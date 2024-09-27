@@ -139,32 +139,34 @@ void Player::set_select_opponent_hysteresis_factor(ScenePos factor) {
 }
 
 void Player::reset_node() {
-    std::scoped_lock lock{ mutex_ };
-    if (vehicle_ != nullptr) {
-        on_clear_vehicle_.clear();
-        vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-        vehicle_ = nullptr;
-    }
-    if (next_scene_vehicle_ != nullptr) {
-        next_scene_vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-        next_scene_vehicle_ = nullptr;
-    }
-    if (target_scene_node_ != nullptr) {
-        target_scene_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-        target_name_.reset();
-        target_scene_node_ = nullptr;
-        target_rb_ = nullptr;
-    }
-    if (controlled_.gun_node != nullptr) {
-        if (controlled_.has_aim_at()) {
-            controlled_.aim_at().set_followed(nullptr);
+    {
+        std::scoped_lock lock{ mutex_ };
+        if (vehicle_ != nullptr) {
+            on_clear_vehicle_.clear();
+            vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+            vehicle_ = nullptr;
         }
-        change_gun_node(nullptr);
+        if (next_scene_vehicle_ != nullptr) {
+            next_scene_vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+            next_scene_vehicle_ = nullptr;
+        }
+        if (target_scene_node_ != nullptr) {
+            target_scene_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+            target_name_.reset();
+            target_scene_node_ = nullptr;
+            target_rb_ = nullptr;
+        }
+        if (controlled_.gun_node != nullptr) {
+            if (controlled_.has_aim_at()) {
+                controlled_.aim_at().set_followed(nullptr);
+            }
+            change_gun_node(nullptr);
+        }
+        vehicle_movement.reset_node();
+        car_movement.reset_node();
+        stuck_start_ = std::chrono::steady_clock::time_point();
+        unstuck_start_ = std::chrono::steady_clock::time_point();
     }
-    vehicle_movement.reset_node();
-    car_movement.reset_node();
-    stuck_start_ = std::chrono::steady_clock::time_point();
-    unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_vehicle_externals.empty()) {
         delete_vehicle_externals.clear();
     }
@@ -177,8 +179,11 @@ void Player::reset_node() {
             scene_.delete_node(p.mapped());
             });
     }
-    externals_mode_ = ExternalsMode::NONE;
-    internals_mode_.role.clear();
+    {
+        std::scoped_lock lock{ mutex_ };
+        externals_mode_ = ExternalsMode::NONE;
+        internals_mode_.role.clear();
+    }
 }
 
 void Player::set_scene_vehicle(
@@ -383,7 +388,6 @@ void Player::notify_destroyed(SceneNode& destroyed_object) {
 }
 
 void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
-    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (&destroyed_object == next_scene_vehicle_) {
         next_scene_vehicle_ = nullptr;
@@ -395,7 +399,6 @@ void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
 }
 
 void Player::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
-    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_ == nullptr) {
         verbose_abort("Player::notify_destroyed: Vehicle is null");

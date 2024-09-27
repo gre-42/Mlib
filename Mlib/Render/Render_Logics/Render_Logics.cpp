@@ -60,7 +60,7 @@ void RenderLogics::render_without_setup(
 
     for (const auto& [_, c] : render_logics_) {
         if ([this, &c=c](){
-            std::shared_lock lock{ui_focus_.focuses.mutex};
+            std::shared_lock lock{ ui_focus_.focuses.mutex };
             return ui_focus_.has_focus(c->focus_filter());}())
         {
             c->render_toplevel(
@@ -113,6 +113,7 @@ void RenderLogics::insert(const DanglingBaseClassRef<RenderLogic>& render_logic,
     }
     it.first->second.on_destroy(
         [this, k = it.first->first]() {
+            std::scoped_lock lock{ mutex_ };
             if (render_logics_.erase(k) != 1) {
                 verbose_abort("Could not erase render logic");
             }

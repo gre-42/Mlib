@@ -56,7 +56,7 @@ SkidmarkLogic::~SkidmarkLogic() {
 }
 
 void SkidmarkLogic::deallocate() {
-    skidmark_->texture = nullptr;
+    // skidmark_->texture = nullptr;
     fbs_(0) = nullptr;
     fbs_(1) = nullptr;
 }

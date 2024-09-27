@@ -78,7 +78,6 @@ SceneNode::SceneNode(PoseInterpolationMode interpolation_mode)
 {}
 
 void SceneNode::shutdown() {
-    std::scoped_lock lock{ mutex_ };
     if (state_ == SceneNodeState::STATIC) {
         if (scene_ == nullptr) {
             verbose_abort("ERROR: Scene is null in static node");
@@ -358,7 +357,9 @@ void SceneNode::clear_sticky_absolute_observer() {
 }
 
 void SceneNode::clear() {
-    std::scoped_lock lock{ mutex_ };
+    if (scene_ != nullptr) {
+        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+    }
     if (shutting_down()) {
         verbose_abort("Node to be cleared is shutting down");
     }
@@ -366,9 +367,14 @@ void SceneNode::clear() {
 }
 
 void SceneNode::clear_unsafe() {
+    if (scene_ != nullptr) {
+        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+    }
     clearing_observers.clear();
     clearing_pointers.clear();
     on_clear.clear();
+
+    std::scoped_lock lock{ mutex_ };
 
     absolute_movable_ = nullptr;
     relative_movable_ = nullptr;
@@ -1290,7 +1296,7 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(
     std::chrono::steady_clock::time_point time) const
 {
     auto result = relative_model_matrix(time);
-    std::shared_lock lock{ mutex_, std::defer_lock };
+    std::shared_lock lock{ pose_mutex_, std::defer_lock };
     if (locking_strategy == LockingStrategy::ACQUIRE_LOCK) {
         lock.lock();
     }
@@ -1321,7 +1327,7 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::ch
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_view_matrix(std::chrono::steady_clock::time_point time) const {
     auto result = relative_view_matrix(time);
-    std::shared_lock lock{ mutex_ };
+    std::shared_lock lock{ pose_mutex_ };
     // if (state_ == SceneNodeState::DYNAMIC) {
     //     scene_->delete_node_mutex().notify_reading();
     // }
@@ -1347,7 +1353,7 @@ Bijection<TransformationMatrix<float, ScenePos, 3>> SceneNode::absolute_bijectio
     std::chrono::steady_clock::time_point time) const
 {
     auto result = relative_bijection(time);
-    std::shared_lock lock{ mutex_ };
+    std::shared_lock lock{ pose_mutex_ };
     if (parent_ != nullptr) {
         lock.unlock();
         return parent_->absolute_bijection(time) * result;
@@ -1360,7 +1366,7 @@ FixedArray<float, 3> SceneNode::velocity(
     std::chrono::steady_clock::time_point time,
     std::chrono::steady_clock::duration dt) const
 {
-    std::shared_lock lock{ mutex_ };
+    std::shared_lock lock{ pose_mutex_ };
     auto p0 = absolute_model_matrix(LockingStrategy::NO_LOCK, time - dt);
     auto p1 = absolute_model_matrix(LockingStrategy::NO_LOCK, time + dt);
     return (p1.t() - p0.t()).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count() * seconds);
@@ -1372,7 +1378,7 @@ void SceneNode::set_absolute_pose(
     float scale,
     std::optional<std::chrono::steady_clock::time_point> time)
 {
-    std::scoped_lock lock{ mutex_ };
+    std::scoped_lock lock{ pose_mutex_ };
     if (parent_ == nullptr) {
         set_relative_pose(
             position,

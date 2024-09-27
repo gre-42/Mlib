@@ -51,16 +51,14 @@ LightmapLogic::LightmapLogic(
 }
 
 LightmapLogic::~LightmapLogic() {
-    deallocate();
     on_destroy.clear();
+    deallocate();
 }
 
 void LightmapLogic::deallocate() {
-    if (fbs_ != nullptr) {
-        // light_->lightmap_color = nullptr;
-        // light_->lightmap_depth = nullptr;
-        fbs_ = nullptr;
-    }
+    // light_->lightmap_color = nullptr;
+    // light_->lightmap_depth = nullptr;
+    fbs_ = nullptr;
 }
 
 std::optional<RenderSetup> LightmapLogic::try_render_setup(
