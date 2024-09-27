@@ -98,6 +98,15 @@ void StandardRenderLogic::render_with_setup(
     }
 
     {
+        child_logic_.render_with_setup(
+            lx,
+            ly,
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id,
+            setup);
+
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
 
         scene_.render(
