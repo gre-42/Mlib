@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
+#include <memory>
 
 namespace Mlib {
 
@@ -10,10 +11,10 @@ class RenderToFrameBufferGuard {
     RenderToFrameBufferGuard(const RenderToFrameBufferGuard&) = delete;
     RenderToFrameBufferGuard& operator = (const RenderToFrameBufferGuard&) = delete;
 public:
-    explicit RenderToFrameBufferGuard(IFrameBuffer& fb);
+    explicit RenderToFrameBufferGuard(std::shared_ptr<IFrameBuffer> fb);
     ~RenderToFrameBufferGuard();
 private:
-    IFrameBuffer* previous_frame_buffer_;
+    std::shared_ptr<IFrameBuffer> previous_frame_buffer_;
 };
 
 class RenderToScreenGuard {

@@ -145,7 +145,7 @@ PostProcessingLogic::PostProcessingLogic(
     , depth_fog_{ depth_fog }
     , low_pass_{ low_pass }
     , high_pass_{ high_pass }
-    , fbs_{ CURRENT_SOURCE_LOCATION }
+    , fbs_{ std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION) }
 {}
 
 PostProcessingLogic::~PostProcessingLogic() {
@@ -217,7 +217,7 @@ void PostProcessingLogic::render_with_setup(
 
         ensure_initialized();
 
-        fbs_.configure({
+        fbs_->configure({
             .width = lx.ilength(),
             .height = ly.ilength(),
             .depth_kind = FrameBufferChannelKind::TEXTURE,
@@ -260,11 +260,11 @@ void PostProcessingLogic::render_with_setup(
                 CHK(glUniform1i(rp_.soft_light_texture_location, 2));
             }
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_color()->handle<GLuint>()));  // use the color attachment texture as the texture of the quad plane
+            CHK(glBindTexture(GL_TEXTURE_2D, fbs_->texture_color()->handle<GLuint>()));  // use the color attachment texture as the texture of the quad plane
 
             if (depth_fog_ || low_pass_) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_depth()->handle<GLuint>()));
+                CHK(glBindTexture(GL_TEXTURE_2D, fbs_->texture_depth()->handle<GLuint>()));
             }
             if (!soft_light_filename_->empty()) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2

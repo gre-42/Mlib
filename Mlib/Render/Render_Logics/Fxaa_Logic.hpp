@@ -39,7 +39,7 @@ private:
     bool initialized_;
     FxaaRenderProgram rp_;
     std::string soft_light_filename_;
-    FrameBuffer fbs_;
+    std::shared_ptr<FrameBuffer> fbs_;
 };
 
 }

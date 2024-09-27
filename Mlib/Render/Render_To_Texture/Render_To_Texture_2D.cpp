@@ -30,7 +30,7 @@ GLuint Mlib::render_to_texture_2d(
     }
     CHK(glBindTexture(GL_TEXTURE_2D, 0));
     for (auto level = 0; level <= mip_level_count; ++level) {
-        FrameBufferStorage2D afbs{ texture, level };
+        auto afbs = std::make_shared<FrameBufferStorage2D>(texture, level);
         RenderToFrameBufferGuard rfg{ afbs };
         render(width, height);
         width = std::max(1, width / 2);

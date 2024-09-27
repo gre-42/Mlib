@@ -83,7 +83,7 @@ private:
     Scene& scene_;
     DanglingRef<SceneNode> orig_node_;
     SelectedCameras& cameras_;
-    std::unique_ptr<FrameBuffer> fbs_;
+    std::shared_ptr<FrameBuffer> fbs_;
     FixedArray<FixedArray<ScenePos, 3>, 8> old_projected_bbox_;
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;

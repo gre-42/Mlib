@@ -53,8 +53,8 @@ private:
     BloomThresholdRenderProgram rp_threshold_;
     UFixedArray<BloomFilterRenderProgram, 2> rp_filter_;
     BloomBlendRenderProgram rp_blend_;
-    FrameBuffer screen_fbs_;
-    FrameBuffer bloom_fbs_[2];
+    std::shared_ptr<FrameBuffer> screen_fbs_;
+    std::shared_ptr<FrameBuffer> bloom_fbs_[2];
 };
 
 }

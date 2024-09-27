@@ -1216,8 +1216,8 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
     check_color_mode(color, role);
     if (auto it = preloaded_texture_dds_data_.try_get(color); it != nullptr) {
         auto info = ImageInfo::load(*color.filename, it);
-        FrameBuffer fb{ CURRENT_SOURCE_LOCATION };
-        fb.configure(FrameBufferConfig{
+        auto fb = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+        fb->configure(FrameBufferConfig{
             .width = integral_cast<int>(info.size(0)),
             .height = integral_cast<int>(info.size(1)),
             .color_internal_format = GL_RGBA,
@@ -1239,7 +1239,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             RenderToFrameBufferGuard rfg{fb};
             logic.render(ClearMode::COLOR);
         }
-        return fb.color_to_stb_image();
+        return fb->color_to_stb_image();
     }
     if (auto it = preloaded_processed_texture_data_.try_get(color); it != nullptr) {
         if (copy_behavior == CopyBehavior::RAISE) {

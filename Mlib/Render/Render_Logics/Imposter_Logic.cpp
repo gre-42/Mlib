@@ -297,7 +297,7 @@ void ImposterLogic::render_without_setup(
             },
             .time_id = 0};
         if (fbs_ == nullptr) {
-            fbs_ = std::make_unique<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+            fbs_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
         }
         ViewportGuard vg{ npixels->width, npixels->height };
         fbs_->configure({
@@ -307,7 +307,7 @@ void ImposterLogic::render_without_setup(
             .color_format = GL_RGBA,
             .nsamples_msaa = render_config.imposter_nsamples_msaa});
         {
-            RenderToFrameBufferGuard rfg{*fbs_};
+            RenderToFrameBufferGuard rfg{ fbs_ };
             AggregateRendererGuard arg{
                 std::make_shared<AggregateArrayRenderer>(rendering_resources_),
                 std::make_shared<AggregateArrayRenderer>(rendering_resources_)};

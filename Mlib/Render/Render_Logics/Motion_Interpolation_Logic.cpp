@@ -281,9 +281,9 @@ bool MotionInterpolationLogic::render_optional_setup(
             RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = frame_id.time_id };
             auto it = frame_buffers_.find(rsd);
             if (it == frame_buffers_.end()) {
-                it = frame_buffers_.try_emplace(rsd, CURRENT_SOURCE_LOCATION).first;
+                it = frame_buffers_.try_emplace(rsd, std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION)).first;
             }
-            it->second.configure({.width = lx.ilength(), .height = ly.ilength()});
+            it->second->configure({.width = lx.ilength(), .height = ly.ilength()});
             RenderToFrameBufferGuard rfg{ it->second };
             child_logic_.render_auto_setup(
                 lx,
@@ -302,7 +302,7 @@ bool MotionInterpolationLogic::render_optional_setup(
                 rp_no_interpolate_.use();
 
                 CHK(glUniform1i(rp_no_interpolate_.screen_texture_color0_location, 0));
-                CHK(glBindTexture(GL_TEXTURE_2D, it->second.texture_color()->handle<GLuint>()));
+                CHK(glBindTexture(GL_TEXTURE_2D, it->second->texture_color()->handle<GLuint>()));
 
                 va().bind();
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -322,10 +322,10 @@ bool MotionInterpolationLogic::render_optional_setup(
                     CHK(glUniform1i(rp_interpolate_mean_.screen_texture_color1_location, 1));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                    CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()->handle<GLuint>()));
+                    CHK(glBindTexture(GL_TEXTURE_2D, it0->second->texture_color()->handle<GLuint>()));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                    CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()->handle<GLuint>()));
+                    CHK(glBindTexture(GL_TEXTURE_2D, it1->second->texture_color()->handle<GLuint>()));
 
                     va().bind();
                     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -336,14 +336,14 @@ bool MotionInterpolationLogic::render_optional_setup(
                 } else if (interpolation_type_ == InterpolationType::OPTICAL_FLOW) {
                     GLint of_width = 640;
                     GLint of_height = 480;
-                    FrameBuffer fb_flow{ CURRENT_SOURCE_LOCATION };
+                    auto fb_flow = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
                     {
-                        ViewportGuard vg{of_width, of_height};
-                        FrameBuffer fb_diff{ CURRENT_SOURCE_LOCATION };
+                        ViewportGuard vg{ of_width, of_height };
+                        auto fb_diff = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
                         // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
-                        fb_diff.configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
+                        fb_diff->configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
                         {
-                            RenderToFrameBufferGuard rfg{fb_diff};
+                            RenderToFrameBufferGuard rfg{ fb_diff };
                             rp_interpolate_of_diff_.use();
 
                             CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color0_location, 0));
@@ -352,10 +352,10 @@ bool MotionInterpolationLogic::render_optional_setup(
                             CHK(glUniform1f(rp_interpolate_of_diff_.height_location, (GLfloat)of_height));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                            CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()->handle<GLuint>()));
+                            CHK(glBindTexture(GL_TEXTURE_2D, it0->second->texture_color()->handle<GLuint>()));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                            CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()->handle<GLuint>()));
+                            CHK(glBindTexture(GL_TEXTURE_2D, it1->second->texture_color()->handle<GLuint>()));
 
                             va().bind();
                             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -365,16 +365,16 @@ bool MotionInterpolationLogic::render_optional_setup(
                             CHK(glActiveTexture(GL_TEXTURE0));
                         }
                         // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
-                        fb_flow.configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
+                        fb_flow->configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
                         {
-                            RenderToFrameBufferGuard rfg{fb_flow};
+                            RenderToFrameBufferGuard rfg{ fb_flow };
 
                             rp_interpolate_of_finalize_.use();
 
                             CHK(glUniform1i(rp_interpolate_of_finalize_.screen_texture_of_diff_location, 0));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                            CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.texture_color()->handle<GLuint>()));
+                            CHK(glBindTexture(GL_TEXTURE_2D, fb_diff->texture_color()->handle<GLuint>()));
 
                             va().bind();
                             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -385,7 +385,7 @@ bool MotionInterpolationLogic::render_optional_setup(
                             // Reset to defaults
                             CHK(glActiveTexture(GL_TEXTURE0));
                         }
-                        fb_diff.deallocate();
+                        fb_diff->deallocate();
                     }
                     {
                         rp_interpolate_of_apply_.use();
@@ -395,13 +395,13 @@ bool MotionInterpolationLogic::render_optional_setup(
                         CHK(glUniform1i(rp_interpolate_of_apply_.screen_texture_of_location, 2));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()->handle<GLuint>()));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second->texture_color()->handle<GLuint>()));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()->handle<GLuint>()));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second->texture_color()->handle<GLuint>()));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
-                        CHK(glBindTexture(GL_TEXTURE_2D, fb_flow.texture_color()->handle<GLuint>()));
+                        CHK(glBindTexture(GL_TEXTURE_2D, fb_flow->texture_color()->handle<GLuint>()));
 
                         va().bind();
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

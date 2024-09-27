@@ -42,7 +42,7 @@ public:
 private:
     RenderLogic& child_logic_;
     RenderingResources& rendering_resources_;
-    std::unique_ptr<FrameBuffer> fbs_;
+    std::shared_ptr<FrameBuffer> fbs_;
     ResourceUpdateCycle update_cycle_;
     FrameBufferChannelKind depth_kind_;
     VariableAndHash<std::string> color_texture_name_;

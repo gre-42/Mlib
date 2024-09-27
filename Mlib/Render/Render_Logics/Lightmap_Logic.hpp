@@ -46,7 +46,7 @@ private:
     void deallocate();
     RenderingResources& rendering_resources_;
     RenderLogic& child_logic_;
-    std::unique_ptr<FrameBuffer> fbs_;
+    std::shared_ptr<FrameBuffer> fbs_;
     ExternalRenderPassType render_pass_type_;
     DanglingRef<SceneNode> light_node_;
     const std::string black_node_name_;

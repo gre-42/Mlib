@@ -58,7 +58,7 @@ private:
     bool low_pass_;
     bool high_pass_;
     VariableAndHash<std::string> soft_light_filename_;
-    FrameBuffer fbs_;
+    std::shared_ptr<FrameBuffer> fbs_;
 };
 
 }

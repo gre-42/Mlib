@@ -44,7 +44,7 @@ public:
 private:
     void deallocate();
     RenderingResources& rendering_resources_;
-    FixedArray<std::unique_ptr<FrameBuffer>, 2> fbs_;
+    FixedArray<std::shared_ptr<FrameBuffer>, 2> fbs_;
     DanglingRef<SceneNode> skidmark_node_;
     std::shared_ptr<Skidmark> skidmark_;
     IParticleRenderer& particle_renderer_;

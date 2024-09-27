@@ -98,8 +98,10 @@ BloomLogic::BloomLogic(
     : child_logic_{ child_logic }
     , brightness_threshold_{ brightness_threshold }
     , niterations_{ niterations }
-    , screen_fbs_{ CURRENT_SOURCE_LOCATION }
-    , bloom_fbs_{ FrameBuffer{CURRENT_SOURCE_LOCATION}, FrameBuffer{CURRENT_SOURCE_LOCATION} }
+    , screen_fbs_{ std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION) }
+    , bloom_fbs_{
+        std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION),
+        std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION) }
 {}
 
 BloomLogic::~BloomLogic() {
@@ -161,7 +163,7 @@ bool BloomLogic::render_optional_setup(
 
         auto width = lx.ilength();
         auto height = ly.ilength();
-        screen_fbs_.configure({
+        screen_fbs_->configure({
             .width = width,
             .height = height,
             .nsamples_msaa = render_config.nsamples_msaa});
@@ -180,7 +182,7 @@ bool BloomLogic::render_optional_setup(
         }
 
         for (auto& fbs : bloom_fbs_) {
-            fbs.configure({
+            fbs->configure({
                 .width = width,
                 .height = height,
                 .depth_kind = FrameBufferChannelKind::NONE,
@@ -199,7 +201,7 @@ bool BloomLogic::render_optional_setup(
             CHK(glUniform3fv(rp_threshold_.brightness_threshold_location, 1, brightness_threshold_.flat_begin()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 0));
-            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_.texture_color()->handle<GLuint>()));
+            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_->texture_color()->handle<GLuint>()));
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -230,7 +232,7 @@ bool BloomLogic::render_optional_setup(
                 offset2 *= 2.f;
 
                 CHK(glActiveTexture(GL_TEXTURE0 + 0));
-                CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_source_id].texture_color()->handle<GLuint>()));
+                CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_source_id]->texture_color()->handle<GLuint>()));
 
                 va().bind();
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -249,10 +251,10 @@ bool BloomLogic::render_optional_setup(
             CHK(glUniform3fv(rp_blend_.brightness_threshold_location, 1, brightness_threshold_.flat_begin()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 0));
-            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_.texture_color()->handle<GLuint>()));
+            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_->texture_color()->handle<GLuint>()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 1));
-            CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_target_id].texture_color()->handle<GLuint>()));
+            CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_target_id]->texture_color()->handle<GLuint>()));
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

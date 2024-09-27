@@ -36,7 +36,7 @@ GLuint Mlib::render_to_texture_2d_array(
         auto w = width;
         auto h = height;
         for (auto level = 0; level <= mip_level_count; ++level) {
-            ArrayFrameBufferStorage afbs{ texture, level, integral_cast<int>(layer) };
+            auto afbs = std::make_shared<ArrayFrameBufferStorage>(texture, level, integral_cast<int>(layer));
             RenderToFrameBufferGuard rfg{ afbs };
             render(w, h, layer);
             w = std::max(1, w / 2);

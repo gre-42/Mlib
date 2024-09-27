@@ -7,8 +7,8 @@
 
 using namespace Mlib;
 
-static IFrameBuffer* last_frame_buffer = nullptr;
-static IFrameBuffer* bound_frame_buffer = nullptr;
+static std::shared_ptr<IFrameBuffer> last_frame_buffer = nullptr;
+static std::shared_ptr<IFrameBuffer> bound_frame_buffer = nullptr;
 static SourceLocation bound_source_location = CURRENT_SOURCE_LOCATION;
 
 // use cases:
@@ -38,13 +38,13 @@ static SourceLocation bound_source_location = CURRENT_SOURCE_LOCATION;
 //     glReadPixels();
 // }
 
-RenderToFrameBufferGuard::RenderToFrameBufferGuard(IFrameBuffer& fb)
+RenderToFrameBufferGuard::RenderToFrameBufferGuard(std::shared_ptr<IFrameBuffer> fb)
     : previous_frame_buffer_{ last_frame_buffer }
 {
-    if (!fb.is_configured()) {
+    if (!fb->is_configured()) {
         THROW_OR_ABORT("Frame buffer has not been configured");
     }
-    last_frame_buffer = &fb;
+    last_frame_buffer = fb;
 }
 
 RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {

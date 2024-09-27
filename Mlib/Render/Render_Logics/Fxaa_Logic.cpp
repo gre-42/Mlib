@@ -121,7 +121,7 @@ SHADER_VER FRAGMENT_PRECISION
 FxaaLogic::FxaaLogic(RenderLogic& child_logic)
     : child_logic_{child_logic}
     , initialized_{false}
-    , fbs_{ CURRENT_SOURCE_LOCATION }
+    , fbs_{ std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION) }
 {}
 
 FxaaLogic::~FxaaLogic() {
@@ -175,7 +175,7 @@ void FxaaLogic::render_with_setup(
 
         int width = lx.ilength();
         int height = ly.ilength();
-        fbs_.configure({.width = width, .height = height});
+        fbs_->configure({.width = width, .height = height});
         {
             RenderToFrameBufferGuard rfg{fbs_};
             child_logic_.render_with_setup(
@@ -203,7 +203,7 @@ void FxaaLogic::render_with_setup(
             CHK(glUniform1f(rp_.rt_w_location, (float)width));
             CHK(glUniform1f(rp_.rt_h_location, (float)height));
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_color()->handle<GLuint>()));  // use the color attachment texture as the texture of the quad plane
+            CHK(glBindTexture(GL_TEXTURE_2D, fbs_->texture_color()->handle<GLuint>()));  // use the color attachment texture as the texture of the quad plane
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

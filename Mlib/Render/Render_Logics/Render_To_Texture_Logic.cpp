@@ -69,7 +69,7 @@ bool RenderToTextureLogic::render_optional_setup(
     if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
         ViewportGuard vg{ texture_size_(0), texture_size_(1) };
         if (fbs_ == nullptr) {
-            fbs_ = std::make_unique<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+            fbs_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
         }
         fbs_->configure({
             .width = texture_size_(0),
@@ -78,7 +78,7 @@ bool RenderToTextureLogic::render_optional_setup(
             .depth_kind = depth_kind_,
             .nsamples_msaa = render_config.nsamples_msaa});
         {
-            RenderToFrameBufferGuard fbg(*fbs_);
+            RenderToFrameBufferGuard fbg{ fbs_ };
             child_logic_.render_auto_setup(
                 LayoutConstraintParameters{
                     .dpi = lx.dpi,

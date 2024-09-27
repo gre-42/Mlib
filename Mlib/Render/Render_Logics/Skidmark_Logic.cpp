@@ -122,7 +122,7 @@ void SkidmarkLogic::render_without_setup(
         }
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
-        RenderToFrameBufferGuard rfg{ *fbs_(new_fbs_id) };
+        RenderToFrameBufferGuard rfg{ fbs_(new_fbs_id) };
         RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
         {
             ViewportGuard vg{ texture_width_, texture_height_ };

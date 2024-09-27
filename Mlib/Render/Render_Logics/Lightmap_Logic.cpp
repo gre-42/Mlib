@@ -57,9 +57,8 @@ LightmapLogic::~LightmapLogic() {
 
 void LightmapLogic::deallocate() {
     if (fbs_ != nullptr) {
-        // Warning in case of exception during child_logic_.render.
-        light_->lightmap_color = nullptr;
-        light_->lightmap_depth = nullptr;
+        // light_->lightmap_color = nullptr;
+        // light_->lightmap_depth = nullptr;
         fbs_ = nullptr;
     }
 }
@@ -90,7 +89,7 @@ void LightmapLogic::render_without_setup(
             .external_render_pass = {render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0};
         if (fbs_ == nullptr) {
-            fbs_ = std::make_unique<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+            fbs_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
         }
         fbs_->configure({
             .width = lightmap_width_,
@@ -101,7 +100,7 @@ void LightmapLogic::render_without_setup(
             .nsamples_msaa = render_config.lightmap_nsamples_msaa});
         std::optional<RenderSetup> setup;
         {
-            RenderToFrameBufferGuard rfg{ *fbs_ };
+            RenderToFrameBufferGuard rfg{ fbs_ };
             // Non-static lights are not aggregated at all due to the following lines
             // in Scene::render:
             //   bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
