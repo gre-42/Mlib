@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -59,14 +60,13 @@ public:
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
         const RenderedSceneDescriptor& frame_id) const override;
-    virtual void render_with_setup(
+    virtual void render_without_setup(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
-        const RenderedSceneDescriptor& frame_id,
-        const RenderSetup& setup) override;
+        const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
     DestructionFunctionsRemovalTokens on_node_clear;
@@ -87,7 +87,7 @@ private:
     FixedArray<FixedArray<ScenePos, 3>, 8> old_projected_bbox_;
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
-    VariableAndHash<std::string> texture_id_;
+    ColormapWithModifiers texture_;
     DanglingUniquePtr<SceneNode> imposter_node_;
     std::string debug_prefix_;
     uint32_t max_texture_size_;

@@ -89,6 +89,9 @@ ImposterLogic::ImposterLogic(
     , old_projected_bbox_{ uninitialized }
     , orig_hider{ *this }
     , imposter_node_{ nullptr }
+    , texture_{ ColormapWithModifiers{
+        .filename = VariableAndHash{ "imposter_color" + scene.get_temporary_instance_suffix() },
+        .color_mode = ColorMode::RGBA}.compute_hash() }
     , debug_prefix_{ debug_prefix }
     , max_texture_size_{ max_texture_size }
     , down_sampling_{ down_sampling }
@@ -98,7 +101,6 @@ ImposterLogic::ImposterLogic(
     if ((max_texture_size_ < 1) || (max_texture_size_ > 4096)) {
         THROW_OR_ABORT("Imposter texture size out of bounds");
     }
-    texture_id_ = "imposter_color" + scene.get_temporary_instance_suffix();
     auto aabb = orig_node_->relative_aabb();
     if (!aabb.has_value()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + debug_prefix_ + '"');
@@ -111,10 +113,7 @@ ImposterLogic::~ImposterLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
         rendering_resources_.delete_texture(
-            {
-                .filename = texture_id_,
-                .color_mode = ColorMode::RGBA
-            },
+            texture_,
             DeletionFailureMode::WARN);
     }
     delete_imposter_if_exists();
@@ -131,9 +130,7 @@ void ImposterLogic::add_imposter(
     Material material{
         // .blend_mode = BlendMode::SEMI_CONTINUOUS_08,  // does not work with vegetation
         .blend_mode = BlendMode::BINARY_08,
-        .textures_color = { {.texture_descriptor = TextureDescriptor{.color = {
-            .filename = texture_id_,
-            .color_mode = ColorMode::RGBA}}} },
+        .textures_color = { {.texture_descriptor = TextureDescriptor{.color = texture_}} },
         .shading{
             .emissive = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
             .ambient = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
@@ -176,14 +173,13 @@ std::optional<RenderSetup> ImposterLogic::try_render_setup(
     return std::nullopt;
 }
 
-void ImposterLogic::render_with_setup(
+void ImposterLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id,
-    const RenderSetup& setup)
+    const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("ImposterLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
@@ -340,7 +336,7 @@ void ImposterLogic::render_with_setup(
             // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter-" + debug_prefix_ + ".png");
         }
 
-        rendering_resources_.set_texture({ .filename = texture_id_, .color_mode = ColorMode::RGBA }, fbs_->texture_color()->handle<GLuint>(), ResourceOwner::CALLER);
+        rendering_resources_.set_texture(texture_, fbs_->texture_color()->handle<GLuint>(), ResourceOwner::CALLER);
         // TODO: Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{

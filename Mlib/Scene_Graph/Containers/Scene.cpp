@@ -224,6 +224,7 @@ void Scene::try_delete_root_node(const std::string& name) {
 
 void Scene::delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node) {
     std::scoped_lock lock{ mutex_ };
+    scene_node->shutdown();
     if (root_imposter_nodes_.erase(scene_node.ptr()) != 1) {
         verbose_abort("Could not delete root imposter node");
     }
