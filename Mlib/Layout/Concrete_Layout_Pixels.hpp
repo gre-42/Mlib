@@ -3,16 +3,21 @@
 
 namespace Mlib {
 
+enum class PixelsRoundMode;
 enum class ScreenUnits;
 
 class MinimumConstraint: public ILayoutPixels {
 public:
-    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
+    virtual float to_pixels(
+        const LayoutConstraintParameters& params,
+        PixelsRoundMode round_mode) const override;
 };
 
 class EndConstraint: public ILayoutPixels {
 public:
-    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
+    virtual float to_pixels(
+        const LayoutConstraintParameters& params,
+        PixelsRoundMode round_mode) const override;
 };
 
 class ConstantConstraint: public ILayoutPixels {
@@ -20,7 +25,9 @@ public:
     ConstantConstraint(
         float f,
         ScreenUnits screen_units);
-    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
+    virtual float to_pixels(
+        const LayoutConstraintParameters& params,
+        PixelsRoundMode round_mode) const override;
 private:
     float f_;
     ScreenUnits screen_units_;
@@ -32,7 +39,9 @@ public:
         float f,
         ScreenUnits screen_units,
         ILayoutPixels& a);
-    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
+    virtual float to_pixels(
+        const LayoutConstraintParameters& params,
+        PixelsRoundMode round_mode) const override;
 private:
     float f_;
     ScreenUnits screen_units_;
@@ -45,7 +54,9 @@ public:
         float f,
         ILayoutPixels& a,
         ILayoutPixels& b);
-    virtual float to_pixels(const LayoutConstraintParameters& params) const override;
+    virtual float to_pixels(
+        const LayoutConstraintParameters& params,
+        PixelsRoundMode round_mode) const override;
 private:
     float f_;
     ILayoutPixels& a_;

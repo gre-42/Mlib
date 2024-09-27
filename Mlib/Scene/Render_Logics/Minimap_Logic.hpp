@@ -30,7 +30,7 @@ public:
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
         const DanglingBaseClassRef<Player>& player,
-        DanglingRef<SceneNode> node,
+        const DanglingRef<SceneNode>& node,
         const VariableAndHash<std::string>& map_image_resource_name,
         const VariableAndHash<std::string>& locator_image_resource_name,
         std::unique_ptr<IWidget>&& widget,

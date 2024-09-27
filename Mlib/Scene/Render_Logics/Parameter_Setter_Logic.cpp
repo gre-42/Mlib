@@ -93,7 +93,7 @@ void ParameterSetterLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("ParameterSetterLogic::render");
-    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     ListViewStringDrawer drawer{
           ListViewOrientation::VERTICAL,
           *renderable_text_,

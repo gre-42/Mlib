@@ -1,6 +1,7 @@
 #include "Players_Stats_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -50,10 +51,10 @@ void PlayersStatsLogic::render_without_setup(
 {
     LOG_FUNCTION("PlayersStatsLogic::render");
     renderable_text().render(
-        font_height_.to_pixels(ly),
-        *widget_->evaluate(lx, ly, YOrientation::AS_IS),
+        font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+        *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         players_.get_score_board(score_board_configuration_),
-        line_distance_.to_pixels(ly));
+        line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }
 
 void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {

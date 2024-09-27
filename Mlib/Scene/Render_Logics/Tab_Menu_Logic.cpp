@@ -124,7 +124,7 @@ void TabMenuLogic::render_without_setup(
             reload_transient_objects_();
         }
     }
-    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     if (list_view_style_ == ListViewStyle::TEXT) {
         ListViewStringDrawer drawer{
             ListViewOrientation::HORIZONTAL,
@@ -140,7 +140,7 @@ void TabMenuLogic::render_without_setup(
         if (icon_widget_ == nullptr) {
             THROW_OR_ABORT("Listview style is \"icon\", but icon widget is null");
         }
-        auto iw = icon_widget_->evaluate(lx, ly, YOrientation::AS_IS);
+        auto iw = icon_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
         ListViewWidgetDrawer drawer{
             [&](const IPixelRegion& ew){
                 gallery_["dots"]->render(

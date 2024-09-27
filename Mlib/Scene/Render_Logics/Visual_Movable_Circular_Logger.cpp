@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -56,8 +57,8 @@ void VisualMovableCircularLogger::render(
     RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
     display_.render(
         value_,
-        font_height_.to_pixels(ly),
-        *widget_->evaluate(lx, ly, YOrientation::AS_IS),
-        tick_radius_.to_pixels(ly),
-        { pointer_width_.to_pixels(ly), pointer_length_.to_pixels(ly) });
+        font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+        *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
+        tick_radius_.to_pixels(ly, PixelsRoundMode::NONE),
+        { pointer_width_.to_pixels(ly, PixelsRoundMode::NONE), pointer_length_.to_pixels(ly, PixelsRoundMode::NONE) });
 }

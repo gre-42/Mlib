@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material/Cull_Face_Mode.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -27,7 +28,7 @@ MinimapLogic::MinimapLogic(
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
     const DanglingBaseClassRef<Player>& player,
-    DanglingRef<SceneNode> node,
+    const DanglingRef<SceneNode>& node,
     const VariableAndHash<std::string>& map_image_resource_name,
     const VariableAndHash<std::string>& locator_image_resource_name,
     std::unique_ptr<IWidget>&& widget,
@@ -109,7 +110,7 @@ void MinimapLogic::render_without_setup(
     if (std::isnan(angle)) {
         return;
     }
-    auto pixel_region = widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto pixel_region = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     {
         auto vg = ViewportGuard::from_widget(*pixel_region);
         if (vg.has_value()) {
@@ -139,10 +140,10 @@ void MinimapLogic::render_without_setup(
             (pixel_region->left() + pixel_region->right()) / 2.f,
             (pixel_region->bottom() + pixel_region->top()) / 2.f};
         PixelRegion locator_pixel_region{
-            center(0) - locator_size_.to_pixels(lx) / 2.f,
-            center(0) + locator_size_.to_pixels(lx) / 2.f,
-            center(1) - locator_size_.to_pixels(ly) / 2.f,
-            center(1) + locator_size_.to_pixels(ly) / 2.f};
+            center(0) - locator_size_.to_pixels(lx, PixelsRoundMode::ROUND) / 2.f,
+            center(0) + locator_size_.to_pixels(lx, PixelsRoundMode::ROUND) / 2.f,
+            center(1) - locator_size_.to_pixels(ly, PixelsRoundMode::ROUND) / 2.f,
+            center(1) + locator_size_.to_pixels(ly, PixelsRoundMode::ROUND) / 2.f};
         auto vg = ViewportGuard::from_widget(locator_pixel_region);
         if (vg.has_value()) {
             locator_logic_.render(ClearMode::OFF);

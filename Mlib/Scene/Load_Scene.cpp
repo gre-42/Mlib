@@ -45,7 +45,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Focused_Text.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Minimap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Players_Stats.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Percentage_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Pixel_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Visual_Node_Status_3rd.hpp>
@@ -386,7 +385,6 @@ LoadScene::LoadScene() {
     register_json_user_function(RespawnAllPlayers::key, RespawnAllPlayers::json_user_function);
     register_json_user_function(RootNodeInstance::key, RootNodeInstance::json_user_function);
     register_json_user_function(SaveToObjFile::key, SaveToObjFile::json_user_function);
-    register_json_user_function(SceneToPercentageRegion::key, SceneToPercentageRegion::json_user_function);
     register_json_user_function(SceneToPixelRegion::key, SceneToPixelRegion::json_user_function);
     register_json_user_function(SceneToTexture::key, SceneToTexture::json_user_function);
     register_json_user_function(SetAnimationState::key, SetAnimationState::json_user_function);

@@ -1,6 +1,7 @@
 #include "List_View_String_Drawer.hpp"
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -47,7 +48,7 @@ ListViewStringDrawer::ListViewStringDrawer(
 }
 
 size_t ListViewStringDrawer::max_entries_visible() const {
-    float line_distance_pixels = line_distance_.to_pixels(ly_);
+    float line_distance_pixels = line_distance_.to_pixels(ly_, PixelsRoundMode::NONE);
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
         return SIZE_MAX;
     } else {
@@ -90,8 +91,8 @@ void ListViewStringDrawer::draw_entry(
 
 void ListViewStringDrawer::render() {
     renderable_text_.render(
-        font_height_.to_pixels(ly_),
+        font_height_.to_pixels(ly_, PixelsRoundMode::ROUND),
         ew_,
         sstr_.str(),
-        line_distance_.to_pixels(ly_));
+        line_distance_.to_pixels(ly_, PixelsRoundMode::NONE));
 }

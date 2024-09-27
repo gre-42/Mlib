@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -56,10 +57,10 @@ void VisualGlobalLog::render_without_setup(
     std::stringstream sstr;
     base_log_.get_messages(sstr, nentries_, severity_);
     renderable_text().render(
-        font_height_.to_pixels(ly),
-        *widget_->evaluate(lx, ly, YOrientation::AS_IS),
+        font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+        *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         sstr.str(),
-        line_distance_.to_pixels(ly));
+        line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {

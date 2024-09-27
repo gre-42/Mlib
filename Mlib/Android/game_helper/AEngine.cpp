@@ -130,7 +130,8 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                         auto ew = tb.widget->evaluate(
                             eng->LayoutParametersX(),
                             eng->LayoutParametersY(),
-                            Mlib::YOrientation::SWAPPED);
+                            Mlib::YOrientation::SWAPPED,
+                            Mlib::RegionRoundMode::ENABLED);
                         if ((ew->width() > 0.f) && (ew->height() > 0.f) &&
                             (x >= ew->left()) && (x <= ew->right()) &&
                             (y >= ew->bottom()) && (y <= ew->top()))

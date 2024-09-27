@@ -49,7 +49,7 @@ void FillPixelRegionWithTextureLogic::render_without_setup(
             return;
         }
     }
-    auto vg = ViewportGuard::from_widget(*widget_->evaluate(lx, ly, YOrientation::AS_IS));
+    auto vg = ViewportGuard::from_widget(*widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED));
     if (vg.has_value()) {
         fill_with_texture_logic_->render(ClearMode::OFF);
     }

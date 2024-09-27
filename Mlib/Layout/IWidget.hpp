@@ -21,13 +21,19 @@ enum class YOrientation {
     SWAPPED
 };
 
+enum class RegionRoundMode {
+    ENABLED,
+    DISABLED
+};
+
 class IWidget {
 public:
     virtual ~IWidget() = default;
     virtual std::unique_ptr<IPixelRegion> evaluate(
         const LayoutConstraintParameters& x,
         const LayoutConstraintParameters& y,
-        YOrientation y_orientation) const = 0;
+        YOrientation y_orientation,
+        RegionRoundMode round_mode) const = 0;
 };
 
 }

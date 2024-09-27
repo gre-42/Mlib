@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -70,10 +71,10 @@ void VisualBulletCount::render_without_setup(
     std::scoped_lock lock{mutex_};
     if (!text_.empty()) {
         renderable_text().render(
-            font_height_.to_pixels(ly),
-            *widget_->evaluate(lx, ly, YOrientation::AS_IS),
+            font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+            *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
             text_,
-            line_distance_.to_pixels(ly));
+            line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
     }
 }
 

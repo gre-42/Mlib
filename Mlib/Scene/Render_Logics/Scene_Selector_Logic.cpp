@@ -131,7 +131,7 @@ void SceneSelectorLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("SceneSelectorLogic::render");
-    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
         *renderable_text_,

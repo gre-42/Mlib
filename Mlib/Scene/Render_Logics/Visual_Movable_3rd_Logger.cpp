@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -96,12 +97,12 @@ void VisualMovable3rdLogger::render_with_setup(
         FixedArray<float, 2> size{lx.flength(), ly.flength()};
         auto p2 = (position2 * 0.5f + 0.5f) * size;
         renderable_text_->render(
-            font_height_.to_pixels(ly),
+            font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
             p2,
             size,
             (std::string)text_,
             AlignText::BOTTOM,
-            line_distance_.to_pixels(ly));
+            line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
     }
 }
 

@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 
 using namespace Mlib;
 
@@ -27,11 +28,11 @@ PixelRegion::PixelRegion(
 {}
 
 PixelRegion PixelRegion::transformed(const IPixelRegion& ew, float dx, float dy) {
-    return PixelRegion(
+    return {
         ew.left() + dx,
         ew.right() + dx,
         ew.bottom() + dy,
-        ew.top() + dy);
+        ew.top() + dy};
 }
 
 float PixelRegion::width() const {
@@ -72,21 +73,26 @@ Widget::Widget(
 std::unique_ptr<IPixelRegion> Widget::evaluate(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    YOrientation y_orientation) const
+    YOrientation y_orientation,
+    RegionRoundMode round_mode) const
 {
+    auto rnd = (round_mode == RegionRoundMode::DISABLED)
+        ? PixelsRoundMode::NONE
+        : PixelsRoundMode::ROUND;
+
     if (y_orientation == YOrientation::AS_IS) {
         return std::make_unique<PixelRegion>(
-            left_.to_pixels(lx),
-            right_.to_pixels(lx),
-            bottom_.to_pixels(ly),
-            top_.to_pixels(ly));
+            left_.to_pixels(lx, rnd),
+            right_.to_pixels(lx, rnd),
+            bottom_.to_pixels(ly, rnd),
+            top_.to_pixels(ly, rnd));
     }
     if (y_orientation == YOrientation::SWAPPED) {
         return std::make_unique<PixelRegion>(
-            left_.to_pixels(lx),
-            right_.to_pixels(lx),
-            ly.end_pixel - top_.to_pixels(ly),
-            ly.end_pixel - bottom_.to_pixels(ly));
+            left_.to_pixels(lx, rnd),
+            right_.to_pixels(lx, rnd),
+            ::Mlib::round(ly.end_pixel - top_.to_pixels(ly, PixelsRoundMode::NONE), rnd),
+            ::Mlib::round(ly.end_pixel - bottom_.to_pixels(ly, PixelsRoundMode::NONE), rnd));
     }
     THROW_OR_ABORT("Unknown y-orientation");
 }

@@ -362,6 +362,7 @@ void android_main(android_app* app) {
         "    [--high_pass]\n"
         "    [--bloom_x <niterations>]\n"
         "    [--bloom_y <niterations>]\n"
+        "    [--bloom_thresold <threshold>]\n"
         "    [--motion_interpolation]\n"
         "    [--no_render]\n"
         "    [--save_playback]\n"
@@ -452,7 +453,8 @@ void android_main(android_app* app) {
          "--audio_frequency",
          "--audio_alpha",
          "--bloom_x",
-         "--bloom_y"});
+         "--bloom_y",
+         "--bloom_threshold"});
     try {
         const char* argv[] = {"appname", "/;/data", "/levels/main/main.scn.json"};
         const auto args = parser.parsed(sizeof(argv) / sizeof(argv[0]), argv);
@@ -594,9 +596,11 @@ void android_main(android_app* app) {
                     {"PRIMARY_SCENE_DEPTH_FOG", !args.has_named("--no_depth_fog")},
                     {"PRIMARY_SCENE_LOW_PASS", args.has_named("--low_pass")},
                     {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},
-                    {"PRIMARY_SCENE_BLOOM", FixedArray<unsigned int, 2>{
-                        safe_stou(args.named_value("--bloom_x", "0")),
-                        safe_stou(args.named_value("--bloom_y", "0"))}},
+                    {"PRIMARY_SCENE_BLOOM_ITERATIONS", FixedArray<unsigned int, 2>{
+                        safe_stou(args.named_value("--bloom_x", "3")),
+                        safe_stou(args.named_value("--bloom_y", "3"))}},
+                    {"PRIMARY_SCENE_BLOOM_THRESHOLDS", fixed_full<float, 3>(
+                        safe_stof(args.named_value("--bloom_threshold", "0.5")))},
                     {"PRIMARY_SCENE_WITH_SKYBOX", true},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", true},
                     {"PRIMARY_SCENE_SAVE_PLAYBACK", args.has_named("--save_playback")},

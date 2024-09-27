@@ -1,17 +1,11 @@
 #include "Viewport_Guard.hpp"
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 
 using namespace Mlib;
-
-static int ftoi(float v) {
-    if (std::isnan(v)) {
-        THROW_OR_ABORT("NAN not supported");
-    }
-    return (int)std::round(v);
-}
 
 std::atomic<ViewportGuard*> ViewportGuard::current_guard_ = nullptr;
 
@@ -68,8 +62,8 @@ ViewportGuard::~ViewportGuard() {
 #ifdef __ANDROID__
 struct IntViewport {
     IntViewport(float begin, float size) {
-        ibegin = ftoi(begin);
-        int iend = ftoi(begin + size);
+        ibegin = float_to_integral<int>(begin);
+        int iend = ibegin + float_to_integral<int>(size);
         isize = iend - ibegin;
     }
     int ibegin;
@@ -140,11 +134,11 @@ float ViewportGuard::fheight() const {
 }
 
 int ViewportGuard::iwidth() const {
-    return ftoi(viewport_.width);
+    return float_to_integral<int>(viewport_.width);
 }
 
 int ViewportGuard::iheight() const {
-    return ftoi(viewport_.height);
+    return float_to_integral<int>(viewport_.height);
 }
 
 #endif

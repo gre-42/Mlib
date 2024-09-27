@@ -80,7 +80,7 @@ void HudOpponentZoomLogic::render_without_setup(
     if (observed_node == nullptr) {
         return;
     }
-    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     auto vg = ViewportGuard::from_widget(*ew);
     if (!vg.has_value()) {
         return;

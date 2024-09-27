@@ -1,5 +1,6 @@
 #include "Layout_Constraint_Parameters.hpp"
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -9,12 +10,7 @@ float LayoutConstraintParameters::flength() const {
 }
 
 int LayoutConstraintParameters::ilength() const {
-    float f = flength();
-    int i = (int)f;
-    if ((float)i != f) {
-        THROW_OR_ABORT("ilength() called on non-integer layout constraints");
-    }
-    return i;
+    return float_to_integral<int>(end_pixel) - float_to_integral<int>(min_pixel);
 }
 
 LayoutConstraintParameters LayoutConstraintParameters::child_x(

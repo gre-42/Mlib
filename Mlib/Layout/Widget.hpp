@@ -40,7 +40,8 @@ public:
     virtual std::unique_ptr<IPixelRegion> evaluate(
         const LayoutConstraintParameters& x,
         const LayoutConstraintParameters& y,
-        YOrientation y_orientation) const override;
+        YOrientation y_orientation,
+        RegionRoundMode round_mode) const override;
 private:
     const ILayoutPixels& left_;
     const ILayoutPixels& right_;

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
@@ -51,12 +52,12 @@ void FocusedTextLogic::render_without_setup(
 {
     LOG_FUNCTION("FocusedTextLogic::render");
     renderable_text().render(
-        font_height_.to_pixels(ly),
+        font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
         position_,
         {lx.flength(), ly.flength()},
         text_,
         AlignText::BOTTOM,
-        line_distance_.to_pixels(ly));
+        line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }
 
 FocusFilter FocusedTextLogic::focus_filter() const {

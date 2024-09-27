@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -68,14 +69,14 @@ void CountDownLogic::render_without_setup(
         return focuses_.contains(counting_focus_);}())
     {
         renderable_text().render(
-            font_height_.to_pixels(ly),
+            font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
             position_,
             {lx.flength(), ly.flength()},
             text_.empty()
                 ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / seconds))
                 : text_,
             AlignText::BOTTOM,
-            line_distance_.to_pixels(ly));
+            line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
     }
 }
 

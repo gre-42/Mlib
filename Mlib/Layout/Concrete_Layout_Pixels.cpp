@@ -6,18 +6,24 @@
 
 using namespace Mlib;
 
-float MinimumConstraint::to_pixels(const LayoutConstraintParameters& params) const {
+float MinimumConstraint::to_pixels(
+    const LayoutConstraintParameters& params,
+    PixelsRoundMode round_mode) const
+{
     if (std::isnan(params.min_pixel)) {
         THROW_OR_ABORT("Minimum pixel requested, but min_pixel is NAN");
     }
-    return params.min_pixel;
+    return ::Mlib::round(params.min_pixel, round_mode);
 }
 
-float EndConstraint::to_pixels(const LayoutConstraintParameters& params) const {
+float EndConstraint::to_pixels(
+    const LayoutConstraintParameters& params,
+    PixelsRoundMode round_mode) const
+{
     if (std::isnan(params.end_pixel)) {
         THROW_OR_ABORT("End pixel requested, but max_pixel is NAN");
     }
-    return params.end_pixel;
+    return ::Mlib::round(params.end_pixel, round_mode);
 }
 
 ConstantConstraint::ConstantConstraint(
@@ -27,8 +33,11 @@ ConstantConstraint::ConstantConstraint(
     , screen_units_{ screen_units }
 {}
 
-float ConstantConstraint::to_pixels(const LayoutConstraintParameters& params) const {
-    return ::Mlib::to_pixels(screen_units_, f_, params.dpi);
+float ConstantConstraint::to_pixels(
+    const LayoutConstraintParameters& params,
+    PixelsRoundMode round_mode) const
+{
+    return ::Mlib::round(::Mlib::to_pixels(screen_units_, f_, params.dpi), round_mode);
 }
 
 AdditiveConstraint::AdditiveConstraint(
@@ -40,8 +49,13 @@ AdditiveConstraint::AdditiveConstraint(
     , a_{ a }
 {}
 
-float AdditiveConstraint::to_pixels(const LayoutConstraintParameters& params) const {
-    return a_.to_pixels(params) + ::Mlib::to_pixels(screen_units_, f_, params.dpi);
+float AdditiveConstraint::to_pixels(
+    const LayoutConstraintParameters& params,
+    PixelsRoundMode round_mode) const
+{
+    return ::Mlib::round(
+        a_.to_pixels(params, PixelsRoundMode::NONE) + ::Mlib::to_pixels(screen_units_, f_, params.dpi),
+        round_mode);
 }
 
 FractionalConstraint::FractionalConstraint(
@@ -53,8 +67,12 @@ FractionalConstraint::FractionalConstraint(
     , b_{ b }
 {}
     
-float FractionalConstraint::to_pixels(const LayoutConstraintParameters& params) const {
-    return
-        (1 - f_) * a_.to_pixels(params) +
-        f_ * b_.to_pixels(params);
+float FractionalConstraint::to_pixels(
+    const LayoutConstraintParameters& params,
+    PixelsRoundMode round_mode) const
+{
+    return ::Mlib::round(
+        (1 - f_) * a_.to_pixels(params, PixelsRoundMode::NONE) +
+        f_ * b_.to_pixels(params, PixelsRoundMode::NONE),
+        round_mode);
 }

@@ -42,3 +42,17 @@ FixedArray<float, 2> Mlib::to_pixels(
         THROW_OR_ABORT("Unknown screen units");
     }
 }
+
+float Mlib::round(float value, PixelsRoundMode pixels_round_mode) {
+    switch (pixels_round_mode) {
+    case PixelsRoundMode::NONE:
+        return value;
+    case PixelsRoundMode::CEIL:
+        return std::ceil(value);
+    case PixelsRoundMode::ROUND:
+        return std::round(value);
+    case PixelsRoundMode::FLOOR:
+        return std::floor(value);
+    }
+    THROW_OR_ABORT("Unknown round mode");
+}

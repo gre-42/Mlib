@@ -43,7 +43,7 @@ bool RenderToPixelRegionLogic::render_optional_setup(
     const RenderSetup* setup)
 {
     LOG_FUNCTION("RenderToPixelRegionLogic::render");
-    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     auto vg = ViewportGuard::from_widget(*ew);
     if (vg.has_value()) {
         render_logic_.render_auto_setup(

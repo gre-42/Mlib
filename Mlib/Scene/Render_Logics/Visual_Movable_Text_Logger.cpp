@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -45,8 +46,8 @@ void VisualMovableTextLogger::render(
 {
     LOG_FUNCTION("VisualMovableTextLogger::render");
     renderable_text().render(
-        font_height_.to_pixels(ly),
-        *widget_->evaluate(lx, ly, YOrientation::AS_IS),
+        font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+        *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         (std::string)text_,
-        line_distance_.to_pixels(ly));
+        line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }

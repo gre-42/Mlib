@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
@@ -82,14 +83,14 @@ void CheckPointsPacenotes::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     std::shared_lock lock{ mutex_ };
-    auto text_region = text_widget_->evaluate(lx, ly, YOrientation::AS_IS);
-    auto picture_region = picture_widget_->evaluate(lx, ly, YOrientation::AS_IS);
-    auto dx1 = widget_distance_.to_pixels(lx);
+    auto text_region = text_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+    auto picture_region = picture_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+    auto dx1 = widget_distance_.to_pixels(lx, PixelsRoundMode::ROUND);
     float dx = 0.f;
     for (const auto& pacenote : pacenotes_) {
         display_.render(
             *pacenote,
-            font_height_.to_pixels(ly),
+            font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
             PixelRegion::transformed(*text_region, dx, 0.f),
             PixelRegion::transformed(*picture_region, dx, 0.f));
         dx += dx1;
