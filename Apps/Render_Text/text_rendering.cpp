@@ -126,7 +126,11 @@ int main(int argc, char** argv)
 
             {
                 PixelRegion ew{0.f, 400, 0.f, 100};
-                renderable_text.render(large_font_height.to_pixels(ly), ew, "This is sample text", line_distance.to_pixels(ly));
+                renderable_text.render(
+                    large_font_height.to_pixels(ly, PixelsRoundMode::ROUND),
+                    ew,
+                    "This is sample text",
+                    line_distance.to_pixels(ly, PixelsRoundMode::NONE));
             }
             {
                 PixelRegion ew{10.f, 400, 120.f, 500.f};
