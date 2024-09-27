@@ -88,10 +88,10 @@ ImposterLogic::ImposterLogic(
     , cameras_{ cameras }
     , old_projected_bbox_{ uninitialized }
     , orig_hider{ *this }
-    , imposter_node_{ nullptr }
     , texture_{ ColormapWithModifiers{
         .filename = VariableAndHash{ "imposter_color" + scene.get_temporary_instance_suffix() },
         .color_mode = ColorMode::RGBA}.compute_hash() }
+    , imposter_node_{ nullptr }
     , debug_prefix_{ debug_prefix }
     , max_texture_size_{ max_texture_size }
     , down_sampling_{ down_sampling }
