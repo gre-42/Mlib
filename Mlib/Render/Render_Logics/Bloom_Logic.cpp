@@ -34,12 +34,7 @@ static GenShaderText threshold_fragment_shader_text{[]()
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     sstr << "    vec3 color = texture(screen_texture_color, TexCoords.st).rgb;" << std::endl;
-    sstr << "    float brightness = dot(color, brightness_threshold);" << std::endl;
-    sstr << "    if (brightness > 1.0) {" << std::endl;
-    sstr << "        FragColor = vec4(max(vec3(0, 0, 0), color.rgb - brightness_threshold), 1.0);" << std::endl;
-    sstr << "    } else {" << std::endl;
-    sstr << "        FragColor = vec4(0.0, 0.0, 0.0, 1.0);" << std::endl;
-    sstr << "    }" << std::endl;
+    sstr << "    FragColor = vec4(max(vec3(0, 0, 0), color.rgb - brightness_threshold), 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
@@ -85,12 +80,13 @@ static GenShaderText blend_fragment_shader_text{[]()
     sstr << std::endl;
     sstr << "uniform sampler2D screen_texture_color;" << std::endl;
     sstr << "uniform sampler2D bloom_texture_color;" << std::endl;
+    sstr << "uniform vec3 brightness_threshold;" << std::endl;
     sstr << std::endl;
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     sstr << "    vec3 screen_color = texture(screen_texture_color, TexCoords.st).rgb;" << std::endl;
     sstr << "    vec3 bloom_color = texture(bloom_texture_color, TexCoords.st).rgb;" << std::endl;
-    sstr << "    FragColor = vec4(screen_color + bloom_color, 1.0);" << std::endl;
+    sstr << "    FragColor = vec4(max(screen_color, min(screen_color, brightness_threshold) + bloom_color), 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
@@ -160,6 +156,7 @@ bool BloomLogic::render_optional_setup(
             rp_blend_.allocate(simple_vertex_shader_text_, blend_fragment_shader_text());
             rp_blend_.screen_texture_color_location = rp_blend_.get_uniform_location("screen_texture_color");
             rp_blend_.bloom_texture_color_location = rp_blend_.get_uniform_location("bloom_texture_color");
+            rp_blend_.brightness_threshold_location = rp_blend_.get_uniform_location("brightness_threshold");
         }
 
         auto width = lx.ilength();
@@ -249,6 +246,7 @@ bool BloomLogic::render_optional_setup(
 
             CHK(glUniform1i(rp_blend_.screen_texture_color_location, 0));
             CHK(glUniform1i(rp_blend_.bloom_texture_color_location, 1));
+            CHK(glUniform3fv(rp_blend_.brightness_threshold_location, 1, brightness_threshold_.flat_begin()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 0));
             CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_.texture_color()->handle<GLuint>()));
