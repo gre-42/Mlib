@@ -21,7 +21,6 @@ struct BloomFilterRenderProgram: public RenderProgram {
 struct BloomBlendRenderProgram: public RenderProgram {
     GLint screen_texture_color_location = -1;
     GLint bloom_texture_color_location = -1;
-    GLint brightness_threshold_location = -1;
 };
 
 class BloomLogic final: public RenderLogic, public GenericPostProcessingLogic {
