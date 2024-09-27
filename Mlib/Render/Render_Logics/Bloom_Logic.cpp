@@ -36,7 +36,7 @@ static GenShaderText threshold_fragment_shader_text{[]()
     sstr << "    vec3 color = texture(screen_texture_color, TexCoords.st).rgb;" << std::endl;
     sstr << "    float brightness = dot(color, brightness_threshold);" << std::endl;
     sstr << "    if (brightness > 1.0) {" << std::endl;
-    sstr << "        FragColor = vec4(color.rgb, 1.0);" << std::endl;
+    sstr << "        FragColor = vec4(max(vec3(0, 0, 0), color.rgb - brightness_threshold), 1.0);" << std::endl;
     sstr << "    } else {" << std::endl;
     sstr << "        FragColor = vec4(0.0, 0.0, 0.0, 1.0);" << std::endl;
     sstr << "    }" << std::endl;
@@ -132,7 +132,7 @@ bool BloomLogic::render_optional_setup(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("BloomLogic did not receive standard rendering");
     }
-    if (all(niterations_ == 0u)) {
+    if (all(brightness_threshold_ == 1.f)) {
         child_logic_.render_auto_setup(
             lx,
             ly,
@@ -220,6 +220,7 @@ bool BloomLogic::render_optional_setup(
             } else {
                 THROW_OR_ABORT("Texture axis");
             }
+            float offset2 = offset;
             for (size_t i = 0; i < niterations_(axis); ++i) {
                 size_t bloom_source_id = bloom_target_id;
                 bloom_target_id = (bloom_source_id + 1) % 2;
@@ -228,7 +229,8 @@ bool BloomLogic::render_optional_setup(
                 RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
 
                 CHK(glUniform1i(rp.texture_color_location, 0));
-                CHK(glUniform1f(rp.lowpass_offset_location, offset * integral_to_float<float>(i + 1)));
+                CHK(glUniform1f(rp.lowpass_offset_location, offset2));
+                offset2 *= 2.f;
 
                 CHK(glActiveTexture(GL_TEXTURE0 + 0));
                 CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_source_id].texture_color()->handle<GLuint>()));

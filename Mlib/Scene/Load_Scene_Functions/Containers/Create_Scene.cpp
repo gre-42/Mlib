@@ -29,7 +29,8 @@ DECLARE_ARGUMENT(rotate);
 DECLARE_ARGUMENT(depth_fog);
 DECLARE_ARGUMENT(low_pass);
 DECLARE_ARGUMENT(high_pass);
-DECLARE_ARGUMENT(bloom);
+DECLARE_ARGUMENT(bloom_iterations);
+DECLARE_ARGUMENT(bloom_thresholds);
 DECLARE_ARGUMENT(with_skybox);
 DECLARE_ARGUMENT(with_flying_logic);
 DECLARE_ARGUMENT(clear_mode);
@@ -69,7 +70,8 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
             .depth_fog = args.arguments.at<bool>(KnownArgs::depth_fog),
             .low_pass = args.arguments.at<bool>(KnownArgs::low_pass),
             .high_pass = args.arguments.at<bool>(KnownArgs::high_pass),
-            .bloom = args.arguments.at<UFixedArray<unsigned int, 2>>(KnownArgs::bloom),
+            .bloom_iterations = args.arguments.at<UFixedArray<unsigned int, 2>>(KnownArgs::bloom_iterations),
+            .bloom_thresholds = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::bloom_thresholds),
             .with_skybox = args.arguments.at<bool>(KnownArgs::with_skybox),
             .with_flying_logic = args.arguments.at<bool>(KnownArgs::with_flying_logic),
             .background_color = {1.f, 0.f, 1.f},

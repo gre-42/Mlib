@@ -75,7 +75,8 @@ struct SceneConfigResource {
     bool depth_fog;
     bool low_pass;
     bool high_pass;
-    FixedArray<unsigned int, 2> bloom;
+    FixedArray<unsigned int, 2> bloom_iterations;
+    FixedArray<float, 3> bloom_thresholds;
     bool with_skybox;
     bool with_flying_logic;
     FixedArray<float, 3> background_color;

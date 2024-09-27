@@ -153,10 +153,8 @@ RenderableScene::RenderableScene(
     , fxaa_logic_{ std::make_unique<FxaaLogic>(*post_processing_logic_) }
     , bloom_logic_{ std::make_unique<BloomLogic>(
         scene_render_logics_,
-        // The weights sum up to one. Multiply with 1.05 to
-        // circumvent floating point issues.
-        1.05f * FixedArray<float, 3>{0.2126f, 0.7152f, 0.0722f},
-        config.bloom) }
+        config.bloom_thresholds,
+        config.bloom_iterations) }
     , imposter_render_logics_{ std::make_unique<RenderLogics>(ui_focus) }
     , imposters_{ rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_ }
     , players_{ max_tracks, save_playback, scene_node_resources, race_identfier }
