@@ -125,7 +125,7 @@ int main(int argc, char** argv)
             glClear(GL_COLOR_BUFFER_BIT);
 
             {
-                PixelRegion ew{0.f, 400, 0.f, 100};
+                PixelRegion ew{ 0.f, 400, 0.f, 100, RegionRoundMode::ENABLED };
                 renderable_text.render(
                     large_font_height.to_pixels(ly, PixelsRoundMode::ROUND),
                     ew,
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
                     line_distance.to_pixels(ly, PixelsRoundMode::NONE));
             }
             {
-                PixelRegion ew{10.f, 400, 120.f, 500.f};
+                PixelRegion ew{ 10.f, 400, 120.f, 500.f, RegionRoundMode::ENABLED };
                 circular_data_display.render(
                     value,          // value
                     20.f,           // font_height
