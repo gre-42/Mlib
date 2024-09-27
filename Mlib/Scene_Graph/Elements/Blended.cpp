@@ -12,10 +12,10 @@ Blended::Blended(
     const std::list<const ColorStyle*>& ecolor_styles)
     : mvp{ mvp }
     , m{ m }
+    , animation_state{ std::move(animation_state) }
     , color_style{ renderable_with_style->style(ecolor_styles, name) }
     , z_order{ (*renderable_with_style)->continuous_blending_z_order() }
     , renderable_with_style_{ std::move(renderable_with_style) }
-    , animation_state_{ std::move(animation_state) }
 { }
 
 Blended::~Blended() = default;

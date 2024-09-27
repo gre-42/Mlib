@@ -26,7 +26,7 @@ public:
     ~Blended();
     FixedArray<ScenePos, 4, 4> mvp;
     TransformationMatrix<float, ScenePos, 3> m;
-    const std::shared_ptr<const AnimationState> animation_state;
+    std::shared_ptr<const AnimationState> animation_state;
     inline const Renderable& renderable() const {
         return *renderable_with_style_;
     }
@@ -37,7 +37,6 @@ public:
 private:
     int z_order;
     std::shared_ptr<const RenderableWithStyle> renderable_with_style_;
-    std::shared_ptr<const AnimationState> animation_state_;
 };
 
 }
