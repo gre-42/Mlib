@@ -600,7 +600,7 @@ void android_main(android_app* app) {
                         safe_stou(args.named_value("--bloom_x", "3")),
                         safe_stou(args.named_value("--bloom_y", "3"))}},
                     {"PRIMARY_SCENE_BLOOM_THRESHOLDS", fixed_full<float, 3>(
-                        safe_stof(args.named_value("--bloom_threshold", "0.5")))},
+                        safe_stof(args.named_value("--bloom_threshold", "1")))},
                     {"PRIMARY_SCENE_WITH_SKYBOX", true},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", true},
                     {"PRIMARY_SCENE_SAVE_PLAYBACK", args.has_named("--save_playback")},
