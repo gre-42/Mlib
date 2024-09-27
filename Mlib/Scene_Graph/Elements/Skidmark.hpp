@@ -1,11 +1,12 @@
 #pragma once
-#include <Mlib/Variable_And_Hash.hpp>
-#include <string>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
+#include <memory>
 
 namespace Mlib {
 
 struct Skidmark {
-    VariableAndHash<std::string> resource_name;
+    std::shared_ptr<ITextureHandle> texture;
+    FixedArray<ScenePos, 4, 4> vp;
 };
 
 }

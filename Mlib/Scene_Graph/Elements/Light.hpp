@@ -1,7 +1,9 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
-#include <string>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
+#include <Mlib/Scene_Pos.hpp>
+#include <memory>
+#include <optional>
 
 namespace Mlib {
 
@@ -13,8 +15,9 @@ struct Light {
     FixedArray<float, 3> specular{1.f, 1.f, 1.f};
     FixedArray<float, 3> fresnel_ambient{1.f, 1.f, 1.f};
     FixedArray<float, 3> fog_ambient{1.f, 1.f, 1.f};
-    ColormapWithModifiers lightmap_color = ColormapWithModifiers{}.compute_hash();
-    ColormapWithModifiers lightmap_depth = ColormapWithModifiers{}.compute_hash();
+    std::shared_ptr<ITextureHandle> lightmap_color;
+    std::shared_ptr<ITextureHandle> lightmap_depth;
+    std::optional<FixedArray<ScenePos, 4, 4>> vp;
     ExternalRenderPassType shadow_render_pass;
     bool emits_colors() const;
 };

@@ -197,8 +197,8 @@ public:
     void set_camera(std::unique_ptr<Camera>&& camera);
     DanglingBaseClassRef<Camera> get_camera(SourceLocation loc) const;
     DanglingBaseClassPtr<Camera> try_get_camera(SourceLocation loc) const;
-    void add_light(std::shared_ptr<Light>&& light);
-    void add_skidmark(std::shared_ptr<Skidmark>&& skidmark);
+    void add_light(std::shared_ptr<Light> light);
+    void add_skidmark(std::shared_ptr<Skidmark> skidmark);
     bool visit_all(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const std::function<bool(

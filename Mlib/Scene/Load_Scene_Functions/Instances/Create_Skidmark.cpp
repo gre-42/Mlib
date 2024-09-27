@@ -38,12 +38,15 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node_name = args.arguments.at<std::string>(KnownArgs::node);
     auto node = scene.get_node(node_name, DP_LOC);
-    auto resource_suffix = "skidmark" + scene.get_temporary_instance_suffix();
+    auto skidmark = std::make_shared<Skidmark>(Skidmark{
+        .texture = nullptr,
+        .vp = fixed_nans<ScenePos, 4, 4>()
+        });
     auto& o = global_object_pool.create<SkidmarkLogic>(
         CURRENT_SOURCE_LOCATION,
         rendering_resources,
         node,
-        resource_suffix,
+        skidmark,
         particle_renderer,
         args.arguments.at<int>(KnownArgs::texture_width),
         args.arguments.at<int>(KnownArgs::texture_height));
@@ -52,6 +55,5 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
         { o, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
-    node->add_skidmark(std::make_unique<Skidmark>(Skidmark{
-        .resource_name = VariableAndHash{ "skidmark." + resource_suffix } }));
+    node->add_skidmark(skidmark);
 }

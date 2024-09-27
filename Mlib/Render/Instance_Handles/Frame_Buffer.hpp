@@ -11,6 +11,7 @@ struct StbInfo;
 
 namespace Mlib {
 
+class ITextureHandle;
 class FrameBuffer;
 class RenderToFrameBufferGuard;
 
@@ -51,15 +52,15 @@ public:
     void bind_draw(SourceLocation loc) const;
     void bind(SourceLocation loc) const;
     void unbind() const;
-    GLuint texture_color() const;
-    GLuint texture_depth() const;
+    std::shared_ptr<ITextureHandle> texture_color() const;
+    std::shared_ptr<ITextureHandle> texture_depth() const;
 private:
     void gc_deallocate();
     void allocate(const FrameBufferConfig& config);
     FrameBufferConfig config_;
     GLuint frame_buffer_ = (GLuint)-1;
-    GLuint texture_color_ = (GLuint)-1;
-    GLuint texture_depth_ = (GLuint)-1;
+    std::shared_ptr<ITextureHandle> texture_color_;
+    std::shared_ptr<ITextureHandle> texture_depth_;
     GLuint depth_buffer_ = (GLuint)-1;
     mutable FrameBufferStatus status_ = FrameBufferStatus::UNINITIALIZED;
     mutable SourceLocation create_loc_;
@@ -78,8 +79,8 @@ public:
     virtual void bind(SourceLocation loc) override;
     virtual void unbind(SourceLocation loc) override;
     void deallocate();
-    GLuint texture_color() const;
-    GLuint texture_depth() const;
+    std::shared_ptr<ITextureHandle> texture_color() const;
+    std::shared_ptr<ITextureHandle> texture_depth() const;
     StbInfo<uint8_t> color_to_stb_image() const;
 private:
     FrameBufferStorage fb_;

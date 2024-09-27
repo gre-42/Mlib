@@ -1,6 +1,7 @@
 #include "Render_To_Texture_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
@@ -96,9 +97,9 @@ bool RenderToTextureLogic::render_optional_setup(
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
-        rendering_resources_.set_texture({ .filename = color_texture_name_, .color_mode = ColorMode::RGBA }, fbs_->texture_color(), ResourceOwner::CALLER);
+        rendering_resources_.set_texture({ .filename = color_texture_name_, .color_mode = ColorMode::RGBA }, fbs_->texture_color()->handle<GLuint>(), ResourceOwner::CALLER);
         if (depth_kind_ == FrameBufferChannelKind::TEXTURE) {
-            rendering_resources_.set_texture({ .filename = depth_texture_name_, .color_mode = ColorMode::GRAYSCALE }, fbs_->texture_depth(), ResourceOwner::CALLER);
+            rendering_resources_.set_texture({ .filename = depth_texture_name_, .color_mode = ColorMode::GRAYSCALE }, fbs_->texture_depth()->handle<GLuint>(), ResourceOwner::CALLER);
         }
     }
     return true;

@@ -1,6 +1,7 @@
 #include "Bloom_Logic.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
@@ -201,7 +202,7 @@ bool BloomLogic::render_optional_setup(
             CHK(glUniform3fv(rp_threshold_.brightness_threshold_location, 1, brightness_threshold_.flat_begin()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 0));
-            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_.texture_color()));
+            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_.texture_color()->handle<GLuint>()));
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -230,7 +231,7 @@ bool BloomLogic::render_optional_setup(
                 CHK(glUniform1f(rp.lowpass_offset_location, offset * integral_to_float<float>(i + 1)));
 
                 CHK(glActiveTexture(GL_TEXTURE0 + 0));
-                CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_source_id].texture_color()));
+                CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_source_id].texture_color()->handle<GLuint>()));
 
                 va().bind();
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -248,10 +249,10 @@ bool BloomLogic::render_optional_setup(
             CHK(glUniform1i(rp_blend_.bloom_texture_color_location, 1));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 0));
-            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_.texture_color()));
+            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_.texture_color()->handle<GLuint>()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 1));
-            CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_target_id].texture_color()));
+            CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_target_id].texture_color()->handle<GLuint>()));
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

@@ -1,5 +1,6 @@
 #include "Motion_Interpolation_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -301,7 +302,7 @@ bool MotionInterpolationLogic::render_optional_setup(
                 rp_no_interpolate_.use();
 
                 CHK(glUniform1i(rp_no_interpolate_.screen_texture_color0_location, 0));
-                CHK(glBindTexture(GL_TEXTURE_2D, it->second.texture_color()));
+                CHK(glBindTexture(GL_TEXTURE_2D, it->second.texture_color()->handle<GLuint>()));
 
                 va().bind();
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -321,10 +322,10 @@ bool MotionInterpolationLogic::render_optional_setup(
                     CHK(glUniform1i(rp_interpolate_mean_.screen_texture_color1_location, 1));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                    CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()));
+                    CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()->handle<GLuint>()));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                    CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()));
+                    CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()->handle<GLuint>()));
 
                     va().bind();
                     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -351,10 +352,10 @@ bool MotionInterpolationLogic::render_optional_setup(
                             CHK(glUniform1f(rp_interpolate_of_diff_.height_location, (GLfloat)of_height));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                            CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()));
+                            CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()->handle<GLuint>()));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                            CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()));
+                            CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()->handle<GLuint>()));
 
                             va().bind();
                             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -373,7 +374,7 @@ bool MotionInterpolationLogic::render_optional_setup(
                             CHK(glUniform1i(rp_interpolate_of_finalize_.screen_texture_of_diff_location, 0));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                            CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.texture_color()));
+                            CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.texture_color()->handle<GLuint>()));
 
                             va().bind();
                             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -394,13 +395,13 @@ bool MotionInterpolationLogic::render_optional_setup(
                         CHK(glUniform1i(rp_interpolate_of_apply_.screen_texture_of_location, 2));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color()->handle<GLuint>()));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()->handle<GLuint>()));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
-                        CHK(glBindTexture(GL_TEXTURE_2D, fb_flow.texture_color()));
+                        CHK(glBindTexture(GL_TEXTURE_2D, fb_flow.texture_color()->handle<GLuint>()));
 
                         va().bind();
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

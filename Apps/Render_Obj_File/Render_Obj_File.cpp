@@ -150,7 +150,7 @@ static void add_bone_frame(
 }
 
 struct LightAndNode {
-    Light& light;
+    std::shared_ptr<Light> light;
     DanglingRef<SceneNode> node;
 };
 
@@ -574,16 +574,14 @@ int main(int argc, char** argv) {
         }
         auto create_light = [&args](const std::string& resource_suffix) {
             if (args.has_named("--no_shadows")) {
-                return std::unique_ptr<Light>(new Light{
+                return std::make_shared<Light>(Light{
                     .ambient = fixed_full<float, 3>(safe_stof(args.named_value("--ambient", "1"))),
                     .diffuse = fixed_full<float, 3>(safe_stof(args.named_value("--diffuse", "1"))),
                     .specular = fixed_full<float, 3>(safe_stof(args.named_value("--specular", "1"))),
                     .shadow_render_pass = ExternalRenderPassType::NONE});
             } else {
-                return std::unique_ptr<Light>(new Light{
-                    .lightmap_depth = ColormapWithModifiers{
-                        .filename = VariableAndHash{resource_suffix},
-                        .color_mode = ColorMode::GRAYSCALE}.compute_hash(),
+                return std::make_shared<Light>(Light{
+                    .lightmap_depth = nullptr,
                     .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
             }
         };
@@ -902,7 +900,7 @@ int main(int argc, char** argv) {
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto light = create_light("light_node0");
-            lights.push_back({.light = *light, .node = scene.get_node("light_node0", DP_LOC)});
+            lights.push_back({.light = light, .node = scene.get_node("light_node0", DP_LOC)});
             scene.get_node("light_node0", DP_LOC)->add_light(std::move(light));
             scene.get_node("light_node0", DP_LOC)->set_camera(
                 std::make_unique<PerspectiveCamera>(
@@ -938,15 +936,15 @@ int main(int argc, char** argv) {
                     RenderingDynamics::MOVING,
                     RenderingStrategies::OBJECT);
                 auto light = create_light(name);
-                lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
-                scene.get_node(name, DP_LOC)->add_light(std::move(light));
+                lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
+                scene.get_node(name, DP_LOC)->add_light(light);
                 scene.get_node(name, DP_LOC)->set_camera(
                     std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
-                lights.back().light.ambient *= 2.f / float(n * size_t(1 + (int)with_diffusivity));
-                lights.back().light.diffuse = 0.f;
-                lights.back().light.specular = 0.f;
+                light->ambient *= 2.f / float(n * size_t(1 + (int)with_diffusivity));
+                light->diffuse = 0.f;
+                light->specular = 0.f;
             }
             if (with_diffusivity) {
                 for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
@@ -966,14 +964,14 @@ int main(int argc, char** argv) {
                         RenderingDynamics::MOVING,
                         RenderingStrategies::OBJECT);
                     auto light = create_light(name);
-                    lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
+                    lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
                     scene.get_node(name, DP_LOC)->add_light(std::move(light));
                     scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
-                    lights.back().light.ambient = 0.f;
-                    lights.back().light.diffuse /= (float)(2 * n);
-                    lights.back().light.specular = 0.f;
+                    light->ambient = 0.f;
+                    light->diffuse /= (float)(2 * n);
+                    light->specular = 0.f;
                 }
             }
         } else if ((light_configuration != "none") && (light_configuration != "emissive")) {
@@ -987,14 +985,14 @@ int main(int argc, char** argv) {
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto light = create_light(name);
-            lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
+            lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
             scene.get_node(name, DP_LOC)->add_light(std::move(light));
             scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig(),
                 PerspectiveCamera::Postprocessing::ENABLED));
-            lights.back().light.ambient = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
-            lights.back().light.diffuse = 0.f;
-            lights.back().light.specular = 0.f;
+            light->ambient = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
+            light->diffuse = 0.f;
+            light->specular = 0.f;
         }
         
         if (args.has_named("--look_at_aabb")) {
@@ -1101,15 +1099,14 @@ int main(int argc, char** argv) {
         ReadPixelsLogic read_pixels_logic{ aggregate_render_logic };
         std::list<LightmapLogic*> lightmap_logics;
         for (const auto& l : lights) {
-            if (any(l.light.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
+            if (any(l.light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
                 lightmap_logics.push_back(&object_pool.create<LightmapLogic>(
                     CURRENT_SOURCE_LOCATION,
                     rendering_resources,
                     read_pixels_logic,
-                    l.light.shadow_render_pass,
+                    l.light->shadow_render_pass,
                     l.node,
-                    l.light.lightmap_color,
-                    l.light.lightmap_depth,
+                    l.light,
                     "",                             // black_node_name
                     true,                           // with_depth_texture
                     2048,                           // lightmap_width

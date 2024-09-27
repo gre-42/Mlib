@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -339,7 +340,7 @@ void ImposterLogic::render_with_setup(
             // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter-" + debug_prefix_ + ".png");
         }
 
-        rendering_resources_.set_texture({ .filename = texture_id_, .color_mode = ColorMode::RGBA }, fbs_->texture_color(), ResourceOwner::CALLER);
+        rendering_resources_.set_texture({ .filename = texture_id_, .color_mode = ColorMode::RGBA }, fbs_->texture_color()->handle<GLuint>(), ResourceOwner::CALLER);
         // TODO: Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{

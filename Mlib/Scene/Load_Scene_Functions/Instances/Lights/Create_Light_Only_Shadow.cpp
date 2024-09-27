@@ -48,20 +48,22 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
     {
         THROW_OR_ABORT("Unsupported render pass type for \"only shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
-    auto lightmap_color = ColormapWithModifiers{
-        .filename = VariableAndHash{"lightmap_color" + scene.get_temporary_instance_suffix()},
-        .color_mode = ColorMode::RGB}.compute_hash();
-    auto lightmap_depth = ColormapWithModifiers{
-        .filename = VariableAndHash{"lightmap_depth" + scene.get_temporary_instance_suffix()},
-        .color_mode = ColorMode::GRAYSCALE}.compute_hash();
+    auto light = std::make_shared<Light>(Light{
+        .ambient = {1.f, 1.f, 1.f},
+        .diffuse = {1.f, 1.f, 1.f},
+        .specular = {1.f, 1.f, 1.f},
+        .fresnel_ambient = {1.f, 1.f, 1.f},
+        .fog_ambient = {1.f, 1.f, 1.f},
+        .lightmap_color = nullptr,
+        .lightmap_depth = nullptr,
+        .shadow_render_pass = render_pass});
     auto& o = global_object_pool.create<LightmapLogic>(
         CURRENT_SOURCE_LOCATION,
         rendering_resources,
         read_pixels_logic,
         render_pass,
         node,
-        lightmap_color,
-        lightmap_depth,
+        light,
         args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
         false,                                                      // with_depth_texture
         args.arguments.at<int>(KnownArgs::lightmap_width),
@@ -71,13 +73,5 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         { o, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
-    node->add_light(std::make_unique<Light>(Light{
-        .ambient = {1.f, 1.f, 1.f},
-        .diffuse = {1.f, 1.f, 1.f},
-        .specular = {1.f, 1.f, 1.f},
-        .fresnel_ambient = {1.f, 1.f, 1.f},
-        .fog_ambient = {1.f, 1.f, 1.f},
-        .lightmap_color = lightmap_color,
-        .lightmap_depth = lightmap_depth,
-        .shadow_render_pass = render_pass}));
+    node->add_light(light);
 }

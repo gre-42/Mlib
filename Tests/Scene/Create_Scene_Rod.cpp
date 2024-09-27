@@ -111,12 +111,6 @@ void Mlib::create_scene_rod(
     scene_nodeR->set_position({0.f, -1.f, -40.f}, INITIAL_POSE);
     scene_nodeL->set_position({0.f, 50.f, -40.f}, INITIAL_POSE);
     scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
-    scene_nodeL->add_light(std::make_unique<Light>(Light{
-        .lightmap_color = ColormapWithModifiers{.filename = VariableAndHash<std::string>{"lightmap_color"}, .color_mode = ColorMode::RGB}.compute_hash(),
-        .lightmap_depth = ColormapWithModifiers{.filename = VariableAndHash<std::string>{"lightmap_depth"}, .color_mode = ColorMode::GRAYSCALE}.compute_hash(),
-        .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH}));
-    scene_nodeL->add_light(std::make_unique<Light>(Light{
-        .shadow_render_pass = ExternalRenderPassType::NONE}));
 
     scene.auto_add_root_node("obj", std::move(scene_nodeR), RenderingDynamics::MOVING);
     scene.add_root_node("follower_camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);

@@ -1,6 +1,6 @@
 #include "Lightmap_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
-#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
+#include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
@@ -16,6 +16,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -26,8 +27,7 @@ LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
     ExternalRenderPassType render_pass_type,
     DanglingRef<SceneNode> light_node,
-    ColormapWithModifiers colormap_color,
-    ColormapWithModifiers colormap_depth,
+    std::shared_ptr<Light> light,
     std::string black_node_name,
     bool with_depth_texture,
     int lightmap_width,
@@ -39,11 +39,10 @@ LightmapLogic::LightmapLogic(
     , render_pass_type_{ render_pass_type }
     , light_node_{ light_node }
     , black_node_name_{ std::move(black_node_name) }
+    , light_{ light }
     , with_depth_texture_{ with_depth_texture }
     , lightmap_width_{ lightmap_width }
     , lightmap_height_{ lightmap_height }
-    , colormap_color_{ std::move(colormap_color) }
-    , colormap_depth_{ std::move(colormap_depth) }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
     if (!any(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
@@ -59,12 +58,8 @@ LightmapLogic::~LightmapLogic() {
 void LightmapLogic::deallocate() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
-        rendering_resources_.delete_texture(colormap_color_, DeletionFailureMode::WARN);
-        rendering_resources_.delete_vp(colormap_color_.filename, DeletionFailureMode::WARN);
-        if (with_depth_texture_) {
-            rendering_resources_.delete_texture(colormap_depth_, DeletionFailureMode::WARN);
-            rendering_resources_.delete_vp(colormap_depth_.filename, DeletionFailureMode::WARN);
-        }
+        light_->lightmap_color = nullptr;
+        light_->lightmap_depth = nullptr;
         fbs_ = nullptr;
     }
 }
@@ -147,12 +142,9 @@ void LightmapLogic::render_without_setup(
             // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");
         }
 
-        rendering_resources_.set_texture(colormap_color_, fbs_->texture_color(), ResourceOwner::CALLER);
-        rendering_resources_.set_vp(colormap_color_.filename, setup->vp);
-        if (with_depth_texture_) {
-            rendering_resources_.set_texture(colormap_depth_, fbs_->texture_depth(), ResourceOwner::CALLER);
-            rendering_resources_.set_vp(colormap_depth_.filename, setup->vp);
-        }
+        light_->lightmap_color = fbs_->texture_color();
+        light_->lightmap_depth = fbs_->texture_depth();
+        light_->vp = setup->vp;
     }
 }
 

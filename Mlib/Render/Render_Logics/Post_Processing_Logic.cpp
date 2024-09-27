@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -259,11 +260,11 @@ void PostProcessingLogic::render_with_setup(
                 CHK(glUniform1i(rp_.soft_light_texture_location, 2));
             }
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_color()));  // use the color attachment texture as the texture of the quad plane
+            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_color()->handle<GLuint>()));  // use the color attachment texture as the texture of the quad plane
 
             if (depth_fog_ || low_pass_) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_depth()));
+                CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_depth()->handle<GLuint>()));
             }
             if (!soft_light_filename_->empty()) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2

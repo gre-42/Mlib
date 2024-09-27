@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
@@ -12,6 +11,7 @@ class RenderingResources;
 enum class ExternalRenderPassType;
 class FrameBuffer;
 class SceneNode;
+struct Light;
 
 class LightmapLogic: public RenderLogic {
 public:
@@ -20,8 +20,7 @@ public:
         RenderLogic& child_logic,
         ExternalRenderPassType render_pass_type,
         DanglingRef<SceneNode> light_node,
-        ColormapWithModifiers colormap_color,
-        ColormapWithModifiers colormap_depth,
+        std::shared_ptr<Light> light,
         std::string black_node_name,
         bool with_depth_texture,
         int lightmap_width,
@@ -51,11 +50,10 @@ private:
     ExternalRenderPassType render_pass_type_;
     DanglingRef<SceneNode> light_node_;
     const std::string black_node_name_;
+    std::shared_ptr<Light> light_;
     bool with_depth_texture_;
     int lightmap_width_;
     int lightmap_height_;
-    ColormapWithModifiers colormap_color_;
-    ColormapWithModifiers colormap_depth_;
     DeallocationToken deallocation_token_;
 };
 

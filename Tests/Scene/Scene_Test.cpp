@@ -26,6 +26,7 @@
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
+#include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
@@ -107,6 +108,7 @@ void test_physics_engine(unsigned int seed) {
             }
         },
         &render_results };
+    ClearWrapperGuard clear_wrapper_guard;
 
     PhysicsEngineConfig physics_cfg{
         .dt = getenv_default_float("DT", 0.01667f) * seconds,
@@ -182,6 +184,7 @@ void test_physics_engine(unsigned int seed) {
         [&]() { return physics_sleeper.simulated_time(); }, // simulated_time
         []() { return false; }                              // paused
     };
+    scene_node_resources.register_gravity("world", { 0.f, -9.8f * meters / squared(seconds), 0.f });
     DynamicWorld dynamic_world{ scene_node_resources, "world" };
     PhysicsIteration pi{
         scene_node_resources,
@@ -241,14 +244,22 @@ void test_physics_engine(unsigned int seed) {
         standard_render_logic);
     auto append_lightmap_logic = [&](){
         DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);
+        // Light without shadow
+        light_node->add_light(std::make_unique<Light>(Light{
+            .shadow_render_pass = ExternalRenderPassType::NONE}));
+        // Light with shadow
+        auto light = std::make_shared<Light>(Light{
+            .lightmap_color = nullptr,
+            .lightmap_depth = nullptr,
+            .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
+        light_node->add_light(light);
         auto& lightmap_logic = global_object_pool.create<LightmapLogic>(
             CURRENT_SOURCE_LOCATION,
             rendering_resources,
             read_pixels_logic,
             ExternalRenderPassType::LIGHTMAP_DEPTH,
             light_node,
-            ColormapWithModifiers{ .filename = VariableAndHash<std::string>{"lightmap_color"}, .color_mode = ColorMode::RGB }.compute_hash(),
-            ColormapWithModifiers{ .filename = VariableAndHash<std::string>{"lightmap_depth"}, .color_mode = ColorMode::GRAYSCALE }.compute_hash(),
+            light,
             "",     // black_node_name
             true,   // with_depth_texture
             2048,   // lightmap_width

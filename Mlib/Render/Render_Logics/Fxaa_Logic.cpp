@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -202,7 +203,7 @@ void FxaaLogic::render_with_setup(
             CHK(glUniform1f(rp_.rt_w_location, (float)width));
             CHK(glUniform1f(rp_.rt_h_location, (float)height));
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_color()));  // use the color attachment texture as the texture of the quad plane
+            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_color()->handle<GLuint>()));  // use the color attachment texture as the texture of the quad plane
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

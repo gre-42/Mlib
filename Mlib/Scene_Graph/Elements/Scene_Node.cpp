@@ -602,14 +602,14 @@ DanglingBaseClassPtr<Camera> SceneNode::try_get_camera(SourceLocation loc) const
     return { camera_.get(), loc };
 }
 
-void SceneNode::add_light(std::shared_ptr<Light>&& light) {
+void SceneNode::add_light(std::shared_ptr<Light> light) {
     std::scoped_lock lock{ mutex_ };
-    lights_.push_back(std::move(light));
+    lights_.emplace_back(std::move(light));
 }
 
-void SceneNode::add_skidmark(std::shared_ptr<Skidmark>&& skidmark) {
+void SceneNode::add_skidmark(std::shared_ptr<Skidmark> skidmark) {
     std::scoped_lock lock{ mutex_ };
-    skidmarks_.push_back(std::move(skidmark));
+    skidmarks_.emplace_back(std::move(skidmark));
 }
 
 bool SceneNode::has_color_style(const VariableAndHash<std::string>& name) const {

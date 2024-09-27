@@ -53,17 +53,22 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
     {
         THROW_OR_ABORT("Unsupported render pass type for \"with shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
-    auto resource_suffix = "lightmap" + scene.get_temporary_instance_suffix();
-    auto lightmap_color = ColormapWithModifiers{ .filename = VariableAndHash{"color_" + resource_suffix}, .color_mode = ColorMode::RGB }.compute_hash();
-    auto lightmap_depth = ColormapWithModifiers{ .filename = VariableAndHash{"depth_" + resource_suffix}, .color_mode = ColorMode::GRAYSCALE }.compute_hash();
+    auto light = std::make_shared<Light>(Light{
+        .ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient),
+        .diffuse = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse),
+        .specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular),
+        .fresnel_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
+        .fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient),
+        .lightmap_color = nullptr,
+        .lightmap_depth = nullptr,
+        .shadow_render_pass = render_pass});
     auto& o = global_object_pool.create<LightmapLogic>(
         CURRENT_SOURCE_LOCATION,
         rendering_resources,
         read_pixels_logic,
         render_pass,
         node,
-        lightmap_color,
-        lightmap_depth,
+        light,
         args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
         args.arguments.at<bool>(KnownArgs::with_depth_texture),     // with_depth_texture
         args.arguments.at<int>(KnownArgs::lightmap_width),
@@ -73,13 +78,5 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         { o, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
-    node->add_light(std::make_unique<Light>(Light{
-        .ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient),
-        .diffuse = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse),
-        .specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular),
-        .fresnel_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
-        .fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient),
-        .lightmap_color = lightmap_color,
-        .lightmap_depth = lightmap_depth,
-        .shadow_render_pass = render_pass}));
+    node->add_light(light);
 }

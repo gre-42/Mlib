@@ -5,6 +5,7 @@
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Download/Download_As_Stb_Image.hpp>
+#include <Mlib/Render/Instance_Handles/Texture.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 
@@ -61,15 +62,15 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
 
     // create a color attachment texture
-    CHK(glGenTextures(1, &texture_color_));
+    texture_color_ = std::make_shared<Texture>(generate_texture);
     if (config.nsamples_msaa == 1) {
-        CHK(glBindTexture(GL_TEXTURE_2D, texture_color_));
+        CHK(glBindTexture(GL_TEXTURE_2D, texture_color_->handle<GLuint>()));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
     } else {
 #ifdef __ANDROID__
         THROW_OR_ABORT("MSAA not supported on android");
 #else
-        CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color_));
+        CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color_->handle<GLuint>()));
         CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, (GLenum)config.color_internal_format, config.width, config.height, GL_TRUE));
 #endif
     }
@@ -78,38 +79,38 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, config.wrap_s));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, config.wrap_t));
     if (config.nsamples_msaa == 1) {
-        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_, 0));
+        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_->handle<GLuint>(), 0));
     } else {
 #ifdef __ANDROID__
         THROW_OR_ABORT("MSAA not supported on android");
 #else
-        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture_color_, 0));
+        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture_color_->handle<GLuint>(), 0));
 #endif
     }
 
     if (config.depth_kind == FrameBufferChannelKind::TEXTURE) {
         // create a depth attachment texture
-        CHK(glGenTextures(1, &texture_depth_));
+        texture_depth_ = std::make_shared<Texture>(generate_texture);
         if (config.nsamples_msaa == 1) {
-            CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_));
+            CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_->handle<GLuint>()));
             CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
         } else {
 #ifdef __ANDROID__
             THROW_OR_ABORT("MSAA not supported on android");
 #else
-            CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_depth_));
+            CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_depth_->handle<GLuint>()));
             CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, GL_DEPTH_COMPONENT24, config.width, config.height, GL_TRUE));
 #endif
         }
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         if (config.nsamples_msaa == 1) {
-            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_, 0));
+            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_->handle<GLuint>(), 0));
         } else {
 #ifdef __ANDROID__
             THROW_OR_ABORT("MSAA not supported on android");
 #else
-            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth_, 0));
+            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth_->handle<GLuint>(), 0));
 #endif
         }
     } else if (config.depth_kind == FrameBufferChannelKind::ATTACHMENT) {
@@ -157,14 +158,8 @@ void FrameBufferStorage::deallocate() {
         ABORT(glDeleteFramebuffers(1, &frame_buffer_));
         frame_buffer_ = (GLuint)-1;
     }
-    if (texture_color_ != (GLuint)-1) {
-        ABORT(glDeleteTextures(1, &texture_color_));
-        texture_color_ = (GLuint)-1;
-    }
-    if (texture_depth_ != (GLuint)-1) {
-        ABORT(glDeleteTextures(1, &texture_depth_));
-        texture_depth_ = (GLuint)-1;
-    }
+    texture_color_ = nullptr;
+    texture_depth_ = nullptr;
     if (depth_buffer_ != (GLuint)-1) {
         ABORT(glDeleteRenderbuffers(1, &depth_buffer_));
         depth_buffer_ = (GLuint)-1;
@@ -177,14 +172,8 @@ void FrameBufferStorage::gc_deallocate() {
         render_gc_append_to_frame_buffers(frame_buffer_);
         frame_buffer_ = (GLuint)-1;
     }
-    if (texture_color_ != (GLuint)-1) {
-        render_gc_append_to_textures(texture_color_);
-        texture_color_ = (GLuint)-1;
-    }
-    if (texture_depth_ != (GLuint)-1) {
-        render_gc_append_to_textures(texture_depth_);
-        texture_depth_ = (GLuint)-1;
-    }
+    texture_color_ = nullptr;
+    texture_depth_ = nullptr;
     if (depth_buffer_ != (GLuint)-1) {
         render_gc_append_to_render_buffers(depth_buffer_);
         depth_buffer_ = (GLuint)-1;
@@ -224,14 +213,14 @@ void FrameBufferStorage::unbind() const {
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-GLuint FrameBufferStorage::texture_color() const {
+std::shared_ptr<ITextureHandle> FrameBufferStorage::texture_color() const {
     if (status_ != FrameBufferStatus::WRITTEN) {
         THROW_OR_ABORT("Frame buffer has not been written");
     }
     return texture_color_;
 }
 
-GLuint FrameBufferStorage::texture_depth() const {
+std::shared_ptr<ITextureHandle> FrameBufferStorage::texture_depth() const {
     if (status_ != FrameBufferStatus::WRITTEN) {
         THROW_OR_ABORT("Frame buffer has not been written");
     }
@@ -286,16 +275,16 @@ void FrameBuffer::unbind(SourceLocation loc) {
         fb_.unbind();
     }
     if (config_.with_mipmaps) {
-        CHK(glBindTexture(GL_TEXTURE_2D, texture_color()));
+        CHK(glBindTexture(GL_TEXTURE_2D, texture_color()->handle<GLuint>()));
         CHK(glGenerateMipmap(GL_TEXTURE_2D));
     }
 }
 
-GLuint FrameBuffer::texture_color() const {
+std::shared_ptr<ITextureHandle> FrameBuffer::texture_color() const {
     return fb_.texture_color();
 }
 
-GLuint FrameBuffer::texture_depth() const {
+std::shared_ptr<ITextureHandle> FrameBuffer::texture_depth() const {
     return fb_.texture_depth();
 }
 

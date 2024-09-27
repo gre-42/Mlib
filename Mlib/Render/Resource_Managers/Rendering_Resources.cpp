@@ -1553,7 +1553,7 @@ void RenderingResources::delete_texture(const ColormapWithModifiers& name, Delet
             verbose_abort("Could not delete texture " + *name.filename);
         }
         verbose_abort("Unknown deletion failure mode: \"" + std::to_string((int)deletion_failure_mode + '"'));
-    } else {
+    } else if (it.mapped().owner == ResourceOwner::CONTAINER) {
         try_delete_texture(it.mapped().handle);
     }
 }

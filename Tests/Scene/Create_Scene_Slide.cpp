@@ -128,12 +128,6 @@ void Mlib::create_scene_slide(
 
     scene_node_light->set_position({0.f, 50.f, -90.f}, INITIAL_POSE);
     scene_node_light->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
-    scene_node_light->add_light(std::make_unique<Light>(Light{
-        .lightmap_color = ColormapWithModifiers{.filename = VariableAndHash<std::string>{"lightmap_color"}, .color_mode = ColorMode::RGB}.compute_hash(),
-        .lightmap_depth = ColormapWithModifiers{.filename = VariableAndHash<std::string>{"lightmap_depth"}, .color_mode = ColorMode::GRAYSCALE}.compute_hash(),
-        .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH}));
-    scene_node_light->add_light(std::make_unique<Light>(Light{
-        .shadow_render_pass = ExternalRenderPassType::NONE}));
 
     scene.auto_add_root_node("obj_slide", std::move(scene_node_slide), RenderingDynamics::STATIC);
     scene.auto_add_root_node("obj_box", std::move(scene_node_box), RenderingDynamics::MOVING);

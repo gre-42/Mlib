@@ -2,9 +2,11 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
@@ -21,6 +23,7 @@
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -30,7 +33,7 @@ using namespace Mlib;
 SkidmarkLogic::SkidmarkLogic(
     RenderingResources& rendering_resources,
     DanglingRef<SceneNode> skidmark_node,
-    std::string resource_suffix,
+    std::shared_ptr<Skidmark> skidmark,
     IParticleRenderer& particle_renderer,
     int texture_width,
     int texture_height)
@@ -38,18 +41,14 @@ SkidmarkLogic::SkidmarkLogic(
     , rendering_resources_{ rendering_resources }
     , fbs_{ uninitialized }
     , skidmark_node_{ skidmark_node }
-    , resource_suffix_{ std::move(resource_suffix) }
+    , skidmark_{ skidmark }
     , particle_renderer_{ particle_renderer }
     , texture_width_{ texture_width }
     , texture_height_{ texture_height }
     , old_fbs_id_{ 0 }
     , old_camera_position_{ fixed_nans<ScenePos, 3>() }
-    , colormap_{ .filename = VariableAndHash{ "skidmark." + resource_suffix_ }, .color_mode = ColorMode::RGB }
-    , vp_{ "skidmark." + resource_suffix_ }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
-{
-    colormap_.compute_hash();
-}
+{}
 
 SkidmarkLogic::~SkidmarkLogic() {
     on_destroy.clear();
@@ -57,14 +56,9 @@ SkidmarkLogic::~SkidmarkLogic() {
 }
 
 void SkidmarkLogic::deallocate() {
-    auto null = std::unique_ptr<FrameBuffer>{ nullptr };
-    if (any(fbs_ != null)) {
-        // Warning in case of exception during child_logic_.render.
-        rendering_resources_.delete_texture(colormap_, DeletionFailureMode::WARN);
-        rendering_resources_.delete_vp(vp_, DeletionFailureMode::WARN);
-        fbs_(0) = nullptr;
-        fbs_(1) = nullptr;
-    }
+    skidmark_->texture = nullptr;
+    fbs_(0) = nullptr;
+    fbs_(1) = nullptr;
 }
 
 std::optional<RenderSetup> SkidmarkLogic::try_render_setup(
@@ -105,14 +99,26 @@ void SkidmarkLogic::render_without_setup(
         .depth_kind = FrameBufferChannelKind::NONE,
         .nsamples_msaa = 1});
     {
-        if (old_render_texture_logic_ == nullptr) {
-            old_render_texture_logic_ = std::make_shared<FillWithTextureLogic>(
-                rendering_resources_,
-                colormap_,
-                ResourceUpdateCycle::ALWAYS,
-                CullFaceMode::NO_CULL);
-        } else if (fbs_(old_fbs_id_) != nullptr) {
-            old_render_texture_logic_->update_texture_id();
+        if (fbs_(old_fbs_id_) != nullptr) {
+            static const auto colormap = ColormapWithModifiers{
+                .filename = VariableAndHash<std::string>{ "__tmp__" },
+                .color_mode = ColorMode::RGB }.compute_hash();
+            rendering_resources_.set_texture(
+                colormap,
+                fbs_(old_fbs_id_)->texture_color()->handle<GLuint>(),
+                ResourceOwner::CALLER);
+            DestructionGuard dg{[this]() {
+                rendering_resources_.delete_texture(colormap, DeletionFailureMode::ABORT);
+                }};
+            if (old_render_texture_logic_ == nullptr) {
+                old_render_texture_logic_ = std::make_shared<FillWithTextureLogic>(
+                    rendering_resources_,
+                    colormap,
+                    ResourceUpdateCycle::ALWAYS,
+                    CullFaceMode::NO_CULL);
+            } else {
+                old_render_texture_logic_->update_texture_id();
+            }
         }
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
@@ -153,11 +159,8 @@ void SkidmarkLogic::render_without_setup(
         // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
         // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");
     }
-    rendering_resources_.set_texture(
-        colormap_,
-        fbs_(new_fbs_id)->texture_color(),
-        ResourceOwner::CALLER);
-    rendering_resources_.set_vp(vp_, vp);
+    skidmark_->texture = fbs_(new_fbs_id)->texture_color();
+    skidmark_->vp = vp;
 }
 
 void SkidmarkLogic::print(std::ostream& ostr, size_t depth) const {
