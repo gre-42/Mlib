@@ -75,10 +75,10 @@ public:
             camera_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         } else if (&destroyed_object == &camera_node_.obj()) {
             node_to_hide_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-            node_to_hide_->remove_node_hider(*this);
         } else {
             verbose_abort("Unknown destroyed object");
         }
+        node_to_hide_->remove_node_hider(*this);
         node_to_hide_ = nullptr;
         camera_node_ = nullptr;
         global_object_pool.remove(this);
