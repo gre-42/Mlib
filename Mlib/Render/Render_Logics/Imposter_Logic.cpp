@@ -185,7 +185,7 @@ void ImposterLogic::render_without_setup(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("ImposterLogic received wrong rendering");
     }
-    auto can = cameras_.camera();
+    auto can = cameras_.camera(DP_LOC);
     auto c = can.node->absolute_bijection(frame_id.external_render_pass.time);
     auto m = orig_node_->absolute_model_matrix();
     {

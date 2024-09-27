@@ -147,7 +147,7 @@ FlyingCameraLogic::FlyingCameraLogic(
     // GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
     // GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
     if (fly_) {
-        DanglingRef<SceneNode> cn = user_object_.cameras.camera().node;
+        DanglingRef<SceneNode> cn = user_object_.cameras.camera(DP_LOC).node;
         user_object_.position = cn->position();
         user_object_.angles = cn->rotation();
     }
@@ -168,7 +168,7 @@ std::optional<RenderSetup> FlyingCameraLogic::try_render_setup(
     const RenderedSceneDescriptor& frame_id) const
 {
     LOG_FUNCTION("FlyingCameraLogic::init");
-    DanglingRef<SceneNode> cn = user_object_.cameras.camera().node;
+    DanglingRef<SceneNode> cn = user_object_.cameras.camera(DP_LOC).node;
     if (fly_) {
         flying_key_callback(user_object_, *keys_);
         cn->set_position(user_object_.position, SUCCESSOR_POSE);

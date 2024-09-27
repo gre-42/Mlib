@@ -51,7 +51,7 @@ void KeepOffsetFromCamera::advance_time(float dt, const StaticWorld& world) {
 }
 
 void KeepOffsetFromCamera::advance_time(float dt) {
-    auto new_position_abs = cameras_.camera().node->absolute_model_matrix().t() + offset_.casted<ScenePos>();
+    auto new_position_abs = cameras_.camera(DP_LOC).node->absolute_model_matrix().t() + offset_.casted<ScenePos>();
     if (all(grid_ == 0.f)) {
         transformation_matrix_.t() = new_position_abs;
     } else {

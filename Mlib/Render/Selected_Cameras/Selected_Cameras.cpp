@@ -41,12 +41,12 @@ void SelectedCameras::set_camera_node_name(const std::string& name) {
     camera_changed.emit();
 }
 
-std::optional<NodeAndCamera> SelectedCameras::try_get_camera(const std::string& name) const {
-    auto node = scene_.try_get_node(name, DP_LOC);
+std::optional<NodeAndCamera> SelectedCameras::try_get_camera(const std::string& name, SOURCE_LOCATION loc) const {
+    auto node = scene_.try_get_node(name, loc);
     if (node == nullptr) {
         return std::nullopt;
     }
-    auto camera = node->try_get_camera(DP_LOC);
+    auto camera = node->try_get_camera(loc);
     if (camera == nullptr) {
         return std::nullopt;
     }
@@ -62,34 +62,34 @@ std::string SelectedCameras::camera_node_name() const {
         std::shared_lock lock{ camera_mutex_ };
         cnn = camera_node_name_;
     }
-    auto res = try_get_camera(cnn);
+    auto res = try_get_camera(cnn, DP_LOC);
     if (res.has_value()) {
         return cnn;
     }
     return fallback_camera_node_name_;
 }
 
-NodeAndCamera SelectedCameras::camera() const {
-    if (auto res = try_camera(); res.has_value()) {
+NodeAndCamera SelectedCameras::camera(SOURCE_LOCATION loc) const {
+    if (auto res = try_camera(loc); res.has_value()) {
         return *res;
     }
     THROW_OR_ABORT("Could not find camera");
 }
 
-std::optional<NodeAndCamera> SelectedCameras::try_camera() const {
+std::optional<NodeAndCamera> SelectedCameras::try_camera(SOURCE_LOCATION loc) const {
     std::string cnn;
     {
         std::shared_lock lock{ camera_mutex_ };
         cnn = camera_node_name_;
     }
-    if (auto res = try_get_camera(cnn); res.has_value()) {
+    if (auto res = try_get_camera(cnn, loc); res.has_value()) {
         return *res;
     }
     {
         std::shared_lock lock{ camera_mutex_ };
         cnn = fallback_camera_node_name_;
     }
-    return try_get_camera(cnn);
+    return try_get_camera(cnn, loc);
 }
 
 void SelectedCameras::set_camera_cycle(CameraCycleType tpe, const std::vector<std::string>& cameras) {
@@ -127,5 +127,5 @@ void SelectedCameras::cycle_camera(CameraCycleType tpe) {
 }
 
 bool SelectedCameras::camera_node_exists() const {
-    return try_camera().has_value();
+    return try_camera(DP_LOC).has_value();
 }

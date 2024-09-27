@@ -59,7 +59,7 @@ std::optional<RenderSetup> StandardCameraLogic::try_render_setup(
         setup.camera_node = frame_id.external_render_pass.nonstandard_camera_node;
         setup.camera = setup.camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-        auto can = cameras_.camera();
+        auto can = cameras_.camera(DP_LOC);
         setup.camera_node = can.node.ptr();
         setup.camera = can.camera->copy();
     } else {
