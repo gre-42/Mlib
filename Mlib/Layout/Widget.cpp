@@ -10,11 +10,12 @@ PixelRegion::PixelRegion(
     float left,
     float right,
     float bottom,
-    float top)
-    : left_{ left }
-    , right_{ right }
-    , bottom_{ bottom }
-    , top_{ top }
+    float top,
+    RegionRoundMode round_mode)
+    : left_{ ::Mlib::round(left, round_mode == RegionRoundMode::ENABLED ? PixelsRoundMode::ROUND : PixelsRoundMode::NONE) }
+    , right_{ ::Mlib::round(right, round_mode == RegionRoundMode::ENABLED ? PixelsRoundMode::ROUND : PixelsRoundMode::NONE) }
+    , bottom_{ ::Mlib::round(bottom, round_mode == RegionRoundMode::ENABLED ? PixelsRoundMode::ROUND : PixelsRoundMode::NONE) }
+    , top_{ ::Mlib::round(top, round_mode == RegionRoundMode::ENABLED ? PixelsRoundMode::ROUND : PixelsRoundMode::NONE) }
 {}
 
 PixelRegion::PixelRegion(
@@ -24,7 +25,8 @@ PixelRegion::PixelRegion(
         lx.min_pixel,
         lx.end_pixel,
         ly.min_pixel,
-        ly.end_pixel}
+        ly.end_pixel,
+        RegionRoundMode::DISABLED}
 {}
 
 PixelRegion PixelRegion::transformed(const IPixelRegion& ew, float dx, float dy) {
@@ -32,7 +34,8 @@ PixelRegion PixelRegion::transformed(const IPixelRegion& ew, float dx, float dy)
         ew.left() + dx,
         ew.right() + dx,
         ew.bottom() + dy,
-        ew.top() + dy};
+        ew.top() + dy,
+        RegionRoundMode::DISABLED};
 }
 
 float PixelRegion::width() const {
@@ -85,14 +88,16 @@ std::unique_ptr<IPixelRegion> Widget::evaluate(
             left_.to_pixels(lx, rnd),
             right_.to_pixels(lx, rnd),
             bottom_.to_pixels(ly, rnd),
-            top_.to_pixels(ly, rnd));
+            top_.to_pixels(ly, rnd),
+            RegionRoundMode::DISABLED);
     }
     if (y_orientation == YOrientation::SWAPPED) {
         return std::make_unique<PixelRegion>(
             left_.to_pixels(lx, rnd),
             right_.to_pixels(lx, rnd),
             ::Mlib::round(ly.end_pixel - top_.to_pixels(ly, PixelsRoundMode::NONE), rnd),
-            ::Mlib::round(ly.end_pixel - bottom_.to_pixels(ly, PixelsRoundMode::NONE), rnd));
+            ::Mlib::round(ly.end_pixel - bottom_.to_pixels(ly, PixelsRoundMode::NONE), rnd),
+            RegionRoundMode::DISABLED);
     }
     THROW_OR_ABORT("Unknown y-orientation");
 }

@@ -140,10 +140,11 @@ void MinimapLogic::render_without_setup(
             (pixel_region->left() + pixel_region->right()) / 2.f,
             (pixel_region->bottom() + pixel_region->top()) / 2.f};
         PixelRegion locator_pixel_region{
-            center(0) - locator_size_.to_pixels(lx, PixelsRoundMode::ROUND) / 2.f,
-            center(0) + locator_size_.to_pixels(lx, PixelsRoundMode::ROUND) / 2.f,
-            center(1) - locator_size_.to_pixels(ly, PixelsRoundMode::ROUND) / 2.f,
-            center(1) + locator_size_.to_pixels(ly, PixelsRoundMode::ROUND) / 2.f};
+            center(0) - locator_size_.to_pixels(lx, PixelsRoundMode::NONE) / 2.f,
+            center(0) + locator_size_.to_pixels(lx, PixelsRoundMode::NONE) / 2.f,
+            center(1) - locator_size_.to_pixels(ly, PixelsRoundMode::NONE) / 2.f,
+            center(1) + locator_size_.to_pixels(ly, PixelsRoundMode::NONE) / 2.f,
+            RegionRoundMode::ENABLED};
         auto vg = ViewportGuard::from_widget(locator_pixel_region);
         if (vg.has_value()) {
             locator_logic_.render(ClearMode::OFF);

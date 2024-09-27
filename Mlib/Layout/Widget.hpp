@@ -12,7 +12,8 @@ public:
         float left,
         float right,
         float bottom,
-        float top);
+        float top,
+        RegionRoundMode round_mode);
     PixelRegion(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly);
