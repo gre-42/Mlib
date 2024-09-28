@@ -308,9 +308,6 @@ void RenderableColoredVertexArray::render_cva(
         !cva->material.shading.diffuse.all_equal(0) ||
         !cva->material.shading.specular.all_equal(0) ||
         !cva->material.shading.fresnel.ambient.all_equal(0);
-    bool any_light_has_ambient = false;
-    bool any_light_has_diffuse = false;
-    bool any_light_has_specular = false;
     if (!is_lightmap) {
         if (depends_on_light) {
             filtered_lights.reserve(lights.size());
@@ -372,9 +369,6 @@ void RenderableColoredVertexArray::render_cva(
                             THROW_OR_ABORT("Black shadow has no depth texture");
                         }
                     }
-                    any_light_has_ambient |= any(tl.second->ambient != 0.f);
-                    any_light_has_diffuse |= any(tl.second->diffuse != 0.f);
-                    any_light_has_specular |= any(tl.second->specular != 0.f);
                 }
             }
         }
@@ -443,6 +437,9 @@ void RenderableColoredVertexArray::render_cva(
     } else {
         emissive = 1.f;
     }
+    bool any_light_has_ambient = false;
+    bool any_light_has_diffuse = false;
+    bool any_light_has_specular = false;
     if (!filtered_lights.empty() && !is_lightmap) {
         FixedArray<float, 3> sum_light_fresnel_ambient = fixed_zeros<float, 3>();
         FixedArray<float, 3> sum_light_fog_ambient = fixed_zeros<float, 3>();
@@ -450,6 +447,9 @@ void RenderableColoredVertexArray::render_cva(
             if (light->emits_colors()) {
                 sum_light_fresnel_ambient += light->fresnel_ambient;
                 sum_light_fog_ambient += light->fog_ambient;
+                any_light_has_ambient |= any(light->ambient != 0.f);
+                any_light_has_diffuse |= any(light->diffuse != 0.f);
+                any_light_has_specular |= any(light->specular != 0.f);
             }
         }
         ambient = color_style && !color_style->ambient.all_equal(-1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
@@ -462,18 +462,6 @@ void RenderableColoredVertexArray::render_cva(
         fresnel_emissive = sum_light_fresnel_ambient * fresnel_ambient;
         fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
         fog_emissive = sum_light_fog_ambient * cva->material.shading.fog_ambient;
-    } else {
-        ambient = 0.f;
-        diffuse = 0.f;
-        specular = 0.f;
-        specular_exponent = 0.f;
-        fresnel_emissive = 0.f;
-        fresnel = {
-            .min = 0.f,
-            .max = 0.f,
-            .exponent = 0.f
-        };
-        fog_emissive = -1.f;
     }
     if (!any_light_has_ambient) {
         ambient = 0.f;
@@ -483,6 +471,16 @@ void RenderableColoredVertexArray::render_cva(
     }
     if (!any_light_has_specular) {
         specular = 0.f;
+        specular_exponent = 0.f;
+        fresnel_emissive = 0.f;
+        fresnel = {
+            .min = 0.f,
+            .max = 0.f,
+            .exponent = 0.f
+        };
+    }
+    if (is_lightmap) {
+        fog_emissive = -1.f;
     }
     if ((fresnel.exponent != 0.f) && (std::abs(fresnel.max - fresnel.min) < 1e-12)) {
         THROW_OR_ABORT("Nonzero fresnel exponent requires nonzero fresnel range");
