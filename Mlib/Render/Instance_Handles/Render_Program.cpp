@@ -76,6 +76,9 @@ void RenderProgram::gc_deallocate() {
 }
 
 void RenderProgram::use() const {
+    if (program_ == 0) {
+        THROW_OR_ABORT("Render program not allocated");
+    }
     CHK(glUseProgram(program_));
 }
 

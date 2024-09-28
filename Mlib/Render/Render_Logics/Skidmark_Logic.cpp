@@ -20,7 +20,6 @@
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
@@ -31,14 +30,12 @@
 using namespace Mlib;
 
 SkidmarkLogic::SkidmarkLogic(
-    RenderingResources& rendering_resources,
     DanglingRef<SceneNode> skidmark_node,
     std::shared_ptr<Skidmark> skidmark,
     IParticleRenderer& particle_renderer,
     int texture_width,
     int texture_height)
     : on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
-    , rendering_resources_{ rendering_resources }
     , fbs_{ uninitialized }
     , skidmark_node_{ skidmark_node }
     , skidmark_{ skidmark }
@@ -100,24 +97,13 @@ void SkidmarkLogic::render_without_setup(
         .nsamples_msaa = 1});
     {
         if (fbs_(old_fbs_id_) != nullptr) {
-            static const auto colormap = ColormapWithModifiers{
-                .filename = VariableAndHash<std::string>{ "__tmp__" },
-                .color_mode = ColorMode::RGB }.compute_hash();
-            rendering_resources_.set_texture(
-                colormap,
-                fbs_(old_fbs_id_)->texture_color()->handle<GLuint>(),
-                ResourceOwner::CALLER);
-            DestructionGuard dg{[this]() {
-                rendering_resources_.delete_texture(colormap, DeletionFailureMode::ABORT);
-                }};
             if (old_render_texture_logic_ == nullptr) {
                 old_render_texture_logic_ = std::make_shared<FillWithTextureLogic>(
-                    rendering_resources_,
-                    colormap,
-                    ResourceUpdateCycle::ALWAYS,
+                    fbs_(old_fbs_id_)->texture_color(),
                     CullFaceMode::NO_CULL);
             } else {
-                old_render_texture_logic_->update_texture_id();
+                old_render_texture_logic_->set_image_resource_name(
+                    fbs_(old_fbs_id_)->texture_color());
             }
         }
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;

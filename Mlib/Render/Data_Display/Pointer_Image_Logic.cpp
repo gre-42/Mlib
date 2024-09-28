@@ -10,12 +10,9 @@
 using namespace Mlib;
 
 PointerImageLogic::PointerImageLogic(
-    RenderingResources& rendering_resources,
-    ColormapWithModifiers image_resource_name)
+    const std::shared_ptr<ITextureHandle>& texture)
 : FillWithTextureLogic{
-    rendering_resources,
-    std::move(image_resource_name),
-    ResourceUpdateCycle::ONCE,
+    texture,
     CullFaceMode::CULL,
     ContinuousBlendMode::ALPHA,
     nullptr }

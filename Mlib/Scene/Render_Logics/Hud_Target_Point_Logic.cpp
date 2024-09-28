@@ -25,8 +25,7 @@ HudTargetPointLogic::HudTargetPointLogic(
     DanglingPtr<SceneNode> exclusive_node,
     YawPitchLookAtNodes* ypln,
     AdvanceTimes& advance_times,
-    const VariableAndHash<std::string>& image_resource_name,
-    ResourceUpdateCycle update_cycle,
+    const std::shared_ptr<ITextureHandle>& texture,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
     HudErrorBehavior hud_error_behavior)
@@ -40,8 +39,7 @@ HudTargetPointLogic::HudTargetPointLogic(
         hud_error_behavior,
         center,
         size,
-        image_resource_name,
-        update_cycle }
+        texture }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , on_destroy_gun_node_{ gun_node->on_destroy, CURRENT_SOURCE_LOCATION }
     , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }

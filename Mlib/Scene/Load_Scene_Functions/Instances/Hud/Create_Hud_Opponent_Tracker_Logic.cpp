@@ -6,7 +6,8 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Opponent_Tracker_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -20,7 +21,6 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(exclusive_node);
 DECLARE_ARGUMENT(filename);
-DECLARE_ARGUMENT(update);
 DECLARE_ARGUMENT(center);
 DECLARE_ARGUMENT(size);
 DECLARE_ARGUMENT(error_behavior);
@@ -54,8 +54,9 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
         player,
         exclusive_node,
         physics_engine.advance_times_,
-        VariableAndHash{ args.arguments.path(KnownArgs::filename) },
-        resource_update_cycle_from_string(args.arguments.at(KnownArgs::update)),
+        RenderingContextStack::primary_rendering_resources().get_texture_lazy(
+            ColormapWithModifiers{ .filename = VariableAndHash{ args.arguments.path(KnownArgs::filename) } },
+            TextureRole::COLOR_FROM_DB),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));

@@ -1,4 +1,6 @@
 #include "Frame_Buffer.hpp"
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
@@ -62,7 +64,10 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
 
     // create a color attachment texture
-    texture_color_ = std::make_shared<Texture>(generate_texture);
+    texture_color_ = std::make_shared<Texture>(
+        generate_texture,
+        config_.color_format,
+        config_.with_mipmaps);
     if (config.nsamples_msaa == 1) {
         CHK(glBindTexture(GL_TEXTURE_2D, texture_color_->handle<GLuint>()));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
@@ -90,7 +95,10 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
 
     if (config.depth_kind == FrameBufferChannelKind::TEXTURE) {
         // create a depth attachment texture
-        texture_depth_ = std::make_shared<Texture>(generate_texture);
+        texture_depth_ = std::make_shared<Texture>(
+            generate_texture,
+            ColorMode::GRAYSCALE,
+            MipmapMode::NO_MIPMAPS);
         if (config.nsamples_msaa == 1) {
             CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_->handle<GLuint>()));
             CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));

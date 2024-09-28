@@ -33,7 +33,7 @@ public:
     virtual uint32_t num_levels() const override;
     virtual uint8_t* lock(uint32_t level, uint32_t lock_mode) override;
     virtual void unlock() override;
-    virtual std::unique_ptr<ITextureHandle>& texture_handle() override;
+    virtual std::shared_ptr<ITextureHandle> texture_handle() override;
 private:
     void allocate_dxt(const RasterConfig& cfg);
     void create_texture();
@@ -54,7 +54,7 @@ private:
     bool native_is_compressed_;
     uint32_t native_num_levels_;
     bool native_autogen_mipmap_;
-    std::unique_ptr<ITextureHandle> native_texture_id_;
+    std::shared_ptr<ITextureHandle> native_texture_id_;
     GLenum native_format_;
     std::vector<MipmapLevel> levels_;
     uint32_t private_flags_;

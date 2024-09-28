@@ -6,9 +6,9 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Bind_Texture_Guard.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_2D.hpp>
+#include <Mlib/Render/Instance_Handles/Texture.hpp>
 #include <Mlib/Render/Raster/Convert_Pixels.hpp>
 #include <Mlib/Render/Raster/Gl3_Caps.hpp>
-#include <Mlib/Render/Raster/Gl3_Texture_Handle.hpp>
 
 #define GL_COMPRESSED_RGB_S3TC_DXT1_EXT                   0x83F0
 #define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT                  0x83F1
@@ -156,11 +156,11 @@ void Gl3Raster::allocate_dxt(const RasterConfig& cfg) {
     case 1:
         if (has_alpha_) {
             native_internal_format_ = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-            format_ = GL_RGBA;
+            native_format_ = GL_RGBA;
         }
         else {
             native_internal_format_ = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-            format_ = GL_RGB;
+            native_format_ = GL_RGB;
         }
         // bogus, but stride*height should be the size of the image
         // 4x4 in 8 bytes
@@ -168,13 +168,13 @@ void Gl3Raster::allocate_dxt(const RasterConfig& cfg) {
         break;
     case 3:
         native_internal_format_ = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-        format_ = GL_RGBA;
+        native_format_ = GL_RGBA;
         // 4x4 in 16 bytes
         stride_ = width_;
         break;
     case 5:
         native_internal_format_ = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        format_ = GL_RGBA;
+        native_format_ = GL_RGBA;
         // 4x4 in 16 bytes
         stride_ = width_;
         break;
@@ -196,8 +196,10 @@ void Gl3Raster::allocate_dxt(const RasterConfig& cfg) {
     if (native_texture_id_ != nullptr) {
         THROW_OR_ABORT("Texture already set");
     }
-    native_texture_id_ = std::make_unique<Gl3TextureHandle>();
-    CHK(glGenTextures(1, &native_texture_id_->handle<GLuint>()));
+    native_texture_id_ = std::make_shared<Mlib::Texture>(
+        generate_texture,
+        native_format_,
+        bool(format_ & Raster::MIPMAP));
     {
         BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, integral_cast<GLint>(native_internal_format_),
@@ -416,8 +418,10 @@ void Gl3Raster::create_texture()
     if (native_texture_id_ != nullptr) {
         THROW_OR_ABORT("Texture ID already set");
     }
-    native_texture_id_ = std::make_unique<Gl3TextureHandle>();
-    CHK(glGenTextures(1, &native_texture_id_->handle<GLuint>()));
+    native_texture_id_ = std::make_shared<Mlib::Texture>(
+        generate_texture,
+        native_format_,
+        bool(format_ & Raster::MIPMAP));
     BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
     CHK(glTexImage2D(
         GL_TEXTURE_2D,
@@ -520,7 +524,7 @@ uint32_t Gl3Raster::format() const {
     return format_ & 0xFF00;
 }
 
-std::unique_ptr<Mlib::ITextureHandle>& Gl3Raster::texture_handle() {
+std::shared_ptr<Mlib::ITextureHandle> Gl3Raster::texture_handle() {
     if (native_texture_id_ == nullptr) {
         THROW_OR_ABORT("Texture ID not set");
     }

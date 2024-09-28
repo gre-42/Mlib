@@ -7,7 +7,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Target_Point_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -23,7 +23,6 @@ DECLARE_ARGUMENT(gun_node);
 DECLARE_ARGUMENT(exclusive_node);
 DECLARE_ARGUMENT(ypln_node);
 DECLARE_ARGUMENT(filename);
-DECLARE_ARGUMENT(update);
 DECLARE_ARGUMENT(center);
 DECLARE_ARGUMENT(size);
 DECLARE_ARGUMENT(error_behavior);
@@ -67,8 +66,9 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         exclusive_node,
         ypln,
         physics_engine.advance_times_,
-        VariableAndHash{ args.arguments.path(KnownArgs::filename) },
-        resource_update_cycle_from_string(args.arguments.at(KnownArgs::update)),
+        RenderingContextStack::primary_rendering_resources().get_texture_lazy(
+            ColormapWithModifiers{ .filename = VariableAndHash{ args.arguments.path(KnownArgs::filename) } },
+            TextureRole::COLOR_FROM_DB),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));

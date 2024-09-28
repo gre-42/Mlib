@@ -438,7 +438,7 @@ void Ps2Raster::unlock_palette() {
     private_flags_ &= ~(Raster::PRIVATELOCK_READ_PALETTE|Raster::PRIVATELOCK_WRITE_PALETTE);
 }
 
-std::unique_ptr<ITextureHandle>& Ps2Raster::texture_handle() {
+std::shared_ptr<ITextureHandle> Ps2Raster::texture_handle() {
     THROW_OR_ABORT("Ps2Raster texture handle not implemented");
 }
 

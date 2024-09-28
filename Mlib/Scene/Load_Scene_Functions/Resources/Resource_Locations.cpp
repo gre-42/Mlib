@@ -85,7 +85,7 @@ static void add_resource(
                 } else {
                     res.set_texture(
                         cm,
-                        std::move(tx->raster->texture_handle()),
+                        tx->raster->texture_handle(),
                         &size);
                 }
             }

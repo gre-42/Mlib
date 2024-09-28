@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
-#include <Mlib/Log.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
@@ -128,7 +128,7 @@ void SkyboxLogic::render_with_setup(
     // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
     if (!loaded_) {
         loaded_ = true;
-        if (!alias_->empty()) {
+        if (texture_ != nullptr) {
             rp_.allocate(vertex_shader_text, fragment_shader_text);
             rp_.skybox_location = rp_.get_uniform_location("skybox");
             rp_.vp_location = rp_.get_uniform_location("vp");
@@ -140,7 +140,7 @@ void SkyboxLogic::render_with_setup(
             CHK(glBindVertexArray(0));
         }
     }
-    if (!alias_->empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
+    if ((texture_ != nullptr) && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
         rp_.use();
@@ -154,7 +154,7 @@ void SkyboxLogic::render_with_setup(
 
         CHK(glUniform1i(rp_.skybox_location, 0));
         CHK(glActiveTexture(GL_TEXTURE0));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_texture(colormap_)));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, texture_->handle<GLuint>()));
 
         va_.bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));
@@ -167,18 +167,17 @@ void SkyboxLogic::render_with_setup(
 }
 
 void SkyboxLogic::clear_alias() {
-    alias_ = std::string();
+    texture_ = nullptr;
 }
 
 void SkyboxLogic::set_alias(VariableAndHash<std::string> alias) {
-    if (!alias_->empty()) {
+    if (texture_ != nullptr) {
         THROW_OR_ABORT("SkyboxLogic::set_alias called multiple times");
     }
-    alias_ = alias;
-    colormap_ = ColormapWithModifiers{
-        .filename = alias_,
+    texture_ = rendering_resources_.get_texture_lazy(ColormapWithModifiers{
+        .filename = alias,
         .color_mode = ColorMode::RGB,
-        .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash();
+        .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash());
 }
 
 void SkyboxLogic::print(std::ostream& ostr, size_t depth) const {

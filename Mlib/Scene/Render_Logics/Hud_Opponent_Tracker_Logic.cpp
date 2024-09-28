@@ -22,8 +22,7 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     const DanglingBaseClassRef<Player>& player,
     DanglingPtr<SceneNode> exclusive_node,
     AdvanceTimes& advance_times,
-    const VariableAndHash<std::string>& image_resource_name,
-    ResourceUpdateCycle update_cycle,
+    const std::shared_ptr<ITextureHandle>& texture,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
     HudErrorBehavior hud_error_behavior)
@@ -35,8 +34,7 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
         hud_error_behavior,
         center,
         size,
-        image_resource_name,
-        update_cycle }
+        texture }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }

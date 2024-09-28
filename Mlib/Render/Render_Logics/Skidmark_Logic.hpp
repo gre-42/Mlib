@@ -9,7 +9,6 @@
 
 namespace Mlib {
 
-class RenderingResources;
 class FrameBuffer;
 class SceneNode;
 class FillWithTextureLogic;
@@ -19,7 +18,6 @@ struct Skidmark;
 class SkidmarkLogic: public RenderLogic {
 public:
     explicit SkidmarkLogic(
-        RenderingResources& rendering_resources,
         DanglingRef<SceneNode> skidmark_node,
         std::shared_ptr<Skidmark> skidmark,
         IParticleRenderer& particle_renderer,
@@ -43,7 +41,6 @@ public:
     DestructionFunctionsRemovalTokens on_skidmark_node_clear;
 private:
     void deallocate();
-    RenderingResources& rendering_resources_;
     FixedArray<std::shared_ptr<FrameBuffer>, 2> fbs_;
     DanglingRef<SceneNode> skidmark_node_;
     std::shared_ptr<Skidmark> skidmark_;

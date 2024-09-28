@@ -23,7 +23,7 @@ public:
     virtual uint32_t type() const = 0;
     virtual uint8_t* lock(uint32_t level, uint32_t flags) = 0;
     virtual void unlock() = 0;
-    virtual std::unique_ptr<ITextureHandle>& texture_handle() = 0;
+    virtual std::shared_ptr<ITextureHandle> texture_handle() = 0;
 };
 
 }

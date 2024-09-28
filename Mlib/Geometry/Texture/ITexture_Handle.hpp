@@ -5,6 +5,9 @@
 
 namespace Mlib {
 
+enum class MipmapMode;
+enum class ColorMode;
+
 class ITextureHandle {
 public:
     virtual ~ITextureHandle() = default;
@@ -32,6 +35,9 @@ public:
     virtual uint64_t handle64() const = 0;
     virtual uint32_t& handle32() = 0;
     virtual uint64_t& handle64() = 0;
+    virtual bool texture_is_loaded_and_try_preload() = 0;
+    virtual ColorMode color_mode() const = 0;
+    virtual MipmapMode mipmap_mode() const = 0;
 };
 
 }

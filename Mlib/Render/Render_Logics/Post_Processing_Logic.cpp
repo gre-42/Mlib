@@ -154,7 +154,7 @@ PostProcessingLogic::~PostProcessingLogic() {
 
 void PostProcessingLogic::ensure_initialized() {
     if (!initialized_) {
-        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text(low_pass_, high_pass_, depth_fog_, !soft_light_filename_->empty()));
+        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text(low_pass_, high_pass_, depth_fog_, soft_light_texture_ != nullptr));
 
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
         rp_.screen_texture_color_location = rp_.get_uniform_location("screenTextureColor");
@@ -172,7 +172,7 @@ void PostProcessingLogic::ensure_initialized() {
         } else {
             rp_.background_color_location = 0;
         }
-        if (!soft_light_filename_->empty()) {
+        if (soft_light_texture_ != nullptr) {
             rp_.soft_light_texture_location = rp_.get_uniform_location("softLightTexture");
         } else {
             rp_.soft_light_texture_location = 0;
@@ -256,7 +256,7 @@ void PostProcessingLogic::render_with_setup(
             if (depth_fog_) {
                 CHK(glUniform3fv(rp_.background_color_location, 1, background_color_.flat_begin()));
             }
-            if (!soft_light_filename_->empty()) {
+            if (soft_light_texture_ != nullptr) {
                 CHK(glUniform1i(rp_.soft_light_texture_location, 2));
             }
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
@@ -266,15 +266,9 @@ void PostProcessingLogic::render_with_setup(
                 CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
                 CHK(glBindTexture(GL_TEXTURE_2D, fbs_->texture_depth()->handle<GLuint>()));
             }
-            if (!soft_light_filename_->empty()) {
+            if (soft_light_texture_ != nullptr) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
-                CHK(glBindTexture(
-                    GL_TEXTURE_2D,
-                    rendering_resources_.get_texture({
-                            .filename = soft_light_filename_,
-                            .color_mode = ColorMode::RGB,
-                            .mipmap_mode = MipmapMode::NO_MIPMAPS},
-                        TextureRole::COLOR_FROM_DB)));
+                CHK(glBindTexture(GL_TEXTURE_2D, soft_light_texture_->handle<GLuint>()));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             }
 
@@ -288,11 +282,15 @@ void PostProcessingLogic::render_with_setup(
     }
 }
 
-void PostProcessingLogic::set_soft_light_filename(const std::string& soft_light_filename) {
-    if (!soft_light_filename_->empty()) {
+void PostProcessingLogic::set_soft_light_filename(const VariableAndHash<std::string>& soft_light_filename) {
+    if (soft_light_texture_ != nullptr) {
         THROW_OR_ABORT("Soft light filename already set");
     }
-    soft_light_filename_ = soft_light_filename;
+    soft_light_texture_ = rendering_resources_.get_texture({
+        .filename = soft_light_filename,
+        .color_mode = ColorMode::RGB,
+        .mipmap_mode = MipmapMode::NO_MIPMAPS},
+        TextureRole::COLOR_FROM_DB);
 }
 
 void PostProcessingLogic::set_background_color(const FixedArray<float, 3>& color) {

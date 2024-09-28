@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
@@ -13,6 +12,7 @@
 
 namespace Mlib {
 
+class ITextureHandle;
 class RenderingResources;
 
 struct SRenderProgram: public RenderProgram {
@@ -49,9 +49,8 @@ private:
     BufferBackgroundCopy vertices_;
     EmptyArrayBuffer empty_;
     VertexArray va_;
-    VariableAndHash<std::string> alias_;
     bool loaded_;
-    ColormapWithModifiers colormap_;
+    std::shared_ptr<ITextureHandle> texture_;
     DeallocationToken deallocation_token_;
 };
 

@@ -140,7 +140,7 @@ int main(int argc, char** argv)
                     };
                     rendering_resources.set_texture(
                         cm,
-                        std::move(tx->raster->texture_handle()),
+                        tx->raster->texture_handle(),
                         &size);
                 }
             }
@@ -165,25 +165,22 @@ int main(int argc, char** argv)
             }
             if (auto filename = parsed.try_named_value("--texname"); filename != nullptr) {
                 ftl.emplace(
-                    rendering_resources,
-                    ColormapWithModifiers{
+                    rendering_resources.get_texture(ColormapWithModifiers{
                         .filename = VariableAndHash{ *filename },
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                    }.compute_hash(),
-                    ResourceUpdateCycle::ONCE);
+                    }.compute_hash()));
             } else if (!parsed.has_named("--rerender_atlas")) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {
                     THROW_OR_ABORT("Layer index out of bounds");
                 }
                 ftl.emplace(
-                    rendering_resources,
-                    ColormapWithModifiers{
-                        .filename = tmp_texture,
-                        .color_mode = ColorMode::RGBA,
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
-                    ResourceUpdateCycle::ONCE,
+                    rendering_resources.get_texture(
+                        ColormapWithModifiers{
+                            .filename = tmp_texture,
+                            .color_mode = ColorMode::RGBA,
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash()),
                     CullFaceMode::CULL,
                     ContinuousBlendMode::ALPHA,
                     standard_quad_vertices,
@@ -204,12 +201,10 @@ int main(int argc, char** argv)
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}});
             ftl.emplace(
-                rendering_resources,
-                ColormapWithModifiers{
+                rendering_resources.get_texture(ColormapWithModifiers{
                     .filename = tmp_texture,
                     .color_mode = ColorMode::RGBA,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
-                ResourceUpdateCycle::ONCE);
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash()));
         } else {
             THROW_OR_ABORT("Expected 0 or 1 unnamed arguments");
         }

@@ -70,15 +70,9 @@ HudTracker::HudTracker(
     HudErrorBehavior hud_error_behavior,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
-    const VariableAndHash<std::string>& image_resource_name,
-    ResourceUpdateCycle update_cycle)
+    const std::shared_ptr<ITextureHandle>& texture)
     : FillWithTextureLogic{
-        RenderingContextStack::primary_rendering_resources(),
-        ColormapWithModifiers{
-            .filename = image_resource_name,
-            .color_mode = ColorMode::RGBA
-        }.compute_hash(),
-        update_cycle,
+        texture,
         CullFaceMode::CULL,
         ContinuousBlendMode::ALPHA,
         nullptr }

@@ -11,7 +11,6 @@ class Scene;
 class SceneNode;
 struct RenderedSceneDescriptor;
 struct LayoutConstraintParameters;
-enum class ResourceUpdateCycle;
 class HudTracker;
 struct RenderSetup;
 
@@ -45,8 +44,7 @@ public:
         HudErrorBehavior hud_error_behavior,
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size,
-        const VariableAndHash<std::string>& image_resource_name,
-        ResourceUpdateCycle update_cycle);
+        const std::shared_ptr<ITextureHandle>& texture);
     ~HudTracker();
     void invalidate();
     HudTrackerTimeAdvancer time_advancer();

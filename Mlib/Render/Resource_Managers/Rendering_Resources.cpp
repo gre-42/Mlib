@@ -26,12 +26,12 @@
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
-#include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
 #include <Mlib/Render/Gl_Extensions.hpp>
 #include <Mlib/Render/Instance_Handles/Bind_Texture_Guard.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Instance_Handles/Texture.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -40,6 +40,7 @@
 #include <Mlib/Render/Render_To_Texture/Render_To_Texture_2D.hpp>
 #include <Mlib/Render/Render_To_Texture/Render_To_Texture_2D_Array.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Lazy_Texture.hpp>
 #include <Mlib/Render/Text/Loaded_Font.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
@@ -654,14 +655,7 @@ RenderingResources::~RenderingResources() {
 void RenderingResources::deallocate() {
     std::scoped_lock lock{ mutex_ };
     render_programs_.clear();
-    textures_.erase_if([](auto &item) {
-        auto &[_, texture] = item;
-        if (texture.owner == ResourceOwner::CONTAINER) {
-            try_delete_texture(texture.handle);
-            return true;
-        }
-        return false;
-    });
+    textures_.clear();
     texture_types_.clear();
     font_textures_.clear();
     texture_sizes_.clear();
@@ -729,9 +723,16 @@ void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole
     }
 }
 
+std::shared_ptr<ITextureHandle> RenderingResources::get_texture_lazy(
+    const ColormapWithModifiers& name,
+    TextureRole role) const
+{
+    return std::make_shared<LazyTexture>(*this, name, role);
+}
+
 bool RenderingResources::texture_is_loaded_and_try_preload(
     const ColormapWithModifiers& color,
-    TextureRole role)
+    TextureRole role) const
 {
     if (texture_is_loaded_unsafe(color)) {
         return true;
@@ -911,7 +912,7 @@ static GLenum nchannels2format(size_t nchannels) {
     };
 }
 
-GLuint RenderingResources::get_texture(
+std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     const ColormapWithModifiers& color,
     TextureRole role,
     CallerType caller_type) const
@@ -964,28 +965,20 @@ GLuint RenderingResources::get_texture(
             });
     } else {
         if (preloaded_texture_dds_data_.contains(color)) {
-            GLuint original_texture;
-            CHK(glGenTextures(1, &original_texture));
-            DestructionGuard dg0{ [original_texture]() { ABORT(glDeleteTextures(1, &original_texture)); } };
+            GLuint original_texture_handle;
+            CHK(glGenTextures(1, &original_texture_handle));
+            DestructionGuard dg0{ [original_texture_handle]() { ABORT(glDeleteTextures(1, &original_texture_handle)); } };
             auto sinfo = [&](){
-                BindTextureGuard btg{ GL_TEXTURE_2D, original_texture };
+                BindTextureGuard btg{ GL_TEXTURE_2D, original_texture_handle };
                 return initialize_dds_texture(color);
             }();
-            auto original_key = ColormapWithModifiers{
-                .filename = VariableAndHash<std::string>{"__original_texture__"},
-                .color_mode = (ColorMode)sinfo.nchannels,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS
-            }.compute_hash();
-            const_cast<RenderingResources*>(this)->set_texture(
-                original_key,
-                original_texture,
-                ResourceOwner::CALLER);
-            DestructionGuard dg1{ [this, &original_key]() { const_cast<RenderingResources*>(this)->delete_texture(original_key, DeletionFailureMode::ABORT); } };
+            auto original_texture = std::make_shared<Texture>(
+                original_texture_handle,
+                (ColorMode)sinfo.nchannels,
+                MipmapMode::WITH_MIPMAPS);
 
             FillWithTextureLogic logic{
-                *const_cast<RenderingResources*>(this),
-                original_key,
-                ResourceUpdateCycle::ONCE,
+                original_texture,
                 CullFaceMode::CULL,
                 ContinuousBlendMode::NONE,
                 vertically_flipped_quad_vertices };
@@ -1016,8 +1009,9 @@ GLuint RenderingResources::get_texture(
         }
     }
 
-    textures_.add(color, TextureHandleAndOwner{texture, ResourceOwner::CONTAINER});
-    return texture;
+    return textures_.add(
+        color,
+        std::make_shared<Texture>(texture, color.color_mode, color.mipmap_mode)).handle;
 }
 
 GLuint RenderingResources::get_cubemap_unsafe(const VariableAndHash<std::string>& name) const {
@@ -1059,45 +1053,35 @@ GLuint RenderingResources::get_cubemap_unsafe(const VariableAndHash<std::string>
     return textureID;
 }
 
-void RenderingResources::set_texture(
+void RenderingResources::add_texture(
     const ColormapWithModifiers& name,
-    GLuint id,
-    ResourceOwner resource_owner,
+    std::shared_ptr<ITextureHandle> id,
     const TextureSize* texture_size)
 {
     LOG_FUNCTION("RenderingResources::set_texture " + *name.filename);
-    // Old texture is deleted by frame buffer
-    if (id == (GLuint)-1) {
-        THROW_OR_ABORT("RenderingResources::set_texture: invalid texture ID");
-    }
     std::scoped_lock lock{ mutex_ };
-    if (auto v = textures_.try_get(name); v != nullptr) {
-        if (v->owner == ResourceOwner::CONTAINER) {
-            THROW_OR_ABORT("Overwriting texture that needs garbage-collection");
-        }
-        textures_.erase(name);
-    }
-    textures_.add(
-        name,
-        TextureHandleAndOwner{
-            .handle = id,
-            .owner = resource_owner});
+    textures_.add(name, TextureHandleAndOwner{ .handle = id });
     if (texture_size != nullptr) {
-        texture_sizes_.insert_or_assign(name.filename, *texture_size);
+        texture_sizes_.add(name.filename, *texture_size);
     }
 }
 
 void RenderingResources::set_texture(
     const ColormapWithModifiers& name,
-    std::unique_ptr<ITextureHandle>&& id,
+    std::shared_ptr<ITextureHandle>&& id,
     const TextureSize* texture_size)
 {
-    set_texture(
-        name,
-        id->handle<GLuint>(),
-        ResourceOwner::CONTAINER,
-        texture_size);
-    id.reset();
+    verbose_abort("RenderingResources::set_texture to be deleted");
+    LOG_FUNCTION("RenderingResources::set_texture " + *name.filename);
+    std::scoped_lock lock{ mutex_ };
+    if (auto v = textures_.try_get(name); v != nullptr) {
+        v->handle = std::move(id);
+    } else {
+        textures_.add(name, TextureHandleAndOwner{ .handle = std::move(id) });
+    }
+    if (texture_size != nullptr) {
+        texture_sizes_.insert_or_assign(name.filename, *texture_size);
+    }
 }
 
 void RenderingResources::set_textures_lazy(std::function<void()> func)
@@ -1230,9 +1214,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             (float)info.size(0),
             (float)info.size(1)};
         FillWithTextureLogic logic{
-            *const_cast<RenderingResources*>(this),
-            color,
-            ResourceUpdateCycle::ONCE,
+            get_texture(color),
             CullFaceMode::CULL,
             ContinuousBlendMode::NONE};
         {
@@ -1553,8 +1535,6 @@ void RenderingResources::delete_texture(const ColormapWithModifiers& name, Delet
             verbose_abort("Could not delete texture " + *name.filename);
         }
         verbose_abort("Unknown deletion failure mode: \"" + std::to_string((int)deletion_failure_mode + '"'));
-    } else if (it.mapped().owner == ResourceOwner::CONTAINER) {
-        try_delete_texture(it.mapped().handle);
     }
 }
 

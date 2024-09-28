@@ -33,6 +33,7 @@ DECLARE_ARGUMENT(ambient);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(z_order);
 DECLARE_ARGUMENT(depth_func);
+DECLARE_ARGUMENT(depth_test);
 DECLARE_ARGUMENT(alpha_distances);
 DECLARE_ARGUMENT(cull_faces);
 DECLARE_ARGUMENT(rotation);
@@ -95,6 +96,7 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         .depth_func = args.arguments.contains(KnownArgs::depth_func)
             ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
             : DepthFunc::LESS,
+        .depth_test = args.arguments.at<bool>(KnownArgs::depth_test, true),
         .textures_color = { primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename).path}) },
         .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
         .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),

@@ -83,12 +83,16 @@ public:
         return it->second;
     }
 
-    const mapped_type* try_get(const key_type& key) const {
+    mapped_type* try_get(const key_type& key) {
         auto it = elements_.find(key);
         if (it == elements_.end()) {
             return nullptr;
         }
         return &it->second;
+    }
+
+    const mapped_type* try_get(const key_type& key) const {
+        return const_cast<VerboseGenericMap*>(this)->try_get(key);
     }
 
     template< class... Args >

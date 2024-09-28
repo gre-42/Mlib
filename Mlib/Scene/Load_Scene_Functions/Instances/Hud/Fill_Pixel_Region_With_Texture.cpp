@@ -10,7 +10,6 @@
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
@@ -27,7 +26,6 @@ DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
-DECLARE_ARGUMENT(update);
 DECLARE_ARGUMENT(delay_load_policy);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
@@ -52,13 +50,12 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto& scene_window_logic = object_pool.create<FillPixelRegionWithTextureLogic>(
         CURRENT_SOURCE_LOCATION,
         std::make_shared<FillWithTextureLogic>(
-            rs.rendering_resources_,
-            ColormapWithModifiers{
-                .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
-                .color_mode = ColorMode::RGBA,
-                .mipmap_mode = MipmapMode::NO_MIPMAPS
-            }.compute_hash(),
-            resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
+            rs.rendering_resources_.get_texture_lazy(
+                ColormapWithModifiers{
+                    .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
+                    .color_mode = ColorMode::RGBA,
+                    .mipmap_mode = MipmapMode::NO_MIPMAPS
+                }.compute_hash()),
             CullFaceMode::CULL,
             ContinuousBlendMode::ALPHA),
         std::make_unique<Widget>(

@@ -33,7 +33,7 @@ public:
     virtual void unlock() override;
     virtual uint8_t* lock_palette(uint32_t lock_mode) override;
     virtual void unlock_palette() override;
-    virtual std::unique_ptr<ITextureHandle>& texture_handle() override;
+    virtual std::shared_ptr<ITextureHandle> texture_handle() override;
 private:
     void create_texture();
     void unswizzle_raster();

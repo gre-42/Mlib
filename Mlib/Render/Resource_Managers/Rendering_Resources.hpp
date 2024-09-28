@@ -13,6 +13,7 @@
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/Resource_Managers/Font_Name_And_Height_Hash.hpp>
+#include <Mlib/Render/Resource_Managers/Texture_Role.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
@@ -47,14 +48,8 @@ struct TextureSizeAndMipmaps {
     GLsizei mip_level_count;
 };
 
-enum class ResourceOwner {
-    CALLER,
-    CONTAINER
-};
-
 struct TextureHandleAndOwner {
-    GLuint handle;
-    ResourceOwner owner;
+    std::shared_ptr<ITextureHandle> handle;
 };
 
 struct ManualAtlasTileSource {
@@ -124,14 +119,6 @@ enum class CopyBehavior {
     COPY
 };
 
-enum class TextureRole {
-    TRUSTED,
-    COLOR_FROM_DB,
-    COLOR,
-    SPECULAR,
-    NORMAL
-};
-
 enum class TextureType {
     TEXTURE_2D,
     TEXTURE_2D_ARRAY,
@@ -158,22 +145,24 @@ public:
     void preload(const TextureDescriptor& descriptor) const;
     bool texture_is_loaded_and_try_preload(
         const ColormapWithModifiers& color,
-        TextureRole role = TextureRole::COLOR);
-    GLuint get_texture(
+        TextureRole role = TextureRole::COLOR) const;
+    std::shared_ptr<ITextureHandle> get_texture(
         const ColormapWithModifiers& name,
         TextureRole role = TextureRole::COLOR,
         CallerType caller_type = CallerType::RENDER) const;
+    std::shared_ptr<ITextureHandle> get_texture_lazy(
+        const ColormapWithModifiers& name,
+        TextureRole role = TextureRole::COLOR) const;
     bool contains_texture(const ColormapWithModifiers& name) const;
     TextureType texture_type(const ColormapWithModifiers& name, TextureRole role) const;
     FixedArray<int, 2> texture_size(const ColormapWithModifiers& name) const;
-    void set_texture(
+    void add_texture(
         const ColormapWithModifiers& name,
-        GLuint id,
-        ResourceOwner resource_owner,
+        std::shared_ptr<ITextureHandle> id,
         const TextureSize* texture_size = nullptr);
     void set_texture(
         const ColormapWithModifiers& name,
-        std::unique_ptr<ITextureHandle>&& id,
+        std::shared_ptr<ITextureHandle>&& id,
         const TextureSize* texture_size = nullptr);
     void set_textures_lazy(std::function<void()> func);
     void add_texture_descriptor(const VariableAndHash<std::string>& name, const TextureDescriptor& descriptor);
@@ -276,7 +265,7 @@ private:
     mutable ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     std::string name_;
     unsigned int max_anisotropic_filtering_level_;
-    BackgroundLoop preloader_background_loop_;
+    mutable BackgroundLoop preloader_background_loop_;
     DeallocationToken deallocation_token_;
     std::shared_ptr<int> lifetime_indicator_;
 };

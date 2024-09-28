@@ -35,7 +35,7 @@ public:
     virtual uint8_t* lock(uint32_t level, uint32_t lock_mode) override;
     virtual void unlock() override;
     virtual uint8_t* palette() override;
-    virtual std::unique_ptr<ITextureHandle>& texture_handle() override;
+    virtual std::shared_ptr<ITextureHandle> texture_handle() override;
 private:
     void allocate_dxt(uint32_t dxt);
     void compute_mip_level_metadata();

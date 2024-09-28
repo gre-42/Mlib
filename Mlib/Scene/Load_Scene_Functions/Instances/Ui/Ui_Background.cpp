@@ -13,6 +13,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -28,7 +29,6 @@ DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
-DECLARE_ARGUMENT(update);
 DECLARE_ARGUMENT(delay_load_policy);
 DECLARE_ARGUMENT(focus_mask);
 }
@@ -50,13 +50,12 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& bg = object_pool.create<FillPixelRegionWithTextureLogic>(
         CURRENT_SOURCE_LOCATION,
         std::make_shared<FillWithTextureLogic>(
-            RenderingContextStack::primary_rendering_resources(),
-            ColormapWithModifiers{
-                .filename = VariableAndHash{args.arguments.path(KnownArgs::texture)},
-                .color_mode = ColorMode::RGBA,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS
-            }.compute_hash(),
-            resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update))),
+            RenderingContextStack::primary_rendering_resources().get_texture_lazy(
+                ColormapWithModifiers{
+                    .filename = VariableAndHash{args.arguments.path(KnownArgs::texture)},
+                    .color_mode = ColorMode::RGBA,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                }.compute_hash())),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),

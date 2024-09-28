@@ -10,6 +10,7 @@
 namespace Mlib {
 
 class RenderingResources;
+class ITextureHandle;
 
 struct PPRenderProgram: public RenderProgram {
     GLint screen_texture_color_location = -1;
@@ -44,7 +45,7 @@ public:
         const RenderSetup& setup) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void set_soft_light_filename(const std::string& soft_light_filename);
+    void set_soft_light_filename(const VariableAndHash<std::string>& soft_light_filename);
     void set_background_color(const FixedArray<float, 3>& color);
 private:
     void ensure_initialized();
@@ -57,7 +58,7 @@ private:
     bool depth_fog_;
     bool low_pass_;
     bool high_pass_;
-    VariableAndHash<std::string> soft_light_filename_;
+    std::shared_ptr<ITextureHandle> soft_light_texture_;
     std::shared_ptr<FrameBuffer> fbs_;
 };
 

@@ -5,18 +5,14 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/IArray_Buffer.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 
 using namespace Mlib;
 
 CenteredTextureImageLogic::CenteredTextureImageLogic(
-    RenderingResources& rendering_resources,
-    ColormapWithModifiers image_resource_name,
+    const std::shared_ptr<ITextureHandle>& texture,
     ContinuousBlendMode blend_mode)
     : FillWithTextureLogic{
-        rendering_resources,
-        std::move(image_resource_name),
-        ResourceUpdateCycle::ONCE,
+        texture,
         CullFaceMode::CULL,
         blend_mode,
         nullptr }

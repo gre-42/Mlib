@@ -16,6 +16,7 @@
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -40,22 +41,21 @@ MinimapLogic::MinimapLogic(
     : render_logics_{ render_logics }
     , node_{ node }
     , centered_texture_image_logic_{
-          RenderingContextStack::primary_rendering_resources(),
-          ColormapWithModifiers{
-              .filename = map_image_resource_name,
-              .color_mode = ColorMode::RGB,
-              .mipmap_mode = MipmapMode::WITH_MIPMAPS
-          }.compute_hash(),
+          RenderingContextStack::primary_rendering_resources().get_texture_lazy(
+              ColormapWithModifiers{
+                  .filename = map_image_resource_name,
+                  .color_mode = ColorMode::RGB,
+                  .mipmap_mode = MipmapMode::WITH_MIPMAPS
+              }.compute_hash()),
           ContinuousBlendMode::ADD
     }
     , locator_logic_{
-          RenderingContextStack::primary_rendering_resources(),
-          ColormapWithModifiers{
-              .filename = locator_image_resource_name,
-              .color_mode = ColorMode::RGBA,
-              .mipmap_mode = MipmapMode::WITH_MIPMAPS
-          }.compute_hash(),
-          ResourceUpdateCycle::ONCE,
+          RenderingContextStack::primary_rendering_resources().get_texture_lazy(
+              ColormapWithModifiers{
+                  .filename = locator_image_resource_name,
+                  .color_mode = ColorMode::RGBA,
+                  .mipmap_mode = MipmapMode::WITH_MIPMAPS
+              }.compute_hash()),
     }
     , widget_{ std::move(widget) }
     , locator_size_{ locator_size }

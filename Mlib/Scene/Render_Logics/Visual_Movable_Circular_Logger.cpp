@@ -8,6 +8,7 @@
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 
 using namespace Mlib;
@@ -29,7 +30,7 @@ VisualMovableCircularLogger::VisualMovableCircularLogger(
     : status_writer_{ status_writer }
     , log_components_{ log_components }
     , tick_text_{ ttf_filename, {1.f, 1.f, 1.f} }
-    , pointer_image_logic_{ RenderingContextStack::primary_rendering_resources(), std::move(pointer_texture_name) }
+    , pointer_image_logic_{ RenderingContextStack::primary_rendering_resources().get_texture_lazy(pointer_texture_name) }
     , display_{ tick_text_, pointer_image_logic_, minimum_value, maximum_value, blank_angle, ticks }
     , font_height_{ font_height }
     , tick_radius_{ tick_radius }

@@ -44,7 +44,6 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
         });
     auto& o = global_object_pool.create<SkidmarkLogic>(
         CURRENT_SOURCE_LOCATION,
-        rendering_resources,
         node,
         skidmark,
         particle_renderer,

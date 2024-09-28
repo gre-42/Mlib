@@ -1,10 +1,11 @@
 #include "Fill_With_Texture_Logic.hpp"
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
-#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
@@ -17,14 +18,9 @@
 using namespace Mlib;
 
 FillWithTextureRenderProgram::FillWithTextureRenderProgram()
-: deallocation_token_{render_deallocator.insert([this](){invalidate_texture_id();})}
 {}
 
 FillWithTextureRenderProgram::~FillWithTextureRenderProgram() = default;
-
-void FillWithTextureRenderProgram::invalidate_texture_id() {
-    texture_id_ = (GLuint)-1;
-}
 
 static const char* fragment_shader_text =
 SHADER_VER FRAGMENT_PRECISION
@@ -54,17 +50,13 @@ std::string fragment_shader_text_layer(size_t layer) {
 }
 
 FillWithTextureLogic::FillWithTextureLogic(
-    RenderingResources& rendering_resources,
-    const ColormapWithModifiers& image_resource_name,
-    ResourceUpdateCycle update_cycle,
+    std::shared_ptr<ITextureHandle> texture,
     CullFaceMode cull_face_mode,
     ContinuousBlendMode blend_mode,
     const float* quad_vertices,
     std::optional<size_t> layer)
     : GenericPostProcessingLogic{ quad_vertices }
-    , rendering_resources_{ rendering_resources }
-    , image_resource_name_{ rendering_resources_.colormap(image_resource_name) }
-    , update_cycle_{ update_cycle }
+    , texture_{ texture }
     , cull_face_mode_{ cull_face_mode }
     , blend_mode_{ blend_mode }
     , layer_{ layer }
@@ -72,12 +64,11 @@ FillWithTextureLogic::FillWithTextureLogic(
 
 FillWithTextureLogic::~FillWithTextureLogic() = default;
 
-void FillWithTextureLogic::set_image_resource_name(const ColormapWithModifiers& image_resource_name) {
-    image_resource_name_ = rendering_resources_.colormap(image_resource_name);
-    rp_.texture_id_ = (GLuint)-1;
+void FillWithTextureLogic::set_image_resource_name(std::shared_ptr<ITextureHandle> texture) {
+    texture_ = std::move(texture);
 }
 
-void FillWithTextureLogic::update_texture_id() {
+void FillWithTextureLogic::ensure_allocated() {
     if (!rp_.allocated()) {
         if (layer_.has_value()) {
             rp_.allocate(simple_vertex_shader_text_, fragment_shader_text_layer(*layer_).c_str());
@@ -86,29 +77,24 @@ void FillWithTextureLogic::update_texture_id() {
         }
         rp_.texture_location = rp_.get_uniform_location("texture1");
     }
-    if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
-            rp_.texture_id_ = rendering_resources_.get_texture(
-                image_resource_name_,
-                TextureRole::COLOR);
-    }
 }
 
 bool FillWithTextureLogic::texture_is_loaded_and_try_preload() const {
-    return rendering_resources_.texture_is_loaded_and_try_preload(
-        image_resource_name_,
-        TextureRole::COLOR);
+    return texture_->texture_is_loaded_and_try_preload();
 }
 
 void FillWithTextureLogic::render_wo_update_and_bind()
 {
     LOG_FUNCTION("FillWithTextureLogic::render");
 
+    ensure_allocated();
+
     if (cull_face_mode_ == CullFaceMode::CULL) {
         CHK(glEnable(GL_CULL_FACE));
     }
     bool enable_alpha_blend =
         (blend_mode_ == ContinuousBlendMode::ALPHA) &&
-        any(image_resource_name_.color_mode & ColorMode::RGBA);
+        any(texture_->color_mode() & ColorMode::RGBA);
     if (enable_alpha_blend) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -121,8 +107,8 @@ void FillWithTextureLogic::render_wo_update_and_bind()
 
     CHK(glUniform1i(rp_.texture_location, 0));
     if (layer_.has_value()) {
-        CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, rp_.texture_id_));
-        if (image_resource_name_.mipmap_mode == MipmapMode::NO_MIPMAPS) {
+        CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture_->handle<GLuint>()));
+        if (texture_->mipmap_mode() == MipmapMode::NO_MIPMAPS) {
             CHK(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
@@ -130,8 +116,8 @@ void FillWithTextureLogic::render_wo_update_and_bind()
             CHK(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         }
     } else {
-        CHK(glBindTexture(GL_TEXTURE_2D, rp_.texture_id_));
-        if (image_resource_name_.mipmap_mode == MipmapMode::NO_MIPMAPS) {
+        CHK(glBindTexture(GL_TEXTURE_2D, texture_->handle<GLuint>()));
+        if (texture_->mipmap_mode() == MipmapMode::NO_MIPMAPS) {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
@@ -155,7 +141,6 @@ void FillWithTextureLogic::render_wo_update_and_bind()
 }
 
 void FillWithTextureLogic::render(ClearMode clear_mode) {
-    update_texture_id();
     RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
     switch (clear_mode) {
     case ClearMode::OFF:

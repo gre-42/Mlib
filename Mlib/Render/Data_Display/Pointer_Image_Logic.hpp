@@ -9,8 +9,7 @@ class FixedArray;
 class PointerImageLogic: public FillWithTextureLogic {
 public:
     explicit PointerImageLogic(
-        RenderingResources& rendering_resources,
-        ColormapWithModifiers image_resource_name);
+        const std::shared_ptr<ITextureHandle>& texture);
     ~PointerImageLogic();
 
     void render(

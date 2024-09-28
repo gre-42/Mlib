@@ -9,15 +9,13 @@
 using namespace Mlib;
 
 void Mlib::render_texture_atlas(
-    RenderingResources& rendering_resources,
+    const RenderingResources& rendering_resources,
     const std::vector<AutoAtlasTileDescriptor>& tiles,
     float scale_width,
     float scale_height)
 {
     FillWithTextureLogic logic{
-        rendering_resources,
-        { .filename = VariableAndHash<std::string>{""} },
-        ResourceUpdateCycle::ONCE,
+        nullptr,
         CullFaceMode::CULL,
         ContinuousBlendMode::NONE };
     for (const auto& tile : tiles) {
@@ -26,7 +24,7 @@ void Mlib::render_texture_atlas(
             (float)tile.bottom * scale_height,
             (float)tile.width * scale_width,
             (float)tile.height * scale_height};
-        logic.set_image_resource_name(tile.name);
+        logic.set_image_resource_name(rendering_resources.get_texture(tile.name));
         logic.render(ClearMode::OFF);
     }
 }

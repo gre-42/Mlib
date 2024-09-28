@@ -94,12 +94,11 @@ int main(int argc, char** argv)
                 .text = std::to_string(f)});
         }
         PointerImageLogic pointer_image_logic{
-            rendering_resources,
-            {
+            rendering_resources.get_texture(ColormapWithModifiers{
                 .filename = VariableAndHash<std::string>{ argv[2] },
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
-            }
+            }.compute_hash())
         };
         CircularDataDisplay circular_data_display{
             circular_renderable_text,

@@ -30,8 +30,7 @@ public:
         const DanglingBaseClassRef<Player>& player,
         DanglingPtr<SceneNode> exclusive_node,
         AdvanceTimes& advance_times,
-        const VariableAndHash<std::string>& image_resource_name,
-        ResourceUpdateCycle update_cycle,
+        const std::shared_ptr<ITextureHandle>& texture,
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size,
         HudErrorBehavior hud_error_behavior);

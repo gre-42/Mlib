@@ -1,12 +1,11 @@
 #include "Controls_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
-#include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
@@ -18,9 +17,7 @@ ControlsLogic::ControlsLogic(
     FocusFilter focus_filter)
 : gamepad_texture_{
     std::make_shared<FillWithTextureLogic>(
-        RenderingContextStack::primary_rendering_resources(),
-        std::move(image_resource_name),
-        ResourceUpdateCycle::ONCE),
+        RenderingContextStack::primary_rendering_resources().get_texture_lazy(image_resource_name)),
     std::move(widget),
     delay_load_policy,
     {.focus_mask = Focus::ALWAYS} },

@@ -416,6 +416,6 @@ uint32_t D3d8Raster::format() const {
     return format_ & 0xFF00;
 }
 
-std::unique_ptr<Mlib::ITextureHandle>& D3d8Raster::texture_handle() {
+std::shared_ptr<Mlib::ITextureHandle> D3d8Raster::texture_handle() {
     THROW_OR_ABORT("Non-native GL3 raster has no texture handle");
 }
