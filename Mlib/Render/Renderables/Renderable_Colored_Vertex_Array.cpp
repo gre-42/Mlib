@@ -308,6 +308,9 @@ void RenderableColoredVertexArray::render_cva(
         !cva->material.shading.diffuse.all_equal(0) ||
         !cva->material.shading.specular.all_equal(0) ||
         !cva->material.shading.fresnel.ambient.all_equal(0);
+    bool any_light_has_ambient = false;
+    bool any_light_has_diffuse = false;
+    bool any_light_has_specular = false;
     if (!is_lightmap) {
         if (depends_on_light) {
             filtered_lights.reserve(lights.size());
@@ -369,6 +372,9 @@ void RenderableColoredVertexArray::render_cva(
                             THROW_OR_ABORT("Black shadow has no depth texture");
                         }
                     }
+                    any_light_has_ambient |= any(tl.second->ambient != 0.f);
+                    any_light_has_diffuse |= any(tl.second->diffuse != 0.f);
+                    any_light_has_specular |= any(tl.second->specular != 0.f);
                 }
             }
         }
@@ -469,10 +475,14 @@ void RenderableColoredVertexArray::render_cva(
         };
         fog_emissive = -1.f;
     }
-    if (filtered_lights.size() == 1) {
-        ambient *= (filtered_lights.front().second->ambient != 0.f).casted<float>();
-        diffuse *= (filtered_lights.front().second->diffuse != 0.f).casted<float>();
-        specular *= (filtered_lights.front().second->specular != 0.f).casted<float>();
+    if (!any_light_has_ambient) {
+        ambient = 0.f;
+    }
+    if (!any_light_has_diffuse) {
+        diffuse = 0.f;
+    }
+    if (!any_light_has_specular) {
+        specular = 0.f;
     }
     if ((fresnel.exponent != 0.f) && (std::abs(fresnel.max - fresnel.min) < 1e-12)) {
         THROW_OR_ABORT("Nonzero fresnel exponent requires nonzero fresnel range");
