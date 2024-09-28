@@ -659,6 +659,9 @@ const ColorStyle& SceneNode::color_style(const VariableAndHash<std::string>& nam
 }
 
 void SceneNode::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
+    if (scene_ != nullptr) {
+        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+    }
     std::scoped_lock lock{ mutex_ };
     if ((state_ != SceneNodeState::DETACHED) && !renderables_.empty()) {
         THROW_OR_ABORT(
@@ -670,6 +673,9 @@ void SceneNode::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
 }
 
 void SceneNode::set_animation_state(std::unique_ptr<AnimationState>&& animation_state) {
+    if (scene_ != nullptr) {
+        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+    }
     std::scoped_lock lock{ mutex_ };
     if (!renderables_.empty()) {
         THROW_OR_ABORT("Animation state was set after renderables, this leads to a race condition");
@@ -678,6 +684,9 @@ void SceneNode::set_animation_state(std::unique_ptr<AnimationState>&& animation_
 }
 
 void SceneNode::set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater) {
+    if (scene_ != nullptr) {
+        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+    }
     std::scoped_lock lock{ mutex_ };
     if (!renderables_.empty()) {
         THROW_OR_ABORT("Animation state updater was set after renderables, this leads to a race condition");
@@ -695,6 +704,9 @@ void SceneNode::move(
     SceneNodeResources* scene_node_resources,
     const AnimationState* animation_state)
 {
+    if (scene_ != nullptr) {
+        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+    }
     {
         std::unique_lock lock{ mutex_ };
         if (state_ == SceneNodeState::STATIC) {
@@ -702,6 +714,19 @@ void SceneNode::move(
         }
         if (node_modifier_ != nullptr) {
             node_modifier_->modify_node();
+        }
+        if (animation_state_ != nullptr) {
+            if (animation_state_->aperiodic_animation_frame.active()) {
+                animation_state_->aperiodic_animation_frame.advance_time(dt);
+            } else {
+                animation_state_->periodic_skelletal_animation_frame.advance_time(dt);
+            }
+            if (animation_state_updater_ != nullptr) {
+                auto s = animation_state_updater_->update_animation_state(*animation_state_);
+                if (s != nullptr) {
+                    set_animation_state(std::move(s));
+                }
+            }
         }
         const AnimationState* estate = animation_state_ != nullptr
             ? animation_state_.get()
@@ -748,19 +773,6 @@ void SceneNode::move(
                     periodic_animation_.empty()
                         ? estate->periodic_skelletal_animation_name
                         : periodic_animation_);
-            }
-        }
-        if (animation_state_ != nullptr) {
-            if (animation_state_->aperiodic_animation_frame.active()) {
-                animation_state_->aperiodic_animation_frame.advance_time(dt);
-            } else {
-                animation_state_->periodic_skelletal_animation_frame.advance_time(dt);
-            }
-            if (animation_state_updater_ != nullptr) {
-                auto s = animation_state_updater_->update_animation_state(*animation_state_);
-                if (s != nullptr) {
-                    set_animation_state(std::move(s));
-                }
             }
         }
         TransformationMatrix<float, ScenePos, 3> v2 = uninitialized;
