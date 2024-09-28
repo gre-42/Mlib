@@ -67,7 +67,10 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         ypln,
         physics_engine.advance_times_,
         RenderingContextStack::primary_rendering_resources().get_texture_lazy(
-            ColormapWithModifiers{ .filename = VariableAndHash{ args.arguments.path(KnownArgs::filename) } },
+            ColormapWithModifiers{
+                .filename = VariableAndHash{ args.arguments.path(KnownArgs::filename) },
+                .color_mode = ColorMode::RGBA
+            },
             TextureRole::COLOR_FROM_DB),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::size),

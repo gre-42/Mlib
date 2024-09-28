@@ -22,6 +22,7 @@ public:
     explicit NavigationMeshBuilder(
         const IndexedFaceSet<float, float, size_t>& indexed_face_set,
         const NavigationMeshConfig& cfg);
+    ~NavigationMeshBuilder();
 private:
     StderrContext ctx_;
     InputGeom geom_;

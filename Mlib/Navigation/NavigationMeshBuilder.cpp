@@ -34,3 +34,5 @@ NavigationMeshBuilder::NavigationMeshBuilder(
         THROW_OR_ABORT("Build failed");
     }
 }
+
+NavigationMeshBuilder::~NavigationMeshBuilder() = default;
