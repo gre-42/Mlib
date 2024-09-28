@@ -10,7 +10,11 @@ LazyTexture::LazyTexture(
 	: rendering_resources_{ rendering_resources }
 	, colormap_{ colormap }
 	, role_{ role }
-{}
+{
+	if (!colormap.hash.has_value()) {
+		THROW_OR_ABORT2("LazyTexture: Colormap hash not computed");
+	}
+}
 
 LazyTexture::~LazyTexture() = default;
 

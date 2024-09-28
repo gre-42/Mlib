@@ -490,7 +490,7 @@ void SceneNode::remove_child(const std::string& name) {
         }
         scene_->unregister_node(name);
     }
-    if (scene_ == nullptr) {
+    if (scene_ != nullptr) {
         scene_->add_to_trash_can(std::move(it->second.scene_node));
     }
     children_.erase(it);

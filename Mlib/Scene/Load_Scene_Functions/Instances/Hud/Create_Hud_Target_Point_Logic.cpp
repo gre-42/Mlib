@@ -70,7 +70,7 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
             ColormapWithModifiers{
                 .filename = VariableAndHash{ args.arguments.path(KnownArgs::filename) },
                 .color_mode = ColorMode::RGBA
-            },
+            }.compute_hash(),
             TextureRole::COLOR_FROM_DB),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::size),
