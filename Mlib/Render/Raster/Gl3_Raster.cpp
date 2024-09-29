@@ -506,11 +506,7 @@ Gl3Raster::Gl3Raster(
         : AllocationMode::NO_ALLOCATE);
 }
 
-Gl3Raster::~Gl3Raster() {
-    if (native_texture_id_ != nullptr) {
-        ABORT(glDeleteTextures(1, &native_texture_id_->handle<GLuint>()));
-    }
-}
+Gl3Raster::~Gl3Raster() = default;
 
 uint32_t Gl3Raster::type() const {
     return format_ & 0x7;
