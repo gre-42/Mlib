@@ -620,12 +620,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         bool pred0 = (!specular.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
         bool pred1 = (fresnel.exponent != 0.f);
         bool pred2 = (fog_distances != default_step_distances);
-        if (pred0 || pred1 || pred2 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
+        bool pred3 = (reflection_strength != 0.f);
+        if (pred0 || pred1 || pred2 || pred3 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
             sstr << "in vec3 FragPos;" << std::endl;
             if ((pred0 || pred1 || pred2 || reorient_uv0 || reorient_normals) && orthographic) {
                 sstr << "uniform vec3 viewDir;" << std::endl;
             }
-            if (((pred0 || pred1) && !orthographic) || has_interiormap || pred2) {
+            if (((pred0 || pred1 || pred3) && !orthographic) || has_interiormap || pred2) {
                 sstr << "uniform highp vec3 viewPos;" << std::endl;
             }
         }
