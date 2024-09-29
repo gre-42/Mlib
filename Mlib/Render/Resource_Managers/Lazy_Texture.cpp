@@ -12,7 +12,7 @@ LazyTexture::LazyTexture(
 	, role_{ role }
 {
 	if (!colormap.hash.has_value()) {
-		THROW_OR_ABORT2("LazyTexture: Colormap hash not computed");
+		THROW_OR_ABORT("LazyTexture: Colormap hash not computed");
 	}
 }
 

@@ -938,7 +938,7 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
         });
     return std::make_shared<Texture>(
         texture,
-        nchannels2format(nchannels),
+        nchannels2format(integral_cast<size_t>(nchannels)),
         mip_level_count != 0);
 }
 
