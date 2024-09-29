@@ -29,9 +29,8 @@ inline bool any(ColorMode a) {
 }
 
 size_t max(ColorMode mode);
-
+ColorMode color_mode_from_channels(size_t nchannels);
 ColorMode color_mode_from_string(const std::string& str);
-
 std::string color_mode_to_string(const ColorMode& mode);
 
 }

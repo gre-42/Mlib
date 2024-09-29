@@ -912,6 +912,36 @@ static GLenum nchannels2format(size_t nchannels) {
     };
 }
 
+std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float aniso) const {
+    FillWithTextureLogic logic{
+        handle,
+        CullFaceMode::CULL,
+        ContinuousBlendMode::NONE,
+        vertically_flipped_quad_vertices };
+    GLuint texture = render_to_texture_2d(
+        width,
+        height,
+        // https://stackoverflow.com/questions/9572414/how-many-mipmaps-does-a-texture-have-in-opengl
+        (mip_level_count == 0)
+        ? integral_cast<GLsizei>(log2(std::max(width, height)))
+        : mip_level_count,
+        aniso,
+        nchannels2sized_internal_format(integral_cast<size_t>(nchannels)),
+        [&logic](GLsizei width, GLsizei height)
+        {
+            ViewportGuard vg{
+                0.f,
+                0.f,
+                integral_to_float<float>(width),
+                integral_to_float<float>(height)};
+            logic.render(ClearMode::COLOR);
+        });
+    return std::make_shared<Texture>(
+        texture,
+        nchannels2format(nchannels),
+        mip_level_count != 0);
+}
+
 std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     const ColormapWithModifiers& color,
     TextureRole role,
@@ -942,13 +972,16 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     WARN(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
     aniso = std::min({ aniso, (float)color.anisotropic_filtering_level, (float)max_anisotropic_filtering_level_ });
 
-    GLuint texture;
+    auto make_shared_texture = [&](GLuint handle) {
+        return std::make_shared<Texture>(handle, color.color_mode, color.mipmap_mode);
+        };
+    std::shared_ptr<ITextureHandle> texture;
 
     if (auto aptr = get_or_extract<EXTRACT_PROCESSED>(auto_atlas_tile_descriptors_, color); aptr != nullptr) {
         if (caller_type != CallerType::PRELOAD) {
             THROW_OR_ABORT("Texture source is not preload for texture \"" + *color.filename + '"');
         }
-        texture = render_to_texture_2d_array(
+        texture = make_shared_texture(render_to_texture_2d_array(
             aptr->width,
             aptr->height,
             integral_cast<GLsizei>(aptr->tiles.size()),
@@ -962,56 +995,21 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
                     aptr->tiles.at(integral_cast<size_t>(layer)),
                     integral_to_float<float>(width) / integral_to_float<float>(aptr->width),
                     integral_to_float<float>(height) / integral_to_float<float>(aptr->height));
-            });
+            }));
     } else {
         if (preloaded_texture_dds_data_.contains(color)) {
-            GLuint original_texture_handle;
-            CHK(glGenTextures(1, &original_texture_handle));
-            DestructionGuard dg0{ [original_texture_handle]() { ABORT(glDeleteTextures(1, &original_texture_handle)); } };
-            auto sinfo = [&](){
-                BindTextureGuard btg{ GL_TEXTURE_2D, original_texture_handle };
-                return initialize_dds_texture(color);
-            }();
-            auto original_texture = std::make_shared<Texture>(
-                original_texture_handle,
-                (ColorMode)sinfo.nchannels,
-                MipmapMode::WITH_MIPMAPS);
-
-            FillWithTextureLogic logic{
-                original_texture,
-                CullFaceMode::CULL,
-                ContinuousBlendMode::NONE,
-                vertically_flipped_quad_vertices };
-            texture = render_to_texture_2d(
-                sinfo.width,
-                sinfo.height,
-                // https://stackoverflow.com/questions/9572414/how-many-mipmaps-does-a-texture-have-in-opengl
-                (sinfo.mip_level_count == 0)
-                    ? integral_cast<GLsizei>(log2(std::max(sinfo.width, sinfo.height)))
-                    : sinfo.mip_level_count,
-                aniso,
-                nchannels2sized_internal_format(integral_cast<size_t>(sinfo.nchannels)),
-                [&logic](GLsizei width, GLsizei height)
-                {
-                    ViewportGuard vg{
-                        0.f,
-                        0.f,
-                        integral_to_float<float>(width),
-                        integral_to_float<float>(height)};
-                    logic.render(ClearMode::COLOR);
-                });
+            auto original_texture = initialize_dds_texture(color);
+            texture = original_texture.flipped_vertically(aniso);
         } else if (cubemap_descriptors_.contains(color.filename)) {
-            texture = get_cubemap_unsafe(color.filename);
+            texture = make_shared_texture(get_cubemap_unsafe(color.filename));
         } else {
             auto t = initialize_non_dds_texture(color, role, aniso);
+            texture = make_shared_texture(t.first);
             texture_types_.add(color, t.second);
-            texture = t.first;
         }
     }
 
-    return textures_.add(
-        color,
-        std::make_shared<Texture>(texture, color.color_mode, color.mipmap_mode)).handle;
+    return textures_.add(color, std::move(texture)).handle;
 }
 
 GLuint RenderingResources::get_cubemap_unsafe(const VariableAndHash<std::string>& name) const {
@@ -1034,15 +1032,16 @@ GLuint RenderingResources::get_cubemap_unsafe(const VariableAndHash<std::string>
 
         auto info = get_texture_data(desc, TextureRole::COLOR, FlipMode::NONE);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
-        CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + integral_cast<GLuint>(i),
-                            0,
-                            GL_RGB,
-                            info.width,
-                            info.height,
-                            0,
-                            GL_RGB,
-                            GL_UNSIGNED_BYTE,
-                            info.data.get()));
+        CHK(glTexImage2D(
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + integral_cast<GLuint>(i),
+            0,
+            GL_RGB,
+            info.width,
+            info.height,
+            0,
+            GL_RGB,
+            GL_UNSIGNED_BYTE,
+            info.data.get()));
     }
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
@@ -1068,10 +1067,9 @@ void RenderingResources::add_texture(
 
 void RenderingResources::set_texture(
     const ColormapWithModifiers& name,
-    std::shared_ptr<ITextureHandle>&& id,
+    std::shared_ptr<ITextureHandle> id,
     const TextureSize* texture_size)
 {
-    verbose_abort("RenderingResources::set_texture to be deleted");
     LOG_FUNCTION("RenderingResources::set_texture " + *name.filename);
     std::scoped_lock lock{ mutex_ };
     if (auto v = textures_.try_get(name); v != nullptr) {
@@ -1849,6 +1847,13 @@ TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const ColormapW
         image.load(sstr, false /* flipImage */);
     }
 
+    auto handle = std::make_shared<Texture>(
+        generate_texture,
+        color_mode_from_channels(image.get_components()),
+        MipmapMode::WITH_MIPMAPS);
+
+    BindTextureGuard btg{ GL_TEXTURE_2D, handle->handle<GLuint>() };
+
     if (image.get_num_mipmaps() == 0) {
         // if (descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
         //     CHK(glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE));
@@ -1933,6 +1938,7 @@ TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const ColormapW
         }
     }
     return {
+        .handle = handle,
         .width = integral_cast<GLsizei>(image.get_width()),
         .height = integral_cast<GLsizei>(image.get_height()),
         .nchannels = integral_cast<GLsizei>(image.get_components()),

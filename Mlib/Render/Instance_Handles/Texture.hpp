@@ -11,17 +11,21 @@ class Texture: public ITextureHandle {
 	Texture(const Texture&) = delete;
 	Texture& operator = (const Texture&) = delete;
 public:
-	explicit Texture(
+	Texture(
 		GenerateTexture,
 		ColorMode color_mode,
 		MipmapMode mipmap_mode);
-	explicit Texture(
+	Texture(
 		GLuint handle,
 		ColorMode color_mode,
 		MipmapMode mipmap_mode);
-	explicit Texture(
+	Texture(
 		GenerateTexture,
-		GLenum internal_format,
+		GLenum format,
+		bool with_mipmaps);
+	Texture(
+		GLuint handle,
+		GLenum format,
 		bool with_mipmaps);
 	Texture(Texture&& other) noexcept;
 	~Texture();

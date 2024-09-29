@@ -17,6 +17,18 @@ size_t Mlib::max(ColorMode mode) {
     THROW_OR_ABORT("Unknown color mode: " + std::to_string((int)mode));
 }
 
+ColorMode Mlib::color_mode_from_channels(size_t nchannels) {
+    switch (nchannels) {
+    case 4:
+        return ColorMode::RGBA;
+    case 3:
+        return ColorMode::RGB;
+    case 1:
+        return ColorMode::GRAYSCALE;
+    }
+    THROW_OR_ABORT("Unsupported number of channels: " + std::to_string(nchannels));
+}
+
 ColorMode Mlib::color_mode_from_string(const std::string& str) {
     const std::map<std::string, ColorMode> m{
         {"grayscale", ColorMode::GRAYSCALE},

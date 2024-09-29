@@ -61,6 +61,16 @@ Texture::Texture(
 		with_mipmaps ? MipmapMode::WITH_MIPMAPS : MipmapMode::NO_MIPMAPS }
 {}
 
+Texture::Texture(
+	GLuint handle,
+	GLenum format,
+	bool with_mipmaps)
+	: Texture{
+		handle,
+		format_to_color_mode(format),
+		with_mipmaps ? MipmapMode::WITH_MIPMAPS : MipmapMode::NO_MIPMAPS }
+{}
+
 Texture::Texture(Texture&& other) noexcept
 	: handle_{ other.handle_ }
 	, color_mode_{ other.color_mode_ }

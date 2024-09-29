@@ -42,10 +42,12 @@ struct LoadedFont;
 class ITextureHandle;
 
 struct TextureSizeAndMipmaps {
+    std::shared_ptr<ITextureHandle> handle;
     GLsizei width;
     GLsizei height;
     GLsizei nchannels;
     GLsizei mip_level_count;
+    std::shared_ptr<ITextureHandle> flipped_vertically(float aniso) const;
 };
 
 struct TextureHandleAndOwner {
@@ -162,7 +164,7 @@ public:
         const TextureSize* texture_size = nullptr);
     void set_texture(
         const ColormapWithModifiers& name,
-        std::shared_ptr<ITextureHandle>&& id,
+        std::shared_ptr<ITextureHandle> id,
         const TextureSize* texture_size = nullptr);
     void set_textures_lazy(std::function<void()> func);
     void add_texture_descriptor(const VariableAndHash<std::string>& name, const TextureDescriptor& descriptor);
