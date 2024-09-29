@@ -422,14 +422,14 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
-    FixedArray<float, 3> emissive = uninitialized;
-    FixedArray<float, 3> ambient = uninitialized;
-    FixedArray<float, 3> diffuse = uninitialized;
-    FixedArray<float, 3> specular = uninitialized;
-    float specular_exponent;
-    FixedArray<float, 3> fresnel_emissive = uninitialized;
+    FixedArray<float, 3> emissive = fixed_zeros<float, 3>();
+    FixedArray<float, 3> ambient = fixed_zeros<float, 3>();
+    FixedArray<float, 3> diffuse = fixed_zeros<float, 3>();
+    FixedArray<float, 3> specular = fixed_zeros<float, 3>();
+    float specular_exponent = 0.f;
+    FixedArray<float, 3> fresnel_emissive = fixed_zeros<float, 3>();
     FresnelReflectance fresnel;
-    FixedArray<float, 3> fog_emissive = uninitialized;
+    FixedArray<float, 3> fog_emissive = fixed_zeros<float, 3>();
     if (!is_lightmap) {
         emissive = color_style && !color_style->emissive.all_equal(-1.f)
             ? color_style->emissive
@@ -437,10 +437,10 @@ void RenderableColoredVertexArray::render_cva(
     } else {
         emissive = 1.f;
     }
-    bool any_light_has_ambient = false;
-    bool any_light_has_diffuse = false;
-    bool any_light_has_specular = false;
     if (!filtered_lights.empty() && !is_lightmap) {
+        bool any_light_has_ambient = false;
+        bool any_light_has_diffuse = false;
+        bool any_light_has_specular = false;
         FixedArray<float, 3> sum_light_fresnel_ambient = fixed_zeros<float, 3>();
         FixedArray<float, 3> sum_light_fog_ambient = fixed_zeros<float, 3>();
         for (const auto& [_, light] : filtered_lights) {
@@ -452,35 +452,24 @@ void RenderableColoredVertexArray::render_cva(
                 any_light_has_specular |= any(light->specular != 0.f);
             }
         }
-        ambient = color_style && !color_style->ambient.all_equal(-1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
-        diffuse = color_style && !color_style->diffuse.all_equal(-1.f) ? color_style->diffuse * cva->material.shading.diffuse : cva->material.shading.diffuse;
-        specular = color_style && !color_style->specular.all_equal(-1.f) ? color_style->specular * cva->material.shading.specular : cva->material.shading.specular;
-        specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
+        if (any_light_has_ambient) {
+            ambient = color_style && !color_style->ambient.all_equal(-1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
+        }
+        if (any_light_has_diffuse) {
+            diffuse = color_style && !color_style->diffuse.all_equal(-1.f) ? color_style->diffuse * cva->material.shading.diffuse : cva->material.shading.diffuse;
+        }
+        if (any_light_has_specular) {
+            specular = color_style && !color_style->specular.all_equal(-1.f) ? color_style->specular * cva->material.shading.specular : cva->material.shading.specular;
+            specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
+        }
         FixedArray<float, 3> fresnel_ambient = color_style && !color_style->fresnel_ambient.all_equal(-1.f)
             ? color_style->fresnel_ambient * cva->material.shading.fresnel.ambient
             : cva->material.shading.fresnel.ambient;
         fresnel_emissive = sum_light_fresnel_ambient * fresnel_ambient;
-        fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
+        if (any_light_has_specular || any(fresnel_emissive != 0.f)) {
+            fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
+        }
         fog_emissive = sum_light_fog_ambient * cva->material.shading.fog_ambient;
-    }
-    if (!any_light_has_ambient) {
-        ambient = 0.f;
-    }
-    if (!any_light_has_diffuse) {
-        diffuse = 0.f;
-    }
-    if (!any_light_has_specular) {
-        specular = 0.f;
-        specular_exponent = 0.f;
-        fresnel_emissive = 0.f;
-        fresnel = {
-            .min = 0.f,
-            .max = 0.f,
-            .exponent = 0.f
-        };
-    }
-    if (is_lightmap) {
-        fog_emissive = -1.f;
     }
     if ((fresnel.exponent != 0.f) && (std::abs(fresnel.max - fresnel.min) < 1e-12)) {
         THROW_OR_ABORT("Nonzero fresnel exponent requires nonzero fresnel range");
