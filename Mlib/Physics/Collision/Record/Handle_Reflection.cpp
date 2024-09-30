@@ -389,13 +389,17 @@ void Mlib::handle_reflection(
         } else {
             auto dv = c.o0.velocity_at_position(intersection_point) - c.o1.velocity_at_position(intersection_point);
             float vn = dot0d(normal.casted<float>(), dv);
-            if (vn > c.history.cfg.min_skip_velocity) {
-                float ds = vn * c.history.cfg.dt_substeps();
-                if ((overlap < ds * c.history.cfg.slide_factor) ||
-                    (overlap > ds * c.history.cfg.ignore_factor))
-                {
-                    return;
-                }
+            // if (vn > c.history.cfg.min_skip_velocity) {
+            //     float ds = vn * c.history.cfg.dt_substeps();
+            //     if (overlap < ds * c.history.cfg.slide_factor)
+            //        (overlap > ds * c.history.cfg.ignore_factor))
+            //     {
+            //         return;
+            //     }
+            // }
+            float ds = vn * c.history.cfg.dt_substeps();
+            if (overlap < ds * c.history.cfg.slide_factor) {
+                return;
             }
         }
     }
