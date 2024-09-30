@@ -26,6 +26,7 @@
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
+#include <Mlib/Physics/Interfaces/ISurface_Normal.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
@@ -1103,6 +1104,24 @@ void RigidBodyVehicle::set_actor_task(ActorTask actor_task) {
 
 void RigidBodyVehicle::set_waypoint_ofs(float dy) {
     waypoint_ofs_ = dy;
+}
+
+void RigidBodyVehicle::set_surface_normal(std::unique_ptr<ISurfaceNormal>&& surface_normal) {
+    if (surface_normal_ != nullptr) {
+        THROW_OR_ABORT("Surface normal already set");
+    }
+    surface_normal_ = std::move(surface_normal);
+}
+
+bool RigidBodyVehicle::has_surface_normal() const {
+    return surface_normal_ != nullptr;
+}
+
+const ISurfaceNormal& RigidBodyVehicle::get_surface_normal() const {
+    if (surface_normal_ == nullptr) {
+        THROW_OR_ABORT("Rigid body has no surface normal");
+    }
+    return *surface_normal_;
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {

@@ -37,10 +37,27 @@ public:
     }
 };
 
+// template <class T>
+//     requires ( std::is_constructible_v<T, Uninitialized> && std::is_convertible_v<T, Uninitialized> )
+// static DefaultUnitialized<T> default_uninitialized_func();
+// 
+// template <class T>
+//     requires ( !std::is_constructible_v<T, Uninitialized> || !std::is_convertible_v<T, Uninitialized> )
+// static T default_uninitialized_func();
+// 
+// template <class T>
+// using default_uninitialized_t = decltype(default_uninitialized_func<T>());
+
 template <class T>
 using default_uninitialized_t = std::conditional<
-    std::is_constructible_v<T, Uninitialized>,
-    DefaultUnitialized<T>,
-    T>::type;
+    std::is_default_constructible_v<T>,
+    T,
+    DefaultUnitialized<T>>::type;
+
+// template <class T>
+// using default_uninitialized_t = std::conditional<
+//     std::is_constructible_v<T, Uninitialized>,
+//     DefaultUnitialized<T>,
+//     T>::type;
 
 }

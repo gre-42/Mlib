@@ -62,6 +62,14 @@ public:
     explicit FixedArray(const std::array<TData, FixedArray<TData, tshape0, tshape...>::nelements()>& v) {
         std::copy(v.begin(), v.end(), flat_begin());
     }
+    explicit FixedArray(const FixedArray<FixedArray<TData, tshape0>, tshape...>& a) {
+        static_assert(sizeof(a) == sizeof(*this));
+        *reinterpret_cast<FixedArray<FixedArray<TData, tshape0>, tshape...>*>(this) = a;
+    }
+    explicit FixedArray(const DefaultUnitialized<FixedArray<DefaultUnitialized<FixedArray<TData, tshape0>>, tshape...>>& a) {
+        static_assert(sizeof(a) == sizeof(*this));
+        *reinterpret_cast<DefaultUnitialized<FixedArray<DefaultUnitialized<FixedArray<TData, tshape0>>, tshape...>>*>(this) = a;
+    }
     static FixedArray<TData, tshape0, tshape...> from_buffer(const TData* data, size_t nelements)
     {
         FixedArray<TData, tshape0, tshape...> result = uninitialized;

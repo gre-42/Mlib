@@ -22,8 +22,6 @@ public:
     static Quaternion identity() {
         return Quaternion{TData{1}, FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}}};
     }
-    Quaternion()
-    {}
     Quaternion(Uninitialized)
         : v_{ uninitialized }
     {}
