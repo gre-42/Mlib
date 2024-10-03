@@ -23,6 +23,7 @@
 #include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
+#include <Mlib/Physics/Interfaces/ICollision_Normal_Modifier.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
@@ -1122,6 +1123,24 @@ const ISurfaceNormal& RigidBodyVehicle::get_surface_normal() const {
         THROW_OR_ABORT("Rigid body has no surface normal");
     }
     return *surface_normal_;
+}
+
+void RigidBodyVehicle::set_collision_normal_modifier(std::unique_ptr<ICollisionNormalModifier>&& collision_normal_modifier) {
+    if (collision_normal_modifier_ != nullptr) {
+        THROW_OR_ABORT("Collision normal modifier already set");
+    }
+    collision_normal_modifier_ = std::move(collision_normal_modifier);
+}
+
+bool RigidBodyVehicle::has_collision_normal_modifier() const {
+    return collision_normal_modifier_ != nullptr;
+}
+
+const ICollisionNormalModifier& RigidBodyVehicle::get_collision_normal_modifier() const {
+    if (collision_normal_modifier_ == nullptr) {
+        THROW_OR_ABORT("Rigid body has no collision normal modifier");
+    }
+    return *collision_normal_modifier_;
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {

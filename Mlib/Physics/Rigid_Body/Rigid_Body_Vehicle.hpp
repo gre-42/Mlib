@@ -58,6 +58,7 @@ struct StaticWorld;
 template <class T>
 class DanglingRef;
 class ISurfaceNormal;
+class ICollisionNormalModifier;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -260,6 +261,10 @@ public:
     bool has_surface_normal() const;
     const ISurfaceNormal& get_surface_normal() const;
 
+    void set_collision_normal_modifier(std::unique_ptr<ICollisionNormalModifier>&& collision_normal_modifier);
+    bool has_collision_normal_modifier() const;
+    const ICollisionNormalModifier& get_collision_normal_modifier() const;
+
     DestructionObservers<const RigidBodyVehicle&> destruction_observers;
     DestructionFunctions on_destroy;
 
@@ -310,6 +315,7 @@ public:
     float waypoint_ofs_;
     ObjectPool& object_pool_;
     std::unique_ptr<ISurfaceNormal> surface_normal_;
+    std::unique_ptr<ICollisionNormalModifier> collision_normal_modifier_;
 private:
     void advance_time_skate(
         const PhysicsEngineConfig& cfg,

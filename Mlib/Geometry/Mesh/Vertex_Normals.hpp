@@ -9,24 +9,24 @@ template <class TPos, class TNormal>
 class VertexNormals {
 public:
     template <class TIterator>
-    inline void add_triangles(const TIterator& begin, const TIterator& end) {
+    void add_triangles(const TIterator& begin, const TIterator& end) {
         for (auto it = begin; it != end; ++it) {
             add_triangle(*it);
         }
     }
-    inline void add_triangle(const FixedArray<ColoredVertex<TPos>, 3>& triangle) {
+    void add_triangle(const FixedArray<ColoredVertex<TPos>, 3>& triangle) {
         for (auto& v : triangle.flat_iterable()) {
             add_vertex_face_normal(v.position, v.normal);
         }
     }
-    inline void add_vertex_face_normal(
+    void add_vertex_face_normal(
         const FixedArray<TPos, 3>& position,
         const FixedArray<TNormal, 3>& normal)
     {
         auto it = vertices_.try_emplace(OrderableFixedArray{position}, TNormal(0)).first;
         it->second += normal;
     }
-    inline void compute_vertex_normals() {
+    void compute_vertex_normals() {
         for (auto& [_, n] : vertices_) {
             n /= std::sqrt(sum(squared(n)));
         }
@@ -36,6 +36,13 @@ public:
     }
     inline const std::map<OrderableFixedArray<TPos, 3>, FixedArray<TNormal, 3>>& vertices() {
         return vertices_;
+    }
+    template <size_t tnvertices>
+    FixedArray<FixedArray<TNormal, 3>, tnvertices> get_normals(
+        const FixedArray<FixedArray<TPos, 3>, tnvertices>& position)
+    {
+        return position-> template applied<FixedArray<TNormal, 3>>(
+            [this](const auto& p) { return get_normal(p); });
     }
 private:
     std::map<OrderableFixedArray<TPos, 3>, FixedArray<TNormal, 3>> vertices_;

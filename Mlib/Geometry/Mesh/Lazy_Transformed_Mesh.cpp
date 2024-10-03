@@ -136,10 +136,10 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
         if (!ridges_calculated_) {
             CollisionRidges ridges;
             for (const auto& q3 : transformed_quads_) {
-                ridges.insert(q3.corners, q3.polygon.plane().normal, max_min_cos_ridge_, q3.physics_material);
+                ridges.insert(q3.corners, q3.polygon.plane().normal, q3.vertex_normals, max_min_cos_ridge_, q3.physics_material);
             }
             for (const auto& t3 : transformed_triangles_) {
-                ridges.insert(t3.corners, t3.polygon.plane().normal, max_min_cos_ridge_, t3.physics_material);
+                ridges.insert(t3.corners, t3.polygon.plane().normal, t3.vertex_normals, max_min_cos_ridge_, t3.physics_material);
             }
             transformed_ridges_.reserve(ridges.size());
             for (const auto& e : ridges) {

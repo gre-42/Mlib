@@ -117,6 +117,7 @@ void RigidBodies::add_rigid_body(
                                 collision_ridges.insert(
                                     t.corners,
                                     t.polygon.plane().normal,
+                                    t.vertex_normals,
                                     cfg_.max_min_cos_ridge,
                                     t.physics_material);
                             }
@@ -168,6 +169,7 @@ void RigidBodies::add_rigid_body(
                                 collision_ridges_.insert(
                                     t.base.corners,
                                     t.base.polygon.plane().normal,
+                                    t.base.vertex_normals,
                                     cfg_.max_min_cos_ridge,
                                     t.base.physics_material,
                                     rb);

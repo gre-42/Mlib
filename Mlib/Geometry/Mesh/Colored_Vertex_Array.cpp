@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Line_3D.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Polygon_3D.hpp>
 #include <Mlib/Geometry/Quad_3D.hpp>
 #include <Mlib/Geometry/Triangle_3D.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -220,36 +221,14 @@ template <class TPos>
 void ColoredVertexArray<TPos>::quads_sphere(
     std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons) const
 {
-    if (collision_polygons.size() + quads.size() > collision_polygons.capacity()) {
-        THROW_OR_ABORT("Transformed vector has insufficient capacity");
-    }
-    auto rng = welzl_rng();
-    for (const auto& q : quads) {
-        Quad3D quad{ q };
-        collision_polygons.push_back(CollisionPolygonSphere<TPos, 4>{
-            .bounding_sphere = quad.bounding_sphere(rng),
-            .polygon = quad.polygon(),
-            .physics_material = morphology.physics_material,
-            .corners = quad.vertices()});
-    }
+    polygon_sphere(collision_polygons);
 }
 
 template <class TPos>
 void ColoredVertexArray<TPos>::triangles_sphere(
     std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons) const
 {
-    if (collision_polygons.size() + triangles.size() > collision_polygons.capacity()) {
-        THROW_OR_ABORT("Transformed vector has insufficient capacity");
-    }
-    auto rng = welzl_rng();
-    for (const auto& t : triangles) {
-        Triangle3D tri{ t };
-        collision_polygons.push_back(CollisionPolygonSphere<TPos, 3>{
-            .bounding_sphere = tri.bounding_sphere(rng),
-            .polygon = tri.polygon(),
-            .physics_material = morphology.physics_material,
-            .corners = tri.vertices()});
-    }
+    polygon_sphere(collision_polygons);
 }
 
 template <class TPos>
@@ -257,21 +236,7 @@ template <class TPosResult, class TPosTransform>
 std::vector<CollisionPolygonAabb<TPosResult, 4>> ColoredVertexArray<TPos>::transformed_quads_bbox(
     const TransformationMatrix<float, TPosTransform, 3>& tm) const
 {
-    std::vector<CollisionPolygonAabb<TPosResult, 4>> res;
-    res.reserve(quads.size());
-    auto rng = welzl_rng();
-    for (const auto& q : quads) {
-        Quad3D<TPosResult> quad{ q, tm };
-        res.push_back(CollisionPolygonAabb<TPosResult, 4>{
-            .base = CollisionPolygonSphere<TPosResult, 4>{
-                .bounding_sphere = quad.bounding_sphere(rng),
-                .polygon = quad.polygon(),
-                .physics_material = morphology.physics_material,
-                .corners = quad.vertices()
-            },
-            .aabb = quad.aabb()});
-    }
-    return res;
+    return transformed_polygon_bbox<4, TPosResult, TPosTransform>(tm);
 }
 
 template <class TPos>
@@ -279,19 +244,74 @@ template <class TPosResult, class TPosTransform>
 std::vector<CollisionPolygonAabb<TPosResult, 3>> ColoredVertexArray<TPos>::transformed_triangles_bbox(
     const TransformationMatrix<float, TPosTransform, 3>& tm) const
 {
-    std::vector<CollisionPolygonAabb<TPosResult, 3>> res;
-    res.reserve(triangles.size());
+    return transformed_polygon_bbox<3, TPosResult, TPosTransform>(tm);
+}
+
+template <class TPos>
+template <size_t tnvertices>
+void ColoredVertexArray<TPos>::polygon_sphere(
+    std::vector<CollisionPolygonSphere<TPos, tnvertices>>& collision_polygons) const
+{
+    const auto& prims = primitives<(PrimitiveDimensions)tnvertices>();
+    size_t len0 = collision_polygons.size();
+    if (len0 + prims.size() > collision_polygons.capacity()) {
+        THROW_OR_ABORT("Transformed vector has insufficient capacity");
+    }
     auto rng = welzl_rng();
-    for (const auto& t : triangles) {
-        Triangle3D<TPosResult> tri{ t, tm };
-        res.push_back(CollisionPolygonAabb<TPosResult, 3>{
-            .base = CollisionPolygonSphere<TPosResult, 3>{
-                .bounding_sphere = tri.bounding_sphere(rng),
-                .polygon = tri.polygon(),
+    for (const auto& q : prims) {
+        Polygon3D<TPos, tnvertices> quad{ q };
+        collision_polygons.push_back(CollisionPolygonSphere<TPos, tnvertices>{
+            .bounding_sphere = quad.bounding_sphere(rng),
+            .polygon = quad.polygon(),
+            .physics_material = morphology.physics_material,
+            .corners = quad.vertices(),
+            .vertex_normals = fixed_full<FixedArray<float, 3>, tnvertices>(fixed_nans<float, 3>())
+        });
+    }
+    VertexNormals<TPos, float> vertex_normals;
+    for (size_t i = len0; i < collision_polygons.size(); ++i) {
+        const auto& quad = collision_polygons[i];
+        for (const auto& v : quad.corners.flat_iterable()) {
+            vertex_normals.add_vertex_face_normal(v, quad.polygon.plane().normal.casted<float>());
+        }
+    }
+    vertex_normals.compute_vertex_normals();
+    for (size_t i = len0; i < collision_polygons.size(); ++i) {
+        auto& quad = collision_polygons[i];
+        quad.vertex_normals = vertex_normals.get_normals(quad.corners);
+    }
+}
+
+template <class TPos>
+template <size_t tnvertices, class TPosResult, class TPosTransform>
+std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> ColoredVertexArray<TPos>::transformed_polygon_bbox(
+    const TransformationMatrix<float, TPosTransform, 3>& tm) const
+{
+    const auto& prims = primitives<(PrimitiveDimensions)tnvertices>();
+    std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> res;
+    res.reserve(prims.size());
+    auto rng = welzl_rng();
+    for (const auto& q : prims) {
+        Polygon3D<TPosResult, tnvertices> quad{ q, tm };
+        res.push_back(CollisionPolygonAabb<TPosResult, tnvertices>{
+            .base = CollisionPolygonSphere<TPosResult, tnvertices>{
+                .bounding_sphere = quad.bounding_sphere(rng),
+                .polygon = quad.polygon(),
                 .physics_material = morphology.physics_material,
-                .corners = tri.vertices()
+                .corners = quad.vertices(),
+                .vertex_normals = fixed_full<FixedArray<float, 3>, tnvertices>(fixed_nans<float, 3>())
             },
-            .aabb = tri.aabb()});
+            .aabb = quad.aabb()});
+    }
+    VertexNormals<TPosResult, float> vertex_normals;
+    for (const auto& quad : res) {
+        for (const auto& v : quad.base.corners.flat_iterable()) {
+            vertex_normals.add_vertex_face_normal(v, quad.base.polygon.plane().normal.casted<float>());
+        }
+    }
+    vertex_normals.compute_vertex_normals();
+    for (auto& quad : res) {
+        quad.base.vertex_normals = vertex_normals.get_normals(quad.base.corners);
     }
     return res;
 }
@@ -452,9 +472,6 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
     if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
         THROW_OR_ABORT("Destination mesh is not tagged as concave");
     }
-    VertexNormals<TPos, float> vertex_normals;
-    vertex_normals.add_triangles(triangles.begin(), triangles.end());
-    vertex_normals.compute_vertex_normals();
 
     std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> result;
     result.reserve(triangles.size() + 1);

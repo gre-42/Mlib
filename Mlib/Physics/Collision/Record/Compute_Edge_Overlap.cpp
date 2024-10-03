@@ -10,6 +10,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
+#include <Mlib/Physics/Interfaces/ICollision_Normal_Modifier.hpp>
 #include <Mlib/Physics/Interfaces/ISurface_Normal.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -108,7 +109,14 @@ bool Mlib::compute_edge_overlap(
             return false;
         }
         if (c.o1.has_surface_normal()) {
-            normal = -c.o1.get_surface_normal().get_surface_normal(c.o1.rbp_.abs_transformation(), intersection_point).casted<ScenePos>();
+            normal = -c.o1.get_surface_normal().get_surface_normal(*c.r1, intersection_point).casted<ScenePos>();
+        }
+        if (c.o1.has_collision_normal_modifier()) {
+            auto o = (float)overlap;
+            auto n = -normal.casted<float>();
+            c.o1.get_collision_normal_modifier().modify_collision_normal(intersection_point, n, o);
+            overlap = o;
+            normal = -n.casted<double>();
         }
     } else if (
         any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
@@ -126,11 +134,25 @@ bool Mlib::compute_edge_overlap(
         if (overlap == INFINITY) {
             return false;
         }
+        if (overlap < -1e-4) {
+            verbose_abort("Unexpected overlap");
+        }
         if (dot0d(intersection_point - c.o0.rbp_.abs_position(), normal) < 0.) {
             return false;
         }
         if (c.o0.has_surface_normal()) {
-            normal = c.o0.get_surface_normal().get_surface_normal(c.o0.rbp_.abs_transformation(), intersection_point).casted<ScenePos>();
+            if (c.t0 != nullptr) {
+                normal = c.o0.get_surface_normal().get_surface_normal(*c.t0, intersection_point).casted<ScenePos>();
+            } else {
+                normal = c.o0.get_surface_normal().get_surface_normal(*c.q0, intersection_point).casted<ScenePos>();
+            }
+        }
+        if (c.o0.has_collision_normal_modifier()) {
+            auto o = (float)overlap;
+            auto n = normal.casted<float>();
+            c.o0.get_collision_normal_modifier().modify_collision_normal(intersection_point, n, o);
+            overlap = o;
+            normal = n.casted<double>();
         }
         // overlap = std::min((ScenePos)c.history.cfg.overlap_clipped, overlap);
         c.history.ridge_intersection_points[&c.o0].push_back(intersection_point);

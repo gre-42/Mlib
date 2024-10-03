@@ -100,20 +100,13 @@ public:
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const TransformationMatrix<float, TPosTransform, 3>& tm,
         const std::string& suffix) const;
+    template <size_t tnvertices>
+    void polygon_sphere(std::vector<CollisionPolygonSphere<TPos, tnvertices>>& collision_polygons) const;
     void quads_sphere(std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons) const;
     void triangles_sphere(std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons) const;
     template <size_t tnvertices, class TPosResult, class TPosTransform>
     std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> transformed_polygon_bbox(
-        const TransformationMatrix<float, TPosTransform, 3>& tm) const
-    {
-        if constexpr (tnvertices == 4) {
-            return transformed_quads_bbox<TPosResult, TPosTransform>(tm);
-        } else if constexpr (tnvertices == 3) {
-            return transformed_triangles_bbox<TPosResult, TPosTransform>(tm);
-        } else {
-            static_assert(tnvertices == 4, "Unknown number of vertices");
-        }
-    }
+        const TransformationMatrix<float, TPosTransform, 3>& tm) const;
     template <class TPosResult, class TPosTransform>
     std::vector<CollisionPolygonAabb<TPosResult, 4>> transformed_quads_bbox(
         const TransformationMatrix<float, TPosTransform, 3>& tm) const;

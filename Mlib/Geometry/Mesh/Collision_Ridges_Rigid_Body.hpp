@@ -36,6 +36,7 @@ public:
     void insert(
         const FixedArray<FixedArray<ScenePos, 3>, tnvertices>& polygon,
         const FixedArray<ScenePos, 3>& normal,
+        const FixedArray<FixedArray<float, 3>, tnvertices>& vertex_normals,
         ScenePos max_min_cos_ridge,
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb);
@@ -44,6 +45,8 @@ protected:
         const FixedArray<ScenePos, 3>& a,
         const FixedArray<ScenePos, 3>& b,
         const FixedArray<ScenePos, 3>& normal,
+        const FixedArray<float, 3>& a_vertex_normal,
+        const FixedArray<float, 3>& b_vertex_normal,
         ScenePos max_min_cos_ridge,
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb);

@@ -174,7 +174,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Door_Distance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Target.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Round_Mesh_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Sliding_Normal_Modifier.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Trailer_Hitch_Positions.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Waypoint_Ofs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Ypln_Update_Bullet_Properties.hpp>
@@ -395,6 +397,8 @@ LoadScene::LoadScene() {
     register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
     register_json_user_function(SetAvailableRoles::key, SetAvailableRoles::json_user_function);
     register_json_user_function(SetCapsuleSurfaceNormal::key, SetCapsuleSurfaceNormal::json_user_function);
+    register_json_user_function(SetRoundMeshSurfaceNormal::key, SetRoundMeshSurfaceNormal::json_user_function);
+    register_json_user_function(SetSlidingNormalModifier::key, SetSlidingNormalModifier::json_user_function);
     register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
     register_json_user_function(SetCamera::key, SetCamera::json_user_function);
     register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);

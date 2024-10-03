@@ -6,7 +6,6 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -36,7 +35,8 @@ void SetCapsuleSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& rb = get_rigid_body_vehicle(node);
     FixedArray<float, 3, 3> R{ args.arguments.at<UFixedArray<UFixedArray<float, 3>, 3>>(KnownArgs::rotation) };
     rb.set_surface_normal(std::make_unique<NormalOnCapsule>(
+        rb.rbp_,
         TransformationMatrix<float, ScenePos, 3>{
             R,
-            args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position)}));
+            args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters}));
 }
