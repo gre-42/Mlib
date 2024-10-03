@@ -1,4 +1,5 @@
 #include "Smoothen_Ways.hpp"
+#include <Mlib/Math/Sigmoid.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Way_Width.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -16,9 +17,7 @@ FixedArray<double, 2> smooth_intermediate_node(
     double d,
     double t)
 {
-    // From: https://math.stackexchange.com/a/3253471/233679
-    double a = 1 / squared(1 / t - 1);
-    double t1 = (1 - 1 / (1 + a));
+    double t1 = sigmoid(t);
 
     return ((p0 + n0 * d * t) * (1 - t1) +
             (p1 - n1 * d * (1 - t)) * t1);
