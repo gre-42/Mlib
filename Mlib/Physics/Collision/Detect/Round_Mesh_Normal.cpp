@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Math/Lerp.hpp>
+#include <Mlib/Math/Sigmoid.hpp>
 
 using namespace Mlib;
 
@@ -26,6 +27,10 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
 {
     auto l = dot0d(ridge.ray.direction, position - ridge.ray.start);
     auto alpha = (float)(l / ridge.ray.length);
+    // For compatibility with barycentric triangle coordinates.
+    auto b = inv_sigmoid(alpha);
+    auto e = inv_sigmoid(1 - alpha);
+    alpha = b / (b + e);
     auto ni = lerp(ridge.vertex_normals(0), ridge.vertex_normals(1), alpha);
     ni /= std::sqrt(sum(squared(ni)));
     return ni;
@@ -45,6 +50,8 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
         uvw(0),
         uvw(1),
         uvw(2));
+    uvw = inv_sigmoid(uvw);
+    uvw /= sum(uvw);
     auto ni =
         (uvw(0) * triangle.vertex_normals(0).casted<double>() +
          uvw(1) * triangle.vertex_normals(1).casted<double>() +
@@ -58,22 +65,26 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
     const FixedArray<ScenePos, 3>& position) const
 {
     auto m2d = to_2d(quad.polygon.plane().normal, quad.corners(1) - quad.corners(0));
-    auto uvw = FixedArray<ScenePos, 3>{ uninitialized };
-    auto uv = inverse_bilinear(
+    auto uvo = inverse_bilinear(
         dot1d(m2d, position),
         dot1d(m2d, quad.corners(0)),
         dot1d(m2d, quad.corners(1)),
         dot1d(m2d, quad.corners(2)),
         dot1d(m2d, quad.corners(3)));
-    if (!uv.has_value()) {
+    if (!uvo.has_value()) {
         THROW_OR_ABORT("Could not compute inverse bilinear");
     }
+    auto& uv = *uvo;
     const auto& A = quad.vertex_normals(0);
     const auto& B = quad.vertex_normals(1);
     const auto& C = quad.vertex_normals(2);
     const auto& D = quad.vertex_normals(3);
-    auto u = (float)(*uv)(0);
-    auto v = (float)(*uv)(1);
+    // For compatibility with barycentric triangle coordinates.
+    auto b = inv_sigmoid(uv);
+    auto e = inv_sigmoid(1.0 - uv);
+    uv = b / (b + e);
+    auto u = (float)uv(0);
+    auto v = (float)uv(1);
     auto P = A + (B - A) * u;
     auto Q = D + (C - D) * u;
     auto X = P + (Q - P) * v;

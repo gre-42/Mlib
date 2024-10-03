@@ -553,8 +553,8 @@ int main(int argc, char** argv) {
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .no_slip = args.has_named("--no_slip"),
                 // Friction
-                .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
-                .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
+                .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.25")),
+                .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.25")),
                 .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 // Collision
