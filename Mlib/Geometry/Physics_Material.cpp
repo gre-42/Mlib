@@ -17,6 +17,7 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"attr_concave", PhysicsMaterial::ATTR_CONCAVE},
         {"attr_round", PhysicsMaterial::ATTR_ROUND},
         {"attr_contains_skidmarks", PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS},
+        {"attr_slippery", PhysicsMaterial::ATTR_SLIPPERY},
         {"obj_alignment_plane", PhysicsMaterial::OBJ_ALIGNMENT_PLANE},
         {"obj_chassis", PhysicsMaterial::OBJ_CHASSIS},
         {"obj_tire_line", PhysicsMaterial::OBJ_TIRE_LINE},
@@ -38,6 +39,8 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"surface_base_tire", PhysicsMaterial::SURFACE_BASE_TIRE},
         {"surface_base_stone", PhysicsMaterial::SURFACE_BASE_STONE},
         {"surface_base_foliage", PhysicsMaterial::SURFACE_BASE_FOLIAGE},
+        {"surface_base_metal", PhysicsMaterial::SURFACE_BASE_METAL},
+        {"surface_base_concrete", PhysicsMaterial::SURFACE_BASE_CONCRETE},
         {"surface_wet", PhysicsMaterial::SURFACE_WET}
     };
     auto it = m.find(s);
@@ -66,6 +69,7 @@ static std::string physics_material_modifiers_to_string(PhysicsMaterial p) {
         { PhysicsMaterial::ATTR_CONCAVE, "attr_concave" },
         { PhysicsMaterial::ATTR_ROUND, "attr_round" },
         { PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS, "attr_contains_skidmarks" },
+        { PhysicsMaterial::ATTR_SLIPPERY, "attr_slippery" },
         { PhysicsMaterial::OBJ_ALIGNMENT_PLANE, "obj_alignment_plane" },
         { PhysicsMaterial::OBJ_CHASSIS, "obj_chassis" },
         { PhysicsMaterial::OBJ_TIRE_LINE, "obj_tire_line" },
@@ -109,6 +113,8 @@ static std::string physics_material_base_to_string(PhysicsMaterial p) {
         case PhysicsMaterial::SURFACE_BASE_TIRE: return "surface_base_tire";
         case PhysicsMaterial::SURFACE_BASE_STONE: return "surface_base_stone";
         case PhysicsMaterial::SURFACE_BASE_FOLIAGE: return "surface_base_foliage";
+        case PhysicsMaterial::SURFACE_BASE_METAL: return "surface_base_metal";
+        case PhysicsMaterial::SURFACE_BASE_CONCRETE: return "surface_base_concrete";
         default: return "PhysicsMaterial(" + std::to_string((uint32_t)p) + ')';
     };
 }
