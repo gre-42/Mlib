@@ -8,6 +8,9 @@
 
 using namespace Mlib;
 
+static const float t = 0.8f;
+static const float k = 2;
+
 static FixedArray<ScenePos, 2, 3> to_2d(
     const FixedArray<ScenePos, 3>& normal,
     const FixedArray<ScenePos, 3>& dx)
@@ -15,6 +18,17 @@ static FixedArray<ScenePos, 2, 3> to_2d(
     auto x = dx / std::sqrt(sum(squared(dx)));
     auto y = cross(x, normal);
     return FixedArray<ScenePos, 2, 3>{ x, y };
+}
+
+template <class TData>
+static const FixedArray<TData, 3> mix_normals(
+    const FixedArray<TData, 3>& vertex_normal,
+    const FixedArray<TData, 3>& plane_normal)
+{
+    auto vl = std::sqrt(sum(squared(vertex_normal)));
+    auto res = lerp(plane_normal, vertex_normal / vl, sigmoid(vl, t, k));
+    res /= std::sqrt(sum(squared(res)));
+    return res;
 }
 
 RoundMeshNormal::RoundMeshNormal() = default;
@@ -27,13 +41,8 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
 {
     auto l = dot0d(ridge.ray.direction, position - ridge.ray.start);
     auto alpha = (float)(l / ridge.ray.length);
-    // For compatibility with barycentric triangle coordinates.
-    auto b = inv_sigmoid(alpha);
-    auto e = inv_sigmoid(1 - alpha);
-    alpha = b / (b + e);
     auto ni = lerp(ridge.vertex_normals(0), ridge.vertex_normals(1), alpha);
-    ni /= std::sqrt(sum(squared(ni)));
-    return ni;
+    return mix_normals(ni, ridge.normal.casted<float>());
 }
 
 FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
@@ -50,14 +59,11 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
         uvw(0),
         uvw(1),
         uvw(2));
-    uvw = inv_sigmoid(uvw);
-    uvw /= sum(uvw);
     auto ni =
         (uvw(0) * triangle.vertex_normals(0).casted<double>() +
          uvw(1) * triangle.vertex_normals(1).casted<double>() +
          uvw(2) * triangle.vertex_normals(2).casted<double>()).casted<float>();
-    ni /= std::sqrt(sum(squared(ni)));
-    return ni;
+    return mix_normals(ni, triangle.polygon.plane().normal.casted<float>());
 }
 
 FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
@@ -79,15 +85,10 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
     const auto& B = quad.vertex_normals(1);
     const auto& C = quad.vertex_normals(2);
     const auto& D = quad.vertex_normals(3);
-    // For compatibility with barycentric triangle coordinates.
-    auto b = inv_sigmoid(uv);
-    auto e = inv_sigmoid(1.0 - uv);
-    uv = b / (b + e);
     auto u = (float)uv(0);
     auto v = (float)uv(1);
     auto P = A + (B - A) * u;
     auto Q = D + (C - D) * u;
     auto X = P + (Q - P) * v;
-    X /= std::sqrt(sum(squared(X)));
-    return X;
+    return mix_normals(X, quad.polygon.plane().normal.casted<float>());
 }
