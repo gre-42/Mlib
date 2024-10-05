@@ -146,7 +146,7 @@ bool Mlib::compute_edge_overlap(
         }
         if (any(c.mesh1_material & PhysicsMaterial::ATTR_SLIPPERY)) {
             if (c.o0.has_surface_normal()) {
-                auto normal = (c.t0 != nullptr)
+                normal = (c.t0 != nullptr)
                     ? c.o0.get_surface_normal().get_surface_normal(*c.t0, intersection_point).casted<ScenePos>()
                     : c.o0.get_surface_normal().get_surface_normal(*c.q0, intersection_point).casted<ScenePos>();
             }
