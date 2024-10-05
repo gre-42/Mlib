@@ -292,17 +292,19 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                     },
                     .null_space = abs_vertical_line
                 }));
-            c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
-                rbp_,
-                *tire.rbp,
-                LineEqualityConstraint{
-                    .pec = PointEqualityConstraint{
-                        .p0 = T0.transform(tire.vehicle_mount_1.casted<ScenePos>()),
-                        .p1 = T1.t(),
-                        .beta = c.cfg.point_equality_beta
-                    },
-                    .null_space = abs_vertical_line
-                }));
+            // Disabled because this code prevents all but the vertical axis
+            // from rotating when the time step is small.
+            // c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
+            //     rbp_,
+            //     *tire.rbp,
+            //     LineEqualityConstraint{
+            //         .pec = PointEqualityConstraint{
+            //             .p0 = T0.transform(tire.vehicle_mount_1.casted<ScenePos>()),
+            //             .p1 = T1.t(),
+            //             .beta = c.cfg.point_equality_beta
+            //         },
+            //         .null_space = abs_vertical_line
+            //     }));
         }
         // Horizontal constraints
         {
