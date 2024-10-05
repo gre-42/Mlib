@@ -12,6 +12,7 @@ struct CollisionPolygonSphere;
 
 class ISurfaceNormal {
 public:
+    virtual ~ISurfaceNormal() = default;
     virtual FixedArray<float, 3> get_surface_normal(
         const CollisionRidgeSphere& ridge,
         const FixedArray<ScenePos, 3>& position) const = 0;

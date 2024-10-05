@@ -9,6 +9,7 @@ class FixedArray;
 
 class ICollisionNormalModifier {
 public:
+    virtual ~ICollisionNormalModifier() = default;
     virtual void modify_collision_normal(
         const FixedArray<ScenePos, 3>& position,
         FixedArray<float, 3>& normal,
