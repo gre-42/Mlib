@@ -272,7 +272,7 @@ void ColoredVertexArray<TPos>::polygon_sphere(
     for (size_t i = len0; i < collision_polygons.size(); ++i) {
         const auto& quad = collision_polygons[i];
         for (const auto& v : quad.corners.flat_iterable()) {
-            vertex_normals.add_vertex_face_normal(v, quad.polygon.plane().normal.casted<float>());
+            vertex_normals.add_vertex_face_normal(v, quad.polygon.plane().normal.template casted<float>());
         }
     }
     vertex_normals.compute_vertex_normals();
@@ -306,7 +306,7 @@ std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> ColoredVertexArray<TPo
     VertexNormals<TPosResult, float> vertex_normals;
     for (const auto& quad : res) {
         for (const auto& v : quad.base.corners.flat_iterable()) {
-            vertex_normals.add_vertex_face_normal(v, quad.base.polygon.plane().normal.casted<float>());
+            vertex_normals.add_vertex_face_normal(v, quad.base.polygon.plane().normal.template casted<float>());
         }
     }
     vertex_normals.compute_vertex_normals();
