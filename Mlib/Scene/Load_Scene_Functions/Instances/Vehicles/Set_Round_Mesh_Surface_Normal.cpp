@@ -13,6 +13,8 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(t);
+DECLARE_ARGUMENT(k);
 }
 
 const std::string SetRoundMeshSurfaceNormal::key = "set_round_mesh_surface_normal";
@@ -31,5 +33,7 @@ void SetRoundMeshSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& arg
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
-    rb.set_surface_normal(std::make_unique<RoundMeshNormal>());
+    rb.set_surface_normal(std::make_unique<RoundMeshNormal>(
+        args.arguments.at<float>(KnownArgs::t),
+        args.arguments.at<float>(KnownArgs::k)));
 }

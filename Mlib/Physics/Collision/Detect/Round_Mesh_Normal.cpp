@@ -8,9 +8,6 @@
 
 using namespace Mlib;
 
-static const float t = 0.8f;
-static const float k = 2;
-
 static FixedArray<ScenePos, 2, 3> to_2d(
     const FixedArray<ScenePos, 3>& normal,
     const FixedArray<ScenePos, 3>& dx)
@@ -23,7 +20,9 @@ static FixedArray<ScenePos, 2, 3> to_2d(
 template <class TData>
 static const FixedArray<TData, 3> mix_normals(
     const FixedArray<TData, 3>& vertex_normal,
-    const FixedArray<TData, 3>& plane_normal)
+    const FixedArray<TData, 3>& plane_normal,
+    float t,
+    float k)
 {
     auto vl = std::sqrt(sum(squared(vertex_normal)));
     auto res = lerp(plane_normal, vertex_normal / vl, sigmoid(vl, t, k));
@@ -31,7 +30,10 @@ static const FixedArray<TData, 3> mix_normals(
     return res;
 }
 
-RoundMeshNormal::RoundMeshNormal() = default;
+RoundMeshNormal::RoundMeshNormal(float t, float k)
+    : t_{ t }
+    , k_{ t }
+{}
 
 RoundMeshNormal::~RoundMeshNormal() = default;
 
@@ -42,7 +44,7 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
     auto l = dot0d(ridge.ray.direction, position - ridge.ray.start);
     auto alpha = (float)(l / ridge.ray.length);
     auto ni = lerp(ridge.vertex_normals(0), ridge.vertex_normals(1), alpha);
-    return mix_normals(ni, ridge.normal.casted<float>());
+    return mix_normals(ni, ridge.normal.casted<float>(), t_, k_);
 }
 
 FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
@@ -63,7 +65,7 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
         (uvw(0) * triangle.vertex_normals(0).casted<double>() +
          uvw(1) * triangle.vertex_normals(1).casted<double>() +
          uvw(2) * triangle.vertex_normals(2).casted<double>()).casted<float>();
-    return mix_normals(ni, triangle.polygon.plane().normal.casted<float>());
+    return mix_normals(ni, triangle.polygon.plane().normal.casted<float>(), t_, k_);
 }
 
 FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
@@ -90,5 +92,5 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
     auto P = A + (B - A) * u;
     auto Q = D + (C - D) * u;
     auto X = P + (Q - P) * v;
-    return mix_normals(X, quad.polygon.plane().normal.casted<float>());
+    return mix_normals(X, quad.polygon.plane().normal.casted<float>(), t_, k_);
 }
