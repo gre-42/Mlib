@@ -57,7 +57,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                     if (!any(a->morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
                         continue;
                     }
-                    SurfaceContactInfo* c = args.surface_contact_db.get_contact_info(
+                    const SurfaceContactInfo* c = args.surface_contact_db.get_contact_info(
                         a->morphology.physics_material,
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {

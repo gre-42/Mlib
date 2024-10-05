@@ -22,7 +22,9 @@ struct SurfaceSmokeInfo {
 };
 
 struct SurfaceContactInfo {
-    float surface_stiction_factor;
+    float stiction_factor;      // for tires (tires store their stiction coefficient themselves)
+    float stiction_coefficient; // for everything except tires
+    float friction_coefficient; // for everything except tires
     std::vector<SurfaceSmokeInfo> smoke_infos;
 };
 

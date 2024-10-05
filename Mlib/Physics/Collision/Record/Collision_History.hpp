@@ -25,12 +25,14 @@ struct GrindInfo;
 class BaseLog;
 struct CollisionRidgeSphere;
 struct StaticWorld;
+class SurfaceContactDb;
 
 struct CollisionHistory {
     bool burn_in;
     const PhysicsEngineConfig& cfg;
     const StaticWorld& world;
     const SatTracker& st;
+    const SurfaceContactDb& surface_contact_db;
     ContactSmokeGenerator& csg;
     ITrailRenderer& tr;
     std::list<Beacon>* beacons;

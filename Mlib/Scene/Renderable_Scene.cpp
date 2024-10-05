@@ -86,7 +86,7 @@ RenderableScene::RenderableScene(
           .delete_node_mutex = delete_node_mutex_,
           .physics_set_fps = &physics_set_fps_}
     , smoke_particle_generator_{ &rendering_resources_, scene_node_resources, scene_ }
-    , contact_smoke_generator_{ surface_contact_db, smoke_particle_generator_ }
+    , contact_smoke_generator_{ smoke_particle_generator_ }
     , paused_{ [&ui_focus, focus_filter]() {
         std::shared_lock lock{ ui_focus.focuses.mutex };
         return !ui_focus.has_focus(focus_filter);
@@ -163,6 +163,7 @@ RenderableScene::RenderableScene(
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 #endif
 {
+    physics_engine_.set_surface_contact_db(surface_contact_db);
     physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);
     physics_engine_.set_particle_renderer(*particle_renderer_);
     physics_engine_.set_trail_renderer(*trail_renderer_);

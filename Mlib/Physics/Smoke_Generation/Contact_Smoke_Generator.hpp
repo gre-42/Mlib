@@ -15,25 +15,21 @@ class FixedArray;
 class SmokeParticleGenerator;
 class RigidBodyVehicle;
 struct IntersectionScene;
-struct SurfaceContactInfo;
-class SurfaceContactDb;
 
 class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
 public:
     explicit ContactSmokeGenerator(
-        SurfaceContactDb& surface_contact_db,
         SmokeParticleGenerator& smoke_particle_generator);
     ~ContactSmokeGenerator();
     virtual void notify_destroyed(const RigidBodyVehicle& destroyed_object) override;
 
-    SurfaceContactInfo* notify_contact(
+    void notify_contact(
         const FixedArray<ScenePos, 3>& intersection_point,
         const FixedArray<float, 3>& rotation,
         const FixedArray<ScenePos, 3>& surface_normal,
         const IntersectionScene& c);
     void advance_time(float dt);
 private:
-    SurfaceContactDb& surface_contact_db_;
     SmokeParticleGenerator& smoke_particle_generator_;
     std::unordered_map<RigidBodyVehicle*, std::map<std::pair<size_t, size_t>, SmokeTrailGenerator>> tire_smoke_trail_generators_;
 };

@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Attached_Wheel.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef __GNUC__
@@ -51,8 +52,8 @@ static void handle_standard_reflection(
         c.o0.rbp_,
         *normal_impulse,
         intersection_point,
-        c.history.cfg.stiction_coefficient,
-        c.history.cfg.friction_coefficient,
+        c.surface_contact_info != nullptr ? c.surface_contact_info->stiction_coefficient : c.history.cfg.stiction_coefficient,
+        c.surface_contact_info != nullptr ? c.surface_contact_info->friction_coefficient : c.history.cfg.friction_coefficient,
         c.o1.velocity_at_position(intersection_point)}));
 }
 
@@ -222,8 +223,8 @@ static void handle_extended_reflection(
                 c.o1.rbp_,
                 *normal_impulse,
                 intersection_point,
-                align ? 0.f : c.history.cfg.stiction_coefficient,
-                align ? 0.f : c.history.cfg.friction_coefficient,
+                align ? 0.f : c.surface_contact_info != nullptr ? c.surface_contact_info->stiction_coefficient : c.history.cfg.stiction_coefficient,
+                align ? 0.f : c.surface_contact_info != nullptr ? c.surface_contact_info->friction_coefficient : c.history.cfg.friction_coefficient,
                 c.o0.velocity_at_position(intersection_point)}));
         }
     } else {
@@ -232,8 +233,8 @@ static void handle_extended_reflection(
             c.o0.rbp_,
             *normal_impulse,
             intersection_point,
-            align ? 0.f : c.history.cfg.stiction_coefficient,
-            align ? 0.f : c.history.cfg.friction_coefficient,
+            align ? 0.f : c.surface_contact_info != nullptr ? c.surface_contact_info->stiction_coefficient : c.history.cfg.stiction_coefficient,
+            align ? 0.f : c.surface_contact_info != nullptr ? c.surface_contact_info->friction_coefficient : c.history.cfg.friction_coefficient,
             fixed_zeros<float, 3>()}));
     }
     // if (float lr = c.cfg.stiction_coefficient * force_n1; lr > 1e-12) {

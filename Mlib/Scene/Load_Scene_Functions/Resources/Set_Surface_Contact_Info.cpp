@@ -76,7 +76,9 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(material0);
 DECLARE_ARGUMENT(material1);
-DECLARE_ARGUMENT(surface_stiction_factor);
+DECLARE_ARGUMENT(stiction_factor);
+DECLARE_ARGUMENT(stiction_coefficient);
+DECLARE_ARGUMENT(friction_coefficient);
 DECLARE_ARGUMENT(smoke);
 }
 
@@ -87,7 +89,9 @@ LoadSceneJsonUserFunction SetSurfaceContactInfo::json_user_function = [](const L
     args.arguments.validate(KnownArgs::options);
     args.surface_contact_db.store_contact_info(
         SurfaceContactInfo{
-            .surface_stiction_factor = args.arguments.at<float>(KnownArgs::surface_stiction_factor),
+            .stiction_factor = args.arguments.at<float>(KnownArgs::stiction_factor),
+            .stiction_coefficient = args.arguments.at<float>(KnownArgs::stiction_coefficient),
+            .friction_coefficient = args.arguments.at<float>(KnownArgs::friction_coefficient),
             .smoke_infos = args.arguments.at<std::vector<SurfaceSmokeInfo>>(KnownArgs::smoke) },
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material0)),
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material1)));

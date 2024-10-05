@@ -20,6 +20,7 @@ struct CollisionPolygonSphere;
 struct CollisionRidgeSphere;
 template <class TData>
 struct CollisionLineSphere;
+struct SurfaceContactInfo;
 
 struct IntersectionScene {
     RigidBodyVehicle& o0;
@@ -34,6 +35,7 @@ struct IntersectionScene {
     PhysicsMaterial mesh0_material;
     PhysicsMaterial mesh1_material;
     bool l1_is_normal;
+    const SurfaceContactInfo* surface_contact_info;
     CollisionType default_collision_type;
     const CollisionHistory& history;
 };

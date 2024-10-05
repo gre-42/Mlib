@@ -15,6 +15,7 @@ class IControllable;
 struct Beacon;
 class BaseLog;
 enum class CollisionDirection;
+class SurfaceContactDb;
 class ContactSmokeGenerator;
 class IParticleRenderer;
 class ITrailRenderer;
@@ -41,6 +42,7 @@ public:
     void burn_in(
         const StaticWorld& world,
         float duration);
+    void set_surface_contact_db(SurfaceContactDb& surface_contact_db);
     void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);
     void set_particle_renderer(IParticleRenderer& particle_renderer);
     void set_trail_renderer(ITrailRenderer& trail_renderer);
@@ -52,6 +54,7 @@ public:
     PermanentContacts permanent_contacts_;
 private:
     CollisionDirection collision_direction_;
+    SurfaceContactDb* surface_contact_db_;
     ContactSmokeGenerator* contact_smoke_generator_;
     IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;

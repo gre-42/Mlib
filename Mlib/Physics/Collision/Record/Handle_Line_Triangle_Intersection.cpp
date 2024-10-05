@@ -112,7 +112,7 @@ void Mlib::handle_line_triangle_intersection(
     for (auto& c1 : c.o1.collision_observers_) {
         c1->notify_collided(intersection_point, c.history.world, c.o0, CollisionRole::SECONDARY, collision_type, abort);
     }
-    auto* scinfo = c.history.csg.notify_contact(intersection_point, fixed_zeros<float, 3>(), N0.normal, c);
+    c.history.csg.notify_contact(intersection_point, fixed_zeros<float, 3>(), N0.normal, c);
     if (abort) {
         return;
     }
@@ -122,9 +122,9 @@ void Mlib::handle_line_triangle_intersection(
         handle_reflection(
             c,
             intersection_point,
-            scinfo == nullptr
+            c.surface_contact_info == nullptr
                 ? 1.f
-                : scinfo->surface_stiction_factor);
+                : c.surface_contact_info->stiction_factor);
     } else if (collision_type == CollisionType::GRIND) {
         if (!c.o0.grind_state_.wants_to_grind_) {
             return;

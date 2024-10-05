@@ -26,9 +26,9 @@ void SurfaceContactDb::store_contact_info(
     }
 }
 
-SurfaceContactInfo* SurfaceContactDb::get_contact_info(
+const SurfaceContactInfo* SurfaceContactDb::get_contact_info(
     PhysicsMaterial material0,
-    PhysicsMaterial material1)
+    PhysicsMaterial material1) const
 {
     auto sit = surface_contact_infos_.find(CommutativeMaterialPair{
         material0 & PhysicsMaterial::SURFACE_MASK,
@@ -39,10 +39,13 @@ SurfaceContactInfo* SurfaceContactDb::get_contact_info(
     return &sit->second;
 }
 
-SurfaceContactInfo* SurfaceContactDb::get_contact_info(const IntersectionScene& c)
+const SurfaceContactInfo* SurfaceContactDb::get_contact_info(
+    PhysicsMaterial material0,
+    PhysicsMaterial material1,
+    size_t tire_id1) const
 {
-    PhysicsMaterial material1 = (c.tire_id1 == SIZE_MAX)
-        ? c.mesh1_material
+    PhysicsMaterial m1 = (tire_id1 == SIZE_MAX)
+        ? material1
         : PhysicsMaterial::SURFACE_BASE_TIRE;
-    return get_contact_info(c.mesh0_material, material1);
+    return get_contact_info(material0, m1);
 }

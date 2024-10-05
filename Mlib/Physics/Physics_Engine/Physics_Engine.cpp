@@ -28,6 +28,7 @@ PhysicsEngine::PhysicsEngine(const PhysicsEngineConfig& cfg)
     : rigid_bodies_{ cfg }
     , collision_query_{ *this }
     , collision_direction_{ CollisionDirection::FORWARD }
+    , surface_contact_db_{ nullptr }
     , contact_smoke_generator_{ nullptr }
     , particle_renderer_{ nullptr }
     , trail_renderer_{ nullptr }
@@ -70,6 +71,9 @@ void PhysicsEngine::collide(
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
     std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>> ridge_intersection_points;
     SatTracker st;
+    if (surface_contact_db_ == nullptr) {
+        THROW_OR_ABORT("surface_contact_db not set");
+    }
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
@@ -81,6 +85,7 @@ void PhysicsEngine::collide(
         .cfg = cfg_,
         .world = world,
         .st = st,
+        .surface_contact_db = *surface_contact_db_,
         .csg = *contact_smoke_generator_,
         .tr = *trail_renderer_,
         .beacons = beacons,
@@ -183,6 +188,13 @@ void PhysicsEngine::burn_in(
         }
         move_rigid_bodies(world, nullptr);  // nullptr=beacons
     }
+}
+
+void PhysicsEngine::set_surface_contact_db(SurfaceContactDb& surface_contact_db) {
+    if (surface_contact_db_ != nullptr) {
+        THROW_OR_ABORT("Surface contact DB already set");
+    }
+    surface_contact_db_ = &surface_contact_db;
 }
 
 void PhysicsEngine::set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator) {

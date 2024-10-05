@@ -134,8 +134,9 @@ void test_physics_engine(unsigned int seed) {
     SurfaceContactDb surface_contact_db;
     BulletPropertyDb bullet_property_db;
     SmokeParticleGenerator smoke_particle_generator{ &rendering_resources, scene_node_resources, scene };
-    ContactSmokeGenerator contact_smoke_generator{ surface_contact_db, smoke_particle_generator };
+    ContactSmokeGenerator contact_smoke_generator{ smoke_particle_generator };
     TrailRenderer trail_renderer{ trail_resources };
+    pe.set_surface_contact_db(surface_contact_db);
     pe.set_contact_smoke_generator(contact_smoke_generator);
     pe.set_trail_renderer(trail_renderer);
     RenderingContext primary_rendering_context{

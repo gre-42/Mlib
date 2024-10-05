@@ -4,9 +4,11 @@
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 
 using namespace Mlib;
 
@@ -49,6 +51,10 @@ void Mlib::collide_triangles_and_ridge(
             .mesh0_material = poly0.physics_material,
             .mesh1_material = r1.physics_material,
             .l1_is_normal = false,
+            .surface_contact_info = history.surface_contact_db.get_contact_info(
+                poly0.physics_material,
+                r1.physics_material,
+                SIZE_MAX),
             .default_collision_type = CollisionType::REFLECT,
             .history = history});
     };

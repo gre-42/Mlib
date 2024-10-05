@@ -4,17 +4,14 @@
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
-#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 ContactSmokeGenerator::ContactSmokeGenerator(
-    SurfaceContactDb& surface_contact_db,
     SmokeParticleGenerator& smoke_particle_generator)
-    : surface_contact_db_{ surface_contact_db }
-    , smoke_particle_generator_{ smoke_particle_generator }
+    : smoke_particle_generator_{ smoke_particle_generator }
 {}
 
 ContactSmokeGenerator::~ContactSmokeGenerator() {
@@ -29,21 +26,20 @@ void ContactSmokeGenerator::notify_destroyed(const RigidBodyVehicle& destroyed_o
     }
 }
 
-SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
+void ContactSmokeGenerator::notify_contact(
     const FixedArray<ScenePos, 3>& intersection_point,
     const FixedArray<float, 3>& rotation,
     const FixedArray<ScenePos, 3>& surface_normal,
     const IntersectionScene& c)
 {
     if (c.history.burn_in) {
-        return nullptr;
+        return;
     }
-    SurfaceContactInfo* surface_contact_info = surface_contact_db_.get_contact_info(c);
-    if (surface_contact_info == nullptr) {
-        return nullptr;
+    if (c.surface_contact_info == nullptr) {
+        return;
     }
-    if (surface_contact_info->smoke_infos.empty()) {
-        return surface_contact_info;
+    if (c.surface_contact_info->smoke_infos.empty()) {
+        return;
     }
     auto v0 = c.o0.rbp_.velocity_at_position(intersection_point);
     auto v1_a = c.o1.rbp_.velocity_at_position(intersection_point);
@@ -55,7 +51,7 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
             c.o1.get_tire_radius(c.tire_id1));
     auto dvel_a = std::sqrt(sum(squared(v0 - v1_a)));
     auto dvel_s = std::sqrt(sum(squared(v0 - v1_s)));
-    for (const auto& [i, smoke_info] : enumerate(surface_contact_info->smoke_infos)) {
+    for (const auto& [i, smoke_info] : enumerate(c.surface_contact_info->smoke_infos)) {
         const auto& af = smoke_info.vehicle_velocity.smoke_particle_frequency;
         const auto& sf = smoke_info.tire_velocity.smoke_particle_frequency;
         auto f =
@@ -96,7 +92,6 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
             1.f / f,
             ParticleType::INSTANCE);
     }
-    return surface_contact_info;
 }
 
 void ContactSmokeGenerator::advance_time(float dt) {
