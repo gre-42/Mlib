@@ -56,11 +56,11 @@ void ParticlesInstance::add_particle(
 {
     if (dynamic_instance_buffers_->tmp_length() < dynamic_instance_buffers_->capacity()) {
         if (dynamic_instance_buffers_->tmp_empty()) {
-            offset_ = transformation_matrix.t();
+            offset_ = transformation_matrix.t;
         }
         auto trafo = TransformationMatrix<float, float, 3>{
-            transformation_matrix.R(),
-            (transformation_matrix.t() - offset_).casted<float>()};
+            transformation_matrix.R,
+            (transformation_matrix.t - offset_).casted<float>()};
         dynamic_instance_buffers_->append(trafo, sequence, velocity, air_resistance);
     }
 }

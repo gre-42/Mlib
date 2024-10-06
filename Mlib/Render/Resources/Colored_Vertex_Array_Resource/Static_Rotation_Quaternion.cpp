@@ -13,7 +13,7 @@ StaticRotationQuaternion::StaticRotationQuaternion(
 {
     quaternions_.reserve(instances_.size());
     for (const TransformationAndBillboardId& m : instances_) {
-        quaternions_.push_back(RotationQuaternion{ m.transformation_matrix.R() });
+        quaternions_.push_back(RotationQuaternion{ m.transformation_matrix.R });
     }
 }
 
