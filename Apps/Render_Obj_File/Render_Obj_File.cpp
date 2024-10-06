@@ -1107,10 +1107,11 @@ int main(int argc, char** argv) {
                     l.light->shadow_render_pass,
                     l.node,
                     l.light,
-                    "",                             // black_node_name
-                    true,                           // with_depth_texture
-                    2048,                           // lightmap_width
-                    2048));                         // lightmap_height
+                    "",                                 // black_node_name
+                    true,                               // with_depth_texture
+                    2048,                               // lightmap_width
+                    2048,                               // lightmap_height
+                    FixedArray<uint32_t, 2>{2u, 2u}));  // smooth_niterations
             }
         }
 

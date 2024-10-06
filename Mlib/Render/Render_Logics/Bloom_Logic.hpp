@@ -5,17 +5,13 @@
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
+#include <Mlib/Render/Render_To_Texture/Lowpass.hpp>
 
 namespace Mlib {
 
 struct BloomThresholdRenderProgram: public RenderProgram {
     GLint screen_texture_color_location = -1;
     GLint brightness_threshold_location = -1;
-};
-
-struct BloomFilterRenderProgram: public RenderProgram {
-    GLint texture_color_location = -1;
-    GLint lowpass_offset_location = -1;
 };
 
 struct BloomBlendRenderProgram: public RenderProgram {
@@ -50,7 +46,7 @@ private:
     FixedArray<float, 3> brightness_threshold_;
     FixedArray<uint32_t, 2> niterations_;
     BloomThresholdRenderProgram rp_threshold_;
-    UFixedArray<BloomFilterRenderProgram, 2> rp_filter_;
+    Lowpass lowpass_;
     BloomBlendRenderProgram rp_blend_;
     std::shared_ptr<FrameBuffer> screen_fbs_;
     std::shared_ptr<FrameBuffer> bloom_fbs_[2];

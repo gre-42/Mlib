@@ -28,6 +28,7 @@ DECLARE_ARGUMENT(fresnel_ambient);
 DECLARE_ARGUMENT(fog_ambient);
 DECLARE_ARGUMENT(lightmap_width);
 DECLARE_ARGUMENT(lightmap_height);
+DECLARE_ARGUMENT(smooth_niterations);
 }
 
 const std::string CreateLightWithShadow::key = "light_with_shadow";
@@ -72,7 +73,8 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
         args.arguments.at<bool>(KnownArgs::with_depth_texture),     // with_depth_texture
         args.arguments.at<int>(KnownArgs::lightmap_width),
-        args.arguments.at<int>(KnownArgs::lightmap_height));
+        args.arguments.at<int>(KnownArgs::lightmap_height),
+        args.arguments.at<UFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));
     o.on_node_clear.add([&o]() { global_object_pool.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { o, CURRENT_SOURCE_LOCATION },

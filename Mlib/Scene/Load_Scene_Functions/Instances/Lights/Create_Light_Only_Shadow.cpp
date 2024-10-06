@@ -22,6 +22,7 @@ DECLARE_ARGUMENT(black_node);
 DECLARE_ARGUMENT(render_pass);
 DECLARE_ARGUMENT(lightmap_width);
 DECLARE_ARGUMENT(lightmap_height);
+DECLARE_ARGUMENT(smooth_niterations);
 }
 
 const std::string CreateLightOnlyShadow::key = "light_only_shadow";
@@ -67,7 +68,8 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
         false,                                                      // with_depth_texture
         args.arguments.at<int>(KnownArgs::lightmap_width),
-        args.arguments.at<int>(KnownArgs::lightmap_height));
+        args.arguments.at<int>(KnownArgs::lightmap_height),
+        args.arguments.at<UFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));
     o.on_node_clear.add([&o]() { global_object_pool.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { o, CURRENT_SOURCE_LOCATION },

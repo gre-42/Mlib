@@ -2,11 +2,9 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
-#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
@@ -35,37 +33,6 @@ static GenShaderText threshold_fragment_shader_text{[]()
     sstr << "{" << std::endl;
     sstr << "    vec3 color = texture(screen_texture_color, TexCoords.st).rgb;" << std::endl;
     sstr << "    FragColor = vec4(max(vec3(0, 0, 0), color.rgb - brightness_threshold), 1.0);" << std::endl;
-    sstr << "}" << std::endl;
-    return sstr.str();
-}};
-
-static GenShaderText filter_fragment_shader_text{[](size_t axis)
-{
-    std::stringstream sstr;
-    sstr << SHADER_VER << FRAGMENT_PRECISION;
-    sstr << "out vec4 FragColor;" << std::endl;
-    sstr << std::endl;
-    sstr << "in vec2 TexCoords;" << std::endl;
-    sstr << std::endl;
-    sstr << "uniform sampler2D texture_color;" << std::endl;
-    sstr << "uniform float offset;" << std::endl;
-    sstr << std::endl;
-    sstr << "void main()" << std::endl;
-    sstr << "{" << std::endl;
-    if (axis == 0) {
-        sstr << "    vec3 color =" << std::endl;
-        sstr << "          texture(texture_color, TexCoords.st).rgb" << std::endl;
-        sstr << "        + texture(texture_color, TexCoords.st + vec2(offset, 0.0)).rgb" << std::endl;
-        sstr << "        + texture(texture_color, TexCoords.st - vec2(offset, 0.0)).rgb;" << std::endl;
-    } else if (axis == 1) {
-        sstr << "    vec3 color =" << std::endl;
-        sstr << "          texture(texture_color, TexCoords.st).rgb" << std::endl;
-        sstr << "        + texture(texture_color, TexCoords.st + vec2(0.0, offset)).rgb" << std::endl;
-        sstr << "        + texture(texture_color, TexCoords.st - vec2(0.0, offset)).rgb;" << std::endl;
-    } else {
-        THROW_OR_ABORT("Unknown texture axis");
-    }
-    sstr << "    FragColor = vec4(color / 3.0, 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
@@ -146,13 +113,6 @@ bool BloomLogic::render_optional_setup(
             rp_threshold_.screen_texture_color_location = rp_threshold_.get_uniform_location("screen_texture_color");
             rp_threshold_.brightness_threshold_location = rp_threshold_.get_uniform_location("brightness_threshold");
         }
-        for (auto&& [axis, rp] : enumerate(rp_filter_.flat_iterable())) {
-            if (!rp.allocated()) {
-                rp.allocate(simple_vertex_shader_text_, filter_fragment_shader_text(axis));
-                rp.texture_color_location = rp.get_uniform_location("texture_color");
-                rp.lowpass_offset_location = rp.get_uniform_location("offset");
-            }
-        }
         if (!rp_blend_.allocated()) {
             rp_blend_.allocate(simple_vertex_shader_text_, blend_fragment_shader_text());
             rp_blend_.screen_texture_color_location = rp_blend_.get_uniform_location("screen_texture_color");
@@ -207,39 +167,7 @@ bool BloomLogic::render_optional_setup(
 
             CHK(glActiveTexture(GL_TEXTURE0));
         }
-        for (auto&& [axis, rp] : enumerate(rp_filter_.flat_iterable())) {
-            rp.use();
-            float offset;
-            if (axis == 0) {
-                offset = 1.f / integral_to_float<float>(width);
-            } else if (axis == 1) {
-                offset = 1.f / integral_to_float<float>(height);
-            } else {
-                THROW_OR_ABORT("Texture axis");
-            }
-            float offset2 = offset;
-            for (size_t i = 0; i < niterations_(axis); ++i) {
-                size_t bloom_source_id = bloom_target_id;
-                bloom_target_id = (bloom_source_id + 1) % 2;
-                RenderToFrameBufferGuard rfg{ bloom_fbs_[bloom_target_id] };
-                ViewportGuard vg{ width, height };
-                RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
-
-                CHK(glUniform1i(rp.texture_color_location, 0));
-                CHK(glUniform1f(rp.lowpass_offset_location, offset2));
-                offset2 *= 2.f;
-
-                CHK(glActiveTexture(GL_TEXTURE0 + 0));
-                CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_source_id]->texture_color()->handle<GLuint>()));
-
-                va().bind();
-                CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
-                CHK(glBindVertexArray(0));
-
-                CHK(glActiveTexture(GL_TEXTURE0));
-            }
-        }
-
+        lowpass_.render(width, height, niterations_, bloom_fbs_, bloom_target_id);
         {
             RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
             rp_blend_.use();
