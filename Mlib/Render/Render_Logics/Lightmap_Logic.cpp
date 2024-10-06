@@ -80,7 +80,7 @@ void LightmapLogic::render_without_setup(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("LightmapLogic received wrong rendering");
     }
-    if ((fbs_[0]->texture_color() == nullptr) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
+    if ((!fbs_[0]->is_configured()) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
         ViewportGuard vg{ lightmap_width_, lightmap_height_ };
         RenderedSceneDescriptor light_rsd{
             .external_render_pass = {render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
