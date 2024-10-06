@@ -50,8 +50,8 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         vars.database.at<UFixedArray<ScenePos, 3>>("TRAILER_HITCH_POSITION_FEMALE"));
     auto pose1 = rb.rbp_.abs_transformation() * pose0;
     auto node = make_unique_scene_node(
-        pose1.t(),
-        matrix_2_tait_bryan_angles(pose1.R()),
+        pose1.t,
+        matrix_2_tait_bryan_angles(pose1.R),
         pose1.get_scale());
     scene.add_root_node(
         args.arguments.at<std::string>(KnownArgs::trailer_node),

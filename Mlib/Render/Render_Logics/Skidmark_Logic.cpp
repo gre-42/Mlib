@@ -118,7 +118,7 @@ void SkidmarkLogic::render_without_setup(
             auto dpi = ortho_camera->dpi(
                 (float)texture_width_,
                 (float)texture_height_);
-            auto diff = bi.view.rotate((old_camera_position_ - bi.model.t()).casted<float>());
+            auto diff = bi.view.rotate((old_camera_position_ - bi.model.t).casted<float>());
             ViewportGuard vg{
                 diff(0) * dpi(0),
                 diff(1) * dpi(1),
@@ -140,7 +140,7 @@ void SkidmarkLogic::render_without_setup(
                 { ExternalRenderPassType::STANDARD });
         }
         old_fbs_id_ = new_fbs_id;
-        old_camera_position_ = bi.model.t();
+        old_camera_position_ = bi.model.t;
         // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
         // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
         // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");

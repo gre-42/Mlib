@@ -62,10 +62,10 @@ DffArrays<TPosition> Mlib::load_dff(
             p = parent.parent;
         }
         if (any(frame_transformation & FrameTransformation::ZERO_POSITION)) {
-            trafo.t() = 0.f;
+            trafo.t = 0.f;
         }
         if (any(frame_transformation & FrameTransformation::IDENTITY_ROTATION)) {
-            trafo.R() = fixed_identity_array<float, 3>();
+            trafo.R = fixed_identity_array<float, 3>();
         }
         const auto& morph_target = a.geometry->morph_targets[0];
         const auto& materials = a.geometry->mat_list.materials;

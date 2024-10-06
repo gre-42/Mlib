@@ -22,28 +22,28 @@ public:
 
     static inline TransformationMatrix inverse(const FixedArray<TDir, n, n>& R, const FixedArray<TPos, n>& t) {
         TransformationMatrix result = uninitialized;
-        invert_t_R(t, R, result.t_, result.R_);
+        invert_t_R(t, R, result.t, result.R);
         return result;
     }
 
     inline TransformationMatrix(Uninitialized)
-        : R_{ uninitialized }
-        , t_{ uninitialized }
+        : R{ uninitialized }
+        , t{ uninitialized }
     {}
 
     inline TransformationMatrix(const FixedArray<TDir, n, n>& R, const FixedArray<TPos, n>& t)
-        : R_{ R }
-        , t_{ t }
+        : R{ R }
+        , t{ t }
     {}
 
     inline explicit TransformationMatrix(const FixedArray<TPos, n + 1, n + 1>& m)
-        : R_{ R_from_NxN(m).template casted<TDir>() }
-        , t_{ t_from_NxN(m) }
+        : R{ R_from_NxN(m).template casted<TDir>() }
+        , t{ t_from_NxN(m) }
     {}
 
     inline explicit TransformationMatrix(const FixedArray<TPos, n, n + 1>& m)
-        : R_{ R_from_NxN1(m).template casted<TDir>() }
-        , t_{ t_from_NxN1(m) }
+        : R{ R_from_NxN1(m).template casted<TDir>() }
+        , t{ t_from_NxN1(m) }
     {}
 
     template <class TPos2>
@@ -51,10 +51,10 @@ public:
     {
         using ResultR = decltype(TDir() * TPos2());
         using ResultT = decltype(ResultR() + TPos());
-        auto R = R_.template casted<ResultR>();
+        auto R_c = R.template casted<ResultR>();
         auto rhs_c = rhs.template casted<ResultR>();
-        auto t = t_.template casted<ResultT>();
-        return dot1d(R, rhs_c).template casted<ResultT>() + t;
+        auto t_c = t.template casted<ResultT>();
+        return dot1d(R_c, rhs_c).template casted<ResultT>() + t_c;
     }
 
     template <class TPos2>
@@ -63,31 +63,31 @@ public:
         using ResultT = decltype(TPos2() - TPos());
         using ResultR = decltype(ResultT() * TDir());
         auto rhs_c = rhs.template casted<ResultT>();
-        auto t = t_.template casted<ResultT>();
-        auto R = R_.template casted<ResultR>();
-        return dot((rhs_c - t).template casted<ResultR>(), R);
+        auto t_c = t.template casted<ResultT>();
+        auto R_c = R.template casted<ResultR>();
+        return dot((rhs_c - t_c).template casted<ResultR>(), R_c);
     }
 
     inline TransformationMatrix operator * (const TransformationMatrix& rhs) const {
         return TransformationMatrix{
-            dot2d(R_, rhs.R_),
-            transform(rhs.t_)};
+            dot2d(R, rhs.R),
+            transform(rhs.t)};
     }
 
     template <class TDir2>
     inline auto rotate(const FixedArray<TDir2, n>& rhs) const {
         using Result = decltype(TDir() * TDir2());
-        auto R = R_.template casted<Result>();
+        auto R_c = R.template casted<Result>();
         auto rhs_c = rhs.template casted<Result>();
-        return dot1d(R, rhs_c);
+        return dot1d(R_c, rhs_c);
     }
 
     template <class TDir2>
     inline auto irotate(const FixedArray<TDir2, n>& rhs) const {
         using Result = decltype(TDir() * TDir2());
         auto rhs_c = rhs.template casted<Result>();
-        auto R = R_.template casted<Result>();
-        return dot(rhs_c, R);
+        auto R_c = R.template casted<Result>();
+        return dot(rhs_c, R_c);
     }
 
     template <size_t m>
@@ -98,52 +98,20 @@ public:
         return res;
     }
 
-    inline const FixedArray<TDir, n, n>& R() const {
-        return R_;
-    }
-
-    inline const FixedArray<TPos, n>& t() const {
-        return t_;
-    }
-
-    inline FixedArray<TDir, n, n>& R() {
-        return R_;
-    }
-
-    inline FixedArray<TPos, n>& t() {
-        return t_;
-    }
-
-    inline const TDir& R(size_t r, size_t c) const {
-        return R_(r, c);
-    }
-
-    inline TDir& R(size_t r, size_t c) {
-        return R_(r, c);
-    }
-
-    inline const TPos& t(size_t i) const {
-        return t_(i);
-    }
-
-    inline TPos& t(size_t i) {
-        return t_(i);
-    }
-
     inline const FixedArray<TPos, n+1, n+1> affine() const {
-        return assemble_homogeneous_NxN(R_.template casted<TPos>(), t_);
+        return assemble_homogeneous_NxN(R.template casted<TPos>(), t);
     }
 
     inline const FixedArray<TPos, n, n + 1> semi_affine() const {
-        return assemble_homogeneous_NxN1(R_.template casted<TPos>(), t_);
+        return assemble_homogeneous_NxN1(R.template casted<TPos>(), t);
     }
 
     inline TransformationMatrix inverted() const {
-        return inverse(R_, t_);
+        return inverse(R, t);
     }
 
     inline float get_scale2() const {
-        return sum(squared(R_)) / n;
+        return sum(squared(R)) / n;
     }
 
     inline float get_scale() const {
@@ -151,33 +119,32 @@ public:
     }
 
     inline TransformationMatrix inverted_scaled() const {
-        return inverse(R_ / get_scale2(), t_);
+        return inverse(R / get_scale2(), t);
     }
     
     void pre_scale(const TPos& f) {
-        R_ *= f;
-        t_ *= f;
+        R *= f;
+        t *= f;
     }
 
     TransformationMatrix pre_scaled(const TPos& f) const {
-        return TransformationMatrix{R_ * f, t_ * f};
+        return TransformationMatrix{R * f, t * f};
     }
 
     template <class TResultDir, class TResultPos>
     TransformationMatrix<TResultDir, TResultPos, n> casted() const {
         return TransformationMatrix<TResultDir, TResultPos, n>{
-            R_.template casted<TResultDir>(),
-            t_.template casted<TResultPos>()};
+            R.template casted<TResultDir>(),
+            t.template casted<TResultPos>()};
     }
 
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(R_);
-        archive(t_);
+        archive(R);
+        archive(t);
     }
-private:
-    FixedArray<TDir, n, n> R_;
-    FixedArray<TPos, n> t_;
+    FixedArray<TDir, n, n> R;
+    FixedArray<TPos, n> t;
 };
 
 }

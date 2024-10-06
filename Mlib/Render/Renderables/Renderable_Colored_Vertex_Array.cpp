@@ -803,7 +803,7 @@ void RenderableColoredVertexArray::render_cva(
                 size_t i = 0;
                 for (const auto& [trafo, light] : filtered_lights) {
                     if (!any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                        auto mz = m.irotate(z3_from_3x3(trafo.R()));
+                        auto mz = m.irotate(z3_from_3x3(trafo.R));
                         mz /= std::sqrt(sum(squared(mz)));
                         CHK(glUniform3fv(rp.light_dir_locations.at(i), 1, mz.flat_begin()));
                     }
@@ -845,22 +845,22 @@ void RenderableColoredVertexArray::render_cva(
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;
             if ((pred0 || pred1 || pred2 || reorient_uv0 || reorient_normals) && ortho) {
-                auto d = z3_from_3x3(miv.R());
+                auto d = z3_from_3x3(miv.R);
                 d /= std::sqrt(sum(squared(d)));
                 CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
             }
             if (((pred0 || pred1 || pred3) && !ortho) || (tic.ntextures_interior != 0) || pred2) {
-                CHK(glUniform3fv(rp.view_pos, 1, miv.t().casted<float>().flat_begin()));
+                CHK(glUniform3fv(rp.view_pos, 1, miv.t.casted<float>().flat_begin()));
             }
         }
     }
     if (reflection_strength != 0.f) {
-        CHK(glUniformMatrix3fv(rp.r_location, 1, GL_TRUE, m.R().T().flat_begin()));
+        CHK(glUniformMatrix3fv(rp.r_location, 1, GL_TRUE, m.R.T().flat_begin()));
     }
     if (!rcva_->triangles_res_->bone_indices.empty()) {
         for (const auto& [i, l] : enumerate(absolute_bone_transformations)) {
-            CHK(glUniform3fv(rp.pose_positions.at(i), 1, l.offset().flat_begin()));
-            CHK(glUniform4fv(rp.pose_quaternions.at(i), 1, l.quaternion().vector().flat_begin()));
+            CHK(glUniform3fv(rp.pose_positions.at(i), 1, l.t.flat_begin()));
+            CHK(glUniform4fv(rp.pose_quaternions.at(i), 1, l.q.v.flat_begin()));
         }
     }
     if (has_horizontal_detailmap) {
@@ -1103,7 +1103,7 @@ void RenderableColoredVertexArray::render_cva(
         // the aggregation step, which also converts double to float,
         // making the following code obsolete.
         si.delete_triangles_far_away(
-            iv.t().casted<float>(),
+            iv.t.casted<float>(),
             m.casted<float, float>(),
             std::isnan(render_config.draw_distance_add)
                 ? cva->material.draw_distance_add
@@ -1286,7 +1286,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
         VisibilityCheck vc{mvp};
         if (vc.is_visible(cva->name, cva->material, cva->morphology, UINT32_MAX, scene_graph_config, external_render_pass.pass))
         {
-            TransformationMatrix<float, ScenePos, 3> mo{m.R(), m.t() - offset};
+            TransformationMatrix<float, ScenePos, 3> mo{m.R, m.t - offset};
             aggregate_queue.push_back({ (float)vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });
         }
     }
@@ -1299,7 +1299,7 @@ void RenderableColoredVertexArray::append_large_aggregates_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const
 {
     for (const auto& cva : aggregate_once_) {
-        TransformationMatrix<float, ScenePos, 3> mo{m.R(), m.t() - offset};
+        TransformationMatrix<float, ScenePos, 3> mo{m.R, m.t - offset};
         aggregate_queue.push_back(cva->transformed<float>(mo, "_transformed_tm"));
     }
 }

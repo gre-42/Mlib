@@ -34,10 +34,10 @@ void LookAtMovable::advance_time(float dt, const StaticWorld& world) {
         return;
     }
     auto dmat = followed_->get_new_absolute_model_matrix();
-    const auto& dpos = dmat.t();
-    auto R = gl_lookat_absolute(transformation_matrix_.t(), dpos);
+    const auto& dpos = dmat.t;
+    auto R = gl_lookat_absolute(transformation_matrix_.t, dpos);
     if (R.has_value()) {
-        transformation_matrix_.R() = R->casted<float>();
+        transformation_matrix_.R = R->casted<float>();
     }
 }
 

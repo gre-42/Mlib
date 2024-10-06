@@ -19,7 +19,7 @@ NormalOnCapsule::NormalOnCapsule(
 	const TransformationMatrix<float, ScenePos, 3>& trafo)
 	: rbp_{ rbp }
 	, itrafo_{ inv_(trafo) }
-	, rotate_{ fixed_inverse_3x3(trafo.R().T()) }
+	, rotate_{ fixed_inverse_3x3(trafo.R.T()) }
 {}
 
 NormalOnCapsule::~NormalOnCapsule() = default;

@@ -33,7 +33,7 @@ void LargeInstancesQueue::insert(
     const SceneGraphConfig& scene_graph_config,
     InvisibilityHandling invisibility_handling)
 {
-    TransformationMatrix<float, float, 3> mo{m.R(), (m.t() - offset).casted<float>()};
+    TransformationMatrix<float, float, 3> mo{m.R, (m.t - offset).casted<float>()};
     for (const auto& scva : scvas) {
         if (render_pass_ == ExternalRenderPassType::STANDARD) {
             if (!VisibilityCheck{mvp}.is_visible(scva->name, scva->material, scva->morphology, billboard_id, scene_graph_config, render_pass_)) {

@@ -179,7 +179,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     const TransformationMatrix<float, TPosTransform, 3>& tm,
     const std::string& suffix) const
 {
-    auto r = tm.R() / tm.get_scale();
+    auto r = tm.R / tm.get_scale();
     UUVector<FixedArray<ColoredVertex<TPosResult>, 4>> transformed_quads;
     UUVector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
     UUVector<FixedArray<ColoredVertex<TPosResult>, 2>> transformed_lines;

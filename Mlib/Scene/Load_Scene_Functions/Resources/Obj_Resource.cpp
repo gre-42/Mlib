@@ -71,8 +71,8 @@ public:
             asset_references_["levels"].merge_into_database(
                 asset_id_,
                 JsonMacroArguments{{
-                    {"CAR_NODE_POSITION", pose.t()},
-                    {"CAR_NODE_ANGLES", matrix_2_tait_bryan_angles(pose.R()) / degrees},
+                    {"CAR_NODE_POSITION", pose.t},
+                    {"CAR_NODE_ANGLES", matrix_2_tait_bryan_angles(pose.R) / degrees},
                     {"VEHICLE_VELOCITY", velocity},
                     {"VEHICLE_ANGULAR_VELOCITY", angular_velocity}
                 }});
@@ -91,7 +91,7 @@ public:
             global_checkpoints.push_back(
                 TrackElement{
                     .elapsed_seconds = NAN,
-                    .transformations = {OffsetAndTaitBryanAngles{c.R(), c.t()}}}
+                    .transformations = {OffsetAndTaitBryanAngles{c.R, c.t}}}
                 .to_vector(geographic_mapping));
         }
         asset_references_["levels"].merge_into_database(

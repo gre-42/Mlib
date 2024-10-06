@@ -45,7 +45,7 @@ void Spawn::set_spawn_points(
 {
     spawn_points_.clear();
     spawn_points_.reserve(spawn_points.size());
-    FixedArray<float, 3, 3> R = absolute_model_matrix.R() / absolute_model_matrix.get_scale();
+    FixedArray<float, 3, 3> R = absolute_model_matrix.R / absolute_model_matrix.get_scale();
     size_t nsubs = cfg_.spawn_points_nsubdivisions;
     spawn_points_bvh_split_.resize(nsubs);
     for (size_t i = 0; i < nsubs; ++i) {

@@ -106,8 +106,8 @@ TrackElement Mlib::interpolated(const TrackElement& a, const TrackElement& b, fl
         auto qa = OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles(a.transformations[i]);
         auto qb = OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles(b.transformations[i]);
         auto qi = qa.slerp(qb, alpha);
-        result.transformations[i].position() = qi.offset();
-        result.transformations[i].rotation() = qi.quaternion().to_tait_bryan_angles();
+        result.transformations[i].position() = qi.t;
+        result.transformations[i].rotation() = qi.q.to_tait_bryan_angles();
     }
     return result;
 }

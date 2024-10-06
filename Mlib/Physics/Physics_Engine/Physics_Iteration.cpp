@@ -83,8 +83,8 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
             size_t i = 0;
             for (const auto& beacon : beacons) {
                 auto node = make_unique_scene_node(
-                    beacon.location.t(),
-                    matrix_2_tait_bryan_angles<float>(beacon.location.R()),
+                    beacon.location.t,
+                    matrix_2_tait_bryan_angles<float>(beacon.location.R),
                     beacon.location.get_scale(),
                     PoseInterpolationMode::DISABLED);
                 scene_node_resources_.instantiate_child_renderable(

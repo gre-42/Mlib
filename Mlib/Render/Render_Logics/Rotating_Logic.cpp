@@ -183,7 +183,7 @@ void RotatingLogic::render_with_setup(
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
         const TransformationMatrix<float, ScenePos, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();
-        bn->set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale, std::nullopt);
+        bn->set_relative_pose(pose.t, matrix_2_tait_bryan_angles(pose.R / scale), scale, std::nullopt);
     }
 
     RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };

@@ -100,8 +100,8 @@ static void add_reference_bone(
     SceneNodeResources& scene_node_resources)
 {
     auto bone_node = make_unique_scene_node(
-        b.initial_absolute_transformation.offset().casted<ScenePos>(),
-        b.initial_absolute_transformation.quaternion().to_tait_bryan_angles(),
+        b.initial_absolute_transformation.t.casted<ScenePos>(),
+        b.initial_absolute_transformation.q.to_tait_bryan_angles(),
         1.f,
         PoseInterpolationMode::ENABLED);
     scene_node_resources.instantiate_child_renderable(
@@ -131,8 +131,8 @@ static void add_bone_frame(
         throw std::runtime_error("Frame index too large");
     }
     auto bone_node = make_unique_scene_node(
-        frame.at(b.index).offset().casted<ScenePos>(),
-        frame.at(b.index).quaternion().to_tait_bryan_angles(),
+        frame.at(b.index).t.casted<ScenePos>(),
+        frame.at(b.index).q.to_tait_bryan_angles(),
         1.f,
         PoseInterpolationMode::ENABLED);
     scene_node_resources.instantiate_child_renderable(

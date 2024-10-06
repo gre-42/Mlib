@@ -495,7 +495,7 @@ void Scene::render(
         NodeDanglingPtrs nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(node.ptr()); return true; });
+            root_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(node.ptr()); return true; });
         }
         for (const auto& node : nodes) {
             node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
@@ -514,9 +514,9 @@ void Scene::render(
         NodeRawPtrs local_static_root_nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t(), [&local_root_nodes](const auto& node) { local_root_nodes.emplace_back(node.ptr()); return true; });
+            root_nodes_.visit(iv.t, [&local_root_nodes](const auto& node) { local_root_nodes.emplace_back(node.ptr()); return true; });
             if (any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK)) {
-                static_root_nodes_.visit(iv.t(), [&local_static_root_nodes](const auto& node) { local_static_root_nodes.emplace_back(&node.obj()); return true; });
+                static_root_nodes_.visit(iv.t, [&local_static_root_nodes](const auto& node) { local_static_root_nodes.emplace_back(&node.obj()); return true; });
             }
         }
         for (const auto& node : local_root_nodes) {
@@ -574,13 +574,13 @@ void Scene::render(
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_aggregate_once_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+                                root_aggregate_once_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                             }
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
                             for (const auto& node : nodes) {
-                                node->append_large_aggregates_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
+                                node->append_large_aggregates_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), iv.t, aggregate_queue, scene_graph_config);
                             }
-                            large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue, external_render_pass, task_location);
+                            large_aggregate_renderer->update_aggregates(iv.t, aggregate_queue, external_render_pass, task_location);
                         });
                     };
                     if (is_foreground_task || (is_background_task && !large_aggregate_renderer->is_initialized())) {
@@ -606,13 +606,13 @@ void Scene::render(
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_instances_once_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+                                root_instances_once_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                             }
                             LargeInstancesQueue instances_queue{external_render_pass.pass};
                             for (const auto& node : nodes) {
-                                node->append_large_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                                node->append_large_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t, PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                             }
-                            large_instances_renderer->update_instances(iv.t(), instances_queue.queue(), task_location);
+                            large_instances_renderer->update_instances(iv.t, instances_queue.queue(), task_location);
                         });
                     };
                     if (is_foreground_task || (is_background_task && !large_instances_renderer->is_initialized())) {
@@ -638,18 +638,18 @@ void Scene::render(
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_aggregate_always_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+                                root_aggregate_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                             }
                             std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
                             for (const auto& node : nodes) {
-                                node->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
+                                node->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t, aggregate_queue, scene_graph_config, external_render_pass);
                             }
                             aggregate_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> sorted_aggregate_queue;
                             for (auto& e : aggregate_queue) {
                                 sorted_aggregate_queue.push_back(std::move(e.second));
                             }
-                            small_sorted_aggregate_renderer->update_aggregates(iv.t(), sorted_aggregate_queue, external_render_pass, task_location);
+                            small_sorted_aggregate_renderer->update_aggregates(iv.t, sorted_aggregate_queue, external_render_pass, task_location);
                         });
                     };
                     if (is_foreground_task || (is_background_task && !small_sorted_aggregate_renderer->is_initialized())) {
@@ -688,23 +688,23 @@ void Scene::render(
                                 NodeRawPtrs nodes{ CHUNK_SIZE };
                                 {
                                     std::shared_lock lock{ mutex_ };
-                                    root_instances_always_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+                                    root_instances_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                                 }
                                 // auto start_time = std::chrono::steady_clock::now();
                                 SmallInstancesQueues instances_queues{
                                     external_render_pass.pass,
                                     black_render_passes};
                                 for (const auto& node : nodes) {
-                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t(), PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t, PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
                                 }
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->update_instances(
-                                    iv.t(),
+                                    iv.t,
                                     sorted_instances.at(external_render_pass.pass),
                                     task_location);
                                 for (auto rp : black_render_passes) {
                                     small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
-                                        iv.t(),
+                                        iv.t,
                                         sorted_instances.at(rp),
                                         task_location);
                                 }
@@ -757,7 +757,7 @@ void Scene::render(
                 blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
                 for (const auto& b : blended) {
                     DynamicStyle dynamic_style{ dynamic_lights_ != nullptr
-                        ? dynamic_lights_->get_color(b.m.t())
+                        ? dynamic_lights_->get_color(b.m.t)
                         : fixed_zeros<float, 3>() };
                     b.renderable().render(
                         b.mvp,

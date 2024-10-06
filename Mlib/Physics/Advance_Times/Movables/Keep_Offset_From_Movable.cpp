@@ -31,7 +31,7 @@ void KeepOffsetFromMovable::advance_time(float dt, const StaticWorld& world) {
     if (followed_ == nullptr) {
         return;
     }
-    transformation_matrix_.t() = followed_->get_new_absolute_model_matrix().t() + offset_.casted<ScenePos>();
+    transformation_matrix_.t = followed_->get_new_absolute_model_matrix().t + offset_.casted<ScenePos>();
 }
 
 void KeepOffsetFromMovable::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {

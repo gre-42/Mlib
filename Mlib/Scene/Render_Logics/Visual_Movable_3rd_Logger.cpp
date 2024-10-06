@@ -82,7 +82,7 @@ void VisualMovable3rdLogger::render_with_setup(
         if (scene_node_ == nullptr) {
             return;
         }
-        node_pos = scene_node_->absolute_model_matrix().t();
+        node_pos = scene_node_->absolute_model_matrix().t;
     }
     if (renderable_text_ == nullptr) {
         renderable_text_ = std::make_unique<TextResource>(

@@ -25,8 +25,8 @@ Wing::Wing(
     , drag_coefficients{ drag_coefficients }
     , angle_of_attack{ angle_of_attack }
     , brake_angle{ brake_angle }
-    , angle_of_attack_movable{ angle_of_attack_node, this->angle_of_attack, relative_location.R().column(0) }
-    , brake_angle_movable{ brake_angle_node, this->brake_angle, relative_location.R().column(0) }
+    , angle_of_attack_movable{ angle_of_attack_node, this->angle_of_attack, relative_location.R.column(0) }
+    , brake_angle_movable{ brake_angle_node, this->brake_angle, relative_location.R.column(0) }
     , trail_source{ std::move(trail_source) }
     , relative_location_{ relative_location }
 {}
@@ -34,7 +34,7 @@ Wing::Wing(
 Wing::~Wing() = default;
 
 TransformationMatrix<float, ScenePos, 3> Wing::absolute_location(
-    const TransformationMatrix<float, ScenePos, 3>& parent_location)
+    const TransformationMatrix<float, ScenePos, 3>& parent_location) const
 {
     return parent_location * relative_location_;
 }

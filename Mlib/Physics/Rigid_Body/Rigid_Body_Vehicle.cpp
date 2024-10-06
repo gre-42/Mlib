@@ -199,8 +199,8 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, ScenePos, 3>{
-                    .vector = z3_from_3x3(abs_location.R()) * P.power * P.relaxation * rotor->power2lift,
-                    .position = abs_location.t() },
+                    .vector = z3_from_3x3(abs_location.R) * P.power * P.relaxation * rotor->power2lift,
+                    .position = abs_location.t },
                 c.cfg);
         }
         set_rotor_angular_velocity(rotor_id, rotor->w, c.cfg, P.power);
@@ -229,7 +229,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         // Absolute location
         auto abs_location = wing->absolute_location(rbp_.abs_transformation());
         // Relative velocity
-        auto vel = dot(rbp_orig.velocity_at_position(abs_location.t()), abs_location.R());
+        auto vel = dot(rbp_orig.velocity_at_position(abs_location.t), abs_location.R);
         auto vel2 = squared(vel);
         auto lvel = std::sqrt(sum(squared(vel)));
         auto svel2 = lvel * vel;
@@ -242,13 +242,13 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                         drag(0),
                         drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
                         drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz}),
-                .position = abs_location.t() },
+                .position = abs_location.t },
             c.cfg);
         if (wing->trail_source.has_value()) {
             const auto& s = *wing->trail_source;
             if (std::abs(lvel) > s.minimum_velocity) {
                 TransformationMatrix<float, ScenePos, 3> trail_location{
-                    abs_location.R(),
+                    abs_location.R,
                     abs_location.transform(s.position.casted<ScenePos>()) };
                 s.extender->append_location(trail_location, TrailLocationType::MIDPOINT);
             }
@@ -287,7 +287,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 LineEqualityConstraint{
                     .pec = PointEqualityConstraint{
                         .p0 = abs_vehicle_mount_0,
-                        .p1 = T1.t(),
+                        .p1 = T1.t,
                         .beta = c.cfg.point_equality_beta
                     },
                     .null_space = abs_vertical_line
@@ -479,8 +479,8 @@ FixedArray<float, 3> RigidBodyVehicle::velocity_at_position(const FixedArray<Sce
 
 void RigidBodyVehicle::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     rbp_.set_pose(
-        absolute_model_matrix.R(),
-        absolute_model_matrix.t());
+        absolute_model_matrix.R,
+        absolute_model_matrix.t);
 }
 
 TransformationMatrix<float, ScenePos, 3> RigidBodyVehicle::get_new_absolute_model_matrix() const {

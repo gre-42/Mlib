@@ -73,8 +73,8 @@ FixedArray<float, 4, 4> Mlib::cv_to_opengl_hz_intrinsic_matrix(
     float z_near,
     float z_far)
 {
-    const FixedArray<float, 2, 2>& R = intrinsic_matrix.R();
-    const FixedArray<float, 2>& t = intrinsic_matrix.t();
+    const FixedArray<float, 2, 2>& R = intrinsic_matrix.R;
+    const FixedArray<float, 2>& t = intrinsic_matrix.t;
     float x0 = 0.f;
     float y0 = 0.f;
     return FixedArray<float, 4, 4>::init(

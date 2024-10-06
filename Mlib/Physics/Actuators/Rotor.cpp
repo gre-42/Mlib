@@ -91,7 +91,7 @@ TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
         // Drift is defined as the velocity along the x-axis.
         // => Project velocity onto the x-axis.
         // The rotor is oriented along the z-axis btw.
-        FixedArray<float, 3> x = parent_location.R().column(0);
+        FixedArray<float, 3> x = parent_location.R.column(0);
         FixedArray<float, 3> dg =
             x *
             drift_reduction_factor_ *
@@ -147,5 +147,5 @@ TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
 }
 
 FixedArray<float, 3> Rotor::rotation_axis() const {
-    return rest_location.R().column(2);
+    return rest_location.R.column(2);
 }

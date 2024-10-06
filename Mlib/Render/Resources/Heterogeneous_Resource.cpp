@@ -63,8 +63,8 @@ void HeterogeneousResource::instantiate_root_renderables(const RootInstantiation
 
     if (!acvas->scvas.empty() || !acvas->dcvas.empty()) {
         auto node = make_unique_scene_node(
-            options.absolute_model_matrix.t(),
-            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
+            options.absolute_model_matrix.t,
+            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
             options.absolute_model_matrix.get_scale(),
             PoseInterpolationMode::DISABLED);
         instantiate_child_renderable(ChildInstantiationOptions{

@@ -40,7 +40,7 @@ void WingAngle::notify_destroyed(SceneNode& destroyed_object) {
 }
 
 void WingAngle::set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
-    position_ = relative_model_matrix.t();
+    position_ = relative_model_matrix.t;
 }
 
 void WingAngle::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {

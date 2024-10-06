@@ -105,7 +105,7 @@ void SupplyDepots::add_supply_depot(
     const std::map<std::string, uint32_t>& supplies,
     float cooldown)
 {
-    auto center = scene_node->absolute_model_matrix().t();
+    auto center = scene_node->absolute_model_matrix().t;
     auto payload = bvh_.insert(
         AxisAlignedBoundingBox<ScenePos, 3>::from_point(center),
         SupplyDepot{

@@ -54,7 +54,7 @@ void YawPitchLookAtNodes::increment_yaw(float dyaw, float relaxation) {
 }
 
 void YawPitchLookAtNodes::set_yaw(float yaw) {
-    increment_yaw(std::remainderf(yaw - dyaw_ - z_to_yaw(relative_model_matrix_.R().column(2)), float(2 * M_PI)), 1.f);
+    increment_yaw(std::remainderf(yaw - dyaw_ - z_to_yaw(relative_model_matrix_.R.column(2)), float(2 * M_PI)), 1.f);
 }
 
 TransformationMatrix<float, ScenePos, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {

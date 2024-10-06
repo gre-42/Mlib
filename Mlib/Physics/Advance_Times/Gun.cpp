@@ -149,12 +149,12 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
 
 void Gun::generate_bullet(const StaticWorld& world) {
     auto node = make_unique_scene_node(
-        absolute_model_matrix_.t(),
-        matrix_2_tait_bryan_angles(absolute_model_matrix_.R()),
+        absolute_model_matrix_.t,
+        matrix_2_tait_bryan_angles(absolute_model_matrix_.R),
         1.f);
     auto bullet_velocity =
-        - bullet_properties_.velocity * z3_from_3x3(absolute_model_matrix_.R())
-        + parent_rb_.velocity_at_position(absolute_model_matrix_.t());
+        - bullet_properties_.velocity * z3_from_3x3(absolute_model_matrix_.R)
+        + parent_rb_.velocity_at_position(absolute_model_matrix_.t);
     std::string suffix = "_bullet" + scene_.get_temporary_instance_suffix();
     std::string bullet_node_name = "car_node" + suffix;
     if (generate_smart_bullet_) {

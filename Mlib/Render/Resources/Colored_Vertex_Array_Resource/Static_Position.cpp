@@ -11,7 +11,7 @@ StaticPosition::StaticPosition(const std::vector<TransformationAndBillboardId>& 
 {
     positions_.reserve(instances_.size());
     for (const TransformationAndBillboardId& m : instances_) {
-        positions_.push_back(m.transformation_matrix.t());
+        positions_.push_back(m.transformation_matrix.t);
     }
 }
 

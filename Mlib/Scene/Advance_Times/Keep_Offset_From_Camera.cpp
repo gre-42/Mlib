@@ -33,8 +33,8 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
             advance_time(NAN);
             auto trafo = get_new_absolute_model_matrix();
             follower_node_->set_absolute_pose(
-                trafo.t(),
-                matrix_2_tait_bryan_angles(trafo.R()),
+                trafo.t,
+                matrix_2_tait_bryan_angles(trafo.R),
                 1.f,
                 INITIAL_POSE);
             }
@@ -51,11 +51,11 @@ void KeepOffsetFromCamera::advance_time(float dt, const StaticWorld& world) {
 }
 
 void KeepOffsetFromCamera::advance_time(float dt) {
-    auto new_position_abs = cameras_.camera(DP_LOC).node->absolute_model_matrix().t() + offset_.casted<ScenePos>();
+    auto new_position_abs = cameras_.camera(DP_LOC).node->absolute_model_matrix().t + offset_.casted<ScenePos>();
     if (all(grid_ == 0.f)) {
-        transformation_matrix_.t() = new_position_abs;
+        transformation_matrix_.t = new_position_abs;
     } else {
-        auto R = transformation_matrix_.R().casted<ScenePos>();
+        auto R = transformation_matrix_.R.casted<ScenePos>();
         auto diff_rel = dot(new_position_abs, R);
         for (size_t i = 0; i < 3; ++i) {
             if (grid_(i) == 0.f) {
@@ -64,7 +64,7 @@ void KeepOffsetFromCamera::advance_time(float dt) {
                 diff_rel(i) = std::remainder(diff_rel(i), (ScenePos)grid_(i));
             }
         }
-        transformation_matrix_.t() = new_position_abs - dot1d(R, diff_rel);
+        transformation_matrix_.t = new_position_abs - dot1d(R, diff_rel);
     }
 }
 

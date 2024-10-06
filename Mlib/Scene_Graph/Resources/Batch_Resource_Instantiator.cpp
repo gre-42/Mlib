@@ -111,8 +111,8 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     dot2d(lr, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, p.yangle)),
                     p.position};
             auto node = make_unique_scene_node(
-                cm.t(),
-                matrix_2_tait_bryan_angles(cm.R()),
+                cm.t,
+                matrix_2_tait_bryan_angles(cm.R),
                 p.scale,
                 PoseInterpolationMode::DISABLED);
 
@@ -158,8 +158,8 @@ void BatchResourceInstantiator::instantiate_root_renderables(
     }
     if (!resource_instance_positions_.empty()) {
         auto world_node = make_unique_scene_node(
-            options.absolute_model_matrix.t(),
-            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
+            options.absolute_model_matrix.t,
+            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
             options.absolute_model_matrix.get_scale(),
             PoseInterpolationMode::DISABLED);
 

@@ -73,8 +73,8 @@ void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
     auto gun_pose = gun_node_->absolute_model_matrix();
     FixedArray<ScenePos, 3> intersection_point = uninitialized;
     if (collision_query_.can_see(
-        gun_pose.t(),
-        gun_pose.t() - ScenePos(1000) * gun_pose.R().column(2).casted<ScenePos>(),
+        gun_pose.t,
+        gun_pose.t - ScenePos(1000) * gun_pose.R.column(2).casted<ScenePos>(),
         nullptr, // excluded0,
         nullptr, // excluded1
         false, // only_terrain

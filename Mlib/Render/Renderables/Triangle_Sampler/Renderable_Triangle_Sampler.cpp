@@ -127,7 +127,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                 });
             }
         } else {
-            auto rel_camera_position = m.inverted_scaled().transform(iv.t());
+            auto rel_camera_position = m.inverted_scaled().transform(iv.t);
             triangle_bvh.visit(
                 AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(rel_camera_position, max_distance_to_camera * scale_),
                 [&traverse_triangle](const TriangleAndSeed& t){

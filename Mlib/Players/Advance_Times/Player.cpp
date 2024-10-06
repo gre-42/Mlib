@@ -516,7 +516,7 @@ FixedArray<float, 3> Player::gun_direction() const {
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + name() + '"');
     }
-    return -z3_from_3x3(gun().absolute_model_matrix().R());
+    return -z3_from_3x3(gun().absolute_model_matrix().R);
 }
 
 FixedArray<float, 3> Player::punch_angle() const {

@@ -52,7 +52,7 @@ static FixedArray<float, 3, 3> ac_start_to_car(const FixedArray<float, 3, 3>& R)
 
 static TransformationMatrix<float, ScenePos, 3> ac_start_to_car(const TransformationMatrix<float, ScenePos, 3>& tm)
 {
-    return TransformationMatrix<float, ScenePos, 3>{ac_start_to_car(tm.R()), tm.t() + SPAWN_OFFSET};
+    return TransformationMatrix<float, ScenePos, 3>{ac_start_to_car(tm.R), tm.t + SPAWN_OFFSET};
 }
 
 // static TransformationMatrix<float, ScenePos, 3> ac_center(
@@ -72,8 +72,8 @@ static TransformationMatrix<float, ScenePos, 3> ac_portal(
     const TransformationMatrix<float, ScenePos, 3>& left,
     const TransformationMatrix<float, ScenePos, 3>& right)
 {
-    auto x = (right.t() - left.t()).casted<float>();
-    auto y = FixedArray<float, 3>{0.f, 1.f, 0.f};
+    auto x = (right.t - left.t).casted<float>();
+    auto y = FixedArray<float, 3>{ 0.f, 1.f, 0.f };
     x -= dot0d(x, y) * y;
     x /= std::sqrt(sum(squared(x)));
     auto z = cross(x, y);
@@ -82,7 +82,7 @@ static TransformationMatrix<float, ScenePos, 3> ac_portal(
             x(0), y(0), z(0),
             x(1), y(1), z(1),
             x(2), y(2), z(2)),
-        (left.t() + right.t()) / ScenePos(2)};
+        (left.t + right.t) / ScenePos(2)};
 }
 
 static TransformationMatrix<float, ScenePos, 3> ac_start_to_car(

@@ -98,8 +98,8 @@ void HudOpponentZoomLogic::render_without_setup(
         return;
     }
     auto zoom_camera_node = make_unique_scene_node(
-        la->camera_model_matrix.t(),
-        matrix_2_tait_bryan_angles(la->camera_model_matrix.R()),
+        la->camera_model_matrix.t,
+        matrix_2_tait_bryan_angles(la->camera_model_matrix.R),
         1.f);
     zoom_camera_node->set_camera(
         std::make_unique<PerspectiveCamera>(

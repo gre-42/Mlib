@@ -29,7 +29,7 @@ public:
         std::optional<TrailSource> trail_source);
     ~Wing();
     TransformationMatrix<float, ScenePos, 3> absolute_location(
-        const TransformationMatrix<float, ScenePos, 3>& parent_location);
+        const TransformationMatrix<float, ScenePos, 3>& parent_location) const;
     Interp<float> fac;
     float lift_coefficient;
     float angle_coefficient_yz;

@@ -23,11 +23,11 @@ public:
         return Quaternion{TData{1}, FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}}};
     }
     Quaternion(Uninitialized)
-        : v_{ uninitialized }
+        : v{ uninitialized }
     {}
     Quaternion(const TData& s, const FixedArray<TData, 3>& v)
-        : v_{ v }
-        , s_{ s }
+        : v{ v }
+        , s{ s }
     {}
     /**
      * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
@@ -37,29 +37,29 @@ public:
     //     TData trace = m(0, 0) + m(1, 1) + m(2, 2);
     //     if (trace > 0) {
     //         TData k = TData{0.5} / std::sqrt(trace + (TData)1);
-    //         s_ = TData{0.25} / k;
-    //         v_(0) = (m(2, 1) - m(1, 2) ) * k;
-    //         v_(1) = (m(0, 2) - m(2, 0) ) * k;
-    //         v_(2) = (m(1, 0) - m(0, 1) ) * k;
+    //         s = TData{0.25} / k;
+    //         v(0) = (m(2, 1) - m(1, 2) ) * k;
+    //         v(1) = (m(0, 2) - m(2, 0) ) * k;
+    //         v(2) = (m(1, 0) - m(0, 1) ) * k;
     //     } else {
     //         if (m(0, 0) > m(1, 1) && m(0, 0) > m(2, 2) ) {
     //             TData k = (TData)2 * std::sqrt(1 + m(0, 0) - m(1, 1) - m(2, 2));
-    //             s_ = (m(2, 1) - m(1, 2) ) / k;
-    //             v_(0) = TData{0.25} * k;
-    //             v_(1) = (m(0, 1) + m(1, 0) ) / k;
-    //             v_(2) = (m(0, 2) + m(2, 0) ) / k;
+    //             s = (m(2, 1) - m(1, 2) ) / k;
+    //             v(0) = TData{0.25} * k;
+    //             v(1) = (m(0, 1) + m(1, 0) ) / k;
+    //             v(2) = (m(0, 2) + m(2, 0) ) / k;
     //         } else if (m(1, 1) > m(2, 2)) {
     //             TData k = (TData)2 * std::sqrt(1 + m(1, 1) - m(0, 0) - m(2, 2));
-    //             s_ = (m(0, 2) - m(2, 0) ) / k;
-    //             v_(0) = (m(0, 1) + m(1, 0) ) / k;
-    //             v_(1) = TData{0.25} * k;
-    //             v_(2) = (m(1, 2) + m(2, 1) ) / k;
+    //             s = (m(0, 2) - m(2, 0) ) / k;
+    //             v(0) = (m(0, 1) + m(1, 0) ) / k;
+    //             v(1) = TData{0.25} * k;
+    //             v(2) = (m(1, 2) + m(2, 1) ) / k;
     //         } else {
     //             TData k = (TData)2 * std::sqrt(1 + m(2, 2) - m(0, 0) - m(1, 1));
-    //             s_ = (m(1, 0) - m(0, 1) ) / k;
-    //             v_(0) = (m(0, 2) + m(2, 0) ) / k;
-    //             v_(1) = (m(1, 2) + m(2, 1) ) / k;
-    //             v_(2) = TData{0.25} * k;
+    //             s = (m(1, 0) - m(0, 1) ) / k;
+    //             v(0) = (m(0, 2) + m(2, 0) ) / k;
+    //             v(1) = (m(1, 2) + m(2, 1) ) / k;
+    //             v(2) = TData{0.25} * k;
     //         }
     //         *this /= length();
     //     }
@@ -70,21 +70,21 @@ public:
     * Does not work properly
     */
     // explicit Quaternion(const FixedArray<TData, 3, 3>& m) {
-    //     s_ = std::sqrt(std::max<TData>(0, 1 + m(0, 0) + m(1, 1) + m(2, 2))) / 2;
-    //     v_(0) = std::sqrt(std::max<TData>(0, 1 + m(0, 0) - m(1, 1) - m(2, 2))) / 2;
-    //     v_(1) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) + m(1, 1) - m(2, 2))) / 2;
-    //     v_(2) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) - m(1, 1) + m(2, 2))) / 2;
+    //     s = std::sqrt(std::max<TData>(0, 1 + m(0, 0) + m(1, 1) + m(2, 2))) / 2;
+    //     v(0) = std::sqrt(std::max<TData>(0, 1 + m(0, 0) - m(1, 1) - m(2, 2))) / 2;
+    //     v(1) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) + m(1, 1) - m(2, 2))) / 2;
+    //     v(2) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) - m(1, 1) + m(2, 2))) / 2;
     // 
-    //     v_(0) = std::copysign(v_(0), m(2, 1) - m(1, 2));
-    //     v_(1) = std::copysign(v_(1), m(0, 2) - m(2, 0));
-    //     v_(2) = std::copysign(v_(2), m(1, 0) - m(0, 1));
+    //     v(0) = std::copysign(v(0), m(2, 1) - m(1, 2));
+    //     v(1) = std::copysign(v(1), m(0, 2) - m(2, 0));
+    //     v(2) = std::copysign(v(2), m(1, 0) - m(0, 1));
     // }
     explicit Quaternion(const FixedArray<TData, 3, 3>& m)
         : Quaternion{ from_tait_bryan_angles(matrix_2_tait_bryan_angles(m)) }
     {}
     Quaternion(const FixedArray<TData, 3>& axis, const TData& angle)
-        : v_{ axis * std::sin(angle / TData{2}) }
-        , s_{ std::cos(angle / TData{2}) }
+        : v{ axis * std::sin(angle / TData{2}) }
+        , s{ std::cos(angle / TData{2}) }
     {}
     static Quaternion<TData> from_tait_bryan_angles(const FixedArray<TData, 3>& angles) {
         return Quaternion{FixedArray<TData, 3>{(TData)0, (TData)0, (TData)1}, angles(2)} *
@@ -142,20 +142,20 @@ public:
     //     FixedArray<TData, 3> angles;
     // 
     //     // roll (x-axis rotation)
-    //     TData sinr_cosp = 2 * (s_ * v_(0) + v_(1) * v_(2));
-    //     TData cosr_cosp = 1 - 2 * (v_(0) * v_(0) + v_(1) * v_(1));
+    //     TData sinr_cosp = 2 * (s * v(0) + v(1) * v(2));
+    //     TData cosr_cosp = 1 - 2 * (v(0) * v(0) + v(1) * v(1));
     //     angles(0) = std::atan2(sinr_cosp, cosr_cosp);
     // 
     //     // pitch (y-axis rotation)
-    //     TData sinp = 2 * (s_ * v_(1) - v_(2) * v_(0));
+    //     TData sinp = 2 * (s * v(1) - v(2) * v(0));
     //     if (std::abs(sinp) >= 1)
     //         angles(1) = std::copysign(TData{ M_PI / 2 }, sinp); // use 90 degrees if out of range
     //     else
     //         angles(1) = std::asin(sinp);
     // 
     //     // yaw (z-axis rotation)
-    //     TData siny_cosp = 2 * (s_ * v_(2) + v_(0) * v_(1));
-    //     TData cosy_cosp = 1 - 2 * (v_(1) * v_(1) + v_(2) * v_(2));
+    //     TData siny_cosp = 2 * (s * v(2) + v(0) * v(1));
+    //     TData cosy_cosp = 1 - 2 * (v(1) * v(1) + v(2) * v(2));
     //     angles(2) = std::atan2(siny_cosp, cosy_cosp);
     // 
     //     return angles;
@@ -206,69 +206,56 @@ public:
             x(2), y(2), z(2));
     }
     TData length2() const {
-        return squared(s_) + sum(squared(v_));
+        return squared(s) + sum(squared(v));
     }
     TData length() const {
         return std::sqrt(length2());
     }
     Quaternion& operator /= (const TData& x) {
-        s_ /= x;
-        v_ /= x;
+        s /= x;
+        v /= x;
         return *this;
     }
     /**
      * From: https://www.geeks3d.com/20141201/how-to-rotate-a-vertex-by-a-quaternion-in-glsl/
      */
     FixedArray<TData, 3> rotate(const FixedArray<TData, 3>& p) const {
-        return p + TData{2} * cross(v_, cross(v_, p) + s_ * p);
+        return p + TData{2} * cross(v, cross(v, p) + s * p);
     }
     Quaternion inverse() const {
         assert(std::abs(length2() - 1) < 1e-6);
-        return Quaternion{s_, -v_};
+        return Quaternion{s, -v};
     }
     Quaternion operator * (const Quaternion& rhs) const {
         // From: https://www.sciencedirect.com/topics/computer-science/quaternion-multiplication
         return Quaternion{
-            s_ * rhs.s_ - ::Mlib::dot0d(v_, rhs.v_),
-            s_ * rhs.v_ + rhs.s_ * v_ + cross(v_, rhs.v_)};
+            s * rhs.s - ::Mlib::dot0d(v, rhs.v),
+            s * rhs.v + rhs.s * v + cross(v, rhs.v)};
     }
     Quaternion operator - (const Quaternion& rhs) const {
-        return Quaternion{s_ - rhs.s_, v_ - rhs.v_};
+        return Quaternion{s - rhs.s, v - rhs.v};
     }
     Quaternion operator + (const Quaternion& rhs) const {
-        return Quaternion{s_ + rhs.s_, v_ + rhs.v_};
+        return Quaternion{s + rhs.s, v + rhs.v};
     }
     Quaternion operator * (const TData& rhs) const {
-        return Quaternion{s_ * rhs, v_ * rhs};
+        return Quaternion{s * rhs, v * rhs};
     }
     Quaternion operator - () const {
-        return Quaternion{-s_, -v_};
+        return Quaternion{-s, -v};
     }
     TData dot0d(const Quaternion& rhs) const {
-        return s_ * rhs.s_ + ::Mlib::dot0d(v_, rhs.v_);
-    }
-    const TData& scalar() const {
-        return s_;
-    }
-    TData& scalar() {
-        return s_;
-    }
-    const FixedArray<TData, 3>& vector() const {
-        return v_;
-    }
-    FixedArray<TData, 3>& vector() {
-        return v_;
+        return s * rhs.s + ::Mlib::dot0d(v, rhs.v);
     }
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(v_);
-        archive(s_);
+        archive(v);
+        archive(s);
     }
-private:
-    // Storing s_ after v_ makes it possible to access the
+    // Storing s after v makes it possible to access the
     // quaternion with xyzw in shaders.
-    FixedArray<TData, 3> v_;
-    TData s_;
+    FixedArray<TData, 3> v;
+    TData s;
 };
 
 template <class TDir, class TPos>
@@ -287,70 +274,57 @@ public:
             Quaternion<TDir>::from_tait_bryan_angles(a.rotation())};
     }
     OffsetAndQuaternion(Uninitialized)
-        : o_{ uninitialized }
-        , q_{ uninitialized }
+        : t{ uninitialized }
+        , q{ uninitialized }
     {}
-    OffsetAndQuaternion(const FixedArray<TPos, 3>& o, const Quaternion<TDir>& q)
-        : o_{ o }
-        , q_{ q }
+    OffsetAndQuaternion(const FixedArray<TPos, 3>& t, const Quaternion<TDir>& q)
+        : t{ t }
+        , q{ q }
     {}
     explicit OffsetAndQuaternion(const FixedArray<TDir, 4, 4>& m)
-        : o_{ t3_from_4x4(m) }
-        , q_{ R3_from_4x4(m) }
+        : t{ t3_from_4x4(m) }
+        , q{ R3_from_4x4(m) }
     {}
     FixedArray<TPos, 3> transform(const FixedArray<TPos, 3>& p) const {
-        return o_ + q_.rotate(p);
+        return t + q.rotate(p);
     }
     OffsetAndQuaternion inverse() const {
         OffsetAndQuaternion result = uninitialized;
-        result.q_ = q_.inverse();
-        result.o_ = -result.q_.rotate(o_);
+        result.q = q.inverse();
+        result.t = -result.q.rotate(t);
         return result;
     }
     OffsetAndQuaternion operator * (const OffsetAndQuaternion& rhs) const {
         return OffsetAndQuaternion{
-            transform(rhs.o_),
-            q_ * rhs.q_};
+            transform(rhs.t),
+            q * rhs.q};
     }
     template <class TAlpha>
     OffsetAndQuaternion slerp(const OffsetAndQuaternion& other, const TAlpha& a0) const {
         const OffsetAndQuaternion& m0 = *this;
         const OffsetAndQuaternion& m1 = other;
         return OffsetAndQuaternion{
-            m0.offset() * TPos(1 - a0) + m1.offset() * TPos(a0),
-            m0.quaternion().slerp(m1.quaternion(), TDir(a0))};
-    }
-    const FixedArray<TPos, 3>& offset() const {
-        return o_;
-    }
-    FixedArray<TPos, 3>& offset() {
-        return o_;
-    }
-    const Quaternion<TDir>& quaternion() const {
-        return q_;
-    }
-    Quaternion<TDir>& quaternion() {
-        return q_;
+            m0.t * TPos(1 - a0) + m1.t * TPos(a0),
+            m0.q.slerp(m1.q, TDir(a0))};
     }
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(o_);
-        archive(q_);
+        archive(t);
+        archive(q);
     }
-private:
-    FixedArray<TPos, 3> o_;
-    Quaternion<TDir> q_;
+    FixedArray<TPos, 3> t;
+    Quaternion<TDir> q;
 };
 
 template <class TData>
 std::ostream& operator << (std::ostream& ostr, const Quaternion<TData>& q) {
-    ostr << "s: " << q.scalar() << ", v: " << q.vector();
+    ostr << "s: " << q.s << ", v: " << q.v;
     return ostr;
 }
 
 template <class TDir, class TPos>
 std::ostream& operator << (std::ostream& ostr, const OffsetAndQuaternion<TDir, TPos>& oq) {
-    ostr << "o: " << oq.offset() << ", q: " << oq.quaternion();
+    ostr << "t: " << oq.t << ", q: " << oq.q;
     return ostr;
 }
 

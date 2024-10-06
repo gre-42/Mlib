@@ -196,8 +196,8 @@ void Bystanders::handle_bystanders() {
         return;
     }
     TransformationMatrix<float, ScenePos, 3> vip_m = vip_->scene_node()->absolute_model_matrix();
-    const FixedArray<ScenePos, 3>& vip_pos = vip_m.t();
-    FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R());
+    const FixedArray<ScenePos, 3>& vip_pos = vip_m.t;
+    FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R);
     auto it = vehicle_spawners_.spawners().begin();
     using players_map_difference_type = decltype(vehicle_spawners_.spawners().begin())::difference_type;
     std::advance(it, integral_cast<players_map_difference_type>(current_bystander_rng_() % vehicle_spawners_.spawners().size()));

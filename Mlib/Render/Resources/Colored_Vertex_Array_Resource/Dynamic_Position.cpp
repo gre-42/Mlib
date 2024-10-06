@@ -12,7 +12,7 @@ DynamicPosition::DynamicPosition(size_t max_num_instances)
 DynamicPosition::~DynamicPosition() = default;
 
 void DynamicPosition::append(const TransformationAndBillboardId& m) {
-    DynamicBase<value_type>::append(m.transformation_matrix.t());
+    DynamicBase<value_type>::append(m.transformation_matrix.t);
 }
 
 void DynamicPosition::bind(GLuint attribute_index) const {

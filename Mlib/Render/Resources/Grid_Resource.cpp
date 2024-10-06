@@ -19,7 +19,7 @@ GridResource::GridResource(
     const Morphology& morphology)
 {
     auto trafo = transformation;
-    trafo.t() *= scale;
+    trafo.t *= scale;
     TriangleList<double> triangles{
         "grid",
         material,

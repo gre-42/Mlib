@@ -37,7 +37,7 @@ public:
         auto& n1 = result.normal;
         auto& i1 = result.intercept;
         n1 = transformation_matrix.rotate(n0);
-        i1 = i0 - dot0d(n1, transformation_matrix.t());
+        i1 = i0 - dot0d(n1, transformation_matrix.t);
         // i1 = -dot0d(n1, trafo(n0 * (-i0))) = -dot0d(n1, -i0 * n1 + t) = i0 - dot0d(n1, t)
         return result;
     }

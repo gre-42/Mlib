@@ -104,8 +104,8 @@ struct ColoredVertex {
             assert(w.bone_index < oqs.size());
             const OffsetAndQuaternion<float, TPos>& oq = oqs[w.bone_index];
             result.position += w.weight * oq.transform(position);
-            result.normal += w.weight * oq.quaternion().rotate(normal);
-            result.tangent += w.weight * oq.quaternion().rotate(tangent);
+            result.normal += w.weight * oq.q.rotate(normal);
+            result.tangent += w.weight * oq.q.rotate(tangent);
         }
         result.normal /= std::sqrt(sum(squared(result.normal)));
         result.tangent /= std::sqrt(sum(squared(result.tangent)));

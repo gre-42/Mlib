@@ -54,8 +54,8 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos
     if ((followed_ != nullptr) && !std::isnan(bullet_velocity_)) {
         {
             auto bullet_launch_position =
-                gun_node_->absolute_model_matrix().t() -
-                (bullet_start_offset_ * gun_node_->absolute_model_matrix().R().column(2)).casted<ScenePos>();
+                gun_node_->absolute_model_matrix().t -
+                (bullet_start_offset_ * gun_node_->absolute_model_matrix().R.column(2)).casted<ScenePos>();
             auto initial_bullet_velocity = follower_.velocity_at_position(bullet_launch_position);
             float verr = velocity_estimation_error_();
             auto offset = fixed_zeros<ScenePos, 3>();
@@ -71,7 +71,7 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos
                     break;
                 }
                 Aim aim{
-                    absolute_model_matrix.t(),
+                    absolute_model_matrix.t,
                     rbp.transform_to_world_coordinates(followed_->target_),
                     bullet_start_offset_,
                     bullet_velocity_,
@@ -89,12 +89,12 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos
             }
         }
         {
-            auto dir = absolute_point_to_aim_at_ - absolute_model_matrix.t();
+            auto dir = absolute_point_to_aim_at_ - absolute_model_matrix.t;
             auto l2 = sum(squared(dir));
             if (l2 < 1e-12) {
                 target_locked_on_ = false;
             } else {
-                target_locked_on_ = -dot0d((dir / std::sqrt(l2)).casted<float>(), gun_node_->absolute_model_matrix().R().column(2)) > locked_on_cosine_;
+                target_locked_on_ = -dot0d((dir / std::sqrt(l2)).casted<float>(), gun_node_->absolute_model_matrix().R.column(2)) > locked_on_cosine_;
             }
         }
     } else {

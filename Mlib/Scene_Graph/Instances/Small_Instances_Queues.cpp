@@ -30,7 +30,7 @@ void SmallInstancesQueues::insert(
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config)
 {
-    TransformationMatrix<float, float, 3> m_shifted{m.R(), (m.t() - offset).casted<float>()};
+    TransformationMatrix<float, float, 3> m_shifted{m.R, (m.t - offset).casted<float>()};
     VisibilityCheck vc{ mvp };
     for (const auto& scva : scvas) {
         if (vc.is_visible(scva->name, scva->material, scva->morphology, billboard_id, scene_graph_config, main_render_pass_))

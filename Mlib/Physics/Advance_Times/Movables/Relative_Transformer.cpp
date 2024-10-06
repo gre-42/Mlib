@@ -29,7 +29,7 @@ void RelativeTransformer::set_initial_relative_model_matrix(const Transformation
 
 void RelativeTransformer::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix)
 {
-    transformation_matrix_.t() = relative_model_matrix.t();
+    transformation_matrix_.t = relative_model_matrix.t;
 }
 
 void RelativeTransformer::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix)
@@ -43,8 +43,8 @@ TransformationMatrix<float, ScenePos, 3> RelativeTransformer::get_new_relative_m
 }
 
 void RelativeTransformer::advance_time(float dt, const StaticWorld& world) {
-    transformation_matrix_.t() += (dt * v_).casted<ScenePos>();
-    transformation_matrix_.R() = dot2d(rodrigues1(dt * w_), transformation_matrix_.R());
+    transformation_matrix_.t += (dt * v_).casted<ScenePos>();
+    transformation_matrix_.R = dot2d(rodrigues1(dt * w_), transformation_matrix_.R);
 }
 
 void RelativeTransformer::notify_destroyed(SceneNode& destroyed_object) {

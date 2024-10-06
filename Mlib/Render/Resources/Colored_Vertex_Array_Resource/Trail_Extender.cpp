@@ -36,7 +36,7 @@ void TrailExtender::append_location(
     }
     if (previous_center_.has_value()) {
         auto& prev = *previous_center_;
-        auto dz = (location.t() - prev.position).casted<float>();
+        auto dz = (location.t - prev.position).casted<float>();
         auto dz_l2 = sum(squared(dz));
         auto duration = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * seconds;
         if ((location_type == TrailLocationType::MIDPOINT) &&
@@ -48,7 +48,7 @@ void TrailExtender::append_location(
         if (dz_l2 < min_spawn_length_squared_) {
             return;
         }
-        auto lookat = gl_lookat_relative(dz / std::sqrt(dz_l2), location.R().column(1));
+        auto lookat = gl_lookat_relative(dz / std::sqrt(dz_l2), location.R.column(1));
         if (!lookat.has_value()) {
             return;
         }
@@ -107,5 +107,5 @@ void TrailExtender::append_location(
             std::swap(previous_vertices_, current_vertices_);
         }
     }
-    previous_center_ = PreviousCenter{ .position = location.t(), .time = trails_instance_.time() };
+    previous_center_ = PreviousCenter{ .position = location.t, .time = trails_instance_.time() };
 }

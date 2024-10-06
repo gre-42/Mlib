@@ -388,7 +388,7 @@ void KeyBindings::increment_external_forces(
                 if (rt != nullptr) {
                     // rt->w_ = w * k->rotation_axis;
                     // auto r = node->rotation();
-                    auto z = rt->transformation_matrix_.R().column(2);
+                    auto z = rt->transformation_matrix_.R.column(2);
                     auto r = FixedArray<float, 3>{z_to_pitch(z), z_to_yaw(z), 0.f};
                     if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
                         r(1) += dangle;
@@ -397,7 +397,7 @@ void KeyBindings::increment_external_forces(
                     } else {
                         THROW_OR_ABORT("Unsupported rotation axis for relative transformer");
                     }
-                    rt->transformation_matrix_.R() = tait_bryan_angles_2_matrix(r);
+                    rt->transformation_matrix_.R = tait_bryan_angles_2_matrix(r);
                 } else if (ypln != nullptr) {
                     if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
                         ypln->increment_yaw(dangle, 1.f);
@@ -416,7 +416,7 @@ void KeyBindings::increment_external_forces(
                     return;
                 }
                 if (rt != nullptr) {
-                    rt->transformation_matrix_.t() += dx * dot1d(rt->transformation_matrix_.R().casted<ScenePos>(), k.translation);
+                    rt->transformation_matrix_.t += dx * dot1d(rt->transformation_matrix_.R.casted<ScenePos>(), k.translation);
                 }
             };
 
@@ -445,11 +445,11 @@ void KeyBindings::increment_external_forces(
         }
         if (k->button_press.keys_pressed()) {
             auto trafo = node->absolute_model_matrix();
-            auto z = trafo.R().column(2);
+            auto z = trafo.R.column(2);
             if (k->geographic_mapping != nullptr) {
-                linfo() << "Position (lat, lon, height): " << k->geographic_mapping->transform(trafo.t());
+                linfo() << "Position (lat, lon, height): " << k->geographic_mapping->transform(trafo.t);
             }
-            linfo() << "Position: " << trafo.t() / (ScenePos)meters;
+            linfo() << "Position: " << trafo.t / (ScenePos)meters;
             linfo() << "Pitch: " << z_to_pitch(z) / degrees;
             linfo() << "Yaw: " << z_to_yaw(z) / degrees;
         }

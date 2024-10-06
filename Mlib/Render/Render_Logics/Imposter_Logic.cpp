@@ -202,7 +202,7 @@ void ImposterLogic::render_without_setup(
             return;
         }
     }
-    auto camera_position = c.model.t();
+    auto camera_position = c.model.t;
     auto cam_to_obj2 = FixedArray<ScenePos, 2>{
         m.t(0) - camera_position(0),
         m.t(2) - camera_position(2)};
@@ -343,7 +343,7 @@ void ImposterLogic::render_without_setup(
                 la->sensor_aabb,
                 npixels->scaled_sensor_aabb,
                 float(cam_to_obj2_len)},
-            m.t(),
+            m.t,
             camera_position(1),
             (float)std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
     }

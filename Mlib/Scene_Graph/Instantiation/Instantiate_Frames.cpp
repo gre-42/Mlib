@@ -38,8 +38,8 @@ void Mlib::instantiate(
         auto name = VariableAndHash{ info.resource_name + "_inst_" + std::to_string(scene.get_uuid()) };
         auto trafo = trafo_to_world * info.trafo;
         auto node = make_unique_scene_node(
-            trafo.t(),
-            matrix_2_tait_bryan_angles(trafo.R()),
+            trafo.t,
+            matrix_2_tait_bryan_angles(trafo.R),
             info.scale,
             info.rendering_dynamics == RenderingDynamics::STATIC
                 ? PoseInterpolationMode::DISABLED

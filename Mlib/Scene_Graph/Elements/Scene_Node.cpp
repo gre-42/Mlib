@@ -752,12 +752,12 @@ void SceneNode::move(
                 if (it == poses.end()) {
                     THROW_OR_ABORT("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
                 }
-                OffsetAndQuaternion<float, ScenePos> q1{it->second.offset().casted<ScenePos>(), it->second.quaternion()};
+                OffsetAndQuaternion<float, ScenePos> q1{it->second.t.casted<ScenePos>(), it->second.q};
                 auto res_pose = trafo_.slerp(q1, 1.f - bone_.smoothness);
-                res_pose.quaternion() = res_pose.quaternion().slerp(Quaternion<float>::identity(), 1.f - bone_.rotation_strength);
+                res_pose.q = res_pose.q.slerp(Quaternion<float>::identity(), 1.f - bone_.rotation_strength);
                 set_relative_pose(
-                    res_pose.offset(),
-                    res_pose.quaternion().to_tait_bryan_angles(),
+                    res_pose.t,
+                    res_pose.q.to_tait_bryan_angles(),
                     scale(),
                     SUCCESSOR_POSE);
             };
@@ -782,20 +782,20 @@ void SceneNode::move(
             relative_movable_->set_updated_relative_model_matrix(mr);
             relative_movable_->set_absolute_model_matrix(ma);
             auto mr2 = relative_movable_->get_new_relative_model_matrix();
-            set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f, SUCCESSOR_POSE);
+            set_relative_pose(mr2.t, matrix_2_tait_bryan_angles(mr2.R), 1.f, SUCCESSOR_POSE);
             v2 = relative_view_matrix() * v;
             absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
         } else {
             if (absolute_movable_ != nullptr) {
                 auto m = absolute_movable_->get_new_absolute_model_matrix();
                 m = v * m;
-                set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1, SUCCESSOR_POSE);
+                set_relative_pose(m.t, matrix_2_tait_bryan_angles(m.R), 1, SUCCESSOR_POSE);
             }
             v2 = relative_view_matrix() * v;
             if (relative_movable_ != nullptr) {
                 relative_movable_->set_absolute_model_matrix(v2.inverted_scaled());
                 auto m = relative_movable_->get_new_relative_model_matrix();
-                set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1, SUCCESSOR_POSE);
+                set_relative_pose(m.t, matrix_2_tait_bryan_angles(m.R), 1, SUCCESSOR_POSE);
                 v2 = relative_view_matrix() * v;
             }
         }
@@ -945,7 +945,7 @@ void SceneNode::render(
     if (visibility == SceneNodeVisibility::VISIBLE) {
         DynamicStyle dynamic_style{dynamic_lights == nullptr
             ? fixed_zeros<float, 3>()
-            : dynamic_lights->get_color(m.t()) };
+            : dynamic_lights->get_color(m.t) };
         for (const auto& [n, r] : renderables_) {
             OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
             if ((*r)->requires_render_pass(external_render_pass.pass)) {
@@ -1060,9 +1060,9 @@ void SceneNode::append_small_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append small instances to queue for a non-static node");
     }
-    rel.t() += delta_pose.position;
+    rel.t += delta_pose.position;
     if (delta_pose.yangle != 0) {
-        rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
+        rel.R = dot2d(rel.R, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
     FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
     TransformationMatrix<float, ScenePos, 3> m = parent_m * rel;
@@ -1080,7 +1080,7 @@ void SceneNode::append_small_instances_to_queue(
             i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
         }
         if (!i.small_instances.empty()) {
-            auto camera_position = m.inverted_scaled().transform(iv.t());
+            auto camera_position = m.inverted_scaled().transform(iv.t);
             i.small_instances.visit(
                 AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(camera_position, i.max_center_distance),
                 [&, &i = i](const PositionAndYAngle& j) {
@@ -1105,9 +1105,9 @@ void SceneNode::append_large_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append large instances to queue for a non-static node");
     }
-    rel.t() += delta_pose.position;
+    rel.t += delta_pose.position;
     if (delta_pose.yangle != 0) {
-        rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
+        rel.R = dot2d(rel.R, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
     FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
     TransformationMatrix<float, ScenePos, 3> m = parent_m * rel;
@@ -1191,7 +1191,7 @@ void SceneNode::append_skidmarks_to_queue(
 
 const FixedArray<ScenePos, 3>& SceneNode::position() const {
     std::shared_lock lock{ mutex_ };
-    return trafo_.offset();
+    return trafo_.t;
 }
 
 FixedArray<float, 3> SceneNode::rotation() const {
@@ -1215,7 +1215,7 @@ void SceneNode::set_position(
         }
     }
     std::scoped_lock lock{ pose_mutex_ };
-    trafo_.offset() = position;
+    trafo_.t = position;
     if (!time.has_value()) {
         // Do nothing
     } else if (*time == std::chrono::steady_clock::time_point()) {
@@ -1240,7 +1240,7 @@ void SceneNode::set_rotation(
         }
     }
     std::scoped_lock lock{ pose_mutex_ };
-    trafo_.quaternion() = Quaternion<float>::from_tait_bryan_angles(rotation);
+    trafo_.q = Quaternion<float>::from_tait_bryan_angles(rotation);
     rotation_matrix_ = tait_bryan_angles_2_matrix(rotation);
     if (!time.has_value()) {
         // Do nothing
@@ -1292,10 +1292,10 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix(std::c
     if ((time == std::chrono::steady_clock::time_point()) ||
         (interpolation_mode_ == PoseInterpolationMode::DISABLED))
     {
-        return TransformationMatrix{rotation_matrix_ * scale_, trafo_.offset()};
+        return TransformationMatrix{rotation_matrix_ * scale_, trafo_.t};
     } else {
         auto res = trafo_history_.get(time);
-        return TransformationMatrix{res.quaternion().to_rotation_matrix() * scale_, res.offset()};
+        return TransformationMatrix{res.q.to_rotation_matrix() * scale_, res.t};
     }
 }
 
@@ -1330,10 +1330,10 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::ch
     if ((time == std::chrono::steady_clock::time_point()) ||
         (interpolation_mode_ == PoseInterpolationMode::DISABLED))
     {
-        return TransformationMatrix<float, ScenePos, 3>::inverse(rotation_matrix_ / scale_, trafo_.offset());
+        return TransformationMatrix<float, ScenePos, 3>::inverse(rotation_matrix_ / scale_, trafo_.t);
     } else {
         auto res = trafo_history_.get(time);
-        return TransformationMatrix<float, ScenePos, 3>::inverse(res.quaternion().to_rotation_matrix() / scale_, res.offset());
+        return TransformationMatrix<float, ScenePos, 3>::inverse(res.q.to_rotation_matrix() / scale_, res.t);
     }
 }
 
@@ -1381,7 +1381,7 @@ FixedArray<float, 3> SceneNode::velocity(
     std::shared_lock lock{ pose_mutex_ };
     auto p0 = absolute_model_matrix(LockingStrategy::NO_LOCK, time - dt);
     auto p1 = absolute_model_matrix(LockingStrategy::NO_LOCK, time + dt);
-    return (p1.t() - p0.t()).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count() * seconds);
+    return (p1.t - p0.t).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count()* seconds);
 }
 
 void SceneNode::set_absolute_pose(
@@ -1405,8 +1405,8 @@ void SceneNode::set_absolute_pose(
         auto rel_trafo = p_v * m;
         float rel_scale = rel_trafo.get_scale();
         set_relative_pose(
-            rel_trafo.t(),
-            matrix_2_tait_bryan_angles(rel_trafo.R() / rel_scale),
+            rel_trafo.t,
+            matrix_2_tait_bryan_angles(rel_trafo.R / rel_scale),
             rel_scale,
             time);
     }
@@ -1467,7 +1467,7 @@ ScenePos SceneNode::max_center_distance(uint32_t billboard_id) const {
         }
         if (cb != 0.f) {
             auto m = c.scene_node->relative_model_matrix();
-            if (any(m.t() != ScenePos(0))) {
+            if (any(m.t != ScenePos(0))) {
                 THROW_OR_ABORT("Detected node translation in max_center_distance");
             }
             result = std::max(result, cb);

@@ -109,8 +109,8 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         }
         auto a_trafo = a_rb_old.rbp_.abs_transformation();
         FixedArray<float, 3> a_dir = (std::abs(a_trafo.R(0, 1)) > 0.9f)
-            ? a_trafo.R().column(2)
-            : a_trafo.R().column(0);
+            ? a_trafo.R.column(2)
+            : a_trafo.R.column(0);
         a_dir(1) = 0.f;
         a_dir /= std::sqrt(sum(squared(a_dir)));
         // Subtract PI/2 because we want to set the angle in z-direction,
@@ -118,7 +118,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         float angle = std::atan2(-a_dir(2), a_dir(0)) - float(M_PI / 2.);
         b_rb.rbp_.set_pose(
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, angle, 0.f}),
-            a_trafo.t() + (a_rb_old.door_distance_ * a_dir).casted<ScenePos>());
+            a_trafo.t + (a_rb_old.door_distance_ * a_dir).casted<ScenePos>());
         b_rb.rbp_.v_ = 0.f;
         b_rb.rbp_.w_ = 0.f;
         b.scene_node()->invalidate_transformation_history();

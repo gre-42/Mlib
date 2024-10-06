@@ -37,12 +37,12 @@ PitchLookAtNode::~PitchLookAtNode() {
 }
 
 void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
-    relative_position_ = relative_model_matrix.t();
-    pitch_ = z_to_pitch(z3_from_3x3(relative_model_matrix.R()));
+    relative_position_ = relative_model_matrix.t;
+    pitch_ = z_to_pitch(z3_from_3x3(relative_model_matrix.R));
 }
 
 void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
-    relative_position_ = relative_model_matrix.t();
+    relative_position_ = relative_model_matrix.t;
 }
 
 void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {

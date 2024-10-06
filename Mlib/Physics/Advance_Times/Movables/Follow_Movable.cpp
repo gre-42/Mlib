@@ -42,7 +42,7 @@ FollowMovable::FollowMovable(
     , exponential_smoother_{ 1 - std::pow(1 - y_snappiness, dt_dt_ref_), 0 }
     , initialized_{ false }
 {
-    dpos_old_ = followed_->get_new_absolute_model_matrix().t();
+    dpos_old_ = followed_->get_new_absolute_model_matrix().t;
 }
 
 FollowMovable::~FollowMovable() {
@@ -53,8 +53,8 @@ void FollowMovable::initialize(DanglingRef<SceneNode> follower_node) {
     initialized_ = true;
     advance_time(NAN);
     follower_node->set_absolute_pose(
-        transformation_matrix_.t(),
-        matrix_2_tait_bryan_angles(transformation_matrix_.R()),
+        transformation_matrix_.t,
+        matrix_2_tait_bryan_angles(transformation_matrix_.R),
         1,
         INITIAL_POSE);
 }
@@ -73,7 +73,7 @@ void FollowMovable::advance_time(float dt) {
     if (!initialized_) {
         THROW_OR_ABORT("FollowMovable not initialized");
     }
-    FixedArray<ScenePos, 3> dpos3 = followed_->get_new_absolute_model_matrix().t();
+    FixedArray<ScenePos, 3> dpos3 = followed_->get_new_absolute_model_matrix().t;
     FixedArray<ScenePos, 2> dpos2{dpos3(0), dpos3(2)};
     FixedArray<ScenePos, 2> dpos_old2{dpos_old_(0), dpos_old_(2)};
     FixedArray<ScenePos, 2> residual2 = attachment_position_ - ScenePos(snappiness_) * dpos2 - ScenePos(1 - snappiness_) * dpos_old2;
@@ -90,9 +90,9 @@ void FollowMovable::advance_time(float dt) {
         y_adapt_ = y_adaptivity_ * exponential_smoother_(kalman_filter_(std::clamp(float(-dy / std::sqrt(dx2_len2)), 0.f, 0.5f)));
     }
     transformation_matrix_.t(1) += y_adapt_;
-    auto R = gl_lookat_absolute(transformation_matrix_.t(), dpos3 + look_at_displacement_.casted<ScenePos>());
+    auto R = gl_lookat_absolute(transformation_matrix_.t, dpos3 + look_at_displacement_.casted<ScenePos>());
     if (R.has_value()) {
-        transformation_matrix_.R() = R->casted<float>();
+        transformation_matrix_.R = R->casted<float>();
     }
     dpos_old_ = dpos3;
 }

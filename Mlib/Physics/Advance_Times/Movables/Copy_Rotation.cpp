@@ -22,7 +22,7 @@ void CopyRotation::set_initial_relative_model_matrix(const TransformationMatrix<
 
 void CopyRotation::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix)
 {
-    transformation_matrix_.t() = relative_model_matrix.t();
+    transformation_matrix_.t = relative_model_matrix.t;
 }
 
 void CopyRotation::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix)
@@ -30,7 +30,7 @@ void CopyRotation::set_absolute_model_matrix(const TransformationMatrix<float, S
     if (from_ == nullptr) {
         return;
     }
-    transformation_matrix_.R() = from_->relative_model_matrix().R();
+    transformation_matrix_.R = from_->relative_model_matrix().R;
 }
 
 TransformationMatrix<float, ScenePos, 3> CopyRotation::get_new_relative_model_matrix() const

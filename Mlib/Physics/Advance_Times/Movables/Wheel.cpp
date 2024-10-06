@@ -38,7 +38,7 @@ void Wheel::set_initial_relative_model_matrix(const TransformationMatrix<float, 
 
 void Wheel::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix)
 {
-    transformation_matrix_.t() = relative_model_matrix.t();
+    transformation_matrix_.t = relative_model_matrix.t;
 }
 
 void Wheel::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix)
@@ -59,7 +59,7 @@ void Wheel::advance_time(float dt, const StaticWorld& world) {
         angle_x_ = it->second.angle_x;
     }
     tire_angles(0) = angle_x_;
-    transformation_matrix_.R() = tait_bryan_angles_2_matrix(tire_angles);
+    transformation_matrix_.R = tait_bryan_angles_2_matrix(tire_angles);
 }
 
 void Wheel::notify_destroyed(SceneNode& destroyed_object) {

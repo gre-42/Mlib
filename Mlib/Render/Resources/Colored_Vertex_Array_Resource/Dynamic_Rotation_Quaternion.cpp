@@ -13,7 +13,7 @@ DynamicRotationQuaternion::DynamicRotationQuaternion(size_t max_num_instances)
 DynamicRotationQuaternion::~DynamicRotationQuaternion() = default;
 
 void DynamicRotationQuaternion::append(const TransformationAndBillboardId& m) {
-    DynamicBase<value_type>::append(Quaternion<float>{ m.transformation_matrix.R() });
+    DynamicBase<value_type>::append(Quaternion<float>{ m.transformation_matrix.R });
 }
 
 void DynamicRotationQuaternion::bind(GLuint attribute_index) const {
