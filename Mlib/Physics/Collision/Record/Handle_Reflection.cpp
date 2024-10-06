@@ -120,10 +120,9 @@ static void handle_extended_reflection(
             {
                 jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
             }
-            float fit = -dot0d(normal.casted<float>(), c.l1->ray.direction.casted<float>());
             auto& tire = c.o1.tires_.at(c.tire_id1);
             if (tire.rbp != nullptr) {
-                float fsap = fit * c.history.cfg.wheel_penetration_depth - overlap;
+                float fsap = -(float)dot0d(tire.rbp->abs_position() - intersection_point, c.l1->ray.direction) - tire.radius;
                 if (fsap < 0.f) {
                     auto ci = std::make_unique<AttachedWheelNormalContactInfo1>(
                         AttachedWheel{ c.o1.rbp_, *tire.rbp, tire.vertical_line },
@@ -145,6 +144,7 @@ static void handle_extended_reflection(
                 }
                 normal_impulse = tire.normal_impulse;
             } else {
+                float fit = -dot0d(normal.casted<float>(), c.l1->ray.direction.casted<float>());
                 if (fit < 1e-12) {
                     return;
                 }
