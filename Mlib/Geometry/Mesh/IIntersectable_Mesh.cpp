@@ -25,6 +25,9 @@ const std::set<OrderableFixedArray<ScenePos, 3>>& IIntersectableMesh::get_vertic
         }
     }
     std::scoped_lock lock{ mutex_ };
+    if (collision_vertices_ != nullptr) {
+        return collision_vertices_->get();
+    }
     collision_vertices_ = std::make_unique<CollisionVertices>();
     for (const auto& e : get_quads_sphere()) {
         collision_vertices_->insert(e.corners);

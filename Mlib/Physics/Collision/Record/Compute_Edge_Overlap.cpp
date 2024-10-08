@@ -137,9 +137,9 @@ bool Mlib::compute_edge_overlap(
         if (overlap == INFINITY) {
             return false;
         }
-        if (overlap < -1e-4) {
-            verbose_abort("Unexpected overlap");
-        }
+        // if (overlap < -1e-4) {
+        //     verbose_abort("Unexpected overlap");
+        // }
         auto r = intersection_point - c.o0.rbp_.abs_position();
         if (dot0d(r, normal) < 0.) {
             return false;

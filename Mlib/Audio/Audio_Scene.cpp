@@ -68,8 +68,8 @@ void AudioScene::set_source_transformation(
 	}
 	std::scoped_lock lock{ mutex_ };
 	auto& node = source_nodes_.get(&source);
-	auto smooth_position = node.relative_position(relpos->position);
-	auto smooth_velocity = node.relative_velocity(relpos->velocity);
+	const auto& smooth_position = node.relative_position(relpos->position);
+	const auto& smooth_velocity = node.relative_velocity(relpos->velocity);
 	source.set_position(AudioSourceState<float>{
 		.position = smooth_position,
 		.velocity = smooth_velocity
