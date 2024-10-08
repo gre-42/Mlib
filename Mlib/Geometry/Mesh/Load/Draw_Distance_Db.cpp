@@ -3,6 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <Mlib/Strings/RGetline.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <algorithm>
 
@@ -14,13 +15,13 @@ DrawDistanceDb::DrawDistanceDb() = default;
 DrawDistanceDb::~DrawDistanceDb() = default;
 
 void DrawDistanceDb::add_ide(const std::string& filename) {
-    auto f = create_ifstream(filename);
+    auto f = create_ifstream(filename, std::ios::binary);
     if (f->fail()) {
         THROW_OR_ABORT("Could not open \"" + filename + "\" for reading");
     }
     std::string line;
     std::string section;
-    while (std::getline(*f, line)) {
+    while (rgetline(*f, line)) {
         if (f->fail()) {
             THROW_OR_ABORT("Could not read line from file \"" + filename + '"');
         }

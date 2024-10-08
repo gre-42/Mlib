@@ -5,6 +5,7 @@
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Instance_Information.hpp>
 #include <Mlib/Stats/Mean.hpp>
+#include <Mlib/Strings/RGetline.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -15,7 +16,7 @@ std::list<InstanceInformation> Mlib::read_ipl(
     const std::filesystem::path& filename,
     RenderingDynamics rendering_dynamics)
 {
-    auto istr = create_ifstream(filename, std::ios_base::in);
+    auto istr = create_ifstream(filename, std::ios::binary);
     if (istr->fail()) {
         THROW_OR_ABORT("Could not open \"" + filename.string() + '"');
     }
@@ -32,7 +33,7 @@ std::list<InstanceInformation> Mlib::read_ipl(
 {
     {
         std::string header;
-        std::getline(istr, header);
+        rgetline(istr, header);
         if (istr.fail()) {
             THROW_OR_ABORT("Could not read ipl header");
         }
@@ -42,7 +43,7 @@ std::list<InstanceInformation> Mlib::read_ipl(
     }
     {
         std::string inst;
-        std::getline(istr, inst);
+        rgetline(istr, inst);
         if (istr.fail()) {
             THROW_OR_ABORT("Could not read ipl inst");
         }
@@ -53,7 +54,7 @@ std::list<InstanceInformation> Mlib::read_ipl(
     std::list<InstanceInformation> result;
     while (true) {
         std::string line;
-        std::getline(istr, line);
+        rgetline(istr, line);
         if (istr.fail()) {
             THROW_OR_ABORT("Could not read line");
         }
