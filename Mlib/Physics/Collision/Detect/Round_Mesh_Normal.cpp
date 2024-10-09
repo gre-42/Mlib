@@ -25,8 +25,15 @@ static const FixedArray<TData, 3> mix_normals(
     float k)
 {
     auto vl = std::sqrt(sum(squared(vertex_normal)));
-    auto res = lerp(plane_normal, vertex_normal / vl, sigmoid(vl, t, k));
-    res /= std::sqrt(sum(squared(res)));
+    if (vl < 1e-12) {
+        THROW_OR_ABORT("Interpolated vertex normal too short");
+    }
+    auto res = lerp(plane_normal, vertex_normal / vl, sigmoid(std::min((TData)1, vl), t, k));
+    auto pl = std::sqrt(sum(squared(res)));
+    if (pl < 1e-12) {
+        THROW_OR_ABORT("Mixed normal too short");
+    }
+    res /= pl;
     return res;
 }
 

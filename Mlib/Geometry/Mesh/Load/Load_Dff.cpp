@@ -785,7 +785,7 @@ Geometry::Geometry(
 
     if (!(this->flags & NATIVE)) {
         this->triangles.resize(this->numTriangles);
-        if (this->flags & PRELIT && this->numVertices) {
+        if ((this->flags & PRELIT) && (this->numVertices != 0)) {
             this->colors.resize(numVertices);
         }
         this->tex_coords.resize(this->numTexCoordSets);

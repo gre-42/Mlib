@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Math/Nan_To_Num.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <algorithm>
 
@@ -156,9 +157,9 @@ DffArrays<TPosition> Mlib::load_dff(
                     colors.empty() ? material_color : material_color * (colors[v.v(0)].template row_range<0, 3>().template casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(1)].template row_range<0, 3>().template casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(2)].template row_range<0, 3>().template casted<float>() / 255.f),
-                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(0)].base(),
-                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(1)].base(),
-                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(2)].base(),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : nan_to_num((*uvs)[v.v(0)].base(), 0.f),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : nan_to_num((*uvs)[v.v(1)].base(), 0.f),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : nan_to_num((*uvs)[v.v(2)].base(), 0.f),
                     {},
                     {},
                     {},

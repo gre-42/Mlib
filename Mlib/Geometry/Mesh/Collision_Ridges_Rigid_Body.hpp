@@ -18,7 +18,7 @@ struct OrderableRidgeSphereRigidBody: public OrderableRidgeSphereBase {
 namespace std {
 
 template<>
-struct std::hash<Mlib::OrderableRidgeSphereRigidBody>
+struct hash<Mlib::OrderableRidgeSphereRigidBody>
 {
     std::size_t operator()(const Mlib::OrderableRidgeSphereRigidBody& s) const noexcept {
         return std::hash<Mlib::OrderableRidgeSphereBase>()(s);

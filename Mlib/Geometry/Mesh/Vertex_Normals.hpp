@@ -5,6 +5,12 @@
 
 namespace Mlib {
 
+enum class ZeroNormalBehavior {
+    THROW,
+    WARN,
+    ZERO
+};
+
 template <class TPos, class TNormal>
 class VertexNormals {
 public:
@@ -26,9 +32,22 @@ public:
         auto it = vertices_.try_emplace(OrderableFixedArray{position}, TNormal(0)).first;
         it->second += normal;
     }
-    void compute_vertex_normals() {
+    void compute_vertex_normals(ZeroNormalBehavior zero_behavior) {
         for (auto& [_, n] : vertices_) {
-            n /= std::sqrt(sum(squared(n)));
+            auto len = std::sqrt(sum(squared(n)));
+            if (len == 0) {
+                switch (zero_behavior) {
+                case ZeroNormalBehavior::THROW:
+                    THROW_OR_ABORT("Normal is zero");
+                case ZeroNormalBehavior::WARN:
+                    lwarn() << "Normal is zero";
+                    continue;
+                case ZeroNormalBehavior::ZERO:
+                    continue;
+                }
+                THROW_OR_ABORT("Unknown zero normal behavior");
+            }
+            n /= len;
         }
     }
     inline const FixedArray<TNormal, 3>& get_normal(const FixedArray<TPos, 3>& position) {

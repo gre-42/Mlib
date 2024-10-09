@@ -47,7 +47,10 @@ public:
     FixedArray(Uninitialized) {}
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
             v = rhs;
+#pragma GCC diagnostic pop
         }
     }
     explicit FixedArray(const Array<TData>& a) {
@@ -95,7 +98,10 @@ public:
     }
     FixedArray& operator = (const TData& rhs) {
         for (TData& v : flat_iterable()) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
             v = rhs;
+#pragma GCC diagnostic pop
         }
         return *this;
     }
@@ -235,13 +241,19 @@ public:
     }
     FixedArray& operator *= (const TData& rhs) {
         for (TData& v : flat_iterable()) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
             v *= rhs;
+#pragma GCC diagnostic pop
         }
         return *this;
     }
     FixedArray& operator /= (const TData& rhs) {
         for (TData& v : flat_iterable()) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
             v /= rhs;
+#pragma GCC diagnostic pop
         }
         return *this;
     }

@@ -439,7 +439,7 @@ template <class TPos>
 void TriangleList<TPos>::convert_triangle_to_vertex_normals() {
     VertexNormals<TPos, float> vertex_normals;
     vertex_normals.add_triangles(triangles.begin(), triangles.end());
-    vertex_normals.compute_vertex_normals();
+    vertex_normals.compute_vertex_normals(ZeroNormalBehavior::THROW);
     for (auto& it : triangles) {
         for (auto& v : it.flat_iterable()) {
             v.normal = vertex_normals.get_normal(v.position);
@@ -465,7 +465,7 @@ void TriangleList<TPos>::convert_triangle_to_vertex_normals(const std::list<std:
             l->triangles.begin(),
             l->triangles.end());
     }
-    vertex_normals.compute_vertex_normals();
+    vertex_normals.compute_vertex_normals(ZeroNormalBehavior::THROW);
     for (const auto& l : triangle_lists) {
         for (auto& it : l->triangles) {
             for (auto& v : it.flat_iterable()) {

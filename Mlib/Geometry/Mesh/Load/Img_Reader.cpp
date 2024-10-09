@@ -5,6 +5,28 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <istream>
 
+namespace Mlib {
+
+class IStreamAndLock: public std::istream {
+public:
+    explicit IStreamAndLock(
+        std::istream& istr,
+        std::unique_ptr<std::scoped_lock<std::mutex>>&& lock,
+        const DanglingBaseClassRef<ImgReader>& ref)
+        : std::istream{ istr.rdbuf() }
+        , lock_{ std::move(lock) }
+        , ref_{ ref }
+    {}
+    virtual ~IStreamAndLock() override {
+        ref_->reading_ = false;
+    }
+private:
+    std::unique_ptr<std::scoped_lock<std::mutex>> lock_;
+    DanglingBaseClassRef<ImgReader> ref_;
+};
+
+}
+
 using namespace Mlib;
 
 struct DirectoryInfo {
@@ -15,6 +37,7 @@ struct DirectoryInfo {
 static_assert(sizeof(DirectoryInfo) == 32);
 
 ImgReader::ImgReader(std::istream& directory, std::unique_ptr<std::istream>&& data)
+    : reading_{ false }
 {
     while (directory.peek() != EOF) {
         auto h = read_binary<DirectoryInfo>(directory, "directory entry", IoVerbosity::SILENT);
@@ -43,25 +66,10 @@ std::shared_ptr<IIStreamDictionary> ImgReader::load_from_file(const std::string&
     if (img->fail()) {
         THROW_OR_ABORT("Could not open \"" + img_filename + '"');
     }
-    return std::make_unique<ImgReader>(*dir, std::move(img));
+    return std::make_shared<ImgReader>(*dir, std::move(img));
 }
 
 ImgReader::~ImgReader() = default;
-
-class IStreamAndLock: public std::istream {
-public:
-    explicit IStreamAndLock(
-        std::istream& istr,
-        std::unique_ptr<std::scoped_lock<std::mutex>>&& lock,
-        const DanglingBaseClassRef<Object>& ref)
-        : std::istream{ istr.rdbuf() }
-        , lock_{ std::move(lock) }
-        , ref_{ ref }
-    {}
-private:
-    std::unique_ptr<std::scoped_lock<std::mutex>> lock_;
-    DanglingBaseClassRef<Object> ref_;
-};
 
 std::vector<std::string> ImgReader::names() const {
     return directory_.keys();
@@ -77,6 +85,10 @@ std::unique_ptr<std::istream> ImgReader::read(
     }
     const auto& v = directory_.get(name);
     auto lock = std::make_unique<std::scoped_lock<std::mutex>>(mutex_);
+    if (reading_) {
+        THROW_OR_ABORT("Recursively reading from IMG is not supported");
+    }
+    reading_ = true;
     data_->seekg(v.offset);
     if (data_->fail()) {
         THROW_OR_ABORT("Could not seek entry \"" + name + '"');
@@ -84,5 +96,5 @@ std::unique_ptr<std::istream> ImgReader::read(
     return std::make_unique<IStreamAndLock>(
         *data_,
         std::move(lock),
-        DanglingBaseClassRef<ImgReader>{ *this, loc});
+        DanglingBaseClassRef<ImgReader>{ *this, loc });
 }

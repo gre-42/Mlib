@@ -63,7 +63,7 @@ private:
 namespace std {
 
 template<>
-struct std::hash<Mlib::OrderableRidgeSphereBase>
+struct hash<Mlib::OrderableRidgeSphereBase>
 {
     std::size_t operator()(const Mlib::OrderableRidgeSphereBase& s) const noexcept {
         return s.hash;
