@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
@@ -42,16 +41,13 @@ public:
     void clear_alias();
     void set_alias(VariableAndHash<std::string> alias);
 private:
-    void deallocate();
     RenderLogic& child_logic_;
     RenderingResources& rendering_resources_;
     SRenderProgram rp_;
     BufferBackgroundCopy vertices_;
     EmptyArrayBuffer empty_;
     VertexArray va_;
-    bool loaded_;
     std::shared_ptr<ITextureHandle> texture_;
-    DeallocationToken deallocation_token_;
 };
 
 }

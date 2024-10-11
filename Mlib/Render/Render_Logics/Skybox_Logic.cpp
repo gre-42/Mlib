@@ -5,7 +5,6 @@
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -95,16 +94,10 @@ SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
     : child_logic_{ child_logic }
     , rendering_resources_{ RenderingContextStack::primary_rendering_resources() }
     , va_{ vertices_, empty_, empty_, empty_ }
-    , loaded_{ false }
-    , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
 {}
 
 SkyboxLogic::~SkyboxLogic() {
     on_destroy.clear();
-}
-
-void SkyboxLogic::deallocate() {
-    loaded_ = false;
 }
 
 std::optional<RenderSetup> SkyboxLogic::try_render_setup(
@@ -125,22 +118,22 @@ void SkyboxLogic::render_with_setup(
     const RenderSetup& setup)
 {
     LOG_FUNCTION("SkyboxLogic::render");
-    // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
-    if (!loaded_) {
-        loaded_ = true;
-        if (texture_ != nullptr) {
-            rp_.allocate(vertex_shader_text, fragment_shader_text);
-            rp_.skybox_location = rp_.get_uniform_location("skybox");
-            rp_.vp_location = rp_.get_uniform_location("vp");
-
-            va_.initialize();
-            va_.vertex_buffer.set(skybox_vertices, TaskLocation::FOREGROUND);
-            CHK(glEnableVertexAttribArray(0));
-            CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr));
-            CHK(glBindVertexArray(0));
-        }
+    if (texture_ == nullptr) {
+        return;
     }
-    if ((texture_ != nullptr) && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
+    // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
+    if (!rp_.allocated()) {
+        rp_.allocate(vertex_shader_text, fragment_shader_text);
+        rp_.skybox_location = rp_.get_uniform_location("skybox");
+        rp_.vp_location = rp_.get_uniform_location("vp");
+
+        va_.initialize();
+        va_.vertex_buffer.set(skybox_vertices, TaskLocation::FOREGROUND);
+        CHK(glEnableVertexAttribArray(0));
+        CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr));
+        CHK(glBindVertexArray(0));
+    }
+    if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
         rp_.use();

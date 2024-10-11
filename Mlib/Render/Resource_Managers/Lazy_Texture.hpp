@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
+#include <Mlib/Memory/Deallocation_Token.hpp>
 
 namespace Mlib {
 
@@ -22,12 +23,14 @@ public:
     virtual ColorMode color_mode() const override;
     virtual MipmapMode mipmap_mode() const override;
 private:
+    void deallocate();
     ITextureHandle& texture();
     const ITextureHandle& texture() const;
     const RenderingResources& rendering_resources_;
     mutable std::shared_ptr<ITextureHandle> texture_;
 	ColormapWithModifiers colormap_;
     TextureRole role_;
+    DeallocationToken deallocation_token_;
 };
 
 }

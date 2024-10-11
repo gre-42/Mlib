@@ -1,4 +1,5 @@
 #include "Lazy_Texture.hpp"
+#include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 
 using namespace Mlib;
@@ -10,6 +11,7 @@ LazyTexture::LazyTexture(
 	: rendering_resources_{ rendering_resources }
 	, colormap_{ colormap }
 	, role_{ role }
+	, deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
 	if (!colormap.hash.has_value()) {
 		THROW_OR_ABORT("LazyTexture: Colormap hash not computed");
@@ -17,6 +19,10 @@ LazyTexture::LazyTexture(
 }
 
 LazyTexture::~LazyTexture() = default;
+
+void LazyTexture::deallocate() {
+	texture_ = nullptr;
+}
 
 uint32_t LazyTexture::handle32() const {
 	return texture().handle32();
