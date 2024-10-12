@@ -18,6 +18,7 @@ class EngineEventListener;
 struct EnginePowerDeltaIntent;
 struct TirePowerIntent;
 enum class VelocityClassification;
+struct PhysicsPhase;
 
 class RigidBodyEngine: public StatusWriter {
     friend std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
@@ -52,7 +53,8 @@ public:
     void advance_time(
         float dt,
         const FixedArray<ScenePos, 3>& position,
-        const FixedArray<float, 3>& velocity);
+        const FixedArray<float, 3>& velocity,
+        const PhysicsPhase& phase);
     float engine_w() const;
 
 private:

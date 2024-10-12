@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
@@ -186,10 +187,10 @@ void test_com() {
         r0->velocity_at_position(com0.casted<ScenePos>()),
         r1->velocity_at_position(com1.casted<ScenePos>()));
     {
-        r0->advance_time(cfg, world, nullptr);
+        r0->advance_time(cfg, world, nullptr, PhysicsPhase{.burn_in = false, .substep = 0});
     }
     {
-        r1->advance_time(cfg, world, nullptr);
+        r1->advance_time(cfg, world, nullptr, PhysicsPhase{.burn_in = false, .substep = 0});
     }
     assert_allclose(
         r0->velocity_at_position(com0.casted<ScenePos>()),

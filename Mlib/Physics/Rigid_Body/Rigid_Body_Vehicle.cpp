@@ -420,7 +420,8 @@ void RigidBodyVehicle::advance_time_skate(
 void RigidBodyVehicle::advance_time(
     const PhysicsEngineConfig& cfg,
     const StaticWorld& world,
-    std::list<Beacon>* beacons)
+    std::list<Beacon>* beacons,
+    const PhysicsPhase& phase)
 {
     auto dt_substeps = cfg.dt_substeps();
     advance_time_skate(cfg, world);
@@ -433,7 +434,7 @@ void RigidBodyVehicle::advance_time(
         }
     }
     for (auto& [_, e] : engines_) {
-        e.advance_time(dt_substeps, abs_com(), rbp_.v_);
+        e.advance_time(dt_substeps, abs_com(), rbp_.v_, phase);
     }
 #ifdef COMPUTE_POWER
     float nrg = energy();

@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Velocity_Classification.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <cmath>
 
@@ -177,7 +178,8 @@ void RigidBodyEngine::set_surface_power(const EnginePowerIntent& engine_power_in
 void RigidBodyEngine::advance_time(
     float dt,
     const FixedArray<ScenePos, 3>& position,
-    const FixedArray<float, 3>& velocity)
+    const FixedArray<float, 3>& velocity,
+    const PhysicsPhase& phase)
 {
     float average_tire_w_;
     if (tires_w_.empty()) {
@@ -194,7 +196,7 @@ void RigidBodyEngine::advance_time(
         if (!std::isnan(average_tire_w_)) {
             engine_power.auto_set_gear(dt, average_tire_w_);
         }
-        if (audio_ != nullptr) {
+        if (!phase.burn_in && (phase.substep == 0) && (audio_ != nullptr)) {
             audio_->notify_rotation(
                 engine_power.engine_w(),
                 average_tire_w_,

@@ -59,6 +59,7 @@ template <class T>
 class DanglingRef;
 class ISurfaceNormal;
 class ICollisionNormalModifier;
+struct PhysicsPhase;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -142,7 +143,8 @@ public:
     void advance_time(
         const PhysicsEngineConfig& cfg,
         const StaticWorld& world,
-        std::list<Beacon>* beacons);
+        std::list<Beacon>* beacons,
+        const PhysicsPhase& phase);
     float mass() const;
     FixedArray<ScenePos, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;

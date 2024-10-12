@@ -16,6 +16,7 @@
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Raycast_Intersections.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_With_Movables.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_With_Terrain.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
@@ -127,7 +128,8 @@ void PhysicsEngine::collide(
 
 void PhysicsEngine::move_rigid_bodies(
     const StaticWorld& world,
-    std::list<Beacon>* beacons)
+    std::list<Beacon>* beacons,
+    const PhysicsPhase& phase)
 {
     for (const auto& rbm : rigid_bodies_.objects_) {
         if (rbm.rigid_body->is_deactivated_avatar()) {
@@ -135,7 +137,7 @@ void PhysicsEngine::move_rigid_bodies(
         }
         auto& rb = rbm.rigid_body;
         assert_true(rb->mass() != INFINITY);
-        rb->advance_time(cfg_, world, beacons);
+        rb->advance_time(cfg_, world, beacons, phase);
     }
 }
 
@@ -186,7 +188,13 @@ void PhysicsEngine::burn_in(
                 o.rigid_body->rbp_.w_ = 0;
             }
         }
-        move_rigid_bodies(world, nullptr);  // nullptr=beacons
+        move_rigid_bodies(
+            world,
+            nullptr,  // nullptr=beacons
+            PhysicsPhase{
+                .burn_in = true,
+                .substep = SIZE_MAX
+            });
     }
 }
 

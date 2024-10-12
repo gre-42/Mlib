@@ -20,6 +20,7 @@ class ContactSmokeGenerator;
 class IParticleRenderer;
 class ITrailRenderer;
 struct StaticWorld;
+struct PhysicsPhase;
 
 class PhysicsEngine {
 public:
@@ -36,7 +37,8 @@ public:
         BaseLog* base_log);
     void move_rigid_bodies(
         const StaticWorld& world,
-        std::list<Beacon>* beacons);
+        std::list<Beacon>* beacons,
+        const PhysicsPhase& phase);
     void move_particles(const StaticWorld& world);
     void move_advance_times(const StaticWorld& world);
     void burn_in(

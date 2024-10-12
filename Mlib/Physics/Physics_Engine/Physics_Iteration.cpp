@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
@@ -65,7 +66,13 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                 false,          // false=burn_in
                 i,
                 base_log_);
-            physics_engine_.move_rigid_bodies(world, bcns);
+            physics_engine_.move_rigid_bodies(
+                world,
+                bcns,
+                PhysicsPhase{
+                    .burn_in = false,
+                    .substep = i
+                });
             physics_engine_.move_particles(world);
         }
     }
