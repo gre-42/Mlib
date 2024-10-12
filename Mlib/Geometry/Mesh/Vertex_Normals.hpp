@@ -1,15 +1,12 @@
 #pragma once
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <map>
 
 namespace Mlib {
 
-enum class ZeroNormalBehavior {
-    THROW,
-    WARN,
-    ZERO
-};
+enum class NormalVectorErrorBehavior;
 
 template <class TPos, class TNormal>
 class VertexNormals {
@@ -32,22 +29,20 @@ public:
         auto it = vertices_.try_emplace(OrderableFixedArray{position}, TNormal(0)).first;
         it->second += normal;
     }
-    void compute_vertex_normals(ZeroNormalBehavior zero_behavior) {
+    void compute_vertex_normals(NormalVectorErrorBehavior zero_behavior) {
         for (auto& [_, n] : vertices_) {
             auto len = std::sqrt(sum(squared(n)));
-            if (len == 0) {
-                switch (zero_behavior) {
-                case ZeroNormalBehavior::THROW:
-                    THROW_OR_ABORT("Normal is zero");
-                case ZeroNormalBehavior::WARN:
+            if (len < 1e-12) {
+                if (any(zero_behavior & NormalVectorErrorBehavior::WARN)) {
                     lwarn() << "Normal is zero";
-                    continue;
-                case ZeroNormalBehavior::ZERO:
-                    continue;
                 }
-                THROW_OR_ABORT("Unknown zero normal behavior");
+                if (any(zero_behavior & NormalVectorErrorBehavior::THROW)) {
+                    THROW_OR_ABORT("Normal is zero");
+                }
+                n = 0.f;
+            } else {
+                n /= len;
             }
-            n /= len;
         }
     }
     inline const FixedArray<TNormal, 3>& get_normal(const FixedArray<TPos, 3>& position) {

@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Lazy_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
+#include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
@@ -102,7 +103,9 @@ void RigidBodies::add_rigid_body(
                         std::vector<const FixedArray<ScenePos, 3>*> vertex_vector;
                         vertex_vector.reserve(4 * m->quads.size() + 3 * m->triangles.size());
                         auto get_transformed = [&]<size_t tnvertices>(){
-                            auto transformed = m->template transformed_polygon_bbox<tnvertices, ScenePos>(rb.get_new_absolute_model_matrix());
+                            auto transformed = m->template transformed_polygon_bbox<tnvertices, ScenePos>(
+                                rb.get_new_absolute_model_matrix(),
+                                NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP);
                             std::vector<CollisionPolygonSphere<ScenePos, tnvertices>> bases;
                             bases.reserve(transformed.size());
                             for (const CollisionPolygonAabb<ScenePos, tnvertices>& t : transformed) {
@@ -158,7 +161,9 @@ void RigidBodies::add_rigid_body(
                             THROW_OR_ABORT("Collision ridges already baked, or previous baking failed");
                         }
                         auto add = [&]<size_t tnvertices>(){
-                            auto transformed = m->template transformed_polygon_bbox<tnvertices, ScenePos>(rb.get_new_absolute_model_matrix());
+                            auto transformed = m->template transformed_polygon_bbox<tnvertices, ScenePos>(
+                                rb.get_new_absolute_model_matrix(),
+                                NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP);
                             for (const auto& t : transformed) {
                                 triangle_bvh_.insert(t.aabb, { rb, t.base });
                             }
@@ -233,7 +238,9 @@ void RigidBodies::add_rigid_body(
                     BoundingSphere<TPos, 3> bs = welzl_from_iterator<TPos, 3>(vertices.begin(), vertices.end(), rng);
                     meshes.push_back({
                         .physics_material = cva->morphology.physics_material,
-                        .mesh = std::make_pair(bs, std::make_shared<CollisionMesh<TPos>>(*cva))});
+                        .mesh = std::make_pair(bs, std::make_shared<CollisionMesh<TPos>>(
+                            *cva,
+                            NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP))});
                 }
             }
         };

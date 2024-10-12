@@ -218,7 +218,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
                         obj_vertices.at(vertex_ids(2) - 1).position},
-                        TriangleNormalErrorBehavior::WARN).template casted<float>();
+                        NormalVectorErrorBehavior::WARN).template casted<float>();
                     n0 = n;
                     n1 = n;
                     n2 = n;
@@ -274,7 +274,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
                         obj_vertices.at(vertex_ids(2) - 1).position},
-                        TriangleNormalErrorBehavior::WARN).template casted<float>();
+                        NormalVectorErrorBehavior::WARN).template casted<float>();
                     n0 = n;
                     n1 = n;
                     n2 = n;

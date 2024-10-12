@@ -106,7 +106,7 @@ HeightMapResource::HeightMapResource(
         vertex_normals.add_triangles(
             triangles.begin(),
             triangles.end());
-        vertex_normals.compute_vertex_normals(ZeroNormalBehavior::THROW);
+        vertex_normals.compute_vertex_normals(NormalVectorErrorBehavior::THROW);
         for (auto& it : triangles) {
             for (auto& v : it.flat_iterable()) {
                 v.normal = vertex_normals.get_normal(v.position);

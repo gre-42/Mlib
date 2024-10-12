@@ -5,14 +5,16 @@
 using namespace Mlib;
 
 template <class TData>
-CollisionMesh<TData>::CollisionMesh(const ColoredVertexArray<TData>& mesh)
+CollisionMesh<TData>::CollisionMesh(
+    const ColoredVertexArray<TData>& mesh,
+    NormalVectorErrorBehavior zero_normal_behavior)
     : name{ mesh.name }
 {
     quads.reserve(mesh.quads.size());
-    mesh.quads_sphere(quads);
+    mesh.quads_sphere(quads, zero_normal_behavior);
 
     triangles.reserve(mesh.triangles.size());
-    mesh.triangles_sphere(triangles);
+    mesh.triangles_sphere(triangles, zero_normal_behavior);
 
     lines = mesh.lines_sphere();
 }

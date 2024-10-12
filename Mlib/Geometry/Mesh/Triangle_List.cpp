@@ -102,13 +102,30 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     const std::vector<BoneWeight>& b00,
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b01,
-    TriangleNormalErrorBehavior normal_error_behavior,
+    NormalVectorErrorBehavior normal_error_behavior,
     TriangleTangentErrorBehavior tangent_error_behavior,
     ColoredVertex<TPos>** pp00,
     ColoredVertex<TPos>** pp10,
     ColoredVertex<TPos>** pp01)
 {
-    auto n = triangle_normal<TPos>({p00, p10, p01}, normal_error_behavior).template casted<float>();
+    auto t = FixedArray<FixedArray<TPos, 3>, 3>{ p00, p10, p01 };
+    auto n_o = try_triangle_normal<TPos>(t);
+    if (!n_o.has_value()) {
+        if (normal_error_behavior == NormalVectorErrorBehavior::SKIP) {
+            if (pp00 != nullptr) {
+                *pp00 = nullptr;
+            }
+            if (pp10 != nullptr) {
+                *pp10 = nullptr;
+            }
+            if (pp01 != nullptr) {
+                *pp01 = nullptr;
+            }
+            return;
+        }
+        n_o = get_alternative_or_throw(t, normal_error_behavior);
+    }
+    auto n = n_o->template casted<float>();
     draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior, pp00, pp10, pp01);
 }
 
@@ -208,7 +225,7 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b11,
     const std::vector<BoneWeight>& b01,
-    TriangleNormalErrorBehavior normal_error_behavior,
+    NormalVectorErrorBehavior normal_error_behavior,
     TriangleTangentErrorBehavior tangent_error_behavior,
     RectangleTriangulationMode rectangle_triangulation_mode,
     ColoredVertex<TPos>** pp00a,
@@ -426,7 +443,7 @@ void TriangleList<TPos>::delete_backfacing_triangles(
 }
 
 template <class TPos>
-void TriangleList<TPos>::calculate_triangle_normals(TriangleNormalErrorBehavior error_behavior) {
+void TriangleList<TPos>::calculate_triangle_normals(NormalVectorErrorBehavior error_behavior) {
     for (auto& t : triangles) {
         auto n = triangle_normal<TPos>({t(0).position, t(1).position, t(2).position}, error_behavior);
         t(0).normal = n.template casted<float>();
@@ -439,7 +456,7 @@ template <class TPos>
 void TriangleList<TPos>::convert_triangle_to_vertex_normals() {
     VertexNormals<TPos, float> vertex_normals;
     vertex_normals.add_triangles(triangles.begin(), triangles.end());
-    vertex_normals.compute_vertex_normals(ZeroNormalBehavior::THROW);
+    vertex_normals.compute_vertex_normals(NormalVectorErrorBehavior::THROW);
     for (auto& it : triangles) {
         for (auto& v : it.flat_iterable()) {
             v.normal = vertex_normals.get_normal(v.position);
@@ -465,7 +482,7 @@ void TriangleList<TPos>::convert_triangle_to_vertex_normals(const std::list<std:
             l->triangles.begin(),
             l->triangles.end());
     }
-    vertex_normals.compute_vertex_normals(ZeroNormalBehavior::THROW);
+    vertex_normals.compute_vertex_normals(NormalVectorErrorBehavior::THROW);
     for (const auto& l : triangle_lists) {
         for (auto& it : l->triangles) {
             for (auto& v : it.flat_iterable()) {

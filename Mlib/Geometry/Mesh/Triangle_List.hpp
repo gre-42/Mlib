@@ -6,8 +6,8 @@
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
-#include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <cereal/access.hpp>
 #include <cstdint>
@@ -72,7 +72,7 @@ public:
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b01 = {},
-        TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
+        NormalVectorErrorBehavior normal_error_behavior = NormalVectorErrorBehavior::THROW,
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
         ColoredVertex<TPos>** pp00 = nullptr,
         ColoredVertex<TPos>** pp10 = nullptr,
@@ -123,7 +123,7 @@ public:
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b11 = {},
         const std::vector<BoneWeight>& b01 = {},
-        TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
+        NormalVectorErrorBehavior normal_error_behavior = NormalVectorErrorBehavior::THROW,
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
         RectangleTriangulationMode rectangle_triangulation_mode = RectangleTriangulationMode::FIRST,
         ColoredVertex<TPos>** pp00a = nullptr,
@@ -149,7 +149,7 @@ public:
         const std::list<std::shared_ptr<TriangleList>>& a,
         const std::list<std::shared_ptr<TriangleList>>& b);
     void delete_backfacing_triangles(std::list<FixedArray<ColoredVertex<TPos>, 3>>* deleted_triangles = nullptr);
-    void calculate_triangle_normals(TriangleNormalErrorBehavior error_behavior = TriangleNormalErrorBehavior::RAISE);
+    void calculate_triangle_normals(NormalVectorErrorBehavior error_behavior = NormalVectorErrorBehavior::THROW);
     void convert_triangle_to_vertex_normals();
     void flip();
     static void convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists);

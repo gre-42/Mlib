@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Nan_To_Num.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -163,7 +164,7 @@ DffArrays<TPosition> Mlib::load_dff(
                     {},
                     {},
                     {},
-                    TriangleNormalErrorBehavior::ZERO,
+                    NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP,
                     TriangleTangentErrorBehavior::ZERO);
             } else {
                 tls[v.matId].draw_triangle_with_normals(
@@ -189,6 +190,9 @@ DffArrays<TPosition> Mlib::load_dff(
             // if (normals.empty()) {
             //     tl.convert_triangle_to_vertex_normals();
             // }
+            if (tl.triangles.empty()) {
+                continue;
+            }
             result.renderables.push_back(tl.triangle_array()->template transformed<TPosition>(trafo, "_root_frame"));
         }
     }

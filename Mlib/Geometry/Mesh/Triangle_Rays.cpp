@@ -58,7 +58,7 @@ UUVector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_vertex_rays
 {
     VertexNormals<TPos, float> vertex_normals;
     vertex_normals.add_triangles(triangles.begin(), triangles.end());
-    vertex_normals.compute_vertex_normals(ZeroNormalBehavior::THROW);
+    vertex_normals.compute_vertex_normals(NormalVectorErrorBehavior::THROW);
 
     UUVector<FixedArray<FixedArray<TPos, 3>, 2>> res;
     res.reserve(vertex_normals.vertices().size());

@@ -83,7 +83,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
 
     VertexNormals<TPos, float> vertex_normals;
     vertex_normals.add_triangles(cva.triangles.begin(), cva.triangles.end());
-    vertex_normals.compute_vertex_normals(ZeroNormalBehavior::THROW);
+    vertex_normals.compute_vertex_normals(NormalVectorErrorBehavior::THROW);
 
     std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> result;
     result.reserve(cva.triangles.size() + 1);

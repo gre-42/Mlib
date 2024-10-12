@@ -8,13 +8,16 @@ namespace Mlib {
 
 template <class TPos>
 class ColoredVertexArray;
+enum class NormalVectorErrorBehavior;
 
 template <class TData>
 class CollisionMesh {
     CollisionMesh(const CollisionMesh&) = delete;
     CollisionMesh& operator = (const CollisionMesh&) = delete;
 public:
-    explicit CollisionMesh(const ColoredVertexArray<TData>& mesh);
+    explicit CollisionMesh(
+        const ColoredVertexArray<TData>& mesh,
+        NormalVectorErrorBehavior zero_normal_behavior);
     ~CollisionMesh();
     std::string name;
     std::vector<CollisionPolygonSphere<TData, 4>> quads;
