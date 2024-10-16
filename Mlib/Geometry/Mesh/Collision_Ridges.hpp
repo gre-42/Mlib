@@ -16,9 +16,9 @@ public:
     ~CollisionRidges();
     template <size_t tnvertices>
     void insert(
-        const FixedArray<FixedArray<ScenePos, 3>, tnvertices>& polygon,
+        const FixedArray<ScenePos, tnvertices, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        const FixedArray<FixedArray<float, 3>, tnvertices>& vertex_normals,
+        const FixedArray<float, tnvertices, 3>& vertex_normals,
         ScenePos max_min_cos_ridge,
         PhysicsMaterial physics_material);
 protected:

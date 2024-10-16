@@ -1019,8 +1019,8 @@ void DrawStreets::draw_streets_draw_ways(
         racing_line_segment_scale_x1 = (float)std::sqrt(sum(squared(c.s(1, 0) - c.s(1, 1)))) / scale / racing_line_width_x / 2.f;
     }
     if (!std::isnan(racing_line_beta0) && !std::isnan(racing_line_beta1)) {
-        auto v0 = racing_line_segment0->racing_line_segment(1) - racing_line_segment0->racing_line_segment(0);
-        auto v1 = racing_line_segment1->racing_line_segment(1) - racing_line_segment1->racing_line_segment(0);
+        auto v0 = racing_line_segment0->racing_line_segment[1] - racing_line_segment0->racing_line_segment[0];
+        auto v1 = racing_line_segment1->racing_line_segment[1] - racing_line_segment1->racing_line_segment[0];
         auto vs = node1.position - node0.position;
         if ((dot0d(v0, vs) > 0) && (dot0d(v1, vs) > 0)) {
             flip_racing_line = false;

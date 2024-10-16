@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

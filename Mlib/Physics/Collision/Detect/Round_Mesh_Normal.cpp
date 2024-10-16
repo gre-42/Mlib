@@ -50,7 +50,7 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
 {
     auto l = dot0d(ridge.ray.direction, position - ridge.ray.start);
     auto alpha = (float)(l / ridge.ray.length);
-    auto ni = lerp(ridge.vertex_normals(0), ridge.vertex_normals(1), alpha);
+    auto ni = lerp(ridge.vertex_normals[0], ridge.vertex_normals[1], alpha);
     return mix_normals(ni, ridge.normal.casted<float>(), t_, k_);
 }
 
@@ -58,20 +58,20 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
     const CollisionPolygonSphere<ScenePos, 3>& triangle,
     const FixedArray<ScenePos, 3>& position) const
 {
-    auto m2d = to_2d(triangle.polygon.plane().normal, triangle.corners(1) - triangle.corners(0));
+    auto m2d = to_2d(triangle.polygon.plane().normal, triangle.corners[1] - triangle.corners[0]);
     FixedArray<ScenePos, 3> uvw = uninitialized;
     barycentric(
         dot1d(m2d, position),
-        dot1d(m2d, triangle.corners(0)),
-        dot1d(m2d, triangle.corners(1)),
-        dot1d(m2d, triangle.corners(2)),
+        dot1d(m2d, triangle.corners[0]),
+        dot1d(m2d, triangle.corners[1]),
+        dot1d(m2d, triangle.corners[2]),
         uvw(0),
         uvw(1),
         uvw(2));
     auto ni =
-        (uvw(0) * triangle.vertex_normals(0).casted<double>() +
-         uvw(1) * triangle.vertex_normals(1).casted<double>() +
-         uvw(2) * triangle.vertex_normals(2).casted<double>()).casted<float>();
+        (uvw(0) * triangle.vertex_normals[0].casted<double>() +
+         uvw(1) * triangle.vertex_normals[1].casted<double>() +
+         uvw(2) * triangle.vertex_normals[2].casted<double>()).casted<float>();
     return mix_normals(ni, triangle.polygon.plane().normal.casted<float>(), t_, k_);
 }
 
@@ -79,21 +79,21 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
     const CollisionPolygonSphere<ScenePos, 4>& quad,
     const FixedArray<ScenePos, 3>& position) const
 {
-    auto m2d = to_2d(quad.polygon.plane().normal, quad.corners(1) - quad.corners(0));
+    auto m2d = to_2d(quad.polygon.plane().normal, quad.corners[1] - quad.corners[0]);
     auto uvo = inverse_bilinear(
         dot1d(m2d, position),
-        dot1d(m2d, quad.corners(0)),
-        dot1d(m2d, quad.corners(1)),
-        dot1d(m2d, quad.corners(2)),
-        dot1d(m2d, quad.corners(3)));
+        dot1d(m2d, quad.corners[0]),
+        dot1d(m2d, quad.corners[1]),
+        dot1d(m2d, quad.corners[2]),
+        dot1d(m2d, quad.corners[3]));
     if (!uvo.has_value()) {
         THROW_OR_ABORT("Could not compute inverse bilinear");
     }
     auto& uv = *uvo;
-    const auto& A = quad.vertex_normals(0);
-    const auto& B = quad.vertex_normals(1);
-    const auto& C = quad.vertex_normals(2);
-    const auto& D = quad.vertex_normals(3);
+    const auto& A = quad.vertex_normals[0];
+    const auto& B = quad.vertex_normals[1];
+    const auto& C = quad.vertex_normals[2];
+    const auto& D = quad.vertex_normals[3];
     auto u = (float)uv(0);
     auto v = (float)uv(1);
     auto P = A + (B - A) * u;

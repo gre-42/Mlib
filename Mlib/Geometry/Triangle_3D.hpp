@@ -23,12 +23,12 @@ public:
     Triangle3D(
         const FixedArray<ColoredVertex<TPos2>, 3>& vertices,
         const TransformationMatrix<float, TPosTransform, 3>& transformation);
-    const FixedArray<FixedArray<TPos, 3>, 3>& vertices() const;
+    const FixedArray<TPos, 3, 3>& vertices() const;
     ConvexPolygon3D<TPos, 3> polygon() const;
     BoundingSphere<TPos, 3> bounding_sphere(std::minstd_rand& rng) const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
 private:
-    const FixedArray<FixedArray<TPos, 3>, 3> vertices_;
+    const FixedArray<TPos, 3, 3> vertices_;
 };
 
 }

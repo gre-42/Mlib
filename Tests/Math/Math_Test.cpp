@@ -23,6 +23,7 @@
 #include <Mlib/Math/Transformation/Quaternion_Series.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <Mlib/Time/Time_Guard.hpp>
 
@@ -495,6 +496,17 @@ void test_quaternion_series() {
     }
 }
 
+void test_fixed_sum() {
+    auto a = fixed_ones<float, 2, 3, 4>();
+    linfo() << sum<0>(a);
+    linfo();
+    linfo() << sum<1>(a);
+    linfo();
+    linfo() << sum<2>(a);
+    linfo();
+    linfo() << mean<0>(a);
+}
+
 int main(int argc, const char** argv) {
     try {
         test_blocking_transposed();
@@ -535,6 +547,7 @@ int main(int argc, const char** argv) {
         test_eigen_jacobi();
         test_least_common_multiple();
         test_quaternion_series();
+        test_fixed_sum();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;

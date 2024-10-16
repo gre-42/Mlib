@@ -27,7 +27,7 @@ Line3D<TPos>::Line3D(
 {}
 
 template <class TPos>
-const FixedArray<FixedArray<TPos, 3>, 2>& Line3D<TPos>::vertices() const {
+const FixedArray<TPos, 2, 3>& Line3D<TPos>::vertices() const {
     return vertices_;
 }
 

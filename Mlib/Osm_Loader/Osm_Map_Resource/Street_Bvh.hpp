@@ -8,7 +8,7 @@ template <class TPos>
 struct ColoredVertex;
 
 class StreetBvh {
-    typedef FixedArray<FixedArray<double, 2>, 3> Triangle2d;
+    typedef FixedArray<double, 3, 2> Triangle2d;
 public:
     explicit StreetBvh(const std::list<FixedArray<ColoredVertex<double>, 3>>& triangles);
     double min_dist(const FixedArray<double, 2>& pt, double max_dist) const;

@@ -45,11 +45,11 @@ void WayBvh::nearest_way(
     distance = bvh_.min_distance(position, max_dist, [&position](const Line2d& way) {
         FixedArray<double, 2> dir = uninitialized;
         double distance;
-        distance_point_to_line(position, way(0), way(1), dir, distance);
+        distance_point_to_line(position, way[0], way[1], dir, distance);
         return distance;
     }, &nearest_way);
     if (distance != INFINITY) {
-        distance_point_to_line(position, (*nearest_way)(0), (*nearest_way)(1), dir, distance);
+        distance_point_to_line(position, (*nearest_way)[0], (*nearest_way)[1], dir, distance);
     }
 }
 

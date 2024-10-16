@@ -20,7 +20,8 @@ void SlidingNormalModifier::modify_collision_normal(
     FixedArray<float, 3>& normal,
     float& overlap) const
 {
-    auto v = rbp_.velocity_at_position(position);
+    // auto v = rbp_.velocity_at_position(position);
+    auto v = rbp_.v_;
     auto lv = std::sqrt(sum(squared(v)));
     if (lv < 1e-12) {
         return;

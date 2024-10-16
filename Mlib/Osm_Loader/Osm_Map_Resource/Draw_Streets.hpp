@@ -56,7 +56,7 @@ struct DrawStreetsInput {
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
     UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_pipe_triangles;
     UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_bdry_triangles;
-    std::list<FixedArray<FixedArray<double, 2>, 2>>& way_segments;
+    std::list<FixedArray<double, 2, 2>>& way_segments;
     const RacingLineBvh& racing_line_bvh;
     const Map<RoadType, std::string>& street_surface_central_resource_names;
     const Map<RoadType, std::string>& street_surface_endpoint0_resource_names;

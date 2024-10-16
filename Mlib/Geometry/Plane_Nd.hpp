@@ -23,11 +23,11 @@ public:
     PlaneNd(const FixedArray<TData, tndim>& normal, const FixedArray<TData, tndim>& point_on_plane)
         : PlaneNd{ normal, -dot0d(normal, point_on_plane) }
     {}
-    explicit PlaneNd(const FixedArray<FixedArray<TData, 2>, 2>& line, bool compute_center = false)
-        : PlaneNd{ line_normal(line), compute_center ? mean(line) : line(0) }
+    explicit PlaneNd(const FixedArray<TData, 2, 2>& line, bool compute_center = false)
+        : PlaneNd{ line_normal(line), compute_center ? mean<0>(line) : line[0] }
     {}
-    explicit PlaneNd(const FixedArray<FixedArray<TData, 3>, 3>& triangle, bool compute_center = false)
-        : PlaneNd{ triangle_normal(triangle), compute_center ? mean(triangle) : triangle(0) }
+    explicit PlaneNd(const FixedArray<TData, 3, 3>& triangle, bool compute_center = false)
+        : PlaneNd{ triangle_normal(triangle), compute_center ? mean<0>(triangle) : triangle[0] }
     {}
     template <class TDir>
     PlaneNd transformed(const TransformationMatrix<TDir, TData, 3>& transformation_matrix) const {

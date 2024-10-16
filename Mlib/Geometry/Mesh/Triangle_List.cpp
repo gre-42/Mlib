@@ -108,7 +108,7 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     ColoredVertex<TPos>** pp10,
     ColoredVertex<TPos>** pp01)
 {
-    auto t = FixedArray<FixedArray<TPos, 3>, 3>{ p00, p10, p01 };
+    auto t = FixedArray<TPos, 3, 3>{ p00, p10, p01 };
     auto n_o = try_triangle_normal<TPos>(t);
     if (!n_o.has_value()) {
         if (normal_error_behavior == NormalVectorErrorBehavior::SKIP) {

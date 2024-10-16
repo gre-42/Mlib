@@ -24,7 +24,7 @@ bool CollisionQuery::can_see(
     const IIntersectableMesh** seen_mesh) const
 {
     RaySegment3DForAabb<ScenePos> ray{ RaySegment3D<ScenePos>{ watcher, watched } };
-    FixedArray<FixedArray<ScenePos, 3>, 2> l{ ray.start, ray.stop() };
+    FixedArray<ScenePos, 2, 3> l{ ray.start, ray.stop() };
     ScenePos t_min = INFINITY;
     std::variant<const CollisionPolygonSphere<ScenePos, 3>*, const CollisionPolygonSphere<ScenePos, 4>*> triangle_min;
     BoundingSphere<ScenePos, 3> bs{ l };

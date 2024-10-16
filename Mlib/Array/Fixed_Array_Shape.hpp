@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <cstddef>
 
 namespace Mlib {
@@ -29,6 +30,10 @@ public:
     consteval static auto ndim();
     consteval static auto rows_as_1D();
     consteval static auto columns_as_1D();
+    template <size_t axis>
+    consteval static auto axis_as_3D();
+    template <size_t axis>
+    consteval static auto without_axis();
     template <size_t N>
     consteval static size_t get();
 };
@@ -144,6 +149,51 @@ namespace FasUtils {
         return FixedArrayShape<tsize0>().concatenated(FixedArrayShape<decltype(a)::nelements()>());
     }
 
+    template <size_t begin, size_t end>
+    consteval auto sub_range(FixedArrayShape<>) {
+        static_assert(end == 0);
+        return FixedArrayShape<>();
+    }
+    
+    template <size_t begin, size_t end, size_t tsize0, size_t... tsize>
+    consteval auto sub_range(FixedArrayShape<tsize0, tsize...>) {
+        if constexpr (end == 0) {
+            return FixedArrayShape<>();
+        } else if constexpr (begin > 0) {
+            constexpr FixedArrayShape<tsize...> a;
+            return sub_range<begin - 1, end - 1>(a);
+        } else {
+            constexpr FixedArrayShape<tsize...> a;
+            constexpr auto left = FixedArrayShape<tsize0>();
+            constexpr size_t iright = std::max<size_t>(1, begin) - 1;
+            constexpr auto right = sub_range<iright, end - 1>(a);
+            return concatenated(left, right);
+        }
+    }
+
+    template <size_t begin, size_t end, size_t... tsize>
+    consteval auto prod(FixedArrayShape<tsize...>) {
+        constexpr FixedArrayShape<tsize...> a;
+        return sub_range<begin, end>(a).nelements();
+    }
+
+    template <size_t axis, size_t... tsize>
+    consteval auto axis_as_3D(FixedArrayShape<tsize...>) {
+        constexpr FixedArrayShape<tsize...> a;
+        constexpr size_t left = prod<0, axis>(a);
+        constexpr size_t center = a.template get<axis>();
+        constexpr size_t right = prod<axis + 1, a.ndim()>(a);
+        return FixedArrayShape<left, center, right>();
+    }
+
+    template <size_t axis, size_t... tsize>
+    consteval auto without_axis(FixedArrayShape<tsize...>) {
+        constexpr FixedArrayShape<tsize...> a;
+        constexpr auto left = sub_range<0, axis>(a);
+        constexpr auto right = sub_range<axis + 1, a.ndim()>(a);
+        return concatenated(left, right);
+    }
+
     template <size_t... tsize>
     inline void equals_(size_t* other, bool* result);
 
@@ -221,6 +271,14 @@ consteval auto FixedArrayShape<tsize...>::rows_as_1D() { return ::Mlib::FasUtils
 
 template <size_t... tsize>
 consteval auto FixedArrayShape<tsize...>::columns_as_1D() { return ::Mlib::FasUtils::columns_as_1D(A()); }
+
+template <size_t... tsize>
+template <size_t axis>
+consteval auto FixedArrayShape<tsize...>::axis_as_3D() { return ::Mlib::FasUtils::axis_as_3D<axis>(A()); }
+
+template <size_t... tsize>
+template <size_t axis>
+consteval auto FixedArrayShape<tsize...>::without_axis() { return ::Mlib::FasUtils::without_axis<axis>(A()); }
 
 template <size_t... tsize>
 template <size_t N>

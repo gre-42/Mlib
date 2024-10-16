@@ -11,9 +11,9 @@ CollisionRidges::~CollisionRidges() = default;
 
 template <size_t tnvertices>
 void CollisionRidges::insert(
-    const FixedArray<FixedArray<ScenePos, 3>, tnvertices>& tri,
+    const FixedArray<ScenePos, tnvertices, 3>& tri,
     const FixedArray<ScenePos, 3>& normal,
-    const FixedArray<FixedArray<float, 3>, tnvertices>& vertex_normals,
+    const FixedArray<float, tnvertices, 3>& vertex_normals,
     ScenePos max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
@@ -21,11 +21,11 @@ void CollisionRidges::insert(
         size_t j = (i + 1) % tnvertices;
         try {
             insert(
-                tri(i),
-                tri(j),
+                tri[i],
+                tri[j],
                 normal,
-                vertex_normals(i),
-                vertex_normals(j),
+                vertex_normals[i],
+                vertex_normals[j],
                 max_min_cos_ridge,
                 physics_material);
         } catch (const EdgeException<ScenePos>& e) {
@@ -46,7 +46,7 @@ void CollisionRidges::insert(
 {
     OrderableRidgeSphereBase ridge{
         CollisionRidgeSphere{
-            .bounding_sphere{BoundingSphere<ScenePos, 3>{FixedArray<FixedArray<ScenePos, 3>, 2>{a, b}}},
+            .bounding_sphere{BoundingSphere<ScenePos, 3>{FixedArray<ScenePos, 2, 3>{a, b}}},
             .physics_material = physics_material,
             .edge{a, b},
             .ray{a, b},
@@ -61,15 +61,15 @@ void CollisionRidges::insert(
 namespace Mlib {
     template class CollisionRidgesBase<OrderableRidgeSphereBase>;
     template void CollisionRidges::insert<3>(
-        const FixedArray<FixedArray<ScenePos, 3>, 3>& polygon,
+        const FixedArray<ScenePos, 3, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        const FixedArray<FixedArray<float, 3>, 3>& vertex_normals,
+        const FixedArray<float, 3, 3>& vertex_normals,
         ScenePos max_min_cos_ridge,
         PhysicsMaterial physics_material);
     template void CollisionRidges::insert<4>(
-        const FixedArray<FixedArray<ScenePos, 3>, 4>& polygon,
+        const FixedArray<ScenePos, 4, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        const FixedArray<FixedArray<float, 3>, 4>& vertex_normals,
+        const FixedArray<float, 4, 3>& vertex_normals,
         ScenePos max_min_cos_ridge,
         PhysicsMaterial physics_material);
 }

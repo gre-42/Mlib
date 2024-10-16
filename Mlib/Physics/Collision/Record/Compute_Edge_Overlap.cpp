@@ -60,11 +60,14 @@ bool Mlib::compute_edge_overlap(
         // }
 
         auto reflect = [&](const auto& corners0){
+            using Corners0 = std::remove_reference_t<decltype(corners0)>;
+            static_assert(Corners0::ndim() == 2);
+            size_t ncorners = Corners0::template static_shape<0>();
             std::vector<CollisionRidgeSphere> ridges;
-            ridges.reserve(CW::length(corners0));
-            for (size_t i = 0; i < CW::length(corners0); ++i) {
-                auto a = OrderableFixedArray{corners0(i)};
-                auto b = OrderableFixedArray{corners0((i + 1) % CW::length(corners0))};
+            ridges.reserve(ncorners);
+            for (size_t i = 0; i < ncorners; ++i) {
+                auto a = OrderableFixedArray{corners0[i]};
+                auto b = OrderableFixedArray{corners0[(i + 1) % ncorners]};
                 auto it = (a < b)
                     ? c.history.ridge_map.find({a, b})
                     : c.history.ridge_map.find({b, a});
@@ -87,7 +90,8 @@ bool Mlib::compute_edge_overlap(
 
             assert_true(c.r1 != nullptr);
             try {
-                get_overlap2(stm, *c.r1, -INFINITY, overlap, normal);
+                get_overlap(stm, *c.mesh1, overlap, normal);
+                // get_overlap2(stm, *c.r1, -INFINITY, overlap, normal);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error(
                     "Could not compute collision plane of temporary mesh and edge: " + std::string(e.what()));

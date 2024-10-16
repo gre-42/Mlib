@@ -11,7 +11,7 @@
 using namespace Mlib;
 
 template <class TPos>
-UUVector<FixedArray<FixedArray<TPos, 3>, 3>> Mlib::barrier_triangle_hitbox(
+UUVector<FixedArray<TPos, 3, 3>> Mlib::barrier_triangle_hitbox(
     const FixedArray<TPos, 3>& am,
     const FixedArray<TPos, 3>& bm,
     const FixedArray<TPos, 3>& cm,
@@ -37,26 +37,26 @@ UUVector<FixedArray<FixedArray<TPos, 3>, 3>> Mlib::barrier_triangle_hitbox(
     {
         throw TriangleException<TPos>{am, bm, cm, "convex_decomposition_terrain: consistency-check failed"};
     }
-    UUVector<FixedArray<FixedArray<TPos, 3>, 3>> result;
+    UUVector<FixedArray<TPos, 3, 3>> result;
     result.reserve(
         ab_is_contour_edge * 2 +
         bc_is_contour_edge * 2 +
         ca_is_contour_edge * 2);
 
-    result.push_back({a, b, c});
+    result.push_back(FixedArray<TPos, 3, 3>{a, b, c});
     if (ab_is_contour_edge) {
-        result.push_back({a, A, b});
-        result.push_back({A, B, b});
+        result.push_back(FixedArray<TPos, 3, 3>{a, A, b});
+        result.push_back(FixedArray<TPos, 3, 3>{A, B, b});
     }
     if (bc_is_contour_edge) {
-        result.push_back({b, B, c});
-        result.push_back({B, C, c});
+        result.push_back(FixedArray<TPos, 3, 3>{b, B, c});
+        result.push_back(FixedArray<TPos, 3, 3>{B, C, c});
     }
     if (ca_is_contour_edge) {
-        result.push_back({c, C, a});
-        result.push_back({C, A, a});
+        result.push_back(FixedArray<TPos, 3, 3>{c, C, a});
+        result.push_back(FixedArray<TPos, 3, 3>{C, A, a});
     }
-    result.push_back({B, A, C});
+    result.push_back(FixedArray<TPos, 3, 3>{B, A, C});
     return result;
 }
 
@@ -120,9 +120,9 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             }
             auto n = triangle_normal(s).template casted<float>();
             decomposition.push_back({
-                ColoredVertex<TPos>{s(0), purple, zeros2, n},
-                ColoredVertex<TPos>{s(1), purple, zeros2, n},
-                ColoredVertex<TPos>{s(2), purple, zeros2, n}});
+                ColoredVertex<TPos>{s[0], purple, zeros2, n},
+                ColoredVertex<TPos>{s[1], purple, zeros2, n},
+                ColoredVertex<TPos>{s[2], purple, zeros2, n}});
         }
     }
     if (decomposition.capacity() != decomposition.size()) {

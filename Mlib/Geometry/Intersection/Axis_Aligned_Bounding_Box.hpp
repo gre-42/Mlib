@@ -47,9 +47,9 @@ public:
     }
     template <size_t tnpoints>
     static AxisAlignedBoundingBox from_points(
-        const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
+        const FixedArray<TData, tnpoints, tndim>& points)
     {
-        return from_iterator(points.flat_begin(), points.flat_end());
+        return from_iterator(points.row_begin(), points.row_end());
     }
     static AxisAlignedBoundingBox from_points(
         const FixedArray<TData, tndim>& a,

@@ -1,4 +1,5 @@
 #include "Tire.hpp"
+#include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
 

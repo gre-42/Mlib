@@ -49,8 +49,8 @@ bool intersect_rays(
 template <class TData>
 bool intersect_lines(
     FixedArray<TData, 2>& intersection,
-    const FixedArray<FixedArray<TData, 2>, 2>& l0,
-    const FixedArray<FixedArray<TData, 2>, 2>& l1,
+    const FixedArray<TData, 2, 2>& l0,
+    const FixedArray<TData, 2, 2>& l1,
     const TData& width0,
     const TData& width1,
     bool compute_center = false,
@@ -59,7 +59,7 @@ bool intersect_lines(
     if (check_bounds) {
         for (size_t i = 0; i < 2; ++i) {
             for (size_t j = 0; j < 2; ++j) {
-                if (all(l0(i) == l1(j))) {
+                if (all(l0[i] == l1[j])) {
                     return false;
                 }
             }
@@ -73,12 +73,12 @@ bool intersect_lines(
     }
     if (check_bounds) {
         // Maybe use "transform_to_line_coordinates" here?
-        FixedArray<FixedArray<FixedArray<TData, 2>, 2>, 2> ls{l0, l1};
+        FixedArray<TData, 2, 2, 2> ls{l0, l1};
         for (size_t i = 0; i < 2; ++i) {
-            FixedArray<TData, 2> v{ls(i)(1) - ls(i)(0)};
+            FixedArray<TData, 2> v{ls[i][1] - ls[i][0]};
             TData x = dot0d(v, intersection);
-            TData a = dot0d(v, ls(i)(0));
-            TData b = dot0d(v, ls(i)(1));
+            TData a = dot0d(v, ls[i][0]);
+            TData b = dot0d(v, ls[i][1]);
             if (x < a || x > b) {
                 return false;
             }
@@ -89,8 +89,8 @@ bool intersect_lines(
 
 template <class TData>
 FixedArray<TData, 2> intersect_lines(
-    const FixedArray<FixedArray<TData, 2>, 2>& l0,
-    const FixedArray<FixedArray<TData, 2>, 2>& l1,
+    const FixedArray<TData, 2, 2>& l0,
+    const FixedArray<TData, 2, 2>& l1,
     const TData& width0,
     const TData& width1,
     bool compute_center = false)

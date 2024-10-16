@@ -112,7 +112,7 @@ void RigidBodies::add_rigid_body(
                                 bases.push_back(t.base);
                             }
                             for (const auto& t : bases) {
-                                for (const auto& v : t.corners.flat_iterable()) {
+                                for (const auto& v : t.corners.row_iterable()) {
                                     if (vertex_set.insert(OrderableFixedArray{v}).second) {
                                         vertex_vector.push_back(&v);
                                     }
@@ -400,8 +400,8 @@ void RigidBodies::bake_collision_ridges() const
                 .rb = e.rb,
                 .crp = e.collision_ridge_sphere});
         r->crp.finalize();
-        auto a = OrderableFixedArray{ r->crp.edge(0) };
-        auto b = OrderableFixedArray{ r->crp.edge(1) };
+        auto a = OrderableFixedArray{ r->crp.edge[0] };
+        auto b = OrderableFixedArray{ r->crp.edge[1] };
         if (a < b) {
             if (!ridge_map_.insert({ {a, b}, &r->crp }).second) {
                 std::stringstream sstr;

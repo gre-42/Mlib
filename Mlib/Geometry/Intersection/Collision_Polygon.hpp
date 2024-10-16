@@ -16,8 +16,8 @@ struct CollisionPolygonSphere {
     BoundingSphere<TData, 3> bounding_sphere;
     ConvexPolygon3D<TData, tnvertices> polygon;
     PhysicsMaterial physics_material;
-    FixedArray<FixedArray<TData, 3>, tnvertices> corners;
-    FixedArray<FixedArray<float, 3>, tnvertices> vertex_normals;
+    FixedArray<TData, tnvertices, 3> corners;
+    FixedArray<float, tnvertices, 3> vertex_normals;
     inline CollisionPolygonSphere<TData, tnvertices> operator - () const {
         return {
             .bounding_sphere = bounding_sphere,
@@ -34,8 +34,8 @@ struct CollisionPolygonSphere {
             .bounding_sphere = bounding_sphere.transformed(transformation_matrix),
             .polygon = polygon.template casted<ScenePos>().transformed(transformation_matrix),
             .physics_material = physics_material,
-            .corners = corners.template applied<FixedArray<ScenePos, 3>>([&](const auto& c){ return transformation_matrix.transform(c); }),
-            .vertex_normals = vertex_normals.applied([&](const auto& n){ return transformation_matrix.rotate(n); })
+            .corners = transformation_matrix.transform(corners),
+            .vertex_normals = transformation_matrix.rotate(vertex_normals)
         };
     }
 };

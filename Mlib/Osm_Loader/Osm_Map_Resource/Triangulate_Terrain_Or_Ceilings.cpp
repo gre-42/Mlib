@@ -78,7 +78,7 @@ void plot_contours(const std::string& filename, const std::vector<std::vector<p2
         contours.back().push_back({c.front()->x, -c.front()->y, 0.});
     }
     typedef FixedArray<double, 2> P2;
-    typedef FixedArray<P2, 2> Edge;
+    typedef FixedArray<double, 2, 2> Edge;
     Bvh<double, Edge, 2> bvh{{0.1, 0.1}, 10};
     for (const auto& c : p2t_hole_contours) {
         for (auto it = c.begin(); it != c.end(); ++it) {

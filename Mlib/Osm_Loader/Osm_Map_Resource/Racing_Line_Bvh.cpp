@@ -41,8 +41,8 @@ void RacingLineBvh::intersecting_way_beta(
             }
             beta = transform_to_line_coordinates(
                 intersection_point,
-                way_boundary(0),
-                way_boundary(1),
+                way_boundary[0],
+                way_boundary[1],
                 true)(0);  // compute_center
             *racing_line_segment = &candidate_racing_line_segment;
         }

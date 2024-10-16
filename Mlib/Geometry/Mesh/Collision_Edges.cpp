@@ -6,14 +6,14 @@ using namespace Mlib;
 
 std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>> OrderableEdgeSphere::key() const
 {
-    if (OrderableFixedArray{collision_line_sphere.line(0)} > OrderableFixedArray{collision_line_sphere.line(1)}) {
+    if (OrderableFixedArray{collision_line_sphere.line[0]} > OrderableFixedArray{collision_line_sphere.line[1]}) {
         return std::make_pair(
-            OrderableFixedArray{collision_line_sphere.line(0)},
-            OrderableFixedArray{collision_line_sphere.line(1)});
+            OrderableFixedArray{collision_line_sphere.line[0]},
+            OrderableFixedArray{collision_line_sphere.line[1]});
     } else {
         return std::make_pair(
-            OrderableFixedArray{collision_line_sphere.line(1)},
-            OrderableFixedArray{collision_line_sphere.line(0)});
+            OrderableFixedArray{collision_line_sphere.line[1]},
+            OrderableFixedArray{collision_line_sphere.line[0]});
     }
 }
 
@@ -27,11 +27,11 @@ CollisionEdges::~CollisionEdges() = default;
 
 template <size_t tnvertices>
 void CollisionEdges::insert(
-    const FixedArray<FixedArray<ScenePos, 3>, tnvertices>& tri,
+    const FixedArray<ScenePos, tnvertices, 3>& tri,
     PhysicsMaterial physics_material)
 {
     for (size_t i = 0; i < tnvertices; ++i) {
-        insert(tri(i), tri((i + 1) % tnvertices), physics_material);
+        insert(tri[i], tri[(i + 1) % tnvertices], physics_material);
     }
 }
 
@@ -42,7 +42,7 @@ void CollisionEdges::insert(
 {
     OrderableEdgeSphere edge{
         .collision_line_sphere{
-            .bounding_sphere{BoundingSphere<ScenePos, 3>{FixedArray<FixedArray<ScenePos, 3>, 2>{a, b}}},
+            .bounding_sphere{BoundingSphere<ScenePos, 3>{FixedArray<ScenePos, 2, 3>{a, b}}},
             .physics_material = physics_material,
             .line{a, b},
             .ray{a, b}} };
@@ -63,9 +63,9 @@ size_t CollisionEdges::size() const {
 
 namespace Mlib {
     template void CollisionEdges::insert<3>(
-        const FixedArray<FixedArray<ScenePos, 3>, 3>& tri,
+        const FixedArray<ScenePos, 3, 3>& tri,
         PhysicsMaterial physics_material);
     template void CollisionEdges::insert<4>(
-        const FixedArray<FixedArray<ScenePos, 3>, 4>& tri,
+        const FixedArray<ScenePos, 4, 3>& tri,
         PhysicsMaterial physics_material);
 }

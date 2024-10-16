@@ -28,7 +28,7 @@ RenderableTriangleSampler::RenderableTriangleSampler(
     const TerrainStyles& terrain_styles,
     const TerrainTriangles& terrain_triangles,
     const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*>& no_grass,
-    const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* street_bvh,
+    const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* street_bvh,
     ScenePos scale,
     UpAxis up_axis)
 : scene_node_resources_{scene_node_resources},
@@ -71,7 +71,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     auto sample_triangles = [&](
         const Bvh<ScenePos, TriangleAndSeed, 3>& triangle_bvh,
         const TerrainStyle& terrain_style,
-        const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* boundary_bvh)
+        const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* boundary_bvh)
     {
         ScenePos max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources_);
 
@@ -85,7 +85,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
             terrain_style.mudmap()};
         auto traverse_triangle = [&](const TriangleAndSeed& t){
             if (!orthographic) {
-                BoundingSphere<ScenePos, 3> bs{FixedArray<FixedArray<ScenePos, 3>, 3>{
+                BoundingSphere<ScenePos, 3> bs{FixedArray<ScenePos, 3, 3>{
                     t.triangle(0).position,
                     t.triangle(1).position,
                     t.triangle(2).position}};
@@ -152,7 +152,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         unsigned int seed = 0;
         for (const auto& t : gtl) {
             ++seed;
-            auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::from_points(FixedArray<FixedArray<ScenePos, 3>, 3>{
+            auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::from_points(FixedArray<ScenePos, 3, 3>{
                 t(0).position,
                 t(1).position,
                 t(2).position});

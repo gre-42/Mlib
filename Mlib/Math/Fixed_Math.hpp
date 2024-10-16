@@ -3,6 +3,87 @@
 
 namespace Mlib {
 
+template <class TData, size_t... tsize>
+FixedArray<TData, tsize...>& operator += (
+    FixedArray<TData, tsize...>& a,
+    const FixedArray<TData, tsize...>& b)
+{
+    auto v0 = a.flat_begin();
+    auto v1 = b.flat_begin();
+    while(v0 != a.flat_end()) {
+        *v0++ += *v1++;
+    }
+    return a;
+}
+
+template <class TData, size_t... tsize>
+FixedArray<TData, tsize...>& operator -= (
+    FixedArray<TData, tsize...>& a,
+    const FixedArray<TData, tsize...>& b)
+{
+    auto v0 = a.flat_begin();
+    auto v1 = b.flat_begin();
+    while( v0 != a.flat_end()) {
+        *v0++ -= *v1++;
+    }
+    return a;
+}
+
+template <class TData, size_t... tsize>
+FixedArray<TData, tsize...>& operator *= (
+    FixedArray<TData, tsize...>& a,
+    const FixedArray<TData, tsize...>& b)
+{
+    auto v0 = a.flat_begin();
+    auto v1 = b.flat_begin();
+    while (v0 != a.flat_end()) {
+        *v0++ *= *v1++;
+    }
+    return a;
+}
+
+template <class TData, size_t... tsize>
+FixedArray<TData, tsize...>& operator /= (
+    FixedArray<TData, tsize...>& a,
+    const FixedArray<TData, tsize...>& b)
+{
+    auto v0 = a.flat_begin();
+    auto v1 = b.flat_begin();
+    while (v0 != a.flat_end()) {
+        *v0++ /= *v1++;
+    }
+    return a;
+}
+
+template <class TData, size_t... tsize>
+FixedArray<TData, tsize...>& operator *= (
+    FixedArray<TData, tsize...>& a,
+    const TData& b)
+{
+    for (TData& v : a.flat_iterable())
+    {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+        v *= b;
+#pragma GCC diagnostic pop
+    }
+    return a;
+}
+
+template <class TData, size_t... tsize>
+FixedArray<TData, tsize...>& operator /= (
+    FixedArray<TData, tsize...>& a,
+    const TData& b)
+{
+    for (TData& v : a.flat_iterable()) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+        v /= b;
+#pragma GCC diagnostic pop
+    }
+    return a;
+}
+
 /*
  * Outer product of two matrices.
  * outer2d(a, b) = dot(a, b.H())
@@ -178,6 +259,25 @@ constexpr FixedArray<TData, tshape...> fixed_dirac_array(const TIndices&... indi
     FixedArray<TData, tshape...> result = fixed_zeros<TData, tshape...>();
     result(indices...) = 1;
     return result;
+}
+
+template <size_t axis, class TData, size_t... tsize>
+auto sum(const FixedArray<TData, tsize...>& a) {
+    constexpr auto shape3 = decltype(a.shape())::template axis_as_3D<axis>();
+    constexpr auto shape2 = decltype(a.shape())::template without_axis<axis>();
+    constexpr size_t R = shape3.template get<0>();
+    constexpr size_t A = shape3.template get<1>();
+    constexpr size_t C = shape3.template get<2>();
+    auto result = fixed_zeros<TData, R, C>();
+    const auto& a3 = a.reshaped(shape3);
+    for (size_t r = 0; r < R; ++r) {
+        for (size_t c = 0; c < C; ++c) {
+            for (size_t i = 0; i < A; ++i) {
+                result(r, c) += a3(r, i, c);
+            }
+        }
+    }
+    return result.reshaped(shape2);
 }
 
 }

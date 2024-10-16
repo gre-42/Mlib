@@ -144,16 +144,28 @@ public:
         return data_[id];
     }
     constexpr PointerIterable<const FixedArray<TData, tshape...>> row_iterable() const {
-        return { data_ + 0, data_ + tshape0 };
+        return { row_begin(), row_end() };
     }
     constexpr PointerIterable<FixedArray<TData, tshape...>> row_iterable() {
-        return { data_ + 0, data_ + tshape0 };
+        return { row_begin(), row_end() };
     }
     constexpr PointerIterable<const TData> flat_iterable() const {
         return { flat_begin(), flat_end() };
     }
     constexpr PointerIterable<TData> flat_iterable() {
         return { flat_begin(), flat_end() };
+    }
+    constexpr FixedArray<TData, tshape...>* row_begin() {
+        return data_ + 0;
+    }
+    constexpr FixedArray<TData, tshape...>* row_end() {
+        return data_ + tshape0;
+    }
+    constexpr const FixedArray<TData, tshape...>* row_begin() const {
+        return const_cast<FixedArray*>(this)->row_begin();
+    }
+    constexpr const FixedArray<TData, tshape...>* row_end() const {
+        return const_cast<FixedArray*>(this)->row_end();
     }
     constexpr TData* flat_begin() {
         if constexpr (tshape0 == 0) {
@@ -206,56 +218,6 @@ public:
             }
         }
         return false;
-    }
-    FixedArray& operator += (const FixedArray& rhs) {
-        auto v0 = flat_begin();
-        auto v1 = rhs.flat_begin();
-        while(v0 != flat_end()) {
-            *v0++ += *v1++;
-        }
-        return *this;
-    }
-    FixedArray& operator -= (const FixedArray& rhs) {
-        auto v0 = flat_begin();
-        auto v1 = rhs.flat_begin();
-        while(v0 != flat_end()) {
-            *v0++ -= *v1++;
-        }
-        return *this;
-    }
-    FixedArray& operator *= (const FixedArray& rhs) {
-        auto a = flat_begin();
-        auto b = rhs.flat_begin();
-        while(a != flat_end()) {
-            *a++ *= *b++;
-        }
-        return *this;
-    }
-    FixedArray& operator /= (const FixedArray& rhs) {
-        auto a = flat_begin();
-        auto b = rhs.flat_begin();
-        while(a != flat_end()) {
-            *a++ /= *b++;
-        }
-        return *this;
-    }
-    FixedArray& operator *= (const TData& rhs) {
-        for (TData& v : flat_iterable()) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-            v *= rhs;
-#pragma GCC diagnostic pop
-        }
-        return *this;
-    }
-    FixedArray& operator /= (const TData& rhs) {
-        for (TData& v : flat_iterable()) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-            v /= rhs;
-#pragma GCC diagnostic pop
-        }
-        return *this;
     }
     template <size_t tstart, size_t tend>
     FixedArray<TData, tend - tstart, tshape...>& row_range() {
@@ -445,6 +407,12 @@ public:
     }
     constexpr const TData* flat_end() const {
         return const_cast<FixedArray*>(this)->flat_end();
+    }
+    constexpr PointerIterable<const TData> flat_iterable() const {
+        return { flat_begin(), flat_end() };
+    }
+    constexpr PointerIterable<TData> flat_iterable() {
+        return { flat_begin(), flat_end() };
     }
     bool less_than(const FixedArray& rhs) const {
         return value_ < rhs.value_;

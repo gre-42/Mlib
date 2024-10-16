@@ -52,11 +52,14 @@ public:
         return vertices_;
     }
     template <size_t tnvertices>
-    FixedArray<FixedArray<TNormal, 3>, tnvertices> get_normals(
-        const FixedArray<FixedArray<TPos, 3>, tnvertices>& position)
+    FixedArray<TNormal, tnvertices, 3> get_normals(
+        const FixedArray<TPos, tnvertices, 3>& position)
     {
-        return position-> template applied<FixedArray<TNormal, 3>>(
-            [this](const auto& p) { return get_normal(p); });
+        FixedArray<TNormal, tnvertices, 3> result = uninitialized;
+        for (size_t r = 0; r < tnvertices; ++r) {
+            result[r] = get_normal(position[r]);
+        }
+        return result;
     }
 private:
     std::map<OrderableFixedArray<TPos, 3>, FixedArray<TNormal, 3>> vertices_;

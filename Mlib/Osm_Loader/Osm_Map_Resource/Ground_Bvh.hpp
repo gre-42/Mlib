@@ -12,8 +12,8 @@ template <class TPos>
 class ColoredVertexArray;
 
 class GroundBvh {
-    using Triangle3d = FixedArray<FixedArray<double, 3>, 3>;
-    using Triangle2d = FixedArray<FixedArray<double, 2>, 3>;
+    using Triangle3d = FixedArray<double, 3, 3>;
+    using Triangle2d = FixedArray<double, 3, 2>;
 public:
     explicit GroundBvh(const std::list<std::shared_ptr<TriangleList<double>>>& triangles);
     explicit GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas);

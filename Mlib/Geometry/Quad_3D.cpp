@@ -29,7 +29,7 @@ Quad3D<TPos>::Quad3D(
 {}
 
 template <class TPos>
-const FixedArray<FixedArray<TPos, 3>, 4>& Quad3D<TPos>::vertices() const {
+const FixedArray<TPos, 4, 3>& Quad3D<TPos>::vertices() const {
     return vertices_;
 }
 

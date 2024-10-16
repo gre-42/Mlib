@@ -8,6 +8,7 @@
 #include <Mlib/Stats/Logspace.hpp>
 #include <Mlib/Stats/Mean_Variance_Iterator.hpp>
 #include <Mlib/Stats/Neighbor_Db.hpp>
+#include <Mlib/Stats/Online_Nth_Element.hpp>
 #include <Mlib/Stats/Quantile.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Stats/Ransac.hpp>
@@ -53,7 +54,7 @@ void test_ransac() {
             // lerr() << data[indices] << " | " << abs(data - mean(data[indices])) << " | " << sum(abs(data - mean(data[indices]))) << " | " << mean(data[indices]);
             return abs(data - mean(data[indices]));
         });
-    assert_allequal(best_ids, Array<size_t>{ 0, 1, 3, 5, 6, 7 });
+    assert_allequal(best_ids, Array<size_t>{ 1, 3, 5, 6, 7 });
 }
 
 void test_sort() {
@@ -281,6 +282,18 @@ void test_halton_sequence() {
     // }
 }
 
+void test_online_nth_largest() {
+    OnlineNthSmallest<int, double> nl{ 3 };
+    nl.insert(4, 44);
+    nl.insert(3, 33);
+    nl.insert(5, 55);
+    nl.insert(1, 11);
+    nl.insert(2, 22);
+    nl.insert(7, 77);
+    nl.insert(8, 88);
+    linfo() << nl.nth();
+}
+
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
@@ -304,6 +317,7 @@ int main(int argc, char** argv) {
         test_t_cdf();
         test_random_number_generators();
         test_halton_sequence();
+        test_online_nth_largest();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;

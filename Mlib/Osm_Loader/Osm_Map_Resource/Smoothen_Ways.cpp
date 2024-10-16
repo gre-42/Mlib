@@ -1,4 +1,5 @@
 #include "Smoothen_Ways.hpp"
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Sigmoid.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Way_Width.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>

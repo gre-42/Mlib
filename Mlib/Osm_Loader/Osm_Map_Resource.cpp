@@ -185,7 +185,7 @@ OsmMapResource::OsmMapResource(
         };
         auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
         auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
-        std::list<FixedArray<FixedArray<double, 2>, 2>> way_segments;
+        std::list<FixedArray<double, 2, 2>> way_segments;
         ResourceNameCycle street_lights{ config.street_light_resource_names };
         RacingLineBvh racing_line_bvh;
         if (!config.racing_line_track.empty()) {
@@ -1520,7 +1520,7 @@ OsmMapResource::OsmMapResource(
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
 }
 
-const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::street_bvh() const {
+const Bvh<double, FixedArray<double, 3, 3>, 3>& OsmMapResource::street_bvh() const {
     {
         std::shared_lock lock{street_bvh_mutex_};
         if (street_bvh_ != nullptr) {
@@ -1529,10 +1529,10 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
     }
     if (street_bvh_ == nullptr) {
         std::scoped_lock lock{street_bvh_mutex_};
-        street_bvh_.reset(new Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>{{0.1, 0.1, 0.1}, 10});
+        street_bvh_.reset(new Bvh<double, FixedArray<double, 3, 3>, 3>{{0.1, 0.1, 0.1}, 10});
         for (const auto& lst : tls_no_grass_) {
             for (const auto& t : lst->triangles) {
-                FixedArray<FixedArray<double, 3>, 3> tri{
+                FixedArray<double, 3, 3> tri{
                     t(0).position,
                     t(1).position,
                     t(2).position};

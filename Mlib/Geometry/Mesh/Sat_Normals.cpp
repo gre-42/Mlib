@@ -44,6 +44,54 @@ static void update_sat(
     }
 }
 
+void Mlib::get_overlap(
+    const IIntersectableMesh& mesh0,
+    const IIntersectableMesh& mesh1,
+    ScenePos& min_overlap,
+    FixedArray<ScenePos, 3>& normal)
+{
+    std::vector<const CollisionRidgeSphere*> relevant_edges0;
+    std::vector<const CollisionRidgeSphere*> relevant_edges1;
+    std::vector<const CollisionPolygonSphere<ScenePos, 3>*> relevant_triangles0;
+    std::vector<const CollisionPolygonSphere<ScenePos, 3>*> relevant_triangles1;
+    std::vector<const CollisionPolygonSphere<ScenePos, 4>*> relevant_quads0;
+    std::vector<const CollisionPolygonSphere<ScenePos, 4>*> relevant_quads1;
+    compute_relevant_polys(mesh0, mesh1, relevant_quads0, relevant_quads1);
+    compute_relevant_polys(mesh0, mesh1, relevant_triangles0, relevant_triangles1);
+    {
+        const auto& edges0 = mesh0.get_ridges_sphere();
+        const auto& edges1 = mesh1.get_ridges_sphere();
+        relevant_edges0.reserve(edges0.size());
+        relevant_edges1.reserve(edges1.size());
+        for (const auto& e0 : edges0) {
+            if (mesh1.intersects(e0.bounding_sphere)) {
+                relevant_edges0.push_back(&e0);
+            }
+        }
+        for (const auto& e1 : edges1) {
+            if (mesh0.intersects(e1.bounding_sphere)) {
+                relevant_edges1.push_back(&e1);
+            }
+        }
+    }
+    SatOverlapCombiner sac{
+        mesh0.get_vertices(),
+        mesh1.get_vertices()
+    };
+    update_sat(relevant_quads0, relevant_quads1, sac);
+    update_sat(relevant_triangles0, relevant_triangles1, sac);
+    for (const auto& e0 : relevant_edges0) {
+        for (const auto& e1 : relevant_edges1) {
+            sac.combine_ridges(*e0, *e1);
+        }
+    }
+    if (sac.best_min_overlap() == INFINITY) {
+        THROW_OR_ABORT("Could not compute overlap, #triangles might be zero");
+    }
+    min_overlap = sac.best_min_overlap();
+    normal = sac.best_normal();
+}
+
 void SatTracker::get_collision_plane(
     const IIntersectableMesh& mesh0,
     const IIntersectableMesh& mesh1,
@@ -66,46 +114,11 @@ void SatTracker::get_collision_plane(
     }
     auto& collision_planes_m0 = collision_planes_.at(&mesh0);
     if (collision_planes_m0.find(&mesh1) == collision_planes_m0.end()) {
-        std::vector<const CollisionRidgeSphere*> relevant_edges0;
-        std::vector<const CollisionRidgeSphere*> relevant_edges1;
-        std::vector<const CollisionPolygonSphere<ScenePos, 3>*> relevant_triangles0;
-        std::vector<const CollisionPolygonSphere<ScenePos, 3>*> relevant_triangles1;
-        std::vector<const CollisionPolygonSphere<ScenePos, 4>*> relevant_quads0;
-        std::vector<const CollisionPolygonSphere<ScenePos, 4>*> relevant_quads1;
-        compute_relevant_polys(mesh0, mesh1, relevant_quads0, relevant_quads1);
-        compute_relevant_polys(mesh0, mesh1, relevant_triangles0, relevant_triangles1);
-        {
-            const auto& edges0 = mesh0.get_ridges_sphere();
-            const auto& edges1 = mesh1.get_ridges_sphere();
-            relevant_edges0.reserve(edges0.size());
-            relevant_edges1.reserve(edges1.size());
-            for (const auto& e0 : edges0) {
-                if (mesh1.intersects(e0.bounding_sphere)) {
-                    relevant_edges0.push_back(&e0);
-                }
-            }
-            for (const auto& e1 : edges1) {
-                if (mesh0.intersects(e1.bounding_sphere)) {
-                    relevant_edges1.push_back(&e1);
-                }
-            }
-        }
-        SatOverlapCombiner sac{
-            mesh0.get_vertices(),
-            mesh1.get_vertices()
-        };
-        update_sat(relevant_quads0, relevant_quads1, sac);
-        update_sat(relevant_triangles0, relevant_triangles1, sac);
-        for (const auto& e0 : relevant_edges0) {
-            for (const auto& e1 : relevant_edges1) {
-                sac.combine_ridges(*e0, *e1);
-            }
-        }
-        if (sac.best_min_overlap() == INFINITY) {
-            THROW_OR_ABORT("Could not compute overlap, #triangles might be zero");
-        }
+        ScenePos min_overlap;
+        FixedArray<ScenePos, 3> normal = uninitialized;
+        get_overlap(mesh0, mesh1, min_overlap, normal);
         // lerr() << "min_overlap " << min_overlap << " best_triangle " << best_triangle << " best normal " << triangle_normal(best_triangle);
-        collision_planes_m0.insert(std::make_pair(&mesh1, std::make_pair(sac.best_min_overlap(), sac.best_normal())));
+        collision_planes_m0.insert(std::make_pair(&mesh1, std::make_pair(min_overlap, normal)));
     }
     const auto& res = collision_planes_m0.at(&mesh1);
     min_overlap = res.first;

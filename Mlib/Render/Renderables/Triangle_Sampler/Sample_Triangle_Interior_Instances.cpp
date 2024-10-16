@@ -15,7 +15,7 @@ TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
     const TerrainStyle& terrain_style,
     ScenePos scale,
     UpAxis up_axis,
-    const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* boundary_bvh,
+    const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* boundary_bvh,
     const Array<float>& dirtmap,
     float dirtmap_scale,
     const Array<float>& mudmap)
@@ -123,9 +123,9 @@ void TriangleInteriorInstancesSampler::sample_triangle(
                     {
                         return sum(squared(distance_point_to_triangle_3d(
                             p,
-                            tt(0),
-                            tt(1),
-                            tt(2))));
+                            tt[0],
+                            tt[1],
+                            tt[2])));
                     });
                 if (min_dist2 < min_dboundary2_) {
                     return;

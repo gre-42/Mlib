@@ -108,7 +108,7 @@ FixedArray<TData, 2> distance_point_to_triangle_3d(
         v1,
         v2,
         v3,
-        triangle_normal(FixedArray<FixedArray<TData, 3>, 3>{v1, v2, v3}));
+        triangle_normal(FixedArray<TData, 3, 3>{v1, v2, v3}));
 }
 
 }

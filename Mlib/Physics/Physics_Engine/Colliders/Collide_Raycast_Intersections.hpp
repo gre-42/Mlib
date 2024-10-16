@@ -10,6 +10,6 @@ class FixedArray;
 struct IntersectionSceneAndContact;
 
 void collide_raycast_intersections(
-    const std::unordered_map<const FixedArray<FixedArray<ScenePos, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections);
+    const std::unordered_map<const FixedArray<ScenePos, 2, 3>*, IntersectionSceneAndContact>& raycast_intersections);
 
 }

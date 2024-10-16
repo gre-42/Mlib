@@ -37,7 +37,7 @@ void GroundBvh::maybe_add_triangle(const FixedArray<ColoredVertex<double>, 3>& t
             FixedArray<double, 2>{t(0).position(0), t(0).position(1)},
             FixedArray<double, 2>{t(1).position(0), t(1).position(1)},
             FixedArray<double, 2>{t(2).position(0), t(2).position(1)}};
-    if (triangle_area(tri2(0), tri2(1), tri2(2)) < 1e-12) {
+    if (triangle_area(tri2[0], tri2[1], tri2[2]) < 1e-12) {
         // lwarn() << "Found backfacing or steep triangle: " << std::scientific
         //         << tri2(0) << " - " << tri2(1) << " - " << tri2(2);
         return;
@@ -56,16 +56,16 @@ bool GroundBvh::height(double& height, const FixedArray<double, 2>& pt) const
         [&pt, &height](const Triangle3d& t)
     {
         Triangle2d tri2{
-            FixedArray<double, 2>{t(0)(0), t(0)(1)},
-            FixedArray<double, 2>{t(1)(0), t(1)(1)},
-            FixedArray<double, 2>{t(2)(0), t(2)(1)}};
+            FixedArray<double, 2>{t(0, 0), t(0, 1)},
+            FixedArray<double, 2>{t(1, 0), t(1, 1)},
+            FixedArray<double, 2>{t(2, 0), t(2, 1)}};
         FixedArray<double, 3> coords = uninitialized;
-        barycentric(pt, tri2(0), tri2(1), tri2(2), coords(0), coords(1), coords(2));
+        barycentric(pt, tri2[0], tri2[1], tri2[2], coords(0), coords(1), coords(2));
         if (all(coords >= double{ -1e-3 }) && all(coords <= 1.f + double{ 1e-3 })) {
             height =
-                coords(0) * t(0)(2) +
-                coords(1) * t(1)(2) +
-                coords(2) * t(2)(2);
+                coords(0) * t(0, 2) +
+                coords(1) * t(1, 2) +
+                coords(2) * t(2, 2);
             return false;
         }
         return true;
@@ -82,16 +82,16 @@ bool GroundBvh::height3d(double& height, const FixedArray<double, 3>& pt) const
         [&](const Triangle3d& t)
     {
         Triangle2d tri2{
-            FixedArray<double, 2>{t(0)(0), t(0)(1)},
-            FixedArray<double, 2>{t(1)(0), t(1)(1)},
-            FixedArray<double, 2>{t(2)(0), t(2)(1)}};
+            FixedArray<double, 2>{t(0, 0), t(0, 1)},
+            FixedArray<double, 2>{t(1, 0), t(1, 1)},
+            FixedArray<double, 2>{t(2, 0), t(2, 1)}};
         FixedArray<double, 3> coords = uninitialized;
-        barycentric(pt2d, tri2(0), tri2(1), tri2(2), coords(0), coords(1), coords(2));
+        barycentric(pt2d, tri2[0], tri2[1], tri2[2], coords(0), coords(1), coords(2));
         if (all(coords >= double{ -1e-3 }) && all(coords <= 1.f + double{ 1e-3 })) {
             double candidate_height =
-                coords(0) * t(0)(2) +
-                coords(1) * t(1)(2) +
-                coords(2) * t(2)(2);
+                coords(0) * t(0, 2) +
+                coords(1) * t(1, 2) +
+                coords(2) * t(2, 2);
             double candidate_distance = std::abs(candidate_height - pt(2));
             if (candidate_distance < best_distance) {
                 best_distance = candidate_distance;

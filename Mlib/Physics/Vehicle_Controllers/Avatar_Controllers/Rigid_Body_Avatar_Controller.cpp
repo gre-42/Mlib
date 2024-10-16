@@ -1,5 +1,5 @@
 #include "Rigid_Body_Avatar_Controller.hpp"
-#include <cmath>
+#include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
 

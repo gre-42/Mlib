@@ -48,22 +48,22 @@ TData cc_2(
  */
 template <class TData, size_t tndim, class TRng>
 std::optional<BoundingSphere<TData, tndim>> circumscribed_sphere(
-    const FixedArray<FixedArray<TData, tndim>, 3>& x,
+    const FixedArray<TData, 3, tndim>& x,
     TRng& rng)
 {
-    const auto& A = x(0);
-    const auto& B = x(1);
-    const auto& C = x(2);
+    const auto& A = x[0];
+    const auto& B = x[1];
+    const auto& C = x[2];
     auto a = A - C;
     auto b = B - C;
     auto mac = max(abs(a));
     auto mbc = max(abs(b));
     if ((mac < WELZL_DUPLICATE_THRESHOLD) || (mbc < WELZL_DUPLICATE_THRESHOLD)) {
-        return BoundingSphere<TData, tndim>{FixedArray<FixedArray<TData, tndim>, 2>{ A, B }};
+        return BoundingSphere<TData, tndim>{FixedArray<TData, 2, tndim>{ A, B }};
     }
     auto mab = max(abs(A - B));
     if (mab < WELZL_DUPLICATE_THRESHOLD) {
-        return BoundingSphere<TData, tndim>{FixedArray<FixedArray<TData, tndim>, 2>{ A, C }};
+        return BoundingSphere<TData, tndim>{FixedArray<TData, 2, tndim>{ A, C }};
     }
     auto scale = std::max({ mac, mbc, mab });
     a /= scale;
@@ -81,27 +81,27 @@ std::optional<BoundingSphere<TData, tndim>> circumscribed_sphere(
  */
 template <class TData, class TRng>
 std::optional<BoundingSphere<TData, 3>> circumscribed_sphere(
-    const FixedArray<FixedArray<TData, 3>, 4>& x,
+    const FixedArray<TData, 4, 3>& x,
     TRng& rng)
 {
     FixedArray<TData, 3, 3> A = uninitialized;
-    A[0] = x(1) - x(0);
-    A[1] = x(2) - x(0);
-    A[2] = x(3) - x(0);
+    A[0] = x[1] - x[0];
+    A[1] = x[2] - x[0];
+    A[2] = x[3] - x[0];
     auto m10 = max(abs(A[0]));
     auto m20 = max(abs(A[1]));
     auto m30 = max(abs(A[2]));
     if ((m10 < WELZL_DUPLICATE_THRESHOLD) || (m20 < WELZL_DUPLICATE_THRESHOLD) || (m30 < WELZL_DUPLICATE_THRESHOLD)) {
-        return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(1), x(2), x(3) }, rng);
+        return circumscribed_sphere(FixedArray<TData, 3, 3>{ x[1], x[2], x[3] }, rng);
     }
-    auto m21 = max(abs(x(2) - x(1)));
-    auto m31 = max(abs(x(3) - x(1)));
+    auto m21 = max(abs(x[2] - x[1]));
+    auto m31 = max(abs(x[3] - x[1]));
     if ((m21 < WELZL_DUPLICATE_THRESHOLD) || (m31 < WELZL_DUPLICATE_THRESHOLD)) {
-        return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(0), x(2), x(3) }, rng);
+        return circumscribed_sphere(FixedArray<TData, 3, 3>{ x[0], x[2], x[3] }, rng);
     }
-    auto m32 = max(abs(x(3) - x(2)));
+    auto m32 = max(abs(x[3] - x[2]));
     if (m32 < WELZL_DUPLICATE_THRESHOLD) {
-        return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(0), x(1), x(3) }, rng);
+        return circumscribed_sphere(FixedArray<TData, 3, 3>{ x[0], x[1], x[3] }, rng);
     }
     auto scale = std::max({ m10, m20, m30, m21, m31, m32 });
     A /= scale;
@@ -110,7 +110,7 @@ std::optional<BoundingSphere<TData, 3>> circumscribed_sphere(
     if (!optional_center.has_value()) {
         return std::nullopt;
     }
-    auto center = scale * (*optional_center) + x(0);
+    auto center = scale * (*optional_center) + x[0];
     return BoundingSphere<TData, 3>::from_center_and_iterator(center, x.flat_begin(), x.flat_end());
 }
 
@@ -129,14 +129,14 @@ std::optional<BoundingSphere<TData, tndim>> circumscribed_sphere(
         return BoundingSphere<TData, tndim>(*R[0], (TData)0);
     }
     if (R.size() == 2) {
-        return BoundingSphere<TData, tndim>(FixedArray<FixedArray<TData, tndim>, 2>{*R[0], *R[1]});
+        return BoundingSphere<TData, tndim>(FixedArray<TData, 2, tndim>{*R[0], *R[1]});
     }
     if (R.size() == 3) {
-        return circumscribed_sphere(FixedArray<FixedArray<TData, tndim>, 3>{*R[0], *R[1], *R[2]}, rng);
+        return circumscribed_sphere(FixedArray<TData, 3, tndim>{*R[0], *R[1], *R[2]}, rng);
     }
     if constexpr (tndim == 3) {
         if (R.size() == 4) {
-            return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 4>{*R[0], *R[1], *R[2], *R[3]}, rng);
+            return circumscribed_sphere(FixedArray<TData, 4, 3>{*R[0], *R[1], *R[2], *R[3]}, rng);
         }
     }
     THROW_OR_ABORT("Cannot compute trivial bounding sphere for the specified dimension and number of points");
@@ -207,12 +207,12 @@ BoundingSphere<TData, tndim> welzl_from_vector(
 
 template <class TData, size_t tndim, size_t tnpoints, class TRng>
 BoundingSphere<TData, tndim> welzl_from_fixed(
-    const FixedArray<FixedArray<TData, tndim>, tnpoints>& P,
+    const FixedArray<TData, tnpoints, tndim>& P,
     TRng& rng)
 {
     std::vector<const FixedArray<TData, tndim>*> Pvec(tnpoints);
     for (size_t i = 0; i < tnpoints; ++i) {
-        Pvec[i] = &P(i);
+        Pvec[i] = &P[i];
     }
     return welzl_from_vector(Pvec, rng);
 }

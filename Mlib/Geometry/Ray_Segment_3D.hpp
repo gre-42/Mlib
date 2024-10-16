@@ -39,8 +39,8 @@ public:
         length = std::sqrt(l2);
         direction /= length;
     }
-    explicit RaySegment3D(const FixedArray<FixedArray<TData, 3>, 2>& vertices)
-    : RaySegment3D{ vertices(0), vertices(1) }
+    explicit RaySegment3D(const FixedArray<TData, 2, 3>& vertices)
+    : RaySegment3D{ vertices[0], vertices[1] }
     {}
     bool intersects(const PlaneNd<TData, 3>& plane, TData* t, FixedArray<TData, 3>* intersection_point) const {
         auto c = dot0d(plane.normal, direction);

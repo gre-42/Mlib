@@ -9,10 +9,10 @@ class FixedArray;
 
 void save_triangle_to_obj(
     const std::string& filename,
-    const FixedArray<FixedArray<double, 3>, 3>& triangle);
+    const FixedArray<double, 3, 3>& triangle);
 
 void save_quad_to_obj(
     const std::string& filename,
-    const FixedArray<FixedArray<double, 3>, 4>& quad);
+    const FixedArray<double, 4, 3>& quad);
 
 }

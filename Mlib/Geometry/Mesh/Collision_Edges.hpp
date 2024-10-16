@@ -25,7 +25,7 @@ public:
     using const_iterator = Edges::const_iterator;
     template <size_t tnvertices>
     void insert(
-        const FixedArray<FixedArray<ScenePos, 3>, tnvertices>& tri,
+        const FixedArray<ScenePos, tnvertices, 3>& tri,
         PhysicsMaterial physics_material);
     const_iterator begin() const;
     const_iterator end() const;

@@ -10,14 +10,14 @@
 namespace Mlib {
 
 template <class TData>
-FixedArray<TData, 3> scaled_triangle_normal(const FixedArray<FixedArray<TData, 3>, 3>& t)
+FixedArray<TData, 3> scaled_triangle_normal(const FixedArray<TData, 3, 3>& t)
 {
-    return cross(t(2) - t(1), t(0) - t(1));
+    return cross(t[2] - t[1], t[0] - t[1]);
 }
 
 template <class TData>
 std::optional<FixedArray<TData, 3>> try_triangle_normal(
-    const FixedArray<FixedArray<TData, 3>, 3>& t)
+    const FixedArray<TData, 3, 3>& t)
 {
     FixedArray<TData, 3> res = scaled_triangle_normal(t);
     TData ma = max(abs(res));
@@ -31,7 +31,7 @@ std::optional<FixedArray<TData, 3>> try_triangle_normal(
 
 template <class TData>
 FixedArray<TData, 3> triangle_normal(
-    const FixedArray<FixedArray<TData, 3>, 3>& t,
+    const FixedArray<TData, 3, 3>& t,
     NormalVectorErrorBehavior error_behavior = NormalVectorErrorBehavior::THROW)
 {
     auto res = try_triangle_normal(t);
@@ -43,13 +43,13 @@ FixedArray<TData, 3> triangle_normal(
 
 template <class TData>
 FixedArray<TData, 3> get_alternative_or_throw(
-    const FixedArray<FixedArray<TData, 3>, 3>& t,
+    const FixedArray<TData, 3, 3>& t,
     NormalVectorErrorBehavior error_behavior) {
     if (any(error_behavior & NormalVectorErrorBehavior::WARN)) {
         lwarn() << "Cannot calculate triangle normal";
     }
     if (any(error_behavior & NormalVectorErrorBehavior::THROW)) {
-        THROW_OR_ABORT2(TriangleException(t(0), t(1), t(2), "Cannot calculate triangle normal"));
+        THROW_OR_ABORT2(TriangleException(t[0], t[1], t[2], "Cannot calculate triangle normal"));
     }
     return fixed_zeros<TData, 3>();
 }

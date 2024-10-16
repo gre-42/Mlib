@@ -4,7 +4,7 @@
 namespace Mlib {
 
 struct RacingLineSegment {
-    typedef FixedArray<FixedArray<double, 2>, 2> Line2d;
+    typedef FixedArray<double, 2, 2> Line2d;
     Line2d racing_line_segment;
     FixedArray<float, 3> color;
 };

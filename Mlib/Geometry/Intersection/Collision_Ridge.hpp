@@ -21,10 +21,10 @@ enum class SingleFaceBehavior {
 struct CollisionRidgeSphere {
     BoundingSphere<ScenePos, 3> bounding_sphere;
     PhysicsMaterial physics_material;
-    FixedArray<FixedArray<ScenePos, 3>, 2> edge;
+    FixedArray<ScenePos, 2, 3> edge;
     RaySegment3D<ScenePos> ray;
     FixedArray<ScenePos, 3> normal;
-    FixedArray<FixedArray<float, 3>, 2> vertex_normals;
+    FixedArray<float, 2, 3> vertex_normals;
     ScenePos min_cos;
     FixedArray<ScenePos, 3> tangent() const;
     bool is_touchable(SingleFaceBehavior behavior) const;

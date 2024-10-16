@@ -20,6 +20,7 @@
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
+#include <Mlib/Geometry/Mesh/Quad_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -130,6 +131,21 @@ void test_triangle_area() {
     assert_isclose(triangle_area(a.row_range<0, 2>(), b.row_range<0, 2>(), c.row_range<0, 2>()), 0.5f);
 }
 
+void test_quad_area() {
+    FixedArray<float, 3> a{7.f, 3.f, 0.f};
+    FixedArray<float, 3> b{5.f, 2.f, 0.f};
+    FixedArray<float, 3> c{-6.f, -4.f, 0.f};
+    FixedArray<float, 3> d{-3.f, -5.f, 0.f};
+    assert_isclose(triangle_area(a, b, c), 0.5f);
+    assert_isclose(triangle_area(a, c, d), 17.f);
+    assert_isclose(quad_area(a, b, c, d), 17.5f);
+    assert_isclose(quad_area(
+        a.row_range<0, 2>(),
+        b.row_range<0, 2>(),
+        c.row_range<0, 2>(),
+        d.row_range<0, 2>()), 17.5f);
+}
+
 void test_contour() {
     OrderableFixedArray<double, 2> v00{FixedArray<double, 2>{0.f, 0.f}};
     OrderableFixedArray<double, 2> v10{FixedArray<double, 2>{1.f, 0.f}};
@@ -193,8 +209,8 @@ void test_invert_scaled_4x4() {
 //}
 
 void test_intersect_lines() {
-    FixedArray<FixedArray<float, 2>, 2> l0{FixedArray<float, 2>{-1.f, 2.f}, FixedArray<float, 2>{1.f, 2.f}};
-    FixedArray<FixedArray<float, 2>, 2> l1{FixedArray<float, 2>{1.1f, -3.f}, FixedArray<float, 2>{1.1f, 4.f}};
+    FixedArray<float, 2, 2> l0{FixedArray<float, 2>{-1.f, 2.f}, FixedArray<float, 2>{1.f, 2.f}};
+    FixedArray<float, 2, 2> l1{FixedArray<float, 2>{1.1f, -3.f}, FixedArray<float, 2>{1.1f, 4.f}};
     assert_allclose(intersect_lines(l0, l1, 0.f, 0.f), FixedArray<float, 2>{1.1f, 2.f});
     assert_allclose(intersect_lines(l0, l1, 0.1f, 0.f), FixedArray<float, 2>{1.1f, 2.05f});
     assert_allclose(intersect_lines(l0, l1, 0.1f, 0.2f), FixedArray<float, 2>{1.f, 2.05f});
@@ -684,6 +700,7 @@ int main(int argc, const char** argv) {
 
     test_cross();
     test_triangle_area();
+    test_quad_area();
     test_contour();
     test_contour2();
     // test_octree();

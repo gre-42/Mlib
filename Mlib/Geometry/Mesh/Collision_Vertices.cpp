@@ -3,22 +3,22 @@
 
 using namespace Mlib;
 
-void CollisionVertices::insert(const FixedArray<FixedArray<ScenePos, 3>, 4>& quad) {
-    insert(quad(0));
-    insert(quad(1));
-    insert(quad(2));
-    insert(quad(3));
+void CollisionVertices::insert(const FixedArray<ScenePos, 4, 3>& quad) {
+    insert(quad[0]);
+    insert(quad[1]);
+    insert(quad[2]);
+    insert(quad[3]);
 }
 
-void CollisionVertices::insert(const FixedArray<FixedArray<ScenePos, 3>, 3>& tri) {
-    insert(tri(0));
-    insert(tri(1));
-    insert(tri(2));
+void CollisionVertices::insert(const FixedArray<ScenePos, 3, 3>& tri) {
+    insert(tri[0]);
+    insert(tri[1]);
+    insert(tri[2]);
 }
 
-void CollisionVertices::insert(const FixedArray<FixedArray<ScenePos, 3>, 2>& line) {
-    insert(line(0));
-    insert(line(1));
+void CollisionVertices::insert(const FixedArray<ScenePos, 2, 3>& line) {
+    insert(line[0]);
+    insert(line[1]);
 }
 
 void CollisionVertices::insert(const FixedArray<ScenePos, 3>& vertex) {

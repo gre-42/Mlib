@@ -7,7 +7,7 @@ namespace Mlib {
 struct Node;
 
 class WayBvh {
-    typedef FixedArray<FixedArray<double, 2>, 2> Line2d;
+    typedef FixedArray<double, 2, 2> Line2d;
 public:
     WayBvh();
     explicit WayBvh(const std::list<Line2d>& way_segments);

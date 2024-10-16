@@ -37,7 +37,7 @@ void Mlib::load_racing_line_bvh(
         float c_idle = std::max(0.f, 1.f - c_drive - c_break);
         racing_line_bvh.insert(
             RacingLineSegment{
-                .racing_line_segment = FixedArray<FixedArray<double, 2>, 2>{
+                .racing_line_segment = FixedArray<double, 2, 2>{
                     normalization_matrix.transform(FixedArray<double, 2>{ mat(r - 1, LAT), mat(r - 1, LON) }),
                     normalization_matrix.transform(FixedArray<double, 2>{ mat(r, LAT), mat(r, LON) })},
                 .color = FixedArray<float, 3>{c_break, c_idle, c_drive}});

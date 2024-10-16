@@ -46,26 +46,34 @@ public:
         , t{ t_from_NxN1(m) }
     {}
 
-    template <class TPos2>
-    inline auto transform(const FixedArray<TPos2, n>& rhs) const
+    template <class TPos2, size_t... tshape>
+    inline auto transform(const FixedArray<TPos2, tshape...>& rhs) const
     {
         using ResultR = decltype(TDir() * TPos2());
         using ResultT = decltype(ResultR() + TPos());
         auto R_c = R.template casted<ResultR>();
         auto rhs_c = rhs.template casted<ResultR>();
         auto t_c = t.template casted<ResultT>();
-        return dot1d(R_c, rhs_c).template casted<ResultT>() + t_c;
+        auto x = outer(rhs_c, R_c).template casted<ResultT>();
+        for (auto& r : x.rows_as_1D().row_iterable()) {
+            r += t_c;
+        }
+        return x;
     }
 
-    template <class TPos2>
-    inline auto itransform(const FixedArray<TPos2, n>& rhs) const
+    template <class TPos2, size_t... tshape>
+    inline auto itransform(const FixedArray<TPos2, tshape...>& rhs) const
     {
         using ResultT = decltype(TPos2() - TPos());
         using ResultR = decltype(ResultT() * TDir());
         auto rhs_c = rhs.template casted<ResultT>();
         auto t_c = t.template casted<ResultT>();
         auto R_c = R.template casted<ResultR>();
-        return dot((rhs_c - t_c).template casted<ResultR>(), R_c);
+        auto x = rhs_c;
+        for (auto& r : x.rows_as_1D().row_iterable()) {
+            r -= t_c;
+        }
+        return dot(x.template casted<ResultR>(), R_c);
     }
 
     inline TransformationMatrix operator * (const TransformationMatrix& rhs) const {
@@ -74,16 +82,16 @@ public:
             transform(rhs.t)};
     }
 
-    template <class TDir2>
-    inline auto rotate(const FixedArray<TDir2, n>& rhs) const {
+    template <class TDir2, size_t... tshape>
+    inline auto rotate(const FixedArray<TDir2, tshape...>& rhs) const {
         using Result = decltype(TDir() * TDir2());
         auto R_c = R.template casted<Result>();
         auto rhs_c = rhs.template casted<Result>();
-        return dot1d(R_c, rhs_c);
+        return outer(rhs_c, R_c);
     }
 
-    template <class TDir2>
-    inline auto irotate(const FixedArray<TDir2, n>& rhs) const {
+    template <class TDir2, size_t... tshape>
+    inline auto irotate(const FixedArray<TDir2, tshape...>& rhs) const {
         using Result = decltype(TDir() * TDir2());
         auto rhs_c = rhs.template casted<Result>();
         auto R_c = R.template casted<Result>();

@@ -54,11 +54,21 @@ void Mlib::get_overlap2(
     };
 
     sac.combine_sticky_ridge(e1, max_keep_normal);
+    // for (const auto& vn1 : e1.vertex_normals.row_iterable()) {
+    //     sac.combine_plane(vn1.casted<ScenePos>());
+    // }
+
     for (const auto& q0 : relevant_quads0) {
         sac.combine_plane(q0->polygon.plane().normal);
+        // for (const auto& vn0 : q0->vertex_normals.row_iterable()) {
+        //     sac.combine_plane(vn0.casted<ScenePos>());
+        // }
     }
     for (const auto& t0 : relevant_triangles0) {
         sac.combine_plane(t0->polygon.plane().normal);
+        // for (const auto& vn0 : t0->vertex_normals.row_iterable()) {
+        //     sac.combine_plane(vn0.casted<ScenePos>());
+        // }
     }
     for (const auto& e0 : relevant_edges0) {
         sac.combine_ridges(*e0, e1);

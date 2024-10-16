@@ -336,7 +336,7 @@ void Mlib::handle_reflection(
             THROW_OR_ABORT("handle_reflection: l1 not set");
         }
         normal = N0.normal;
-        overlap = -(dot0d(c.l1->line(1), normal) + N0.intercept);
+        overlap = -(dot0d(c.l1->line[1], normal) + N0.intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (overlap < 0) {
                 normal = -normal;

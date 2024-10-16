@@ -31,12 +31,12 @@ public:
         : center_{ center }
         , radius_{ radius }
     {}
-    explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, 2>& line)
-        : BoundingSphere{ from_iterator(line.flat_begin(), line.flat_end()) }
+    explicit BoundingSphere(const FixedArray<TData, 2, tndim>& line)
+        : BoundingSphere{ from_iterator(line.row_begin(), line.row_end()) }
     {}
     template <size_t tnpoints>
-    explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
-        : BoundingSphere{ from_iterator(points.flat_begin(), points.flat_end()) }
+    explicit BoundingSphere(const FixedArray<TData, tnpoints, tndim>& points)
+        : BoundingSphere{ from_iterator(points.row_begin(), points.row_end()) }
     {}
     template <class TIterable>
     static BoundingSphere from_center_and_iterator(

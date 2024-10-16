@@ -24,12 +24,12 @@ public:
     Line3D(
         const FixedArray<ColoredVertex<TPos2>, 2>& vertices,
         const TransformationMatrix<float, TPosTransform, 3>& transformation);
-    const FixedArray<FixedArray<TPos, 3>, 2>& vertices() const;
+    const FixedArray<TPos, 2, 3>& vertices() const;
     RaySegment3D<TPos> ray() const;
     BoundingSphere<TPos, 3> bounding_sphere() const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
 private:
-    const FixedArray<FixedArray<TPos, 3>, 2> vertices_;
+    const FixedArray<TPos, 2, 3> vertices_;
 };
 
 }

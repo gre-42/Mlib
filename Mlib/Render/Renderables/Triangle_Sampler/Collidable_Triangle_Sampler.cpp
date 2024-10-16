@@ -23,7 +23,7 @@ CollidableTriangleSampler::CollidableTriangleSampler(
 
 void CollidableTriangleSampler::add_near_hitboxes(
     const TerrainTriangles& tl_terrain,
-    const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>& street_bvh,
+    const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>& street_bvh,
     HeterogeneousResource& hri)
 {
     std::list<std::pair<const TerrainStyle&, const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*>> grass_triangles;
@@ -83,7 +83,7 @@ void CollidableTriangleSampler::add_near_hitboxes(
 
 void CollidableTriangleSampler::add_far_hitboxes(
     const TerrainTriangles& tl_terrain,
-    const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>& street_bvh,
+    const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>& street_bvh,
     HeterogeneousResource& hri)
 {
     std::list<std::pair<const TerrainStyle&, const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*>> grass_triangles;

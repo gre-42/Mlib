@@ -12,6 +12,12 @@ template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
 class IIntersectableMesh;
 
+void get_overlap(
+    const IIntersectableMesh& mesh0,
+    const IIntersectableMesh& mesh1,
+    ScenePos& min_overlap,
+    FixedArray<ScenePos, 3>& normal);
+
 class SatTracker {
 public:
     void get_collision_plane(

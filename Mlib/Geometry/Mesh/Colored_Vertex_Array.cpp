@@ -270,13 +270,13 @@ void ColoredVertexArray<TPos>::polygon_sphere(
             .polygon = poly.polygon(),
             .physics_material = morphology.physics_material,
             .corners = poly.vertices(),
-            .vertex_normals = fixed_full<FixedArray<float, 3>, tnvertices>(fixed_nans<float, 3>())
+            .vertex_normals = fixed_full<float, tnvertices, 3>(NAN)
         });
     }
     VertexNormals<TPos, float> vertex_normals;
     for (size_t i = len0; i < collision_polygons.size(); ++i) {
         const auto& poly = collision_polygons[i];
-        for (const auto& v : poly.corners.flat_iterable()) {
+        for (const auto& v : poly.corners.row_iterable()) {
             vertex_normals.add_vertex_face_normal(v, poly.polygon.plane().normal.template casted<float>());
         }
     }
@@ -285,7 +285,7 @@ void ColoredVertexArray<TPos>::polygon_sphere(
         collision_polygons.erase(
             std::remove_if(collision_polygons.begin(), collision_polygons.end(), [&vertex_normals](auto& poly) {
                 const auto& n = vertex_normals.get_normals(poly.corners);
-                for (const auto& c : n.flat_iterable()) {
+                for (const auto& c : n.row_iterable()) {
                     if (all(c == 0.f)) {
                         return true;
                     }
@@ -321,13 +321,13 @@ std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> ColoredVertexArray<TPo
                 .polygon = poly.polygon(),
                 .physics_material = morphology.physics_material,
                 .corners = poly.vertices(),
-                .vertex_normals = fixed_full<FixedArray<float, 3>, tnvertices>(fixed_nans<float, 3>())
+                .vertex_normals = fixed_full<float, tnvertices, 3>(NAN)
             },
             .aabb = poly.aabb()});
     }
     VertexNormals<TPosResult, float> vertex_normals;
     for (const auto& poly : res) {
-        for (const auto& v : poly.base.corners.flat_iterable()) {
+        for (const auto& v : poly.base.corners.row_iterable()) {
             vertex_normals.add_vertex_face_normal(v, poly.base.polygon.plane().normal.template casted<float>());
         }
     }
@@ -336,7 +336,7 @@ std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> ColoredVertexArray<TPo
         res.erase(
             std::remove_if(res.begin(), res.end(), [&vertex_normals](auto& poly) {
                 const auto& n = vertex_normals.get_normals(poly.base.corners);
-                for (const auto& c : n.flat_iterable()) {
+                for (const auto& c : n.row_iterable()) {
                     if (all(c == 0.f)) {
                         return true;
                     }

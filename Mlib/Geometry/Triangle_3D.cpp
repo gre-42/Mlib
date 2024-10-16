@@ -28,7 +28,7 @@ Triangle3D<TPos>::Triangle3D(
 {}
 
 template <class TPos>
-const FixedArray<FixedArray<TPos, 3>, 3>& Triangle3D<TPos>::vertices() const {
+const FixedArray<TPos, 3, 3>& Triangle3D<TPos>::vertices() const {
     return vertices_;
 }
 

@@ -13,7 +13,7 @@ template <class TData>
 struct CollisionLineSphere {
     BoundingSphere<TData, 3> bounding_sphere;
     PhysicsMaterial physics_material;
-    FixedArray<FixedArray<TData, 3>, 2> line;
+    FixedArray<TData, 2, 3> line;
     RaySegment3D<TData> ray;
     CollisionLineSphere<ScenePos> transformed(
         const TransformationMatrix<float, ScenePos, 3>& transformation_matrix) const
@@ -21,10 +21,7 @@ struct CollisionLineSphere {
         return {
             bounding_sphere.transformed(transformation_matrix),
             physics_material,
-            {
-                transformation_matrix.transform(line(0)),
-                transformation_matrix.transform(line(1))
-            },
+            transformation_matrix.transform(line),
             ray.transformed(transformation_matrix),
         };
     }

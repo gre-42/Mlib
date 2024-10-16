@@ -27,23 +27,23 @@ public:
         : edges_{ edges }
         , plane_{ plane }
     {}
-    ConvexPolygon3D(const FixedArray<FixedArray<TData, 3>, tnvertices>& corners)
+    ConvexPolygon3D(const FixedArray<TData, tnvertices, 3>& corners)
         : edges_{ uninitialized }
         , plane_{ uninitialized }
     {
         static_assert(tnvertices >= 3);
-        plane_ = PlaneNd<TData, 3>{ FixedArray<FixedArray<TData, 3>, 3>{
-            corners(0),
-            corners(1),
-            corners(2) } };
+        plane_ = PlaneNd<TData, 3>{ FixedArray<TData, 3, 3>{
+            corners[0],
+            corners[1],
+            corners[2] } };
         for (size_t i = 0; i < tnvertices; ++i) {
-            auto dir = corners((i + 1) % tnvertices) - corners(i);
+            auto dir = corners[(i + 1) % tnvertices] - corners[i];
             auto edge_normal = cross(plane_.normal, dir);
             auto l2 = sum(squared(edge_normal));
             if (l2 < 1e-12) {
                 THROW_OR_ABORT("Cannot compute edge normal");
             }
-            edges_(i) = PlaneNd<TData, 3>{ edge_normal / std::sqrt(l2), corners(i) };
+            edges_(i) = PlaneNd<TData, 3>{ edge_normal / std::sqrt(l2), corners[i] };
         }
     }
     bool contains(const FixedArray<TData, 3>& point) const {

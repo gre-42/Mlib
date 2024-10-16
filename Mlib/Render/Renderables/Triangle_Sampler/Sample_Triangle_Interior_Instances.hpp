@@ -31,7 +31,7 @@ public:
         const TerrainStyle& terrain_style,
         ScenePos scale,
         UpAxis up_axis,
-        const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* boundary_bvh,
+        const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* boundary_bvh,
         const Array<float>& dirtmap,
         float dirtmap_scale,
         const Array<float>& mudmap);
@@ -53,7 +53,7 @@ private:
     TriangleSampler2<ScenePos> ts_;
     ScenePos scale_;
     UpAxis up_axis_;
-    const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* boundary_bvh_;
+    const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* boundary_bvh_;
     const Array<float>& dirtmap_;
     float dirtmap_scale_;
     const Array<float>& mudmap_;
