@@ -90,8 +90,8 @@ bool Mlib::compute_edge_overlap(
 
             assert_true(c.r1 != nullptr);
             try {
-                get_overlap(stm, *c.mesh1, overlap, normal);
-                // get_overlap2(stm, *c.r1, -INFINITY, overlap, normal);
+                // get_overlap(stm, *c.mesh1, overlap, normal);
+                get_overlap2(stm, *c.r1, -INFINITY, overlap, normal);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error(
                     "Could not compute collision plane of temporary mesh and edge: " + std::string(e.what()));

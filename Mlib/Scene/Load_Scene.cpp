@@ -167,6 +167,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Follow_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Actor_Task.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Available_Roles.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Bevel_Box_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Capsule_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Jump_Dv.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_RigidBody_Grind_Point.hpp>
@@ -396,6 +397,7 @@ LoadScene::LoadScene() {
     register_json_user_function(FitCanvasToRenderables::key, FitCanvasToRenderables::json_user_function);
     register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
     register_json_user_function(SetAvailableRoles::key, SetAvailableRoles::json_user_function);
+    register_json_user_function(SetBevelBoxSurfaceNormal::key, SetBevelBoxSurfaceNormal::json_user_function);
     register_json_user_function(SetCapsuleSurfaceNormal::key, SetCapsuleSurfaceNormal::json_user_function);
     register_json_user_function(SetRoundMeshSurfaceNormal::key, SetRoundMeshSurfaceNormal::json_user_function);
     register_json_user_function(SetSlidingNormalModifier::key, SetSlidingNormalModifier::json_user_function);
