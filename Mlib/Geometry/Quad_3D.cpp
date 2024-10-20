@@ -8,6 +8,11 @@
 using namespace Mlib;
 
 template <class TPos>
+Quad3D<TPos>::Quad3D(const FixedArray<TPos, 4, 3>& vertices)
+    : vertices_{ vertices }
+{}
+
+template <class TPos>
 Quad3D<TPos>::Quad3D(const FixedArray<ColoredVertex<TPos>, 4>& vertices)
     : vertices_{
         vertices(0).position,

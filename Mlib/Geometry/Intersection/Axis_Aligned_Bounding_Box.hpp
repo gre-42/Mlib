@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Stats/Clamped.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Uninitialized.hpp>
 #include <iosfwd>
@@ -103,6 +104,9 @@ public:
             }
         }
         return true;
+    }
+    FixedArray<TData, tndim> closest_point(const FixedArray<TData, tndim>& point) const {
+        return clamped(point, min(), max());
     }
     void extend(const AxisAlignedBoundingBox& other) {
         min_ = minimum(min_, other.min_);

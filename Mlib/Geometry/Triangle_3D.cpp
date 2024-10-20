@@ -9,6 +9,11 @@
 using namespace Mlib;
 
 template <class TPos>
+Triangle3D<TPos>::Triangle3D(const FixedArray<TPos, 3, 3>& vertices)
+    : vertices_{ vertices }
+{}
+
+template <class TPos>
 Triangle3D<TPos>::Triangle3D(const FixedArray<ColoredVertex<TPos>, 3>& vertices)
     : vertices_{
         vertices(0).position,

@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Caching_Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Distange_Polygon_Aabb.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
@@ -689,6 +690,20 @@ void test_ray_sphere_intersection() {
     assert_isclose(lambda, 2.);
 }
 
+void test_distance_polygon_aabb() {
+    auto aabb = AxisAlignedBoundingBox<double, 3>::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f});
+    FixedArray<double, 3> a{1., 2., 10.};
+    FixedArray<double, 3> b{2., 2., 10.};
+    FixedArray<double, 3> c{2., 3., 10.};
+    FixedArray<double, 3> d{1., 3., 10.};
+    Polygon3D<double, 4> polygon{{a, b, c, d}};
+    FixedArray<double, 3> closest_point = uninitialized;
+    FixedArray<double, 3> normal = uninitialized;
+    double distance;
+    distance_polygon_aabb<double, 4>(polygon, aabb, closest_point, normal, distance);
+    linfo() << closest_point << " - " << normal << " - " << distance;
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -727,5 +742,6 @@ int main(int argc, const char** argv) {
     test_shortest_path();
     test_frustum3();
     test_ray_sphere_intersection();
+    test_distance_polygon_aabb();
     return 0;
 }

@@ -97,6 +97,21 @@ void distance_point_to_line(
     dir /= distance;
 }
 
+template <class TData, size_t tndim>
+FixedArray<TData, tndim> closest_point_to_line(
+    const FixedArray<TData, tndim>& pt,
+    const FixedArray<TData, tndim>& l0,
+    const FixedArray<TData, tndim>& l1)
+{
+    auto len = std::sqrt(sum(squared(l1 - l0)));
+    if (len < 1e-12) {
+        THROW_OR_ABORT("Line too short");
+    }
+    auto dir = (l1 - l0) / len;
+    auto l = dot0d(pt - l0, dir);
+    return l0 + dir * std::clamp<TData>(l, 0, 1);
+}
+
 }
 
 #ifdef __GNUC__

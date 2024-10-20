@@ -18,6 +18,7 @@ struct ColoredVertex;
 template <class TPos>
 class Triangle3D {
 public:
+    explicit Triangle3D(const FixedArray<TPos, 3, 3>& vertices);
     explicit Triangle3D(const FixedArray<ColoredVertex<TPos>, 3>& vertices);
     template <class TPos2, class TPosTransform>
     Triangle3D(

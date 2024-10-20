@@ -18,6 +18,7 @@ struct ColoredVertex;
 template <class TPos>
 class Quad3D {
 public:
+    explicit Quad3D(const FixedArray<TPos, 4, 3>& vertices);
     explicit Quad3D(const FixedArray<ColoredVertex<TPos>, 4>& vertices);
     template <class TPos2, class TPosTransform>
     Quad3D(
