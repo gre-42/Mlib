@@ -26,9 +26,13 @@ template <class TPoint, class TFlags>
 struct PointAndFlags;
 template <class TData, size_t n>
 struct FixedScaledUnitVector;
+template <class T>
+struct TypedMesh;
 
 class ISceneNodeResource;
 class SceneNode;
+template <class TData>
+class IIntersectable;
 
 template <class TPos>
 class ColoredVertexArray;
@@ -123,6 +127,10 @@ public:
     std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_poses(const std::string& name, float seconds) const;
     float get_animation_duration(const std::string& name) const;
 
+    // Collision
+    void add_intersectables(std::string name, std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> intersectables);
+    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> get_intersectables(const std::string& name) const;
+
     // Modifiers
     void add_modifier(
         const std::string& resource_name,
@@ -168,6 +176,7 @@ private:
     ThreadsafeStringMap<TransformationMatrix<double, double, 3>> geographic_mappings_;
     ThreadsafeStringMap<FixedScaledUnitVector<float, 3>> wind_;
     ThreadsafeStringMap<FixedScaledUnitVector<float, 3>> gravity_;
+    ThreadsafeStringMap<std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>>> intersectables_;
     std::map<std::string, std::list<std::pair<std::string, RenderableResourceFilter>>> companions_;
     std::map<std::string, std::function<std::shared_ptr<ISceneNodeResource>()>> resource_loaders_;
     mutable std::map<std::string, std::list<std::function<void(ISceneNodeResource&)>>> modifiers_;

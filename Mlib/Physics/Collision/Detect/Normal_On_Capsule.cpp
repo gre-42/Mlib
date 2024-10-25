@@ -24,28 +24,28 @@ NormalOnCapsule::NormalOnCapsule(
 
 NormalOnCapsule::~NormalOnCapsule() = default;
 
-FixedArray<float, 3> NormalOnCapsule::get_surface_normal(
-    const CollisionRidgeSphere& ridge,
+std::optional<FixedArray<float, 3>> NormalOnCapsule::get_surface_normal(
+    const CollisionRidgeSphere<ScenePos>& ridge,
     const FixedArray<ScenePos, 3>& position) const
 {
     return get_surface_normal(position);
 }
 
-FixedArray<float, 3> NormalOnCapsule::get_surface_normal(
+std::optional<FixedArray<float, 3>> NormalOnCapsule::get_surface_normal(
     const CollisionPolygonSphere<ScenePos, 3>& triangle,
     const FixedArray<ScenePos, 3>& position) const
 {
     return get_surface_normal(position);
 }
 
-FixedArray<float, 3> NormalOnCapsule::get_surface_normal(
+std::optional<FixedArray<float, 3>> NormalOnCapsule::get_surface_normal(
     const CollisionPolygonSphere<ScenePos, 4>& quad,
     const FixedArray<ScenePos, 3>& position) const
 {
     return get_surface_normal(position);
 }
 
-FixedArray<float, 3> NormalOnCapsule::get_surface_normal(
+std::optional<FixedArray<float, 3>> NormalOnCapsule::get_surface_normal(
     const FixedArray<ScenePos, 3>& position) const
 {
     auto trafo = rbp_.abs_transformation();

@@ -1,5 +1,6 @@
 #include "Handle_Reflection.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Intersection/Intersectors/IIntersection_Info.hpp>
 #include <Mlib/Geometry/Mesh/Farthest_Distances.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -244,13 +245,10 @@ static void handle_extended_reflection(
 
 void Mlib::handle_reflection(
     const IntersectionScene& c,
-    const FixedArray<ScenePos, 3>& intersection_point,
+    const IIntersectionInfo& iinfo,
     float surface_stiction_factor)
 {
-    if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
-        THROW_OR_ABORT("handle_reflection: Not exactly one of q0/t0 are set");
-    }
-    const auto& N0 = (c.t0 != nullptr) ? c.t0->polygon.plane() : c.q0->polygon.plane();
+    const auto* N0 = (c.t0 != nullptr) ? &c.t0->polygon.plane() : c.q0 != nullptr ? &c.q0->polygon.plane() : nullptr;
 
     // #############
     // # Alignment #
@@ -264,32 +262,38 @@ void Mlib::handle_reflection(
             c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
             return;
         }
-        if ((dot0d(N0.normal.casted<float>(), c.o1.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
+        if (N0 == nullptr) {
+            THROW_OR_ABORT("Alignment object has no plane normal");
+        }
+        if ((dot0d(N0->normal.casted<float>(), c.o1.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
             !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_))
         {
             return;
         }
     }
     if (any(c.mesh1_material & PhysicsMaterial::OBJ_ALIGNMENT_CONTACT)) {
+        if (N0 == nullptr) {
+            THROW_OR_ABORT("Alignment contact touches an object without a plane normal");
+        }
         if (c.o1.align_to_surface_state_.align_to_surface_relaxation_ != 0.f) {
             if (any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                 if (!c.o1.align_to_surface_state_.touches_alignment_plane_ ||
-                    (N0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
+                    (N0->normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
                 {
                     c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
-                    c.o1.align_to_surface_state_.surface_normal_ = N0.normal.casted<float>();
+                    c.o1.align_to_surface_state_.surface_normal_ = N0->normal.casted<float>();
                 }
             } else if (!c.o1.align_to_surface_state_.touches_alignment_plane_ &&
-                (std::abs(N0.normal(1)) > c.history.cfg.alignment_surface_cos) &&
+                (std::abs(N0->normal(1)) > c.history.cfg.alignment_surface_cos) &&
                 (!any(c.mesh0_material & PhysicsMaterial::ATTR_ALIGN_STRICT) ||
-                    (N0.normal(1) > c.history.cfg.alignment_surface_cos_strict)) &&
+                    (N0->normal(1) > c.history.cfg.alignment_surface_cos_strict)) &&
                 (// (dot0d(plane.normal, c.o1.rbp_.rotation_.column(1)) > c.cfg.alignment_cos) &&
                 (any(Mlib::isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
-                (N0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
+                (N0->normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
                 // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
                 // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbp_.rotation_.column(1)) > 0.f))))
             {
-                c.o1.align_to_surface_state_.surface_normal_ = N0.normal.casted<float>();
+                c.o1.align_to_surface_state_.surface_normal_ = N0->normal.casted<float>();
             }
         }
         // if (c.beacons != nullptr) {
@@ -306,7 +310,11 @@ void Mlib::handle_reflection(
     // }
     FixedArray<ScenePos, 3> normal = uninitialized;
     ScenePos overlap = INFINITY;
-    if (!c.l1_is_normal) {
+    if (iinfo.has_normal_and_overlap()) {
+        sat_used = true;
+        overlap = iinfo.overlap();
+        normal = iinfo.normal();
+    } else if (!c.l1_is_normal) {
         assert_true(c.r1 != nullptr);
         IntersectionScene cf{ c };
         std::optional<CollisionPolygonSphere<ScenePos, 4>> q0f;
@@ -315,7 +323,10 @@ void Mlib::handle_reflection(
             if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
                 THROW_OR_ABORT("Two-sided materials require a convex collision partner (case 0). Consider using collision-normals.");
             }
-            auto dist = get_farthest_distances(*c.mesh1, N0);
+            if (N0 == nullptr) {
+                THROW_OR_ABORT("Two-sided materials require a collision partner with an plane normal");
+            }
+            auto dist = get_farthest_distances(*c.mesh1, *N0);
             // (dist.min + dist.max) / 2. < 0  =>  dist.min < -dist.max
             if (dist.min < -dist.max) {
                 if (c.q0 != nullptr) {
@@ -328,15 +339,18 @@ void Mlib::handle_reflection(
                 }
             }
         }
-        if (!compute_edge_overlap(cf, intersection_point, sat_used, overlap, normal)) {
+        if (!compute_edge_overlap(cf, iinfo.intersection_point(), sat_used, overlap, normal)) {
             return;
         }
     } else {
         if (c.l1 == nullptr) {
             THROW_OR_ABORT("handle_reflection: l1 not set");
         }
-        normal = N0.normal;
-        overlap = -(dot0d(c.l1->line[1], normal) + N0.intercept);
+        if (N0 == nullptr) {
+            THROW_OR_ABORT("Lines require a collision partner with either normals or plane normals");
+        }
+        normal = N0->normal;
+        overlap = -(dot0d(c.l1->line[1], normal) + N0->intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (overlap < 0) {
                 normal = -normal;
@@ -373,14 +387,20 @@ void Mlib::handle_reflection(
             if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) &&
                 any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
             {
-                round_normal = N0.normal - c.r1->normal;
+                if (N0 == nullptr) {
+                    THROW_OR_ABORT("Round materials require a plane normal (0)");
+                }
+                round_normal = N0->normal - c.r1->normal;
                 ScenePos nl2 = sum(squared(round_normal));
                 if (nl2 < 1e-12) {
                     THROW_OR_ABORT("Normal is too small in collision of round objects (objects might be unseparated)");
                 }
                 round_normal /= std::sqrt(nl2);
             } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND)) {
-                round_normal = N0.normal;
+                if (N0 == nullptr) {
+                    THROW_OR_ABORT("Round materials require a plane normal (1)");
+                }
+                round_normal = N0->normal;
             } else {
                 round_normal = -c.r1->normal;
             }
@@ -388,7 +408,7 @@ void Mlib::handle_reflection(
                 normal = round_normal;
             }
         } else {
-            auto dv = c.o0.velocity_at_position(intersection_point) - c.o1.velocity_at_position(intersection_point);
+            auto dv = c.o0.velocity_at_position(iinfo.intersection_point()) - c.o1.velocity_at_position(iinfo.intersection_point());
             float vn = dot0d(normal.casted<float>(), dv);
             // if (vn > c.history.cfg.min_skip_velocity) {
             //     float ds = vn * c.history.cfg.dt_substeps();
@@ -412,13 +432,13 @@ void Mlib::handle_reflection(
         handle_standard_reflection(
             c,
             normal,
-            intersection_point,
+            iinfo.intersection_point(),
             (float)overlap);
     } else {
         handle_extended_reflection(
             c,
             normal,
-            intersection_point,
+            iinfo.intersection_point(),
             (float)overlap,
             surface_stiction_factor);
     }

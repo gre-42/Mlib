@@ -1,8 +1,10 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Stats/Clamped.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Uninitialized.hpp>
+#include <array>
 #include <iosfwd>
 #include <string>
 
@@ -160,6 +162,107 @@ public:
         return AxisAlignedBoundingBox<TResultData, tndim>(
             min_.template casted<TResultData>(),
             max_.template casted<TResultData>());
+    }
+    auto edges() const {
+        static_assert(tndim == 3);
+        return FixedArray<TData, 12, 2, 3>{
+            // 0, 0, 0
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{min(0), min(1), min(2)},
+                FixedArray<TData, 3>{min(0), min(1), max(2)}
+            },
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{min(0), min(1), min(2)},
+                FixedArray<TData, 3>{min(0), max(1), min(2)}
+            },
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{min(0), min(1), min(2)},
+                FixedArray<TData, 3>{max(0), min(1), min(2)}
+            },
+            // 0, 0, 1
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{min(0), min(1), max(2)},
+                FixedArray<TData, 3>{min(0), max(1), max(2)}
+            },
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{min(0), min(1), max(2)},
+                FixedArray<TData, 3>{max(0), min(1), max(2)}
+            },
+            // 0, 1, 0
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{min(0), max(1), min(2)},
+                FixedArray<TData, 3>{min(0), max(1), max(2)}
+            },
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{min(0), max(1), min(2)},
+                FixedArray<TData, 3>{max(0), max(1), min(2)}
+            },
+            // 0, 1, 1
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{min(0), max(1), max(2)},
+                FixedArray<TData, 3>{max(0), max(1), max(2)}
+            },
+            // 1, 0, 0
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{max(0), min(1), min(2)},
+                FixedArray<TData, 3>{max(0), min(1), max(2)}
+            },
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{max(0), min(1), min(2)},
+                FixedArray<TData, 3>{max(0), max(1), min(2)}
+            },
+            // 1, 0, 1
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{max(0), min(1), max(2)},
+                FixedArray<TData, 3>{max(0), max(1), max(2)}
+            },
+            // 1, 1, 0
+            FixedArray<TData, 2, 3>{
+                FixedArray<TData, 3>{max(0), min(1), max(2)},
+                FixedArray<TData, 3>{max(0), max(1), max(2)}
+            }
+        };
+    }
+    auto faces() const {
+        static_assert(tndim == 3);
+        return std::array<ConvexPolygon3D<TData, 4>, 6>{
+            // x-
+            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+                FixedArray<TData, 3>{min(0), min(1), min(2)},
+                FixedArray<TData, 3>{min(0), max(1), min(2)},
+                FixedArray<TData, 3>{min(0), max(1), max(2)},
+                FixedArray<TData, 3>{min(0), min(1), max(2)}}},
+            // x+
+            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+                FixedArray<TData, 3>{max(0), min(1), min(2)},
+                FixedArray<TData, 3>{max(0), max(1), min(2)},
+                FixedArray<TData, 3>{max(0), max(1), max(2)},
+                FixedArray<TData, 3>{max(0), min(1), max(2)}}},
+            // y-
+            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+                FixedArray<TData, 3>{min(0), min(1), min(2)},
+                FixedArray<TData, 3>{max(0), min(1), min(2)},
+                FixedArray<TData, 3>{max(0), min(1), max(2)},
+                FixedArray<TData, 3>{min(0), min(1), max(2)}}},
+            // y+
+            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+                FixedArray<TData, 3>{min(0), max(1), min(2)},
+                FixedArray<TData, 3>{max(0), max(1), min(2)},
+                FixedArray<TData, 3>{max(0), max(1), max(2)},
+                FixedArray<TData, 3>{min(0), max(1), max(2)}}},
+            // z-
+            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+                FixedArray<TData, 3>{min(0), min(1), min(2)},
+                FixedArray<TData, 3>{max(0), min(1), min(2)},
+                FixedArray<TData, 3>{max(0), max(1), min(2)},
+                FixedArray<TData, 3>{min(0), max(1), min(2)}}},
+            // z+
+            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+                FixedArray<TData, 3>{min(0), min(1), max(2)},
+                FixedArray<TData, 3>{max(0), min(1), max(2)},
+                FixedArray<TData, 3>{max(0), max(1), max(2)},
+                FixedArray<TData, 3>{min(0), max(1), max(2)}}}
+        };
     }
 private:
     AxisAlignedBoundingBox(const FixedArray<TData, tndim>& min, const FixedArray<TData, tndim>& max)

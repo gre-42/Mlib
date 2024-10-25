@@ -18,6 +18,8 @@ template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
 template <class TData>
 struct CollisionLineSphere;
+template <class T>
+struct TypedMesh;
 
 class LazyTransformedMesh: public IIntersectableMesh {
     LazyTransformedMesh(const LazyTransformedMesh&) = delete;
@@ -41,7 +43,8 @@ public:
     virtual const std::vector<CollisionPolygonSphere<ScenePos, 3>>& get_triangles_sphere() const override;
     virtual const std::vector<CollisionLineSphere<ScenePos>>& get_lines_sphere() const override;
     virtual const std::vector<CollisionLineSphere<ScenePos>>& get_edges_sphere() const override;
-    virtual const std::vector<CollisionRidgeSphere>& get_ridges_sphere() const override;
+    virtual const std::vector<CollisionRidgeSphere<ScenePos>>& get_ridges_sphere() const override;
+    virtual const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& get_intersectables() const override;
     virtual BoundingSphere<ScenePos, 3> bounding_sphere() const override;
     virtual AxisAlignedBoundingBox<ScenePos, 3> aabb() const override;
     void print_info() const;
@@ -51,17 +54,21 @@ private:
     BoundingSphere<ScenePos, 3> transformed_bounding_sphere_;
     std::shared_ptr<CollisionMesh<float>> smesh_;
     std::shared_ptr<CollisionMesh<double>> dmesh_;
+    mutable std::vector<TypedMesh<std::shared_ptr<IIntersectable<float>>>> sintersectables_;
+    mutable std::vector<TypedMesh<std::shared_ptr<IIntersectable<double>>>> dintersectables_;
     mutable std::vector<CollisionPolygonSphere<ScenePos, 4>> transformed_quads_;
     mutable std::vector<CollisionPolygonSphere<ScenePos, 3>> transformed_triangles_;
     mutable std::vector<CollisionLineSphere<ScenePos>> transformed_lines_;
     mutable std::vector<CollisionLineSphere<ScenePos>> transformed_edges_;
-    mutable std::vector<CollisionRidgeSphere> transformed_ridges_;
+    mutable std::vector<CollisionRidgeSphere<ScenePos>> transformed_ridges_;
+    mutable std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>> transformed_intersectables_;
     mutable AtomicMutex mutex_;
     mutable std::atomic_bool quads_calculated_ = false;
     mutable std::atomic_bool triangles_calculated_ = false;
     mutable std::atomic_bool lines_calculated_ = false;
     mutable std::atomic_bool edges_calculated_ = false;
     mutable std::atomic_bool ridges_calculated_ = false;
+    mutable std::atomic_bool intersectables_calculated_ = false;
 };
 
 }

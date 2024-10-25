@@ -13,11 +13,11 @@ class OrderableFixedArray;
 
 struct OrderableRidgeSphereBase {
 public:
-    OrderableRidgeSphereBase(const CollisionRidgeSphere& value)
+    OrderableRidgeSphereBase(const CollisionRidgeSphere<ScenePos>& value)
         : collision_ridge_sphere{ value }
         , hash{ key() }
     {}
-    CollisionRidgeSphere collision_ridge_sphere;
+    CollisionRidgeSphere<ScenePos> collision_ridge_sphere;
     size_t hash;
     inline bool operator == (const OrderableRidgeSphereBase& other) const {
         return hash == other.hash;

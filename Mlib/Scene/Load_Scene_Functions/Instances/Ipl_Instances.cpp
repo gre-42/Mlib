@@ -96,7 +96,7 @@ void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
             fixed_ones<float, 3>(),     // size
             fixed_ones<float, 3>());    // com
         rb->set_absolute_model_matrix(TransformationMatrix<float, ScenePos, 3>::identity());
-        physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, hitboxes, CollidableMode::STATIC);
+        physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, hitboxes, {}, CollidableMode::STATIC);
         rb.release();
     }
 }

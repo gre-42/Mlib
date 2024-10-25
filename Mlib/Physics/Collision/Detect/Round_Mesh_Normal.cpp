@@ -44,8 +44,8 @@ RoundMeshNormal::RoundMeshNormal(float t, float k)
 
 RoundMeshNormal::~RoundMeshNormal() = default;
 
-FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
-    const CollisionRidgeSphere& ridge,
+std::optional<FixedArray<float, 3>> RoundMeshNormal::get_surface_normal(
+    const CollisionRidgeSphere<ScenePos>& ridge,
     const FixedArray<ScenePos, 3>& position) const
 {
     auto l = dot0d(ridge.ray.direction, position - ridge.ray.start);
@@ -54,7 +54,7 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
     return mix_normals(ni, ridge.normal.casted<float>(), t_, k_);
 }
 
-FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
+std::optional<FixedArray<float, 3>> RoundMeshNormal::get_surface_normal(
     const CollisionPolygonSphere<ScenePos, 3>& triangle,
     const FixedArray<ScenePos, 3>& position) const
 {
@@ -75,7 +75,7 @@ FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
     return mix_normals(ni, triangle.polygon.plane().normal.casted<float>(), t_, k_);
 }
 
-FixedArray<float, 3> RoundMeshNormal::get_surface_normal(
+std::optional<FixedArray<float, 3>> RoundMeshNormal::get_surface_normal(
     const CollisionPolygonSphere<ScenePos, 4>& quad,
     const FixedArray<ScenePos, 3>& position) const
 {

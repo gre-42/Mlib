@@ -23,6 +23,7 @@ struct IntersectionSceneAndContact;
 class RigidBodyVehicle;
 struct GrindInfo;
 class BaseLog;
+template <class TData>
 struct CollisionRidgeSphere;
 struct StaticWorld;
 class SurfaceContactDb;
@@ -41,7 +42,7 @@ struct CollisionHistory {
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>>& concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos;
     std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>>& ridge_intersection_points;
-    const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere*>& ridge_map;
+    const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere<ScenePos>*>& ridge_map;
     BaseLog* base_log;
 };
 

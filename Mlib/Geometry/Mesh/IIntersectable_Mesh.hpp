@@ -14,6 +14,7 @@ template <class TData, size_t tndim>
 class PlaneNd;
 template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
+template <class TData>
 struct CollisionRidgeSphere;
 template <class TData>
 struct CollisionLineSphere;
@@ -22,6 +23,10 @@ class AxisAlignedBoundingBox;
 class CollisionVertices;
 template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
+template <class TData>
+class IIntersectable;
+template <class T>
+struct TypedMesh;
 
 class IIntersectableMesh {
 public:
@@ -46,7 +51,8 @@ public:
     virtual const std::vector<CollisionPolygonSphere<ScenePos, 3>>& get_triangles_sphere() const = 0;
     virtual const std::vector<CollisionLineSphere<ScenePos>>& get_lines_sphere() const = 0;
     virtual const std::vector<CollisionLineSphere<ScenePos>>& get_edges_sphere() const = 0;
-    virtual const std::vector<CollisionRidgeSphere>& get_ridges_sphere() const = 0;
+    virtual const std::vector<CollisionRidgeSphere<ScenePos>>& get_ridges_sphere() const = 0;
+    virtual const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& get_intersectables() const = 0;
     const std::set<OrderableFixedArray<ScenePos, 3>>& get_vertices() const;
     virtual BoundingSphere<ScenePos, 3> bounding_sphere() const = 0;
     virtual AxisAlignedBoundingBox<ScenePos, 3> aabb() const = 0;

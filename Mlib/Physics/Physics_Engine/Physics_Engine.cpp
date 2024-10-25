@@ -1,5 +1,6 @@
 #include "Physics_Engine.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Intersection/Intersectors/IIntersection_Info.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>

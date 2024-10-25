@@ -8,16 +8,13 @@
 
 namespace Mlib {
 
-template <class TData, size_t tnvertices>
-void distance_polygon_aabb(
-    const Polygon3D<TData, tnvertices>& polygon,
-    const AxisAlignedBoundingBox<TData, 3>& aabb,
-    FixedArray<TData, 3>& closest_point,
-    FixedArray<TData, 3>& normal,
-    TData& distance)
-{
-    distance = INFINITY;
-    auto update_result = [&](
+template <class TData>
+class ClosestPoint {
+public:
+    ClosestPoint()
+        : distance{ INFINITY }
+    {}
+    void update(
         const FixedArray<TData, 3>& candidate0,
         const FixedArray<TData, 3>& candidate1)
     {
@@ -31,99 +28,112 @@ void distance_polygon_aabb(
             distance = std::sqrt(dist2);
             normal = dir / distance;
         }
-    };
+    }
+    FixedArray<TData, 3> closest_point = uninitialized;
+    FixedArray<TData, 3> normal = uninitialized;
+    TData distance;
+};
+
+template <class TData>
+void distance_point_aabb(
+    const FixedArray<TData, 3>& point,
+    const AxisAlignedBoundingBox<TData, 3>& aabb,
+    ClosestPoint<TData>& closest_point)
+{
     // Point-volume
-    for (const auto& p : polygon.vertices().row_iterable()) {
-        update_result(p, aabb.closest_point(p));
-    }
+    closest_point.update(point, aabb.closest_point(point));
+}
+
+template <class TData>
+void distance_line_aabb(
+    const RaySegment3D<TData>& ray,
+    const AxisAlignedBoundingBox<TData, 3>& aabb,
+    ClosestPoint<TData>& closest_point)
+{
     // Line-point
-    for (size_t i = 0; i < tnvertices; ++i) {
-        aabb.for_each_corner([&](const FixedArray<TData, 3>& corner){
-            auto cp = closest_point_to_line(
-                corner,
-                polygon.vertices()[i],
-                polygon.vertices()[(i + 1) % tnvertices]);
-            update_result(cp, corner);
-            return true;
-        });
-    }
-    const FixedArray<TData, 2, 3> aabb_edges[] = {
-        // 0, 0, 0
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.min(0), aabb.min(1), aabb.min(2)},
-            FixedArray<TData, 3>{aabb.min(0), aabb.min(1), aabb.max(2)}
-        },
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.min(0), aabb.min(1), aabb.min(2)},
-            FixedArray<TData, 3>{aabb.min(0), aabb.max(1), aabb.min(2)}
-        },
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.min(0), aabb.min(1), aabb.min(2)},
-            FixedArray<TData, 3>{aabb.max(0), aabb.min(1), aabb.min(2)}
-        },
-        // 0, 0, 1
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.min(0), aabb.min(1), aabb.max(2)},
-            FixedArray<TData, 3>{aabb.min(0), aabb.max(1), aabb.max(2)}
-        },
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.min(0), aabb.min(1), aabb.max(2)},
-            FixedArray<TData, 3>{aabb.max(0), aabb.min(1), aabb.max(2)}
-        },
-        // 0, 1, 0
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.min(0), aabb.max(1), aabb.min(2)},
-            FixedArray<TData, 3>{aabb.min(0), aabb.max(1), aabb.max(2)}
-        },
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.min(0), aabb.max(1), aabb.min(2)},
-            FixedArray<TData, 3>{aabb.max(0), aabb.max(1), aabb.min(2)}
-        },
-        // 0, 1, 1
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.min(0), aabb.max(1), aabb.max(2)},
-            FixedArray<TData, 3>{aabb.max(0), aabb.max(1), aabb.max(2)}
-        },
-        // 1, 0, 0
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.max(0), aabb.min(1), aabb.min(2)},
-            FixedArray<TData, 3>{aabb.max(0), aabb.min(1), aabb.max(2)}
-        },
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.max(0), aabb.min(1), aabb.min(2)},
-            FixedArray<TData, 3>{aabb.max(0), aabb.max(1), aabb.min(2)}
-        },
-        // 1, 0, 1
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.max(0), aabb.min(1), aabb.max(2)},
-            FixedArray<TData, 3>{aabb.max(0), aabb.max(1), aabb.max(2)}
-        },
-        // 1, 1, 0
-        FixedArray<TData, 2, 3>{
-            FixedArray<TData, 3>{aabb.max(0), aabb.min(1), aabb.max(2)},
-            FixedArray<TData, 3>{aabb.max(0), aabb.max(1), aabb.max(2)}
+    aabb.for_each_corner([&](const FixedArray<TData, 3>& corner){
+        FixedArray<TData, 3> cp = uninitialized;
+        TData ray_t;
+        closest_point_to_line(corner, ray, ray_t, cp);
+        if ((ray_t >= 0) && (ray_t <= 1)) {
+            closest_point.update(cp, corner);
         }
-    };
+        return true;
+    });
+
+    auto aabb_edges = aabb.edges();
     // Line-line
-    for (size_t i = 0; i < tnvertices; ++i) {
-        for (const auto& e1 : aabb_edges) {
-            FixedArray<TData, 3> p0 = uninitialized;
-            FixedArray<TData, 3> p1 = uninitialized;
-            if (distance_line_line({polygon.vertices()[i], polygon.vertices()[(i + 1) % tnvertices]}, e1, p0, p1)) {
-                update_result(p0, p1);
-            }
+    auto line = FixedArray<TData, 2, 3>{ ray.start, ray.stop() };
+    for (const auto& e1 : aabb_edges.row_iterable()) {
+        FixedArray<TData, 3> p0 = uninitialized;
+        FixedArray<TData, 3> p1 = uninitialized;
+        if (distance_line_line(line, e1, p0, p1)) {
+            closest_point.update(p0, p1);
         }
     }
+}
+
+template <class TData, size_t tnvertices>
+void distance_interior_polygon_aabb(
+    const ConvexPolygon3D<TData, tnvertices>& polygon,
+    const AxisAlignedBoundingBox<TData, 3>& aabb,
+    ClosestPoint<TData>& closest_point)
+{
     // Plane-point
-    for (size_t i = 0; i < 3; ++i) {
-        aabb.for_each_corner([&](const FixedArray<TData, 3>& corner){
-            if (polygon.polygon().contains(corner)) {
-                auto proj = corner;
-                const auto& n = polygon.polygon().plane().normal;
-                proj -= n * (dot0d(n, corner) + polygon.polygon().plane().intercept);
-            }
-            return true;
-        });
+    aabb.for_each_corner([&](const FixedArray<TData, 3>& corner){
+        if (polygon.contains(corner)) {
+            auto proj = corner;
+            const auto& n = polygon.plane().normal;
+            proj -= n * (dot0d(n, corner) + polygon.plane().intercept);
+            closest_point.update(proj, corner);
+        }
+        return true;
+    });
+}
+
+template <class TData, size_t tnvertices>
+void distance_polygon_aabb(
+    const Polygon3D<TData, tnvertices>& polygon,
+    const AxisAlignedBoundingBox<TData, 3>& aabb,
+    ClosestPoint<TData>& closest_point)
+{
+    // Point
+    for (const auto& p : polygon.vertices().row_iterable()) {
+        distance_point_aabb(p, aabb, closest_point);
+    }
+    // Line
+    for (size_t i = 0; i < tnvertices; ++i) {
+        distance_line_aabb(
+            RaySegment3D<TData>{
+                polygon.vertices()[i],
+                polygon.vertices()[(i + 1) % tnvertices]
+            },
+            aabb,
+            closest_point);
+    }
+    // Plane
+    distance_interior_polygon_aabb(
+        polygon.polygon(),
+        aabb,
+        closest_point);
+}
+
+template <class TData>
+void distance_aabb_aabb(
+    const AxisAlignedBoundingBox<TData, 3>& aabb0,
+    const AxisAlignedBoundingBox<TData, 3>& aabb1,
+    const TransformationMatrix<float, TData, 3>& trafo1,
+    ClosestPoint<TData>& closest_point)
+{
+    aabb1.for_each_corner([&](const FixedArray<TData, 3>& corner1){
+        distance_point_aabb(trafo1.transform(corner1), aabb0, closest_point);
+    });
+    for (const auto& e : aabb1.edges()) {
+        auto te = trafo1.transform(e);
+        distance_line_aabb({te[0], te[1]}, aabb0, closest_point);
+    }
+    for (const auto& p : aabb1.faces()) {
+        distance_interior_polygon_aabb(p.transformed(trafo1), aabb0, closest_point);
     }
 }
 

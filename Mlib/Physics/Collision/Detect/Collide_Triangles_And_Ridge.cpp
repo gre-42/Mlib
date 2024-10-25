@@ -2,12 +2,12 @@
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
-#include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 
 using namespace Mlib;
@@ -16,7 +16,7 @@ void Mlib::collide_triangles_and_ridge(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh0,
-    const CollisionRidgeSphere& r1,
+    const CollisionRidgeSphere<ScenePos>& r1,
     const CollisionHistory& history)
 {
     auto non_tire_line_mask =

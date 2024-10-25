@@ -1,13 +1,14 @@
 #include "Collide_With_Terrain.hpp"
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Line_And_Triangles.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Edges.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangles_And_Ridge.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
-#include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -75,6 +76,12 @@ void Mlib::collide_with_terrain(
                                     t0.ctp,
                                     history);
                                 collide_triangle_and_lines(
+                                    t0.rb,
+                                    o1.rigid_body.get(),
+                                    msh1,
+                                    t0.ctp,
+                                    history);
+                                collide_triangle_and_intersectables(
                                     t0.rb,
                                     o1.rigid_body.get(),
                                     msh1,

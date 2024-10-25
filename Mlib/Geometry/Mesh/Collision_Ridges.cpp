@@ -45,7 +45,7 @@ void CollisionRidges::insert(
     PhysicsMaterial physics_material)
 {
     OrderableRidgeSphereBase ridge{
-        CollisionRidgeSphere{
+        CollisionRidgeSphere<ScenePos>{
             .bounding_sphere{BoundingSphere<ScenePos, 3>{FixedArray<ScenePos, 2, 3>{a, b}}},
             .physics_material = physics_material,
             .edge{a, b},

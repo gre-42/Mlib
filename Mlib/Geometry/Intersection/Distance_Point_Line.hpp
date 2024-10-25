@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Geometry/Ray_Segment_3D.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef __GNUC__
@@ -98,18 +99,14 @@ void distance_point_to_line(
 }
 
 template <class TData, size_t tndim>
-FixedArray<TData, tndim> closest_point_to_line(
+void closest_point_to_line(
     const FixedArray<TData, tndim>& pt,
-    const FixedArray<TData, tndim>& l0,
-    const FixedArray<TData, tndim>& l1)
+    const RaySegment3D<TData>& ray,
+    TData& l,
+    FixedArray<TData, tndim>& closest_point)
 {
-    auto len = std::sqrt(sum(squared(l1 - l0)));
-    if (len < 1e-12) {
-        THROW_OR_ABORT("Line too short");
-    }
-    auto dir = (l1 - l0) / len;
-    auto l = dot0d(pt - l0, dir);
-    return l0 + dir * std::clamp<TData>(l, 0, 1);
+    l = dot0d(pt - ray.start, ray.direction);
+    closest_point = ray.start + ray.direction * std::clamp<TData>(l, 0, 1);
 }
 
 }

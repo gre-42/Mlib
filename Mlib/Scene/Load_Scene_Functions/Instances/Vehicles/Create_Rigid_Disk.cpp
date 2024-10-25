@@ -26,6 +26,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(hitboxes);
+DECLARE_ARGUMENT(intersectables);
 DECLARE_ARGUMENT(mass);
 DECLARE_ARGUMENT(radius);
 DECLARE_ARGUMENT(com);
@@ -91,6 +92,10 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
         insert(s_hitboxes, acva->scvas);
         insert(d_hitboxes, acva->dcvas);
     }
+    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> intersectables;
+    if (args.arguments.contains_non_null(KnownArgs::intersectables)) {
+        intersectables = scene_node_resources.get_intersectables(args.arguments.at<std::string>(KnownArgs::intersectables));
+    }
     CollidableMode collidable_mode = collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode));
     // 1. Set movable, which updates the transformation-matrix.
     AbsoluteMovableSetter ams{ scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC), std::move(rb) };
@@ -100,6 +105,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
             *ams.absolute_movable,
             s_hitboxes,
             d_hitboxes,
+            intersectables,
             collidable_mode);
         ams.absolute_movable.release();
     } catch (const TriangleException<double>& e) {

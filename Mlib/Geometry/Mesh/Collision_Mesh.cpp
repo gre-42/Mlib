@@ -1,6 +1,8 @@
 #include "Collision_Mesh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 
 using namespace Mlib;
 
@@ -18,6 +20,14 @@ CollisionMesh<TData>::CollisionMesh(
 
     lines = mesh.lines_sphere();
 }
+
+template <class TData>
+CollisionMesh<TData>::CollisionMesh(
+    std::string name,
+    TypedMesh<std::shared_ptr<IIntersectable<TData>>> intersectable)
+    : name{ name }
+    , intersectable{ std::move(intersectable) }
+{}
 
 template <class TData>
 CollisionMesh<TData>::~CollisionMesh() = default;

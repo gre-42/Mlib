@@ -1,7 +1,9 @@
 #include "Static_Transformed_Mesh.hpp"
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 
 using namespace Mlib;
@@ -19,15 +21,17 @@ StaticTransformedMesh::StaticTransformedMesh(
     std::vector<CollisionPolygonSphere<ScenePos, 3>>&& triangles,
     std::vector<CollisionLineSphere<ScenePos>>&& lines,
     std::vector<CollisionLineSphere<ScenePos>>&& edges,
-    std::vector<CollisionRidgeSphere>&& ridges)
-: name_{ std::move(name) },
-  aabb_{ aabb },
-  bounding_sphere_{ bounding_sphere },
-  quads_{ std::move(quads) },
-  triangles_{ std::move(triangles) },
-  lines_{ std::move(lines) },
-  edges_{ std::move(edges) },
-  ridges_{ std::move(ridges) }
+    std::vector<CollisionRidgeSphere<ScenePos>>&& ridges,
+    std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>&& intersectables)
+    : name_{ std::move(name) }
+    , aabb_{ aabb }
+    , bounding_sphere_{ bounding_sphere }
+    , quads_{ std::move(quads) }
+    , triangles_{ std::move(triangles) }
+    , lines_{ std::move(lines) }
+    , edges_{ std::move(edges) }
+    , ridges_{ std::move(ridges) }
+    , intersectables_{ std::move(intersectables) }
 {}
 
 StaticTransformedMesh::~StaticTransformedMesh() = default;
@@ -56,8 +60,13 @@ const std::vector<CollisionLineSphere<ScenePos>>& StaticTransformedMesh::get_edg
     return edges_;
 }
 
-const std::vector<CollisionRidgeSphere>& StaticTransformedMesh::get_ridges_sphere() const {
+const std::vector<CollisionRidgeSphere<ScenePos>>& StaticTransformedMesh::get_ridges_sphere() const {
     return ridges_;
+}
+
+const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& StaticTransformedMesh::get_intersectables() const
+{
+    return intersectables_;
 }
 
 BoundingSphere<ScenePos, 3> StaticTransformedMesh::bounding_sphere() const {

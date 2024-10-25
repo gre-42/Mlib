@@ -4,11 +4,13 @@
 
 using namespace Mlib;
 
-FixedArray<ScenePos, 3> CollisionRidgeSphere::tangent() const {
+template <class TData>
+FixedArray<TData, 3> CollisionRidgeSphere<TData>::tangent() const {
     return cross(ray.direction, normal);
 }
 
-bool CollisionRidgeSphere::is_touchable(SingleFaceBehavior behavior) const {
+template <class TData>
+bool CollisionRidgeSphere<TData>::is_touchable(SingleFaceBehavior behavior) const {
     if ((behavior == SingleFaceBehavior::UNTOUCHABLE) &&
         (min_cos == RIDGE_SINGLE_FACE) &&
         !any(physics_material & PhysicsMaterial::ATTR_TWO_SIDED))
@@ -18,7 +20,8 @@ bool CollisionRidgeSphere::is_touchable(SingleFaceBehavior behavior) const {
     return min_cos != RIDGE_UNTOUCHABLE;
 }
 
-bool CollisionRidgeSphere::is_oriented() const {
+template <class TData>
+bool CollisionRidgeSphere<TData>::is_oriented() const {
     if (min_cos == RIDGE_SINGLE_FACE) {
         THROW_OR_ABORT("CollisionRidgeSphere has not been finalized");
     }
@@ -28,9 +31,10 @@ bool CollisionRidgeSphere::is_oriented() const {
     return min_cos < RIDGE_SPECIAL_THRESHOLD;
 }
 
-void CollisionRidgeSphere::combine(
+template <class TData>
+void CollisionRidgeSphere<TData>::combine(
     const CollisionRidgeSphere& other,
-    ScenePos max_min_cos_ridge)
+    TData max_min_cos_ridge)
 {
     if (other.min_cos != RIDGE_SINGLE_FACE) {
         THROW_OR_ABORT("Ridge to be inserted has invalid state");
@@ -81,7 +85,8 @@ void CollisionRidgeSphere::combine(
     min_cos = dot0d(normal, other_normal_f);
 }
 
-void CollisionRidgeSphere::finalize() {
+template <class TData>
+void CollisionRidgeSphere<TData>::finalize() {
     if (min_cos == RIDGE_UNTOUCHABLE) {
         THROW_OR_ABORT("Attempt to finalize an untouchable ridge");
     }
@@ -89,4 +94,44 @@ void CollisionRidgeSphere::finalize() {
         normal = tangent();
         min_cos = 0.;
     }
+}
+
+template <class TData>
+template <class TResult>
+CollisionRidgeSphere<TResult> CollisionRidgeSphere<TData>::transformed(const TransformationMatrix<float, TResult, 3>& trafo) const {
+    return CollisionRidgeSphere<TResult>{
+        bounding_sphere.transformed(trafo),
+        physics_material,
+        trafo.transform(edge),
+        ray.transformed(trafo),
+        trafo.rotate(normal.template casted<float>()).template casted<TResult>(),
+        trafo.rotate(vertex_normals),
+        min_cos
+    };
+}
+
+template <class TData>
+template <class TResult>
+CollisionRidgeSphere<TResult> CollisionRidgeSphere<TData>::casted() const {
+    return CollisionRidgeSphere<TResult>{
+        .bounding_sphere = bounding_sphere.template casted<TResult>(),
+        .physics_material = physics_material,
+        .edge = edge.template casted<TResult>(),
+        .ray = ray.template casted<TResult>(),
+        .normal = normal.template casted<TResult>(),
+        .vertex_normals = vertex_normals,
+        .min_cos = (TResult)min_cos
+    };
+}
+
+namespace Mlib {
+
+template class CollisionRidgeSphere<float>;
+template class CollisionRidgeSphere<double>;
+template CollisionRidgeSphere<double> CollisionRidgeSphere<float>::transformed(const TransformationMatrix<float, double, 3>&) const;
+template CollisionRidgeSphere<double> CollisionRidgeSphere<double>::transformed(const TransformationMatrix<float, double, 3>&) const;
+template CollisionRidgeSphere<double> CollisionRidgeSphere<double>::casted() const;
+template CollisionRidgeSphere<float> CollisionRidgeSphere<double>::casted() const;
+template CollisionRidgeSphere<float> CollisionRidgeSphere<float>::casted() const;
+
 }

@@ -1,6 +1,7 @@
 #include "Rigid_Bodies.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Mesh.hpp>
@@ -53,15 +54,16 @@ void RigidBodies::add_rigid_body(
     RigidBodyVehicle& rigid_body,
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
+    const std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>>& intersectables,
     CollidableMode collidable_mode)
 {
     auto& rb = rigid_body;
-    bool has_meshes = !s_hitboxes.empty() || !d_hitboxes.empty();
-    if ((collidable_mode == CollidableMode::NONE) && has_meshes) {
-        THROW_OR_ABORT("Non-collidable has meshes: \"" + rb.name() + '"');
+    bool has_meshes_or_intersectables = !s_hitboxes.empty() || !d_hitboxes.empty() || !intersectables.empty();
+    if ((collidable_mode == CollidableMode::NONE) && has_meshes_or_intersectables) {
+        THROW_OR_ABORT("Non-collidable has meshes or intersectables: \"" + rb.name() + '"');
     }
-    if ((collidable_mode != CollidableMode::NONE) && !has_meshes) {
-        THROW_OR_ABORT("Collidable has no meshes: \"" + rb.name() + '"');
+    if ((collidable_mode != CollidableMode::NONE) && !has_meshes_or_intersectables) {
+        THROW_OR_ABORT("Collidable has no meshes or intersectables: \"" + rb.name() + '"');
     }
     {
         auto rit = rigid_bodies_.try_emplace(&rb, DanglingBaseClassRef<RigidBodyVehicle>{ rb, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
@@ -77,6 +79,9 @@ void RigidBodies::add_rigid_body(
     if (collidable_mode == CollidableMode::STATIC) {
         if (rb.mass() != INFINITY) {
             THROW_OR_ABORT("Terrain requires infinite mass");
+        }
+        if (!intersectables.empty()) {
+            THROW_OR_ABORT("Intersectables only supported for moving objects");
         }
         // if (!tirelines.empty()) {
         //     THROW_OR_ABORT("static rigid body has tirelines");
@@ -128,8 +133,9 @@ void RigidBodies::add_rigid_body(
                         };
                         std::vector<CollisionPolygonSphere<ScenePos, 4>> quads = get_transformed.template operator()<4>();
                         std::vector<CollisionPolygonSphere<ScenePos, 3>> triangles = get_transformed.template operator()<3>();
-                        std::vector<CollisionRidgeSphere> ridges;
+                        std::vector<CollisionRidgeSphere<ScenePos>> ridges;
                         std::vector<CollisionLineSphere<ScenePos>> lines;
+                        std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>> intersectables;
 
                         auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::from_iterator(vertex_set.begin(), vertex_set.end());
                         BoundingSphere<ScenePos, 3> bounding_sphere = welzl_from_vector<ScenePos, 3>(vertex_vector, rng);
@@ -155,7 +161,8 @@ void RigidBodies::add_rigid_body(
                                         std::move(triangles),
                                         std::move(lines),
                                         std::vector<CollisionLineSphere<ScenePos>>{},
-                                        std::move(ridges))}});
+                                        std::move(ridges),
+                                        std::move(intersectables))}});
                     } else {
                         if (collision_ridges_baking_status_ != CollisionRidgeBakingStatus::NOT_BAKED) {
                             THROW_OR_ABORT("Collision ridges already baked, or previous baking failed");
@@ -246,6 +253,15 @@ void RigidBodies::add_rigid_body(
         };
         add_hitboxes(s_hitboxes, rbm.smeshes);
         add_hitboxes(d_hitboxes, rbm.dmeshes);
+        for (const auto& intersectable : intersectables) {
+            rbm.smeshes.push_back({
+                .physics_material = intersectable.physics_material,
+                .mesh = std::make_pair(
+                    intersectable.mesh->bounding_sphere(),
+                    std::make_shared<CollisionMesh<float>>(
+                        "intersectable mesh",
+                        intersectable))});
+        }
     } else {
         THROW_OR_ABORT("Unknown collidable mode");
     }
@@ -380,7 +396,7 @@ const Bvh<ScenePos, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh
     return ridge_bvh_;
 }
 
-const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere*>& RigidBodies::ridge_map()
+const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere<ScenePos>*>& RigidBodies::ridge_map()
 {
     bake_collision_ridges_if_necessary();
     return ridge_map_;

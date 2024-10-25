@@ -7,10 +7,11 @@ namespace Mlib {
 struct IntersectionScene;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class IIntersectionInfo;
 
 void handle_reflection(
     const IntersectionScene& c,
-    const FixedArray<ScenePos, 3>& intersection_point,
+    const IIntersectionInfo& iinfo,
     float surface_stiction_factor);
 
 }

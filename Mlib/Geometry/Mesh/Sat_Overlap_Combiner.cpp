@@ -35,7 +35,7 @@ void SatOverlapCombiner::overlap_unsigned(
         overlap1);
 }
 
-void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere& e1, ScenePos max_keep_normal)
+void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere<ScenePos>& e1, ScenePos max_keep_normal)
 {
     if (max_keep_normal != -INFINITY) {
         ScenePos sat_overl = overlap_signed(-e1.normal);
@@ -47,7 +47,7 @@ void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere& e1, Sc
     }
 }
 
-void SatOverlapCombiner::combine_ridges(const CollisionRidgeSphere& e0, const CollisionRidgeSphere& e1) {
+void SatOverlapCombiner::combine_ridges(const CollisionRidgeSphere<ScenePos>& e0, const CollisionRidgeSphere<ScenePos>& e1) {
     auto n = cross(e0.ray.direction, e1.ray.direction);
     ScenePos l2 = sum(squared(n));
     if (l2 < 1e-6) {

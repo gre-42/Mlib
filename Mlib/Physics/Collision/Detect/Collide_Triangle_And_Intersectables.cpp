@@ -1,4 +1,5 @@
-#include "Collide_Triangle_And_Lines.hpp"
+#include "Collide_Triangle_And_Intersectables.hpp"
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
@@ -15,7 +16,7 @@
 
 using namespace Mlib;
 
-void Mlib::collide_triangle_and_lines(
+void Mlib::collide_triangle_and_intersectables(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
@@ -23,8 +24,8 @@ void Mlib::collide_triangle_and_lines(
     const CollisionPolygonSphere<ScenePos, 3>* t0,
     const CollisionHistory& history)
 {
-    const auto& lines1 = msh1.mesh->get_lines_sphere();
-    if (lines1.empty()) {
+    const auto& intersectables1 = msh1.mesh->get_intersectables();
+    if (intersectables1.empty()) {
         return;
     }
     auto non_tire_line_mask =
@@ -34,8 +35,8 @@ void Mlib::collide_triangle_and_lines(
         PhysicsMaterial::OBJ_DISTANCEBOX;
     auto collide = [&](const auto& poly0){
         if (any(msh1.physics_material & non_tire_line_mask)) {
-            for (const auto& l1 : lines1) {
-                if (!l1.bounding_sphere.intersects(poly0.bounding_sphere)) {
+            for (const auto& i1 : intersectables1) {
+                if (!i1.mesh->bounding_sphere().intersects(poly0.bounding_sphere)) {
                     continue;
                 }
                 handle_line_triangle_intersection(IntersectionScene{
@@ -43,14 +44,16 @@ void Mlib::collide_triangle_and_lines(
                     .o1 = o1,
                     .mesh0 = nullptr,
                     .mesh1 = msh1.mesh.get(),
-                    .l1 = &l1,
+                    .l1 = nullptr,
                     .r1 = nullptr,
+                    .i1 = i1.mesh.get(),
                     .q0 = q0,
                     .t0 = t0,
+                    .i0 = nullptr,
                     .tire_id1 = SIZE_MAX,
                     .mesh0_material = poly0.physics_material,
                     .mesh1_material = msh1.physics_material,
-                    .l1_is_normal = true,
+                    .l1_is_normal = false,
                     .surface_contact_info = history.surface_contact_db.get_contact_info(
                         poly0.physics_material,
                         msh1.physics_material,
@@ -58,42 +61,6 @@ void Mlib::collide_triangle_and_lines(
                     .default_collision_type = CollisionType::REFLECT,
                     .history = history});
             }
-        } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
-            if (lines1.size() != o1.tires_.size()) {
-                THROW_OR_ABORT(
-                    "Number of tire-lines (" + std::to_string(lines1.size()) + ") does not equal the "
-                    "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
-            }
-            for (const auto& [tire_id1, l1] : enumerate(lines1)) {
-                if (!l1.bounding_sphere.intersects(poly0.bounding_sphere)) {
-                    continue;
-                }
-                handle_line_triangle_intersection(IntersectionScene{
-                    .o0 = o0,
-                    .o1 = o1,
-                    .mesh0 = nullptr,
-                    .mesh1 = msh1.mesh.get(),
-                    .l1 = &l1,
-                    .r1 = nullptr,
-                    .q0 = q0,
-                    .t0 = t0,
-                    .tire_id1 = tire_id1,
-                    .mesh0_material = poly0.physics_material,
-                    .mesh1_material = msh1.physics_material,
-                    .l1_is_normal = true,
-                    .surface_contact_info = history.surface_contact_db.get_contact_info(
-                        poly0.physics_material,
-                        msh1.physics_material,
-                        tire_id1),
-                    .default_collision_type = CollisionType::REFLECT,
-                    .history = history});
-            }
-        } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
-            THROW_OR_ABORT("Detected hitbox with lines in object \"" + o1.name() + '"');
-        } else {
-            THROW_OR_ABORT(
-                "Unknown mesh type when colliding objects \"" +
-                o0.name() + "\" and \"" + o1.name() + '"');
         }
     };
     if (q0 != nullptr) {
@@ -104,14 +71,14 @@ void Mlib::collide_triangle_and_lines(
     }
 }
 
-void Mlib::collide_triangle_and_lines(
+void Mlib::collide_triangle_and_intersectables(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const std::variant<CollisionPolygonSphere<ScenePos, 3>, CollisionPolygonSphere<ScenePos, 4>>& cps0,
     const CollisionHistory& history)
 {
-    collide_triangle_and_lines(
+    collide_triangle_and_intersectables(
         o0,
         o1,
         msh1,

@@ -28,7 +28,7 @@ void CollisionRidgesBase<TOrderableRidgeSphere>::insert(
         }
         return;
     }
-    const_cast<CollisionRidgeSphere&>(previous_ridge->collision_ridge_sphere).combine(
+    const_cast<CollisionRidgeSphere<ScenePos>&>(previous_ridge->collision_ridge_sphere).combine(
         ridge.collision_ridge_sphere,
         max_min_cos_ridge);
 }

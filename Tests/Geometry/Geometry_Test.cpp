@@ -697,11 +697,9 @@ void test_distance_polygon_aabb() {
     FixedArray<double, 3> c{2., 3., 10.};
     FixedArray<double, 3> d{1., 3., 10.};
     Polygon3D<double, 4> polygon{{a, b, c, d}};
-    FixedArray<double, 3> closest_point = uninitialized;
-    FixedArray<double, 3> normal = uninitialized;
-    double distance;
-    distance_polygon_aabb<double, 4>(polygon, aabb, closest_point, normal, distance);
-    linfo() << closest_point << " - " << normal << " - " << distance;
+    ClosestPoint<double> cp;
+    distance_polygon_aabb<double, 4>(polygon, aabb, cp);
+    linfo() << cp.closest_point << " - " << cp.normal << " - " << cp.distance;
 }
 
 int main(int argc, const char** argv) {

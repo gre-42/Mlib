@@ -13,17 +13,17 @@ public:
 		const AxisAlignedBoundingBox<float, 3>& aabb,
         float radius);
     ~NormalOnBevelBox();
-    virtual FixedArray<float, 3> get_surface_normal(
-        const CollisionRidgeSphere& ridge,
+    virtual std::optional<FixedArray<float, 3>> get_surface_normal(
+        const CollisionRidgeSphere<ScenePos>& ridge,
         const FixedArray<ScenePos, 3>& position) const override;
-    virtual FixedArray<float, 3> get_surface_normal(
+    virtual std::optional<FixedArray<float, 3>> get_surface_normal(
         const CollisionPolygonSphere<ScenePos, 3>& triangle,
         const FixedArray<ScenePos, 3>& position) const override;
-    virtual FixedArray<float, 3> get_surface_normal(
+    virtual std::optional<FixedArray<float, 3>> get_surface_normal(
         const CollisionPolygonSphere<ScenePos, 4>& quad,
         const FixedArray<ScenePos, 3>& position) const override;
 private:
-    FixedArray<float, 3> get_surface_normal(
+    std::optional<FixedArray<float, 3>> get_surface_normal(
         const FixedArray<ScenePos, 3>& position) const;
 
     const RigidBodyPulses& rbp_;

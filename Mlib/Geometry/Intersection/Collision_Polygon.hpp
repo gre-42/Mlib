@@ -38,6 +38,16 @@ struct CollisionPolygonSphere {
             .vertex_normals = transformation_matrix.rotate(vertex_normals)
         };
     }
+    template <class TResult>
+    CollisionPolygonSphere<TResult, tnvertices> casted() const {
+        return {
+            bounding_sphere.template casted<TResult>(),
+            polygon.template casted<TResult>(),
+            physics_material,
+            corners.template casted<TResult>(),
+            vertex_normals,
+        };
+    }
 };
 
 template <class TData, size_t tnvertices>

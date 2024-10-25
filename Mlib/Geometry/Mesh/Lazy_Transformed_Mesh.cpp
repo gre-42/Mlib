@@ -1,6 +1,7 @@
 #include "Lazy_Transformed_Mesh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Interfaces/Transformed_IIntersectable.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
@@ -8,6 +9,7 @@
 #include <Mlib/Geometry/Mesh/Collision_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Geometry/Quad_3D.hpp>
 #include <Mlib/Geometry/Triangle_3D.hpp>
@@ -125,7 +127,7 @@ const std::vector<CollisionLineSphere<ScenePos>>& LazyTransformedMesh::get_edges
     return transformed_edges_;
 }
 
-const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere() const {
+const std::vector<CollisionRidgeSphere<ScenePos>>& LazyTransformedMesh::get_ridges_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
@@ -177,6 +179,33 @@ const std::vector<CollisionLineSphere<ScenePos>>& LazyTransformedMesh::get_lines
         }
     }
     return transformed_lines_;
+}
+
+const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& LazyTransformedMesh::get_intersectables() const
+{
+    if (!intersectables_calculated_) {
+        std::scoped_lock lock{mutex_};
+        if (!intersectables_calculated_) {
+            transformed_intersectables_.reserve(
+                ((smesh_ == nullptr) || (smesh_->intersectable.mesh == nullptr) ? 0 : 1) +
+                ((dmesh_ == nullptr) || (dmesh_->intersectable.mesh == nullptr) ? 0 : 1));
+            if ((smesh_ != nullptr) && (smesh_->intersectable.mesh != nullptr)) {
+                transformed_intersectables_.emplace_back(
+                    smesh_->intersectable.physics_material,
+                    std::make_shared<TransformedIntersectable<float>>(
+                        smesh_->intersectable.mesh,
+                        transformation_matrix_));
+            }
+            if (dmesh_ != nullptr) {
+                transformed_intersectables_.emplace_back(
+                    dmesh_->intersectable.physics_material,
+                    std::make_shared<TransformedIntersectable<double>>(
+                        dmesh_->intersectable.mesh,
+                        transformation_matrix_));
+            }
+        }
+    }
+    return transformed_intersectables_;
 }
 
 BoundingSphere<ScenePos, 3> LazyTransformedMesh::bounding_sphere() const {

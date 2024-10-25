@@ -25,6 +25,15 @@ struct CollisionLineSphere {
             ray.transformed(transformation_matrix),
         };
     }
+    template <class TResult>
+    CollisionLineSphere<TResult> casted() const {
+        return {
+            bounding_sphere.template casted<TResult>(),
+            physics_material,
+            line.template casted<TResult>(),
+            ray.template casted<TResult>()
+        };
+    }
 };
 
 template <class TData>

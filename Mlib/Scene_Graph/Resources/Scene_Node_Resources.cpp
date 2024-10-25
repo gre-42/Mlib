@@ -1,8 +1,10 @@
 #include "Scene_Node_Resources.hpp"
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
@@ -24,6 +26,7 @@ SceneNodeResources::SceneNodeResources()
     , geographic_mappings_{ "Geographic mapping" }
     , wind_{ "Wind" }
     , gravity_{ "Gravity" }
+    , intersectables_{ "Intersectables" }
 {}
 
 SceneNodeResources::~SceneNodeResources() = default;
@@ -376,6 +379,17 @@ float SceneNodeResources::get_animation_duration(const std::string& name) const 
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("get_animation_duration for resource \"" + name + "\" failed: " + e.what());
     }
+}
+
+void SceneNodeResources::add_intersectables(
+    std::string name,
+    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> intersectables)
+{
+    intersectables_.add(std::move(name), std::move(intersectables));
+}
+
+std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> SceneNodeResources::get_intersectables(const std::string& name) const {
+    return intersectables_.get(name);
 }
 
 void SceneNodeResources::downsample(const std::string& name, size_t factor) {

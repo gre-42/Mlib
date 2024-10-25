@@ -1,5 +1,6 @@
 #include "Compute_Edge_Overlap.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Overlap.hpp>
@@ -63,7 +64,7 @@ bool Mlib::compute_edge_overlap(
             using Corners0 = std::remove_reference_t<decltype(corners0)>;
             static_assert(Corners0::ndim() == 2);
             size_t ncorners = Corners0::template static_shape<0>();
-            std::vector<CollisionRidgeSphere> ridges;
+            std::vector<CollisionRidgeSphere<ScenePos>> ridges;
             ridges.reserve(ncorners);
             for (size_t i = 0; i < ncorners; ++i) {
                 auto a = OrderableFixedArray{corners0[i]};
@@ -86,7 +87,8 @@ bool Mlib::compute_edge_overlap(
                 (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<ScenePos, 3>>{*c.t0} : std::vector<CollisionPolygonSphere<ScenePos, 3>>(),
                 std::vector<CollisionLineSphere<ScenePos>>(),
                 std::vector<CollisionLineSphere<ScenePos>>(),
-                std::move(ridges));
+                std::move(ridges),
+                std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>());
 
             assert_true(c.r1 != nullptr);
             try {
@@ -115,7 +117,10 @@ bool Mlib::compute_edge_overlap(
         }
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_SLIPPERY)) {
             if (c.o1.has_surface_normal()) {
-                normal = -c.o1.get_surface_normal().get_surface_normal(*c.r1, intersection_point).casted<ScenePos>();
+                auto n1 = c.o1.get_surface_normal().get_surface_normal(*c.r1, intersection_point);
+                if (n1.has_value()) {
+                    normal = -n1->casted<ScenePos>();
+                }
             }
             if (c.o1.has_collision_normal_modifier()) {
                 auto o = (float)overlap;
@@ -150,9 +155,12 @@ bool Mlib::compute_edge_overlap(
         }
         if (any(c.mesh1_material & PhysicsMaterial::ATTR_SLIPPERY)) {
             if (c.o0.has_surface_normal()) {
-                normal = (c.t0 != nullptr)
-                    ? c.o0.get_surface_normal().get_surface_normal(*c.t0, intersection_point).casted<ScenePos>()
-                    : c.o0.get_surface_normal().get_surface_normal(*c.q0, intersection_point).casted<ScenePos>();
+                auto n1 = (c.t0 != nullptr)
+                    ? c.o0.get_surface_normal().get_surface_normal(*c.t0, intersection_point)
+                    : c.o0.get_surface_normal().get_surface_normal(*c.q0, intersection_point);
+                if (n1.has_value()) {
+                    normal = n1->casted<ScenePos>();
+                }
             }
             if (c.o0.has_collision_normal_modifier()) {
                 auto o = (float)overlap;

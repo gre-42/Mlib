@@ -50,8 +50,8 @@ void Mlib::get_overlap(
     ScenePos& min_overlap,
     FixedArray<ScenePos, 3>& normal)
 {
-    std::vector<const CollisionRidgeSphere*> relevant_edges0;
-    std::vector<const CollisionRidgeSphere*> relevant_edges1;
+    std::vector<const CollisionRidgeSphere<ScenePos>*> relevant_edges0;
+    std::vector<const CollisionRidgeSphere<ScenePos>*> relevant_edges1;
     std::vector<const CollisionPolygonSphere<ScenePos, 3>*> relevant_triangles0;
     std::vector<const CollisionPolygonSphere<ScenePos, 3>*> relevant_triangles1;
     std::vector<const CollisionPolygonSphere<ScenePos, 4>*> relevant_quads0;

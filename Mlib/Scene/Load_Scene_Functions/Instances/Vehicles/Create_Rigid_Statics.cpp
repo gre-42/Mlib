@@ -93,6 +93,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
             *rb,
             s_hitboxes,
             d_hitboxes,
+            {},
             CollidableMode::STATIC);
         rb.release();
     } catch (const TriangleException<double>& e) {

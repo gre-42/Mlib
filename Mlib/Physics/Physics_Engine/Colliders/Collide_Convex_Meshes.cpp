@@ -1,10 +1,10 @@
 #include "Collide_Convex_Meshes.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
-#include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Scene_Pos.hpp>
 
 using namespace Mlib;

@@ -109,6 +109,14 @@ public:
             length
         };
     }
+    template <class TResult>
+    RaySegment3D<TResult> casted() const {
+        return {
+            start.template casted<TResult>(),
+            direction.template casted<TResult>(),
+            (TResult)length
+        };
+    }
     FixedArray<TData, 3> start;
     FixedArray<TData, 3> direction;
     TData length;

@@ -4,9 +4,9 @@
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Rigid_Body.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Iterator/Iterable_Wrapper.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <functional>
@@ -28,6 +28,8 @@ template <class T>
 class DestructionFunctionsTokensObject;
 template <class TData>
 class CollisionMesh;
+template <class TData>
+class IIntersectable;
 
 struct RigidBodyAndMeshes {
     DanglingBaseClassRef<RigidBodyVehicle> rigid_body;
@@ -60,7 +62,7 @@ struct RigidBodyAndCollisionLineSphere {
 
 struct RigidBodyAndCollisionRidgeSphere {
     RigidBodyVehicle& rb;
-    CollisionRidgeSphere crp;
+    CollisionRidgeSphere<ScenePos> crp;
 };
 
 enum class CollisionRidgeBakingStatus {
@@ -78,6 +80,7 @@ public:
         RigidBodyVehicle& rigid_body,
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
         const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
+        const std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>>& intersectables,
         CollidableMode collidable_mode);
     void delete_rigid_body(const RigidBodyVehicle& rigid_body);
     void optimize_search_time(std::ostream& ostr) const;
@@ -90,7 +93,7 @@ public:
     const Bvh<ScenePos, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
     const Bvh<ScenePos, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
     const Bvh<ScenePos, RigidBodyAndCollisionRidgeSphere, 3>& ridge_bvh() const;
-    const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere*>& ridge_map();
+    const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere<ScenePos>*>& ridge_map();
     const Bvh<ScenePos, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
     bool empty() const;
 private:
@@ -106,7 +109,7 @@ private:
     Bvh<ScenePos, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
     Bvh<ScenePos, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
     mutable Bvh<ScenePos, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
-    mutable std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere*> ridge_map_;
+    mutable std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere<ScenePos>*> ridge_map_;
     Bvh<ScenePos, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
     mutable CollisionRidgesRigidBody collision_ridges_;
     mutable CollisionRidgeBakingStatus collision_ridges_baking_status_;
