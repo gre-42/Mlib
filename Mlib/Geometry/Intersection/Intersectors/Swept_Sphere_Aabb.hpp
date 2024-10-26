@@ -46,7 +46,8 @@ public:
         FixedArray<TData, 3>& intersection_point,
         FixedArray<TData, 3>& normal) const;
 private:
-    AxisAlignedBoundingBox<TData, 3> aabb_;
+    AxisAlignedBoundingBox<TData, 3> aabb_small_;
+    AxisAlignedBoundingBox<TData, 3> aabb_large_;
     TData radius_;
     BoundingSphere<TData, 3> bounding_sphere_;
 };

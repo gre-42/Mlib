@@ -68,6 +68,13 @@ void distance_interior_line_aabb(
     aabb.for_each_edge([&](const auto& e1){
         FixedArray<TData, 3> p0 = uninitialized;
         FixedArray<TData, 3> p1 = uninitialized;
+        TData dist;
+        if (!distance_line_line(line, e1, dist)) {
+            return true;
+        }
+        if (dist >= closest_point.distance) {
+            return true;
+        }
         if (distance_line_line(line, e1, p0, p1)) {
             closest_point.update(p0, p1);
         }
@@ -81,9 +88,9 @@ void distance_line_aabb(
     const AxisAlignedBoundingBox<TData, 3>& aabb,
     ClosestPoint<TData>& closest_point)
 {
-    distance_interior_line_aabb(ray, aabb, closest_point);
     distance_point_aabb(ray.start, aabb, closest_point);
     distance_point_aabb(ray.stop(), aabb, closest_point);
+    distance_interior_line_aabb(ray, aabb, closest_point);
 }
 
 template <class TData, size_t tnvertices>

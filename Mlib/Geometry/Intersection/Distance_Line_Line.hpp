@@ -3,6 +3,22 @@
 
 namespace Mlib {
 
+template <class TData>
+bool distance_line_line(
+    const FixedArray<TData, 2, 3>& line0,
+    const FixedArray<TData, 2, 3>& line1,
+    TData& distance)
+{
+    // From: https://math.stackexchange.com/questions/2213165/find-shortest-distance-between-lines-in-3d
+    auto n = cross(line0[1] - line0[0], line1[1] - line1[0]);
+    auto l2 = sum(squared(n));
+    if (l2 < 1e-12) {
+        return false;
+    }
+    distance = std::abs(dot0d(n, line0[0] - line1[0])) / std::sqrt(l2);
+    return true;
+}
+
 template <class TData, size_t tndim>
 bool distance_line_line(
     const FixedArray<TData, 2, tndim>& line0,
