@@ -57,7 +57,7 @@ void distance_interior_line_aabb(
         FixedArray<TData, 3> cp = uninitialized;
         TData ray_t;
         closest_point_to_line(corner, ray, ray_t, cp);
-        if ((ray_t >= 0) && (ray_t <= 1)) {
+        if ((ray_t >= 0) && (ray_t <= ray.length)) {
             closest_point.update(cp, corner);
         }
         return true;

@@ -106,7 +106,7 @@ void closest_point_to_line(
     FixedArray<TData, tndim>& closest_point)
 {
     l = dot0d(pt - ray.start, ray.direction);
-    closest_point = ray.start + ray.direction * std::clamp<TData>(l, 0, 1);
+    closest_point = ray.start + ray.direction * std::clamp<TData>(l, 0, ray.length);
 }
 
 }
