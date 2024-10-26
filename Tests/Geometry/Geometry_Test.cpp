@@ -26,6 +26,8 @@
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Polygon_3D.hpp>
 #include <Mlib/Geometry/Ray_Segment_3D.hpp>
 #include <Mlib/Geometry/Roundness_Estimator.hpp>
 #include <Mlib/Geometry/Shortest_Path_Multiple_Targets.hpp>
@@ -696,9 +698,16 @@ void test_distance_polygon_aabb() {
     FixedArray<double, 3> b{2., 2., 10.};
     FixedArray<double, 3> c{2., 3., 10.};
     FixedArray<double, 3> d{1., 3., 10.};
-    Polygon3D<double, 4> polygon{{a, b, c, d}};
+    Polygon3D<double, 4> poly{{a, b, c, d}};
+    auto rng = welzl_rng();
+    CollisionPolygonSphere<double, 4> cps{
+        .bounding_sphere = poly.bounding_sphere(rng),
+        .polygon = poly.polygon(),
+        .physics_material = PhysicsMaterial::NONE,
+        .corners = poly.vertices(),
+        .vertex_normals = fixed_full<float, 4, 3>(NAN)};
     ClosestPoint<double> cp;
-    distance_polygon_aabb<double, 4>(polygon, aabb, cp);
+    distance_polygon_aabb<double, 4>(cps, aabb, cp);
     linfo() << cp.closest_point << " - " << cp.normal << " - " << cp.distance;
 }
 

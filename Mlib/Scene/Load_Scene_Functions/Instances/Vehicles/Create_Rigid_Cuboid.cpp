@@ -26,7 +26,6 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(hitboxes);
-DECLARE_ARGUMENT(intersectables);
 DECLARE_ARGUMENT(mass);
 DECLARE_ARGUMENT(size);
 DECLARE_ARGUMENT(com);
@@ -75,26 +74,25 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
-    if (args.arguments.contains_non_null(KnownArgs::hitboxes)) {
-        PhysicsResourceFilter filter{
-            .cva_filter = {
-                .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-                .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}};
-        auto acva = scene_node_resources.get_physics_arrays(
-            args.arguments.at<std::string>(KnownArgs::hitboxes));
-        auto insert = [&filter](auto& hitboxes, const auto& cvas){
-            for (const auto& cva: cvas) {
-                if (filter.matches(*cva)) {
-                    hitboxes.push_back(cva);
-                }
-            }
-        };
-        insert(s_hitboxes, acva->scvas);
-        insert(d_hitboxes, acva->dcvas);
-    }
     std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> intersectables;
-    if (args.arguments.contains_non_null(KnownArgs::intersectables)) {
-        intersectables = scene_node_resources.get_intersectables(args.arguments.at<std::string>(KnownArgs::intersectables));
+    if (auto hbs = args.arguments.try_at_non_null(KnownArgs::hitboxes); hbs.has_value()) {
+        {
+            PhysicsResourceFilter filter{
+                .cva_filter = {
+                    .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}};
+            auto acva = scene_node_resources.get_physics_arrays(*hbs);
+            auto insert = [&filter](auto& hitboxes, const auto& cvas){
+                for (const auto& cva: cvas) {
+                    if (filter.matches(*cva)) {
+                        hitboxes.push_back(cva);
+                    }
+                }
+            };
+            insert(s_hitboxes, acva->scvas);
+            insert(d_hitboxes, acva->dcvas);
+        }
+        intersectables = scene_node_resources.get_intersectables(*hbs);
     }
     CollidableMode collidable_mode = collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode));
     // 1. Set movable, which updates the transformation-matrix.

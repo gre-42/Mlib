@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Line_Line.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
-#include <Mlib/Geometry/Polygon_3D.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
 namespace Mlib {
@@ -61,16 +61,16 @@ void distance_line_aabb(
         return true;
     });
 
-    auto aabb_edges = aabb.edges();
     // Line-line
     auto line = FixedArray<TData, 2, 3>{ ray.start, ray.stop() };
-    for (const auto& e1 : aabb_edges.row_iterable()) {
+    aabb.for_each_edge([&](const auto& e1){
         FixedArray<TData, 3> p0 = uninitialized;
         FixedArray<TData, 3> p1 = uninitialized;
         if (distance_line_line(line, e1, p0, p1)) {
             closest_point.update(p0, p1);
         }
-    }
+        return true;
+    });
 }
 
 template <class TData, size_t tnvertices>
@@ -93,27 +93,27 @@ void distance_interior_polygon_aabb(
 
 template <class TData, size_t tnvertices>
 void distance_polygon_aabb(
-    const Polygon3D<TData, tnvertices>& polygon,
+    const CollisionPolygonSphere<TData, tnvertices>& polygon,
     const AxisAlignedBoundingBox<TData, 3>& aabb,
     ClosestPoint<TData>& closest_point)
 {
     // Point
-    for (const auto& p : polygon.vertices().row_iterable()) {
+    for (const auto& p : polygon.corners.row_iterable()) {
         distance_point_aabb(p, aabb, closest_point);
     }
     // Line
     for (size_t i = 0; i < tnvertices; ++i) {
         distance_line_aabb(
             RaySegment3D<TData>{
-                polygon.vertices()[i],
-                polygon.vertices()[(i + 1) % tnvertices]
+                polygon.corners[i],
+                polygon.corners[(i + 1) % tnvertices]
             },
             aabb,
             closest_point);
     }
     // Plane
     distance_interior_polygon_aabb(
-        polygon.polygon(),
+        polygon.polygon,
         aabb,
         closest_point);
 }
@@ -127,14 +127,17 @@ void distance_aabb_aabb(
 {
     aabb1.for_each_corner([&](const FixedArray<TData, 3>& corner1){
         distance_point_aabb(trafo1.transform(corner1), aabb0, closest_point);
+        return true;
     });
-    for (const auto& e : aabb1.edges()) {
+    aabb1.for_each_edge([&](const auto& e){
         auto te = trafo1.transform(e);
         distance_line_aabb({te[0], te[1]}, aabb0, closest_point);
-    }
-    for (const auto& p : aabb1.faces()) {
+        return true;
+    });
+    aabb1.for_each_face([&](const auto& p){
         distance_interior_polygon_aabb(p.transformed(trafo1), aabb0, closest_point);
-    }
+        return true;
+    });
 }
 
 }

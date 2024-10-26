@@ -6,9 +6,9 @@
 namespace Mlib {
 
 template <class TData>
-class SphereSweptAabb: public IIntersectable<TData> {
+class SweptSphereAabb: public IIntersectable<TData> {
 public:
-    SphereSweptAabb(
+    SweptSphereAabb(
         const FixedArray<TData, 3>& min,
         const FixedArray<TData, 3>& max,
         const TData& radius);
@@ -36,14 +36,19 @@ public:
         FixedArray<TData, 3>& normal) const;
     virtual bool intersects(
         const IIntersectable<TData>& intersectable,
+        TData& overlap,
+        FixedArray<TData, 3>& intersection_point,
+        FixedArray<TData, 3>& normal) const;
+    virtual bool intersects(
+        const IIntersectable<TData>& intersectable,
         const TransformationMatrix<float, TData, 3>& trafo,
         TData& overlap,
         FixedArray<TData, 3>& intersection_point,
         FixedArray<TData, 3>& normal) const;
 private:
     AxisAlignedBoundingBox<TData, 3> aabb_;
-    BoundingSphere<TData, 3> bounding_sphere_;
     TData radius_;
+    BoundingSphere<TData, 3> bounding_sphere_;
 };
 
 }

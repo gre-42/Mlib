@@ -157,15 +157,10 @@ public:
         FixedArray<TData, tndim> corner = uninitialized;
         return for_each_corner(op, 0, corner);
     }
-    template <class TResultData>
-    AxisAlignedBoundingBox<TResultData, tndim> casted() const {
-        return AxisAlignedBoundingBox<TResultData, tndim>(
-            min_.template casted<TResultData>(),
-            max_.template casted<TResultData>());
-    }
-    auto edges() const {
+    template <class TOperation>
+    bool for_each_edge(const TOperation& op) const {
         static_assert(tndim == 3);
-        return FixedArray<TData, 12, 2, 3>{
+        const auto edges = FixedArray<TData, 12, 2, 3>{
             // 0, 0, 0
             FixedArray<TData, 2, 3>{
                 FixedArray<TData, 3>{min(0), min(1), min(2)},
@@ -222,10 +217,17 @@ public:
                 FixedArray<TData, 3>{max(0), max(1), max(2)}
             }
         };
+        for (const auto& e : edges.row_iterable()) {
+            if (!op(e)) {
+                return false;
+            }
+        }
+        return true;
     }
-    auto faces() const {
+    template <class TOperation>
+    bool for_each_face(const TOperation& op) const {
         static_assert(tndim == 3);
-        return std::array<ConvexPolygon3D<TData, 4>, 6>{
+        auto faces = std::array<ConvexPolygon3D<TData, 4>, 6>{
             // x-
             ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
                 FixedArray<TData, 3>{min(0), min(1), min(2)},
@@ -263,6 +265,18 @@ public:
                 FixedArray<TData, 3>{max(0), max(1), max(2)},
                 FixedArray<TData, 3>{min(0), max(1), max(2)}}}
         };
+        for (const auto& f : faces) {
+            if (!op(f)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    template <class TResultData>
+    AxisAlignedBoundingBox<TResultData, tndim> casted() const {
+        return AxisAlignedBoundingBox<TResultData, tndim>(
+            min_.template casted<TResultData>(),
+            max_.template casted<TResultData>());
     }
 private:
     AxisAlignedBoundingBox(const FixedArray<TData, tndim>& min, const FixedArray<TData, tndim>& max)

@@ -38,6 +38,10 @@ std::list<std::shared_ptr<AnimatedColoredVertexArrays>> ISceneNodeResource::get_
     THROW_OR_ABORT("get_rendering_arrays not implemented");
 }
 
+std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> ISceneNodeResource::get_intersectables() const {
+    THROW_OR_ABORT("get_intersectables not implemented");
+}
+
 void ISceneNodeResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
     THROW_OR_ABORT("generate_triangle_rays not implemented");
 }

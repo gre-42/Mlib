@@ -1,6 +1,8 @@
 #include "Heterogeneous_Resource.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -114,6 +116,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_physics_
 
 std::list<std::shared_ptr<AnimatedColoredVertexArrays>> HeterogeneousResource::get_rendering_arrays() const {
     return { acvas };
+}
+
+std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> HeterogeneousResource::get_intersectables() const {
+    return {};
 }
 
 void HeterogeneousResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {

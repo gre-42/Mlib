@@ -1,8 +1,10 @@
 #include "Compound_Resource.hpp"
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -160,6 +162,17 @@ std::list<std::shared_ptr<AnimatedColoredVertexArrays>> CompoundResource::get_re
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
         auto c = scene_node_resources_.get_rendering_arrays(resource_name);
+        result.insert(result.end(), c.begin(), c.end());
+    }
+    return result;
+}
+
+std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> CompoundResource::get_intersectables() const {
+    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> result;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+    for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
+        auto c = scene_node_resources_.get_intersectables(resource_name);
         result.insert(result.end(), c.begin(), c.end());
     }
     return result;

@@ -38,5 +38,5 @@ void SetBevelBoxSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args
         AxisAlignedBoundingBox<float, 3>::from_min_max(
             args.arguments.at<UFixedArray<float, 3>>(KnownArgs::min) * meters,
             args.arguments.at<UFixedArray<float, 3>>(KnownArgs::max) * meters),
-        args.arguments.at<float>(KnownArgs::radius)));
+        args.arguments.at<float>(KnownArgs::radius) * meters));
 }

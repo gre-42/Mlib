@@ -20,10 +20,14 @@ enum class WayPointLocation;
 enum class JoinedWayPointSandbox;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <class T>
+struct TypedMesh;
 
 struct AnimatedColoredVertexArrays;
 template <class TPos>
 class ColoredVertexArray;
+template <class TData>
+class IIntersectable;
 class Scene;
 class SceneNode;
 enum class AggregateMode;
@@ -60,6 +64,7 @@ public:
     // Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const;
     virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const;
+    virtual std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> get_intersectables() const;
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance);

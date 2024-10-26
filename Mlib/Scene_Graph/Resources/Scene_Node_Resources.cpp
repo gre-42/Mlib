@@ -26,7 +26,6 @@ SceneNodeResources::SceneNodeResources()
     , geographic_mappings_{ "Geographic mapping" }
     , wind_{ "Wind" }
     , gravity_{ "Gravity" }
-    , intersectables_{ "Intersectables" }
 {}
 
 SceneNodeResources::~SceneNodeResources() = default;
@@ -263,11 +262,11 @@ std::shared_ptr<ColoredVertexArray<float>> SceneNodeResources::get_single_precis
 }
 
 std::list<std::shared_ptr<ColoredVertexArray<float>>> SceneNodeResources::get_single_precision_arrays(const std::string& name) const {
-    auto avcas = get_physics_arrays(name);
-    if (!avcas->dcvas.empty()) {
+    auto acvas = get_physics_arrays(name);
+    if (!acvas->dcvas.empty()) {
         THROW_OR_ABORT("Resource \"" + name + "\" contains double precision arrays");
     }
-    return avcas->scvas;
+    return acvas->scvas;
 }
 
 void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -381,15 +380,13 @@ float SceneNodeResources::get_animation_duration(const std::string& name) const 
     }
 }
 
-void SceneNodeResources::add_intersectables(
-    std::string name,
-    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> intersectables)
-{
-    intersectables_.add(std::move(name), std::move(intersectables));
-}
-
 std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> SceneNodeResources::get_intersectables(const std::string& name) const {
-    return intersectables_.get(name);
+    auto resource = get_resource(name);
+    try {
+        return resource->get_intersectables();
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("get_animation_duration for resource \"" + name + "\" failed: " + e.what());
+    }
 }
 
 void SceneNodeResources::downsample(const std::string& name, size_t factor) {
