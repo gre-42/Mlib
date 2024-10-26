@@ -24,12 +24,14 @@ public:
             THROW_OR_ABORT("Polygon intersects AABB");
         }
         if (dist2 < squared(distance)) {
-            closest_point = candidate1;
+            closest_point0 = candidate0;
+            closest_point1 = candidate1;
             distance = std::sqrt(dist2);
             normal = dir / distance;
         }
     }
-    FixedArray<TData, 3> closest_point = uninitialized;
+    FixedArray<TData, 3> closest_point0 = uninitialized;
+    FixedArray<TData, 3> closest_point1 = uninitialized;
     FixedArray<TData, 3> normal = uninitialized;
     TData distance;
 };

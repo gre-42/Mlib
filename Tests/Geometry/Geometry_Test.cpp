@@ -708,7 +708,7 @@ void test_distance_polygon_aabb() {
         .vertex_normals = fixed_full<float, 4, 3>(NAN)};
     ClosestPoint<double> cp;
     distance_polygon_aabb<double, 4>(cps, aabb, cp);
-    linfo() << cp.closest_point << " - " << cp.normal << " - " << cp.distance;
+    linfo() << cp.closest_point0 << " - " << cp.closest_point1 << " - " << cp.normal << " - " << cp.distance;
 }
 
 int main(int argc, const char** argv) {

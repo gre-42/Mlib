@@ -1,7 +1,7 @@
 #include "Collide_Triangles_And_Ridge.hpp"
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

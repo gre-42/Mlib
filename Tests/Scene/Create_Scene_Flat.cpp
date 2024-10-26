@@ -2,8 +2,8 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Intersection/Intersectors/Swept_Sphere_Aabb.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

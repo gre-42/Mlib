@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Intersection/Distange_Polygon_Aabb.hpp>
+#include <Mlib/Math/Lerp.hpp>
 
 using namespace Mlib;
 
@@ -35,7 +36,7 @@ bool SweptSphereAabb<TData>::intersects(
     ClosestPoint<TData> closest_point;
     distance_polygon_aabb(q, aabb_, closest_point);
     if (closest_point.distance <= radius_) {
-        intersection_point = closest_point.closest_point;
+        intersection_point = closest_point.closest_point0;
         normal = closest_point.normal;
         overlap = radius_ - closest_point.distance;
         return true;
@@ -54,7 +55,7 @@ bool SweptSphereAabb<TData>::intersects(
     ClosestPoint<TData> closest_point;
     distance_polygon_aabb(t, aabb_, closest_point);
     if (closest_point.distance <= radius_) {
-        intersection_point = closest_point.closest_point;
+        intersection_point = closest_point.closest_point0;
         normal = closest_point.normal;
         overlap = radius_ - closest_point.distance;
         return true;
@@ -73,7 +74,7 @@ bool SweptSphereAabb<TData>::intersects(
     ClosestPoint<TData> closest_point;
     distance_line_aabb(r1.ray, aabb_, closest_point);
     if (closest_point.distance <= radius_) {
-        intersection_point = closest_point.closest_point;
+        intersection_point = closest_point.closest_point0;
         normal = closest_point.normal;
         overlap = radius_ - closest_point.distance;
         return true;
@@ -94,7 +95,7 @@ bool SweptSphereAabb<TData>::intersects(
     ClosestPoint<TData> closest_point;
     distance_line_aabb(l1.ray, aabb_, closest_point);
     if (closest_point.distance <= radius_) {
-        intersection_point = closest_point.closest_point;
+        intersection_point = closest_point.closest_point0;
         normal = closest_point.normal;
         overlap = radius_ - closest_point.distance;
         return true;
@@ -129,7 +130,7 @@ bool SweptSphereAabb<TData>::intersects(
     distance_aabb_aabb(aabb_, c->aabb_, trafo, closest_point);
     auto sum_radius = radius_ + c->radius_;
     if (closest_point.distance <= sum_radius) {
-        intersection_point = closest_point.closest_point;
+        intersection_point = lerp(closest_point.closest_point0, closest_point.closest_point1, radius_ / sum_radius);
         normal = closest_point.normal;
         overlap = closest_point.distance - sum_radius;
         return true;
