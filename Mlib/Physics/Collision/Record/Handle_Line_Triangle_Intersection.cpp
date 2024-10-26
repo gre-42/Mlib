@@ -66,6 +66,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     if (!iinfo->intersects()) {
         return;
     }
+    // if (iinfo->has_normal_and_overlap()) {
+    //     for (double t = 0; t < 0.5; t += 0.1) {
+    //         add_beacon(Beacon::create(iinfo->intersection_point() + t * iinfo->normal(), "beacon"));
+    //     }
+    // }
     // if (!line_intersects_triangle(
     //     L1(0),
     //     L1(1),

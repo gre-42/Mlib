@@ -3,11 +3,6 @@
 
 namespace Mlib {
 
-#ifdef __GNUC__
-    #pragma GCC push_options
-    #pragma GCC optimize ("O0")
-#endif
-
 template <class TData, size_t tndim>
 bool distance_line_line(
     const FixedArray<TData, 2, tndim>& line0,
@@ -44,9 +39,5 @@ bool distance_line_line(
     p1 = c + d * s;
     return true;
 }
-
-#ifdef __GNUC__
-    #pragma GCC pop_options
-#endif
 
 }
