@@ -166,12 +166,7 @@ std::unique_ptr<IIntersectionInfo> Mlib::intersect(
     ScenePos ray_t = NAN;
     ScenePos overlap;
     bool intersects = i1.intersects(q0, overlap, intersection_point, normal);
-    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{
-        intersects,
-        overlap,
-        ray_t,
-        intersection_point,
-        -normal});
+    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{intersects, overlap, ray_t, intersection_point, -normal});
 }
 
 // Triangle - intersectable
@@ -184,12 +179,7 @@ std::unique_ptr<IIntersectionInfo> Mlib::intersect(
     ScenePos ray_t = NAN;
     ScenePos overlap;
     bool intersects = i1.intersects(t0, overlap, intersection_point, normal);
-    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{
-        intersects,
-        overlap,
-        ray_t,
-        intersection_point,
-        -normal});
+    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{intersects, overlap, ray_t, intersection_point, -normal});
 }
 
 // Intersectable - ridge
@@ -202,7 +192,7 @@ std::unique_ptr<IIntersectionInfo> Mlib::intersect(
     ScenePos ray_t = NAN;
     ScenePos overlap;
     bool intersects = i0.intersects(r1, overlap, intersection_point, normal);
-    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{intersects, overlap, ray_t, intersection_point, -normal});
+    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{intersects, overlap, ray_t, intersection_point, normal});
 }
 
 // Intersectable - line
@@ -215,7 +205,7 @@ std::unique_ptr<IIntersectionInfo> Mlib::intersect(
     ScenePos ray_t;
     ScenePos overlap;
     bool intersects = i0.intersects(l1, overlap, ray_t, intersection_point, normal);
-    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{intersects, overlap, ray_t, intersection_point, -normal});
+    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{intersects, overlap, ray_t, intersection_point, normal});
 }
 
 // Intersectable - intersectable
