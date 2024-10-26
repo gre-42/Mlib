@@ -45,7 +45,7 @@ void distance_point_aabb(
 }
 
 template <class TData>
-void distance_line_aabb(
+void distance_interior_line_aabb(
     const RaySegment3D<TData>& ray,
     const AxisAlignedBoundingBox<TData, 3>& aabb,
     ClosestPoint<TData>& closest_point)
@@ -71,6 +71,17 @@ void distance_line_aabb(
         }
         return true;
     });
+}
+
+template <class TData>
+void distance_line_aabb(
+    const RaySegment3D<TData>& ray,
+    const AxisAlignedBoundingBox<TData, 3>& aabb,
+    ClosestPoint<TData>& closest_point)
+{
+    distance_interior_line_aabb(ray, aabb, closest_point);
+    distance_point_aabb(ray.start, aabb, closest_point);
+    distance_point_aabb(ray.stop(), aabb, closest_point);
 }
 
 template <class TData, size_t tnvertices>
@@ -103,7 +114,7 @@ void distance_polygon_aabb(
     }
     // Line
     for (size_t i = 0; i < tnvertices; ++i) {
-        distance_line_aabb(
+        distance_interior_line_aabb(
             RaySegment3D<TData>{
                 polygon.corners[i],
                 polygon.corners[(i + 1) % tnvertices]

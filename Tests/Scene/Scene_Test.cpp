@@ -265,7 +265,7 @@ void test_physics_engine(unsigned int seed) {
             true,                               // with_depth_texture
             2048,                               // lightmap_width
             2048,                               // lightmap_height
-            FixedArray<uint32_t, 2>{ 2u, 2u }); // smooth_niterations
+            fixed_zeros<uint32_t, 2>());        // smooth_niterations
         lightmap_logic.on_child_logic_destroy.add([&lightmap_logic]() { global_object_pool.remove(lightmap_logic); }, CURRENT_SOURCE_LOCATION);
         lightmap_logic.on_node_clear.add([&lightmap_logic]() { global_object_pool.remove(lightmap_logic); }, CURRENT_SOURCE_LOCATION);
         render_logics.append({ lightmap_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);

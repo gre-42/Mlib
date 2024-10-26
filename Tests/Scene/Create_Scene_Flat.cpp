@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Intersection/Intersectors/Swept_Sphere_Aabb.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -112,6 +113,14 @@ void Mlib::create_scene_flat(
             .physics_material = PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
             .rectangle_triangulation_mode = RectangleTriangulationMode::DISABLED,
             .werror = true});
+    using TSI = TypedMesh<std::shared_ptr<IIntersectable<float>>>;
+    std::list<TSI> intersectables1 = {
+        TSI{ PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
+             std::make_shared<SweptSphereAabb<float>>(
+                -fixed_ones<float, 3>(),
+                fixed_ones<float, 3>(),
+                0.5f) }
+    };
 
     RenderingContextStack::primary_scene_node_resources().add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles0));
     RenderingContextStack::primary_scene_node_resources().add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
@@ -202,7 +211,7 @@ void Mlib::create_scene_flat(
         pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, { triangles0 }, {}, {}, CollidableMode::STATIC);
         pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, quads1, {}, {}, CollidableMode::MOVING);
         pe.rigid_bodies_.add_rigid_body(*ams1_1.absolute_movable, quads1, {}, {}, CollidableMode::MOVING);
-        pe.rigid_bodies_.add_rigid_body(*ams1_2.absolute_movable, quads1, {}, {}, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(*ams1_2.absolute_movable, {}, {}, intersectables1, CollidableMode::MOVING);
         ams0.absolute_movable.release();
         ams1_0.absolute_movable.release();
         ams1_1.absolute_movable.release();

@@ -94,35 +94,35 @@ private:
     ScenePos ray_t_;
 };
 
-class NegatedIntersectionInfo: public IIntersectionInfo {
-public:
-    NegatedIntersectionInfo(std::unique_ptr<IIntersectionInfo>&& iinfo)
-        : iinfo_(std::move(iinfo))
-    {}
-    virtual bool intersects() const override {
-        return iinfo_->intersects();
-    }
-    virtual bool has_normal_and_overlap() const override {
-        return iinfo_->has_normal_and_overlap();
-    }
-    virtual ScenePos ray_t() const override {
-        return iinfo_->ray_t();
-    }
-    virtual FixedArray<ScenePos, 3> intersection_point() const override {
-        return iinfo_->intersection_point();
-    }
-    virtual FixedArray<ScenePos, 3> normal0() const override {
-        return -iinfo_->normal0();
-    }
-    virtual FixedArray<ScenePos, 3> normal() const override {
-        return -iinfo_->normal();
-    }
-    virtual ScenePos overlap() const override {
-        return iinfo_->overlap();
-    }
-private:
-    std::unique_ptr<IIntersectionInfo> iinfo_;
-};
+// class NegatedIntersectionInfo: public IIntersectionInfo {
+// public:
+//     NegatedIntersectionInfo(std::unique_ptr<IIntersectionInfo>&& iinfo)
+//         : iinfo_(std::move(iinfo))
+//     {}
+//     virtual bool intersects() const override {
+//         return iinfo_->intersects();
+//     }
+//     virtual bool has_normal_and_overlap() const override {
+//         return iinfo_->has_normal_and_overlap();
+//     }
+//     virtual ScenePos ray_t() const override {
+//         return iinfo_->ray_t();
+//     }
+//     virtual FixedArray<ScenePos, 3> intersection_point() const override {
+//         return iinfo_->intersection_point();
+//     }
+//     virtual FixedArray<ScenePos, 3> normal0() const override {
+//         return -iinfo_->normal0();
+//     }
+//     virtual FixedArray<ScenePos, 3> normal() const override {
+//         return -iinfo_->normal();
+//     }
+//     virtual ScenePos overlap() const override {
+//         return iinfo_->overlap();
+//     }
+// private:
+//     std::unique_ptr<IIntersectionInfo> iinfo_;
+// };
 
 // Quad - ridge
 std::unique_ptr<IIntersectionInfo> Mlib::intersect(
@@ -166,7 +166,12 @@ std::unique_ptr<IIntersectionInfo> Mlib::intersect(
     ScenePos ray_t = NAN;
     ScenePos overlap;
     bool intersects = i1.intersects(q0, overlap, intersection_point, normal);
-    return std::make_unique<NegatedIntersectionInfo>(std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{intersects, overlap, ray_t, intersection_point, normal}));
+    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{
+        intersects,
+        overlap,
+        ray_t,
+        intersection_point,
+        -normal});
 }
 
 // Triangle - intersectable
@@ -179,7 +184,12 @@ std::unique_ptr<IIntersectionInfo> Mlib::intersect(
     ScenePos ray_t = NAN;
     ScenePos overlap;
     bool intersects = i1.intersects(t0, overlap, intersection_point, normal);
-    return std::make_unique<NegatedIntersectionInfo>(std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{intersects, overlap, ray_t, intersection_point, normal}));
+    return std::unique_ptr<IIntersectionInfo>(new StaticIntersectionInfo{
+        intersects,
+        overlap,
+        ray_t,
+        intersection_point,
+        -normal});
 }
 
 // Intersectable - ridge
