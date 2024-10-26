@@ -34,10 +34,10 @@ bool distance_line_line(
     auto de = dot0d(d, e);
     auto s = (-b2 * de + be * bd) / A;
     auto t = (d2 * be - de * bd) / A;
-    if ((t < 0) || (squared(t) > b2)) {
+    if ((t < 0) || (t > 1)) {
         return false;
     }
-    if ((s < 0) || (squared(s) > d2)) {
+    if ((s < 0) || (s > 1)) {
         return false;
     }
     p0 = a + b * t;
