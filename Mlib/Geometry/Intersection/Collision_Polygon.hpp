@@ -7,6 +7,11 @@
 #include <Mlib/Scene_Pos.hpp>
 #include <cstdint>
 
+#ifdef __GNUC__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
+
 namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
@@ -57,3 +62,7 @@ struct CollisionPolygonAabb {
 };
 
 }
+
+#ifdef __GNUC__
+    #pragma GCC pop_options
+#endif
