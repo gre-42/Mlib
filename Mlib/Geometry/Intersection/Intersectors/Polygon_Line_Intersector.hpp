@@ -1,9 +1,10 @@
+#pragma once
 #include <Mlib/Scene_Pos.hpp>
 #include <memory>
 
 namespace Mlib {
 
-class IIntersectionInfo;
+struct IntersectionInfo;
 template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
 template <class TData>
@@ -16,48 +17,57 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
 // Quad - ridge
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const CollisionPolygonSphere<ScenePos, 4>& q0,
-    const CollisionRidgeSphere<ScenePos>& r1);
+    const CollisionRidgeSphere<ScenePos>& r1,
+    IntersectionInfo& intersection_info);
 
 // Triangle - ridge
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const CollisionPolygonSphere<ScenePos, 3>& t0,
-    const CollisionRidgeSphere<ScenePos>& r1);
+    const CollisionRidgeSphere<ScenePos>& r1,
+    IntersectionInfo& intersection_info);
 
 // Quad - line
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const CollisionPolygonSphere<ScenePos, 4>& q0,
-    const CollisionLineSphere<ScenePos>& l1);
+    const CollisionLineSphere<ScenePos>& l1,
+    IntersectionInfo& intersection_info);
 
 // Triangle - line
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const CollisionPolygonSphere<ScenePos, 3>& t0,
-    const CollisionLineSphere<ScenePos>& l1);
+    const CollisionLineSphere<ScenePos>& l1,
+    IntersectionInfo& intersection_info);
 
 // Quad - intersectable
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const CollisionPolygonSphere<ScenePos, 4>& q0,
-    const IIntersectable<ScenePos>& i1);
+    const IIntersectable<ScenePos>& i1,
+    IntersectionInfo& intersection_info);
 
 // Triangle - intersectable
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const CollisionPolygonSphere<ScenePos, 3>& t0,
-    const IIntersectable<ScenePos>& i1);
+    const IIntersectable<ScenePos>& i1,
+    IntersectionInfo& intersection_info);
 
 // Intersectable - ridge
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const IIntersectable<ScenePos>& i0,
-    const CollisionRidgeSphere<ScenePos>& r1);
+    const CollisionRidgeSphere<ScenePos>& r1,
+    IntersectionInfo& intersection_info);
 
 // Intersectable - line
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const IIntersectable<ScenePos>& i0,
-    const CollisionLineSphere<ScenePos>& l1);
+    const CollisionLineSphere<ScenePos>& l1,
+    IntersectionInfo& intersection_info);
 
 // Intersectable - intersectable
-std::unique_ptr<IIntersectionInfo> intersect(
+bool intersect(
     const IIntersectable<ScenePos>& i0,
-    const IIntersectable<ScenePos>& i1);
+    const IIntersectable<ScenePos>& i1,
+    IntersectionInfo& intersection_info);
 
 }

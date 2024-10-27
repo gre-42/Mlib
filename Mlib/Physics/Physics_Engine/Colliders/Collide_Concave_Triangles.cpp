@@ -1,5 +1,4 @@
 #include "Collide_Concave_Triangles.hpp"
-#include <Mlib/Geometry/Intersection/Intersectors/IIntersection_Info.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Record/Ridge_Intersection_Points_Bvh.hpp>
@@ -20,14 +19,14 @@ void Mlib::collide_concave_triangles(
                 bvh.insert(p);
             }
             for (const auto& c : cs) {
-                if (bvh.has_neighbor(c.iinfo->intersection_point())) {
+                if (bvh.has_neighbor(c.iinfo.intersection_point)) {
                     continue;
                 }
-                handle_line_triangle_intersection(c.scene, *c.iinfo);
+                handle_line_triangle_intersection(c.scene, c.iinfo);
             }
         } else {
             for (const auto& c : cs) {
-                handle_line_triangle_intersection(c.scene, *c.iinfo);
+                handle_line_triangle_intersection(c.scene, c.iinfo);
             }
         }
     }

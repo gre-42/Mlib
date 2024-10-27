@@ -1,6 +1,6 @@
 #include "Handle_Reflection.hpp"
 #include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/IIntersection_Info.hpp>
+#include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Geometry/Mesh/Farthest_Distances.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -245,7 +245,7 @@ static void handle_extended_reflection(
 
 void Mlib::handle_reflection(
     const IntersectionScene& c,
-    const IIntersectionInfo& iinfo,
+    const IntersectionInfo& iinfo,
     float surface_stiction_factor)
 {
     const auto* N0 = (c.t0 != nullptr) ? &c.t0->polygon.plane() : c.q0 != nullptr ? &c.q0->polygon.plane() : nullptr;
@@ -310,10 +310,10 @@ void Mlib::handle_reflection(
     // }
     FixedArray<ScenePos, 3> normal = uninitialized;
     ScenePos overlap = INFINITY;
-    if (iinfo.has_normal_and_overlap()) {
+    if (iinfo.no.has_value()) {
         sat_used = true;
-        overlap = iinfo.overlap();
-        normal = iinfo.normal();
+        overlap = iinfo.no->overlap;
+        normal = iinfo.no->normal;
     } else if (!c.l1_is_normal) {
         assert_true(c.r1 != nullptr);
         IntersectionScene cf{ c };
@@ -339,7 +339,7 @@ void Mlib::handle_reflection(
                 }
             }
         }
-        if (!compute_edge_overlap(cf, iinfo.intersection_point(), sat_used, overlap, normal)) {
+        if (!compute_edge_overlap(cf, iinfo.intersection_point, sat_used, overlap, normal)) {
             return;
         }
     } else {
@@ -408,7 +408,7 @@ void Mlib::handle_reflection(
                 normal = round_normal;
             }
         } else {
-            auto dv = c.o0.velocity_at_position(iinfo.intersection_point()) - c.o1.velocity_at_position(iinfo.intersection_point());
+            auto dv = c.o0.velocity_at_position(iinfo.intersection_point) - c.o1.velocity_at_position(iinfo.intersection_point);
             float vn = dot0d(normal.casted<float>(), dv);
             // if (vn > c.history.cfg.min_skip_velocity) {
             //     float ds = vn * c.history.cfg.dt_substeps();
@@ -432,13 +432,13 @@ void Mlib::handle_reflection(
         handle_standard_reflection(
             c,
             normal,
-            iinfo.intersection_point(),
+            iinfo.intersection_point,
             (float)overlap);
     } else {
         handle_extended_reflection(
             c,
             normal,
-            iinfo.intersection_point(),
+            iinfo.intersection_point,
             (float)overlap,
             surface_stiction_factor);
     }

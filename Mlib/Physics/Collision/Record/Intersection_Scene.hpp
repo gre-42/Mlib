@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <cstdint>
 #include <memory>
@@ -24,7 +25,6 @@ struct CollisionLineSphere;
 struct SurfaceContactInfo;
 template <class TData>
 class IIntersectable;
-class IIntersectionInfo;
 
 struct IntersectionScene {
     RigidBodyVehicle& o0;
@@ -48,7 +48,7 @@ struct IntersectionScene {
 
 struct IntersectionSceneAndContact {
     IntersectionScene scene;
-    std::unique_ptr<IIntersectionInfo> iinfo;
+    IntersectionInfo iinfo;
 };
 
 }

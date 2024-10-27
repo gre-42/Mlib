@@ -1,7 +1,6 @@
 #include "Handle_Line_Triangle_Intersection.hpp"
 #include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/IIntersection_Info.hpp>
-#include <Mlib/Geometry/Intersection/Intersectors/IIntersection_Info.hpp>
+#include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Geometry/Intersection/Intersectors/Polygon_Line_Intersector.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
@@ -34,42 +33,57 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     if (int(c.l1 != nullptr) + int(c.r1 != nullptr) + int(c.i1 != nullptr) != 1) {
         THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/r1/i1 are set");
     }
-    std::unique_ptr<IIntersectionInfo> iinfo;
+    IntersectionInfo iinfo;
     if (c.q0 != nullptr) {
         if (c.l1 != nullptr) {
-            iinfo = intersect(*c.q0, *c.l1);
+            if (!intersect(*c.q0, *c.l1, iinfo)) {
+                return;
+            }
         } else if (c.r1 != nullptr) {
-            iinfo = intersect(*c.q0, *c.r1);
+            if (!intersect(*c.q0, *c.r1, iinfo)) {
+                return;
+            }
         } else if (c.i1 != nullptr) {
-            iinfo = intersect(*c.q0, *c.i1);
+            if (!intersect(*c.q0, *c.i1, iinfo)) {
+                return;
+            }
         } else {
             THROW_OR_ABORT("Unexpected intersection object (0)");
         }
     } else if (c.t0 != nullptr) {
         if (c.l1 != nullptr) {
-            iinfo = intersect(*c.t0, *c.l1);
+            if (!intersect(*c.t0, *c.l1, iinfo)) {
+                return;
+            }
         } else if (c.r1 != nullptr) {
-            iinfo = intersect(*c.t0, *c.r1);
+            if (!intersect(*c.t0, *c.r1, iinfo)) {
+                return;
+            }
         } else if (c.i1 != nullptr) {
-            iinfo = intersect(*c.t0, *c.i1);
+            if (!intersect(*c.t0, *c.i1, iinfo)) {
+                return;
+            }
         } else {
             THROW_OR_ABORT("Unexpected intersection object (1)");
         }
     } else if (c.i0 != nullptr) {
         if (c.l1 != nullptr) {
-            iinfo = intersect(*c.i0, *c.l1);
+            if (!intersect(*c.i0, *c.l1, iinfo)) {
+                return;
+            }
         } else if (c.r1 != nullptr) {
-            iinfo = intersect(*c.i0, *c.r1);
+            if (!intersect(*c.i0, *c.r1, iinfo)) {
+                return;
+            }
         } else if (c.i1 != nullptr) {
-            iinfo = intersect(*c.i0, *c.i1);
+            if (!intersect(*c.i0, *c.i1, iinfo)) {
+                return;
+            }
         } else {
             THROW_OR_ABORT("Unexpected intersection object (2)");
         }
     } else {
-            THROW_OR_ABORT("Unexpected intersection object (3)");
-        }
-    if (iinfo == nullptr) {
-        return;
+        THROW_OR_ABORT("Unexpected intersection object (3)");
     }
     // if (iinfo->has_normal_and_overlap()) {
     //     for (double t = 0; t < 0.5; t += 0.1) {
@@ -99,7 +113,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         assert_true(c.l1 != nullptr);
         auto res = c.history.raycast_intersections.try_emplace(&c.l1->line, std::move(cc));
         if (!res.second) {
-            if (cc.iinfo->ray_t() < res.first->second.iinfo->ray_t()) {
+            if (!cc.iinfo.ray_t.has_value()) {
+                THROW_OR_ABORT("l1_is_normal but ray_t not given");
+            }
+            if (*cc.iinfo.ray_t < *res.first->second.iinfo.ray_t) {
                 c.history.raycast_intersections.erase(res.first);
                 c.history.raycast_intersections.try_emplace(&c.l1->line, std::move(cc));
             }
@@ -112,13 +129,13 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 .scene = c,
                 .iinfo = std::move(iinfo)});
     } else {
-        handle_line_triangle_intersection(c, *iinfo);
+        handle_line_triangle_intersection(c, iinfo);
     }
 }
 
 void Mlib::handle_line_triangle_intersection(
     const IntersectionScene& c,
-    const IIntersectionInfo& iinfo)
+    const IntersectionInfo& iinfo)
 {
     const auto* N0 = (c.t0 != nullptr) ? &c.t0->polygon.plane() : (c.q0 != nullptr) ? &c.q0->polygon.plane() : nullptr;
     const auto* X1 = (c.l1 != nullptr) ? &c.l1->ray : (c.r1 != nullptr) ? &c.r1->ray : nullptr;
@@ -126,12 +143,12 @@ void Mlib::handle_line_triangle_intersection(
     CollisionType collision_type = c.default_collision_type;
     bool abort = false;
     for (auto& c0 : c.o0.collision_observers_) {
-        c0->notify_collided(iinfo.intersection_point(), c.history.world, c.o1, CollisionRole::PRIMARY, collision_type, abort);
+        c0->notify_collided(iinfo.intersection_point, c.history.world, c.o1, CollisionRole::PRIMARY, collision_type, abort);
     }
     for (auto& c1 : c.o1.collision_observers_) {
-        c1->notify_collided(iinfo.intersection_point(), c.history.world, c.o0, CollisionRole::SECONDARY, collision_type, abort);
+        c1->notify_collided(iinfo.intersection_point, c.history.world, c.o0, CollisionRole::SECONDARY, collision_type, abort);
     }
-    c.history.csg.notify_contact(iinfo.intersection_point(), fixed_zeros<float, 3>(), iinfo.normal0(), c);
+    c.history.csg.notify_contact(iinfo.intersection_point, fixed_zeros<float, 3>(), iinfo.normal0, c);
     if (abort) {
         return;
     }
@@ -154,7 +171,7 @@ void Mlib::handle_line_triangle_intersection(
         if (X1 == nullptr) {
             THROW_OR_ABORT("Grind collision requires a ray");
         }
-        FixedArray<float, 3> d3 = (iinfo.intersection_point() - c.o0.abs_grind_point()).casted<float>();
+        FixedArray<float, 3> d3 = (iinfo.intersection_point - c.o0.abs_grind_point()).casted<float>();
         if (std::abs(dot0d(X1->direction, N0->normal)) < c.history.cfg.max_grind_cos) {
             return;
         }
@@ -178,7 +195,7 @@ void Mlib::handle_line_triangle_intersection(
         }
         GrindInfo gi{
             .squared_distance = sum(squared(d3)),
-            .intersection_point = iinfo.intersection_point(),
+            .intersection_point = iinfo.intersection_point,
             .rail_direction = X1->direction,
             .rail_rb = &c.o1 };
         auto res = c.history.grind_infos.insert({ &c.o0, gi });
