@@ -126,8 +126,8 @@ CollisionRidgeSphere<TResult> CollisionRidgeSphere<TData>::casted() const {
 
 namespace Mlib {
 
-template class CollisionRidgeSphere<float>;
-template class CollisionRidgeSphere<double>;
+template struct CollisionRidgeSphere<float>;
+template struct CollisionRidgeSphere<double>;
 template CollisionRidgeSphere<double> CollisionRidgeSphere<float>::transformed(const TransformationMatrix<float, double, 3>&) const;
 template CollisionRidgeSphere<double> CollisionRidgeSphere<double>::transformed(const TransformationMatrix<float, double, 3>&) const;
 template CollisionRidgeSphere<double> CollisionRidgeSphere<double>::casted() const;
