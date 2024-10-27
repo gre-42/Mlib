@@ -6,6 +6,11 @@
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
+#ifdef __GNUC__
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#endif
+
 namespace Mlib {
 
 template <class TData>
@@ -161,3 +166,7 @@ void distance_aabb_aabb(
 }
 
 }
+
+#ifdef __GNUC__
+#pragma GCC pop_options
+#endif

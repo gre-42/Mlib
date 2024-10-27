@@ -1,6 +1,11 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 
+#ifdef __GNUC__
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#endif
+
 namespace Mlib {
 
 template <class TData>
@@ -57,3 +62,7 @@ bool distance_line_line(
 }
 
 }
+
+#ifdef __GNUC__
+#pragma GCC pop_options
+#endif
