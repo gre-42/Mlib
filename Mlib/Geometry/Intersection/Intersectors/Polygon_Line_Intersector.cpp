@@ -20,7 +20,7 @@ public:
     virtual bool has_normal_and_overlap() const override {
         return false;
     }
-    virtual ScenePos ray_t() const {
+    virtual ScenePos ray_t() const override {
         return ray_t_;
     }
     virtual FixedArray<ScenePos, 3> intersection_point() const override {
@@ -56,7 +56,7 @@ public:
     virtual bool has_normal_and_overlap() const override {
         return true;
     }
-    virtual ScenePos ray_t() const {
+    virtual ScenePos ray_t() const override {
         if (std::isnan(ray_t_)) {
             THROW_OR_ABORT("ray t is NaN");
         }
