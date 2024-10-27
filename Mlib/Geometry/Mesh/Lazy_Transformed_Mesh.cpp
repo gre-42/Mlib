@@ -203,6 +203,7 @@ const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& LazyTra
                         dmesh_->intersectable.mesh,
                         transformation_matrix_));
             }
+            intersectables_calculated_ = true;
         }
     }
     return transformed_intersectables_;
