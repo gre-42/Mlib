@@ -9,7 +9,11 @@ bool aabb_intersects_sphere(
 	const AxisAlignedBoundingBox<TData, tndim>& aabb,
 	const BoundingSphere<TData, tndim>& sphere)
 {
-	auto distance2 = sum(squared(aabb.closest_point(sphere.center()) - sphere.center()));
+	auto distance1 = abs(aabb.closest_point(sphere.center()) - sphere.center());
+	if (any(distance1 > sphere.radius())) {
+		return false;
+	}
+	auto distance2 = sum(squared(distance1));
 	return distance2 <= squared(sphere.radius());
 }
 

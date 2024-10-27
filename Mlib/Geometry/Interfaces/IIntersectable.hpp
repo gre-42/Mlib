@@ -5,6 +5,8 @@ namespace Mlib {
 
 template <class TData, size_t tndim>
 class BoundingSphere;
+template <class TData, size_t tndim>
+class AxisAlignedBoundingBox;
 template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
 template <class TData>
@@ -21,6 +23,7 @@ class IIntersectable {
 public:
     virtual ~IIntersectable() = default;
     virtual BoundingSphere<TData, 3> bounding_sphere() const = 0;
+    virtual AxisAlignedBoundingBox<TData, 3> aabb() const = 0;
     virtual bool intersects(
         const CollisionPolygonSphere<TData, 4>& q,
         TData& overlap,

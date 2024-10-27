@@ -10,7 +10,6 @@ class FixedArray;
 class IIntersectionInfo {
 public:
     virtual ~IIntersectionInfo() = default;
-    virtual bool intersects() const = 0;
     virtual bool has_normal_and_overlap() const = 0;
     virtual ScenePos ray_t() const = 0;
     virtual FixedArray<ScenePos, 3> intersection_point() const = 0;

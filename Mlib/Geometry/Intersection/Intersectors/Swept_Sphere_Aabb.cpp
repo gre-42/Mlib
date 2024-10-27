@@ -29,13 +29,18 @@ BoundingSphere<TData, 3> SweptSphereAabb<TData>::bounding_sphere() const {
 }
 
 template <class TData>
+AxisAlignedBoundingBox<TData, 3> SweptSphereAabb<TData>::aabb() const {
+    return aabb_large_;
+}
+
+template <class TData>
 bool SweptSphereAabb<TData>::intersects(
     const CollisionPolygonSphere<TData, 4>& q,
     TData& overlap,
     FixedArray<TData, 3>& intersection_point,
     FixedArray<TData, 3>& normal) const
 {
-    if (!aabb_intersects_sphere(aabb_large_, q.bounding_sphere)) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<TData, 3>::from_points(q.corners))) {
         return false;
     }
     ClosestPoint<TData> closest_point;
@@ -57,7 +62,7 @@ bool SweptSphereAabb<TData>::intersects(
     FixedArray<TData, 3>& intersection_point,
     FixedArray<TData, 3>& normal) const
 {
-    if (!aabb_intersects_sphere(aabb_large_, t.bounding_sphere)) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<TData, 3>::from_points(t.corners))) {
         return false;
     }
     ClosestPoint<TData> closest_point;
@@ -79,7 +84,7 @@ bool SweptSphereAabb<TData>::intersects(
     FixedArray<TData, 3>& intersection_point,
     FixedArray<TData, 3>& normal) const
 {
-    if (!aabb_intersects_sphere(aabb_large_, r1.bounding_sphere)) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<TData, 3>::from_points(r1.edge))) {
         return false;
     }
     ClosestPoint<TData> closest_point;
@@ -102,7 +107,7 @@ bool SweptSphereAabb<TData>::intersects(
     FixedArray<TData, 3>& intersection_point,
     FixedArray<TData, 3>& normal) const
 {
-    if (!aabb_intersects_sphere(aabb_large_, l1.bounding_sphere)) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<TData, 3>::from_points(l1.line))) {
         return false;
     }
     ray_t = NAN;

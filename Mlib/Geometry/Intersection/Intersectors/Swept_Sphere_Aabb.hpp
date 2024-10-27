@@ -13,6 +13,7 @@ public:
         const FixedArray<TData, 3>& max,
         const TData& radius);
     virtual BoundingSphere<TData, 3> bounding_sphere() const;
+    virtual AxisAlignedBoundingBox<TData, 3> aabb() const;
     virtual bool intersects(
         const CollisionPolygonSphere<TData, 4>& q,
         TData& overlap,

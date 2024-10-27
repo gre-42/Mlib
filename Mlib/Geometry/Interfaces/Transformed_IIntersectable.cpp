@@ -1,4 +1,5 @@
 #include "Transformed_IIntersectable.hpp"
+#include <Mlib/Geometry/Intersection/Aabb_Sphere_Intersection.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
@@ -17,6 +18,11 @@ TransformedIntersectable<TData>::TransformedIntersectable(
 template <class TData>
 BoundingSphere<ScenePos, 3> TransformedIntersectable<TData>::bounding_sphere() const {
     return child_->bounding_sphere().transformed(trafo_);
+}
+
+template <class TData>
+AxisAlignedBoundingBox<ScenePos, 3> TransformedIntersectable<TData>::aabb() const {
+    return child_->aabb().template casted<ScenePos>().transformed(trafo_);
 }
 
 template <class TData>
@@ -108,6 +114,10 @@ bool TransformedIntersectable<TData>::intersects_any_wo_ray_t(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<ScenePos, 3>& normal) const
 {
+    auto tbs = o.bounding_sphere.itransformed(trafo_).template casted<TData>();
+    if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
+        return false;
+    }
     TData c_overlap;
     FixedArray<TData, 3> c_intersection_point = uninitialized;
     FixedArray<TData, 3> c_normal = uninitialized;
@@ -134,6 +144,10 @@ bool TransformedIntersectable<TData>::intersects_any_with_ray_t(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<ScenePos, 3>& normal) const
 {
+    auto tbs = o.bounding_sphere.itransformed(trafo_).template casted<TData>();
+    if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
+        return false;
+    }
     TData c_overlap;
     TData c_ray_t;
     FixedArray<TData, 3> c_intersection_point = uninitialized;

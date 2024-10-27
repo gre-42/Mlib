@@ -42,6 +42,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             iinfo = intersect(*c.q0, *c.r1);
         } else if (c.i1 != nullptr) {
             iinfo = intersect(*c.q0, *c.i1);
+        } else {
+            THROW_OR_ABORT("Unexpected intersection object (0)");
         }
     } else if (c.t0 != nullptr) {
         if (c.l1 != nullptr) {
@@ -50,6 +52,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             iinfo = intersect(*c.t0, *c.r1);
         } else if (c.i1 != nullptr) {
             iinfo = intersect(*c.t0, *c.i1);
+        } else {
+            THROW_OR_ABORT("Unexpected intersection object (1)");
         }
     } else if (c.i0 != nullptr) {
         if (c.l1 != nullptr) {
@@ -58,12 +62,13 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             iinfo = intersect(*c.i0, *c.r1);
         } else if (c.i1 != nullptr) {
             iinfo = intersect(*c.i0, *c.i1);
+        } else {
+            THROW_OR_ABORT("Unexpected intersection object (2)");
         }
-    }
+    } else {
+            THROW_OR_ABORT("Unexpected intersection object (3)");
+        }
     if (iinfo == nullptr) {
-        THROW_OR_ABORT("iinfo is null");
-    }
-    if (!iinfo->intersects()) {
         return;
     }
     // if (iinfo->has_normal_and_overlap()) {

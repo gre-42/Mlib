@@ -15,6 +15,7 @@ public:
         std::shared_ptr<IIntersectable<TData>> child,
         const TransformationMatrix<float, ScenePos, 3>& trafo);
     virtual BoundingSphere<ScenePos, 3> bounding_sphere() const override;
+    virtual AxisAlignedBoundingBox<ScenePos, 3> aabb() const override;
     virtual bool intersects(
         const CollisionPolygonSphere<ScenePos, 4>& q,
         ScenePos& overlap,
