@@ -8,6 +8,8 @@ namespace Mlib {
 class RigidBodyVehicle;
 template <class T>
 struct TypedMesh;
+template <class TData>
+class IIntersectable;
 class IIntersectableMesh;
 template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
@@ -19,6 +21,7 @@ void collide_triangle_and_lines(
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionPolygonSphere<ScenePos, 4>* q0,
     const CollisionPolygonSphere<ScenePos, 3>* t0,
+    const TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>* i0,
     const CollisionHistory& history);
 
 void collide_triangle_and_lines(

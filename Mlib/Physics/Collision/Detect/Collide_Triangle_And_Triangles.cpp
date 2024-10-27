@@ -1,4 +1,5 @@
 #include "Collide_Triangle_And_Triangles.hpp"
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
@@ -19,19 +20,24 @@ void Mlib::collide_triangle_and_triangles(
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionPolygonSphere<ScenePos, 4>* q0,
     const CollisionPolygonSphere<ScenePos, 3>* t0,
+    const TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>* i0,
     const CollisionHistory& history)
 {
-    auto collide = [&](const auto& poly0){
+    auto collide = [&](
+        const auto& bounding_sphere0,
+        const PlaneNd<ScenePos, 3>* plane0,
+        PhysicsMaterial physics_material0)
+    {
         // Mesh-sphere <-> triangle-sphere intersection
-        if (!msh1.mesh->intersects(poly0.bounding_sphere)) {
+        if (!msh1.mesh->intersects(bounding_sphere0)) {
             return;
         }
         // Mesh-sphere <-> triangle-plane intersection
-        if (!msh1.mesh->intersects(poly0.polygon.plane())) {
+        if ((plane0 != nullptr) && !msh1.mesh->intersects(*plane0)) {
             return;
         }
         for (const auto& r1 : msh1.mesh->get_ridges_sphere()) {
-            if (!r1.bounding_sphere.intersects(poly0.bounding_sphere)) {
+            if (!r1.bounding_sphere.intersects(bounding_sphere0)) {
                 continue;
             }
             handle_line_triangle_intersection(IntersectionScene{
@@ -43,12 +49,13 @@ void Mlib::collide_triangle_and_triangles(
                 .r1 = &r1,
                 .q0 = q0,
                 .t0 = t0,
+                .i0 = (i0 == nullptr) ? nullptr : i0->mesh.get(),
                 .tire_id1 = SIZE_MAX,
-                .mesh0_material = poly0.physics_material,
+                .mesh0_material = physics_material0,
                 .mesh1_material = msh1.physics_material,
                 .l1_is_normal = false,
                 .surface_contact_info = history.surface_contact_db.get_contact_info(
-                    poly0.physics_material,
+                    physics_material0,
                     msh1.physics_material,
                     SIZE_MAX),
                 .default_collision_type = CollisionType::REFLECT,
@@ -56,10 +63,13 @@ void Mlib::collide_triangle_and_triangles(
         }
     };
     if (q0 != nullptr) {
-        collide(*q0);
+        collide(q0->bounding_sphere, &q0->polygon.plane(), q0->physics_material);
     }
     if (t0 != nullptr) {
-        collide(*t0);
+        collide(t0->bounding_sphere, &t0->polygon.plane(), t0->physics_material);
+    }
+    if (i0 != nullptr) {
+        collide(i0->mesh->bounding_sphere(), nullptr, i0->physics_material);
     }
 }
 
@@ -78,5 +88,6 @@ void Mlib::collide_triangle_and_triangles(
         msh1,
         std::get_if<CollisionPolygonSphere<ScenePos, 4>>(&cps0),
         std::get_if<CollisionPolygonSphere<ScenePos, 3>>(&cps0),
+        nullptr,
         history);
 }

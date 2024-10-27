@@ -1,4 +1,5 @@
 #include "Collide_Triangle_And_Lines.hpp"
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
@@ -21,6 +22,7 @@ void Mlib::collide_triangle_and_lines(
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionPolygonSphere<ScenePos, 4>* q0,
     const CollisionPolygonSphere<ScenePos, 3>* t0,
+    const TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>* i0,
     const CollisionHistory& history)
 {
     const auto& lines1 = msh1.mesh->get_lines_sphere();
@@ -32,10 +34,13 @@ void Mlib::collide_triangle_and_lines(
         PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT |
         PhysicsMaterial::OBJ_ALIGNMENT_CONTACT |
         PhysicsMaterial::OBJ_DISTANCEBOX;
-    auto collide = [&](const auto& poly0){
+    auto collide = [&](
+        const auto& bounding_sphere0,
+        PhysicsMaterial physics_material0)
+    {
         if (any(msh1.physics_material & non_tire_line_mask)) {
             for (const auto& l1 : lines1) {
-                if (!l1.bounding_sphere.intersects(poly0.bounding_sphere)) {
+                if (!l1.bounding_sphere.intersects(bounding_sphere0)) {
                     continue;
                 }
                 handle_line_triangle_intersection(IntersectionScene{
@@ -47,12 +52,13 @@ void Mlib::collide_triangle_and_lines(
                     .r1 = nullptr,
                     .q0 = q0,
                     .t0 = t0,
+                    .i0 = (i0 == nullptr) ? nullptr : i0->mesh.get(),
                     .tire_id1 = SIZE_MAX,
-                    .mesh0_material = poly0.physics_material,
+                    .mesh0_material = physics_material0,
                     .mesh1_material = msh1.physics_material,
                     .l1_is_normal = true,
                     .surface_contact_info = history.surface_contact_db.get_contact_info(
-                        poly0.physics_material,
+                        physics_material0,
                         msh1.physics_material,
                         SIZE_MAX),
                     .default_collision_type = CollisionType::REFLECT,
@@ -65,7 +71,7 @@ void Mlib::collide_triangle_and_lines(
                     "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
             }
             for (const auto& [tire_id1, l1] : enumerate(lines1)) {
-                if (!l1.bounding_sphere.intersects(poly0.bounding_sphere)) {
+                if (!l1.bounding_sphere.intersects(bounding_sphere0)) {
                     continue;
                 }
                 handle_line_triangle_intersection(IntersectionScene{
@@ -78,11 +84,11 @@ void Mlib::collide_triangle_and_lines(
                     .q0 = q0,
                     .t0 = t0,
                     .tire_id1 = tire_id1,
-                    .mesh0_material = poly0.physics_material,
+                    .mesh0_material = physics_material0,
                     .mesh1_material = msh1.physics_material,
                     .l1_is_normal = true,
                     .surface_contact_info = history.surface_contact_db.get_contact_info(
-                        poly0.physics_material,
+                        physics_material0,
                         msh1.physics_material,
                         tire_id1),
                     .default_collision_type = CollisionType::REFLECT,
@@ -97,10 +103,13 @@ void Mlib::collide_triangle_and_lines(
         }
     };
     if (q0 != nullptr) {
-        collide(*q0);
+        collide(q0->bounding_sphere, q0->physics_material);
     }
     if (t0 != nullptr) {
-        collide(*t0);
+        collide(t0->bounding_sphere, t0->physics_material);
+    }
+    if (i0 != nullptr) {
+        collide(i0->mesh->bounding_sphere(), i0->physics_material);
     }
 }
 
@@ -117,5 +126,6 @@ void Mlib::collide_triangle_and_lines(
         msh1,
         std::get_if<CollisionPolygonSphere<ScenePos, 4>>(&cps0),
         std::get_if<CollisionPolygonSphere<ScenePos, 3>>(&cps0),
+        nullptr,
         history);
 }
