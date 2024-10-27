@@ -2,6 +2,11 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 
+#ifdef __GNUC__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
+
 namespace Mlib {
 
 template <class TData, size_t tndim>
@@ -18,3 +23,7 @@ bool aabb_intersects_sphere(
 }
 
 }
+
+#ifdef __GNUC__
+    #pragma GCC pop_options
+#endif

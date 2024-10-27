@@ -5,6 +5,11 @@
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 
+#ifdef __GNUC__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
+
 using namespace Mlib;
 
 template <class TData>
@@ -174,3 +179,7 @@ template class TransformedIntersectable<double>;
 template class TransformedIntersectable<float>;
 
 }
+
+#ifdef __GNUC__
+    #pragma GCC pop_options
+#endif

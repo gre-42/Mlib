@@ -5,6 +5,11 @@
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Intersection/Intersectors/IIntersection_Info.hpp>
 
+#ifdef __GNUC__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
+
 using namespace Mlib;
 
 class IntersectionInfoWithoutNormalAndOverlap: public IIntersectionInfo {
@@ -237,3 +242,7 @@ std::unique_ptr<IIntersectionInfo> Mlib::intersect(
     }
     return std::unique_ptr<IIntersectionInfo>(new IntersectionInfoWithNormalAndOverlap{overlap, ray_t, intersection_point, -normal});
 }
+
+#ifdef __GNUC__
+    #pragma GCC pop_options
+#endif
