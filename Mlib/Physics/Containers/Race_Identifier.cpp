@@ -15,10 +15,10 @@ void check_dirname_part(const std::string& part) {
         if ((c >= 'a') && (c <= 'z')) {
             continue;
         }
-        if ((c == '_') || (c == '-')) {
+        if ((c == '_') || (c == '-') || (c == '.')) {
             continue;
         }
-        THROW_OR_ABORT("Invalid charactar in dirname part (must be 0-9, A-Z, a-z, _ or -)");
+        THROW_OR_ABORT("Invalid charactar in dirname part (must be 0-9, A-Z, a-z, _ or -): \"" + part + '"');
     }
 }
 
