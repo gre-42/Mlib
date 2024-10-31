@@ -43,7 +43,7 @@ void Mlib::make_triangles_with_opposing_normals_two_sided(
                 cva.morphology + PhysicsMaterial::ATTR_TWO_SIDED,
             ModifierBacklog{},
             UUVector<FixedArray<ColoredVertex<TPos>, 4>>(),                      // quads
-            uuvector(two_sided_triangles.begin(), two_sided_triangles.end()), // triangles
+            uuvector(two_sided_triangles.begin(), two_sided_triangles.end()),    // triangles
             UUVector<FixedArray<ColoredVertex<TPos>, 2>>(),                      // lines
             UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),                  // triangle_bone_weights
             UUVector<FixedArray<float, 3>>(),                                    // continous_triangle_texture_layers
