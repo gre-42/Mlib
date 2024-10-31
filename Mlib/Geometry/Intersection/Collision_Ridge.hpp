@@ -25,7 +25,6 @@ struct CollisionRidgeSphere {
     FixedArray<TData, 2, 3> edge;
     RaySegment3D<TData> ray;
     FixedArray<TData, 3> normal;
-    FixedArray<float, 2, 3> vertex_normals;
     TData min_cos;
     FixedArray<TData, 3> tangent() const;
     bool is_touchable(SingleFaceBehavior behavior) const;

@@ -105,7 +105,6 @@ CollisionRidgeSphere<TResult> CollisionRidgeSphere<TData>::transformed(const Tra
         trafo.transform(edge),
         ray.transformed(trafo),
         trafo.rotate(normal.template casted<float>()).template casted<TResult>(),
-        trafo.rotate(vertex_normals),
         min_cos
     };
 }
@@ -119,7 +118,6 @@ CollisionRidgeSphere<TResult> CollisionRidgeSphere<TData>::casted() const {
         .edge = edge.template casted<TResult>(),
         .ray = ray.template casted<TResult>(),
         .normal = normal.template casted<TResult>(),
-        .vertex_normals = vertex_normals,
         .min_cos = (TResult)min_cos
     };
 }

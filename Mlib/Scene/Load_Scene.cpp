@@ -175,7 +175,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Door_Distance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Target.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Round_Mesh_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Sliding_Normal_Modifier.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Trailer_Hitch_Positions.hpp>
@@ -219,7 +218,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Triangle_Rays.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Import_Bone_Weights.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Make_Triangles_With_Opposing_Normals_Two_Sided.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Meshes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Textures.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Modify_Physics_Material_Tags.hpp>
@@ -400,7 +398,6 @@ LoadScene::LoadScene() {
     register_json_user_function(SetAvailableRoles::key, SetAvailableRoles::json_user_function);
     register_json_user_function(SetBevelBoxSurfaceNormal::key, SetBevelBoxSurfaceNormal::json_user_function);
     register_json_user_function(SetCapsuleSurfaceNormal::key, SetCapsuleSurfaceNormal::json_user_function);
-    register_json_user_function(SetRoundMeshSurfaceNormal::key, SetRoundMeshSurfaceNormal::json_user_function);
     register_json_user_function(SetSlidingNormalModifier::key, SetSlidingNormalModifier::json_user_function);
     register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
     register_json_user_function(SetCamera::key, SetCamera::json_user_function);
@@ -479,7 +476,6 @@ LoadScene::LoadScene() {
     register_json_user_function(SetFocuses::key, SetFocuses::json_user_function);
     register_json_user_function(CreateSquareResource::key, CreateSquareResource::json_user_function);
     register_json_user_function(CreateGridResource::key, CreateGridResource::json_user_function);
-    register_json_user_function(MakeTrianglesWithOpposingNormalsTwoSided::key, MakeTrianglesWithOpposingNormalsTwoSided::json_user_function);
     register_json_user_function(MergeBlendedMaterials::key, MergeBlendedMaterials::json_user_function);
     register_json_user_function(MergeMeshes::key, MergeMeshes::json_user_function);
     register_json_user_function(ModifyPhysicsMaterialTags::key, ModifyPhysicsMaterialTags::json_user_function);

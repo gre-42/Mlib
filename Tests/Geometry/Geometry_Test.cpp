@@ -704,8 +704,7 @@ void test_distance_polygon_aabb() {
         .bounding_sphere = poly.bounding_sphere(rng),
         .polygon = poly.polygon(),
         .physics_material = PhysicsMaterial::NONE,
-        .corners = poly.vertices(),
-        .vertex_normals = fixed_full<float, 4, 3>(NAN)};
+        .corners = poly.vertices()};
     ClosestPoint<double> cp;
     distance_polygon_aabb<double, 4>(cps, aabb, cp);
     linfo() << cp.closest_point0 << " - " << cp.closest_point1 << " - " << cp.normal << " - " << cp.distance;

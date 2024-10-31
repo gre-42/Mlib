@@ -13,7 +13,6 @@ template <size_t tnvertices>
 void CollisionRidges::insert(
     const FixedArray<ScenePos, tnvertices, 3>& tri,
     const FixedArray<ScenePos, 3>& normal,
-    const FixedArray<float, tnvertices, 3>& vertex_normals,
     ScenePos max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
@@ -24,8 +23,6 @@ void CollisionRidges::insert(
                 tri[i],
                 tri[j],
                 normal,
-                vertex_normals[i],
-                vertex_normals[j],
                 max_min_cos_ridge,
                 physics_material);
         } catch (const EdgeException<ScenePos>& e) {
@@ -39,8 +36,6 @@ void CollisionRidges::insert(
     const FixedArray<ScenePos, 3>& a,
     const FixedArray<ScenePos, 3>& b,
     const FixedArray<ScenePos, 3>& normal,
-    const FixedArray<float, 3>& a_vertex_normal,
-    const FixedArray<float, 3>& b_vertex_normal,
     ScenePos max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
@@ -51,7 +46,6 @@ void CollisionRidges::insert(
             .edge{a, b},
             .ray{a, b},
             .normal = normal,
-            .vertex_normals = {a_vertex_normal, b_vertex_normal},
             .min_cos = RIDGE_SINGLE_FACE}};
     CollisionRidgesBase<OrderableRidgeSphereBase>::insert(
         ridge,
@@ -63,13 +57,11 @@ namespace Mlib {
     template void CollisionRidges::insert<3>(
         const FixedArray<ScenePos, 3, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        const FixedArray<float, 3, 3>& vertex_normals,
         ScenePos max_min_cos_ridge,
         PhysicsMaterial physics_material);
     template void CollisionRidges::insert<4>(
         const FixedArray<ScenePos, 4, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        const FixedArray<float, 4, 3>& vertex_normals,
         ScenePos max_min_cos_ridge,
         PhysicsMaterial physics_material);
 }

@@ -36,7 +36,6 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
-enum class NormalVectorErrorBehavior;
 
 template <class TPos>
 class ColoredVertexArray {
@@ -103,24 +102,18 @@ public:
         const std::string& suffix) const;
     template <size_t tnvertices>
     void polygon_sphere(
-        std::vector<CollisionPolygonSphere<TPos, tnvertices>>& collision_polygons,
-        NormalVectorErrorBehavior zero_normal_behavior) const;
-    void quads_sphere(std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons,
-        NormalVectorErrorBehavior zero_normal_behavior) const;
-    void triangles_sphere(std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons,
-        NormalVectorErrorBehavior zero_normal_behavior) const;
+        std::vector<CollisionPolygonSphere<TPos, tnvertices>>& collision_polygons) const;
+    void quads_sphere(std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons) const;
+    void triangles_sphere(std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons) const;
     template <size_t tnvertices, class TPosResult, class TPosTransform>
     std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> transformed_polygon_bbox(
-        const TransformationMatrix<float, TPosTransform, 3>& tm,
-        NormalVectorErrorBehavior zero_normal_behavior) const;
+        const TransformationMatrix<float, TPosTransform, 3>& tm) const;
     template <class TPosResult, class TPosTransform>
     std::vector<CollisionPolygonAabb<TPosResult, 4>> transformed_quads_bbox(
-        const TransformationMatrix<float, TPosTransform, 3>& tm,
-        NormalVectorErrorBehavior zero_normal_behavior) const;
+        const TransformationMatrix<float, TPosTransform, 3>& tm) const;
     template <class TPosResult, class TPosTransform>
     std::vector<CollisionPolygonAabb<TPosResult, 3>> transformed_triangles_bbox(
-        const TransformationMatrix<float, TPosTransform, 3>& tm,
-        NormalVectorErrorBehavior zero_normal_behavior) const;
+        const TransformationMatrix<float, TPosTransform, 3>& tm) const;
     template <class TPosResult, class TPosTransform>
     std::vector<CollisionLineAabb<TPosResult>> transformed_lines_bbox(
         const TransformationMatrix<float, TPosTransform, 3>& tm) const;

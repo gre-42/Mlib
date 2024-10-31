@@ -9,7 +9,6 @@ namespace Mlib {
 
 template <class TPos>
 class ColoredVertexArray;
-enum class NormalVectorErrorBehavior;
 template <class TData>
 class IIntersectable;
 template <class T>
@@ -20,9 +19,7 @@ class CollisionMesh {
     CollisionMesh(const CollisionMesh&) = delete;
     CollisionMesh& operator = (const CollisionMesh&) = delete;
 public:
-    CollisionMesh(
-        const ColoredVertexArray<TData>& mesh,
-        NormalVectorErrorBehavior zero_normal_behavior);
+    explicit CollisionMesh(const ColoredVertexArray<TData>& mesh);
     CollisionMesh(
         std::string name,
         TypedMesh<std::shared_ptr<IIntersectable<TData>>> intersectable);

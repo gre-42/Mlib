@@ -219,43 +219,38 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
 
 template <class TPos>
 void ColoredVertexArray<TPos>::quads_sphere(
-    std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons,
-    NormalVectorErrorBehavior zero_normal_behavior) const
+    std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons) const
 {
-    polygon_sphere(collision_polygons, zero_normal_behavior);
+    polygon_sphere(collision_polygons);
 }
 
 template <class TPos>
 void ColoredVertexArray<TPos>::triangles_sphere(
-    std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons,
-    NormalVectorErrorBehavior zero_normal_behavior) const
+    std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons) const
 {
-    polygon_sphere(collision_polygons, zero_normal_behavior);
+    polygon_sphere(collision_polygons);
 }
 
 template <class TPos>
 template <class TPosResult, class TPosTransform>
 std::vector<CollisionPolygonAabb<TPosResult, 4>> ColoredVertexArray<TPos>::transformed_quads_bbox(
-    const TransformationMatrix<float, TPosTransform, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const
+    const TransformationMatrix<float, TPosTransform, 3>& tm) const
 {
-    return transformed_polygon_bbox<4, TPosResult, TPosTransform>(tm, zero_normal_behavior);
+    return transformed_polygon_bbox<4, TPosResult, TPosTransform>(tm);
 }
 
 template <class TPos>
 template <class TPosResult, class TPosTransform>
 std::vector<CollisionPolygonAabb<TPosResult, 3>> ColoredVertexArray<TPos>::transformed_triangles_bbox(
-    const TransformationMatrix<float, TPosTransform, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const
+    const TransformationMatrix<float, TPosTransform, 3>& tm) const
 {
-    return transformed_polygon_bbox<3, TPosResult, TPosTransform>(tm, zero_normal_behavior);
+    return transformed_polygon_bbox<3, TPosResult, TPosTransform>(tm);
 }
 
 template <class TPos>
 template <size_t tnvertices>
 void ColoredVertexArray<TPos>::polygon_sphere(
-    std::vector<CollisionPolygonSphere<TPos, tnvertices>>& collision_polygons,
-    NormalVectorErrorBehavior zero_normal_behavior) const
+    std::vector<CollisionPolygonSphere<TPos, tnvertices>>& collision_polygons) const
 {
     const auto& prims = primitives<(PrimitiveDimensions)tnvertices>();
     size_t len0 = collision_polygons.size();
@@ -269,8 +264,7 @@ void ColoredVertexArray<TPos>::polygon_sphere(
             .bounding_sphere = poly.bounding_sphere(rng),
             .polygon = poly.polygon(),
             .physics_material = morphology.physics_material,
-            .corners = poly.vertices(),
-            .vertex_normals = fixed_full<float, tnvertices, 3>(NAN)
+            .corners = poly.vertices()
         });
     }
     VertexNormals<TPos, float> vertex_normals;
@@ -280,34 +274,12 @@ void ColoredVertexArray<TPos>::polygon_sphere(
             vertex_normals.add_vertex_face_normal(v, poly.polygon.plane().normal.template casted<float>());
         }
     }
-    if (any(zero_normal_behavior & NormalVectorErrorBehavior::SKIP)) {
-        vertex_normals.compute_vertex_normals(zero_normal_behavior);
-        collision_polygons.erase(
-            std::remove_if(collision_polygons.begin(), collision_polygons.end(), [&vertex_normals](auto& poly) {
-                const auto& n = vertex_normals.get_normals(poly.corners);
-                for (const auto& c : n.row_iterable()) {
-                    if (all(c == 0.f)) {
-                        return true;
-                    }
-                }
-                poly.vertex_normals = n;
-                return false;
-                }),
-            collision_polygons.end());
-    } else {
-        vertex_normals.compute_vertex_normals(zero_normal_behavior);
-        for (size_t i = len0; i < collision_polygons.size(); ++i) {
-            auto& poly = collision_polygons[i];
-            poly.vertex_normals = vertex_normals.get_normals(poly.corners);
-        }
-    }
 }
 
 template <class TPos>
 template <size_t tnvertices, class TPosResult, class TPosTransform>
 std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> ColoredVertexArray<TPos>::transformed_polygon_bbox(
-    const TransformationMatrix<float, TPosTransform, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const
+    const TransformationMatrix<float, TPosTransform, 3>& tm) const
 {
     const auto& prims = primitives<(PrimitiveDimensions)tnvertices>();
     std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> res;
@@ -320,8 +292,7 @@ std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> ColoredVertexArray<TPo
                 .bounding_sphere = poly.bounding_sphere(rng),
                 .polygon = poly.polygon(),
                 .physics_material = morphology.physics_material,
-                .corners = poly.vertices(),
-                .vertex_normals = fixed_full<float, tnvertices, 3>(NAN)
+                .corners = poly.vertices()
             },
             .aabb = poly.aabb()});
     }
@@ -329,25 +300,6 @@ std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> ColoredVertexArray<TPo
     for (const auto& poly : res) {
         for (const auto& v : poly.base.corners.row_iterable()) {
             vertex_normals.add_vertex_face_normal(v, poly.base.polygon.plane().normal.template casted<float>());
-        }
-    }
-    if (any(zero_normal_behavior & NormalVectorErrorBehavior::SKIP)) {
-        vertex_normals.compute_vertex_normals(zero_normal_behavior);
-        res.erase(
-            std::remove_if(res.begin(), res.end(), [&vertex_normals](auto& poly) {
-                const auto& n = vertex_normals.get_normals(poly.base.corners);
-                for (const auto& c : n.row_iterable()) {
-                    if (all(c == 0.f)) {
-                        return true;
-                    }
-                }
-                poly.base.vertex_normals = n;
-                return false;
-                }),
-            res.end());
-    } else {
-        for (auto& quad : res) {
-            quad.base.vertex_normals = vertex_normals.get_normals(quad.base.corners);
         }
     }
     return res;
@@ -664,27 +616,21 @@ template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::t
     const std::string& suffix) const;
 
 template std::vector<CollisionPolygonAabb<double, 4>> ColoredVertexArray<double>::transformed_quads_bbox(
-    const TransformationMatrix<float, double, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const;
+    const TransformationMatrix<float, double, 3>& tm) const;
 template std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<double>::transformed_triangles_bbox(
-    const TransformationMatrix<float, double, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const;
+    const TransformationMatrix<float, double, 3>& tm) const;
 template std::vector<CollisionLineAabb<double>> ColoredVertexArray<double>::transformed_lines_bbox(
     const TransformationMatrix<float, double, 3>& tm) const;
 template std::vector<CollisionPolygonAabb<double, 4>> ColoredVertexArray<float>::transformed_quads_bbox(
-    const TransformationMatrix<float, double, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const;
+    const TransformationMatrix<float, double, 3>& tm) const;
 template std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<float>::transformed_triangles_bbox(
-    const TransformationMatrix<float, double, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const;
+    const TransformationMatrix<float, double, 3>& tm) const;
 template std::vector<CollisionLineAabb<double>> ColoredVertexArray<float>::transformed_lines_bbox(
     const TransformationMatrix<float, double, 3>& tm) const;
 
 template std::vector<CollisionPolygonAabb<float, 4>> ColoredVertexArray<float>::transformed_quads_bbox(
-    const TransformationMatrix<float, float, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const;
+    const TransformationMatrix<float, float, 3>& tm) const;
 template std::vector<CollisionPolygonAabb<float, 3>> ColoredVertexArray<float>::transformed_triangles_bbox(
-    const TransformationMatrix<float, float, 3>& tm,
-    NormalVectorErrorBehavior zero_normal_behavior) const;
+    const TransformationMatrix<float, float, 3>& tm) const;
 template std::vector<CollisionLineAabb<float>> ColoredVertexArray<float>::transformed_lines_bbox(
     const TransformationMatrix<float, float, 3>& tm) const;

@@ -22,14 +22,12 @@ struct CollisionPolygonSphere {
     ConvexPolygon3D<TData, tnvertices> polygon;
     PhysicsMaterial physics_material;
     FixedArray<TData, tnvertices, 3> corners;
-    FixedArray<float, tnvertices, 3> vertex_normals;
     inline CollisionPolygonSphere<TData, tnvertices> operator - () const {
         return {
             .bounding_sphere = bounding_sphere,
             .polygon = -polygon,
             .physics_material = physics_material,
-            .corners = corners,
-            .vertex_normals = vertex_normals
+            .corners = corners
         };
     }
     CollisionPolygonSphere<ScenePos, tnvertices> transformed(
@@ -39,8 +37,7 @@ struct CollisionPolygonSphere {
             .bounding_sphere = bounding_sphere.transformed(transformation_matrix),
             .polygon = polygon.template casted<ScenePos>().transformed(transformation_matrix),
             .physics_material = physics_material,
-            .corners = transformation_matrix.transform(corners),
-            .vertex_normals = transformation_matrix.rotate(vertex_normals)
+            .corners = transformation_matrix.transform(corners)
         };
     }
     template <class TResult>
@@ -49,8 +46,7 @@ struct CollisionPolygonSphere {
             bounding_sphere.template casted<TResult>(),
             polygon.template casted<TResult>(),
             physics_material,
-            corners.template casted<TResult>(),
-            vertex_normals,
+            corners.template casted<TResult>()
         };
     }
 };
