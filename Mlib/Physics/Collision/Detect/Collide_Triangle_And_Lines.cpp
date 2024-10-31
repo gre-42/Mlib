@@ -22,7 +22,6 @@ void Mlib::collide_triangle_and_lines(
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionPolygonSphere<ScenePos, 4>* q0,
     const CollisionPolygonSphere<ScenePos, 3>* t0,
-    const TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>* i0,
     const CollisionHistory& history)
 {
     const auto& lines1 = msh1.mesh->get_lines_sphere();
@@ -52,7 +51,6 @@ void Mlib::collide_triangle_and_lines(
                     .r1 = nullptr,
                     .q0 = q0,
                     .t0 = t0,
-                    .i0 = (i0 == nullptr) ? nullptr : i0->mesh.get(),
                     .tire_id1 = SIZE_MAX,
                     .mesh0_material = physics_material0,
                     .mesh1_material = msh1.physics_material,
@@ -108,9 +106,6 @@ void Mlib::collide_triangle_and_lines(
     if (t0 != nullptr) {
         collide(t0->bounding_sphere, t0->physics_material);
     }
-    if (i0 != nullptr) {
-        collide(i0->mesh->bounding_sphere(), i0->physics_material);
-    }
 }
 
 void Mlib::collide_triangle_and_lines(
@@ -126,6 +121,5 @@ void Mlib::collide_triangle_and_lines(
         msh1,
         std::get_if<CollisionPolygonSphere<ScenePos, 4>>(&cps0),
         std::get_if<CollisionPolygonSphere<ScenePos, 3>>(&cps0),
-        nullptr,
         history);
 }

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
 #include <Mlib/Scene_Pos.hpp>
@@ -17,8 +18,7 @@ static void collide(
     const CollisionHistory& history,
     PhysicsMaterial line_mask,
     const CollisionPolygonSphere<ScenePos, 4>* q0,
-    const CollisionPolygonSphere<ScenePos, 3>* t0,
-    const TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>* i0)
+    const CollisionPolygonSphere<ScenePos, 3>* t0)
 {
     collide_triangle_and_triangles(
         o0,
@@ -27,7 +27,13 @@ static void collide(
         msh1,
         q0,
         t0,
-        i0,
+        history);
+    collide_triangle_and_intersectables(
+        o0,
+        o1,
+        msh1,
+        q0,
+        t0,
         history);
     if (any(msh1.physics_material & line_mask)) {
         collide_triangle_and_lines(
@@ -36,7 +42,6 @@ static void collide(
             msh1,
             q0,
             t0,
-            i0,
             history);
     }
 }
@@ -50,13 +55,10 @@ static void collide(
     PhysicsMaterial line_mask)
 {
     for (const auto& q0 : msh0.mesh->get_quads_sphere()) {
-        collide(o0, o1, msh0, msh1, history, line_mask, &q0, nullptr, nullptr);
+        collide(o0, o1, msh0, msh1, history, line_mask, &q0, nullptr);
     }
     for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
-        collide(o0, o1, msh0, msh1, history, line_mask, nullptr, &t0, nullptr);
-    }
-    for (const auto& i0 : msh0.mesh->get_intersectables()) {
-        collide(o0, o1, msh0, msh1, history, line_mask, nullptr, nullptr, &i0);
+        collide(o0, o1, msh0, msh1, history, line_mask, nullptr, &t0);
     }
 }
 

@@ -20,7 +20,6 @@ void Mlib::collide_triangle_and_triangles(
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionPolygonSphere<ScenePos, 4>* q0,
     const CollisionPolygonSphere<ScenePos, 3>* t0,
-    const TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>* i0,
     const CollisionHistory& history)
 {
     auto collide = [&](
@@ -49,7 +48,6 @@ void Mlib::collide_triangle_and_triangles(
                 .r1 = &r1,
                 .q0 = q0,
                 .t0 = t0,
-                .i0 = (i0 == nullptr) ? nullptr : i0->mesh.get(),
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = physics_material0,
                 .mesh1_material = msh1.physics_material,
@@ -68,9 +66,6 @@ void Mlib::collide_triangle_and_triangles(
     if (t0 != nullptr) {
         collide(t0->bounding_sphere, &t0->polygon.plane(), t0->physics_material);
     }
-    if (i0 != nullptr) {
-        collide(i0->mesh->bounding_sphere(), nullptr, i0->physics_material);
-    }
 }
 
 void Mlib::collide_triangle_and_triangles(
@@ -88,6 +83,5 @@ void Mlib::collide_triangle_and_triangles(
         msh1,
         std::get_if<CollisionPolygonSphere<ScenePos, 4>>(&cps0),
         std::get_if<CollisionPolygonSphere<ScenePos, 3>>(&cps0),
-        nullptr,
         history);
 }
