@@ -32,6 +32,7 @@ option(BUILD_CV "Build the computer vision library" ON)
 option(BUILD_OPENCV "Build the Open Computer Vision Library" ON)
 option(BUILD_SCENE "Build the scene library" ON)
 option(WITH_OPENSSL "Build against OpenSSL" ON)
+option(WITH_ZLIB "Build aganst zlib" ON)
 
 ####################
 # Add dependencies #
@@ -63,6 +64,9 @@ find_package(Vulkan)
 find_package(OpenCV OPTIONAL_COMPONENTS features2d)
 if (WITH_OPENSSL)
     find_package(OpenSSL)
+endif()
+if (WITH_ZLIB)
+    find_package(ZLIB REQUIRED)
 endif()
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     # Alternative OpenAL-implementation: openal.org
@@ -128,6 +132,10 @@ endif()
 
 if (NOT ALUT_FOUND)
     add_compile_definitions(WITHOUT_ALUT)
+endif()
+
+if (NOT ZLIB_FOUND)
+    add_compile_definitions(WITHOUT_ZLIB)
 endif()
 
 #####################

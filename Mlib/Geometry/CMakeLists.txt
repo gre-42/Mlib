@@ -26,3 +26,7 @@ endif()
 if (BUILD_CORK AND (NOT (MINGW OR MSVC)))
     target_link_libraries(MlibGeometry MlibCork)
 endif()
+
+if (WITH_ZLIB)
+    target_link_libraries(MlibGeometry ZLIB::ZLIB)
+endif()

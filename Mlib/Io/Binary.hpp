@@ -19,11 +19,15 @@ inline IoVerbosity operator & (IoVerbosity a, IoVerbosity b) {
     return (IoVerbosity)((int)a & (int)b);
 }
 
+inline IoVerbosity operator | (IoVerbosity a, IoVerbosity b) {
+    return (IoVerbosity)((int)a | (int)b);
+}
+
 inline bool any(IoVerbosity v) {
     return v != IoVerbosity::SILENT;
 }
 
-void print_chars(std::span<char> span);
+void print_chars(std::span<char> span, const char* msg = nullptr);
 
 template <class T>
 T read_binary(std::istream& istr, const char* msg, IoVerbosity verbosity) {
@@ -35,7 +39,7 @@ T read_binary(std::istream& istr, const char* msg, IoVerbosity verbosity) {
     if (any(verbosity & IoVerbosity::DATA)) {
         char* begin = reinterpret_cast<char*>(&result);
         char* end = begin + sizeof(result);
-        print_chars({ begin, end });
+        print_chars({ begin, end }, msg);
     }
     return result;
 }
@@ -54,7 +58,7 @@ void read_vector(std::istream& istr, TVec& vec, const char* msg, IoVerbosity ver
     if (any(verbosity & IoVerbosity::DATA)) {
         char* begin = reinterpret_cast<char*>(vec.data());
         char* end = begin + sizeof(vec[0]) * vec.size();
-        print_chars({ begin, end });
+        print_chars({ begin, end }, msg);
     }
 }
 

@@ -8,7 +8,10 @@ static void print_char(char c) {
     linfo() << "Read: " << std::hex << "0x" << std::setfill('0') << std::setw(2) << (uint32_t)(uint8_t)c << " - " << v;
 }
 
-void Mlib::print_chars(std::span<char> span) {
+void Mlib::print_chars(std::span<char> span, const char* msg) {
+    if (msg != nullptr) {
+        linfo() << "Msg: " << msg;
+    }
     for (char c : span) {
         print_char(c);
     }
@@ -16,7 +19,7 @@ void Mlib::print_chars(std::span<char> span) {
 
 std::string Mlib::read_string(std::istream& istr, size_t length, const char* msg, IoVerbosity verbosity) {
     if (length > 1'000) {
-        THROW_OR_ABORT("String too large");
+        THROW_OR_ABORT("String too large: " + std::string(msg));
     }
     std::string s(length, '?');
     read_vector(istr, s, msg, verbosity);
