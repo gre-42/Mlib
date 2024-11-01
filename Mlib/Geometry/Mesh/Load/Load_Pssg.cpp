@@ -197,7 +197,18 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         {"SHADERINPUT", true},
         {"TEXTUREIMAGEBLOCKDATA", true},
         {"TRANSFORM", true},
-        {"PSSGDATABASE", true}
+        {"PSSGDATABASE", false},
+        {"LIBRARY", false},
+        {"PNSTRING", false},
+        {"SHADERINSTANCE", false},
+        {"SHADERGROUP", false},
+        {"SHADERINPUTDEFINITION", false},
+        {"SEGMENTSET", false},
+        {"RENDERDATASOURCE", false},
+        {"RENDERINDEXSOURCE", false},
+        {"RENDERSTREAM", false},
+        {"DATABLOCK", false},
+        {"DATABLOCKSTREAM", false}
     };
     const auto& name = schema.nodes.get(node_id).name;
     auto it = IS_DATA_NODE.find(name);
@@ -211,6 +222,10 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         }
         result.data.resize(size);
         read_vector(istr, result.data, "node data", verbosity);
+    } else {
+        while (istr.tellg() < node_end) {
+            result.children.push_back(load_pssg_node(istr, schema, verbosity));
+        }
     }
     return result;
 }

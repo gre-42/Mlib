@@ -2,6 +2,7 @@
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
+#include <list>
 #include <string>
 #include <unordered_map>
 
@@ -30,6 +31,7 @@ struct PssgAttribute {
 
 struct PssgNode {
     std::vector<uint8_t> data;
+    std::list<PssgNode> children;
     VerboseUnorderedMap<uint32_t, PssgAttribute> attributes = { "PSSG node attribute info", [](uint32_t id) { return std::to_string(id); } };
 };
 
