@@ -14,7 +14,7 @@ NormalOnBevelBox::NormalOnBevelBox(
     , radius_{ radius }
 {
     if (any(aabb_.size() < radius_)) {
-        THROW_OR_ABORT2("Radius too large for the given AABB");
+        THROW_OR_ABORT("Radius too large for the given AABB");
     }
 }
 
