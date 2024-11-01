@@ -7,13 +7,13 @@
 
 namespace Mlib {
 
-struct PssgAttribute {
+struct PssgAttributeInfo {
     std::string name;
 };
 
-struct PssgNode {
+struct PssgNodeInfo {
     std::string name;
-    VerboseUnorderedMap<uint32_t, PssgAttribute> attributes = { "PSSG attribute", [](uint32_t id) { return std::to_string(id); } };
+    VerboseUnorderedMap<uint32_t, PssgAttributeInfo> attributes = { "PSSG node attribute info", [](uint32_t id) { return std::to_string(id); } };
 };
 
 struct PssgTexture {
@@ -21,11 +21,21 @@ struct PssgTexture {
 };
 
 struct PssgSchema {
-    VerboseUnorderedMap<uint32_t, PssgNode> nodes = { "PSSG node", [](uint32_t id) { return std::to_string(id); } };
+    VerboseUnorderedMap<uint32_t, PssgNodeInfo> nodes = { "PSSG node info", [](uint32_t id) { return std::to_string(id); } };
+};
+
+struct PssgAttribute {
+    std::vector<uint8_t> data;
+};
+
+struct PssgNode {
+    std::vector<uint8_t> data;
+    VerboseUnorderedMap<uint32_t, PssgAttribute> attributes = { "PSSG node attribute info", [](uint32_t id) { return std::to_string(id); } };
 };
 
 struct PssgModel {
     PssgSchema schema;
+    PssgNode root;
     std::unordered_map<VariableAndHash<std::string>, PssgTexture> textures;
 };
 

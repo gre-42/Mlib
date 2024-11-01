@@ -71,11 +71,12 @@ int uncompress2_patched(Bytef *dest, uLongf destLen,
         }
         auto before = stream.total_out;
         err = inflate(&stream, Z_NO_FLUSH);
-        if (err == Z_OK) {
+        if ((err == Z_OK) || (err == Z_STREAM_END)) {
             if (!notifyRead(stream.total_out - before)) {
                 return Z_BUF_ERROR;
             }
-        } else {
+        }
+        if (err != Z_OK) {
             break;
         }
     }
@@ -152,16 +153,78 @@ std::istringstream uncompress_stream(
     return std::istringstream{ uncompressed_string, std::ios::binary | std::ios::in };
 }
 
+PssgAttribute load_pssg_attribute(std::istream& istr, IoVerbosity verbosity) {
+    PssgAttribute result;
+    auto size = swap_endianness(read_binary<uint32_t>(istr, "attribute size", verbosity));
+    if (size > 1'000'000'000) {
+        THROW_OR_ABORT("Attribute size too large");
+    }
+    result.data.resize(size);
+    read_vector(istr, result.data, "attribute data", verbosity);
+    return result;
+}
+
+PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosity verbosity) {
+    PssgNode result;
+    auto node_id = swap_endianness(read_binary<uint32_t>(istr, "node ID", verbosity));
+    auto node_size = swap_endianness(read_binary<uint32_t>(istr, "node size", verbosity));
+    if (node_size > 1'000'000'000) {
+        THROW_OR_ABORT("Node size too large");
+    }
+    auto node_end = istr.tellg() + integral_cast<std::streamoff>(node_size);
+
+    auto attribute_size = swap_endianness(read_binary<uint32_t>(istr, "attribute size", verbosity));
+    if (attribute_size > 1'000'000'000) {
+        THROW_OR_ABORT("Attribute size too large");
+    }
+    auto attribute_end = istr.tellg() + integral_cast<std::streamoff>(attribute_size);
+    while (istr.tellg() < attribute_end)
+    {
+        auto attribute_id = swap_endianness(read_binary<uint32_t>(istr, "attribute ID", verbosity));
+        result.attributes.add(attribute_id, load_pssg_attribute(istr, verbosity));
+    }
+    static const std::unordered_map<std::string, bool> IS_DATA_NODE {
+        {"BOUNDINGBOX", true},
+        {"DATA", true},
+        {"DATABLOCKDATA", true},
+        {"DATABLOCKBUFFERED", true},
+        {"INDEXSOURCEDATA", true},
+        {"INVERSEBINDMATRIX", true},
+        {"MODIFIERNETWORKINSTANCEUNIQUEMODIFIERINPUT", true},
+        {"NeAnimPacketData_B1", true},
+        {"NeAnimPacketData_B4", true},
+        {"RENDERINTERFACEBOUNDBUFFERED", true},
+        {"SHADERINPUT", true},
+        {"TEXTUREIMAGEBLOCKDATA", true},
+        {"TRANSFORM", true},
+        {"PSSGDATABASE", true}
+    };
+    const auto& name = schema.nodes.get(node_id).name;
+    auto it = IS_DATA_NODE.find(name);
+    if (it == IS_DATA_NODE.end()) {
+        THROW_OR_ABORT("Could not determine if node is a data node: \"" + name + '"');
+    }
+    if (it->second) {
+        auto size = node_end - istr.tellg();
+        if (size > 1'000'000'000) {
+            THROW_OR_ABORT("Node size too large (2)");
+        }
+        result.data.resize(size);
+        read_vector(istr, result.data, "node data", verbosity);
+    }
+    return result;
+}
+
 PssgSchema load_pssg_schema(std::istream& istr, IoVerbosity verbosity)
 {
     PssgSchema result;
 
-    swap_endianness(read_binary<uint32_t>(istr, "??? attribute_info_count ???", verbosity));
-    auto node_info_count = swap_endianness(read_binary<uint32_t>(istr, "node_info_count", verbosity));
+    swap_endianness(read_binary<uint32_t>(istr, "??? attribute info count ???", verbosity));
+    auto node_info_count = swap_endianness(read_binary<uint32_t>(istr, "node info count", verbosity));
 
     for (uint32_t i = 0; i < node_info_count; ++i)
     {
-        auto n_id = swap_endianness(read_binary<uint32_t>(istr, "n_id", verbosity));
+        auto n_id = swap_endianness(read_binary<uint32_t>(istr, "node ID", verbosity));
         auto& node = result.nodes.add(n_id);
 
         auto node_name_length = swap_endianness(read_binary<uint32_t>(istr, "node name length", verbosity));
@@ -186,6 +249,7 @@ PssgModel load_uncompressed_pssg(std::istream& istr, IoVerbosity verbosity) {
     read_binary<uint32_t>(istr, "PSSG size", verbosity);
     PssgModel res;
     res.schema = load_pssg_schema(istr, verbosity);
+    res.root = load_pssg_node(istr, res.schema, verbosity);
     return res;
 }
 
