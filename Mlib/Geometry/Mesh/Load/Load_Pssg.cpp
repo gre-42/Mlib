@@ -283,6 +283,15 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         }
         result.data.resize(size);
         read_vector(istr, result.data, "node data", verbosity);
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            if (schema_node.name == "TRANSFORM") {
+                linfo() << std::string(2 * (rec + 1), ' ') << "  Data: " << result.smat4x4().flattened();
+            } else if (schema_node.name == "BOUNDINGBOX") {
+                linfo() << std::string(2 * (rec + 1), ' ') << "  Data: " << result.saabb3();
+            } else {
+                linfo() << std::string(2 * (rec + 1), ' ') << "  Data: byte[" << result.data.size() << ']';
+            }
+        }
     } else {
         while (istr.tellg() < node_end) {
             const auto& child = result.children.emplace_back(load_pssg_node(istr, schema, verbosity, rec + 1));

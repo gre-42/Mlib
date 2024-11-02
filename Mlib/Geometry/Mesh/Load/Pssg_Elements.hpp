@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
@@ -41,6 +42,8 @@ struct PssgNode {
     std::list<PssgNode> children;
     VerboseUnorderedMap<uint32_t, PssgAttribute> attributes = { "PSSG node attribute info", [](uint32_t id) { return std::to_string(id); } };
     std::string pnstring() const;
+    FixedArray<float, 4, 4> smat4x4() const;
+    AxisAlignedBoundingBox<float, 3> saabb3() const;
 };
 
 struct PssgModel {

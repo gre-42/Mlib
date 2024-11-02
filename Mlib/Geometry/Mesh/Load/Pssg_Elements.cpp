@@ -55,3 +55,29 @@ std::string PssgNode::pnstring() const {
     }
     return str.substr(0, str.size() - 1);
 }
+
+FixedArray<float, 4, 4> PssgNode::smat4x4() const {
+    if (data.size() != 64) {
+        THROW_OR_ABORT("PSSG smat4x4 attribute does not have 16 bytes");
+    }
+    FixedArray<float, 4, 4> result = uninitialized;
+    const float* src = reinterpret_cast<const float*>(data.data());
+    float* dst = result.flat_begin();
+    for (size_t i = 0; i < 16; ++i) {
+        dst[i] = swap_endianness(src[i]);
+    }
+    return result;
+}
+
+AxisAlignedBoundingBox<float, 3> PssgNode::saabb3() const {
+    if (data.size() != 24) {
+        THROW_OR_ABORT("PSSG saabb3 attribute does not have 24 bytes");
+    }
+    AxisAlignedBoundingBox<float, 3> result = uninitialized;
+    const float* src = reinterpret_cast<const float*>(data.data());
+    float* dst = reinterpret_cast<float*>(&result);
+    for (size_t i = 0; i < 6; ++i) {
+        dst[i] = swap_endianness(src[i]);
+    }
+    return result;
+}
