@@ -54,13 +54,13 @@ static void add_resource(
         auto& res = RenderingContextStack::primary_scene_node_resources();
         res.add_resource_loader(name, [img, cfg, name, &res, dddb]() {
             auto istr = img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION);
-            return load_renderable_dff(*istr, name, *cfg, res, *dddb);
+            return load_renderable_dff(*istr.stream, name, *cfg, res, *dddb);
             });
     } else if (extension == ".txd") {
         auto& res = RenderingContextStack::primary_rendering_resources();
         res.set_textures_lazy([img, name, &res](){
             auto txd = Dff::read_txd(
-                *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION),
+                *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION).stream,
                 rvalue_address(Dff::RasterFactory{}),
                 rvalue_address(Dff::RasterConfig{
                     .need_to_read_back_textures = true,

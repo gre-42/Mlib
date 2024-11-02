@@ -19,11 +19,11 @@ static void add_resource(
     if (extension == ".dff") {
         linfo() << "dff: " << name;
         auto istr = img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION);
-        Dff::read_dff(*istr, IoVerbosity::METADATA);
+        Dff::read_dff(*istr.stream, IoVerbosity::METADATA);
     } else if (extension == ".txd") {
         linfo() << "txd: " << name;
         Dff::read_txd(
-            *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION),
+            *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION).stream,
             nullptr,
             nullptr,
             IoVerbosity::METADATA);

@@ -1,31 +1,11 @@
 #include "Img_Reader.hpp"
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Io/Cleanup.hpp>
+#include <Mlib/Io/Stream_And_Lock.hpp>
+#include <Mlib/Io/Stream_Segment.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <istream>
-
-namespace Mlib {
-
-class IStreamAndLock: public std::istream {
-public:
-    explicit IStreamAndLock(
-        std::istream& istr,
-        std::unique_ptr<std::scoped_lock<std::mutex>>&& lock,
-        const DanglingBaseClassRef<ImgReader>& ref)
-        : std::istream{ istr.rdbuf() }
-        , lock_{ std::move(lock) }
-        , ref_{ ref }
-    {}
-    virtual ~IStreamAndLock() override {
-        ref_->reading_ = false;
-    }
-private:
-    std::unique_ptr<std::scoped_lock<std::mutex>> lock_;
-    DanglingBaseClassRef<ImgReader> ref_;
-};
-
-}
 
 using namespace Mlib;
 
@@ -75,7 +55,7 @@ std::vector<std::string> ImgReader::names() const {
     return directory_.keys();
 }
 
-std::unique_ptr<std::istream> ImgReader::read(
+StreamAndSize ImgReader::read(
     const std::string& name,
     std::ios::openmode openmode,
     SourceLocation loc)
@@ -84,7 +64,7 @@ std::unique_ptr<std::istream> ImgReader::read(
         THROW_OR_ABORT("Open-mode is not binary");
     }
     const auto& v = directory_.get(name);
-    auto lock = std::make_unique<std::scoped_lock<std::mutex>>(mutex_);
+    auto lock = std::make_unique<std::scoped_lock<std::recursive_mutex>>(mutex_);
     if (reading_) {
         THROW_OR_ABORT("Recursively reading from IMG is not supported");
     }
@@ -93,8 +73,9 @@ std::unique_ptr<std::istream> ImgReader::read(
     if (data_->fail()) {
         THROW_OR_ABORT("Could not seek entry \"" + name + '"');
     }
-    return std::make_unique<IStreamAndLock>(
+    auto stream = std::make_unique<IStreamAndLock<DanglingBaseClassRef<ImgReader>>>(
         *data_,
         std::move(lock),
         DanglingBaseClassRef<ImgReader>{ *this, loc });
+    return { std::move(stream), v.size };
 }

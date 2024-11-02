@@ -8,19 +8,21 @@
 
 namespace Mlib {
 
+enum class IoVerbosity;
 struct StreamSegment;
-
 template <class TStreamOwner>
 class IStreamAndLock;
 
-class ImgReader: public IIStreamDictionary, public virtual DanglingBaseClass {
-    ImgReader(const ImgReader&) = delete;
-    ImgReader& operator = (const ImgReader& other) = delete;
-    friend IStreamAndLock<DanglingBaseClassRef<ImgReader>>;
+class JpkReader: public IIStreamDictionary, public virtual DanglingBaseClass {
+    JpkReader(const JpkReader&) = delete;
+    JpkReader& operator = (const JpkReader& other) = delete;
+    friend IStreamAndLock<DanglingBaseClassRef<JpkReader>>;
 public:
-    ImgReader(std::istream& directory, std::unique_ptr<std::istream>&& data);
-    static std::shared_ptr<IIStreamDictionary> load_from_file(const std::string& img_filename);
-    virtual ~ImgReader() override;
+    JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity);
+    static std::shared_ptr<IIStreamDictionary> load_from_file(
+        const std::string& filename,
+        IoVerbosity verbosity);
+    virtual ~JpkReader() override;
     virtual std::vector<std::string> names() const override;
     virtual StreamAndSize read(
         const std::string& name,

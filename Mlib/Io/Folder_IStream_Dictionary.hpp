@@ -8,7 +8,7 @@ public:
     explicit FolderIStreamDictionary(std::string folder);
     virtual ~FolderIStreamDictionary() override;
     virtual std::vector<std::string> names() const override;
-    virtual std::unique_ptr<std::istream> read(
+    virtual StreamAndSize read(
         const std::string& name,
         std::ios::openmode openmode,
         SourceLocation loc) override;
