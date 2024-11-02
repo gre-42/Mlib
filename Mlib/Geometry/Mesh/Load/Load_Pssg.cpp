@@ -208,7 +208,23 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         {"RENDERINDEXSOURCE", false},
         {"RENDERSTREAM", false},
         {"DATABLOCK", false},
-        {"DATABLOCKSTREAM", false}
+        {"DATABLOCKSTREAM", false},
+        {"ROOTNODE", false},
+        {"LODVISIBLERENDERNODE", false},
+        {"RENDERSTREAMINSTANCE", false},
+        {"RENDERINSTANCESOURCE", false},
+        {"LODRENDERINSTANCES", false},
+        {"NODE", false},
+        {"RENDERNODE", false},
+        {"LODRENDERINSTANCELIST", false},
+        {"BUNDLENODE", false},
+        {"JOINTNODE", false},
+        {"SKINNODE", false},
+        {"MODIFIERNETWORKINSTANCE", false},
+        {"MODIFIERNETWORKINSTANCEMODIFIERINPUT", false},
+        {"MODIFIERNETWORKINSTANCECOMPILE", false},
+        {"SKINJOINT", false},
+        {"SKELETON", false}
     };
     const auto& name = schema.nodes.get(node_id).name;
     auto it = IS_DATA_NODE.find(name);
