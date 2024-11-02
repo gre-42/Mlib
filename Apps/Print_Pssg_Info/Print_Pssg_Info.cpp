@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
         args.assert_num_unnamed_atleast(1);
         for (const auto& file : args.unnamed_values()) {
             linfo() << "Processing file " << file;
-            auto pssg = load_pssg(file, IoVerbosity::DATA | IoVerbosity::METADATA);
+            auto pssg = load_pssg(file, IoVerbosity::METADATA);
             if (args.has_named_value("--export")) {
                 DECLARE_REGEX(re, args.named_value("--export"));
                 for (const auto& [name, data] : pssg.textures) {

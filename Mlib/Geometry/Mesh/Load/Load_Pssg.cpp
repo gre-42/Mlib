@@ -164,9 +164,13 @@ PssgAttribute load_pssg_attribute(std::istream& istr, IoVerbosity verbosity) {
     return result;
 }
 
-PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosity verbosity) {
+PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosity verbosity, size_t rec) {
     PssgNode result;
     auto node_id = swap_endianness(read_binary<uint32_t>(istr, "node ID", verbosity));
+    const auto& schema_node = schema.nodes.get(node_id);
+    if (any(verbosity & IoVerbosity::METADATA)) {
+        linfo() << std::string(2 * rec, ' ') << "  Node " << node_id << " (" << schema_node.name << ')';
+    }
     auto node_size = swap_endianness(read_binary<uint32_t>(istr, "node size", verbosity));
     if (node_size > 1'000'000'000) {
         THROW_OR_ABORT("Node size too large");
@@ -181,7 +185,15 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
     while (istr.tellg() < attribute_end)
     {
         auto attribute_id = swap_endianness(read_binary<uint32_t>(istr, "attribute ID", verbosity));
-        result.attributes.add(attribute_id, load_pssg_attribute(istr, verbosity));
+        const auto& attr = result.attributes.add(attribute_id, load_pssg_attribute(istr, verbosity));
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            const auto& schema_attribute = schema.attributes.get(attribute_id);
+            if (schema_attribute.name == "id") {
+                linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.string();
+            } else {
+                linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = byte[" << attr.data.size() << ']';
+            }
+        }
     }
     static const std::unordered_map<std::string, bool> IS_DATA_NODE {
         {"BOUNDINGBOX", true},
@@ -224,12 +236,13 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         {"MODIFIERNETWORKINSTANCEMODIFIERINPUT", false},
         {"MODIFIERNETWORKINSTANCECOMPILE", false},
         {"SKINJOINT", false},
-        {"SKELETON", false}
+        {"SKELETON", false},
+        {"TEXTURE", false},
+        {"TEXTUREIMAGEBLOCK", false}
     };
-    const auto& name = schema.nodes.get(node_id).name;
-    auto it = IS_DATA_NODE.find(name);
+    auto it = IS_DATA_NODE.find(schema_node.name);
     if (it == IS_DATA_NODE.end()) {
-        THROW_OR_ABORT("Could not determine if node is a data node: \"" + name + '"');
+        THROW_OR_ABORT("Could not determine if node is a data node: \"" + schema_node.name + '"');
     }
     if (it->second) {
         auto size = node_end - istr.tellg();
@@ -240,7 +253,10 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         read_vector(istr, result.data, "node data", verbosity);
     } else {
         while (istr.tellg() < node_end) {
-            result.children.push_back(load_pssg_node(istr, schema, verbosity));
+            const auto& child = result.children.emplace_back(load_pssg_node(istr, schema, verbosity, rec + 1));
+            if (any(verbosity & IoVerbosity::METADATA) && (schema_node.name == "PNSTRING")) {
+                linfo() << std::string(2 * (rec + 1), ' ') << "  str: " << child.pnstring();
+            }
         }
     }
     return result;
@@ -255,20 +271,28 @@ PssgSchema load_pssg_schema(std::istream& istr, IoVerbosity verbosity)
 
     for (uint32_t i = 0; i < node_info_count; ++i)
     {
-        auto n_id = swap_endianness(read_binary<uint32_t>(istr, "node ID", verbosity));
-        auto& node = result.nodes.add(n_id);
+        auto node_id = swap_endianness(read_binary<uint32_t>(istr, "node ID", verbosity));
+        auto& node = result.nodes.add(node_id);
 
         auto node_name_length = swap_endianness(read_binary<uint32_t>(istr, "node name length", verbosity));
         node.name = read_string(istr, node_name_length, "node name", verbosity);
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            linfo() << "  Node " << node_id << " = " << node.name;
+        }
 
         auto sub_attribute_info_count = swap_endianness(read_binary<uint32_t>(istr, "sub attribute info count", verbosity));
         for (uint32_t j = 0; j < sub_attribute_info_count; j++)
         {
-            auto id = swap_endianness(read_binary<uint32_t>(istr, "attribute id", verbosity));
-            auto& attribute = node.attributes.add(id);
+            auto attribute_id = swap_endianness(read_binary<uint32_t>(istr, "attribute id", verbosity));
+            auto& attribute = result.attributes.add(attribute_id);
+            node.attributes.push_back(attribute_id);
 
             auto attribute_name_length = swap_endianness(read_binary<uint32_t>(istr, "attribute name length", verbosity));
             attribute.name = read_string(istr, attribute_name_length, "attribute name", verbosity);
+
+            if (any(verbosity & IoVerbosity::METADATA)) {
+                linfo() << "    Attribute " << attribute_id << " = " << attribute.name;
+            }
         }
     }
 
@@ -279,8 +303,14 @@ PssgModel load_uncompressed_pssg(std::istream& istr, IoVerbosity verbosity) {
     auto magic = read_string(istr, 4, "Incorrect magic PPSG string", verbosity);
     read_binary<uint32_t>(istr, "PSSG size", verbosity);
     PssgModel res;
+    if (any(verbosity & IoVerbosity::METADATA)) {
+        linfo() << "Schema";
+    }
     res.schema = load_pssg_schema(istr, verbosity);
-    res.root = load_pssg_node(istr, res.schema, verbosity);
+    if (any(verbosity & IoVerbosity::METADATA)) {
+        linfo() << "Root";
+    }
+    res.root = load_pssg_node(istr, res.schema, verbosity, 0);
     return res;
 }
 

@@ -14,7 +14,7 @@ struct PssgAttributeInfo {
 
 struct PssgNodeInfo {
     std::string name;
-    VerboseUnorderedMap<uint32_t, PssgAttributeInfo> attributes = { "PSSG node attribute info", [](uint32_t id) { return std::to_string(id); } };
+    std::list<uint32_t> attributes;
 };
 
 struct PssgTexture {
@@ -23,16 +23,19 @@ struct PssgTexture {
 
 struct PssgSchema {
     VerboseUnorderedMap<uint32_t, PssgNodeInfo> nodes = { "PSSG node info", [](uint32_t id) { return std::to_string(id); } };
+    VerboseUnorderedMap<uint32_t, PssgAttributeInfo> attributes = { "PSSG node attribute info", [](uint32_t id) { return std::to_string(id); } };
 };
 
 struct PssgAttribute {
     std::vector<uint8_t> data;
+    std::string string() const;
 };
 
 struct PssgNode {
     std::vector<uint8_t> data;
     std::list<PssgNode> children;
     VerboseUnorderedMap<uint32_t, PssgAttribute> attributes = { "PSSG node attribute info", [](uint32_t id) { return std::to_string(id); } };
+    std::string pnstring() const;
 };
 
 struct PssgModel {
