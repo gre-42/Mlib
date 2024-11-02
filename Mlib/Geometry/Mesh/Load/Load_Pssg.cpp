@@ -238,7 +238,9 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         {"SKINJOINT", false},
         {"SKELETON", false},
         {"TEXTURE", false},
-        {"TEXTUREIMAGEBLOCK", false}
+        {"TEXTUREIMAGEBLOCK", false},
+        {"PNTEXTURESCALING", false},
+        {"USERDATA", false}
     };
     auto it = IS_DATA_NODE.find(schema_node.name);
     if (it == IS_DATA_NODE.end()) {
