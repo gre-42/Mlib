@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
@@ -29,6 +30,10 @@ struct PssgSchema {
 struct PssgAttribute {
     std::vector<uint8_t> data;
     std::string string() const;
+    uint32_t uint32() const;
+    uint64_t uint64() const;
+    float float32() const;
+    FixedArray<double, 2> dvec2() const;
 };
 
 struct PssgNode {

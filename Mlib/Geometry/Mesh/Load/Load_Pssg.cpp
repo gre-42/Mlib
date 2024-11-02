@@ -6,6 +6,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
+#include <set>
 #include <vector>
 #ifndef WITHOUT_ZLIB
 #include <zlib.h>
@@ -188,9 +189,38 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         const auto& attr = result.attributes.add(attribute_id, load_pssg_attribute(istr, verbosity));
         if (any(verbosity & IoVerbosity::METADATA)) {
             const auto& schema_attribute = schema.attributes.get(attribute_id);
-            if (schema_attribute.name == "id") {
+            static const std::set<std::string> STRING_ATTRIBUTES {
+                "id", "renderType", "dataType", "type", "primitive", "shader", "shaderGroup", "nickname", "source", "indices",
+                "format", "texture", "name", "dataBlock", "typename"
+            };
+            static const std::set<std::string> UINT32_ATTRIBUTES {
+                "offset", "stride", "streamCount", "size", "elementCount", "sourceCount", "streamCount", "maximumIndex", "count",
+                "parameterCount", "parameterSavedCount", "renderSortPriority", "stopTraversal", "parameterID",
+                "parameterStreamCount", "parameterStreamCount", "defaultRenderSortPriority", "instancesRequireSorting", "passCount",
+                "segmentCount", "subStream", "width", "height", "transient", "wrapS", "wrapT", "wrapR",
+                "minFilter", "magFilter", "gammaRemapR", "gammaRemapG", "gammaRemapB", "gammaRemapA", "automipmap",
+                "numberMipMapLevels", "imageBlockCount"
+            };
+            static const std::set<std::string> UINT64_ATTRIBUTES {
+                "texelFormat"
+            };
+            static const std::set<std::string> FLOAT_ATTRIBUTES {
+                "maxAnisotropy"
+            };
+            static const std::set<std::string> DVEC2_ATTRIBUTES {
+                "scale", "min"
+            };
+            if (STRING_ATTRIBUTES.contains(schema_attribute.name)) {
                 linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.string();
-            } else {
+            } else if (UINT32_ATTRIBUTES.contains(schema_attribute.name)) {
+                linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.uint32();
+            } else if (UINT64_ATTRIBUTES.contains(schema_attribute.name)) {
+                linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.uint64();
+            } else if (FLOAT_ATTRIBUTES.contains(schema_attribute.name)) {
+                linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.float32();
+            } else if (DVEC2_ATTRIBUTES.contains(schema_attribute.name)) {
+                linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.dvec2();
+            } else  {
                 linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = byte[" << attr.data.size() << ']';
             }
         }
