@@ -15,6 +15,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Dff_File_Resource.hpp>
+#include <Mlib/Render/Resources/Pssg_File_Resource.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -22,11 +23,13 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(resource_files);
-DECLARE_ARGUMENT(ide_files);
+DECLARE_ARGUMENT(rw_resource_files);
+DECLARE_ARGUMENT(rw_ide_files);
+DECLARE_ARGUMENT(pssg_files);
 DECLARE_ARGUMENT(double_precision);
 DECLARE_ARGUMENT(config);
 DECLARE_ARGUMENT(resource_variable);
+DECLARE_ARGUMENT(instantiables_variable);
 DECLARE_ARGUMENT(texture);
 }
 
@@ -39,7 +42,7 @@ LoadSceneJsonUserFunction ResourceLocations::json_user_function = [](const LoadS
 };
 
 template <class TPosition>
-static void add_resource(
+static void add_rw_resource(
     const std::string& name,
     const std::shared_ptr<IIStreamDictionary>& img,
     const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg,
@@ -96,7 +99,7 @@ static void add_resource(
 }
 
 template <class TPosition>
-static void add_file_resource(
+static void add_rw_file_resource(
     const std::string& name,
     const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg,
     const std::shared_ptr<DrawDistanceDb>& dddb,
@@ -108,12 +111,12 @@ static void add_file_resource(
     if (extension == ".img") {
         auto img = ImgReader::load_from_file(name);
         for (const auto& name : img->names()) {
-            add_resource(name, img, cfg, dddb, added_scene_node_resources);
+            add_rw_resource(name, img, cfg, dddb, added_scene_node_resources);
         }
     } else {
         auto path = std::filesystem::path{ name };
         auto dir = std::make_shared<FolderIStreamDictionary>(path.parent_path().string());
-        add_resource(path.filename().string(), dir, cfg, dddb, added_scene_node_resources);
+        add_rw_resource(path.filename().string(), dir, cfg, dddb, added_scene_node_resources);
     }
 }
 
@@ -123,14 +126,19 @@ static void exec(
     const std::shared_ptr<DrawDistanceDb>& dddb)
 {
     std::list<std::string> added_scene_node_resources;
+    std::list<std::string> added_instantiables;
     auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
     *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
     if (auto c = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::texture)) {
         auto& rr = RenderingContextStack::primary_rendering_resources();
         cfg->textures = { rr.get_blend_map_texture(*c) };
     }
-    for (const auto& s : args.arguments.pathes_or_variables(KnownArgs::resource_files)) {
-        add_file_resource(s.path, cfg, dddb, added_scene_node_resources);
+    for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::rw_resource_files)) {
+        add_rw_file_resource(s.path, cfg, dddb, added_scene_node_resources);
+    }
+    for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::pssg_files)) {
+        auto& sr = RenderingContextStack::primary_scene_node_resources();
+        load_renderable_pssg(s.path, *cfg, sr, added_scene_node_resources, added_instantiables);
     }
     if (auto rv = args.arguments.try_at<std::string>(KnownArgs::resource_variable)) {
         if (args.local_json_macro_arguments == nullptr) {
@@ -138,12 +146,18 @@ static void exec(
         }
         args.local_json_macro_arguments->set(*rv, added_scene_node_resources);
     }
+    if (auto iv = args.arguments.try_at<std::string>(KnownArgs::instantiables_variable)) {
+        if (args.local_json_macro_arguments == nullptr) {
+            THROW_OR_ABORT("No local arguments set");
+        }
+        args.local_json_macro_arguments->set(*iv, added_instantiables);
+    }
 }
 
 void ResourceLocations::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto dddb = std::make_shared<DrawDistanceDb>();
-    for (const auto& f : args.arguments.pathes_or_variables(KnownArgs::ide_files)) {
+    for (const auto& f : args.arguments.pathes_or_variables(KnownArgs::rw_ide_files)) {
         dddb->add_ide(f.path);
     }
     if (args.arguments.at<bool>(KnownArgs::double_precision)) {

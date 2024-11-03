@@ -4,6 +4,7 @@
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
+#include <functional>
 #include <list>
 #include <string>
 #include <unordered_map>
@@ -29,7 +30,7 @@ struct PssgSchema {
 };
 
 struct PssgAttribute {
-    std::vector<uint8_t> data;
+    std::vector<std::byte> data;
     std::string string() const;
     uint32_t uint32() const;
     uint64_t uint64() const;
@@ -38,9 +39,13 @@ struct PssgAttribute {
 };
 
 struct PssgNode {
-    std::vector<uint8_t> data;
+    uint32_t type_id;
+    std::vector<std::byte> data;
     std::list<PssgNode> children;
     VerboseUnorderedMap<uint32_t, PssgAttribute> attributes = { "PSSG node attribute info", [](uint32_t id) { return std::to_string(id); } };
+    const PssgNode& get_child(const std::string& type, const PssgSchema& schema) const;
+    const PssgAttribute& get_attribute(const std::string& name, const PssgSchema& schema) const;
+    bool for_each_node(const std::function<bool(const PssgNode& node)>& op) const;
     std::string pnstring() const;
     FixedArray<float, 4, 4> smat4x4() const;
     AxisAlignedBoundingBox<float, 3> saabb3() const;

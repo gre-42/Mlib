@@ -42,6 +42,8 @@ struct SpawnPoint;
 struct RenderableResourceFilter;
 struct ChildInstantiationOptions;
 struct RootInstantiationOptions;
+template <class TPosition>
+struct InstanceInformation;
 
 enum class AggregateMode;
 enum class WayPointLocation;
@@ -82,6 +84,12 @@ public:
         const RootInstantiationOptions& options,
         PreloadBehavior preload_behavior = PreloadBehavior::PRELOAD,
         unsigned int recursion_depth = 0) const;
+    // Instantiables
+    void add_instantiable(
+        const std::string& name,
+        const InstanceInformation<ScenePos>& instantiable);
+    const InstanceInformation<ScenePos>& instantiable(
+        const std::string& name) const;
     // Geographic mapping
     void register_geographic_mapping(
         const std::string& resource_name,
@@ -170,6 +178,7 @@ public:
 private:
     std::shared_ptr<ISceneNodeResource> get_resource(const std::string& name) const;
     mutable ThreadsafeStringMap<std::shared_ptr<ISceneNodeResource>> resources_;
+    ThreadsafeStringMap<InstanceInformation<ScenePos>> instantiables_;
     ThreadsafeStringMap<TransformationMatrix<double, double, 3>> geographic_mappings_;
     ThreadsafeStringMap<FixedScaledUnitVector<float, 3>> wind_;
     ThreadsafeStringMap<FixedScaledUnitVector<float, 3>> gravity_;

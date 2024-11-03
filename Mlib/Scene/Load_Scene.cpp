@@ -48,11 +48,11 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Pixel_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Visual_Node_Status_3rd.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate_Game_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Invalidate_Aggregate_Renderers.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Desired_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Inventory_Capacity.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Ipl_Instances.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Abs_Idle_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Abs_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Avatar_Controller_Idle_Binding.hpp>
@@ -404,7 +404,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);
     register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
     register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
-    register_json_user_function(IplInstances::key, IplInstances::json_user_function);
+    register_json_user_function(Instantiate::key, Instantiate::json_user_function);
     register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
     register_json_user_function(SetJumpDv::key, SetJumpDv::json_user_function);
     register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);

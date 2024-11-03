@@ -179,6 +179,14 @@ std::vector<FPath> JsonMacroArguments::pathes_or_variables(std::string_view name
     return at_vector<std::string>(name, fpath_);
 }
 
+std::vector<FPath> JsonMacroArguments::try_pathes_or_variables(
+    std::string_view name) const
+{
+    return contains_non_null(name)
+        ? pathes_or_variables(name)
+        : std::vector<FPath>();
+}
+
 std::string JsonMacroArguments::spath(std::string_view name) const {
     return spath_(at<std::string>(name));
 }

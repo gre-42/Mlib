@@ -22,7 +22,7 @@ PssgModel Mlib::load_pssg(const std::string& filename, IoVerbosity verbosity) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
     try {
-        return load_pssg(*f, std::numeric_limits<std::streamoff>::max(), verbosity);
+        return load_pssg(*f, filename, std::numeric_limits<std::streamoff>::max(), verbosity);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Error reading from file \"" + filename + "\": " + e.what());
     }
@@ -93,6 +93,7 @@ int uncompress2_patched(Bytef *dest, uLongf destLen,
 
 std::istringstream uncompress_stream(
     std::istream& istr,
+    const std::string& filename,
     std::streamoff nbytes,
     size_t chunk_size = 512)
 {
@@ -108,13 +109,13 @@ std::istringstream uncompress_stream(
     std::vector<char> compressed(end - begin);
     istr.read(compressed.data(), compressed.size());
     if (istr.fail()) {
-        THROW_OR_ABORT("Could not compressed data");
+        THROW_OR_ABORT("Could not compressed data: \"" + filename + '"');
     }
 
     uLongf clength = compressed.size();
     std::string uncompressed_chunk(chunk_size, '?');
     std::list<std::string> uncompressed_chunks;
-    auto notifyRead = [&](uLongf chunkSize){
+    auto notify_read = [&](uLongf chunkSize){
         if (uncompressed_chunks.size() + chunkSize > 1'000'000'000) {
             return false;
         }
@@ -126,19 +127,19 @@ std::istringstream uncompress_stream(
             uncompressed_chunk.size(),
             (Bytef*)compressed.data(),
             &clength,
-            notifyRead);
+            notify_read);
         ret != Z_OK)
     {
         istr.seekg(begin);
         switch (ret) {
         case Z_MEM_ERROR:
-            THROW_OR_ABORT("Not enough memory for decompression");
+            THROW_OR_ABORT("Not enough memory for decompression: \"" + filename + '"');
         case Z_BUF_ERROR:
-            THROW_OR_ABORT("Not enough room in the output buffer");
+            THROW_OR_ABORT("Not enough room in the output buffer: \"" + filename + '"');
         case Z_DATA_ERROR:
-            THROW_OR_ABORT("Input data corrupted or incomplete");
+            THROW_OR_ABORT("Input data corrupted or incomplete: \"" + filename + '"');
         }
-        verbose_abort("Unknown return code in uncompress: " + std::to_string(ret));
+        verbose_abort("Unknown return code in uncompress: " + std::to_string(ret) + ", \"" + filename + '"');
     }
     istr.seekg(begin + integral_cast<std::streamoff>(clength));
     compressed.clear();
@@ -167,10 +168,10 @@ PssgAttribute load_pssg_attribute(std::istream& istr, IoVerbosity verbosity) {
 
 PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosity verbosity, size_t rec) {
     PssgNode result;
-    auto node_id = swap_endianness(read_binary<uint32_t>(istr, "node ID", verbosity));
-    const auto& schema_node = schema.nodes.get(node_id);
+    result.type_id = swap_endianness(read_binary<uint32_t>(istr, "node ID", verbosity));
+    const auto& schema_node = schema.nodes.get(result.type_id);
     if (any(verbosity & IoVerbosity::METADATA)) {
-        linfo() << std::string(2 * rec, ' ') << "  Node " << node_id << " (" << schema_node.name << ')';
+        linfo() << std::string(2 * rec, ' ') << "  Node " << result.type_id << " (" << schema_node.name << ')';
     }
     auto node_size = swap_endianness(read_binary<uint32_t>(istr, "node size", verbosity));
     if (node_size > 1'000'000'000) {
@@ -355,8 +356,13 @@ PssgModel load_uncompressed_pssg(std::istream& istr, IoVerbosity verbosity) {
     return res;
 }
 
-PssgModel Mlib::load_pssg(std::istream& istr, std::streamoff nbytes, IoVerbosity verbosity) {
-    auto str = uncompress_stream(istr, nbytes);
+PssgModel Mlib::load_pssg(
+    std::istream& istr,
+    const std::string& filename,
+    std::streamoff nbytes,
+    IoVerbosity verbosity)
+{
+    auto str = uncompress_stream(istr, filename, nbytes);
     return load_uncompressed_pssg(str, verbosity);
 }
 

@@ -1,9 +1,9 @@
 #include "Read_Ipl.hpp"
+#include <Mlib/Geometry/Instance/Instance_Information.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
-#include <Mlib/Scene_Graph/Instantiation/Instance_Information.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/RGetline.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
@@ -12,7 +12,18 @@
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;
 
-std::list<InstanceInformation> Mlib::read_ipl(
+// From: https://gtamods.com/wiki/Map_system
+// X: east/west direction
+// Y: north/south direction
+// Z: up/down direction
+static const auto r_to_world = FixedArray<float, 3, 3>::init(
+    1.f, 0.f, 0.f,
+    0.f, 0.f, 1.f,
+    0.f, -1.f, 0.f);
+static const auto t_to_world = fixed_zeros<ScenePos, 3>();
+static const TransformationMatrix<float, ScenePos, 3> trafo_to_world{ r_to_world, t_to_world };
+
+std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
     const std::filesystem::path& filename,
     RenderingDynamics rendering_dynamics)
 {
@@ -27,7 +38,7 @@ std::list<InstanceInformation> Mlib::read_ipl(
     }
 }
 
-std::list<InstanceInformation> Mlib::read_ipl(
+std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
     std::istream& istr,
     RenderingDynamics rendering_dynamics)
 {
@@ -51,7 +62,7 @@ std::list<InstanceInformation> Mlib::read_ipl(
             THROW_OR_ABORT("Unexpected ipl type");
         }
     }
-    std::list<InstanceInformation> result;
+    std::list<InstanceInformation<ScenePos>> result;
     while (true) {
         std::string line;
         rgetline(istr, line);
@@ -101,8 +112,8 @@ std::list<InstanceInformation> Mlib::read_ipl(
         Quaternion<float> q{ -s, v };
         auto r = q.to_rotation_matrix();
         result.push_back(InstanceInformation{
-            .resource_name = std::move(name),
-            .trafo = { r, t },
+            .resource_name = name + ".dff",
+            .trafo = trafo_to_world * TransformationMatrix{ r, t },
             .scale = mean_scale,
             .rendering_dynamics = rendering_dynamics});
     }

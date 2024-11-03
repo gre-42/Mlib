@@ -39,6 +39,7 @@ public:
     FPath path_or_variable(std::string_view name) const;
     FPath try_path_or_variable(std::string_view name) const;
     std::vector<FPath> pathes_or_variables(std::string_view name) const;
+    std::vector<FPath> try_pathes_or_variables(std::string_view name) const;
     template <class TOperation>
     auto pathes_or_variables(std::string_view name, const TOperation& op) const {
         auto el = at(name);

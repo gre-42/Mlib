@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class IplInstances: public LoadSceneInstanceFunction {
+class Instantiate: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit IplInstances(RenderableScene& renderable_scene);
+    explicit Instantiate(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

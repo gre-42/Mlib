@@ -84,6 +84,12 @@ public:
             ? at<T>(name)
             : default_;
     }
+    template <class TData>
+    auto try_at_vector(std::string_view name) const {
+        return contains_non_null(name)
+            ? at<std::vector<TData>>(name)
+            : std::vector<TData>();
+    }
     template <class TData, class TOperation>
     auto at_vector(std::string_view name, const TOperation& op) const {
         const auto& val = j_.at(name);

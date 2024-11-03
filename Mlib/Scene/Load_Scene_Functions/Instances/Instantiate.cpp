@@ -1,5 +1,7 @@
-#include "Ipl_Instances.hpp"
+#include "Instantiate.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Instance/Instance_Information.hpp>
+#include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Cleanup_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
@@ -9,44 +11,55 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
-#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
-#include <Mlib/Scene_Graph/Instantiation/Instance_Information.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Instantiate_Frames.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Read_Ipl.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(files);
+DECLARE_ARGUMENT(ipl_files);
+DECLARE_ARGUMENT(instantiables);
 DECLARE_ARGUMENT(except);
 DECLARE_ARGUMENT(dynamics);
 DECLARE_ARGUMENT(min_vertex_distance);
 DECLARE_ARGUMENT(instantiated_resources);
 }
 
-const std::string IplInstances::key = "ipl_instances";
+const std::string Instantiate::key = "instantiate";
 
-LoadSceneJsonUserFunction IplInstances::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
+LoadSceneJsonUserFunction Instantiate::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    IplInstances(args.renderable_scene()).execute(args);
+    Instantiate(args.renderable_scene()).execute(args);
 };
 
-IplInstances::IplInstances(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+Instantiate::Instantiate(RenderableScene& renderable_scene) 
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
+void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
     auto empty_set = std::set<std::string>();
     auto exclude = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::except, empty_set);
     auto dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics));
     auto ir = args.arguments.try_at<std::string>(KnownArgs::instantiated_resources);
     std::set<std::string> instantiated;
-    for (const auto& file : args.arguments.pathes_or_variables(KnownArgs::files)) {
+    for (const auto& file : args.arguments.try_pathes_or_variables(KnownArgs::ipl_files)) {
+        for (const auto& info : read_ipl(file.path, dynamics)) {
+            instantiate(
+                scene,
+                info,
+                scene_node_resources,
+                rendering_resources,
+                exclude,
+                ir.has_value() ? &instantiated : nullptr);
+        }
+    }
+    for (const auto& name : args.arguments.try_at_vector<std::string>(KnownArgs::instantiables)) {
         instantiate(
             scene,
-            read_ipl(file.path, dynamics),
+            scene_node_resources.instantiable(name),
             scene_node_resources,
             rendering_resources,
             exclude,

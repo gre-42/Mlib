@@ -7,9 +7,10 @@ namespace Mlib {
 
 enum class RenderingDynamics;
 
+template <class TPosition>
 struct InstanceInformation {
     std::string resource_name;
-    TransformationMatrix<float, ScenePos, 3> trafo;
+    TransformationMatrix<float, TPosition, 3> trafo;
     float scale;
     RenderingDynamics rendering_dynamics;
 };

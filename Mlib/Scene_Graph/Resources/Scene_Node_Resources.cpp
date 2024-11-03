@@ -1,4 +1,5 @@
 #include "Scene_Node_Resources.hpp"
+#include <Mlib/Geometry/Instance/Instance_Information.hpp>
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -23,6 +24,7 @@ using namespace Mlib;
 
 SceneNodeResources::SceneNodeResources()
     : resources_{ "Resources" }
+    , instantiables_{ "Instantiables" }
     , geographic_mappings_{ "Geographic mapping" }
     , wind_{ "Wind" }
     , gravity_{ "Gravity" }
@@ -577,4 +579,17 @@ void SceneNodeResources::add_modifier(
     } else {
         THROW_OR_ABORT("Could not find resource or loader with name \"" + resource_name + '"');
     }
+}
+
+void SceneNodeResources::add_instantiable(
+    const std::string& name,
+    const InstanceInformation<ScenePos>& instantiable)
+{
+    instantiables_.add(name, instantiable);
+}
+
+const InstanceInformation<ScenePos>& SceneNodeResources::instantiable(
+    const std::string& name) const
+{
+    return instantiables_.get(name);
 }

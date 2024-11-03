@@ -45,6 +45,43 @@ FixedArray<double, 2> PssgAttribute::dvec2() const {
     return result;
 }
 
+const PssgNode& PssgNode::get_child(
+    const std::string& type,
+    const PssgSchema& schema) const
+{
+    for (const auto& c : children) {
+        if (schema.nodes.get(c.type_id).name == type) {
+            return c;
+        }
+    }
+    THROW_OR_ABORT("Could not find child of type \"" + type + '"');
+}
+
+const PssgAttribute& PssgNode::get_attribute(
+    const std::string& name,
+    const PssgSchema& schema) const
+{
+    for (const auto& [i, a] : attributes) {
+        if (schema.attributes.get(i).name == name) {
+            return a;
+        }
+    }
+    THROW_OR_ABORT("Could not find attribute with name \"" + name + '"');
+}
+
+bool PssgNode::for_each_node(const std::function<bool(const PssgNode& node)>& op) const
+{
+    if (!op(*this)) {
+        return false;
+    }
+    for (const auto& c : children) {
+        if (!c.for_each_node(op)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 std::string PssgNode::pnstring() const {
     auto str = std::string((const char*)data.data(), data.size());
     if (str.empty()) {
