@@ -192,7 +192,7 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
             const auto& schema_attribute = schema.attributes.get(attribute_id);
             static const std::set<std::string> STRING_ATTRIBUTES {
                 "id", "renderType", "dataType", "type", "primitive", "shader", "shaderGroup", "nickname", "source", "indices",
-                "format", "texture", "name", "dataBlock", "typename"
+                "format", "texture", "name", "dataBlock", "typename", "texelFormat"
             };
             static const std::set<std::string> UINT32_ATTRIBUTES {
                 "offset", "stride", "streamCount", "size", "elementCount", "sourceCount", "streamCount", "maximumIndex", "count",
@@ -201,9 +201,6 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
                 "segmentCount", "subStream", "width", "height", "transient", "wrapS", "wrapT", "wrapR",
                 "minFilter", "magFilter", "gammaRemapR", "gammaRemapG", "gammaRemapB", "gammaRemapA", "automipmap",
                 "numberMipMapLevels", "imageBlockCount"
-            };
-            static const std::set<std::string> UINT64_ATTRIBUTES {
-                "texelFormat"
             };
             static const std::set<std::string> FLOAT_ATTRIBUTES {
                 "maxAnisotropy"
@@ -215,8 +212,6 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
                 linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.string();
             } else if (UINT32_ATTRIBUTES.contains(schema_attribute.name)) {
                 linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.uint32();
-            } else if (UINT64_ATTRIBUTES.contains(schema_attribute.name)) {
-                linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.uint64();
             } else if (FLOAT_ATTRIBUTES.contains(schema_attribute.name)) {
                 linfo() << std::string(2 * rec, ' ') << "    " << attribute_id << " (" << schema_attribute.name << ") = " << attr.float32();
             } else if (DVEC2_ATTRIBUTES.contains(schema_attribute.name)) {

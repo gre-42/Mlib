@@ -74,4 +74,11 @@ void write_binary(std::ostream& ostr, const T& value, const char* msg) {
     }
 }
 
+template <class TIterable>
+void write_iterable(std::ostream& ostr, const TIterable& iterable, const char* msg) {
+    for (const auto& e : iterable) {
+        write_binary(ostr, e, msg);
+    }
+}
+
 }

@@ -1,4 +1,5 @@
 #include "Dds_Info.hpp"
+#include <Mlib/Images/Dds_Header.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -6,67 +7,6 @@
 #include <sstream>
 
 using namespace Mlib;
-
-// From: https://learn.microsoft.com/en-us/windows/uwp/gaming/complete-code-for-ddstextureloader
-static const uint32_t DDS_MAGIC = 0x20534444; // "DDS "
-
-enum class DdsPixelFormatFlags: uint32_t {
-    ALPHAPIXELS = 0x1,
-    ALPHA = 0x2,
-    FOURCC = 0x4,
-    RGB = 0x40,
-    YUV = 0x200,
-    LUMINANCE = 0x20000
-};
-
-std::string dds_pixel_format_flags_to_string(DdsPixelFormatFlags size) {
-    switch (size) {
-    case DdsPixelFormatFlags::ALPHAPIXELS:
-        return "alpha_pixels";
-    case DdsPixelFormatFlags::ALPHA:
-        return "alpha";
-    case DdsPixelFormatFlags::FOURCC:
-        return "fourcc";
-    case DdsPixelFormatFlags::RGB:
-        return "rgb";
-    case DdsPixelFormatFlags::YUV:
-        return "yuv";
-    case DdsPixelFormatFlags::LUMINANCE:
-        return "luminance";
-    default:
-        THROW_OR_ABORT("Unknown DDS pixel format size: " + std::to_string((uint32_t)size));
-    }
-}
-
-struct DdsPixelFormat {
-    uint32_t size;
-    DdsPixelFormatFlags  flags;
-    uint32_t  fourCC;
-    uint32_t  RGBBitCount;
-    uint32_t  RBitMask;
-    uint32_t  GBitMask;
-    uint32_t  BBitMask;
-    uint32_t  ABitMask;
-};
-static_assert(sizeof(DdsPixelFormat) == 8 * 4);
-
-struct DdsHeader {
-    uint32_t          size;
-    uint32_t          flags;
-    uint32_t          height;
-    uint32_t          width;
-    uint32_t          pitchOrLinearSize;
-    uint32_t          depth; // only if DDS_HEADER_FLAGS_VOLUME is set in flags
-    uint32_t          mipMapCount;
-    uint32_t          reserved1[11];
-    DdsPixelFormat    ddspf;
-    uint32_t          caps;
-    uint32_t          caps2;
-    uint32_t          caps3;
-    uint32_t          caps4;
-    uint32_t          reserved2;
-};
-static_assert(sizeof(DdsHeader) == 23 * 4 + sizeof(DdsPixelFormat));
 
 DdsInfo DdsInfo::load_from_file(const std::string& filename) {
     auto ifstr = create_ifstream(filename, std::ios_base::binary);
