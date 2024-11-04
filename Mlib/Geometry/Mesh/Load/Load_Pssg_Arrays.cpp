@@ -1,6 +1,7 @@
 #include "Load_Pssg_Arrays.hpp"
 #include <Mlib/Array/Non_Copying_Vector.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
+#include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
@@ -9,6 +10,7 @@
 #include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Io/Endian.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <algorithm>
 #include <half/half.h>
@@ -18,7 +20,8 @@ using namespace Mlib;
 template <class TResourcePos, class TInstancePos>
 PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     const std::string& filename,
-    const LoadMeshConfig<TResourcePos>& cfg)
+    const LoadMeshConfig<TResourcePos>& cfg,
+    IDdsResources* dds_resources)
 {
     auto ifs = create_ifstream(filename, std::ios::binary);
     if (ifs->fail()) {
@@ -28,7 +31,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
         return load_pssg_arrays<TResourcePos, TInstancePos>(
             *ifs,
             filename,
-            cfg);
+            cfg,
+            dds_resources);
     } catch (std::runtime_error& e) {
         THROW_OR_ABORT("Could not read file \"" + filename + "\": "+ e.what());
     }
@@ -89,11 +93,13 @@ void strided_copy(
     }
 }
 
-template <class TInstancePos>
+template <class TInstancePos, class TResourcePos>
 void add_instantiables(
     const PssgNode& node,
     const PssgSchema& schema,
     const TransformationMatrix<float, TInstancePos, 3>& m,
+    const Map<std::string, std::vector<BlendMapTexture>>& shaders,
+    UnorderedMap<std::string, std::shared_ptr<ColoredVertexArray<TResourcePos>>>& resources,
     std::list<InstanceInformation<TInstancePos>>& instances)
 {
     TransformationMatrix<float, TInstancePos, 3> trafo{
@@ -105,6 +111,13 @@ void add_instantiables(
         if (!indices.starts_with('#')) {
             THROW_OR_ABORT("indices do not start with \"#\"");
         }
+        auto shader = rsi.get_attribute("shader", schema).string();
+        if (!shader.starts_with('#')) {
+            THROW_OR_ABORT("shader does not start with \"#\"");
+        }
+        if (auto s = shaders.try_get(shader.substr(1)); s != nullptr) {
+            resources.get(indices.substr(1))->material.textures_color = shaders.get(shader.substr(1));
+        }
         instances.emplace_back(indices.substr(1), mc, 1.f, RenderingDynamics::STATIC);
     }
     for (const auto& c : node.children) {
@@ -112,7 +125,7 @@ void add_instantiables(
             "NODE", "RENDERNODE"
         };
         if (CHILDREN.contains(schema.nodes.get(c.type_id).name)) {
-            add_instantiables(c, schema, mc, instances);
+            add_instantiables(c, schema, mc, shaders, resources, instances);
         }
     }
 }
@@ -121,7 +134,8 @@ template <class TResourcePos, class TInstancePos>
 PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     std::istream& istr,
     const std::string& name,
-    const LoadMeshConfig<TResourcePos>& cfg)
+    const LoadMeshConfig<TResourcePos>& cfg,
+    IDdsResources* dds_resources)
 {
     PssgArrays<TResourcePos, TInstancePos> result;
     auto pssg = load_pssg(istr, name, std::numeric_limits<std::streamoff>::max(), IoVerbosity::SILENT);
@@ -259,6 +273,36 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
         }
         return true;
     });
+    Map<std::string, std::vector<BlendMapTexture>> shaders;
+    pssg.root.for_each_node([&](const PssgNode& node){
+        const auto& s = pssg.schema.nodes.get(node.type_id);
+        if (s.name == "SHADERINSTANCE") {
+            auto shader_group = node.get_attribute("shaderGroup", pssg.schema).string();
+            auto node_id = node.get_attribute("id", pssg.schema).string();
+            if (shader_group == "#terrain_road.fx") {
+                auto diffuse = [&]() -> std::string {
+                    for (const auto& c : node.children) {
+                        if ((pssg.schema.nodes.get(c.type_id).name == "SHADERINPUT") &&
+                            (c.get_attribute("parameterID", pssg.schema).uint32() == 11))
+                        {
+                            return c.get_attribute("texture", pssg.schema).string();
+                        }
+                    }
+                    return "";
+                    }();
+                if (!diffuse.starts_with("#")) {
+                    THROW_OR_ABORT("Diffuse does not start with \"#\": " + diffuse);
+                }
+                shaders.add(
+                    node_id,
+                    std::vector<BlendMapTexture>{{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{ VariableAndHash{ diffuse.substr(1) + ".dds" } }.compute_hash()
+                        }}});
+            }
+        }
+        return true;
+    });
     pssg.root.for_each_node([&](const PssgNode& node){
         const auto& s = pssg.schema.nodes.get(node.type_id);
         if (s.name == "RENDERDATASOURCE") {
@@ -307,7 +351,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             }
             result.resources.add(node_id, std::make_shared<ColoredVertexArray<TResourcePos>>(
                 node_id,
-                Material{}.compute_color_mode(),
+                Material{},
                 Morphology{ cfg.physics_material },
                 ModifierBacklog{},
                 UUVector<FixedArray<ColoredVertex<TResourcePos>, 4>>(),
@@ -326,10 +370,38 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 node,
                 pssg.schema,
                 TransformationMatrix<float, TInstancePos, 3>::identity(),
+                shaders,
+                result.resources,
                 result.instances);
         }
         return true;
     });
+    if (dds_resources != nullptr) {
+        pssg.root.for_each_node([&](const PssgNode& node) {
+            if (pssg.schema.nodes.get(node.type_id).name != "TEXTURE") {
+                return true;
+            }
+            auto node_id = node.get_attribute("id", pssg.schema).string();
+            auto width = node.get_attribute("width", pssg.schema).uint32();
+            if (width > 10'000) {
+                THROW_OR_ABORT("Width too large");
+            }
+            auto height = node.get_attribute("height", pssg.schema).uint32();
+            if (height > 10'000) {
+                THROW_OR_ABORT("Height too large");
+            }
+            dds_resources->add_texture(
+                ColormapWithModifiers{
+                    .filename = VariableAndHash{ node_id + ".dds" }
+                }.compute_hash(),
+                node.texture(pssg.schema),
+                TextureAlreadyExistsBehavior::RAISE);
+            return true;
+        });
+    }
+    for (auto& [_, r] : result.resources) {
+        r->material.compute_color_mode();
+    }
     return result;
 }
 
@@ -337,20 +409,24 @@ namespace Mlib {
 
 template PssgArrays<float, ScenePos> load_pssg_arrays<float>(
     const std::string& filename,
-    const LoadMeshConfig<float>& cfg);
+    const LoadMeshConfig<float>& cfg,
+    IDdsResources* dds_resources);
 
 template PssgArrays<double, ScenePos> load_pssg_arrays<double>(
     const std::string& filename,
-    const LoadMeshConfig<double>& cfg);
+    const LoadMeshConfig<double>& cfg,
+    IDdsResources* dds_resources);
 
 template PssgArrays<float, ScenePos> load_pssg_arrays<float>(
     std::istream& istr,
     const std::string& name,
-    const LoadMeshConfig<float>& cfg);
+    const LoadMeshConfig<float>& cfg,
+    IDdsResources* dds_resources);
 
 template PssgArrays<double, ScenePos> load_pssg_arrays<double>(
     std::istream& istr,
     const std::string& name,
-    const LoadMeshConfig<double>& cfg);
+    const LoadMeshConfig<double>& cfg,
+    IDdsResources* dds_resources);
 
 }

@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <list>
 #include <optional>
@@ -132,7 +133,7 @@ enum class kn5LoadOptions {
 
 struct kn5Texture {
     int32_t type;
-    std::vector<uint8_t> data;
+    std::vector<std::byte> data;
 };
 
 struct kn5Model

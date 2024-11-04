@@ -1620,7 +1620,7 @@ void RenderingResources::save_array_to_file(
 
 void RenderingResources::add_texture(
     const ColormapWithModifiers& name,
-    std::vector<uint8_t>&& data,
+    std::vector<std::byte>&& data,
     TextureAlreadyExistsBehavior already_exists_behavior)
 {
     const auto& filename = (const std::string&)name.filename;
@@ -1797,14 +1797,14 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture: " << color;
         }
-        return { generate_texture(it->data.get(), it->width, it->height, it->nrChannels), TextureType::TEXTURE_2D };
+        return { generate_texture((const uint8_t*)it->data.get(), it->width, it->height, it->nrChannels), TextureType::TEXTURE_2D };
     } else if (auto it = get_or_extract<EXTRACT_PROCESSED>(preloaded_processed_texture_array_data_, color); it != nullptr) {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture array: " << color;
         }
         if (it->size() == 1) {
             const auto& data = (*it)[0];
-            return { generate_texture(data.data.get(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
+            return { generate_texture((const uint8_t*)data.data.get(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
         } else {
             return generate_texture_array(*it);
         }
@@ -1837,8 +1837,8 @@ TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const ColormapW
     nv_dds::CDDSImage image;
     {
         std::stringstream sstr;
-        for (uint8_t c : *data) {
-            sstr << c;
+        for (std::byte c : *data) {
+            sstr << (uint8_t)c;
         }
         // Setting flipImage to false because it does not
         // work with image or mipmap sizes that are not a

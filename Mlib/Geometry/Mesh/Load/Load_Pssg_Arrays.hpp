@@ -13,6 +13,7 @@ template <class TPos>
 class ColoredVertexArray;
 template <class TPos>
 struct LoadMeshConfig;
+class IDdsResources;
 
 template <class TResourcePos, class TInstancePos>
 struct PssgArrays {
@@ -23,12 +24,14 @@ struct PssgArrays {
 template <class TResourcePos, class TInstancePos>
 PssgArrays<TResourcePos, TInstancePos> load_pssg_arrays(
     const std::string& filename,
-    const LoadMeshConfig<TResourcePos>& cfg);
+    const LoadMeshConfig<TResourcePos>& cfg,
+    IDdsResources* dds_resources);
 
 template <class TResourcePos, class TInstancePos>
 PssgArrays<TResourcePos, TInstancePos> load_pssg_arrays(
     std::istream& istr,
     const std::string& name,
-    const LoadMeshConfig<TResourcePos>& cfg);
+    const LoadMeshConfig<TResourcePos>& cfg,
+    IDdsResources* dds_resources);
 
 }

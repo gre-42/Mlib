@@ -4,7 +4,7 @@
 namespace Mlib {
 
 struct ImageInfo {
-    static ImageInfo load(const std::string& filename, const std::vector<uint8_t>* data);
+    static ImageInfo load(const std::string& filename, const std::vector<std::byte>* data);
     FixedArray<size_t, 2> size;
 };
 

@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <cstddef>
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@ struct DdsInfo {
 
     static DdsInfo load_from_file(const std::string& filename);
     static DdsInfo load_from_stream(std::istream& istream);
-    static DdsInfo load_from_buffer(const std::vector<uint8_t>& buffer);
+    static DdsInfo load_from_buffer(const std::vector<std::byte>& buffer);
 };
 
 }

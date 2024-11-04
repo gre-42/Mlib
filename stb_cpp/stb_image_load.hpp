@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <stb/stb_image.h>
@@ -47,11 +48,11 @@ void stb_image_flip_horizontally(const StbInfo<TData>& image);
 std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
     const std::string& filename,
     FlipMode flip_mode,
-    const std::vector<uint8_t>* data = nullptr);
+    const std::vector<std::byte>* data = nullptr);
 StbInfo<uint8_t> stb_load8(
     const std::string& filename,
     FlipMode flip_mode,
-    const std::vector<uint8_t>* data = nullptr,
+    const std::vector<std::byte>* data = nullptr,
     IncorrectDatasizeBehavior datasize_behavior = IncorrectDatasizeBehavior::THROW);
 template <class TData>
 StbInfo<TData> stb_create(int width, int height, int nrChannels);

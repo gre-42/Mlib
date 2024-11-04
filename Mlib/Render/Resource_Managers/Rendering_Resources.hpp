@@ -230,7 +230,7 @@ public:
 
     virtual void add_texture(
         const ColormapWithModifiers& color,
-        std::vector<uint8_t>&& data,
+        std::vector<std::byte>&& data,
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
 private:
@@ -247,8 +247,8 @@ private:
     mutable std::list<std::shared_ptr<ActivationState>> set_textures_lazy_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
-    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<uint8_t>> preloaded_raw_texture_data_;
-    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<uint8_t>> preloaded_texture_dds_data_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<std::byte>> preloaded_raw_texture_data_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<std::byte>> preloaded_texture_dds_data_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
     mutable ThreadsafeUnorderedMap<VariableAndHash<std::string>, TextureDescriptor> texture_descriptors_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;

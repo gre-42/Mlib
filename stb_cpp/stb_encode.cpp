@@ -12,13 +12,13 @@ void my_stbi_write_func(void* context, void* data, int size) {
     std::copy(ip, ip + size, op->data());
 }
 
-std::vector<uint8_t> stb_encode_png(
+std::vector<std::byte> stb_encode_png(
     const uint8_t* data,
     int width,
     int height,
     int nchannels)
 {
-    std::vector<uint8_t> result;
+    std::vector<std::byte> result;
     if (stbi_write_png_to_func(
         my_stbi_write_func,
         &result,

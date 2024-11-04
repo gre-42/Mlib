@@ -41,7 +41,7 @@ static StbInfo<TData> stb_wrap_and_postprocess(TData* data, int width, int heigh
 std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
     const std::string& filename,
     FlipMode flip_mode,
-    const std::vector<uint8_t>* data)
+    const std::vector<std::byte>* data)
 {
     void* image;
     int width;
@@ -61,7 +61,7 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
             THROW_OR_ABORT("File too large");
         }
         image = stbi_load_from_memory_bpc(
-            data->data(),
+            (const uint8_t*)data->data(),
             (int)data->size(),
             &width,
             &height,
@@ -107,7 +107,7 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
 StbInfo<uint8_t> stb_load8(
     const std::string& filename,
     FlipMode flip_mode,
-    const std::vector<uint8_t>* data,
+    const std::vector<std::byte>* data,
     IncorrectDatasizeBehavior datasize_behavior)
 {
     auto res = stb_load(filename, flip_mode, data);

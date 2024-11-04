@@ -41,7 +41,7 @@ DdsInfo DdsInfo::load_from_stream(std::istream& istream) {
         .height = integral_cast<int>(header.height)};
 }
 
-DdsInfo DdsInfo::load_from_buffer(const std::vector<uint8_t>& buffer) {
+DdsInfo DdsInfo::load_from_buffer(const std::vector<std::byte>& buffer) {
     if (buffer.size() < sizeof(DdsHeader) + sizeof(uint32_t)) {
         THROW_OR_ABORT("DDS buffer too small");
     }

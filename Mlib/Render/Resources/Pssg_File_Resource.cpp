@@ -13,12 +13,13 @@ void Mlib::load_renderable_pssg(
     std::istream& istr,
     const std::string& name,
     const LoadMeshConfig<TPos>& cfg,
+    IDdsResources* dds_resources,
     SceneNodeResources& scene_node_resources,
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables)
 {
     if constexpr (std::is_same_v<TPos, float>) {
-        auto pa = load_pssg_arrays<float, ScenePos>(istr, name, cfg);
+        auto pa = load_pssg_arrays<float, ScenePos>(istr, name, cfg, dds_resources);
         for (auto&& [n, a] : pa.resources) {
             auto hr = std::make_shared<HeterogeneousResource>(scene_node_resources);
             hr->acvas->scvas = { a };
@@ -30,7 +31,7 @@ void Mlib::load_renderable_pssg(
             added_instantiables.push_back(instance_name);
         }
     } else if constexpr (std::is_same_v<TPos, double>) {
-        auto pa = load_pssg_arrays<double, ScenePos>(istr, name, cfg);
+        auto pa = load_pssg_arrays<double, ScenePos>(istr, name, cfg, dds_resources);
         for (auto&& [n, a] : pa.resources) {
             auto hr = std::make_shared<HeterogeneousResource>(scene_node_resources);
             hr->acvas->dcvas = { a };
@@ -50,6 +51,7 @@ template <class TPos>
 void Mlib::load_renderable_pssg(
     const std::string& filename,
     const LoadMeshConfig<TPos>& cfg,
+    IDdsResources* dds_resources,
     SceneNodeResources& scene_node_resources,
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables)
@@ -58,7 +60,14 @@ void Mlib::load_renderable_pssg(
     if (f->fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + "\" for reading");
     }
-    load_renderable_pssg(*f, filename, cfg, scene_node_resources, added_scene_node_resources, added_instantiables);
+    load_renderable_pssg(
+        *f,
+        filename,
+        cfg,
+        dds_resources,
+        scene_node_resources,
+        added_scene_node_resources,
+        added_instantiables);
 }
 
 namespace Mlib {
@@ -67,6 +76,7 @@ template void load_renderable_pssg<float>(
     std::istream& istr,
     const std::string& name,
     const LoadMeshConfig<float>& cfg,
+    IDdsResources* dds_resources,
     SceneNodeResources& scene_node_resources,
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables);
@@ -75,6 +85,7 @@ template void load_renderable_pssg<double>(
     std::istream& istr,
     const std::string& name,
     const LoadMeshConfig<double>& cfg,
+    IDdsResources* dds_resources,
     SceneNodeResources& scene_node_resources,
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables);
@@ -82,6 +93,7 @@ template void load_renderable_pssg<double>(
 template void load_renderable_pssg<float>(
     const std::string& filename,
     const LoadMeshConfig<float>& cfg,
+    IDdsResources* dds_resources,
     SceneNodeResources& scene_node_resources,
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables);
@@ -89,6 +101,7 @@ template void load_renderable_pssg<float>(
 template void load_renderable_pssg<double>(
     const std::string& filename,
     const LoadMeshConfig<double>& cfg,
+    IDdsResources* dds_resources,
     SceneNodeResources& scene_node_resources,
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables);

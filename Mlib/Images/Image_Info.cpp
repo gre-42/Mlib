@@ -6,7 +6,7 @@
 
 using namespace Mlib;
 
-ImageInfo ImageInfo::load(const std::string& filename, const std::vector<uint8_t>* data)
+ImageInfo ImageInfo::load(const std::string& filename, const std::vector<std::byte>* data)
 {
     ImageInfo result{
         .size = uninitialized
@@ -26,7 +26,7 @@ ImageInfo ImageInfo::load(const std::string& filename, const std::vector<uint8_t
                 THROW_OR_ABORT("Could not load image info from file \"" + filename + '"');
             }
         } else {
-            if (stbi_info_from_memory(data->data(), integral_cast<int>(data->size()), &width, &height, &comp) == 0) {
+            if (stbi_info_from_memory((uint8_t*)data->data(), integral_cast<int>(data->size()), &width, &height, &comp) == 0) {
                 THROW_OR_ABORT("Could not load image info from file \"" + filename + '"');
             }
         }

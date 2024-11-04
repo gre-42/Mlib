@@ -137,8 +137,9 @@ static void exec(
         add_rw_file_resource(s.path, cfg, dddb, added_scene_node_resources);
     }
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::pssg_files)) {
+        auto& rr = RenderingContextStack::primary_rendering_resources();
         auto& sr = RenderingContextStack::primary_scene_node_resources();
-        load_renderable_pssg(s.path, *cfg, sr, added_scene_node_resources, added_instantiables);
+        load_renderable_pssg(s.path, *cfg, &rr, sr, added_scene_node_resources, added_instantiables);
     }
     if (auto rv = args.arguments.try_at<std::string>(KnownArgs::resource_variable)) {
         if (args.local_json_macro_arguments == nullptr) {

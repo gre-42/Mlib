@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -16,7 +16,7 @@ class IDdsResources {
 public:
     virtual void add_texture(
         const ColormapWithModifiers& name,
-        std::vector<uint8_t>&& data,
+        std::vector<std::byte>&& data,
         TextureAlreadyExistsBehavior already_exists_behavior) = 0;
 };
 
