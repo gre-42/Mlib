@@ -45,7 +45,10 @@ struct PssgNode {
     bool has_attribute(const std::string& name, const PssgSchema& schema) const;
     bool for_each_node(const std::function<bool(const PssgNode& node)>& op) const;
     std::string pnstring() const;
-    FixedArray<float, 4, 4> smat4x4() const;
+    template <class TData>
+    TData scalar() const;
+    template <class TData, size_t... tshape>
+    FixedArray<TData, tshape...> array() const;
     AxisAlignedBoundingBox<float, 3> saabb3() const;
     std::vector<std::byte> texture(const PssgSchema& schema) const;
 };

@@ -3,12 +3,14 @@
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Texture/Uv_Shifter.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
-#include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Triangle_Tangent.hpp>
 #include <Mlib/Io/Endian.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -16,27 +18,6 @@
 #include <half/half.h>
 
 using namespace Mlib;
-
-template <class TResourcePos, class TInstancePos>
-PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
-    const std::string& filename,
-    const LoadMeshConfig<TResourcePos>& cfg,
-    IDdsResources* dds_resources)
-{
-    auto ifs = create_ifstream(filename, std::ios::binary);
-    if (ifs->fail()) {
-        THROW_OR_ABORT("Could not open file for read: \"" + filename + '"');
-    }
-    try {
-        return load_pssg_arrays<TResourcePos, TInstancePos>(
-            *ifs,
-            filename,
-            cfg,
-            dds_resources);
-    } catch (std::runtime_error& e) {
-        THROW_OR_ABORT("Could not read file \"" + filename + "\": "+ e.what());
-    }
-}
 
 template <class TSource, class TDestination, class TConvert>
 void strided_copy(
@@ -103,7 +84,7 @@ void add_instantiables(
     std::list<InstanceInformation<TInstancePos>>& instances)
 {
     TransformationMatrix<float, TInstancePos, 3> trafo{
-        node.get_child("TRANSFORM", schema).smat4x4().casted<TInstancePos>() };
+        node.get_child("TRANSFORM", schema).array<float, 4, 4>().casted<TInstancePos>() };
     auto mc = m * trafo;
     if (schema.nodes.get(node.type_id).name == "RENDERNODE") {
         const auto& rsi = node.get_child("RENDERSTREAMINSTANCE", schema);
@@ -130,226 +111,283 @@ void add_instantiables(
     }
 }
 
+template <class TPos>
+struct DataBlock {
+    explicit DataBlock(size_t element_count)
+        : vertices{
+            element_count,
+            ColoredVertex<TPos>(
+                fixed_nans<TPos, 3>(),          // position
+                fixed_ones<float, 3>(),         // color
+                fixed_zeros<float, 2>(),        // uv
+                fixed_zeros<float, 3>(),        // normal
+                fixed_zeros<float, 3>())}       // tangent
+    {}
+    std::vector<ColoredVertex<TPos>> vertices;
+    ColoredVertexFeatures features = ColoredVertexFeatures::NONE;
+};
+
 template <class TResourcePos, class TInstancePos>
 PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
-    std::istream& istr,
-    const std::string& name,
+    const PssgModel& model,
     const LoadMeshConfig<TResourcePos>& cfg,
-    IDdsResources* dds_resources)
+    IDdsResources* dds_resources,
+    IoVerbosity verbosity)
 {
     PssgArrays<TResourcePos, TInstancePos> result;
-    auto pssg = load_pssg(istr, name, std::numeric_limits<std::streamoff>::max(), IoVerbosity::SILENT);
-    UnorderedMap<std::string, std::vector<ColoredVertex<TResourcePos>>> data_blocks;
-    pssg.root.for_each_node([&](const PssgNode& node){
-        const auto& s = pssg.schema.nodes.get(node.type_id);
+    UnorderedMap<std::string, DataBlock<TResourcePos>> data_blocks;
+    model.root.for_each_node([&](const PssgNode& node){
+        const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "DATABLOCK") {
             // Load vertices, color, ST?, ...
-            auto element_count = node.get_attribute("elementCount", pssg.schema).uint32();
-            auto size = node.get_attribute("size", pssg.schema).uint32();
+            auto element_count = node.get_attribute("elementCount", model.schema).uint32();
+            auto size = node.get_attribute("size", model.schema).uint32();
             if (element_count > 1'000'000'000) {
                 THROW_OR_ABORT("Element count too large");
             }
             if (size > 1'000'000'000) {
                 THROW_OR_ABORT("Size too large");
             }
-            const auto& data = node.get_child("DATABLOCKDATA", pssg.schema).data;
+            const auto& data = node.get_child("DATABLOCKDATA", model.schema).data;
             if (data.size() < size) {
                 THROW_OR_ABORT("DATABLOCKDATA too short");
             }
-            auto& b = data_blocks.add(
-                node.get_attribute("id", pssg.schema).string(),
-                element_count,
-                ColoredVertex<TResourcePos>(
-                    fixed_nans<TResourcePos, 3>(), // position
-                    fixed_ones<float, 3>(),        // color
-                    fixed_zeros<float, 2>(),       // uv
-                    fixed_zeros<float, 3>(),       // normal
-                    fixed_zeros<float, 3>()));     // tangent
+            std::string node_id = node.get_attribute("id", model.schema).string();
+            auto& b = data_blocks.add(node_id, element_count);
             for (const auto& c : node.children) {
-                const auto& cs = pssg.schema.nodes.get(c.type_id);
+                const auto& cs = model.schema.nodes.get(c.type_id);
                 if (cs.name == "DATABLOCKDATA") {
                     continue;
                 }
-                auto offset = c.get_attribute("offset", pssg.schema).uint32();
-                auto stride = c.get_attribute("stride", pssg.schema).uint32();
+                auto offset = c.get_attribute("offset", model.schema).uint32();
+                auto stride = c.get_attribute("stride", model.schema).uint32();
                 if (offset > 1000) {
                     THROW_OR_ABORT("Offset too large");
                 }
                 if (stride > 1000) {
                     THROW_OR_ABORT("Stride too large");
                 }
-                auto render_type = c.get_attribute("renderType", pssg.schema).string();
-                auto data_type = c.get_attribute("dataType", pssg.schema).string();
+                auto render_type = c.get_attribute("renderType", model.schema).string();
+                auto data_type = c.get_attribute("dataType", model.schema).string();
                 const ColoredVertex<TResourcePos>* cv0 = nullptr;
                 if (render_type == "Vertex") {
+                    b.features |= ColoredVertexFeatures::POSITION;
                     if (data_type != "float3") {
                         THROW_OR_ABORT("Unsupported vertex data type");
                     }
                     strided_copy<float, TResourcePos>(
-                        offset,                                         // src_offset
-                        stride,                                         // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->position),     // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),            // dst_stride
-                        element_count,                                  // nelements
-                        3,                                              // ndim
-                        size,                                           // src_size
-                        b.size() * sizeof(ColoredVertex<TResourcePos>), // dst_size
-                        data.data(),                                    // src
-                        (std::byte*)b.data(),                           // dst
+                        offset,                                                     // src_offset
+                        stride,                                                     // src_stride
+                        (uint32_t)(std::ptrdiff_t)(&cv0->position),                 // dst_offset
+                        sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
+                        element_count,                                              // nelements
+                        3,                                                          // ndim
+                        size,                                                       // src_size
+                        b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
+                        data.data(),                                                // src
+                        (std::byte*)b.vertices.data(),                              // dst
                         [](float f) { return (TResourcePos)swap_endianness(f); });
                 } else if (render_type == "Color") {
+                    b.features |= ColoredVertexFeatures::COLOR;
                     if (data_type != "uint_color_argb") {
                         THROW_OR_ABORT("Unsupported color data type");
                     }
                     strided_copy<uint8_t, float>(
-                        offset + 1,                                     // src_offset. Add "1" to skip the unsupported "a" component
-                        stride,                                         // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->color),        // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),            // dst_stride
-                        element_count,                                  // nelements
-                        3,                                              // ndim
-                        size,                                           // src_size
-                        b.size() * sizeof(ColoredVertex<TResourcePos>), // dst_size
-                        data.data(),                                    // src
-                        (std::byte*)b.data(),                           // dst
+                        offset,                                                     // src_offset
+                        stride,                                                     // src_stride
+                        (uint32_t)(std::ptrdiff_t)(&cv0->color),                    // dst_offset
+                        sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
+                        element_count,                                              // nelements
+                        3,                                                          // ndim
+                        size,                                                       // src_size
+                        b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
+                        data.data(),                                                // src
+                        (std::byte*)b.vertices.data(),                              // dst
                         [](uint8_t f) { return float(f) / 255; });
                 } else if (render_type == "ST") {
-                    if ((data_type == "half4") || (data_type == "float4")) {
-                        continue;
-                    }
-                    if (data_type != "half2") {
+                    b.features |= ColoredVertexFeatures::UV;
+                    if ((data_type == "half2") || (data_type == "half4")) {
+                        strided_copy<uint16_t, float>(
+                            offset,                                                     // src_offset
+                            stride,                                                     // src_stride
+                            (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
+                            sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
+                            element_count,                                              // nelements
+                            2,                                                          // ndim
+                            size,                                                       // src_size
+                            b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
+                            data.data(),                                                // src
+                            (std::byte*)b.vertices.data(),                              // dst
+                            [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
+                    } else if ((data_type == "float3") || (data_type == "float4")) {
+                        strided_copy<float, float>(
+                            offset,                                                     // src_offset
+                            stride,                                                     // src_stride
+                            (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
+                            sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
+                            element_count,                                              // nelements
+                            2,                                                          // ndim
+                            size,                                                       // src_size
+                            b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
+                            data.data(),                                                // src
+                            (std::byte*)b.vertices.data(),                              // dst
+                            [](float h) { return swap_endianness(h); });
+                    } else {
                         THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
                     }
-                    strided_copy<uint16_t, float>(
-                        offset,                                         // src_offset
-                        stride,                                         // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->uv),           // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),            // dst_stride
-                        element_count,                                  // nelements
-                        2,                                              // ndim
-                        size,                                           // src_size
-                        b.size() * sizeof(ColoredVertex<TResourcePos>), // dst_size
-                        data.data(),                                    // src
-                        (std::byte*)b.data(),                           // dst
-                        [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
                 } else if (render_type == "Normal") {
+                    b.features |= ColoredVertexFeatures::NORMAL;
                     if (data_type != "half4") {
                         THROW_OR_ABORT("Unsupported Normal data type");
                     }
                     strided_copy<uint16_t, float>(
-                        offset,                                         // src_offset
-                        stride,                                         // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->normal),       // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),            // dst_stride
-                        element_count,                                  // nelements
-                        3,                                              // ndim
-                        size,                                           // src_size
-                        b.size() * sizeof(ColoredVertex<TResourcePos>), // dst_size
-                        data.data(),                                    // src
-                        (std::byte*)b.data(),                           // dst
+                        offset,                                                     // src_offset
+                        stride,                                                     // src_stride
+                        (uint32_t)(std::ptrdiff_t)(&cv0->normal),                   // dst_offset
+                        sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
+                        element_count,                                              // nelements
+                        3,                                                          // ndim
+                        size,                                                       // src_size
+                        b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
+                        data.data(),                                                // src
+                        (std::byte*)b.vertices.data(),                              // dst
                         [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
                 } else if (render_type == "Tangent") {
+                    b.features |= ColoredVertexFeatures::TANGENT;
                     if (data_type != "half4") {
                         THROW_OR_ABORT("Unsupported Tangent data type");
                     }
                     strided_copy<uint16_t, float>(
-                        offset,                                         // src_offset
-                        stride,                                         // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->tangent),      // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),            // dst_stride
-                        element_count,                                  // nelements
-                        3,                                              // ndim
-                        size,                                           // src_size
-                        b.size() * sizeof(ColoredVertex<TResourcePos>), // dst_size
-                        data.data(),                                    // src
-                        (std::byte*)b.data(),                           // dst
+                        offset,                                                     // src_offset
+                        stride,                                                     // src_stride
+                        (uint32_t)(std::ptrdiff_t)(&cv0->tangent),                  // dst_offset
+                        sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
+                        element_count,                                              // nelements
+                        3,                                                          // ndim
+                        size,                                                       // src_size
+                        b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
+                        data.data(),                                                // src
+                        (std::byte*)b.vertices.data(),                              // dst
                         [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
                 } else if (render_type == "Binormal") {
                     // Do nothing
+                } else if (render_type == "SkinnableVertex") {
+                    // Do nothing
+                } else if (render_type == "SkinIndices") {
+                    // Do nothing
+                } else if (render_type == "SkinWeights") {
+                    // Do nothing
+                } else if (render_type == "SkinnableNormal") {
+                    // Do nothing
                 } else {
-                    THROW_OR_ABORT("Unsupported render type: \"" + cs.name + '"');
+                    THROW_OR_ABORT("Unsupported render type: \"" + render_type + '"');
                 }
             }
         }
         return true;
     });
     Map<std::string, std::vector<BlendMapTexture>> shaders;
-    pssg.root.for_each_node([&](const PssgNode& node){
-        const auto& s = pssg.schema.nodes.get(node.type_id);
+    model.root.for_each_node([&](const PssgNode& node){
+        const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "SHADERINSTANCE") {
-            auto shader_group = node.get_attribute("shaderGroup", pssg.schema).string();
-            auto node_id = node.get_attribute("id", pssg.schema).string();
-            if (shader_group == "#terrain_road.fx") {
-                auto diffuse = [&]() -> std::string {
-                    for (const auto& c : node.children) {
-                        if ((pssg.schema.nodes.get(c.type_id).name == "SHADERINPUT") &&
-                            (c.get_attribute("parameterID", pssg.schema).uint32() == 11))
-                        {
-                            return c.get_attribute("texture", pssg.schema).string();
+            auto shader_group = node.get_attribute("shaderGroup", model.schema).string();
+            auto node_id = node.get_attribute("id", model.schema).string();
+            auto get_texture = [&](size_t parameter_id) -> std::string {
+                std::string result;
+                for (const auto& c : node.children) {
+                    if ((model.schema.nodes.get(c.type_id).name == "SHADERINPUT") &&
+                        (c.get_attribute("parameterID", model.schema).uint32() == parameter_id))
+                    {
+                        result = c.get_attribute("texture", model.schema).string();
+                        if (!result.starts_with("#")) {
+                            THROW_OR_ABORT("Diffuse does not start with \"#\": " + result);
                         }
+                        return result.substr(1) + ".dds";
                     }
-                    return "";
-                    }();
-                if (!diffuse.starts_with("#")) {
-                    THROW_OR_ABORT("Diffuse does not start with \"#\": " + diffuse);
+                }
+                return "";
+                };
+            if ((shader_group == "#terrain_road.fx") ||
+                (shader_group == "#terrain_edge_nm.fx") ||
+                (shader_group == "#terrain_wsm_edge_nm.fx"))
+            {
+                auto diffuse = get_texture(11);
+                if (diffuse.empty()) {
+                    THROW_OR_ABORT("Diffuse texture not specified");
                 }
                 shaders.add(
                     node_id,
                     std::vector<BlendMapTexture>{{
                         .texture_descriptor = TextureDescriptor{
-                            .color = ColormapWithModifiers{ VariableAndHash{ diffuse.substr(1) + ".dds" } }.compute_hash()
-                        }}});
+                            .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
+                        },
+                        .scale = { 1.f / 512.f, 1.f / 512.f },
+                        .uv_source = BlendMapUvSource::HORIZONTAL}});
+            } else if (shader_group == "#terrain_track_vista_d4.fx")
+            {
+                auto diffuse = get_texture(33);
+                if (diffuse.empty()) {
+                    THROW_OR_ABORT("Diffuse texture not specified");
+                }
+                shaders.add(
+                    node_id,
+                    std::vector<BlendMapTexture>{{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
+                        },
+                        .scale = { 1.f / 512.f, 1.f / 512.f },
+                        .uv_source = BlendMapUvSource::HORIZONTAL}});
             }
         }
         return true;
     });
-    pssg.root.for_each_node([&](const PssgNode& node){
-        const auto& s = pssg.schema.nodes.get(node.type_id);
+    model.root.for_each_node([&](const PssgNode& node){
+        const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "RENDERDATASOURCE") {
             // Load triangle indices
-            auto primitive = node.get_attribute("primitive", pssg.schema).string();
+            auto primitive = node.get_attribute("primitive", model.schema).string();
             if (primitive != "triangles") {
                 THROW_OR_ABORT("Unsupported render primitive: \"" + primitive + '"');
             }
-            const auto& index_source = node.get_child("RENDERINDEXSOURCE", pssg.schema);
-            auto ixs_primitive = index_source.get_attribute("primitive", pssg.schema).string();
+            const auto& index_source = node.get_child("RENDERINDEXSOURCE", model.schema);
+            auto ixs_primitive = index_source.get_attribute("primitive", model.schema).string();
             if (ixs_primitive != "triangles") {
                 THROW_OR_ABORT("Unsupported render primitive: \"" + primitive + '"');
             }
-            auto ixs_format = index_source.get_attribute("format", pssg.schema).string();
+            auto ixs_format = index_source.get_attribute("format", model.schema).string();
             if (ixs_format != "ushort") {
                 THROW_OR_ABORT("Unsupported triangle format");
             }
-            auto ixs_count = index_source.get_attribute("count", pssg.schema).uint32();
+            auto ixs_count = index_source.get_attribute("count", model.schema).uint32();
             if (ixs_count > 1'000'000'000) {
                 THROW_OR_ABORT("Triangle count too large");
             }
-            const auto& isd = index_source.get_child("INDEXSOURCEDATA", pssg.schema);
+            const auto& isd = index_source.get_child("INDEXSOURCEDATA", model.schema);
             if (isd.data.size() < 2 * ixs_count) {
                 THROW_OR_ABORT("Triangle buffer too small");
             }
             if ((ixs_count % 3) != 0) {
                 THROW_OR_ABORT("Triangle indices not a multiple of 3");
             }
-            const auto& render_stream = node.get_child("RENDERSTREAM", pssg.schema);
-            auto data_block_name = render_stream.get_attribute("dataBlock", pssg.schema).string();
+            const auto& render_stream = node.get_child("RENDERSTREAM", model.schema);
+            auto data_block_name = render_stream.get_attribute("dataBlock", model.schema).string();
             if (!data_block_name.starts_with('#')) {
                 THROW_OR_ABORT("dataBlock does not start with \"#\"");
             }
             const auto& data_block = data_blocks.get(data_block_name.substr(1));
-            auto node_id = node.get_attribute("id", pssg.schema).string();
+            auto node_id = node.get_attribute("id", model.schema).string();
             UUVector<FixedArray<ColoredVertex<TResourcePos>, 3>> triangles;
             triangles.resize(ixs_count / 3);
             for (uint32_t i = 0; i < ixs_count / 3; ++i) {
                 for (uint32_t j = 0; j < 3; ++j) {
                     uint16_t id = swap_endianness(reinterpret_cast<const uint16_t*>(isd.data.data())[i * 3 + j]);
-                    if (id >= data_block.size()) {
-                        THROW_OR_ABORT("Vertex index out of bounds: " + std::to_string(id) + " >= " + std::to_string(data_block.size()));
+                    if (id >= data_block.vertices.size()) {
+                        THROW_OR_ABORT("Vertex index out of bounds: " + std::to_string(id) + " >= " + std::to_string(data_block.vertices.size()));
                     }
-                    triangles[i](j) = data_block[id];
+                    triangles[i](j) = data_block.vertices[id];
                 }
             }
-            result.resources.add(node_id, std::make_shared<ColoredVertexArray<TResourcePos>>(
+            auto& cva = *result.resources.add(node_id, std::make_shared<ColoredVertexArray<TResourcePos>>(
                 node_id,
                 Material{},
                 Morphology{ cfg.physics_material },
@@ -360,15 +398,68 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
                 UUVector<FixedArray<float, 3>>(),
                 UUVector<FixedArray<uint8_t, 3>>()));
+            if (!any(data_block.features & ColoredVertexFeatures::POSITION)) {
+                THROW_OR_ABORT("Vertices have no position in node \"" + node_id + '"');
+            }
+            if (!any(data_block.features & ColoredVertexFeatures::UV)) {
+                for (auto& t : cva.triangles) {
+                    UvShifter3<TResourcePos> uv3{
+                        512.f,
+                        { t(0).position(0), t(0).position(2) },
+                        { t(1).position(0), t(1).position(2) },
+                        { t(2).position(0), t(2).position(2) },
+                        { WrapMode::REPEAT, WrapMode::REPEAT } };
+                    t(0).uv = uv3.u0;
+                    t(1).uv = uv3.u1;
+                    t(2).uv = uv3.u2;
+                }
+            }
+            if (!any(data_block.features & ColoredVertexFeatures::NORMAL)) {
+                VertexNormals<TResourcePos, float> vn;
+                for (auto& t : cva.triangles) {
+                    vn.add_triangle(t);
+                }
+                vn.compute_vertex_normals(NormalVectorErrorBehavior::WARN);
+                for (auto& t : cva.triangles) {
+                    for (auto& v : t.flat_iterable()) {
+                        v.normal = vn.get_normal(v.position);
+                    }
+                }
+                // for (auto& t : cva.triangles) {
+                //     auto n = triangle_normal<TResourcePos>({
+                //         t(0).position,
+                //         t(1).position,
+                //         t(2).position},
+                //         NormalVectorErrorBehavior::WARN).template casted<float>();
+                //     for (auto& v : t.flat_iterable()) {
+                //         v.normal = n;
+                //     }
+                // }
+            }
+            if (!any(data_block.features & ColoredVertexFeatures::TANGENT)) {
+                for (auto& t : cva.triangles) {
+                    auto ta = triangle_tangent(
+                        t(0).position,
+                        t(1).position,
+                        t(2).position,
+                        t(0).uv.template casted<TResourcePos>(),
+                        t(1).uv.template casted<TResourcePos>(),
+                        t(2).uv.template casted<TResourcePos>(),
+                        TriangleTangentErrorBehavior::WARN).template casted<float>();
+                    for (auto& v : t.flat_iterable()) {
+                        v.tangent = ta;
+                    }
+                }
+            }
         }
         return true;
     });
-    pssg.root.for_each_node([&](const PssgNode& node){
-        const auto& s = pssg.schema.nodes.get(node.type_id);
+    model.root.for_each_node([&](const PssgNode& node){
+        const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "ROOTNODE") {
             add_instantiables(
                 node,
-                pssg.schema,
+                model.schema,
                 TransformationMatrix<float, TInstancePos, 3>::identity(),
                 shaders,
                 result.resources,
@@ -377,16 +468,16 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
         return true;
     });
     if (dds_resources != nullptr) {
-        pssg.root.for_each_node([&](const PssgNode& node) {
-            if (pssg.schema.nodes.get(node.type_id).name != "TEXTURE") {
+        model.root.for_each_node([&](const PssgNode& node) {
+            if (model.schema.nodes.get(node.type_id).name != "TEXTURE") {
                 return true;
             }
-            auto node_id = node.get_attribute("id", pssg.schema).string();
-            auto width = node.get_attribute("width", pssg.schema).uint32();
+            auto node_id = node.get_attribute("id", model.schema).string();
+            auto width = node.get_attribute("width", model.schema).uint32();
             if (width > 10'000) {
                 THROW_OR_ABORT("Width too large");
             }
-            auto height = node.get_attribute("height", pssg.schema).uint32();
+            auto height = node.get_attribute("height", model.schema).uint32();
             if (height > 10'000) {
                 THROW_OR_ABORT("Height too large");
             }
@@ -394,39 +485,51 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 ColormapWithModifiers{
                     .filename = VariableAndHash{ node_id + ".dds" }
                 }.compute_hash(),
-                node.texture(pssg.schema),
+                node.texture(model.schema),
                 TextureAlreadyExistsBehavior::RAISE);
             return true;
         });
     }
     for (auto& [_, r] : result.resources) {
+        if (!cfg.textures.empty()) {
+            r->material.textures_color = cfg.textures;
+        }
+        if (!std::isnan(cfg.period_world)) {
+            r->material.period_world = cfg.period_world;
+        }
         r->material.compute_color_mode();
+        r->material.shading.emissive *= cfg.emissive_factor;
+        r->material.shading.ambient *= cfg.ambient_factor;
+        r->material.shading.diffuse *= cfg.diffuse_factor;
+        r->material.shading.specular *= cfg.specular_factor;
     }
     return result;
 }
 
 namespace Mlib {
 
-template PssgArrays<float, ScenePos> load_pssg_arrays<float>(
-    const std::string& filename,
+template PssgArrays<float, float> load_pssg_arrays<float, float>(
+    const PssgModel& model,
     const LoadMeshConfig<float>& cfg,
-    IDdsResources* dds_resources);
+    IDdsResources* dds_resources,
+    IoVerbosity verbosity);
 
-template PssgArrays<double, ScenePos> load_pssg_arrays<double>(
-    const std::string& filename,
-    const LoadMeshConfig<double>& cfg,
-    IDdsResources* dds_resources);
-
-template PssgArrays<float, ScenePos> load_pssg_arrays<float>(
-    std::istream& istr,
-    const std::string& name,
+template PssgArrays<float, double> load_pssg_arrays<float, double>(
+    const PssgModel& model,
     const LoadMeshConfig<float>& cfg,
-    IDdsResources* dds_resources);
+    IDdsResources* dds_resources,
+    IoVerbosity verbosity);
 
-template PssgArrays<double, ScenePos> load_pssg_arrays<double>(
-    std::istream& istr,
-    const std::string& name,
+template PssgArrays<double, float> load_pssg_arrays<double, float>(
+    const PssgModel& model,
     const LoadMeshConfig<double>& cfg,
-    IDdsResources* dds_resources);
+    IDdsResources* dds_resources,
+    IoVerbosity verbosity);
+
+template PssgArrays<double, double> load_pssg_arrays<double, double>(
+    const PssgModel& model,
+    const LoadMeshConfig<double>& cfg,
+    IDdsResources* dds_resources,
+    IoVerbosity verbosity);
 
 }

@@ -7,6 +7,9 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Dff_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config_Json.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Pssg_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Io/Folder_IStream_Dictionary.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -139,7 +142,9 @@ static void exec(
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::pssg_files)) {
         auto& rr = RenderingContextStack::primary_rendering_resources();
         auto& sr = RenderingContextStack::primary_scene_node_resources();
-        load_renderable_pssg(s.path, *cfg, &rr, sr, added_scene_node_resources, added_instantiables);
+        auto model = load_pssg(s.path, IoVerbosity::SILENT);
+        auto arrays = load_pssg_arrays<TPosition, ScenePos>(model, *cfg, &rr, IoVerbosity::SILENT);
+        load_renderable_pssg(arrays, sr, added_scene_node_resources, added_instantiables);
     }
     if (auto rv = args.arguments.try_at<std::string>(KnownArgs::resource_variable)) {
         if (args.local_json_macro_arguments == nullptr) {

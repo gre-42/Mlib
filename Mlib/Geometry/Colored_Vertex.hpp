@@ -15,6 +15,27 @@ namespace Mlib {
     #pragma GCC optimize ("O3")
 #endif
 
+enum class ColoredVertexFeatures {
+    NONE = 0,
+    POSITION = 1 << 0,
+    COLOR = 1 << 1,
+    UV = 1 << 2,
+    NORMAL = 1 << 3,
+    TANGENT = 1 << 4
+};
+
+inline bool any(ColoredVertexFeatures f) {
+    return f != ColoredVertexFeatures::NONE;
+}
+
+inline ColoredVertexFeatures operator & (ColoredVertexFeatures a, ColoredVertexFeatures b) {
+    return (ColoredVertexFeatures)((int)a & (int)b);
+}
+
+inline ColoredVertexFeatures& operator |= (ColoredVertexFeatures& a, ColoredVertexFeatures b) {
+    return (ColoredVertexFeatures&)((int&)a |= (int)b);
+}
+
 template <class TPos>
 struct ColoredVertex {
     FixedArray<TPos, 3> position;

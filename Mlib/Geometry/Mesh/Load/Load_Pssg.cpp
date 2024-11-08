@@ -264,9 +264,18 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         {"SKINJOINT", false},
         {"SKELETON", false},
         {"TEXTURE", false},
+        {"CUBEMAPTEXTURE", false},
         {"TEXTUREIMAGEBLOCK", false},
         {"PNTEXTURESCALING", false},
-        {"USERDATA", false}
+        {"USERDATA", false},
+        {"DATABLOCKSTREAM", false},
+        {"SHADERPROGRAM", false},
+        {"SHADERPROGRAMCODE", false},
+        {"SHADERPROGRAMCODEBLOCK", true},
+        {"CGSTREAM", false},
+        {"SHADERSTREAMDEFINITION", false},
+        {"SHADERGROUPPASS", false},
+        {"LAYER", false}
     };
     auto it = IS_DATA_NODE.find(schema_node.name);
     if (it == IS_DATA_NODE.end()) {
@@ -281,9 +290,21 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         read_vector(istr, result.data, "node data", verbosity);
         if (any(verbosity & IoVerbosity::METADATA)) {
             if (schema_node.name == "TRANSFORM") {
-                linfo() << std::string(2 * (rec + 1), ' ') << "  Data: " << result.smat4x4().flattened();
+                linfo() << std::string(2 * (rec + 1), ' ') << "  Data: " << result.array<float, 4, 4>().flattened();
             } else if (schema_node.name == "BOUNDINGBOX") {
                 linfo() << std::string(2 * (rec + 1), ' ') << "  Data: " << result.saabb3();
+            } else if (
+                (schema_node.name == "SHADERINPUT") &&
+                (result.get_attribute("type", schema).string() == "constant") &&
+                (result.get_attribute("format", schema).string() == "float4"))
+            {
+                linfo() << std::string(2 * (rec + 1), ' ') << "  Data: " << result.array<float, 4>();
+            } else if (
+                (schema_node.name == "SHADERINPUT") &&
+                (result.get_attribute("type", schema).string() == "constant") &&
+                (result.get_attribute("format", schema).string() == "float"))
+            {
+                linfo() << std::string(2 * (rec + 1), ' ') << "  Data: " << result.scalar<float>();
             } else {
                 linfo() << std::string(2 * (rec + 1), ' ') << "  Data: byte[" << result.data.size() << ']';
             }
@@ -337,7 +358,10 @@ PssgSchema load_pssg_schema(std::istream& istr, IoVerbosity verbosity)
 }
 
 PssgModel load_uncompressed_pssg(std::istream& istr, IoVerbosity verbosity) {
-    auto magic = read_string(istr, 4, "Incorrect magic PPSG string", verbosity);
+    auto magic = read_string(istr, 4, "Could not read magic PPSG string", verbosity);
+    if (magic != "PSSG") {
+        THROW_OR_ABORT("Incorrect magic PPSG string");
+    }
     read_binary<uint32_t>(istr, "PSSG size", verbosity);
     PssgModel res;
     if (any(verbosity & IoVerbosity::METADATA)) {
@@ -357,8 +381,16 @@ PssgModel Mlib::load_pssg(
     std::streamoff nbytes,
     IoVerbosity verbosity)
 {
-    auto str = uncompress_stream(istr, filename, nbytes);
-    return load_uncompressed_pssg(str, verbosity);
+    auto magic = read_string(istr, 4, "Could not read magic PPSG string", verbosity);
+    for (size_t i = 0; i < magic.length(); ++i) {
+        istr.unget();
+    }
+    if (magic == "PSSG") {
+        return load_uncompressed_pssg(istr, verbosity);
+    } else {
+        auto str = uncompress_stream(istr, filename, nbytes);
+        return load_uncompressed_pssg(str, verbosity);
+    }
 }
 
 #endif

@@ -45,6 +45,7 @@ DECLARE_ARGUMENT(fresnel_exponent);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(lighten);
+DECLARE_ARGUMENT(period_world);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
 DECLARE_ARGUMENT(rectangle_triangulation_mode);
 DECLARE_ARGUMENT(dynamically_lighted);
@@ -95,6 +96,9 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .desaturate = j.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = j.try_path_or_variable(KnownArgs::histogram).path,
         .lighten = j.at<UFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
+        .period_world = j.contains(KnownArgs::period_world)
+            ? j.at<float>(KnownArgs::period_world)
+            : NAN,
         .triangle_tangent_error_behavior = j.contains(KnownArgs::triangle_tangent_error_behavior)
             ? triangle_tangent_error_behavior_from_string(j.at<std::string>(KnownArgs::triangle_tangent_error_behavior))
             : TriangleTangentErrorBehavior::RAISE,

@@ -1,5 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Pssg_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
 #include <Mlib/Images/Dds_Info.hpp>
 #include <Mlib/Io/Binary.hpp>
@@ -11,33 +13,40 @@ using namespace Mlib;
 
 int main(int argc, char **argv) {
     const ArgParser parser(
-        "Usage: print_pssg_info <file.pssg> [file2.pssg ...] [--export <pattern>]",
-        {},
+        "Usage: print_pssg_info <file.pssg> [file2.pssg ...] [--export <pattern>] [--to_array]",
+        {"--to_array"},
         {"--export"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed_atleast(1);
         for (const auto& file : args.unnamed_values()) {
             linfo() << "Processing file " << file;
-            auto pssg = load_pssg(file, IoVerbosity::METADATA);
+            auto model = load_pssg(file, IoVerbosity::METADATA);
+            if (args.has_named("--to_array")) {
+                auto arrays = load_pssg_arrays<float, float>(
+                    model,
+                    LoadMeshConfig<float>{},
+                    nullptr, // dds_resources
+                    IoVerbosity::METADATA);
+            }
             if (args.has_named_value("--export")) {
                 DECLARE_REGEX(re, args.named_value("--export"));
-                pssg.root.for_each_node([&](const PssgNode& node) {
-                    if (pssg.schema.nodes.get(node.type_id).name != "TEXTURE") {
+                model.root.for_each_node([&](const PssgNode& node) {
+                    if (model.schema.nodes.get(node.type_id).name != "TEXTURE") {
                         return true;
                     }
-                    auto node_id = node.get_attribute("id", pssg.schema).string();
+                    auto node_id = node.get_attribute("id", model.schema).string();
                     if (node_id.length() > 1'000) {
                         THROW_OR_ABORT("Node ID too long");
                     }
                     if (!Mlib::re::regex_search(node_id, re)) {
                         return true;
                     }
-                    auto width = node.get_attribute("width", pssg.schema).uint32();
+                    auto width = node.get_attribute("width", model.schema).uint32();
                     if (width > 10'000) {
                         THROW_OR_ABORT("Width too large");
                     }
-                    auto height = node.get_attribute("height", pssg.schema).uint32();
+                    auto height = node.get_attribute("height", model.schema).uint32();
                     if (height > 10'000) {
                         THROW_OR_ABORT("Height too large");
                     }
@@ -59,7 +68,7 @@ int main(int argc, char **argv) {
                         }
                         return true;
                     }, '_');
-                    auto data = node.texture(pssg.schema);
+                    auto data = node.texture(model.schema);
                     auto tex_filename = std::filesystem::path{ "textures" } / (node_id + ".dds");
                     auto f = create_ofstream(tex_filename, std::ios::binary);
                     if (f->fail()) {

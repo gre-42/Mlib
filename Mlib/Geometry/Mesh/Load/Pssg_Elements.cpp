@@ -114,14 +114,24 @@ std::string PssgNode::pnstring() const {
     return str.substr(0, str.size() - 1);
 }
 
-FixedArray<float, 4, 4> PssgNode::smat4x4() const {
-    if (data.size() != 64) {
-        THROW_OR_ABORT("PSSG smat4x4 attribute does not have 16 bytes");
+template <class TData>
+TData PssgNode::scalar() const {
+    if (data.size() != sizeof(TData)) {
+        THROW_OR_ABORT("PSSG scalar attribute does not have correct number of bytes");
     }
-    FixedArray<float, 4, 4> result = uninitialized;
-    const float* src = reinterpret_cast<const float*>(data.data());
-    float* dst = result.flat_begin();
-    for (size_t i = 0; i < 16; ++i) {
+    const TData* src = reinterpret_cast<const TData*>(data.data());
+    return swap_endianness(*src);
+}
+
+template <class TData, size_t... tshape>
+FixedArray<TData, tshape...> PssgNode::array() const {
+    if (data.size() != sizeof(FixedArray<TData, tshape...>)) {
+        THROW_OR_ABORT("PSSG array attribute does not have correct number of bytes");
+    }
+    FixedArray<TData, tshape...> result = uninitialized;
+    const TData* src = reinterpret_cast<const TData*>(data.data());
+    TData* dst = result.flat_begin();
+    for (size_t i = 0; i < result.nelements(); ++i) {
         dst[i] = swap_endianness(src[i]);
     }
     return result;
@@ -338,4 +348,12 @@ std::vector<std::byte> PssgNode::texture(const PssgSchema& schema) const {
     }
     auto res = sstr.str();
     return { (const std::byte*)res.data(), (const std::byte*)res.data() + res.size() };
+}
+
+namespace Mlib {
+
+template float PssgNode::scalar() const;
+template FixedArray<float, 4> PssgNode::array() const;
+template FixedArray<float, 4, 4> PssgNode::array() const;
+
 }
