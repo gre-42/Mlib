@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash();
-            rendering_resources.add_texture(colormap, std::move(t.data), TextureAlreadyExistsBehavior::RAISE);
+            rendering_resources.add_texture(colormap, std::move(t.data), FlipMode::VERTICAL, TextureAlreadyExistsBehavior::RAISE);
             auto tex = rendering_resources.get_texture_data(
                 colormap,
                 TextureRole::COLOR,

@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Kn5.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
+#include <Mlib/Images/Flip_Mode.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -110,6 +111,7 @@ int main(int argc, char** argv)
                     rendering_resources.add_texture(
                         cm,
                         std::move(data.data),
+                        FlipMode::VERTICAL,
                         TextureAlreadyExistsBehavior::RAISE);
                 }
             }

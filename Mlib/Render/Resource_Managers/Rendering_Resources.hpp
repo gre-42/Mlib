@@ -27,10 +27,10 @@
 
 template <class TData>
 struct StbInfo;
-enum class FlipMode;
 
 namespace Mlib {
 
+enum class FlipMode;
 struct TextureDescriptor;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
@@ -135,6 +135,11 @@ struct TextureSize {
 
 std::ostream& operator << (std::ostream& ostr, TextureType texture_type);
 
+struct FlippedTextureData {
+    std::vector<std::byte> data;
+    FlipMode flip_mode;
+};
+
 class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
     RenderingResources& operator = (const RenderingResources&) = delete;
@@ -231,6 +236,7 @@ public:
     virtual void add_texture(
         const ColormapWithModifiers& color,
         std::vector<std::byte>&& data,
+        FlipMode flip_mode,
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
 private:
@@ -239,7 +245,7 @@ private:
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
     std::pair<GLuint, TextureType> initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role, float aniso) const;
-    TextureSizeAndMipmaps initialize_dds_texture(const ColormapWithModifiers& name) const;
+    std::shared_ptr<ITextureHandle> initialize_dds_texture(const ColormapWithModifiers& name, float aniso) const;
     void add_auto_texture_atlas(
         const ColormapWithModifiers& name,
         const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
@@ -247,8 +253,8 @@ private:
     mutable std::list<std::shared_ptr<ActivationState>> set_textures_lazy_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
-    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<std::byte>> preloaded_raw_texture_data_;
-    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<std::byte>> preloaded_texture_dds_data_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, FlippedTextureData> preloaded_raw_texture_data_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, FlippedTextureData> preloaded_texture_dds_data_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
     mutable ThreadsafeUnorderedMap<VariableAndHash<std::string>, TextureDescriptor> texture_descriptors_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;

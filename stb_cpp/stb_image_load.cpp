@@ -12,6 +12,8 @@
 #include <mutex>
 #endif
 
+using namespace Mlib;
+
 template <class TData>
 void stb_image_flip_horizontally(const StbInfo<TData>& image) {
     for (size_t r = 0; r < (size_t)image.height; ++r) {

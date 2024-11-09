@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Texture/Uv_Shifter.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -11,6 +10,7 @@
 #include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Triangle_Tangent.hpp>
+#include <Mlib/Images/Flip_Mode.hpp>
 #include <Mlib/Io/Endian.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -74,12 +74,20 @@ void strided_copy(
     }
 }
 
+struct Shader {
+    PhysicsMaterial physics_material =
+        PhysicsMaterial::ATTR_VISIBLE |
+        PhysicsMaterial::ATTR_COLLIDE |
+        PhysicsMaterial::ATTR_CONCAVE;
+    Material render_material;
+};
+
 template <class TInstancePos, class TResourcePos>
 void add_instantiables(
     const PssgNode& node,
     const PssgSchema& schema,
     const TransformationMatrix<float, TInstancePos, 3>& m,
-    const Map<std::string, std::vector<BlendMapTexture>>& shaders,
+    const Map<std::string, Shader>& shaders,
     UnorderedMap<std::string, std::shared_ptr<ColoredVertexArray<TResourcePos>>>& resources,
     std::list<InstanceInformation<TInstancePos>>& instances)
 {
@@ -97,7 +105,10 @@ void add_instantiables(
             THROW_OR_ABORT("shader does not start with \"#\"");
         }
         if (auto s = shaders.try_get(shader.substr(1)); s != nullptr) {
-            resources.get(indices.substr(1))->material.textures_color = shaders.get(shader.substr(1));
+            auto& resource = *resources.get(indices.substr(1));
+            const auto& shader_object = shaders.get(shader.substr(1));
+            resource.morphology.physics_material = shader_object.physics_material;
+            resource.material = shader_object.render_material;
         }
         instances.emplace_back(indices.substr(1), mc, 1.f, RenderingDynamics::STATIC);
     }
@@ -310,7 +321,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
         }
         return true;
     });
-    Map<std::string, std::vector<BlendMapTexture>> shaders;
+    Map<std::string, Shader> shaders;
     model.root.for_each_node([&](const PssgNode& node){
         const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "SHADERINSTANCE") {
@@ -341,10 +352,12 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 }
                 shaders.add(
                     node_id,
-                    std::vector<BlendMapTexture>{{
-                        .texture_descriptor = TextureDescriptor{
-                            .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
-                        }}});
+                    Shader{
+                        .render_material = Material{
+                            .textures_color = std::vector<BlendMapTexture>{{
+                                .texture_descriptor = TextureDescriptor{
+                                    .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
+                                }}}}});
             } else if (shader_group == "#terrain_track_vista_d4.fx")
             {
                 auto diffuse = get_texture(33);
@@ -353,10 +366,33 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 }
                 shaders.add(
                     node_id,
-                    std::vector<BlendMapTexture>{{
-                        .texture_descriptor = TextureDescriptor{
-                            .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
-                        }}});
+                    Shader{
+                        .render_material = Material{
+                            .textures_color = std::vector<BlendMapTexture>{{
+                                .texture_descriptor = TextureDescriptor{
+                                    .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
+                                }}}}});
+            } else if (shader_group == "#terrain_lod.fx")
+            {
+                auto diffuse = get_texture(2);
+                if (diffuse.empty()) {
+                    THROW_OR_ABORT("Diffuse texture not specified");
+                }
+                shaders.add(
+                    node_id,
+                    Shader{
+                        .render_material = Material{
+                            .textures_color = std::vector<BlendMapTexture>{{
+                                .texture_descriptor = TextureDescriptor{
+                                    .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
+                                }}}}});
+            } else if (shader_group == "#batched_track.fx")
+            {
+                shaders.add(
+                    node_id,
+                    Shader{
+                        .physics_material = PhysicsMaterial::NONE
+                    });
             }
         }
         return true;
@@ -516,7 +552,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     .filename = VariableAndHash{ node_id + ".dds" }
                 }.compute_hash(),
                 node.texture(model.schema),
-                TextureAlreadyExistsBehavior::RAISE);
+                FlipMode::NONE,
+                TextureAlreadyExistsBehavior::WARN);
             return true;
         });
     }

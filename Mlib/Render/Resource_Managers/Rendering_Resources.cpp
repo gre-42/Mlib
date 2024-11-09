@@ -998,8 +998,7 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
             }));
     } else {
         if (preloaded_texture_dds_data_.contains(color)) {
-            auto original_texture = initialize_dds_texture(color);
-            texture = original_texture.flipped_vertically(aniso);
+            texture = initialize_dds_texture(color, aniso);
         } else if (cubemap_descriptors_.contains(color.filename)) {
             texture = make_shared_texture(get_cubemap_unsafe(color.filename));
         } else {
@@ -1197,7 +1196,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
     }
     check_color_mode(color, role);
     if (auto it = preloaded_texture_dds_data_.try_get(color); it != nullptr) {
-        auto info = ImageInfo::load(*color.filename, it);
+        auto info = ImageInfo::load(*color.filename, &it->data);
         auto fb = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
         fb->configure(FrameBufferConfig{
             .width = integral_cast<int>(info.size(0)),
@@ -1233,7 +1232,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
         if (copy_behavior == CopyBehavior::RAISE) {
             THROW_OR_ABORT("Refusing to copy \"" + *color.filename + '"');
         }
-        return stb_load8(*color.filename, FlipMode::NONE, it, IncorrectDatasizeBehavior::CONVERT);
+        return stb_load8(*color.filename, FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT);
     }
     auto si = stb_load_and_transform_texture(color, flip_mode);
     if (any(color.color_mode & ColorMode::RGB) &&
@@ -1321,10 +1320,10 @@ FixedArray<int, 2> RenderingResources::texture_size(const ColormapWithModifiers&
     if (auto* img = preloaded_processed_texture_data_.try_get(name); img != nullptr) {
         image_size = { img->width, img->height };
     } else if (auto* img = preloaded_raw_texture_data_.try_get(name); img != nullptr) {
-        auto info = ImageInfo::load(*name.filename, img);
+        auto info = ImageInfo::load(*name.filename, &img->data);
         image_size = { integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1)) };
     } else if (auto* img = preloaded_texture_dds_data_.try_get(name); img != nullptr) {
-        auto info = ImageInfo::load(*name.filename, img);
+        auto info = ImageInfo::load(*name.filename, &img->data);
         image_size = { integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1)) };
     } else if (auto* img = texture_sizes_.try_get(name.filename); img != nullptr) {
         image_size = { img->width, img->height };
@@ -1621,6 +1620,7 @@ void RenderingResources::save_array_to_file(
 void RenderingResources::add_texture(
     const ColormapWithModifiers& name,
     std::vector<std::byte>&& data,
+    FlipMode flip_mode,
     TextureAlreadyExistsBehavior already_exists_behavior)
 {
     const auto& filename = (const std::string&)name.filename;
@@ -1676,9 +1676,9 @@ void RenderingResources::add_texture(
         (extension == ".png") ||
         (extension == ".bmp"))
     {
-        preloaded_raw_texture_data_.add(name, std::move(data));
+        preloaded_raw_texture_data_.add(name, std::move(data), flip_mode);
     } else if (extension == ".dds") {
-        preloaded_texture_dds_data_.add(name, std::move(data));
+        preloaded_texture_dds_data_.add(name, std::move(data), flip_mode);
     } else {
         THROW_OR_ABORT("Unknown file extension: \"" + filename + '"');
     }
@@ -1809,7 +1809,7 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
             return generate_texture_array(*it);
         }
     } else if (auto it = get_or_extract<EXTRACT_RAW>(preloaded_raw_texture_data_, color); it != nullptr) {
-        auto si = stb_load8(*color.filename, FlipMode::NONE, it, IncorrectDatasizeBehavior::CONVERT);
+        auto si = stb_load8(*color.filename, FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT);
         return { generate_texture(si.data.get(), si.width, si.height, si.nrChannels), chk_type(TextureType::TEXTURE_2D) };
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
@@ -1830,14 +1830,16 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
     }
 }
 
-TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const ColormapWithModifiers& color) const
+std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
+    const ColormapWithModifiers& color,
+    float aniso) const
 {
     auto data = get_or_extract<EXTRACT_RAW>(preloaded_texture_dds_data_, color);
 
     nv_dds::CDDSImage image;
     {
         std::stringstream sstr;
-        for (std::byte c : *data) {
+        for (std::byte c : data->data) {
             sstr << (uint8_t)c;
         }
         // Setting flipImage to false because it does not
@@ -1937,10 +1939,17 @@ TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const ColormapW
             }
         }
     }
-    return {
+    TextureSizeAndMipmaps original_texture{
         .handle = handle,
         .width = integral_cast<GLsizei>(image.get_width()),
         .height = integral_cast<GLsizei>(image.get_height()),
         .nchannels = integral_cast<GLsizei>(image.get_components()),
         .mip_level_count = integral_cast<GLsizei>(image.get_num_mipmaps())};
+    if (data->flip_mode == FlipMode::NONE) {
+        return original_texture.handle;
+    } else if (data->flip_mode == FlipMode::VERTICAL) {
+        return original_texture.flipped_vertically(aniso);
+    } else {
+        THROW_OR_ABORT("Unsupported flip mode");
+    }
 }

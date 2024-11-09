@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Images/Flip_Mode.hpp>
 #include <Mlib/Io/Ini_Parser.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
@@ -806,7 +807,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if (dds_resources != nullptr) {
                     auto n = textures.extract(cm.filename);
                     if (!n.empty()) {
-                        dds_resources->add_texture(cm, std::move(n.mapped().data), TextureAlreadyExistsBehavior::WARN);
+                        dds_resources->add_texture(cm, std::move(n.mapped().data), FlipMode::VERTICAL, TextureAlreadyExistsBehavior::WARN);
                     }
                 }
                 };
