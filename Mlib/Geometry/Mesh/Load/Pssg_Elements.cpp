@@ -51,12 +51,19 @@ const PssgNode& PssgNode::get_child(
     const std::string& type,
     const PssgSchema& schema) const
 {
+    const PssgNode* result = nullptr;
     for (const auto& c : children) {
         if (schema.nodes.get(c.type_id).name == type) {
-            return c;
+            if (result != nullptr) {
+                THROW_OR_ABORT("Found multiple children of type \"" + type + '"');
+            }
+            result = &c;
         }
     }
-    THROW_OR_ABORT("Could not find child of type \"" + type + '"');
+    if (result == nullptr) {
+        THROW_OR_ABORT("Could not find child of type \"" + type + '"');
+    }
+    return *result;
 }
 
 uint32_t PssgNode::nchildren(const std::string& type, const PssgSchema& schema) const {

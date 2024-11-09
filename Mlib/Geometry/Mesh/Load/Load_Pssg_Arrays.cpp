@@ -96,28 +96,35 @@ void add_instantiables(
         node.get_child("TRANSFORM", schema).array<float, 4, 4>().casted<TInstancePos>() };
     auto mc = m * trafo;
     if (schema.nodes.get(node.type_id).name == "RENDERNODE") {
-        const auto& rsi = node.get_child("RENDERSTREAMINSTANCE", schema);
-        auto indices = rsi.get_attribute("indices", schema).string();
-        if (!indices.starts_with('#')) {
-            THROW_OR_ABORT("indices do not start with \"#\"");
-        }
-        auto shader = rsi.get_attribute("shader", schema).string();
-        if (!shader.starts_with('#')) {
-            THROW_OR_ABORT("shader does not start with \"#\"");
-        }
-        if (auto s = shaders.try_get(shader.substr(1)); s != nullptr) {
-            auto& resource = *resources.get(resource_prefix + indices.substr(1));
-            const auto& shader_object = shaders.get(shader.substr(1));
-            resource.morphology.physics_material = shader_object.physics_material;
-            resource.material = shader_object.render_material;
-        }
-        auto scale = sqrt(sum<0>(squared(mc.R)));
-        auto mean_scale = mean(scale);
-        if (any(abs(scale - mean_scale) > 1e-3f)) {
-            THROW_OR_ABORT("Scale is anisotropic");
-        }
-        auto mcr = TransformationMatrix{ mc.R / mean_scale, mc.t };
-        instances.emplace_back(resource_prefix + indices.substr(1), mcr, mean_scale, RenderingDynamics::STATIC);
+        node.for_each_node([&](const PssgNode& child){
+            if (schema.nodes.get(child.type_id).name == "RENDERSTREAMINSTANCE") {
+                auto indices = child.get_attribute("indices", schema).string();
+                if (!indices.starts_with('#')) {
+                    THROW_OR_ABORT("indices do not start with \"#\"");
+                }
+                auto shader = child.get_attribute("shader", schema).string();
+                if (!shader.starts_with('#')) {
+                    THROW_OR_ABORT("shader does not start with \"#\"");
+                }
+                if (auto s = shaders.try_get(shader.substr(1)); s != nullptr) {
+                    auto& resource = *resources.get(resource_prefix + indices.substr(1));
+                    const auto& shader_object = shaders.get(shader.substr(1));
+                    if (!resource.material.textures_color.empty()) {
+                        THROW_OR_ABORT("Array resource instantiated multiple times");
+                    }
+                    resource.morphology.physics_material = shader_object.physics_material;
+                    resource.material = shader_object.render_material;
+                }
+                auto scale = sqrt(sum<0>(squared(mc.R)));
+                auto mean_scale = mean(scale);
+                if (any(abs(scale - mean_scale) > 1e-3f)) {
+                    THROW_OR_ABORT("Scale is anisotropic");
+                }
+                auto mcr = TransformationMatrix{ mc.R / mean_scale, mc.t };
+                instances.emplace_back(resource_prefix + indices.substr(1), mcr, mean_scale, RenderingDynamics::STATIC);
+            }
+            return true;
+        });
     }
     for (const auto& c : node.children) {
         static const std::set<std::string> CHILDREN {
@@ -379,6 +386,26 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .textures_color = std::vector<BlendMapTexture>{{
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
+                                }}}}});
+            } else if (shader_group == "#terrain_infield_nm.fx") {
+                auto diffuse = get_texture(13);
+                if (diffuse.empty()) {
+                    THROW_OR_ABORT("Diffuse texture not specified");
+                }
+                auto normal = get_texture(14);
+                shaders.add(
+                    node_id,
+                    Shader{
+                        .physics_material = PhysicsMaterial::NONE,
+                        .render_material = Material{
+                            .textures_color = std::vector<BlendMapTexture>{{
+                                .texture_descriptor = TextureDescriptor{
+                                    .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash(),
+                                    .normal = (normal.empty() || (normal == "default_normal_map_n.tga.dds"))
+                                        ? ColormapWithModifiers{}.compute_hash()
+                                        : ColormapWithModifiers{
+                                            .filename = VariableAndHash{ normal },
+                                            .color_mode = ColorMode::RGB }.compute_hash()
                                 }}}}});
             } else if (shader_group == "#terrain_track_vista_d4.fx")
             {
