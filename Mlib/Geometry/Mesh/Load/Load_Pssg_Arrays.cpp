@@ -350,16 +350,16 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             auto shader_group = node.get_attribute("shaderGroup", model.schema).string();
             auto node_id = node.get_attribute("id", model.schema).string();
             auto get_texture = [&](size_t parameter_id) -> std::string {
-                std::string result;
+                std::string texture_reference;
                 for (const auto& c : node.children) {
                     if ((model.schema.nodes.get(c.type_id).name == "SHADERINPUT") &&
                         (c.get_attribute("parameterID", model.schema).uint32() == parameter_id))
                     {
-                        result = c.get_attribute("texture", model.schema).string();
-                        if (!result.starts_with("#")) {
-                            THROW_OR_ABORT("Diffuse does not start with \"#\": " + result);
+                        texture_reference = c.get_attribute("texture", model.schema).string();
+                        if (!texture_reference.starts_with("#")) {
+                            THROW_OR_ABORT("Texture reference does not start with \"#\": " + texture_reference);
                         }
-                        return result.substr(1) + ".dds";
+                        return texture_reference.substr(1) + ".dds";
                     }
                 }
                 return "";
