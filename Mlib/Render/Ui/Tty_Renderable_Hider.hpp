@@ -21,6 +21,7 @@ private:
     ButtonPress increase_;
     ButtonPress decrease_much_;
     ButtonPress increase_much_;
+    ButtonPress show_only_1_;
     SafeAtomicSharedMutex mutex_;
 };
 

@@ -13,11 +13,13 @@ TtyRenderableHider::TtyRenderableHider(const ButtonStates& button_states)
     , increase_{ button_states, key_configurations_, "increase", "" }
     , decrease_much_{ button_states, key_configurations_, "decrease_much", "" }
     , increase_much_{ button_states, key_configurations_, "increase_much", "" }
+    , show_only_1_{ button_states, key_configurations_, "show_only_1", "" }
 {
     key_configurations_.insert("decrease", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "UP"}}} });
     key_configurations_.insert("increase", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "DOWN"}}} });
     key_configurations_.insert("decrease_much", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "PAGE_UP"}}} });
     key_configurations_.insert("increase_much", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "PAGE_DOWN"}}} });
+    key_configurations_.insert("show_only_1", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "LEFT_SHIFT"}}} });
 }
 
 void TtyRenderableHider::process_input() {
@@ -39,6 +41,9 @@ void TtyRenderableHider::process_input() {
                 first_visible_name_ = *it;
             } else {
                 first_visible_name_.clear();
+                if (!available_names_.empty()) {
+                    first_visible_name_ = *available_names_.begin();
+                }
             }
         }
     };
@@ -91,7 +96,11 @@ bool TtyRenderableHider::is_visible(const std::string& name) {
         if (first_visible_name_.empty()) {
             return true;
         }
-        return name >= first_visible_name_; 
+        if (show_only_1_.keys_down()) {
+            return name == first_visible_name_;
+        } else {
+            return name >= first_visible_name_;
+        }
     }();
     auto capacity_ok = [this](){
         return available_names_.size() < 10'000;
