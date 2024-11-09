@@ -275,7 +275,15 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         {"CGSTREAM", false},
         {"SHADERSTREAMDEFINITION", false},
         {"SHADERGROUPPASS", false},
-        {"LAYER", false}
+        {"LAYER", false},
+        {"NeAnimSet", false},
+        {"NeAnimSetClipRef", false},
+        {"NeAnimPacket_SC4", false},
+        {"NeAnimPacketData_SC4", true},
+        {"NeAnimPacket_L4", false},
+        {"NeAnimPacketData_L4", true},
+        {"NeAnimClip", false},
+        {"NeAnimClipPacketRef", false}
     };
     auto it = IS_DATA_NODE.find(schema_node.name);
     if (it == IS_DATA_NODE.end()) {
