@@ -316,6 +316,10 @@ struct DataBlockStreams {
     std::vector<const PssgNode*> streams;
 };
 
+struct ShaderGroup {
+    UnorderedMap<std::string, uint32_t> parameters;
+};
+
 template <class TResourcePos, class TInstancePos>
 PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     const PssgModel& model,
@@ -325,6 +329,23 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     IoVerbosity verbosity)
 {
     PssgArrays<TResourcePos, TInstancePos> result;
+    UnorderedMap<std::string, ShaderGroup> shader_groups;
+    model.root.for_each_node([&](const PssgNode& node){
+        const auto& s = model.schema.nodes.get(node.type_id);
+        if (s.name == "SHADERGROUP") {
+            ShaderGroup sg;
+            for (const auto& input_definition : node.children) {
+                if (model.schema.nodes.get(input_definition.type_id).name != "SHADERINPUTDEFINITION") {
+                    THROW_OR_ABORT("Shader group child is not a shader input definition");
+                }
+                sg.parameters.add(
+                    input_definition.get_attribute("name", model.schema).string(),
+                    integral_cast<uint32_t>(sg.parameters.size()));
+            }
+            shader_groups.add(node.get_attribute("id", model.schema).string(), std::move(sg));
+        }
+        return true;
+    });
     UnorderedMap<std::string, DataBlockStreams> data_block_streams;
     model.root.for_each_node([&](const PssgNode& node){
         const auto& s = model.schema.nodes.get(node.type_id);
@@ -354,9 +375,14 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     model.root.for_each_node([&](const PssgNode& node){
         const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "SHADERINSTANCE") {
-            auto shader_group = node.get_attribute("shaderGroup", model.schema).string();
+            auto shader_group_ref = node.get_attribute("shaderGroup", model.schema).string();
+            if (!shader_group_ref.starts_with('#')) {
+                THROW_OR_ABORT("Shader group reference does not start with \"#\"");
+            }
             auto node_id = node.get_attribute("id", model.schema).string();
-            auto get_texture = [&](size_t parameter_id) -> std::string {
+            const auto& shader_group_object = shader_groups.get(shader_group_ref.substr(1));
+            auto get_texture = [&](const std::string& parameter_name) -> std::string {
+                uint32_t parameter_id = shader_group_object.parameters.get(parameter_name);
                 std::string texture_reference;
                 for (const auto& c : node.children) {
                     if ((model.schema.nodes.get(c.type_id).name == "SHADERINPUT") &&
@@ -371,11 +397,11 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 }
                 return "";
                 };
-            if ((shader_group == "#terrain_road.fx") ||
-                (shader_group == "#terrain_edge_nm.fx") ||
-                (shader_group == "#terrain_wsm_edge_nm.fx"))
+            if ((shader_group_ref == "#terrain_road.fx") ||
+                (shader_group_ref == "#terrain_edge_nm.fx") ||
+                (shader_group_ref == "#terrain_wsm_edge_nm.fx"))
             {
-                auto diffuse = get_texture(11);
+                auto diffuse = get_texture("TDiffuseSpecMap1");
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
                 }
@@ -387,12 +413,12 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
                                 }}}}});
-            } else if (shader_group == "#terrain_infield_nm.fx") {
-                auto diffuse = get_texture(13);
+            } else if (shader_group_ref == "#terrain_infield_nm.fx") {
+                auto diffuse = get_texture("TDiffuseSpecMap2");
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
                 }
-                auto normal = get_texture(14);
+                auto normal = get_texture("TNormalMap2");
                 shaders.add(
                     node_id,
                     Shader{
@@ -407,9 +433,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                             .filename = VariableAndHash{ normal },
                                             .color_mode = ColorMode::RGB }.compute_hash()
                                 }}}}});
-            } else if (shader_group == "#terrain_track_vista_d4.fx")
+            } else if (shader_group_ref == "#terrain_track_vista_d4.fx")
             {
-                auto diffuse = get_texture(33);
+                auto diffuse = get_texture("TlargeColourMap");
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
                 }
@@ -421,9 +447,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
                                 }}}}});
-            } else if (shader_group == "#terrain_lod.fx")
+            } else if (shader_group_ref == "#terrain_lod.fx")
             {
-                auto diffuse = get_texture(2);
+                auto diffuse = get_texture("TDiffuseAlphaMap");
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
                 }
@@ -435,7 +461,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
                                 }}}}});
-            } else if (shader_group == "#batched_track.fx")
+            } else if (shader_group_ref == "#batched_track.fx")
             {
                 shaders.add(
                     node_id,
