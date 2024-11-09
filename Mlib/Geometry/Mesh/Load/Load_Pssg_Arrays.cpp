@@ -88,6 +88,7 @@ void add_instantiables(
     const PssgSchema& schema,
     const TransformationMatrix<float, TInstancePos, 3>& m,
     const Map<std::string, Shader>& shaders,
+    const std::string& resource_prefix,
     UnorderedMap<std::string, std::shared_ptr<ColoredVertexArray<TResourcePos>>>& resources,
     std::list<InstanceInformation<TInstancePos>>& instances)
 {
@@ -105,19 +106,25 @@ void add_instantiables(
             THROW_OR_ABORT("shader does not start with \"#\"");
         }
         if (auto s = shaders.try_get(shader.substr(1)); s != nullptr) {
-            auto& resource = *resources.get(indices.substr(1));
+            auto& resource = *resources.get(resource_prefix + indices.substr(1));
             const auto& shader_object = shaders.get(shader.substr(1));
             resource.morphology.physics_material = shader_object.physics_material;
             resource.material = shader_object.render_material;
         }
-        instances.emplace_back(indices.substr(1), mc, 1.f, RenderingDynamics::STATIC);
+        auto scale = sqrt(sum<0>(squared(mc.R)));
+        auto mean_scale = mean(scale);
+        if (any(abs(scale - mean_scale) > 1e-3f)) {
+            THROW_OR_ABORT("Scale is anisotropic");
+        }
+        auto mcr = TransformationMatrix{ mc.R / mean_scale, mc.t };
+        instances.emplace_back(resource_prefix + indices.substr(1), mcr, mean_scale, RenderingDynamics::STATIC);
     }
     for (const auto& c : node.children) {
         static const std::set<std::string> CHILDREN {
             "NODE", "RENDERNODE"
         };
         if (CHILDREN.contains(schema.nodes.get(c.type_id).name)) {
-            add_instantiables(c, schema, mc, shaders, resources, instances);
+            add_instantiables(c, schema, mc, shaders, resource_prefix, resources, instances);
         }
     }
 }
@@ -166,7 +173,7 @@ struct DataBlocks {
         auto render_type = data_block_stream.get_attribute("renderType", model.schema).string();
         auto data_type = data_block_stream.get_attribute("dataType", model.schema).string();
         const ColoredVertex<TPos>* cv0 = nullptr;
-        if (render_type == "Vertex") {
+        if ((render_type == "Vertex") || (render_type == "SkinnableVertex")) {
             features |= ColoredVertexFeatures::POSITION;
             if (data_type != "float3") {
                 THROW_OR_ABORT("Unsupported vertex data type");
@@ -215,7 +222,7 @@ struct DataBlocks {
                     data.data(),                                                // src
                     (std::byte*)vertices.data(),                                // dst
                     [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
-            } else if ((data_type == "float3") || (data_type == "float4")) {
+            } else if ((data_type == "float2") || (data_type == "float3") || (data_type == "float4")) {
                 strided_copy<float, float>(
                     offset,                                                     // src_offset
                     stride,                                                     // src_stride
@@ -233,21 +240,35 @@ struct DataBlocks {
             }
         } else if (render_type == "Normal") {
             features |= ColoredVertexFeatures::NORMAL;
-            if (data_type != "half4") {
-                THROW_OR_ABORT("Unsupported Normal data type");
+            if (data_type == "half4") {
+                strided_copy<uint16_t, float>(
+                    offset,                                                     // src_offset
+                    stride,                                                     // src_stride
+                    (uint32_t)(std::ptrdiff_t)(&cv0->normal),                   // dst_offset
+                    sizeof(ColoredVertex<TPos>),                                // dst_stride
+                    element_count,                                              // nelements
+                    3,                                                          // ndim
+                    size,                                                       // src_size
+                    vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                    data.data(),                                                // src
+                    (std::byte*)vertices.data(),                                // dst
+                    [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
+            } else if (data_type == "float3") {
+                strided_copy<float, float>(
+                    offset,                                                     // src_offset
+                    stride,                                                     // src_stride
+                    (uint32_t)(std::ptrdiff_t)(&cv0->normal),                   // dst_offset
+                    sizeof(ColoredVertex<TPos>),                                // dst_stride
+                    element_count,                                              // nelements
+                    3,                                                          // ndim
+                    size,                                                       // src_size
+                    vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                    data.data(),                                                // src
+                    (std::byte*)vertices.data(),                                // dst
+                    [](float h) { return swap_endianness(h); });
+            } else {
+                THROW_OR_ABORT("Unsupported Normal data type: \"" + data_type + '"');
             }
-            strided_copy<uint16_t, float>(
-                offset,                                                     // src_offset
-                stride,                                                     // src_stride
-                (uint32_t)(std::ptrdiff_t)(&cv0->normal),                   // dst_offset
-                sizeof(ColoredVertex<TPos>),                                // dst_stride
-                element_count,                                              // nelements
-                3,                                                          // ndim
-                size,                                                       // src_size
-                vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                data.data(),                                                // src
-                (std::byte*)vertices.data(),                                // dst
-                [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
         } else if (render_type == "Tangent") {
             features |= ColoredVertexFeatures::TANGENT;
             if (data_type != "half4") {
@@ -293,6 +314,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     const PssgModel& model,
     const LoadMeshConfig<TResourcePos>& cfg,
     IDdsResources* dds_resources,
+    const std::string& resource_prefix,
     IoVerbosity verbosity)
 {
     PssgArrays<TResourcePos, TInstancePos> result;
@@ -453,8 +475,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     triangles[i](j) = dbm.vertices[id];
                 }
             }
-            auto& cva = *result.resources.add(node_id, std::make_shared<ColoredVertexArray<TResourcePos>>(
-                node_id,
+            auto& cva = *result.resources.add(resource_prefix + node_id, std::make_shared<ColoredVertexArray<TResourcePos>>(
+                resource_prefix + node_id,
                 Material{},
                 Morphology{ cfg.physics_material },
                 ModifierBacklog{},
@@ -528,6 +550,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 model.schema,
                 TransformationMatrix<float, TInstancePos, 3>::identity(),
                 shaders,
+                resource_prefix,
                 result.resources,
                 result.instances);
         }
@@ -579,24 +602,28 @@ template PssgArrays<float, float> load_pssg_arrays<float, float>(
     const PssgModel& model,
     const LoadMeshConfig<float>& cfg,
     IDdsResources* dds_resources,
+    const std::string& resource_prefix,
     IoVerbosity verbosity);
 
 template PssgArrays<float, double> load_pssg_arrays<float, double>(
     const PssgModel& model,
     const LoadMeshConfig<float>& cfg,
     IDdsResources* dds_resources,
+    const std::string& resource_prefix,
     IoVerbosity verbosity);
 
 template PssgArrays<double, float> load_pssg_arrays<double, float>(
     const PssgModel& model,
     const LoadMeshConfig<double>& cfg,
     IDdsResources* dds_resources,
+    const std::string& resource_prefix,
     IoVerbosity verbosity);
 
 template PssgArrays<double, double> load_pssg_arrays<double, double>(
     const PssgModel& model,
     const LoadMeshConfig<double>& cfg,
     IDdsResources* dds_resources,
+    const std::string& resource_prefix,
     IoVerbosity verbosity);
 
 }

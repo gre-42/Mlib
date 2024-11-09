@@ -23,8 +23,8 @@
 using namespace Mlib;
 
 SceneNodeResources::SceneNodeResources()
-    : resources_{ "Resources" }
-    , instantiables_{ "Instantiables" }
+    : resources_{ "Resource" }
+    , instantiables_{ "Instantiable" }
     , geographic_mappings_{ "Geographic mapping" }
     , wind_{ "Wind" }
     , gravity_{ "Gravity" }

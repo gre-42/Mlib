@@ -28,6 +28,7 @@ PssgArrays<TResourcePos, TInstancePos> load_pssg_arrays(
     const PssgModel& model,
     const LoadMeshConfig<TResourcePos>& cfg,
     IDdsResources* dds_resources,
+    const std::string& resource_prefix,
     IoVerbosity verbosity);
 
 }

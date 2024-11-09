@@ -12,6 +12,7 @@
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Io/Folder_IStream_Dictionary.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Raster/Raster_Factory.hpp>
@@ -139,12 +140,21 @@ static void exec(
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::rw_resource_files)) {
         add_rw_file_resource(s.path, cfg, dddb, added_scene_node_resources);
     }
-    for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::pssg_files)) {
+    for (const auto& [i, s] : enumerate(args.arguments.try_pathes_or_variables(KnownArgs::pssg_files))) {
         auto& rr = RenderingContextStack::primary_rendering_resources();
         auto& sr = RenderingContextStack::primary_scene_node_resources();
         auto model = load_pssg(s.path, IoVerbosity::SILENT);
-        auto arrays = load_pssg_arrays<TPosition, ScenePos>(model, *cfg, &rr, IoVerbosity::SILENT);
-        load_renderable_pssg(arrays, sr, added_scene_node_resources, added_instantiables);
+        try {
+            auto arrays = load_pssg_arrays<TPosition, ScenePos>(
+                model,
+                *cfg,
+                &rr,
+                std::to_string(i) + '_',
+                IoVerbosity::SILENT);
+            load_renderable_pssg(arrays, sr, added_scene_node_resources, added_instantiables);
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Error interpreting file \"" + s.path + "\": " + e.what());
+        }
     }
     if (auto rv = args.arguments.try_at<std::string>(KnownArgs::resource_variable)) {
         if (args.local_json_macro_arguments == nullptr) {

@@ -26,7 +26,8 @@ int main(int argc, char **argv) {
                 auto arrays = load_pssg_arrays<float, float>(
                     model,
                     LoadMeshConfig<float>{},
-                    nullptr, // dds_resources
+                    nullptr,    // dds_resources
+                    "",         // resource_prefix
                     IoVerbosity::METADATA);
             }
             if (args.has_named_value("--export")) {
