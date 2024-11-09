@@ -112,19 +112,169 @@ void add_instantiables(
 }
 
 template <class TPos>
-struct DataBlock {
-    explicit DataBlock(size_t element_count)
-        : vertices{
-            element_count,
-            ColoredVertex<TPos>(
-                fixed_nans<TPos, 3>(),          // position
-                fixed_ones<float, 3>(),         // color
-                fixed_zeros<float, 2>(),        // uv
-                fixed_zeros<float, 3>(),        // normal
-                fixed_zeros<float, 3>())}       // tangent
-    {}
+struct DataBlocks {
+    void add(
+        const PssgModel& model,
+        const PssgNode& data_block,
+        const PssgNode& data_block_stream)
+    {
+        // Process DATABLOCK
+        auto element_count = data_block.get_attribute("elementCount", model.schema).uint32();
+        auto size = data_block.get_attribute("size", model.schema).uint32();
+        if (element_count > 1'000'000'000) {
+            THROW_OR_ABORT("Element count too large");
+        }
+        if (size > 1'000'000'000) {
+            THROW_OR_ABORT("Size too large");
+        }
+        const auto& data = data_block.get_child("DATABLOCKDATA", model.schema).data;
+        if (data.size() < size) {
+            THROW_OR_ABORT("DATABLOCKDATA too short");
+        }
+        if (vertices.empty()) {
+            vertices.resize(
+                element_count,
+                ColoredVertex<TPos>(
+                    fixed_nans<TPos, 3>(),          // position
+                    fixed_ones<float, 3>(),         // color
+                    fixed_zeros<float, 2>(),        // uv
+                    fixed_zeros<float, 3>(),        // normal
+                    fixed_zeros<float, 3>()));      // tangent
+        } else if (vertices.size() != element_count) {
+            THROW_OR_ABORT("Element count mismatch");
+        }
+        // Process DATABLOCKSTREAM
+        auto offset = data_block_stream.get_attribute("offset", model.schema).uint32();
+        auto stride = data_block_stream.get_attribute("stride", model.schema).uint32();
+        if (offset > 1000) {
+            THROW_OR_ABORT("Offset too large");
+        }
+        if (stride > 1000) {
+            THROW_OR_ABORT("Stride too large");
+        }
+        auto render_type = data_block_stream.get_attribute("renderType", model.schema).string();
+        auto data_type = data_block_stream.get_attribute("dataType", model.schema).string();
+        const ColoredVertex<TPos>* cv0 = nullptr;
+        if (render_type == "Vertex") {
+            features |= ColoredVertexFeatures::POSITION;
+            if (data_type != "float3") {
+                THROW_OR_ABORT("Unsupported vertex data type");
+            }
+            strided_copy<float, TPos>(
+                offset,                                                     // src_offset
+                stride,                                                     // src_stride
+                (uint32_t)(std::ptrdiff_t)(&cv0->position),                 // dst_offset
+                sizeof(ColoredVertex<TPos>),                                // dst_stride
+                element_count,                                              // nelements
+                3,                                                          // ndim
+                size,                                                       // src_size
+                vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                data.data(),                                                // src
+                (std::byte*)vertices.data(),                                // dst
+                [](float f) { return (TPos)swap_endianness(f); });
+        } else if (render_type == "Color") {
+            features |= ColoredVertexFeatures::COLOR;
+            if (data_type != "uint_color_argb") {
+                THROW_OR_ABORT("Unsupported color data type");
+            }
+            strided_copy<uint8_t, float>(
+                offset,                                                     // src_offset
+                stride,                                                     // src_stride
+                (uint32_t)(std::ptrdiff_t)(&cv0->color),                    // dst_offset
+                sizeof(ColoredVertex<TPos>),                                // dst_stride
+                element_count,                                              // nelements
+                3,                                                          // ndim
+                size,                                                       // src_size
+                vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                data.data(),                                                // src
+                (std::byte*)vertices.data(),                                // dst
+                [](uint8_t f) { return float(f) / 255; });
+        } else if (render_type == "ST") {
+            features |= ColoredVertexFeatures::UV;
+            if ((data_type == "half2") || (data_type == "half4")) {
+                strided_copy<uint16_t, float>(
+                    offset,                                                     // src_offset
+                    stride,                                                     // src_stride
+                    (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
+                    sizeof(ColoredVertex<TPos>),                                // dst_stride
+                    element_count,                                              // nelements
+                    2,                                                          // ndim
+                    size,                                                       // src_size
+                    vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                    data.data(),                                                // src
+                    (std::byte*)vertices.data(),                                // dst
+                    [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
+            } else if ((data_type == "float3") || (data_type == "float4")) {
+                strided_copy<float, float>(
+                    offset,                                                     // src_offset
+                    stride,                                                     // src_stride
+                    (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
+                    sizeof(ColoredVertex<TPos>),                                // dst_stride
+                    element_count,                                              // nelements
+                    2,                                                          // ndim
+                    size,                                                       // src_size
+                    vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                    data.data(),                                                // src
+                    (std::byte*)vertices.data(),                                // dst
+                    [](float h) { return swap_endianness(h); });
+            } else {
+                THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
+            }
+        } else if (render_type == "Normal") {
+            features |= ColoredVertexFeatures::NORMAL;
+            if (data_type != "half4") {
+                THROW_OR_ABORT("Unsupported Normal data type");
+            }
+            strided_copy<uint16_t, float>(
+                offset,                                                     // src_offset
+                stride,                                                     // src_stride
+                (uint32_t)(std::ptrdiff_t)(&cv0->normal),                   // dst_offset
+                sizeof(ColoredVertex<TPos>),                                // dst_stride
+                element_count,                                              // nelements
+                3,                                                          // ndim
+                size,                                                       // src_size
+                vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                data.data(),                                                // src
+                (std::byte*)vertices.data(),                                // dst
+                [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
+        } else if (render_type == "Tangent") {
+            features |= ColoredVertexFeatures::TANGENT;
+            if (data_type != "half4") {
+                THROW_OR_ABORT("Unsupported Tangent data type");
+            }
+            strided_copy<uint16_t, float>(
+                offset,                                                     // src_offset
+                stride,                                                     // src_stride
+                (uint32_t)(std::ptrdiff_t)(&cv0->tangent),                  // dst_offset
+                sizeof(ColoredVertex<TPos>),                                // dst_stride
+                element_count,                                              // nelements
+                3,                                                          // ndim
+                size,                                                       // src_size
+                vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                data.data(),                                                // src
+                (std::byte*)vertices.data(),                                // dst
+                [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
+        } else if (render_type == "Binormal") {
+            // Do nothing
+        } else if (render_type == "SkinnableVertex") {
+            // Do nothing
+        } else if (render_type == "SkinIndices") {
+            // Do nothing
+        } else if (render_type == "SkinWeights") {
+            // Do nothing
+        } else if (render_type == "SkinnableNormal") {
+            // Do nothing
+        } else {
+            THROW_OR_ABORT("Unsupported render type: \"" + render_type + '"');
+        }
+    }
     std::vector<ColoredVertex<TPos>> vertices;
     ColoredVertexFeatures features = ColoredVertexFeatures::NONE;
+};
+
+struct DataBlockStreams {
+    const PssgNode* data_block;
+    std::vector<const PssgNode*> streams;
 };
 
 template <class TResourcePos, class TInstancePos>
@@ -135,154 +285,28 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     IoVerbosity verbosity)
 {
     PssgArrays<TResourcePos, TInstancePos> result;
-    UnorderedMap<std::string, DataBlock<TResourcePos>> data_blocks;
+    UnorderedMap<std::string, DataBlockStreams> data_block_streams;
     model.root.for_each_node([&](const PssgNode& node){
         const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "DATABLOCK") {
-            // Load vertices, color, ST?, ...
-            auto element_count = node.get_attribute("elementCount", model.schema).uint32();
-            auto size = node.get_attribute("size", model.schema).uint32();
-            if (element_count > 1'000'000'000) {
-                THROW_OR_ABORT("Element count too large");
-            }
-            if (size > 1'000'000'000) {
-                THROW_OR_ABORT("Size too large");
-            }
-            const auto& data = node.get_child("DATABLOCKDATA", model.schema).data;
-            if (data.size() < size) {
-                THROW_OR_ABORT("DATABLOCKDATA too short");
-            }
             std::string node_id = node.get_attribute("id", model.schema).string();
-            auto& b = data_blocks.add(node_id, element_count);
+            uint32_t stream_count = node.get_attribute("streamCount", model.schema).uint32();
+            if (stream_count > 100) {
+                THROW_OR_ABORT("Stream count too large");
+            }
+            DataBlockStreams dbs{ &node };
+            dbs.streams.reserve(stream_count);
             for (const auto& c : node.children) {
                 const auto& cs = model.schema.nodes.get(c.type_id);
                 if (cs.name == "DATABLOCKDATA") {
                     continue;
                 }
-                auto offset = c.get_attribute("offset", model.schema).uint32();
-                auto stride = c.get_attribute("stride", model.schema).uint32();
-                if (offset > 1000) {
-                    THROW_OR_ABORT("Offset too large");
-                }
-                if (stride > 1000) {
-                    THROW_OR_ABORT("Stride too large");
-                }
-                auto render_type = c.get_attribute("renderType", model.schema).string();
-                auto data_type = c.get_attribute("dataType", model.schema).string();
-                const ColoredVertex<TResourcePos>* cv0 = nullptr;
-                if (render_type == "Vertex") {
-                    b.features |= ColoredVertexFeatures::POSITION;
-                    if (data_type != "float3") {
-                        THROW_OR_ABORT("Unsupported vertex data type");
-                    }
-                    strided_copy<float, TResourcePos>(
-                        offset,                                                     // src_offset
-                        stride,                                                     // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->position),                 // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
-                        element_count,                                              // nelements
-                        3,                                                          // ndim
-                        size,                                                       // src_size
-                        b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
-                        data.data(),                                                // src
-                        (std::byte*)b.vertices.data(),                              // dst
-                        [](float f) { return (TResourcePos)swap_endianness(f); });
-                } else if (render_type == "Color") {
-                    b.features |= ColoredVertexFeatures::COLOR;
-                    if (data_type != "uint_color_argb") {
-                        THROW_OR_ABORT("Unsupported color data type");
-                    }
-                    strided_copy<uint8_t, float>(
-                        offset,                                                     // src_offset
-                        stride,                                                     // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->color),                    // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
-                        element_count,                                              // nelements
-                        3,                                                          // ndim
-                        size,                                                       // src_size
-                        b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
-                        data.data(),                                                // src
-                        (std::byte*)b.vertices.data(),                              // dst
-                        [](uint8_t f) { return float(f) / 255; });
-                } else if (render_type == "ST") {
-                    b.features |= ColoredVertexFeatures::UV;
-                    if ((data_type == "half2") || (data_type == "half4")) {
-                        strided_copy<uint16_t, float>(
-                            offset,                                                     // src_offset
-                            stride,                                                     // src_stride
-                            (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
-                            sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
-                            element_count,                                              // nelements
-                            2,                                                          // ndim
-                            size,                                                       // src_size
-                            b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
-                            data.data(),                                                // src
-                            (std::byte*)b.vertices.data(),                              // dst
-                            [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
-                    } else if ((data_type == "float3") || (data_type == "float4")) {
-                        strided_copy<float, float>(
-                            offset,                                                     // src_offset
-                            stride,                                                     // src_stride
-                            (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
-                            sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
-                            element_count,                                              // nelements
-                            2,                                                          // ndim
-                            size,                                                       // src_size
-                            b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
-                            data.data(),                                                // src
-                            (std::byte*)b.vertices.data(),                              // dst
-                            [](float h) { return swap_endianness(h); });
-                    } else {
-                        THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
-                    }
-                } else if (render_type == "Normal") {
-                    b.features |= ColoredVertexFeatures::NORMAL;
-                    if (data_type != "half4") {
-                        THROW_OR_ABORT("Unsupported Normal data type");
-                    }
-                    strided_copy<uint16_t, float>(
-                        offset,                                                     // src_offset
-                        stride,                                                     // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->normal),                   // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
-                        element_count,                                              // nelements
-                        3,                                                          // ndim
-                        size,                                                       // src_size
-                        b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
-                        data.data(),                                                // src
-                        (std::byte*)b.vertices.data(),                              // dst
-                        [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
-                } else if (render_type == "Tangent") {
-                    b.features |= ColoredVertexFeatures::TANGENT;
-                    if (data_type != "half4") {
-                        THROW_OR_ABORT("Unsupported Tangent data type");
-                    }
-                    strided_copy<uint16_t, float>(
-                        offset,                                                     // src_offset
-                        stride,                                                     // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->tangent),                  // dst_offset
-                        sizeof(ColoredVertex<TResourcePos>),                        // dst_stride
-                        element_count,                                              // nelements
-                        3,                                                          // ndim
-                        size,                                                       // src_size
-                        b.vertices.size() * sizeof(ColoredVertex<TResourcePos>),    // dst_size
-                        data.data(),                                                // src
-                        (std::byte*)b.vertices.data(),                              // dst
-                        [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
-                } else if (render_type == "Binormal") {
-                    // Do nothing
-                } else if (render_type == "SkinnableVertex") {
-                    // Do nothing
-                } else if (render_type == "SkinIndices") {
-                    // Do nothing
-                } else if (render_type == "SkinWeights") {
-                    // Do nothing
-                } else if (render_type == "SkinnableNormal") {
-                    // Do nothing
-                } else {
-                    THROW_OR_ABORT("Unsupported render type: \"" + render_type + '"');
-                }
+                dbs.streams.push_back(&c);
             }
+            if (dbs.streams.size() != stream_count) {
+                THROW_OR_ABORT("Stream count mismatch");
+            }
+            data_block_streams.add(node_id, std::move(dbs));
         }
         return true;
     });
@@ -320,9 +344,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     std::vector<BlendMapTexture>{{
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
-                        },
-                        .scale = { 1.f / 512.f, 1.f / 512.f },
-                        .uv_source = BlendMapUvSource::HORIZONTAL}});
+                        }}});
             } else if (shader_group == "#terrain_track_vista_d4.fx")
             {
                 auto diffuse = get_texture(33);
@@ -334,9 +356,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     std::vector<BlendMapTexture>{{
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
-                        },
-                        .scale = { 1.f / 512.f, 1.f / 512.f },
-                        .uv_source = BlendMapUvSource::HORIZONTAL}});
+                        }}});
             }
         }
         return true;
@@ -369,22 +389,32 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             if ((ixs_count % 3) != 0) {
                 THROW_OR_ABORT("Triangle indices not a multiple of 3");
             }
-            const auto& render_stream = node.get_child("RENDERSTREAM", model.schema);
-            auto data_block_name = render_stream.get_attribute("dataBlock", model.schema).string();
-            if (!data_block_name.starts_with('#')) {
-                THROW_OR_ABORT("dataBlock does not start with \"#\"");
-            }
-            const auto& data_block = data_blocks.get(data_block_name.substr(1));
+            DataBlocks<TResourcePos> dbm;
+            node.for_each_node([&](const PssgNode& render_stream){
+                if (model.schema.nodes.get(render_stream.type_id).name == "RENDERSTREAM") {
+                    auto data_block_name = render_stream.get_attribute("dataBlock", model.schema).string();
+                    if (!data_block_name.starts_with('#')) {
+                        THROW_OR_ABORT("dataBlock does not start with \"#\"");
+                    }
+                    auto sub_stream = render_stream.get_attribute("subStream", model.schema).uint32();
+                    const auto& dbs = data_block_streams.get(data_block_name.substr(1));
+                    if (sub_stream >= dbs.streams.size()) {
+                        THROW_OR_ABORT("Sub-stream index too large");
+                    }
+                    dbm.add(model, *dbs.data_block, *dbs.streams[sub_stream]);
+                }
+                return true;
+            });
             auto node_id = node.get_attribute("id", model.schema).string();
             UUVector<FixedArray<ColoredVertex<TResourcePos>, 3>> triangles;
             triangles.resize(ixs_count / 3);
             for (uint32_t i = 0; i < ixs_count / 3; ++i) {
                 for (uint32_t j = 0; j < 3; ++j) {
                     uint16_t id = swap_endianness(reinterpret_cast<const uint16_t*>(isd.data.data())[i * 3 + j]);
-                    if (id >= data_block.vertices.size()) {
-                        THROW_OR_ABORT("Vertex index out of bounds: " + std::to_string(id) + " >= " + std::to_string(data_block.vertices.size()));
+                    if (id >= dbm.vertices.size()) {
+                        THROW_OR_ABORT("Vertex index out of bounds: " + std::to_string(id) + " >= " + std::to_string(dbm.vertices.size()));
                     }
-                    triangles[i](j) = data_block.vertices[id];
+                    triangles[i](j) = dbm.vertices[id];
                 }
             }
             auto& cva = *result.resources.add(node_id, std::make_shared<ColoredVertexArray<TResourcePos>>(
@@ -398,23 +428,23 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
                 UUVector<FixedArray<float, 3>>(),
                 UUVector<FixedArray<uint8_t, 3>>()));
-            if (!any(data_block.features & ColoredVertexFeatures::POSITION)) {
+            if (!any(dbm.features & ColoredVertexFeatures::POSITION)) {
                 THROW_OR_ABORT("Vertices have no position in node \"" + node_id + '"');
             }
-            if (!any(data_block.features & ColoredVertexFeatures::UV)) {
-                for (auto& t : cva.triangles) {
-                    UvShifter3<TResourcePos> uv3{
-                        512.f,
-                        { t(0).position(0), t(0).position(2) },
-                        { t(1).position(0), t(1).position(2) },
-                        { t(2).position(0), t(2).position(2) },
-                        { WrapMode::REPEAT, WrapMode::REPEAT } };
-                    t(0).uv = uv3.u0;
-                    t(1).uv = uv3.u1;
-                    t(2).uv = uv3.u2;
-                }
-            }
-            if (!any(data_block.features & ColoredVertexFeatures::NORMAL)) {
+            // if (!any(dbm.features & ColoredVertexFeatures::UV)) {
+            //     for (auto& t : cva.triangles) {
+            //         UvShifter3<TResourcePos> uv3{
+            //             512.f,
+            //             { t(0).position(0), t(0).position(2) },
+            //             { t(1).position(0), t(1).position(2) },
+            //             { t(2).position(0), t(2).position(2) },
+            //             { WrapMode::REPEAT, WrapMode::REPEAT } };
+            //         t(0).uv = uv3.u0;
+            //         t(1).uv = uv3.u1;
+            //         t(2).uv = uv3.u2;
+            //     }
+            // }
+            if (!any(dbm.features & ColoredVertexFeatures::NORMAL)) {
                 VertexNormals<TResourcePos, float> vn;
                 for (auto& t : cva.triangles) {
                     vn.add_triangle(t);
@@ -436,7 +466,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 //     }
                 // }
             }
-            if (!any(data_block.features & ColoredVertexFeatures::TANGENT)) {
+            if (!any(dbm.features & ColoredVertexFeatures::TANGENT)) {
                 for (auto& t : cva.triangles) {
                     auto ta = triangle_tangent(
                         t(0).position,
