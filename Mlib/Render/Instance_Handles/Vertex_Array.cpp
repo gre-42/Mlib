@@ -9,16 +9,8 @@
 
 using namespace Mlib;
 
-VertexArray::VertexArray(
-    IArrayBuffer& vertex_buffer,
-    IArrayBuffer& bone_weight_buffer,
-    IArrayBuffer& texture_layer_buffer,
-    IArrayBuffer& interior_mapping_buffer)
-    : vertex_buffer{ vertex_buffer }
-    , bone_weight_buffer{ bone_weight_buffer }
-    , texture_layer_buffer{ texture_layer_buffer }
-    , interior_mapping_buffer{ interior_mapping_buffer }
-    , vertex_array_ { (GLuint)-1 }
+VertexArray::VertexArray()
+    : vertex_array_ { (GLuint)-1 }
     , deallocation_token_{ render_deallocator.insert([this]() {deallocate(DeallocationMode::DIRECT); }) }
 {}
 
@@ -28,6 +20,10 @@ VertexArray::~VertexArray() {
     } else {
         deallocate(DeallocationMode::GARBAGE_COLLECTION);
     }
+}
+
+void VertexArray::add_array_buffer(IArrayBuffer& array_buffer) {
+    array_buffers_.push_back(&array_buffer);
 }
 
 bool VertexArray::initialized() const {
@@ -46,25 +42,24 @@ void VertexArray::initialize() {
 }
 
 bool VertexArray::copy_in_progress() const {
-    return
-        vertex_buffer.copy_in_progress() ||
-        bone_weight_buffer.copy_in_progress() ||
-        texture_layer_buffer.copy_in_progress() ||
-        interior_mapping_buffer.copy_in_progress();
+    for (const auto& a : array_buffers_) {
+        if (a->copy_in_progress()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void VertexArray::update() {
-    vertex_buffer.update();
-    bone_weight_buffer.update();
-    texture_layer_buffer.update();
-    interior_mapping_buffer.update();
+    for (auto& a : array_buffers_) {
+        a->update();
+    }
 }
 
 void VertexArray::wait() const {
-    vertex_buffer.wait();
-    bone_weight_buffer.wait();
-    texture_layer_buffer.wait();
-    interior_mapping_buffer.wait();
+    for (const auto& a : array_buffers_) {
+        a->wait();
+    }
 }
 
 void VertexArray::bind() const {

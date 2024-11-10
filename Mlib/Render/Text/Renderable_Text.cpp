@@ -53,14 +53,15 @@ TextResource::TextResource(
     std::string ttf_filename,
     const FixedArray<float, 3>& color,
     size_t max_nchars)
-    : va_{ vertices_, empty_, empty_, empty_ }
-    , loaded_font_{ nullptr }
+    : loaded_font_{ nullptr }
     , canvas_size_{ uninitialized }
     , font_descriptor_{ .ttf_filename = std::move(ttf_filename), .height_pixels = NAN }
     , color_{ color }
     , max_nchars_{ max_nchars }
     , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
-{}
+{
+    va_.add_array_buffer(vertices_);
+}
 
 void TextResource::deallocate() {
     loaded_font_ = nullptr;
@@ -87,7 +88,7 @@ void TextResource::ensure_initialized(float font_height) const
         // configure VAO/VBO for texture quads
         // -----------------------------------
         va_.initialize();
-        va_.vertex_buffer.reserve<Letter>(vdata_.capacity());
+        vertices_.reserve<Letter>(vdata_.capacity());
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -154,7 +155,7 @@ void TextResource::set_contents(
         }
     }
     // update content of VBO memory
-    va_.vertex_buffer.bind();
+    vertices_.bind();
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, integral_cast<GLsizeiptr>(sizeof(vdata_[0]) * vdata_.size()), vdata_.data())); // be sure to use glBufferSubData and not glBufferData
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }

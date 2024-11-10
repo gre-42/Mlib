@@ -102,22 +102,25 @@ enum class ReductionTarget {
 
 static const GLuint IDX_POSITION = 0;
 static const GLuint IDX_COLOR = 1;
-static const GLuint IDX_UV = 2;
-static const GLuint IDX_NORMAL = 3;
-static const GLuint IDX_TANGENT = 4;
-static const GLuint IDX_INSTANCE_ATTRS = 5;
-static const GLuint IDX_ROTATION_QUATERNION = 6;
-static const GLuint IDX_BILLBOARD_IDS = 7;
-static const GLuint IDX_BONE_INDICES = 8;
-static const GLuint IDX_BONE_WEIGHTS = 9;
-static const GLuint IDX_TEXTURE_LAYER = 10;
-static const GLuint IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 11;
-static const GLuint IDX_INTERIOR_MAPPING_MULTIPLIER = 12;
+static const GLuint IDX_NORMAL = 2;
+static const GLuint IDX_TANGENT = 3;
+static const GLuint IDX_INSTANCE_ATTRS = 4;
+static const GLuint IDX_ROTATION_QUATERNION = 5;
+static const GLuint IDX_BILLBOARD_IDS = 6;
+static const GLuint IDX_BONE_INDICES = 7;
+static const GLuint IDX_BONE_WEIGHTS = 8;
+static const GLuint IDX_TEXTURE_LAYER = 9;
+static const GLuint IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 10;
+static const GLuint IDX_INTERIOR_MAPPING_MULTIPLIER = 11;
+static const GLuint IDX_UV_0 = 12;
+static const GLuint IDX_UV_1 = 13;
+static const GLuint IDX_UV_LAST = 22;
 
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
+    size_t nuv_indices,
     size_t texture_modifier_hash,
     size_t nlights,
     size_t nskidmarks,
@@ -156,7 +159,12 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "uniform mat4 MVP;" << std::endl;
     sstr << "layout (location=" << IDX_POSITION << ") in vec3 vPos;" << std::endl;
     sstr << "layout (location=" << IDX_COLOR << ") in vec3 vCol;" << std::endl;
-    sstr << "layout (location=" << IDX_UV << ") in vec2 vTexCoord;" << std::endl;
+    if (nuv_indices > (IDX_UV_LAST - IDX_UV_0)) {
+        THROW_OR_ABORT("UV index too large");
+    }
+    for (size_t i = 0; i < nuv_indices; ++i) {
+        sstr << "layout (location=" << (IDX_UV_0 + i) << ") in vec2 vTexCoord" << i << ";" << std::endl;
+    }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_normalmap || fragments_depend_on_normal) {
         sstr << "layout (location=" << IDX_NORMAL << ") in vec3 vNormal;" << std::endl;
     }
@@ -204,7 +212,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform float uv_offset_u;" << std::endl;
     }
     sstr << "out vec3 color;" << std::endl;
-    sstr << "out vec2 tex_coord;" << std::endl;
+    for (size_t i = 0; i < nuv_indices; ++i) {
+        sstr << "out vec2 tex_coord" << i << ";" << std::endl;
+    }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
             THROW_OR_ABORT("No lights despite has_lightmap_color or has_lightmap_depth");
@@ -301,9 +311,13 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (nbillboard_ids != 0) {
         sstr << "    vPosInstance *= vertex_scale[billboard_id];" << std::endl;
-        sstr << "    tex_coord = vTexCoord * uv_scale[billboard_id] + uv_offset[billboard_id];" << std::endl;
+        for (size_t i = 0; i < nuv_indices; ++i) {
+            sstr << "    tex_coord" << i << " = vTexCoord" << i << " * uv_scale[billboard_id] + uv_offset[billboard_id];" << std::endl;
+        }
     } else {
-        sstr << "    tex_coord = vTexCoord;" << std::endl;
+        for (size_t i = 0; i < nuv_indices; ++i) {
+            sstr << "    tex_coord" << i << " = vTexCoord" << i << ";" << std::endl;
+        }
     }
     // if (has_lookat && !has_instances) {
     //     THROW_OR_ABORT("has_lookat requires has_instances");
@@ -362,7 +376,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    }" << std::endl;
     }
     if (has_uv_offset_u) {
-        sstr << "    tex_coord.s += uv_offset_u;" << std::endl;
+        for (size_t i = 0; i < nuv_indices; ++i) {
+            sstr << "    tex_coord" << i << ".s += uv_offset_u;" << std::endl;
+        }
     }
     if (has_lightmap_color || has_lightmap_depth) {
         for (size_t i : lightmap_indices) {
@@ -449,6 +465,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
     const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
+    size_t nuv_indices,
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y,
     size_t texture_modifier_hash,
@@ -496,6 +513,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float dirtmap_discreteness,
     float dirt_scale)
 {
+    if (nuv_indices > (IDX_UV_LAST - IDX_UV_0)) {
+        THROW_OR_ABORT("UV index too large");
+    }
     // Mipmapping does not work unless all textures are actually sampled everywhere.
     bool compute_interiormap_at_end = true;
     assert_true(nlights == lights.size());
@@ -522,7 +542,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform vec3 dynamic_emissive;" << std::endl;
     }
     if (ntextures_color != 0) {
-        sstr << "in vec2 tex_coord;" << std::endl;
+        for (size_t i = 0; i < nuv_indices; ++i) {
+            sstr << "in vec2 tex_coord" << i << ";" << std::endl;
+        }
     }
     sstr << "out vec4 frag_color;" << std::endl;
     if ((nbillboard_ids != 0) && !orthographic) {
@@ -745,7 +767,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "        norm = -norm;" << std::endl;
             }
             if (reorient_uv0) {
-                sstr << "        tex_coord_flipped.s = -tex_coord_flipped.s;" << std::endl;
+                for (size_t i = 0; i < nuv_indices; ++i) {
+                    sstr << "        tex_coord_flipped" << i << ".s = -tex_coord_flipped" << i << ".s;" << std::endl;
+                }
             }
             sstr << "    }" << std::endl;
         }
@@ -755,14 +779,35 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
         sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
     };
-    auto tex_coords = [](const BlendMapTexture& t) {
+    auto tex_coords = [&nuv_indices](const BlendMapTexture& t) {
         std::stringstream sstr;
         sstr << std::scientific;
         sstr << '(';
-        if (t.uv_source == BlendMapUvSource::HORIZONTAL) {
+        sstr << "vec2(" << t.offset(0) << ", " << t.offset(1) << ") + ";
+        switch (t.uv_source) {
+        case BlendMapUvSource::VERTICAL0:
+        case BlendMapUvSource::VERTICAL1:
+        case BlendMapUvSource::VERTICAL2:
+        case BlendMapUvSource::VERTICAL3:
+        case BlendMapUvSource::VERTICAL4:
+        case BlendMapUvSource::VERTICAL5:
+        case BlendMapUvSource::VERTICAL6:
+        case BlendMapUvSource::VERTICAL7:
+        case BlendMapUvSource::VERTICAL8:
+        case BlendMapUvSource::VERTICAL9:
+        {
+            auto id = ((uint32_t)t.uv_source - (uint32_t)BlendMapUvSource::VERTICAL0);
+            if (id >= nuv_indices) {
+                THROW_OR_ABORT("UV index too large");
+            }
+            sstr << "tex_coord_flipped" << id;
+            break;
+        }
+        case BlendMapUvSource::HORIZONTAL:
             sstr << "(FragPos.xz + horizontal_detailmap_remainder)";
-        } else {
-            sstr << "tex_coord_flipped";
+            break;
+        default:
+            THROW_OR_ABORT("Unknown blend-map UV source");
         }
         if (t.scale(0) == t.scale(1)) {
             sstr << " * " << t.scale(0) << ")";
@@ -816,7 +861,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    alpha_fac *= " << alpha << ';' << std::endl;
     }
     if (ntextures_color != 0) {
-        sstr << "    vec2 tex_coord_flipped = tex_coord;" << std::endl;
+        for (size_t i = 0; i < nuv_indices; ++i) {
+            sstr << "    vec2 tex_coord_flipped" << i << " = tex_coord" << i << ";" << std::endl;
+        }
     }
     if (has_interiormap) {
         compute_normal_and_reorient_uv0();
@@ -1243,7 +1290,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
-        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_flipped * " << dirt_scale << " );" << std::endl;
+        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_flipped0 * " << dirt_scale << " );" << std::endl;
         if (any(dirt_color_mode & ColorMode::RGBA)) {
             sstr << "    dirtiness *= dirt_color.a;" << std::endl;
         } else if (!any(dirt_color_mode & ColorMode::RGB)) {
@@ -1706,6 +1753,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ filtered_lights },
         NotSortedArray{ textures_color },
         NotSortedArray{ lightmap_indices },
+        id.nuv_indices,
         id.texture_modifiers_hash,
         id.nlights,
         id.nskidmarks,
@@ -1745,6 +1793,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ light_noshadow_indices },
         NotSortedArray{ light_shadow_indices },
         NotSortedArray{ black_shadow_indices },
+        id.nuv_indices,
         id.continuous_layer_x,
         id.continuous_layer_y,
         id.texture_modifiers_hash,
@@ -2030,7 +2079,11 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
                     inherited_vertices = (*v)->vertex_buffer().fork();
                 }
             }
-            si = std::make_unique<DistantTriangleHider>(cva, cva->triangles.size(), inherited_vertices);
+            si = std::make_unique<DistantTriangleHider>(
+                cva,
+                cva->triangles.size(),
+                cva->uv1.size(),
+                inherited_vertices);
             return *si;
         } else {
             return **pva;
@@ -2049,8 +2102,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
     CHK(glVertexAttribPointer(IDX_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->position));
     CHK(glEnableVertexAttribArray(IDX_COLOR));
     CHK(glVertexAttribPointer(IDX_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->color));
-    CHK(glEnableVertexAttribArray(IDX_UV));
-    CHK(glVertexAttribPointer(IDX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
+    CHK(glEnableVertexAttribArray(IDX_UV_0));
+    CHK(glVertexAttribPointer(IDX_UV_0, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
     if (!cva->material.shading.diffuse.all_equal(0) || !cva->material.shading.specular.all_equal(0) || cva->material.fragments_depend_on_normal()) {
         CHK(glEnableVertexAttribArray(IDX_NORMAL));
@@ -2060,6 +2113,23 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
     if (cva->material.has_normalmap() || !cva->material.interior_textures.empty()) {
         CHK(glEnableVertexAttribArray(IDX_TANGENT));
         CHK(glVertexAttribPointer(IDX_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->tangent));
+    }
+    if (!cva->uv1.empty()) {
+        if (cva->uv1.size() > (IDX_UV_LAST - IDX_UV_1)) {
+            THROW_OR_ABORT("Too many UV indices");
+        }
+        for (const auto& [i, uv1] : enumerate(cva->uv1)) {
+            if (va.uv1_buffer(i).is_awaited()) {
+                va.uv1_buffer(i).bind();
+            } else {
+                if (uv1.size() != cva->triangles.size()) {
+                    THROW_OR_ABORT("#discrete_triangle_texture_layers != #triangles");
+                }
+                va.uv1_buffer(i).set(uv1, task_location);
+            }
+            CHK(glEnableVertexAttribArray(IDX_UV_1 + i));
+            CHK(glVertexAttribPointer(IDX_UV_1 + i, 2, GL_FLOAT, GL_FALSE, sizeof(FixedArray<float, 2>), nullptr));
+        }
     }
     if (instances_ != nullptr) {
         instances_->at(cva.get())->bind(

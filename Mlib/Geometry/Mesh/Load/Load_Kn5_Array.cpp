@@ -606,7 +606,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .normal = {}},
                         .scale = material->detailUVMultiplier.value_or_default(),
                         .role = BlendMapRole::DETAIL_COLOR,
-                        .uv_source = BlendMapUvSource::VERTICAL});
+                        .uv_source = BlendMapUvSource::VERTICAL0});
                 } else if (
                     !material->txDiffuse->empty() &&
                     !material->txMask->empty() &&
@@ -662,7 +662,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .weight = 0.f,
                             .role = BlendMapRole::DETAIL_COLOR,
                             .uv_source = any(attrs & MetaAttributes::ATTR_VERTICAL)
-                                ? BlendMapUvSource::VERTICAL
+                                ? BlendMapUvSource::VERTICAL0
                                 : BlendMapUvSource::HORIZONTAL});
                     }
                 } else {

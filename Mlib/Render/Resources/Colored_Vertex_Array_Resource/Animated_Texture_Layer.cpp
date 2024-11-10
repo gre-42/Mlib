@@ -15,12 +15,10 @@ AnimatedTextureLayer::AnimatedTextureLayer(size_t max_num_triangles)
     , animation_sequences_(max_num_triangles)
     , triangle_{ max_num_triangles }
     , texture_layer_{ max_num_triangles }
-    , va_{
-        triangle_,
-        empty_,
-        texture_layer_,
-        empty_}
-{}
+{
+    va_.add_array_buffer(triangle_);
+    va_.add_array_buffer(texture_layer_);
+}
 
 void AnimatedTextureLayer::update(std::chrono::steady_clock::time_point time) {
     if (time == std::chrono::steady_clock::time_point()) {
@@ -79,19 +77,23 @@ bool AnimatedTextureLayer::has_discrete_triangle_texture_layers() const {
 }
 
 IArrayBuffer& AnimatedTextureLayer::vertex_buffer() {
-    return va_.vertex_buffer;
+    return triangle_;
 }
 
 IArrayBuffer& AnimatedTextureLayer::bone_weight_buffer() {
-    return va_.bone_weight_buffer;
+    THROW_OR_ABORT("AnimatedTextureLayer has no bone_weight_buffer");
 }
 
 IArrayBuffer& AnimatedTextureLayer::texture_layer_buffer() {
-    return va_.texture_layer_buffer;
+    return texture_layer_;
 }
 
 IArrayBuffer& AnimatedTextureLayer::interior_mapping_buffer() {
-    return va_.interior_mapping_buffer;
+    THROW_OR_ABORT("AnimatedTextureLayer has no interior_mapping_buffer");
+}
+
+IArrayBuffer& AnimatedTextureLayer::uv1_buffer(size_t i) {
+    THROW_OR_ABORT("AnimatedTextureLayer has no uv1_buffer");
 }
 
 void AnimatedTextureLayer::append(

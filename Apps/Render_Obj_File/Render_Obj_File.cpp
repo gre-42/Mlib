@@ -187,7 +187,7 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                 .scale = multilayer_scale,
                 .role = BlendMapRole::DETAIL_COLOR,
-                .uv_source = BlendMapUvSource::VERTICAL});
+                .uv_source = BlendMapUvSource::VERTICAL0});
             lcm_world_args.push_back(multilayer_scale);
         }
         if (!lcm_world_args.empty()) {

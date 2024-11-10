@@ -67,7 +67,8 @@ BlendingXResource::BlendingXResource(
                 UUVector<FixedArray<ColoredVertex<float>, 2>>(),
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
                 UUVector<FixedArray<float, 3>>(),
-                UUVector<FixedArray<uint8_t, 3>>()));
+                UUVector<FixedArray<uint8_t, 3>>(),
+                std::vector<UUVector<FixedArray<float, 3, 2>>>()));
     }
 }
 

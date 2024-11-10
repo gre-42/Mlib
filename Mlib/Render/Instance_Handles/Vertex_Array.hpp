@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
+#include <list>
 
 namespace Mlib {
 
@@ -12,22 +13,16 @@ class VertexArray {
     VertexArray& operator = (const VertexArray&) = delete;
 
 public:
-    VertexArray(
-        IArrayBuffer& vertex_buffer,
-        IArrayBuffer& bone_weight_buffer,
-        IArrayBuffer& texture_layer_buffer,
-        IArrayBuffer& interior_mapping_buffer);
+    VertexArray();
     ~VertexArray();
+    void add_array_buffer(IArrayBuffer& array_buffer);
     bool initialized() const;
     void initialize();
     bool copy_in_progress() const;
     void wait() const;
     void update();
     void bind() const;
-    IArrayBuffer& vertex_buffer;
-    IArrayBuffer& bone_weight_buffer;
-    IArrayBuffer& texture_layer_buffer;
-    IArrayBuffer& interior_mapping_buffer;
+    std::list<IArrayBuffer*> array_buffers_;
     void deallocate(DeallocationMode mode);
 
 private:

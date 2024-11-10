@@ -3,7 +3,6 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <memory>
 #include <string>
@@ -45,7 +44,6 @@ private:
     RenderingResources& rendering_resources_;
     SRenderProgram rp_;
     BufferBackgroundCopy vertices_;
-    EmptyArrayBuffer empty_;
     VertexArray va_;
     std::shared_ptr<ITextureHandle> texture_;
 };

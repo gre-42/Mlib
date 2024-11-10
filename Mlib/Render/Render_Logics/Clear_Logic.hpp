@@ -3,7 +3,6 @@
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 
 namespace Mlib {
@@ -25,7 +24,6 @@ public:
 private:
     void ensure_va_initialized();
     BufferBackgroundCopy vertices_;
-    EmptyArrayBuffer empty_;
     VertexArray va_;
     ClearRenderProgram rp_color_only_;
     RenderProgram rp_depth_only_;

@@ -42,7 +42,8 @@ void PointerImageLogic::render(
         (center(0) + pcr(0, 1, 1)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1, 1, 1)) / canvas_size(1) * 2.f - 1.f, 1.0f, 1.0f
     };
 
-    va().vertex_buffer.bind();
+    va();  // Initialize if necessary
+    vertices_.bind();
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 

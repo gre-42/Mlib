@@ -23,7 +23,7 @@ UUVector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectori
     UUVector<OffsetAndQuaternion<float, float>> ms(bone_indices.size());
 #ifndef NDEBUG
     for (auto& m : ms) {
-        m.offset() = fixed_nans<float, 3>();
+        m.t = fixed_nans<float, 3>();
     }
 #endif
     for (const auto& [name, pose] : poses) {
@@ -35,7 +35,7 @@ UUVector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectori
     }
 #ifndef NDEBUG
     for (const auto& m : ms) {
-        if (any(Mlib::isnan(m.offset()))) {
+        if (any(Mlib::isnan(m.t))) {
             THROW_OR_ABORT("Pose contains NAN values or was not set");
         }
     }
@@ -113,7 +113,8 @@ void AnimatedColoredVertexArrays::smoothen_edges(
                 UUVector<FixedArray<ColoredVertex<double>, 2>>{},
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
                 UUVector<FixedArray<float, 3>>{},
-                UUVector<FixedArray<uint8_t, 3>>{}));
+                UUVector<FixedArray<uint8_t, 3>>{},
+                std::vector<UUVector<FixedArray<float, 3, 2>>>{}));
             l->morphology.physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
         }
         Mlib::smoothen_edges(new_dvcas, {}, smoothness, niterations, decay);

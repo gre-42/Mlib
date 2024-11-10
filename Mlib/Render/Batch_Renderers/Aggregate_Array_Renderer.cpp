@@ -275,7 +275,8 @@ void AggregateArrayRenderer::update_aggregates(
             UUVector<FixedArray<ColoredVertex<float>, 2>>(),
             UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
             std::move(continuous_texture_layers),
-            std::move(discrete_texture_layers)));
+            std::move(discrete_texture_layers),
+            std::vector<UUVector<FixedArray<float, 3, 2>>>()));
     }
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,

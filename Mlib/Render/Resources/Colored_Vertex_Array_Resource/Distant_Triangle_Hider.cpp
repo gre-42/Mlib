@@ -22,17 +22,23 @@ using namespace Mlib;
 DistantTriangleHider::DistantTriangleHider(
     std::shared_ptr<ColoredVertexArray<float>> cva,
     size_t ntriangles,
+    size_t nuv1s,
     std::shared_ptr<IArrayBuffer> inherited_vertices)
     : inherited_vertices_{ std::move(inherited_vertices) }
     , vertices_{ inherited_vertices_ == nullptr ? std::make_shared<BufferBackgroundCopy>() : nullptr }
-    , va_{
-        inherited_vertices_ == nullptr ? *vertices_ : *inherited_vertices_,
-        bone_weights_,
-        texture_layers_,
-        interior_mapping_ }
+    , vertex_buffer_{ inherited_vertices_ == nullptr ? *vertices_ : *inherited_vertices_ }
+    , uv1_( nuv1s )
     , cva_{ std::move(cva) }
     , ntriangles_{ ntriangles }
-{}
+{
+    va_.add_array_buffer(vertex_buffer_);
+    va_.add_array_buffer(bone_weights_);
+    va_.add_array_buffer(texture_layers_);
+    va_.add_array_buffer(interior_mapping_);
+    for (auto& u : uv1_) {
+        va_.add_array_buffer(u);
+    }
+}
 
 void DistantTriangleHider::update(std::chrono::steady_clock::time_point time) {
     return va_.update();
@@ -71,19 +77,26 @@ bool DistantTriangleHider::has_discrete_triangle_texture_layers() const {
 }
 
 IArrayBuffer& DistantTriangleHider::vertex_buffer() {
-    return va_.vertex_buffer;
+    return vertex_buffer_;
 }
 
 IArrayBuffer& DistantTriangleHider::bone_weight_buffer() {
-    return va_.bone_weight_buffer;
+    return bone_weights_;
 }
 
 IArrayBuffer& DistantTriangleHider::texture_layer_buffer() {
-    return va_.texture_layer_buffer;
+    return texture_layers_;
 }
 
 IArrayBuffer& DistantTriangleHider::interior_mapping_buffer() {
-    return va_.interior_mapping_buffer;
+    return interior_mapping_;
+}
+
+IArrayBuffer& DistantTriangleHider::uv1_buffer(size_t i) {
+    if (i >= uv1_.size()) {
+        THROW_OR_ABORT("UV1 index too large");
+    }
+    return uv1_[i];
 }
 
 void DistantTriangleHider::delete_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {
@@ -217,7 +230,7 @@ void DistantTriangleHider::delete_triangles_far_away(
         if (background_loop_->done()) {
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
                 // TimeGuard tg{ "deleting triangles", "deleting triangles" };
-                va_.vertex_buffer.bind();
+                vertex_buffer_.bind();
                 // CHK(auto* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
                 CHK(auto* ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, integral_cast<GLintptr>(offset_ * sizeof(Triangle)), integral_cast<GLsizeiptr>(noperations2_ * sizeof(Triangle)), GL_MAP_WRITE_BIT));
                 ptr -= offset_;
@@ -239,7 +252,7 @@ void DistantTriangleHider::delete_triangles_far_away(
             THROW_OR_ABORT("Substitution both in fg and bg");
         }
         update_counters();
-        va_.vertex_buffer.bind();
+        vertex_buffer_.bind();
         func();
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
     }

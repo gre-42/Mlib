@@ -30,6 +30,7 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     UUVector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
     UUVector<FixedArray<float, 3>>&& continuous_triangle_texture_layers,
     UUVector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
+    std::vector<UUVector<FixedArray<float, 3, 2>>>&& uv1,
     const AxisAlignedBoundingBox<TPos, 3>* aabb,
     const BoundingSphere<TPos, 3>* bounding_sphere)
     : name{ std::move(name) }
@@ -42,6 +43,7 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     , triangle_bone_weights{ std::move(triangle_bone_weights) }
     , continuous_triangle_texture_layers{ std::move(continuous_triangle_texture_layers) }
     , discrete_triangle_texture_layers{ std::move(discrete_triangle_texture_layers) }
+    , uv1{ std::move(uv1) }
     , aabb_has_value_{ false }
     , bounding_sphere_has_value_{ false }
 {
@@ -55,14 +57,21 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     if (!this->discrete_triangle_texture_layers.empty() && (this->discrete_triangle_texture_layers.size() != this->triangles.size())) {
         THROW_OR_ABORT("Discrete triangle texture layers size mismatch");
     }
+    for (const auto& u : uv1) {
+        if (u.size() != this->triangles.size()) {
+            THROW_OR_ABORT("UV1 size mismatch");
+        }
+    }
     if ((aabb == nullptr) != (bounding_sphere == nullptr)) {
         THROW_OR_ABORT("Inconsistent AABB/bounding sphere arguments");
     }
     if (aabb != nullptr) {
         aabb_ = *aabb;
+        aabb_has_value_ = true;
     }
     if (bounding_sphere != nullptr) {
         bounding_sphere_ = *bounding_sphere;
+        bounding_sphere_has_value_ = true;
     }
 }
 
@@ -170,7 +179,8 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         UUVector<FixedArray<ColoredVertex<TPosResult>, 2>>{},
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
         UUVector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
-        UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()));
+        UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
+        std::vector(uv1));
 }
 
 template <class TPos>
@@ -214,7 +224,8 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         std::move(transformed_lines),
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
         UUVector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
-        UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()));
+        UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
+        std::vector(uv1));
 }
 
 template <class TPos>
@@ -413,7 +424,8 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_gri
         std::move(grind_lines),
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
         UUVector<FixedArray<float, 3>>{},
-        UUVector<FixedArray<uint8_t, 3>>{});
+        UUVector<FixedArray<uint8_t, 3>>{},
+        std::vector<UUVector<FixedArray<float, 3, 2>>>{});
 }
 
 template <class TPos>
@@ -447,7 +459,8 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_con
         std::move(contour_edges),
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
         UUVector<FixedArray<float, 3>>{},
-        UUVector<FixedArray<uint8_t, 3>>{});
+        UUVector<FixedArray<uint8_t, 3>>{},
+        std::vector<UUVector<FixedArray<float, 3, 2>>>{});
 }
 
 template <class TPos>
@@ -475,7 +488,8 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
             UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
             UUVector<FixedArray<float, 3>>{},
-            UUVector<FixedArray<uint8_t, 3>>{}));
+            UUVector<FixedArray<uint8_t, 3>>{},
+            std::vector<UUVector<FixedArray<float, 3, 2>>>{}));
     for (const auto& tri : triangles) {
         UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangle_as_list;
     
@@ -503,7 +517,8 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
                 UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
                 UUVector<FixedArray<float, 3>>{},
-                UUVector<FixedArray<uint8_t, 3>>{}));
+                UUVector<FixedArray<uint8_t, 3>>{},
+                std::vector<UUVector<FixedArray<float, 3, 2>>>{}));
     }
     return result;
 }

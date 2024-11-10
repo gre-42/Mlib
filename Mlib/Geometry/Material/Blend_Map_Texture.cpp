@@ -6,65 +6,71 @@ using namespace std::string_view_literals;
 using namespace Mlib;
 
 BlendMapRole Mlib::blend_map_role_from_string(std::string_view s) {
-    if (s == "summand"sv) {
-        return BlendMapRole::SUMMAND;
-    } else if (s == "detail_base"sv) {
-        return BlendMapRole::DETAIL_BASE;
-    } else if (s == "detail_mask_r"sv) {
-        return BlendMapRole::DETAIL_MASK_R;
-    } else if (s == "detail_mask_g"sv) {
-        return BlendMapRole::DETAIL_MASK_G;
-    } else if (s == "detail_mask_b"sv) {
-        return BlendMapRole::DETAIL_MASK_B;
-    } else if (s == "detail_mask_a"sv) {
-        return BlendMapRole::DETAIL_MASK_A;
-    } else if (s == "detail_color"sv) {
-        return BlendMapRole::DETAIL_COLOR;
+    static const std::unordered_map<std::string_view, BlendMapRole> m{
+        {"summand"sv, BlendMapRole::SUMMAND},
+        {"detail_base"sv, BlendMapRole::DETAIL_BASE},
+        {"detail_mask_r"sv, BlendMapRole::DETAIL_MASK_R},
+        {"detail_mask_g"sv, BlendMapRole::DETAIL_MASK_G},
+        {"detail_mask_b"sv, BlendMapRole::DETAIL_MASK_B},
+        {"detail_mask_a"sv, BlendMapRole::DETAIL_MASK_A},
+        {"detail_color"sv, BlendMapRole::DETAIL_COLOR}};
+    auto it = m.find(s);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown blend map role: \"" + std::string{ s } + '"');
     }
-    THROW_OR_ABORT("Unknown blend map role: \"" + std::string{ s } + '"');
+    return it->second;
 }
 
 BlendMapUvSource Mlib::blend_map_uv_source_from_string(std::string_view s) {
-    if (s == "vertical"sv) {
-        return BlendMapUvSource::VERTICAL;
-    } else if (s == "horizontal"sv) {
-        return BlendMapUvSource::HORIZONTAL;
+    static const std::unordered_map<std::string_view, BlendMapUvSource> m{
+        {"vertical0"sv, BlendMapUvSource::VERTICAL0},
+        {"vertical1"sv, BlendMapUvSource::VERTICAL1},
+        {"vertical2"sv, BlendMapUvSource::VERTICAL2},
+        {"vertical3"sv, BlendMapUvSource::VERTICAL3},
+        {"vertical4"sv, BlendMapUvSource::VERTICAL4},
+        {"vertical5"sv, BlendMapUvSource::VERTICAL5},
+        {"vertical6"sv, BlendMapUvSource::VERTICAL6},
+        {"vertical7"sv, BlendMapUvSource::VERTICAL7},
+        {"vertical8"sv, BlendMapUvSource::VERTICAL8},
+        {"vertical9"sv, BlendMapUvSource::VERTICAL9},
+        {"horizontal"sv, BlendMapUvSource::HORIZONTAL}
+    };
+    auto it = m.find(s);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown UV source: \"" + std::string{ s } + '"');
     }
-    THROW_OR_ABORT("Unknown UV source: \"" + std::string{ s } + '"');
+    return it->second;
 }
 
 BlendMapReductionOperation Mlib::blend_map_reduction_operation_from_string(std::string_view s) {
-    if (s == "plus"sv) {
-        return BlendMapReductionOperation::PLUS;
-    } else if (s == "minus"sv) {
-        return BlendMapReductionOperation::MINUS;
-    } else if (s == "times"sv) {
-        return BlendMapReductionOperation::TIMES;
-    } else if (s == "feather"sv) {
-        return BlendMapReductionOperation::FEATHER;
-    } else if (s == "invert"sv) {
-        return BlendMapReductionOperation::INVERT;
-    } else if (s == "blend"sv) {
-        return BlendMapReductionOperation::BLEND;
-    } else if (s == "replace_color"sv) {
-        return BlendMapReductionOperation::REPLACE_COLOR;
-    } else if (s == "colorize"sv) {
-        return BlendMapReductionOperation::COLORIZE;
-    } else {
+    static const std::unordered_map<std::string_view, BlendMapReductionOperation> m{
+        {"plus"sv, BlendMapReductionOperation::PLUS},
+        {"minus"sv, BlendMapReductionOperation::MINUS},
+        {"times"sv, BlendMapReductionOperation::TIMES},
+        {"feather"sv, BlendMapReductionOperation::FEATHER},
+        {"invert"sv, BlendMapReductionOperation::INVERT},
+        {"blend"sv, BlendMapReductionOperation::BLEND},
+        {"replace_color"sv, BlendMapReductionOperation::REPLACE_COLOR},
+        {"colorize"sv, BlendMapReductionOperation::COLORIZE}
+    };
+    auto it = m.find(s);
+    if (it == m.end()) {
         THROW_OR_ABORT("Unknown blend map reduction operation: \"" + std::string{ s } + '"');
     }
+    return it->second;
 }
 
 BlendMapReweightMode Mlib::blend_map_reweight_mode_from_string(std::string_view s) {
-    if (s == "undefined"sv) {
-        return BlendMapReweightMode::UNDEFINED;
-    } else if (s == "enabled"sv) {
-        return BlendMapReweightMode::ENABLED;
-    } else if (s == "disabled"sv) {
-        return BlendMapReweightMode::DISABLED;
-    } else {
+    static const std::unordered_map<std::string_view, BlendMapReweightMode> m{
+        {"undefined"sv, BlendMapReweightMode::UNDEFINED},
+        {"enabled"sv, BlendMapReweightMode::ENABLED},
+        {"disabled"sv, BlendMapReweightMode::DISABLED}
+    };
+    auto it = m.find(s);
+    if (it == m.end()) {
         THROW_OR_ABORT("Unknown blend map reweight mode: \"" + std::string{ s } + '"');
     }
+    return it->second;
 }
 
 size_t BlendMapTexture::modifiers_hash() const {
@@ -75,6 +81,7 @@ size_t BlendMapTexture::modifiers_hash() const {
         normal,
         cosines,
         discreteness,
+        offset,
         scale,
         weight,
         plus,

@@ -54,6 +54,7 @@ public:
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
         UUVector<FixedArray<float, 3>>&& continous_triangle_texture_layers,
         UUVector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
+        std::vector<UUVector<FixedArray<float, 3, 2>>>&& uv1,
         const AxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
         const BoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
@@ -67,6 +68,7 @@ public:
     UUVector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
     UUVector<FixedArray<float, 3>> continuous_triangle_texture_layers;
     UUVector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
+    std::vector<UUVector<FixedArray<float, 3, 2>>> uv1;
     
     template <PrimitiveDimensions tdims>
     UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() {
@@ -138,6 +140,7 @@ public:
         archive(triangle_bone_weights);
         archive(continuous_triangle_texture_layers);
         archive(discrete_triangle_texture_layers);
+        archive(uv1);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
@@ -155,6 +158,7 @@ public:
         UUVector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
         UUVector<FixedArray<float, 3>> continuous_triangle_texture_layers;
         UUVector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
+        std::vector<UUVector<FixedArray<float, 3, 2>>> uv1;
 
         archive(name);
         archive(material);
@@ -166,6 +170,7 @@ public:
         archive(triangle_bone_weights);
         archive(continuous_triangle_texture_layers);
         archive(discrete_triangle_texture_layers);
+        archive(uv1);
 
         construct(
             name,
@@ -177,7 +182,8 @@ public:
             std::move(lines),
             std::move(triangle_bone_weights),
             std::move(continuous_triangle_texture_layers),
-            std::move(discrete_triangle_texture_layers));
+            std::move(discrete_triangle_texture_layers),
+            std::move(uv1));
     }
 private:
     template <PrimitiveDimensions tfirst_dim>

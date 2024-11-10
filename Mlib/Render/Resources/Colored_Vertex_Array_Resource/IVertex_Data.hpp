@@ -27,6 +27,7 @@ public:
     virtual IArrayBuffer& bone_weight_buffer() = 0;
     virtual IArrayBuffer& texture_layer_buffer() = 0;
     virtual IArrayBuffer& interior_mapping_buffer() = 0;
+    virtual IArrayBuffer& uv1_buffer(size_t i) = 0;
     virtual void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, float, 3>& m,

@@ -53,20 +53,16 @@ static const float quad_vertices[] = {
     1.0f,  1.0f,
 };
 
-ClearLogic::ClearLogic()
-    : va_{
-        vertices_,
-        empty_,
-        empty_,
-        empty_ }
-{}
+ClearLogic::ClearLogic() {
+    va_.add_array_buffer(vertices_);
+}
 
 ClearLogic::~ClearLogic() = default;
 
 void ClearLogic::ensure_va_initialized() {
     if (!va_.initialized()) {
         va_.initialize();
-        va_.vertex_buffer.set(quad_vertices, TaskLocation::FOREGROUND);
+        vertices_.set(quad_vertices, TaskLocation::FOREGROUND);
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr));
         CHK(glBindVertexArray(0));

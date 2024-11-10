@@ -34,8 +34,17 @@ inline BlendMapRole operator + (BlendMapRole a, uint32_t b) {
 
 BlendMapRole blend_map_role_from_string(std::string_view s);
 
-enum class BlendMapUvSource {
-    VERTICAL,
+enum class BlendMapUvSource: uint32_t {
+    VERTICAL0,
+    VERTICAL1,
+    VERTICAL2,
+    VERTICAL3,
+    VERTICAL4,
+    VERTICAL5,
+    VERTICAL6,
+    VERTICAL7,
+    VERTICAL8,
+    VERTICAL9,
     HORIZONTAL
 };
 
@@ -70,12 +79,13 @@ struct BlendMapTexture {
     OrderableFixedArray<float, 3> normal = { 0.f, 0.f, 0.f };
     OrderableFixedArray<float, 4> cosines{ default_linear_cosines };
     float discreteness = 2.f;
+    OrderableFixedArray<float, 2> offset = { 0.f, 0.f };
     OrderableFixedArray<float, 2> scale = { 1.f, 1.f };
     float weight = 1.f;
     float plus = 0.f;
     float min_detail_weight = 0.f;
     BlendMapRole role = BlendMapRole::SUMMAND;
-    BlendMapUvSource uv_source = BlendMapUvSource::VERTICAL;
+    BlendMapUvSource uv_source = BlendMapUvSource::VERTICAL0;
     BlendMapReductionOperation reduction = BlendMapReductionOperation::PLUS;
     BlendMapReweightMode reweight_mode = BlendMapReweightMode::UNDEFINED;
     // Don't forget to update "modifiers_hash" and "serialize" when adding parameters.
@@ -90,6 +100,7 @@ struct BlendMapTexture {
         archive(normal);
         archive(cosines);
         archive(discreteness);
+        archive(offset);
         archive(scale);
         archive(weight);
         archive(plus);

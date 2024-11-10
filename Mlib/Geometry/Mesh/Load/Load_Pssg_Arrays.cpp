@@ -12,10 +12,12 @@
 #include <Mlib/Geometry/Triangle_Tangent.hpp>
 #include <Mlib/Images/Flip_Mode.hpp>
 #include <Mlib/Io/Endian.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <algorithm>
 #include <half/half.h>
+#include <list>
 
 using namespace Mlib;
 
@@ -215,35 +217,69 @@ struct DataBlocks {
                 (std::byte*)vertices.data(),                                // dst
                 [](uint8_t f) { return float(f) / 255; });
         } else if (render_type == "ST") {
-            features |= ColoredVertexFeatures::UV;
-            if ((data_type == "half2") || (data_type == "half4")) {
-                strided_copy<uint16_t, float>(
-                    offset,                                                     // src_offset
-                    stride,                                                     // src_stride
-                    (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
-                    sizeof(ColoredVertex<TPos>),                                // dst_stride
-                    element_count,                                              // nelements
-                    2,                                                          // ndim
-                    size,                                                       // src_size
-                    vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                    data.data(),                                                // src
-                    (std::byte*)vertices.data(),                                // dst
-                    [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
-            } else if ((data_type == "float2") || (data_type == "float3") || (data_type == "float4")) {
-                strided_copy<float, float>(
-                    offset,                                                     // src_offset
-                    stride,                                                     // src_stride
-                    (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
-                    sizeof(ColoredVertex<TPos>),                                // dst_stride
-                    element_count,                                              // nelements
-                    2,                                                          // ndim
-                    size,                                                       // src_size
-                    vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                    data.data(),                                                // src
-                    (std::byte*)vertices.data(),                                // dst
-                    [](float h) { return swap_endianness(h); });
+            if (any(features & ColoredVertexFeatures::UV)) {
+                UUVector<FixedArray<float, 2>> uvx(element_count);
+                if ((data_type == "half2") || (data_type == "half4")) {
+                    strided_copy<uint16_t, float>(
+                        offset,                                                     // src_offset
+                        stride,                                                     // src_stride
+                        0,                                                          // dst_offset
+                        sizeof(FixedArray<float, 2>),                               // dst_stride
+                        element_count,                                              // nelements
+                        2,                                                          // ndim
+                        size,                                                       // src_size
+                        uvx.size() * sizeof(FixedArray<float, 2>),                  // dst_size
+                        data.data(),                                                // src
+                        (std::byte*)uvx.data(),                                     // dst
+                        [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
+                } else if ((data_type == "float2") || (data_type == "float3") || (data_type == "float4")) {
+                    strided_copy<float, float>(
+                        offset,                                                     // src_offset
+                        stride,                                                     // src_stride
+                        0,                                                          // dst_offset
+                        sizeof(FixedArray<float, 2>),                               // dst_stride
+                        element_count,                                              // nelements
+                        2,                                                          // ndim
+                        size,                                                       // src_size
+                        uvx.size() * sizeof(FixedArray<float, 2>),                  // dst_size
+                        data.data(),                                                // src
+                        (std::byte*)uvx.data(),                                     // dst
+                        [](float h) { return swap_endianness(h); });
+                } else {
+                    THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
+                }
+                uv1.push_back(uvx);
             } else {
-                THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
+                features |= ColoredVertexFeatures::UV;
+                if ((data_type == "half2") || (data_type == "half4")) {
+                    strided_copy<uint16_t, float>(
+                        offset,                                                     // src_offset
+                        stride,                                                     // src_stride
+                        (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
+                        sizeof(ColoredVertex<TPos>),                                // dst_stride
+                        element_count,                                              // nelements
+                        2,                                                          // ndim
+                        size,                                                       // src_size
+                        vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                        data.data(),                                                // src
+                        (std::byte*)vertices.data(),                                // dst
+                        [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
+                } else if ((data_type == "float2") || (data_type == "float3") || (data_type == "float4")) {
+                    strided_copy<float, float>(
+                        offset,                                                     // src_offset
+                        stride,                                                     // src_stride
+                        (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
+                        sizeof(ColoredVertex<TPos>),                                // dst_stride
+                        element_count,                                              // nelements
+                        2,                                                          // ndim
+                        size,                                                       // src_size
+                        vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                        data.data(),                                                // src
+                        (std::byte*)vertices.data(),                                // dst
+                        [](float h) { return swap_endianness(h); });
+                } else {
+                    THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
+                }
             }
         } else if (render_type == "Normal") {
             features |= ColoredVertexFeatures::NORMAL;
@@ -308,6 +344,7 @@ struct DataBlocks {
         }
     }
     std::vector<ColoredVertex<TPos>> vertices;
+    std::list<UUVector<FixedArray<float, 2>>> uv1;
     ColoredVertexFeatures features = ColoredVertexFeatures::NONE;
 };
 
@@ -397,10 +434,22 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 }
                 return "";
                 };
+            auto get_attribute = [&](const std::string& parameter_name) {
+                uint32_t parameter_id = shader_group_object.parameters.get(parameter_name);
+                for (const auto& c : node.children) {
+                    if ((model.schema.nodes.get(c.type_id).name == "SHADERINPUT") &&
+                        (c.get_attribute("parameterID", model.schema).uint32() == parameter_id))
+                    {
+                        return c;
+                    }
+                }
+                THROW_OR_ABORT("Could not find shader input with parameter name \"" + parameter_name + '"');
+                };
             if ((shader_group_ref == "#terrain_road.fx") ||
                 (shader_group_ref == "#terrain_edge_nm.fx") ||
                 (shader_group_ref == "#terrain_wsm_edge_nm.fx"))
             {
+                auto uvso = get_attribute("Map1UVScaleAndOffset").template array<float, 4>();
                 auto diffuse = get_texture("TDiffuseSpecMap1");
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
@@ -411,8 +460,14 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .render_material = Material{
                             .textures_color = std::vector<BlendMapTexture>{{
                                 .texture_descriptor = TextureDescriptor{
-                                    .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
-                                }}}}});
+                                    .color = ColormapWithModifiers{
+                                        .filename = VariableAndHash{ diffuse },
+                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                    }.compute_hash()
+                                },
+                                .offset = { uvso(2), uvso(3) },
+                                .scale = { uvso(0), uvso(1) },
+                                .uv_source = BlendMapUvSource::VERTICAL0}}}});
             } else if (shader_group_ref == "#terrain_infield_nm.fx") {
                 auto diffuse = get_texture("TDiffuseSpecMap2");
                 if (diffuse.empty()) {
@@ -431,7 +486,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                         ? ColormapWithModifiers{}.compute_hash()
                                         : ColormapWithModifiers{
                                             .filename = VariableAndHash{ normal },
-                                            .color_mode = ColorMode::RGB }.compute_hash()
+                                            .color_mode = ColorMode::RGB,
+                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
                                 }}}}});
             } else if (shader_group_ref == "#terrain_track_vista_d4.fx")
             {
@@ -445,7 +501,10 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .render_material = Material{
                             .textures_color = std::vector<BlendMapTexture>{{
                                 .texture_descriptor = TextureDescriptor{
-                                    .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
+                                    .color = ColormapWithModifiers{
+                                        .filename = VariableAndHash{ diffuse },
+                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                    }.compute_hash()
                                 }}}}});
             } else if (shader_group_ref == "#terrain_lod.fx")
             {
@@ -459,7 +518,10 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .render_material = Material{
                             .textures_color = std::vector<BlendMapTexture>{{
                                 .texture_descriptor = TextureDescriptor{
-                                    .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash()
+                                    .color = ColormapWithModifiers{
+                                        .filename = VariableAndHash{ diffuse },
+                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                    }.compute_hash()
                                 }}}}});
             } else if (shader_group_ref == "#batched_track.fx")
             {
@@ -519,6 +581,10 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             auto node_id = node.get_attribute("id", model.schema).string();
             UUVector<FixedArray<ColoredVertex<TResourcePos>, 3>> triangles;
             triangles.resize(ixs_count / 3);
+            std::vector<UUVector<FixedArray<float, 3, 2>>> uv1(dbm.uv1.size());
+            for (auto& u : uv1) {
+                u.resize(ixs_count / 3);
+            }
             for (uint32_t i = 0; i < ixs_count / 3; ++i) {
                 for (uint32_t j = 0; j < 3; ++j) {
                     uint16_t id = swap_endianness(reinterpret_cast<const uint16_t*>(isd.data.data())[i * 3 + j]);
@@ -526,6 +592,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         THROW_OR_ABORT("Vertex index out of bounds: " + std::to_string(id) + " >= " + std::to_string(dbm.vertices.size()));
                     }
                     triangles[i](j) = dbm.vertices[id];
+                    for (const auto& [k, u] : enumerate(dbm.uv1)) {
+                        uv1[k][i][j] = u[id];
+                    }
                 }
             }
             auto& cva = *result.resources.add(resource_prefix + node_id, std::make_shared<ColoredVertexArray<TResourcePos>>(
@@ -538,7 +607,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 UUVector<FixedArray<ColoredVertex<TResourcePos>, 2>>(),
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
                 UUVector<FixedArray<float, 3>>(),
-                UUVector<FixedArray<uint8_t, 3>>()));
+                UUVector<FixedArray<uint8_t, 3>>(),
+                std::move(uv1)));
             if (!any(dbm.features & ColoredVertexFeatures::POSITION)) {
                 THROW_OR_ABORT("Vertices have no position in node \"" + node_id + '"');
             }
@@ -625,7 +695,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             }
             dds_resources->add_texture(
                 ColormapWithModifiers{
-                    .filename = VariableAndHash{ node_id + ".dds" }
+                    .filename = VariableAndHash{ node_id + ".dds" },
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash(),
                 node.texture(model.schema),
                 FlipMode::NONE,

@@ -93,8 +93,9 @@ float skybox_vertices[] = {
 SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
     : child_logic_{ child_logic }
     , rendering_resources_{ RenderingContextStack::primary_rendering_resources() }
-    , va_{ vertices_, empty_, empty_, empty_ }
-{}
+{
+    va_.add_array_buffer(vertices_);
+}
 
 SkyboxLogic::~SkyboxLogic() {
     on_destroy.clear();
@@ -128,7 +129,7 @@ void SkyboxLogic::render_with_setup(
         rp_.vp_location = rp_.get_uniform_location("vp");
 
         va_.initialize();
-        va_.vertex_buffer.set(skybox_vertices, TaskLocation::FOREGROUND);
+        vertices_.set(skybox_vertices, TaskLocation::FOREGROUND);
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr));
         CHK(glBindVertexArray(0));

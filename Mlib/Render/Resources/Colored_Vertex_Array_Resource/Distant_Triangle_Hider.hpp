@@ -2,7 +2,6 @@
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
 #include <memory>
 #include <vector>
@@ -23,6 +22,7 @@ public:
     DistantTriangleHider(
         std::shared_ptr<ColoredVertexArray<float>> cva,
         size_t ntriangles,
+        size_t nuv1s,
         std::shared_ptr<IArrayBuffer> inherited_vertices);
     virtual void update(std::chrono::steady_clock::time_point time) override;
     virtual void bind() const override;
@@ -37,6 +37,7 @@ public:
     virtual IArrayBuffer& bone_weight_buffer() override;
     virtual IArrayBuffer& texture_layer_buffer() override;
     virtual IArrayBuffer& interior_mapping_buffer() override;
+    virtual IArrayBuffer& uv1_buffer(size_t i) override;
     virtual void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, float, 3>& m,
@@ -49,9 +50,11 @@ public:
 private:
     std::shared_ptr<IArrayBuffer> inherited_vertices_;
     std::shared_ptr<BufferBackgroundCopy> vertices_;
+    IArrayBuffer& vertex_buffer_;
     BufferBackgroundCopy bone_weights_;
     BufferBackgroundCopy texture_layers_;
     BufferBackgroundCopy interior_mapping_;
+    std::vector<BufferBackgroundCopy> uv1_;
     VertexArray va_;
     std::shared_ptr<ColoredVertexArray<float>> cva_;
     size_t ntriangles_;

@@ -70,6 +70,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 2> facade_edge_size;
     OrderableFixedArray<float, 2> facade_inner_size;
     OrderableFixedArray<float, 3> interior_size;
+    size_t nuv_indices;
     std::vector<float> continuous_layer_x;
     std::vector<float> continuous_layer_y;
     bool has_horizontal_detailmap;

@@ -2,7 +2,6 @@
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Continuous_Texture_Layer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Triangle.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 
@@ -28,6 +27,7 @@ public:
     virtual IArrayBuffer& bone_weight_buffer() override;
     virtual IArrayBuffer& texture_layer_buffer() override;
     virtual IArrayBuffer& interior_mapping_buffer() override;
+    virtual IArrayBuffer& uv1_buffer(size_t i) override;
     virtual void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, float, 3>& m,
@@ -57,7 +57,6 @@ private:
     std::vector<const TrailSequence*> animation_sequences_;
     DynamicTriangle triangle_;
     DynamicContinuousTextureLayer texture_layer_;
-    EmptyArrayBuffer empty_;
     VertexArray va_;
     std::chrono::steady_clock::time_point time_;
     mutable AtomicMutex mutex_;

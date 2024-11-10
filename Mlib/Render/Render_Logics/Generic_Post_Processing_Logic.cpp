@@ -18,13 +18,10 @@ SHADER_VER
 "}";
 
 GenericPostProcessingLogic::GenericPostProcessingLogic(const float* quad_vertices)
-    : va_{
-        vertices_,
-        empty_,
-        empty_,
-        empty_ }
-    , quad_vertices_ { quad_vertices }
-{}
+    : quad_vertices_ { quad_vertices }
+{
+    va_.add_array_buffer(vertices_);
+}
 
 GenericPostProcessingLogic::~GenericPostProcessingLogic()
 {}
@@ -33,7 +30,7 @@ VertexArray& GenericPostProcessingLogic::va() {
     if (!va_.initialized()) {
         // screen quad VAO
         va_.initialize();
-        va_.vertex_buffer.set(quad_vertices_, quad_vertices_ + 4 * 6, TaskLocation::FOREGROUND);
+        vertices_.set(quad_vertices_, quad_vertices_ + 4 * 6, TaskLocation::FOREGROUND);
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0));
         CHK(glEnableVertexAttribArray(1));
