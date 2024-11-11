@@ -360,6 +360,8 @@ std::vector<std::byte> PssgNode::texture(const PssgSchema& schema) const {
 namespace Mlib {
 
 template float PssgNode::scalar() const;
+template FixedArray<float, 2> PssgNode::array() const;
+template FixedArray<float, 3> PssgNode::array() const;
 template FixedArray<float, 4> PssgNode::array() const;
 template FixedArray<float, 4, 4> PssgNode::array() const;
 

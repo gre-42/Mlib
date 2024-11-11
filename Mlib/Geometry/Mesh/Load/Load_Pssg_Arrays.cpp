@@ -418,7 +418,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             }
             auto node_id = node.get_attribute("id", model.schema).string();
             const auto& shader_group_object = shader_groups.get(shader_group_ref.substr(1));
-            auto get_texture = [&](const std::string& parameter_name) -> std::string {
+            auto try_get_texture = [&](const std::string& parameter_name) -> std::string {
                 uint32_t parameter_id = shader_group_object.parameters.get(parameter_name);
                 std::string texture_reference;
                 for (const auto& c : node.children) {
@@ -449,31 +449,106 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 (shader_group_ref == "#terrain_edge_nm.fx") ||
                 (shader_group_ref == "#terrain_wsm_edge_nm.fx"))
             {
-                auto uvso = get_attribute("Map1UVScaleAndOffset").template array<float, 4>();
-                auto diffuse = get_texture("TDiffuseSpecMap1");
-                if (diffuse.empty()) {
-                    THROW_OR_ABORT("Diffuse texture not specified");
+                std::list<BlendMapTexture> textures_color;
+
+                {
+                    auto base_uvso = get_attribute("Map1UVScaleAndOffset").template array<float, 4>();
+                    auto base_diffuse = try_get_texture("TDiffuseSpecMap1");
+                    if (base_diffuse.empty()) {
+                        THROW_OR_ABORT("Diffuse1 texture not specified");
+                    }
+
+                    auto base_normal = try_get_texture("TNormalMap1");
+
+                    textures_color.emplace_back(BlendMapTexture{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{
+                                .filename = VariableAndHash{ base_diffuse },
+                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                            }.compute_hash(),
+                            .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds"))
+                                ? ColormapWithModifiers{}.compute_hash()
+                                : ColormapWithModifiers{
+                                    .filename = VariableAndHash{ base_normal },
+                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
+                        },
+                        .discreteness = 0,
+                        .offset = { base_uvso(2), base_uvso(3) },
+                        .scale = { base_uvso(0), base_uvso(1) },
+                        .uv_source = BlendMapUvSource::VERTICAL0,
+                        .reweight_mode = BlendMapReweightMode::ENABLED
+                    });
+                }
+
+                auto blend_uvs = get_attribute("BlendMaskUVScale").template array<float, 4>();
+
+                for (size_t i = 2; i <= 4; ++i) {
+                    std::string s = std::to_string(i);
+                    auto op_diffuse = try_get_texture("TDiffuseSpecMap" + s);
+                    if (op_diffuse.empty()) {
+                        continue;
+                    }
+                    auto op_uvso = get_attribute("Map" + s + "UVScaleAndOffset").template array<float, 4>();
+
+                    auto blend_map = try_get_texture("TBlendMap" + s);
+                    if (blend_map.empty()) {
+                        lwarn() << "TBlendMap" + s + " texture not specified. Node: " + node_id;
+                        continue;
+                    }
+
+                    auto op_normal = try_get_texture("TNormalMap" + s);
+
+                    textures_color.emplace_back(BlendMapTexture{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{
+                                .filename = VariableAndHash{ blend_map },
+                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                            }.compute_hash()
+                        },
+                        .scale = { blend_uvs(0), blend_uvs(1) },
+                        .role = BlendMapRole::DETAIL_MASK_R,
+                        .uv_source = BlendMapUvSource::VERTICAL1,
+                        .reduction = BlendMapReductionOperation::TIMES
+                    });
+                    textures_color.emplace_back(BlendMapTexture{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{
+                                .filename = VariableAndHash{ op_diffuse },
+                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                            }.compute_hash(),
+                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
+                                ? ColormapWithModifiers{}.compute_hash()
+                                : ColormapWithModifiers{
+                                    .filename = VariableAndHash{ op_normal },
+                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
+                        },
+                        .discreteness = 0,
+                        .offset = { op_uvso(2), op_uvso(3) },
+                        .scale = { op_uvso(0), op_uvso(1) },
+                        .uv_source = BlendMapUvSource::VERTICAL0,
+                        .reduction = BlendMapReductionOperation::PLUS
+                    });
                 }
                 shaders.add(
                     node_id,
                     Shader{
                         .render_material = Material{
-                            .textures_color = std::vector<BlendMapTexture>{{
-                                .texture_descriptor = TextureDescriptor{
-                                    .color = ColormapWithModifiers{
-                                        .filename = VariableAndHash{ diffuse },
-                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                                    }.compute_hash()
-                                },
-                                .offset = { uvso(2), uvso(3) },
-                                .scale = { uvso(0), uvso(1) },
-                                .uv_source = BlendMapUvSource::VERTICAL0}}}});
+                            .textures_color = std::vector<BlendMapTexture>(
+                                textures_color.begin(),
+                                textures_color.end())
+                        }
+                    });
             } else if (shader_group_ref == "#terrain_infield_nm.fx") {
-                auto diffuse = get_texture("TDiffuseSpecMap2");
+                auto diffuse = try_get_texture("TDiffuseSpecMap2");
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
                 }
-                auto normal = get_texture("TNormalMap2");
+                auto normal = try_get_texture("TNormalMap2");
                 shaders.add(
                     node_id,
                     Shader{
@@ -481,17 +556,20 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .render_material = Material{
                             .textures_color = std::vector<BlendMapTexture>{{
                                 .texture_descriptor = TextureDescriptor{
-                                    .color = ColormapWithModifiers{ VariableAndHash{ diffuse } }.compute_hash(),
+                                    .color = ColormapWithModifiers{
+                                        .filename = VariableAndHash{ diffuse },
+                                        .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash(),
                                     .normal = (normal.empty() || (normal == "default_normal_map_n.tga.dds"))
                                         ? ColormapWithModifiers{}.compute_hash()
                                         : ColormapWithModifiers{
                                             .filename = VariableAndHash{ normal },
-                                            .color_mode = ColorMode::RGB,
+                                            .color_mode = ColorMode::RGB | ColorMode::RGBA,
                                             .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
                                 }}}}});
             } else if (shader_group_ref == "#terrain_track_vista_d4.fx")
             {
-                auto diffuse = get_texture("TlargeColourMap");
+                auto diffuse = try_get_texture("TlargeColourMap");
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
                 }
@@ -503,12 +581,13 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{
                                         .filename = VariableAndHash{ diffuse },
+                                        .color_mode = ColorMode::RGB | ColorMode::RGBA,
                                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                                     }.compute_hash()
                                 }}}}});
             } else if (shader_group_ref == "#terrain_lod.fx")
             {
-                auto diffuse = get_texture("TDiffuseAlphaMap");
+                auto diffuse = try_get_texture("TDiffuseAlphaMap");
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
                 }
@@ -520,6 +599,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{
                                         .filename = VariableAndHash{ diffuse },
+                                        .color_mode = ColorMode::RGB | ColorMode::RGBA,
                                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                                     }.compute_hash()
                                 }}}}});
@@ -696,6 +776,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             dds_resources->add_texture(
                 ColormapWithModifiers{
                     .filename = VariableAndHash{ node_id + ".dds" },
+                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash(),
                 node.texture(model.schema),

@@ -1920,12 +1920,10 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             // rp->texture_lightmap_depth_location = 0;
         }
         if (id.ntextures_normal != 0) {
-            size_t i = 0;
-            for (const auto& r : textures_color) {
+            for (const auto& [i, r] : enumerate(textures_color)) {
                 if (!r->texture_descriptor.normal.filename->empty()) {
                     rp->texture_normalmap_locations[i] = rp->get_uniform_location(("texture_normalmap[" + std::to_string(i) + "]").c_str());
                 }
-                ++i;
             }
         }
         for (size_t i = 0; i < id.nskidmarks; ++i) {

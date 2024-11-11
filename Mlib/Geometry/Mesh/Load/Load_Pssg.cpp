@@ -166,12 +166,12 @@ PssgAttribute load_pssg_attribute(std::istream& istr, IoVerbosity verbosity) {
     return result;
 }
 
-PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosity verbosity, size_t rec) {
+PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosity verbosity, size_t child_index, size_t rec) {
     PssgNode result;
     result.type_id = swap_endianness(read_binary<uint32_t>(istr, "node ID", verbosity));
     const auto& schema_node = schema.nodes.get(result.type_id);
     if (any(verbosity & IoVerbosity::METADATA)) {
-        linfo() << std::string(2 * rec, ' ') << "  Node " << result.type_id << " (" << schema_node.name << ')';
+        linfo() << std::string(2 * rec, ' ') << " " << child_index << ": Node " << result.type_id << " (" << schema_node.name << ')';
     }
     auto node_size = swap_endianness(read_binary<uint32_t>(istr, "node size", verbosity));
     if (node_size > 1'000'000'000) {
@@ -319,7 +319,12 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         }
     } else {
         while (istr.tellg() < node_end) {
-            const auto& child = result.children.emplace_back(load_pssg_node(istr, schema, verbosity, rec + 1));
+            const auto& child = result.children.emplace_back(load_pssg_node(
+                istr,
+                schema,
+                verbosity,
+                result.children.size(),
+                rec + 1));
             if (any(verbosity & IoVerbosity::METADATA) && (schema_node.name == "PNSTRING")) {
                 linfo() << std::string(2 * (rec + 1), ' ') << "  str: " << child.pnstring();
             }
@@ -379,7 +384,7 @@ PssgModel load_uncompressed_pssg(std::istream& istr, IoVerbosity verbosity) {
     if (any(verbosity & IoVerbosity::METADATA)) {
         linfo() << "Root";
     }
-    res.root = load_pssg_node(istr, res.schema, verbosity, 0);
+    res.root = load_pssg_node(istr, res.schema, verbosity, 0, 0);
     return res;
 }
 

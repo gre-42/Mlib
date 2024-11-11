@@ -769,12 +769,10 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     if (tic.ntextures_normal != 0) {
-        size_t i = 0;
-        for (const auto& t : cva->material.textures_color) {
+        for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
             if (!t.texture_descriptor.normal.filename->empty()) {
                 CHK(glUniform1i(rp.texture_normalmap_locations.at(i), (GLint)tic.id_normal(i)));
             }
-            ++i;
         }
     }
     for (size_t i = 0; i < tic.ntextures_filtered_skidmarks; ++i) {
