@@ -76,12 +76,18 @@ void strided_copy(
     }
 }
 
+enum class ColorSemantic {
+    RGB,
+    UNKNOWN
+};
+
 struct Shader {
     PhysicsMaterial physics_material =
         PhysicsMaterial::ATTR_VISIBLE |
         PhysicsMaterial::ATTR_COLLIDE |
         PhysicsMaterial::ATTR_CONCAVE;
     Material render_material;
+    ColorSemantic color_semantic = ColorSemantic::RGB;
 };
 
 template <class TInstancePos, class TResourcePos>
@@ -116,6 +122,13 @@ void add_instantiables(
                     }
                     resource.morphology.physics_material = shader_object.physics_material;
                     resource.material = shader_object.render_material;
+                    if (shader_object.color_semantic == ColorSemantic::UNKNOWN) {
+                        for (auto& t : resource.triangles) {
+                            for (auto& v : t.flat_iterable()) {
+                                v.color = 1;
+                            }
+                        }
+                    }
                 }
                 auto scale = sqrt(sum<0>(squared(mc.R)));
                 auto mean_scale = mean(scale);
@@ -200,22 +213,42 @@ struct DataBlocks {
                 (std::byte*)vertices.data(),                                // dst
                 [](float f) { return (TPos)swap_endianness(f); });
         } else if (render_type == "Color") {
+            if (any(features & ColoredVertexFeatures::COLOR)) {
+                THROW_OR_ABORT("Multiple color atttributes");
+            }
             features |= ColoredVertexFeatures::COLOR;
             if (data_type != "uint_color_argb") {
                 THROW_OR_ABORT("Unsupported color data type");
             }
-            strided_copy<uint8_t, float>(
+            strided_copy<uint32_t, FixedArray<float, 3>>(
                 offset,                                                     // src_offset
                 stride,                                                     // src_stride
                 (uint32_t)(std::ptrdiff_t)(&cv0->color),                    // dst_offset
                 sizeof(ColoredVertex<TPos>),                                // dst_stride
                 element_count,                                              // nelements
-                3,                                                          // ndim
+                1,                                                          // ndim
                 size,                                                       // src_size
                 vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
                 data.data(),                                                // src
                 (std::byte*)vertices.data(),                                // dst
-                [](uint8_t f) { return float(f) / 255; });
+                [](uint32_t f) { return FixedArray<float, 3>{
+                    ((f >>  8) & 0xFF) / 255.f,
+                    ((f >> 16) & 0xFF) / 255.f,
+                    ((f >> 24) & 0xFF) / 255.f
+                    // 1.f, 1.f, 1.f
+                };});
+            // strided_copy<uint8_t, float>(
+            //     offset,                                                     // src_offset
+            //     stride,                                                     // src_stride
+            //     (uint32_t)(std::ptrdiff_t)(&cv0->color),                    // dst_offset
+            //     sizeof(ColoredVertex<TPos>),                                // dst_stride
+            //     element_count,                                              // nelements
+            //     3,                                                          // ndim
+            //     size,                                                       // src_size
+            //     vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+            //     data.data(),                                                // src
+            //     (std::byte*)vertices.data(),                                // dst
+            //     [](uint8_t f) { return float(f) / 255; });
         } else if (render_type == "ST") {
             if (any(features & ColoredVertexFeatures::UV)) {
                 UUVector<FixedArray<float, 2>> uvx(element_count);
@@ -540,8 +573,10 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .render_material = Material{
                             .textures_color = std::vector<BlendMapTexture>(
                                 textures_color.begin(),
-                                textures_color.end())
-                        }
+                                textures_color.end()),
+                            .magnifying_interpolation_mode = InterpolationMode::LINEAR
+                        },
+                        .color_semantic = ColorSemantic::UNKNOWN
                     });
             } else if (shader_group_ref == "#terrain_infield_nm.fx") {
                 auto diffuse = try_get_texture("TDiffuseSpecMap2");
@@ -566,25 +601,116 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                             .filename = VariableAndHash{ normal },
                                             .color_mode = ColorMode::RGB | ColorMode::RGBA,
                                             .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
-                                }}}}});
+                                }}},
+                            .magnifying_interpolation_mode = InterpolationMode::LINEAR}});
             } else if (shader_group_ref == "#terrain_track_vista_d4.fx")
             {
-                auto diffuse = try_get_texture("TlargeColourMap");
-                if (diffuse.empty()) {
-                    THROW_OR_ABORT("Diffuse texture not specified");
+                std::list<BlendMapTexture> textures_color;
+
+                {
+                    auto large_colour_map = try_get_texture("TlargeColourMap");
+                    if (large_colour_map.empty()) {
+                        THROW_OR_ABORT("TlargeColourMap not specified");
+                    }
+                    textures_color.push_back(BlendMapTexture{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{
+                                .filename = VariableAndHash{ large_colour_map },
+                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                            }.compute_hash()
+                        },
+                        .role = BlendMapRole::DETAIL_BASE,
+                        .uv_source = BlendMapUvSource::VERTICAL1,
+                        .reweight_mode = BlendMapReweightMode::DISABLED});
+                }
+                {
+                    auto base_diffuse = try_get_texture("TDiffuseSpecMap1");
+                    if (base_diffuse.empty()) {
+                        THROW_OR_ABORT("Diffuse1 texture not specified");
+                    }
+
+                    auto base_normal = try_get_texture("TNormalMap1");
+
+                    textures_color.emplace_back(BlendMapTexture{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{
+                                .filename = VariableAndHash{ base_diffuse },
+                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                            }.compute_hash(),
+                            .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds"))
+                                ? ColormapWithModifiers{}.compute_hash()
+                                : ColormapWithModifiers{
+                                    .filename = VariableAndHash{ base_normal },
+                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
+                        },
+                        .discreteness = 0,
+                        .role = BlendMapRole::DETAIL_COLOR,
+                        .uv_source = BlendMapUvSource::VERTICAL0
+                    });
+                }
+
+                for (size_t i = 2; i <= 3; ++i) {
+                    std::string s = std::to_string(i);
+                    auto op_diffuse = try_get_texture("TDiffuseSpecMap" + s);
+                    if (op_diffuse.empty()) {
+                        continue;
+                    }
+
+                    auto blend_map = try_get_texture("TBlendMap" + s);
+                    if (blend_map.empty()) {
+                        lwarn() << "TBlendMap" + s + " texture not specified. Node: " + node_id;
+                        continue;
+                    }
+
+                    auto op_normal = try_get_texture("TNormalMap" + s);
+
+                    textures_color.emplace_back(BlendMapTexture{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{
+                                .filename = VariableAndHash{ blend_map },
+                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                            }.compute_hash()
+                        },
+                        .role = BlendMapRole::DETAIL_MASK_R,
+                        .uv_source = BlendMapUvSource::VERTICAL0,
+                        .reduction = BlendMapReductionOperation::TIMES
+                    });
+                    textures_color.emplace_back(BlendMapTexture{
+                        .texture_descriptor = TextureDescriptor{
+                            .color = ColormapWithModifiers{
+                                .filename = VariableAndHash{ op_diffuse },
+                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                            }.compute_hash(),
+                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
+                                ? ColormapWithModifiers{}.compute_hash()
+                                : ColormapWithModifiers{
+                                    .filename = VariableAndHash{ op_normal },
+                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
+                        },
+                        .discreteness = 0,
+                        .weight = 0.f,
+                        .role = BlendMapRole::DETAIL_COLOR,
+                        .uv_source = BlendMapUvSource::VERTICAL0,
+                        .reduction = BlendMapReductionOperation::PLUS
+                    });
                 }
                 shaders.add(
                     node_id,
                     Shader{
                         .render_material = Material{
-                            .textures_color = std::vector<BlendMapTexture>{{
-                                .texture_descriptor = TextureDescriptor{
-                                    .color = ColormapWithModifiers{
-                                        .filename = VariableAndHash{ diffuse },
-                                        .color_mode = ColorMode::RGB | ColorMode::RGBA,
-                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                                    }.compute_hash()
-                                }}}}});
+                            .textures_color = std::vector<BlendMapTexture>(
+                                textures_color.begin(),
+                                textures_color.end()),
+                            .magnifying_interpolation_mode = InterpolationMode::LINEAR
+                        },
+                        .color_semantic = ColorSemantic::UNKNOWN
+                    });
             } else if (shader_group_ref == "#terrain_lod.fx")
             {
                 auto diffuse = try_get_texture("TDiffuseAlphaMap");
@@ -602,7 +728,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                         .color_mode = ColorMode::RGB | ColorMode::RGBA,
                                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                                     }.compute_hash()
-                                }}}}});
+                                }}},
+                            .magnifying_interpolation_mode = InterpolationMode::LINEAR}});
             } else if (shader_group_ref == "#batched_track.fx")
             {
                 shaders.add(
