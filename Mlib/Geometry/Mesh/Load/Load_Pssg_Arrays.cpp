@@ -114,15 +114,14 @@ void add_instantiables(
                 if (!shader.starts_with('#')) {
                     THROW_OR_ABORT("shader does not start with \"#\"");
                 }
-                if (auto s = shaders.try_get(shader.substr(1)); s != nullptr) {
+                if (auto shader_object = shaders.try_get(shader.substr(1)); shader_object != nullptr) {
                     auto& resource = *resources.get(resource_prefix + indices.substr(1));
-                    const auto& shader_object = shaders.get(shader.substr(1));
                     if (!resource.material.textures_color.empty()) {
                         THROW_OR_ABORT("Array resource instantiated multiple times");
                     }
-                    resource.morphology.physics_material = shader_object.physics_material;
-                    resource.material = shader_object.render_material;
-                    if (shader_object.color_semantic == ColorSemantic::UNKNOWN) {
+                    resource.morphology.physics_material = shader_object->physics_material;
+                    resource.material = shader_object->render_material;
+                    if (shader_object->color_semantic == ColorSemantic::UNKNOWN) {
                         for (auto& t : resource.triangles) {
                             for (auto& v : t.flat_iterable()) {
                                 v.color = 1;
