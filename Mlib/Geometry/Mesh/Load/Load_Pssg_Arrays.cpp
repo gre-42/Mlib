@@ -103,7 +103,9 @@ void add_instantiables(
     TransformationMatrix<float, TInstancePos, 3> trafo{
         node.get_child("TRANSFORM", schema).array<float, 4, 4>().casted<TInstancePos>() };
     auto mc = m * trafo;
-    if (schema.nodes.get(node.type_id).name == "RENDERNODE") {
+    if ((schema.nodes.get(node.type_id).name == "RENDERNODE") &&
+        !node.get_attribute("id", schema).string().starts_with("LOW"))
+    {
         node.for_each_node([&](const PssgNode& child){
             if (schema.nodes.get(child.type_id).name == "RENDERSTREAMINSTANCE") {
                 auto indices = child.get_attribute("indices", schema).string();
@@ -124,7 +126,7 @@ void add_instantiables(
                     if (shader_object->color_semantic == ColorSemantic::UNKNOWN) {
                         for (auto& t : resource.triangles) {
                             for (auto& v : t.flat_iterable()) {
-                                v.color = 1;
+                                v.color = 1.f;
                             }
                         }
                     }
@@ -314,6 +316,9 @@ struct DataBlocks {
                 }
             }
         } else if (render_type == "Normal") {
+            if (any(features & ColoredVertexFeatures::NORMAL)) {
+                THROW_OR_ABORT("Vertex has multiple normals");
+            }
             features |= ColoredVertexFeatures::NORMAL;
             if (data_type == "half4") {
                 strided_copy<uint16_t, float>(
@@ -345,6 +350,9 @@ struct DataBlocks {
                 THROW_OR_ABORT("Unsupported Normal data type: \"" + data_type + '"');
             }
         } else if (render_type == "Tangent") {
+            if (any(features & ColoredVertexFeatures::TANGENT)) {
+                THROW_OR_ABORT("Vertex has multiple tangents");
+            }
             features |= ColoredVertexFeatures::TANGENT;
             if (data_type != "half4") {
                 THROW_OR_ABORT("Unsupported Tangent data type");
@@ -479,44 +487,18 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 };
             if ((shader_group_ref == "#terrain_road.fx") ||
                 (shader_group_ref == "#terrain_edge_nm.fx") ||
-                (shader_group_ref == "#terrain_wsm_edge_nm.fx"))
+                (shader_group_ref == "#terrain_wsm_edge_nm.fx") ||
+                (shader_group_ref == "#terrain_infield_nm.fx"))
             {
+                auto uv_source_mask = (shader_group_ref == "#terrain_infield_nm.fx")
+                    ? BlendMapUvSource::VERTICAL0
+                    : BlendMapUvSource::VERTICAL1;
+
                 std::list<BlendMapTexture> textures_color;
 
-                {
-                    auto base_uvso = get_attribute("Map1UVScaleAndOffset").template array<float, 4>();
-                    auto base_diffuse = try_get_texture("TDiffuseSpecMap1");
-                    if (base_diffuse.empty()) {
-                        THROW_OR_ABORT("Diffuse1 texture not specified");
-                    }
-
-                    auto base_normal = try_get_texture("TNormalMap1");
-
-                    textures_color.emplace_back(BlendMapTexture{
-                        .texture_descriptor = TextureDescriptor{
-                            .color = ColormapWithModifiers{
-                                .filename = VariableAndHash{ base_diffuse },
-                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                            }.compute_hash(),
-                            .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds"))
-                                ? ColormapWithModifiers{}.compute_hash()
-                                : ColormapWithModifiers{
-                                    .filename = VariableAndHash{ base_normal },
-                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
-                        },
-                        .discreteness = 0,
-                        .offset = { base_uvso(2), base_uvso(3) },
-                        .scale = { base_uvso(0), base_uvso(1) },
-                        .uv_source = BlendMapUvSource::VERTICAL0,
-                        .reweight_mode = BlendMapReweightMode::ENABLED
-                    });
-                }
-
                 auto blend_uvs = get_attribute("BlendMaskUVScale").template array<float, 4>();
-
-                for (size_t i = 2; i <= 4; ++i) {
+                
+                for (size_t i = 1; i <= 4; ++i) {
                     std::string s = std::to_string(i);
                     auto op_diffuse = try_get_texture("TDiffuseSpecMap" + s);
                     if (op_diffuse.empty()) {
@@ -524,27 +506,33 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     }
                     auto op_uvso = get_attribute("Map" + s + "UVScaleAndOffset").template array<float, 4>();
 
-                    auto blend_map = try_get_texture("TBlendMap" + s);
-                    if (blend_map.empty()) {
-                        lwarn() << "TBlendMap" + s + " texture not specified. Node: " + node_id;
-                        continue;
-                    }
-
                     auto op_normal = try_get_texture("TNormalMap" + s);
 
-                    textures_color.emplace_back(BlendMapTexture{
-                        .texture_descriptor = TextureDescriptor{
-                            .color = ColormapWithModifiers{
-                                .filename = VariableAndHash{ blend_map },
-                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                            }.compute_hash()
-                        },
-                        .scale = { blend_uvs(0), blend_uvs(1) },
-                        .role = BlendMapRole::DETAIL_MASK_R,
-                        .uv_source = BlendMapUvSource::VERTICAL1,
-                        .reduction = BlendMapReductionOperation::TIMES
-                    });
+                    if (i != 1) {
+                        auto blend_map = try_get_texture("TBlendMap" + s);
+                        if (blend_map.empty()) {
+                            lwarn() << "TBlendMap" + s + " texture not specified. Node: " + node_id;
+                            continue;
+                        }
+
+                        textures_color.emplace_back(BlendMapTexture{
+                            .texture_descriptor = TextureDescriptor{
+                                .color = ColormapWithModifiers{
+                                    .filename = VariableAndHash{ blend_map },
+                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                }.compute_hash()
+                            },
+                            .scale = { blend_uvs(0), blend_uvs(1) },
+                            .role = BlendMapRole::DETAIL_MASK_R,
+                            .uv_source = uv_source_mask,
+                            .reduction = BlendMapReductionOperation::TIMES,
+                            .reweight_mode = textures_color.empty()
+                                ? BlendMapReweightMode::ENABLED
+                                : BlendMapReweightMode::UNDEFINED
+                        });
+                    }
+
                     textures_color.emplace_back(BlendMapTexture{
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
@@ -552,7 +540,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .color_mode = ColorMode::RGB | ColorMode::RGBA,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash(),
-                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
+                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds") || true)
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
                                     .filename = VariableAndHash{ op_normal },
@@ -562,8 +550,12 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .discreteness = 0,
                         .offset = { op_uvso(2), op_uvso(3) },
                         .scale = { op_uvso(0), op_uvso(1) },
+                        .weight = 0.f,
                         .uv_source = BlendMapUvSource::VERTICAL0,
-                        .reduction = BlendMapReductionOperation::PLUS
+                        .reduction = BlendMapReductionOperation::PLUS,
+                        .reweight_mode = textures_color.empty()
+                            ? BlendMapReweightMode::ENABLED
+                            : BlendMapReweightMode::UNDEFINED
                     });
                 }
                 shaders.add(
@@ -577,31 +569,6 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         },
                         .color_semantic = ColorSemantic::UNKNOWN
                     });
-            } else if (shader_group_ref == "#terrain_infield_nm.fx") {
-                auto diffuse = try_get_texture("TDiffuseSpecMap2");
-                if (diffuse.empty()) {
-                    THROW_OR_ABORT("Diffuse texture not specified");
-                }
-                auto normal = try_get_texture("TNormalMap2");
-                shaders.add(
-                    node_id,
-                    Shader{
-                        .physics_material = PhysicsMaterial::NONE,
-                        .render_material = Material{
-                            .textures_color = std::vector<BlendMapTexture>{{
-                                .texture_descriptor = TextureDescriptor{
-                                    .color = ColormapWithModifiers{
-                                        .filename = VariableAndHash{ diffuse },
-                                        .color_mode = ColorMode::RGB | ColorMode::RGBA,
-                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash(),
-                                    .normal = (normal.empty() || (normal == "default_normal_map_n.tga.dds"))
-                                        ? ColormapWithModifiers{}.compute_hash()
-                                        : ColormapWithModifiers{
-                                            .filename = VariableAndHash{ normal },
-                                            .color_mode = ColorMode::RGB | ColorMode::RGBA,
-                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
-                                }}},
-                            .magnifying_interpolation_mode = InterpolationMode::LINEAR}});
             } else if (shader_group_ref == "#terrain_track_vista_d4.fx")
             {
                 std::list<BlendMapTexture> textures_color;
@@ -638,7 +605,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .color_mode = ColorMode::RGB | ColorMode::RGBA,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash(),
-                            .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds"))
+                            .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds") || true)
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
                                     .filename = VariableAndHash{ base_normal },
@@ -685,7 +652,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .color_mode = ColorMode::RGB | ColorMode::RGBA,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash(),
-                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
+                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds") || true)
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
                                     .filename = VariableAndHash{ op_normal },

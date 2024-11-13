@@ -902,6 +902,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         } else if (textures_color[0]->role == BlendMapRole::DETAIL_BASE) {
             sstr << "    vec4 texture_color_ambient_diffuse = texture(textures_color[0], " << tex_coords(*textures_color[0]) << ");" << std::endl;
             sstr << "    vec3 sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
+        } else if (any(textures_color[0]->role & BlendMapRole::ANY_DETAIL_MASK)) {
+            sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, 0.0);" << std::endl;
+            sstr << "    vec3 sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
         } else {
             THROW_OR_ABORT("Unsupported base blend map role (0)");
         }
@@ -922,6 +925,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             if (has_normalmap) {
                 if (textures_color[0]->texture_descriptor.normal.filename->empty()) {
                     sstr << "    vec3 tnorm = vec3(0.0, 0.0, 1.0);" << std::endl;
+                } else if (textures_color[0]->role != BlendMapRole::DETAIL_BASE) {
+                    sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
                 } else {
                     sstr << "    vec3 tnorm = 2.0 * texture(texture_normalmap[0], " << tex_coords(*textures_color[0]) << ").rgb - 1.0;" << std::endl;
                 }
@@ -1113,7 +1118,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         } else {
             sstr << "    {" << std::endl;
         }
-        if (textures[0]->role == BlendMapRole::SUMMAND) {
+        if ((textures[0]->role == BlendMapRole::SUMMAND) ||
+            any(textures[0]->role & BlendMapRole::ANY_DETAIL_MASK))
+        {
             // Do nothing
         } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
             sstr << "        texture_color_ambient_diffuse.rgb *= " << textures[0]->weight << " * sum_of_details;" << std::endl;
