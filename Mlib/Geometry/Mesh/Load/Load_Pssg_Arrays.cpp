@@ -21,6 +21,8 @@
 
 using namespace Mlib;
 
+static const auto COLOR_MODE = ColorMode::RGB | ColorMode::RGBA | ColorMode::AGR_NORMAL;
+
 template <class TSource, class TDestination, class TConvert>
 void strided_copy(
     uint32_t src_offset,
@@ -519,7 +521,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .texture_descriptor = TextureDescriptor{
                                 .color = ColormapWithModifiers{
                                     .filename = VariableAndHash{ blend_map },
-                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                                 }.compute_hash()
                             },
@@ -537,14 +539,14 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ op_diffuse },
-                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash(),
-                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds") || true)
+                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
                                     .filename = VariableAndHash{ op_normal },
-                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
                         },
                         .discreteness = 0,
@@ -582,7 +584,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ large_colour_map },
-                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash()
                         },
@@ -602,14 +604,14 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ base_diffuse },
-                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash(),
-                            .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds") || true)
+                            .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds"))
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
                                     .filename = VariableAndHash{ base_normal },
-                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
                         },
                         .discreteness = 0,
@@ -637,7 +639,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ blend_map },
-                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash()
                         },
@@ -649,14 +651,14 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .texture_descriptor = TextureDescriptor{
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ op_diffuse },
-                                .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                .color_mode = COLOR_MODE,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
                             }.compute_hash(),
-                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds") || true)
+                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
                                     .filename = VariableAndHash{ op_normal },
-                                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                    .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
                         },
                         .discreteness = 0,
@@ -691,7 +693,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .texture_descriptor = TextureDescriptor{
                                     .color = ColormapWithModifiers{
                                         .filename = VariableAndHash{ diffuse },
-                                        .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                                        .color_mode = COLOR_MODE,
                                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                                     }.compute_hash()
                                 }}},
@@ -869,7 +871,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             dds_resources->add_texture(
                 ColormapWithModifiers{
                     .filename = VariableAndHash{ node_id + ".dds" },
-                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
+                    .color_mode = COLOR_MODE,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash(),
                 node.texture(model.schema),

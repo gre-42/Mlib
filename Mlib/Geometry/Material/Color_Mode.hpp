@@ -8,7 +8,8 @@ enum class ColorMode {
     UNDEFINED = 1 << 0,
     GRAYSCALE = 1 << 1,
     RGB = 1 << 2,
-    RGBA = 1 << 3
+    RGBA = 1 << 3,
+    AGR_NORMAL = 1 << 4
 };
 
 inline ColorMode operator & (ColorMode a, ColorMode b) {

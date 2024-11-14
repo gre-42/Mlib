@@ -816,6 +816,19 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         return sstr.str();
     };
+    auto normalmap_coords = [&](size_t i) {
+        if (i >= textures_color.size()) {
+            THROW_OR_ABORT("Texture index too large");
+        }
+        const auto& t = *textures_color[i];
+        std::stringstream sstr;
+        if (any(t.texture_descriptor.normal.color_mode & ColorMode::AGR_NORMAL)) {
+            sstr << "(2.0 * texture(texture_normalmap[" << i << "], " << tex_coords(t) << ").agr - 1.0)";
+        } else {
+            sstr << "(2.0 * texture(texture_normalmap[" << i << "], " << tex_coords(t) << ").rgb - 1.0)";
+        }
+        return sstr.str();
+    };
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if ((nbillboard_ids != 0) && !orthographic) {
@@ -928,7 +941,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 } else if (textures_color[0]->role != BlendMapRole::DETAIL_BASE) {
                     sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
                 } else {
-                    sstr << "    vec3 tnorm = 2.0 * texture(texture_normalmap[0], " << tex_coords(*textures_color[0]) << ").rgb - 1.0;" << std::endl;
+                    sstr << "    vec3 tnorm = " << normalmap_coords(0) << ';' << std::endl;
                 }
             }
         }
@@ -1089,7 +1102,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                         if (t->texture_descriptor.normal.filename->empty()) {
                             sstr << "            tnorm.z += final_weight;" << std::endl;
                         } else {
-                            sstr << "            tnorm += final_weight * (2.0 * texture(texture_normalmap[" << i << "], " << tex_coords(*t) << ").rgb - 1.0);" << std::endl;
+                            sstr << "            tnorm += final_weight * " << normalmap_coords(i) << ';' << std::endl;
                         }
                     }
                     sstr << "            sum_weights += final_weight;" << std::endl;
@@ -1138,7 +1151,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_normalmap) {
         if (ntextures_color == 1) {
-            sstr << "    vec3 tnorm = 2.0 * texture(texture_normalmap[0], " << tex_coords(*textures_color[0]) << ").rgb - 1.0;" << std::endl;
+            sstr << "    vec3 tnorm = " << normalmap_coords(0) << ';' << std::endl;
         }
         if (!has_interiormap) {
             compute_TBN();
