@@ -40,5 +40,8 @@ void Mlib::seek_relative_positive(std::istream& istr, std::streamoff amount, IoV
         }
     } else {
         istr.seekg(amount, std::ios::cur);
+        if (istr.fail()) {
+            THROW_OR_ABORT("Seekg failed");
+        }
     }
 }
