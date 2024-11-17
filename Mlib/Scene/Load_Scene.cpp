@@ -50,6 +50,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Visual_Node_Status_3rd.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate_Game_Logic.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate_Grass.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Invalidate_Aggregate_Renderers.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Desired_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Inventory_Capacity.hpp>
@@ -354,7 +355,9 @@ LoadScene::LoadScene() {
     register_json_user_function(FocusedText::key, FocusedText::json_user_function);
     register_json_user_function(FollowNode::key, FollowNode::json_user_function);
     register_json_user_function(Minimap::key, Minimap::json_user_function);
+    register_json_user_function(Instantiate::key, Instantiate::json_user_function);
     register_json_user_function(InstantiateGameLogic::key, InstantiateGameLogic::json_user_function);
+    register_json_user_function(InstantiateGrass::key, InstantiateGrass::json_user_function);
     register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);
     register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
     register_json_user_function(LookAtNode::key, LookAtNode::json_user_function);
@@ -404,7 +407,6 @@ LoadScene::LoadScene() {
     register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);
     register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
     register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
-    register_json_user_function(Instantiate::key, Instantiate::json_user_function);
     register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
     register_json_user_function(SetJumpDv::key, SetJumpDv::json_user_function);
     register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
