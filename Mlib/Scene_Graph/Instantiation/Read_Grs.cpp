@@ -87,10 +87,10 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
         read_vector(istr, cell.coords8, "coords 8", verbosity);
         if (any(verbosity & IoVerbosity::METADATA)) {
             for (const auto& e : cell.coords16) {
-                linfo() << "Position 16: " << e.p;
+                linfo() << "Position 16: " << e.p << " - 0x" << std::hex << e.flags;
             }
             for (const auto& e : cell.coords8) {
-                linfo() << "Position 8: " << e.p.casted<uint16_t>();
+                linfo() << "Position 8: " << e.p.casted<uint16_t>() << " - 0x" << std::hex << +e.flags;
             }
         }
         if (istr.peek() == EOF) {
