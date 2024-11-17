@@ -133,6 +133,9 @@ public:
     {
         return AxisAlignedBoundingBox(min_ + translation, max_ + translation);
     }
+    FixedArray<TData, tndim> center() const {
+        return (min_ + max_) * TData{ 0.5 };
+    }
     FixedArray<TData, tndim> size() const {
         return max_ - min_;
     }
