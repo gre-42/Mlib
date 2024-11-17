@@ -47,6 +47,9 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
             if (element_name.empty()) {
                 break;
             }
+            if (any(verbosity & IoVerbosity::METADATA)) {
+                linfo() << "Resource: \"" << element_name << '"';
+            }
             group.elements.emplace_back(std::move(element_name));
         }
     }
@@ -82,6 +85,14 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
         read_vector(istr, cell.coords16, "coords 16", verbosity);
         cell.coords8.resize(size8);
         read_vector(istr, cell.coords8, "coords 8", verbosity);
+        if (any(verbosity & IoVerbosity::METADATA)) {
+            for (const auto& e : cell.coords16) {
+                linfo() << "Position 16: " << e.p;
+            }
+            for (const auto& e : cell.coords8) {
+                linfo() << "Position 8: " << e.p.casted<uint16_t>();
+            }
+        }
         if (istr.peek() == EOF) {
             break;
         }

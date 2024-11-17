@@ -14,19 +14,7 @@ int main(int argc, char **argv) {
         args.assert_num_unnamed_atleast(1);
         for (const auto& file : args.unnamed_values()) {
             linfo() << "Processing file " << file;
-            auto model = Grs::load_grs(file, IoVerbosity::METADATA);
-            for (const auto& g : model.resource_groups) {
-                linfo() << "Resource group: \"" << g.name + '"';
-                for (const auto& e : g.elements) {
-                    linfo() << "Resource: \"" << e << '"';
-                }
-            }
-            for (const auto& c : model.cells) {
-                linfo() << "AABB: " << c.aabb;
-                for (const auto& e : c.coords16) {
-                    linfo() << "Position: " << e.p;
-                }
-            }
+            Grs::load_grs(file, IoVerbosity::METADATA);
         }
     } catch (const std::exception& e) {
         lerr() << e.what();
