@@ -568,6 +568,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .textures_color = std::vector<BlendMapTexture>(
                                 textures_color.begin(),
                                 textures_color.end()),
+                            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR
                         },
                         .color_semantic = ColorSemantic::UNKNOWN
@@ -676,6 +677,45 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .textures_color = std::vector<BlendMapTexture>(
                                 textures_color.begin(),
                                 textures_color.end()),
+                            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                            .magnifying_interpolation_mode = InterpolationMode::LINEAR
+                        },
+                        .color_semantic = ColorSemantic::UNKNOWN
+                    });
+            } else if (shader_group_ref == "#decal_ao_vc.fx") {
+                auto diffuse = try_get_texture("TDiffuseAlphaMap");
+                auto normal = try_get_texture("TNormalMap");
+                auto specular = try_get_texture("TSpecularMap");
+                if (diffuse.empty()) {
+                    THROW_OR_ABORT("TDiffuseAlphaMap texture not specified");
+                }
+                shaders.add(
+                    node_id,
+                    Shader{
+                        .render_material = Material{
+                            .blend_mode = BlendMode::CONTINUOUS,
+                            .textures_color = {
+                                BlendMapTexture{
+                                    .texture_descriptor = TextureDescriptor{
+                                        .color = ColormapWithModifiers{
+                                            .filename = VariableAndHash{ diffuse },
+                                            .color_mode = COLOR_MODE,
+                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                        }.compute_hash(),
+                                        .specular = ColormapWithModifiers{
+                                            .filename = VariableAndHash{ specular },
+                                            .color_mode = COLOR_MODE,
+                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                        }.compute_hash(),
+                                        .normal = ColormapWithModifiers{
+                                            .filename = VariableAndHash{ normal },
+                                            .color_mode = COLOR_MODE,
+                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                        }.compute_hash()
+                                    }
+                                }
+                            },
+                            .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR
                         },
                         .color_semantic = ColorSemantic::UNKNOWN
