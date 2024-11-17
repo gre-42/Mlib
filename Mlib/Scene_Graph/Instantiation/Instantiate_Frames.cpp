@@ -17,10 +17,13 @@ void Mlib::instantiate(
     const InstanceInformation<ScenePos>& info,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
+    const std::string& required_prefix,
     const std::set<std::string>& exclude,
     std::set<std::string>* instantiated)
 {
-    if (exclude.contains(info.resource_name)) {
+    if (!info.resource_name.starts_with(required_prefix) ||
+        exclude.contains(info.resource_name))
+    {
         return;
     }
     auto name = VariableAndHash{ info.resource_name + "_inst_" + std::to_string(scene.get_uuid()) };

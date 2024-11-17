@@ -21,6 +21,7 @@
 
 using namespace Mlib;
 
+static const std::string LOD_LOW_PREFIX = "LOW";
 static const auto COLOR_MODE = ColorMode::RGB | ColorMode::RGBA | ColorMode::AGR_NORMAL;
 
 template <class TSource, class TDestination, class TConvert>
@@ -106,7 +107,7 @@ void add_instantiables(
         node.get_child("TRANSFORM", schema).array<float, 4, 4>().casted<TInstancePos>() };
     auto mc = m * trafo;
     if ((schema.nodes.get(node.type_id).name == "RENDERNODE") &&
-        !node.get_attribute("id", schema).string().starts_with("LOW"))
+        !node.get_attribute("id", schema).string().starts_with(LOD_LOW_PREFIX))
     {
         node.for_each_node([&](const PssgNode& child){
             if (schema.nodes.get(child.type_id).name == "RENDERSTREAMINSTANCE") {
