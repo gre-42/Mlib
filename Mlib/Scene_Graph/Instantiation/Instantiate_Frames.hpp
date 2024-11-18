@@ -16,7 +16,7 @@ void instantiate(
     const InstanceInformation<ScenePos>& info,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
-    const std::string& required_prefix,
+    const std::set<std::string>& required_prefixes,
     const std::set<std::string>& exclude,
     std::set<std::string>* instantiated);
 

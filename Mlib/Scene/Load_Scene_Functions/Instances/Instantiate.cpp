@@ -14,6 +14,7 @@
 #include <Mlib/Scene_Graph/Instantiation/Instantiate_Frames.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Read_Ipl.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <set>
 
 using namespace Mlib;
 
@@ -21,7 +22,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(ipl_files);
 DECLARE_ARGUMENT(instantiables);
-DECLARE_ARGUMENT(required_prefix);
+DECLARE_ARGUMENT(required_prefixes);
 DECLARE_ARGUMENT(except);
 DECLARE_ARGUMENT(dynamics);
 DECLARE_ARGUMENT(min_vertex_distance);
@@ -42,7 +43,8 @@ Instantiate::Instantiate(RenderableScene& renderable_scene)
 
 void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
     auto empty_set = std::set<std::string>();
-    auto required_prefix = args.arguments.at<std::string>(KnownArgs::required_prefix, "");
+    auto matching_set = std::set<std::string>{""};
+    auto required_prefixes = args.arguments.at<std::set<std::string>>(KnownArgs::required_prefixes, matching_set);
     auto exclude = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::except, empty_set);
     auto dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics));
     auto ir = args.arguments.try_at<std::string>(KnownArgs::instantiated_resources);
@@ -54,7 +56,7 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 info,
                 scene_node_resources,
                 rendering_resources,
-                required_prefix,
+                required_prefixes,
                 exclude,
                 ir.has_value() ? &instantiated : nullptr);
         }
@@ -65,7 +67,7 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
             scene_node_resources.instantiable(name),
             scene_node_resources,
             rendering_resources,
-            required_prefix,
+            required_prefixes,
             exclude,
             ir.has_value() ? &instantiated : nullptr);
     }

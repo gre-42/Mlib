@@ -469,10 +469,11 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         (c.get_attribute("parameterID", model.schema).uint32() == parameter_id))
                     {
                         texture_reference = c.get_attribute("texture", model.schema).string();
-                        if (!texture_reference.starts_with("#")) {
-                            THROW_OR_ABORT("Texture reference does not start with \"#\": " + texture_reference);
+                        if (texture_reference.starts_with("#")) {
+                            return resource_prefix + texture_reference.substr(1) + ".dds";
+                        } else {
+                            return texture_reference + ".dds";
                         }
-                        return texture_reference.substr(1) + ".dds";
                     }
                 }
                 return "";
@@ -491,7 +492,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             if ((shader_group_ref == "#terrain_road.fx") ||
                 (shader_group_ref == "#terrain_edge_nm.fx") ||
                 (shader_group_ref == "#terrain_wsm_edge_nm.fx") ||
-                (shader_group_ref == "#terrain_infield_nm.fx"))
+                (shader_group_ref == "#terrain_infield_nm.fx") ||
+                (shader_group_ref == "#terrain_rockbank.fx") ||
+                (shader_group_ref == "#terrain_rock_d4.fx"))
             {
                 auto uv_source_mask = (shader_group_ref == "#terrain_infield_nm.fx")
                     ? BlendMapUvSource::VERTICAL0
@@ -499,15 +502,22 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
 
                 std::list<BlendMapTexture> textures_color;
 
-                auto blend_uvs = get_attribute("BlendMaskUVScale").template array<float, 4>();
+                auto blend_uvs = (shader_group_ref == "#terrain_rock_d4.fx")
+                    ? FixedArray<float, 4>{ 1.f, 1.f, 0.f, 0.f }
+                    : get_attribute("BlendMaskUVScale").template array<float, 4>();
                 
-                for (size_t i = 1; i <= 4; ++i) {
+                size_t ntextures = (shader_group_ref == "#terrain_rock_d4.fx")
+                    ? 3
+                    : 4;
+                for (size_t i = 1; i <= ntextures; ++i) {
                     std::string s = std::to_string(i);
                     auto op_diffuse = try_get_texture("TDiffuseSpecMap" + s);
                     if (op_diffuse.empty()) {
                         continue;
                     }
-                    auto op_uvso = get_attribute("Map" + s + "UVScaleAndOffset").template array<float, 4>();
+                    auto op_uvso = (shader_group_ref == "#terrain_rock_d4.fx")
+                        ? FixedArray<float, 4>{ 1.f, 1.f, 0.f, 0.f }
+                        : get_attribute("Map" + s + "UVScaleAndOffset").template array<float, 4>();
 
                     auto op_normal = try_get_texture("TNormalMap" + s);
 
@@ -536,30 +546,37 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         });
                     }
 
-                    textures_color.emplace_back(BlendMapTexture{
-                        .texture_descriptor = TextureDescriptor{
-                            .color = ColormapWithModifiers{
-                                .filename = VariableAndHash{ op_diffuse },
-                                .color_mode = COLOR_MODE,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                            }.compute_hash(),
-                            .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
-                                ? ColormapWithModifiers{}.compute_hash()
-                                : ColormapWithModifiers{
-                                    .filename = VariableAndHash{ op_normal },
+                    if (!op_diffuse.empty() &&
+                        !op_diffuse.ends_with("#default_d.tga.dds"))
+                    {
+                        textures_color.emplace_back(BlendMapTexture{
+                            .texture_descriptor = TextureDescriptor{
+                                .color = ColormapWithModifiers{
+                                    .filename = VariableAndHash{ op_diffuse },
                                     .color_mode = COLOR_MODE,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
-                        },
-                        .discreteness = 0,
-                        .offset = { op_uvso(2), op_uvso(3) },
-                        .scale = { op_uvso(0), op_uvso(1) },
-                        .weight = 0.f,
-                        .uv_source = BlendMapUvSource::VERTICAL0,
-                        .reduction = BlendMapReductionOperation::PLUS,
-                        .reweight_mode = textures_color.empty()
-                            ? BlendMapReweightMode::ENABLED
-                            : BlendMapReweightMode::UNDEFINED
-                    });
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                }.compute_hash(),
+                                .normal =
+                                    (op_normal.empty() ||
+                                    op_normal.ends_with("#default_normal_map_n.tga.dds") ||
+                                    op_normal.ends_with("#default_n.tga.dds"))
+                                    ? ColormapWithModifiers{}.compute_hash()
+                                    : ColormapWithModifiers{
+                                        .filename = VariableAndHash{ op_normal },
+                                        .color_mode = COLOR_MODE,
+                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
+                            },
+                            .discreteness = 0,
+                            .offset = { op_uvso(2), op_uvso(3) },
+                            .scale = { op_uvso(0), op_uvso(1) },
+                            .weight = 0.f,
+                            .uv_source = BlendMapUvSource::VERTICAL0,
+                            .reduction = BlendMapReductionOperation::PLUS,
+                            .reweight_mode = textures_color.empty()
+                                ? BlendMapReweightMode::ENABLED
+                                : BlendMapReweightMode::UNDEFINED
+                        });
+                    }
                 }
                 shaders.add(
                     node_id,
@@ -911,7 +928,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             }
             dds_resources->add_texture(
                 ColormapWithModifiers{
-                    .filename = VariableAndHash{ node_id + ".dds" },
+                    .filename = VariableAndHash{ resource_prefix + node_id + ".dds" },
                     .color_mode = COLOR_MODE,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash(),

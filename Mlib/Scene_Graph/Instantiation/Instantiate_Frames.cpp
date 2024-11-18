@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <algorithm>
 
 using namespace Mlib;
 
@@ -17,12 +18,16 @@ void Mlib::instantiate(
     const InstanceInformation<ScenePos>& info,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
-    const std::string& required_prefix,
+    const std::set<std::string>& required_prefixes,
     const std::set<std::string>& exclude,
     std::set<std::string>* instantiated)
 {
-    if (!info.resource_name.starts_with(required_prefix) ||
-        exclude.contains(info.resource_name))
+    if (exclude.contains(info.resource_name)) {
+        return;
+    }
+    if (!std::ranges::any_of(required_prefixes, [&](const auto& p){
+        return info.resource_name.starts_with(p);
+        }))
     {
         return;
     }
