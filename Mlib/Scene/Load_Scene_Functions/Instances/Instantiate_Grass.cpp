@@ -43,14 +43,17 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
         for (const auto& cell : model.cells) {
             for (const auto& p16 : cell.coords16) {
                 if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
+                    auto p16s = p16.p;
+                    std::swap(p16s(1), p16s(2));
                     auto p =
                         cell.aabb.min().casted<double>() +
                         cell.aabb.size().casted<double>() *
-                        p16.p.casted<double>() / double{ UINT16_MAX };
+                        p16s.casted<double>() / double{ UINT16_MAX };
                     bri.add_parsed_resource_name(p, *prn, 0.f, 1.f);
                 }
             }
             for (const auto& p8 : cell.coords8) {
+                continue;
                 if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
                     auto p =
                         cell.aabb.min().casted<double>() +
