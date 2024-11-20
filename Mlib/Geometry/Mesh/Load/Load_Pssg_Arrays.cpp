@@ -1,5 +1,6 @@
 #include "Load_Pssg_Arrays.hpp"
 #include <Mlib/Array/Non_Copying_Vector.hpp>
+#include <Mlib/Geometry/Base_Materials.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -85,10 +86,7 @@ enum class ColorSemantic {
 };
 
 struct Shader {
-    PhysicsMaterial physics_material =
-        PhysicsMaterial::ATTR_VISIBLE |
-        PhysicsMaterial::ATTR_COLLIDE |
-        PhysicsMaterial::ATTR_CONCAVE;
+    PhysicsMaterial physics_material = BASE_VISIBLE_TERRAIN_MATERIAL;
     Material render_material;
     ColorSemantic color_semantic = ColorSemantic::RGB;
 };

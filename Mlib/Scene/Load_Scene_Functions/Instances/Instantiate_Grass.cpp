@@ -1,6 +1,7 @@
 #include "Instantiate_Grass.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Read_Grs.hpp>
@@ -15,6 +16,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(filenames);
 DECLARE_ARGUMENT(resources);
+DECLARE_ARGUMENT(height_tolerance);
 }
 
 const std::string InstantiateGrass::key = "instantiate_grass";
@@ -30,6 +32,7 @@ InstantiateGrass::InstantiateGrass(RenderableScene& renderable_scene)
 {}
 
 void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
+    auto height_tolerance = args.arguments.at<ScenePos>(KnownArgs::height_tolerance) * meters;
     BatchResourceInstantiator bri;
     auto parse_resource_name_func = [this](const std::string& jma){
         return parse_resource_name(scene_node_resources, jma);
@@ -46,10 +49,22 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
                     auto p16s = p16.p;
                     std::swap(p16s(1), p16s(2));
                     auto p =
-                        cell.aabb.min().casted<double>() +
-                        cell.aabb.size().casted<double>() *
-                        p16s.casted<double>() / double{ UINT16_MAX };
-                    bri.add_parsed_resource_name(p, *prn, 0.f, 1.f);
+                        cell.aabb.min().casted<ScenePos>() +
+                        cell.aabb.size().casted<ScenePos>() *
+                        p16s.casted<ScenePos>() / double{ UINT16_MAX };
+                    FixedArray<ScenePos, 3> intersection_point = uninitialized;
+                    if (physics_engine.collision_query_.can_see(
+                        p - FixedArray<ScenePos, 3>{0.f, height_tolerance, 0.f},
+                        p + FixedArray<ScenePos, 3>{0.f, height_tolerance, 0.f},
+                        nullptr,    // excluded0
+                        nullptr,    // excluded1
+                        true,       // only_terrain
+                        PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
+                        &intersection_point))
+                    {
+                        continue;
+                    }
+                    bri.add_parsed_resource_name(intersection_point, *prn, 0.f, 1.f);
                 }
             }
             for (const auto& p8 : cell.coords8) {
