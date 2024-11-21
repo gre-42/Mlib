@@ -1,5 +1,6 @@
 #include "Playback_Waypoints.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -51,14 +52,14 @@ void PlaybackWaypoints::set_waypoints(
     const std::string& playback_filename,
     float speedup)
 {
-    std::ifstream ifstr{playback_filename};
-    if (ifstr.fail()) {
+    auto ifstr = create_ifstream(playback_filename);
+    if (ifstr->fail()) {
         THROW_OR_ABORT("Could not open waypoint file \"" + playback_filename + '"');
     }
     while (true) {
-        TrackElement te = TrackElement::from_stream(ifstr, inverse_geographic_mapping, 1);
-        if (ifstr.fail()) {
-            if (!ifstr.eof()) {
+        TrackElement te = TrackElement::from_stream(*ifstr, inverse_geographic_mapping, 1);
+        if (ifstr->fail()) {
+            if (!ifstr->eof()) {
                 THROW_OR_ABORT("Could not read from file \"" + playback_filename + '"');
             }
             break;

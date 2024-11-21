@@ -135,7 +135,7 @@ void add_instantiables(
                 auto scale = sqrt(sum<0>(squared(mc.R)));
                 auto mean_scale = mean(scale);
                 if (any(abs(scale - mean_scale) > 1e-3f)) {
-                    THROW_OR_ABORT("Scale is anisotropic");
+                    THROW_OR_ABORT((std::stringstream() << "Scale is anisotropic: " << scale).str());
                 }
                 auto mcr = TransformationMatrix{ mc.R / mean_scale, mc.t };
                 instances.emplace_back(resource_prefix + indices.substr(1), mcr, mean_scale, RenderingDynamics::STATIC);
