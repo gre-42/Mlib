@@ -678,6 +678,7 @@ void RenderableColoredVertexArray::render_cva(
             .dirtmap_discreteness = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_discreteness(dirtmap_name) : -1234,
             .dirt_scale = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_scale(dirtmap_name) : -1234,
             .texture_modifiers_hash = texture_modifiers_hash},
+        *cva,
         filtered_lights,
         filtered_skidmarks,
         lightmap_indices,

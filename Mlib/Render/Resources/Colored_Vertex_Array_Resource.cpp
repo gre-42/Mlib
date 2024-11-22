@@ -84,6 +84,28 @@ private:
     const T& value_;
 };
 
+template <class T>
+class NotSortedStruct {
+public:
+    NotSortedStruct(const T& value)
+        : value_{ value }
+    {}
+    operator const T&() const {
+        return value_;
+    }
+    const T& operator * () const {
+        return value_;
+    }
+    const T* operator -> () const {
+        return &value_;
+    }
+    std::strong_ordering operator <=> (const NotSortedStruct&) const {
+        return std::strong_ordering::equal;
+    }
+private:
+    const T& value_;
+};
+
 static const size_t ANIMATION_NINTERPOLATED = 4;
 struct ShaderBoneWeight {
     unsigned char indices[ANIMATION_NINTERPOLATED];
@@ -100,28 +122,74 @@ enum class ReductionTarget {
     ALPHA
 };
 
-static const GLuint IDX_POSITION = 0;
-static const GLuint IDX_COLOR = 1;
-static const GLuint IDX_NORMAL = 2;
-static const GLuint IDX_TANGENT = 3;
-static const GLuint IDX_INSTANCE_ATTRS = 4;
-static const GLuint IDX_ROTATION_QUATERNION = 5;
-static const GLuint IDX_BILLBOARD_IDS = 6;
-static const GLuint IDX_BONE_INDICES = 7;
-static const GLuint IDX_BONE_WEIGHTS = 8;
-static const GLuint IDX_TEXTURE_LAYER = 9;
-static const GLuint IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 10;
-static const GLuint IDX_INTERIOR_MAPPING_MULTIPLIER = 11;
-static const GLuint IDX_UV_0 = 12;
-static const GLuint IDX_UV_1 = 13;
-static const GLuint IDX_UV_LAST = IDX_UV_0 + (BlendMapUvSource::VERTICAL_LAST - BlendMapUvSource::VERTICAL0);
-static const GLuint IDX_CWEIGHT_0 = IDX_UV_LAST + 1;
-static const GLuint IDX_CWEIGHT_LAST = IDX_CWEIGHT_0 + 5;
+namespace Mlib {
+
+struct AttributeIndices {
+    GLuint idx_position;
+    GLuint idx_color;
+    GLuint idx_normal;
+    GLuint idx_tangent;
+    GLuint idx_instance_attrs;
+    GLuint idx_rotation_quaternion;
+    GLuint idx_billboard_ids;
+    GLuint idx_bone_indices;
+    GLuint idx_bone_weights;
+    GLuint idx_texture_layer;
+    GLuint idx_interior_mapping_bottom_left;
+    GLuint idx_interior_mapping_multiplier;
+    GLuint idx_uv_0;
+    GLuint idx_uv_1;
+    GLuint uv_count;
+    GLuint idx_cweight_0;
+    GLuint cweight_count;
+};
+
+struct AttributeIndexCalculator {
+    bool has_position;
+    bool has_color;
+    bool has_normal;
+    bool has_tangent;
+    bool has_instance_attrs;
+    bool has_rotation_quaternion;
+    bool has_billboard_ids;
+    bool has_bone_indices;
+    bool has_bone_weights;
+    bool has_texture_layer;
+    bool has_interior_mapping_bottom_left;
+    bool has_interior_mapping_multiplier;
+    size_t nuvs;
+    size_t ncweights;
+
+    AttributeIndices build() const {
+        AttributeIndices result;
+        result.idx_position = 0;
+        result.idx_color = result.idx_position + has_position;
+        result.idx_normal = result.idx_color + has_color;
+        result.idx_tangent = result.idx_normal + has_normal;
+        result.idx_instance_attrs = result.idx_tangent + has_tangent;
+        result.idx_rotation_quaternion = result.idx_instance_attrs + has_instance_attrs;
+        result.idx_billboard_ids = result.idx_rotation_quaternion + has_rotation_quaternion;
+        result.idx_bone_indices = result.idx_billboard_ids + has_billboard_ids;
+        result.idx_bone_weights = result.idx_bone_indices + has_bone_indices;
+        result.idx_texture_layer = result.idx_bone_weights + has_bone_weights;
+        result.idx_interior_mapping_bottom_left = result.idx_texture_layer + has_texture_layer;
+        result.idx_interior_mapping_multiplier = result.idx_interior_mapping_bottom_left + has_interior_mapping_bottom_left;
+        result.idx_uv_0 = result.idx_interior_mapping_multiplier + has_interior_mapping_multiplier;
+        result.idx_uv_1 = result.idx_uv_0 + 1;
+        result.uv_count = nuvs;
+        result.idx_cweight_0 = result.idx_uv_0 + nuvs;
+        result.cweight_count = ncweights;
+        return result;
+    }
+};
+
+}
 
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
+    const NotSortedStruct<AttributeIndices>& attr_ids,
     size_t nuv_indices,
     size_t ncweight_indices,
     size_t texture_modifier_hash,
@@ -160,40 +228,40 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << std::scientific;
     sstr << SHADER_VER;
     sstr << "uniform mat4 MVP;" << std::endl;
-    sstr << "layout (location=" << IDX_POSITION << ") in vec3 vPos;" << std::endl;
-    sstr << "layout (location=" << IDX_COLOR << ") in vec3 vCol;" << std::endl;
-    if (nuv_indices > (IDX_UV_LAST - IDX_UV_0)) {
+    sstr << "layout (location=" << attr_ids->idx_position << ") in vec3 vPos;" << std::endl;
+    sstr << "layout (location=" << attr_ids->idx_color << ") in vec3 vCol;" << std::endl;
+    if (nuv_indices > attr_ids->uv_count) {
         THROW_OR_ABORT("UV index too large");
     }
     for (size_t i = 0; i < nuv_indices; ++i) {
-        sstr << "layout (location=" << (IDX_UV_0 + i) << ") in vec2 vTexCoord" << i << ";" << std::endl;
+        sstr << "layout (location=" << (attr_ids->idx_uv_0 + i) << ") in vec2 vTexCoord" << i << ";" << std::endl;
     }
-    if (ncweight_indices > (IDX_CWEIGHT_LAST - IDX_CWEIGHT_0)) {
+    if (ncweight_indices > attr_ids->cweight_count) {
         THROW_OR_ABORT("CWeight index too large");
     }
     for (size_t i = 0; i < ncweight_indices; ++i) {
-        sstr << "layout (location=" << (IDX_CWEIGHT_0 + i) << ") in float vCWeight" << i << ";" << std::endl;
+        sstr << "layout (location=" << (attr_ids->idx_cweight_0 + i) << ") in float vCWeight" << i << ";" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_normalmap || fragments_depend_on_normal) {
-        sstr << "layout (location=" << IDX_NORMAL << ") in vec3 vNormal;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_normal << ") in vec3 vNormal;" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
-        sstr << "layout (location=" << IDX_TANGENT << ") in vec3 vTangent;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_tangent << ") in vec3 vTangent;" << std::endl;
     }
     if (has_instances) {
         if (has_yangle) {
-            sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec4 instancePosition;" << std::endl;
+            sstr << "layout (location=" << attr_ids->idx_instance_attrs << ") in vec4 instancePosition;" << std::endl;
         } else {
-            sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec3 instancePosition;" << std::endl;
+            sstr << "layout (location=" << attr_ids->idx_instance_attrs << ") in vec3 instancePosition;" << std::endl;
         }
         if (has_rotation_quaternion) {
-            sstr << "layout (location=" << IDX_ROTATION_QUATERNION << ") in vec4 rotationQuaternion;" << std::endl;
+            sstr << "layout (location=" << attr_ids->idx_rotation_quaternion << ") in vec4 rotationQuaternion;" << std::endl;
         }
     } else if (has_lookat && !orthographic) {
         sstr << "const vec3 instancePosition = vec3(0.0, 0.0, 0.0);" << std::endl;
     }
     if (nbillboard_ids != 0) {
-        sstr << "layout (location=" << IDX_BILLBOARD_IDS << ") in uint billboard_id;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_billboard_ids << ") in uint billboard_id;" << std::endl;
         sstr << "uniform vec3 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;
@@ -206,16 +274,16 @@ static GenShaderText vertex_shader_text_gen{[](
         }
     }
     if (nbones != 0) {
-        sstr << "layout (location=" << IDX_BONE_INDICES << ") in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
-        sstr << "layout (location=" << IDX_BONE_WEIGHTS << ") in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_bone_indices << ") in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_bone_weights << ") in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
     if (has_discrete_vertex_texture_layer) {
-        sstr << "layout (location=" << IDX_TEXTURE_LAYER << ") in lowp uint texture_layer;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_texture_layer << ") in lowp uint texture_layer;" << std::endl;
     }
     if (has_continuous_vertex_texture_layer) {
-        sstr << "layout (location=" << IDX_TEXTURE_LAYER << ") in float texture_layer;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_texture_layer << ") in float texture_layer;" << std::endl;
     }
     if (has_uv_offset_u) {
         sstr << "uniform float uv_offset_u;" << std::endl;
@@ -256,8 +324,8 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "flat out lowp uint texture_layer_fs;" << std::endl;
     }
     if (has_interiormap) {
-        sstr << "layout (location=" << IDX_INTERIOR_MAPPING_BOTTOM_LEFT << ") in vec3 interior_bottom_left;" << std::endl;
-        sstr << "layout (location=" << IDX_INTERIOR_MAPPING_MULTIPLIER << ") in vec2 interior_multiplier;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_interior_mapping_bottom_left << ") in vec3 interior_bottom_left;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_interior_mapping_multiplier << ") in vec2 interior_multiplier;" << std::endl;
         sstr << "out vec3 interior_bottom_left_fs;" << std::endl;
         sstr << "out vec2 interior_multiplier_fs;" << std::endl;
     }
@@ -480,6 +548,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
     const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
+    const NotSortedStruct<AttributeIndices>& attr_ids,
     size_t nuv_indices,
     size_t ncweights,
     const std::vector<float>& continuous_layer_x,
@@ -529,10 +598,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float dirtmap_discreteness,
     float dirt_scale)
 {
-    if (nuv_indices > (IDX_UV_LAST - IDX_UV_0)) {
+    if (nuv_indices > attr_ids->uv_count) {
         THROW_OR_ABORT("UV index too large");
     }
-    if (ncweights > (IDX_CWEIGHT_LAST - IDX_CWEIGHT_0)) {
+    if (ncweights > attr_ids->cweight_count) {
         THROW_OR_ABORT("CWeight index too large");
     }
     // Mipmapping does not work unless all textures are actually sampled everywhere.
@@ -1772,8 +1841,32 @@ void ColoredVertexArrayResource::print(std::ostream& ostr) const {
     triangles_res_->print(ostr);
 }
 
+AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calculator(
+    const ColoredVertexArray<float>& cva) const
+{
+    return AttributeIndexCalculator{
+        .has_position = true,
+        .has_color = true,
+        .has_normal = !cva.material.shading.diffuse.all_equal(0) || !cva.material.shading.specular.all_equal(0) || cva.material.fragments_depend_on_normal(),
+        .has_tangent = cva.material.has_normalmap() || !cva.material.interior_textures.empty(),
+        .has_instance_attrs = instances_ != nullptr,
+        .has_rotation_quaternion = (instances_ != nullptr) && (cva.material.transformation_mode == TransformationMode::ALL),
+        .has_billboard_ids = !cva.material.billboard_atlas_instances.empty(),
+        .has_bone_indices = !triangles_res_->bone_indices.empty(),
+        .has_bone_weights = !triangles_res_->bone_indices.empty(),
+        .has_texture_layer =
+            !cva.continuous_triangle_texture_layers.empty() ||
+            !cva.discrete_triangle_texture_layers.empty(),
+        .has_interior_mapping_bottom_left = !cva.material.interior_textures.empty(),
+        .has_interior_mapping_multiplier = !cva.material.interior_textures.empty(),
+        .nuvs = cva.uv1.size() + 1,
+        .ncweights = cva.cweight.size()
+    };
+}
+    
 const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const RenderProgramIdentifier& id,
+    const ColoredVertexArray<float>& cva,
     const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& filtered_lights,
     const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& filtered_skidmarks,
     const std::vector<size_t>& lightmap_indices,
@@ -1793,10 +1886,13 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     }
     auto rp = std::make_unique<ColoredRenderProgram>();
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
+    auto attr_idc = get_attribute_index_calculator(cva);
+    auto attr_ids = attr_idc.build();
     const char* vs_text = vertex_shader_text_gen(
         NotSortedArray{ filtered_lights },
         NotSortedArray{ textures_color },
         NotSortedArray{ lightmap_indices },
+        NotSortedStruct{ attr_ids },
         id.nuv_indices,
         id.ncweights,
         id.texture_modifiers_hash,
@@ -1838,6 +1934,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ light_noshadow_indices },
         NotSortedArray{ light_shadow_indices },
         NotSortedArray{ black_shadow_indices },
+        NotSortedStruct{ attr_ids },
         id.nuv_indices,
         id.ncweights,
         id.continuous_layer_x,
@@ -2142,26 +2239,29 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
         va.vertex_buffer().set(cva->triangles, task_location);
     }
 
+    auto attr_idc = get_attribute_index_calculator(*cva);
+    auto attr_ids = attr_idc.build();
+
     ColoredVertex<float>* cv = nullptr;
-    CHK(glEnableVertexAttribArray(IDX_POSITION));
-    CHK(glVertexAttribPointer(IDX_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->position));
-    CHK(glEnableVertexAttribArray(IDX_COLOR));
-    CHK(glVertexAttribPointer(IDX_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->color));
-    CHK(glEnableVertexAttribArray(IDX_UV_0));
-    CHK(glVertexAttribPointer(IDX_UV_0, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
+    CHK(glEnableVertexAttribArray(attr_ids.idx_position));
+    CHK(glVertexAttribPointer(attr_ids.idx_position, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->position));
+    CHK(glEnableVertexAttribArray(attr_ids.idx_color));
+    CHK(glVertexAttribPointer(attr_ids.idx_color, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->color));
+    CHK(glEnableVertexAttribArray(attr_ids.idx_uv_0));
+    CHK(glVertexAttribPointer(attr_ids.idx_uv_0, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
-    if (!cva->material.shading.diffuse.all_equal(0) || !cva->material.shading.specular.all_equal(0) || cva->material.fragments_depend_on_normal()) {
-        CHK(glEnableVertexAttribArray(IDX_NORMAL));
-        CHK(glVertexAttribPointer(IDX_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->normal));
+    if (attr_idc.has_normal) {
+        CHK(glEnableVertexAttribArray(attr_ids.idx_normal));
+        CHK(glVertexAttribPointer(attr_ids.idx_normal, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->normal));
     }
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
-    if (cva->material.has_normalmap() || !cva->material.interior_textures.empty()) {
-        CHK(glEnableVertexAttribArray(IDX_TANGENT));
-        CHK(glVertexAttribPointer(IDX_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->tangent));
+    if (attr_idc.has_tangent) {
+        CHK(glEnableVertexAttribArray(attr_ids.idx_tangent));
+        CHK(glVertexAttribPointer(attr_ids.idx_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->tangent));
     }
     if (!cva->uv1.empty()) {
-        if (cva->uv1.size() > (IDX_UV_LAST - IDX_UV_1)) {
-            THROW_OR_ABORT("Too many UV indices");
+        if (cva->uv1.size() + 1 != attr_ids.uv_count) {
+            THROW_OR_ABORT("Unexpected number of UV indices");
         }
         for (const auto& [i, uv1] : enumerate(cva->uv1)) {
             if (va.uv1_buffer(i).is_awaited()) {
@@ -2172,13 +2272,13 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
                 }
                 va.uv1_buffer(i).set(uv1, task_location);
             }
-            CHK(glEnableVertexAttribArray(IDX_UV_1 + i));
-            CHK(glVertexAttribPointer(IDX_UV_1 + i, 2, GL_FLOAT, GL_FALSE, sizeof(FixedArray<float, 2>), nullptr));
+            CHK(glEnableVertexAttribArray(attr_ids.idx_uv_1 + i));
+            CHK(glVertexAttribPointer(attr_ids.idx_uv_1 + i, 2, GL_FLOAT, GL_FALSE, sizeof(FixedArray<float, 2>), nullptr));
         }
     }
     {
-        if (cva->cweight.size() > (IDX_CWEIGHT_LAST - IDX_CWEIGHT_0)) {
-            THROW_OR_ABORT("Too many weight coefficients");
+        if (cva->cweight.size() != attr_ids.cweight_count) {
+            THROW_OR_ABORT("Unexpected number of weight coefficients");
         }
         for (const auto& [i, cweight] : enumerate(cva->cweight)) {
             if (va.cweight_buffer(i).is_awaited()) {
@@ -2189,16 +2289,16 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
                 }
                 va.cweight_buffer(i).set(cweight, task_location);
             }
-            CHK(glEnableVertexAttribArray(IDX_CWEIGHT_0 + i));
-            CHK(glVertexAttribPointer(IDX_CWEIGHT_0 + i, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
+            CHK(glEnableVertexAttribArray(attr_ids.idx_cweight_0 + i));
+            CHK(glVertexAttribPointer(attr_ids.idx_cweight_0 + i, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
         }
     }
     if (instances_ != nullptr) {
         instances_->at(cva.get())->bind(
-            IDX_INSTANCE_ATTRS,
-            IDX_ROTATION_QUATERNION,
-            IDX_BILLBOARD_IDS,
-            IDX_TEXTURE_LAYER,
+            attr_ids.idx_instance_attrs,
+            attr_ids.idx_rotation_quaternion,
+            attr_ids.idx_billboard_ids,
+            attr_ids.idx_texture_layer,
             task_location);
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
@@ -2251,10 +2351,10 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
         }
 
         ShaderBoneWeight* bw = nullptr;
-        CHK(glEnableVertexAttribArray(IDX_BONE_INDICES));
-        CHK(glVertexAttribIPointer(IDX_BONE_INDICES, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
-        CHK(glEnableVertexAttribArray(IDX_BONE_WEIGHTS));
-        CHK(glVertexAttribPointer(IDX_BONE_WEIGHTS, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
+        CHK(glEnableVertexAttribArray(attr_ids.idx_bone_indices));
+        CHK(glVertexAttribIPointer(attr_ids.idx_bone_indices, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
+        CHK(glEnableVertexAttribArray(attr_ids.idx_bone_weights));
+        CHK(glVertexAttribPointer(attr_ids.idx_bone_weights, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
     }
     if (va.has_continuous_triangle_texture_layers() &&
         va.has_discrete_triangle_texture_layers())
@@ -2271,8 +2371,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
             va.texture_layer_buffer().set(cva->continuous_triangle_texture_layers, task_location);
         }
 
-        CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
-        CHK(glVertexAttribPointer(IDX_TEXTURE_LAYER, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
+        CHK(glEnableVertexAttribArray(attr_ids.idx_texture_layer));
+        CHK(glVertexAttribPointer(attr_ids.idx_texture_layer, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
     }
     if (va.has_discrete_triangle_texture_layers()) {
         if (va.texture_layer_buffer().is_awaited()) {
@@ -2284,8 +2384,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
             va.texture_layer_buffer().set(cva->discrete_triangle_texture_layers, task_location);
         }
 
-        CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
-        CHK(glVertexAttribIPointer(IDX_TEXTURE_LAYER, 1, GL_UNSIGNED_BYTE, sizeof(uint8_t), nullptr));
+        CHK(glEnableVertexAttribArray(attr_ids.idx_texture_layer));
+        CHK(glVertexAttribIPointer(attr_ids.idx_texture_layer, 1, GL_UNSIGNED_BYTE, sizeof(uint8_t), nullptr));
     }
     if (!cva->material.interior_textures.empty()) {
         if (va.interior_mapping_buffer().is_awaited()) {
@@ -2306,10 +2406,10 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
         }
 
         ShaderInteriorMappedFacade* im = nullptr;
-        CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_BOTTOM_LEFT));
-        CHK(glVertexAttribPointer(IDX_INTERIOR_MAPPING_BOTTOM_LEFT, 3, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->bottom_left));
-        CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_MULTIPLIER));
-        CHK(glVertexAttribPointer(IDX_INTERIOR_MAPPING_MULTIPLIER, 2, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->multiplier));
+        CHK(glEnableVertexAttribArray(attr_ids.idx_interior_mapping_bottom_left));
+        CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_bottom_left, 3, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->bottom_left));
+        CHK(glEnableVertexAttribArray(attr_ids.idx_interior_mapping_multiplier));
+        CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_multiplier, 2, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->multiplier));
     }
 
     CHK(glBindVertexArray(0));

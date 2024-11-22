@@ -13,6 +13,7 @@
 
 namespace Mlib {
 
+struct AttributeIndexCalculator;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 struct Light;
@@ -116,8 +117,10 @@ public:
     bool copy_in_progress() const;
     void wait() const;
 private:
+    AttributeIndexCalculator get_attribute_index_calculator(const ColoredVertexArray<float>& cva) const;
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
+        const ColoredVertexArray<float>& cva,
         const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& filtered_lights,
         const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& filtered_skidmarks,
         const std::vector<size_t>& lightmap_indices,
