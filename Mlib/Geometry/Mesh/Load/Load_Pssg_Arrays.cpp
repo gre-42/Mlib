@@ -704,7 +704,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .weight = 0.f,
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::VERTICAL0,
-                        .reduction = BlendMapReductionOperation::PLUS
+                        .reduction = BlendMapReductionOperation::BLEND
                     });
                 }
                 shaders.add(
