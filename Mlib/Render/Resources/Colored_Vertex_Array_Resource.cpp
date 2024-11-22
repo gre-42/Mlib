@@ -114,13 +114,16 @@ static const GLuint IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 10;
 static const GLuint IDX_INTERIOR_MAPPING_MULTIPLIER = 11;
 static const GLuint IDX_UV_0 = 12;
 static const GLuint IDX_UV_1 = 13;
-static const GLuint IDX_UV_LAST = 22;
+static const GLuint IDX_UV_LAST = IDX_UV_0 + (BlendMapUvSource::VERTICAL_LAST - BlendMapUvSource::VERTICAL0);
+static const GLuint IDX_CWEIGHT_0 = IDX_UV_LAST + 1;
+static const GLuint IDX_CWEIGHT_LAST = IDX_CWEIGHT_0 + 5;
 
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     size_t nuv_indices,
+    size_t ncweight_indices,
     size_t texture_modifier_hash,
     size_t nlights,
     size_t nskidmarks,
@@ -164,6 +167,12 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     for (size_t i = 0; i < nuv_indices; ++i) {
         sstr << "layout (location=" << (IDX_UV_0 + i) << ") in vec2 vTexCoord" << i << ";" << std::endl;
+    }
+    if (ncweight_indices > (IDX_CWEIGHT_LAST - IDX_CWEIGHT_0)) {
+        THROW_OR_ABORT("CWeight index too large");
+    }
+    for (size_t i = 0; i < ncweight_indices; ++i) {
+        sstr << "layout (location=" << (IDX_CWEIGHT_0 + i) << ") in float vCWeight" << i << ";" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_normalmap || fragments_depend_on_normal) {
         sstr << "layout (location=" << IDX_NORMAL << ") in vec3 vNormal;" << std::endl;
@@ -214,6 +223,9 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "out vec3 color;" << std::endl;
     for (size_t i = 0; i < nuv_indices; ++i) {
         sstr << "out vec2 tex_coord" << i << ";" << std::endl;
+    }
+    for (size_t i = 0; i < ncweight_indices; ++i) {
+        sstr << "out float cweight" << i << ";" << std::endl;
     }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
@@ -318,6 +330,9 @@ static GenShaderText vertex_shader_text_gen{[](
         for (size_t i = 0; i < nuv_indices; ++i) {
             sstr << "    tex_coord" << i << " = vTexCoord" << i << ";" << std::endl;
         }
+    }
+    for (size_t i = 0; i < ncweight_indices; ++i) {
+        sstr << "    cweight" << i << " = vCWeight" << i << ";" << std::endl;
     }
     // if (has_lookat && !has_instances) {
     //     THROW_OR_ABORT("has_lookat requires has_instances");
@@ -466,6 +481,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
     const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
     size_t nuv_indices,
+    size_t ncweights,
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y,
     size_t texture_modifier_hash,
@@ -516,6 +532,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (nuv_indices > (IDX_UV_LAST - IDX_UV_0)) {
         THROW_OR_ABORT("UV index too large");
     }
+    if (ncweights > (IDX_CWEIGHT_LAST - IDX_CWEIGHT_0)) {
+        THROW_OR_ABORT("CWeight index too large");
+    }
     // Mipmapping does not work unless all textures are actually sampled everywhere.
     bool compute_interiormap_at_end = true;
     assert_true(nlights == lights.size());
@@ -545,6 +564,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         for (size_t i = 0; i < nuv_indices; ++i) {
             sstr << "in vec2 tex_coord" << i << ";" << std::endl;
         }
+    }
+    for (size_t i = 0; i < ncweights; ++i) {
+        sstr << "in float cweight" << i << ";" << std::endl;
     }
     sstr << "out vec4 frag_color;" << std::endl;
     if ((nbillboard_ids != 0) && !orthographic) {
@@ -784,19 +806,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << std::scientific;
         sstr << '(';
         sstr << "vec2(" << t.offset(0) << ", " << t.offset(1) << ") + ";
+        static_assert(BlendMapUvSource::VERTICAL_LAST == BlendMapUvSource::VERTICAL4);
         switch (t.uv_source) {
         case BlendMapUvSource::VERTICAL0:
         case BlendMapUvSource::VERTICAL1:
         case BlendMapUvSource::VERTICAL2:
         case BlendMapUvSource::VERTICAL3:
         case BlendMapUvSource::VERTICAL4:
-        case BlendMapUvSource::VERTICAL5:
-        case BlendMapUvSource::VERTICAL6:
-        case BlendMapUvSource::VERTICAL7:
-        case BlendMapUvSource::VERTICAL8:
-        case BlendMapUvSource::VERTICAL9:
         {
-            auto id = ((uint32_t)t.uv_source - (uint32_t)BlendMapUvSource::VERTICAL0);
+            auto id = t.uv_source - BlendMapUvSource::VERTICAL0;
             if (id >= nuv_indices) {
                 THROW_OR_ABORT("UV index too large");
             }
@@ -1015,6 +1033,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "            if (cosine >= " << t->cosines(2) << ") {" << std::endl;
                 sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ';' << std::endl;
                 sstr << "            }" << std::endl;
+            }
+            if (t->cweight_id != UINT32_MAX) {
+                if (t->cweight_id >= ncweights) {
+                    THROW_OR_ABORT("cweight index too large");
+                }
+                sstr << "            weight *= cweight" << t->cweight_id << ';' << std::endl;
             }
             if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
                 char c;
@@ -1774,6 +1798,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ textures_color },
         NotSortedArray{ lightmap_indices },
         id.nuv_indices,
+        id.ncweights,
         id.texture_modifiers_hash,
         id.nlights,
         id.nskidmarks,
@@ -1814,6 +1839,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ light_shadow_indices },
         NotSortedArray{ black_shadow_indices },
         id.nuv_indices,
+        id.ncweights,
         id.continuous_layer_x,
         id.continuous_layer_y,
         id.texture_modifiers_hash,
@@ -2101,6 +2127,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
                 cva,
                 cva->triangles.size(),
                 cva->uv1.size(),
+                cva->cweight.size(),
                 inherited_vertices);
             return *si;
         } else {
@@ -2141,12 +2168,29 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
                 va.uv1_buffer(i).bind();
             } else {
                 if (uv1.size() != cva->triangles.size()) {
-                    THROW_OR_ABORT("#discrete_triangle_texture_layers != #triangles");
+                    THROW_OR_ABORT("#uv1 != #triangles");
                 }
                 va.uv1_buffer(i).set(uv1, task_location);
             }
             CHK(glEnableVertexAttribArray(IDX_UV_1 + i));
             CHK(glVertexAttribPointer(IDX_UV_1 + i, 2, GL_FLOAT, GL_FALSE, sizeof(FixedArray<float, 2>), nullptr));
+        }
+    }
+    {
+        if (cva->cweight.size() > (IDX_CWEIGHT_LAST - IDX_CWEIGHT_0)) {
+            THROW_OR_ABORT("Too many weight coefficients");
+        }
+        for (const auto& [i, cweight] : enumerate(cva->cweight)) {
+            if (va.cweight_buffer(i).is_awaited()) {
+                va.cweight_buffer(i).bind();
+            } else {
+                if (cweight.size() != cva->triangles.size()) {
+                    THROW_OR_ABORT("#cweights != #triangles");
+                }
+                va.cweight_buffer(i).set(cweight, task_location);
+            }
+            CHK(glEnableVertexAttribArray(IDX_CWEIGHT_0 + i));
+            CHK(glVertexAttribPointer(IDX_CWEIGHT_0 + i, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
         }
     }
     if (instances_ != nullptr) {

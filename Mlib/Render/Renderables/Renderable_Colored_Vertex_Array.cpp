@@ -644,6 +644,7 @@ void RenderableColoredVertexArray::render_cva(
             .facade_inner_size = cva->material.interior_textures.facade_inner_size,
             .interior_size = cva->material.interior_textures.interior_size,
             .nuv_indices = is_lightmap ? 1 : (cva->uv1.size() + 1),
+            .ncweights = is_lightmap ? 0 : cva->cweight.size(),
             .continuous_layer_x = cva->material.continuous_layer_x,
             .continuous_layer_y = cva->material.continuous_layer_y,
             .has_horizontal_detailmap = has_horizontal_detailmap,

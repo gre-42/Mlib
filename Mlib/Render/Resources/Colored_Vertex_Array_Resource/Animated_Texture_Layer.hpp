@@ -28,6 +28,7 @@ public:
     virtual IArrayBuffer& texture_layer_buffer() override;
     virtual IArrayBuffer& interior_mapping_buffer() override;
     virtual IArrayBuffer& uv1_buffer(size_t i) override;
+    virtual IArrayBuffer& cweight_buffer(size_t i) override;
     virtual void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, float, 3>& m,

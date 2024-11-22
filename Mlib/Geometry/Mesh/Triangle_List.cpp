@@ -604,7 +604,8 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>(triangle_bone_weights.begin(), triangle_bone_weights.end()),
         UUVector<FixedArray<float, 3>>{},
         UUVector<FixedArray<uint8_t, 3>>{},
-        std::vector<UUVector<FixedArray<float, 3, 2>>>{});
+        std::vector<UUVector<FixedArray<float, 3, 2>>>{},
+        std::vector<UUVector<FixedArray<float, 3>>>{});
 }
 
 namespace Mlib {

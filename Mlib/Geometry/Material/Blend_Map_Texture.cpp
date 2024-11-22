@@ -22,17 +22,13 @@ BlendMapRole Mlib::blend_map_role_from_string(std::string_view s) {
 }
 
 BlendMapUvSource Mlib::blend_map_uv_source_from_string(std::string_view s) {
+    static_assert(BlendMapUvSource::VERTICAL_LAST == BlendMapUvSource::VERTICAL4);
     static const std::unordered_map<std::string_view, BlendMapUvSource> m{
         {"vertical0"sv, BlendMapUvSource::VERTICAL0},
         {"vertical1"sv, BlendMapUvSource::VERTICAL1},
         {"vertical2"sv, BlendMapUvSource::VERTICAL2},
         {"vertical3"sv, BlendMapUvSource::VERTICAL3},
         {"vertical4"sv, BlendMapUvSource::VERTICAL4},
-        {"vertical5"sv, BlendMapUvSource::VERTICAL5},
-        {"vertical6"sv, BlendMapUvSource::VERTICAL6},
-        {"vertical7"sv, BlendMapUvSource::VERTICAL7},
-        {"vertical8"sv, BlendMapUvSource::VERTICAL8},
-        {"vertical9"sv, BlendMapUvSource::VERTICAL9},
         {"horizontal"sv, BlendMapUvSource::HORIZONTAL}
     };
     auto it = m.find(s);
@@ -87,6 +83,7 @@ size_t BlendMapTexture::modifiers_hash() const {
         offset,
         scale,
         weight,
+        cweight_id,
         plus,
         min_detail_weight,
         role,

@@ -222,23 +222,41 @@ struct DataBlocks {
             if (data_type != "uint_color_argb") {
                 THROW_OR_ABORT("Unsupported color data type");
             }
-            strided_copy<uint32_t, FixedArray<float, 3>>(
+            cweight.emplace(element_count);
+            strided_copy<uint32_t, FixedArray<float, 4>>(
                 offset,                                                     // src_offset
                 stride,                                                     // src_stride
-                (uint32_t)(std::ptrdiff_t)(&cv0->color),                    // dst_offset
-                sizeof(ColoredVertex<TPos>),                                // dst_stride
+                0,                                                          // dst_offset
+                sizeof(FixedArray<float, 4>),                               // dst_stride
                 element_count,                                              // nelements
                 1,                                                          // ndim
                 size,                                                       // src_size
-                vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+                cweight->size() * sizeof(FixedArray<float, 4>),             // dst_size
                 data.data(),                                                // src
-                (std::byte*)vertices.data(),                                // dst
-                [](uint32_t f) { return FixedArray<float, 3>{
+                (std::byte*)cweight->data(),                                // dst
+                [](uint32_t f) { return FixedArray<float, 4>{
+                    1.f,
                     ((f >>  8) & 0xFF) / 255.f,
-                    ((f >> 16) & 0xFF) / 255.f,
-                    ((f >> 24) & 0xFF) / 255.f
-                    // 1.f, 1.f, 1.f
+                    ((f >>  0) & 0xFF) / 255.f,
+                    ((f >> 16) & 0xFF) / 255.f
                 };});
+            // strided_copy<uint32_t, FixedArray<float, 3>>(
+            //     offset,                                                     // src_offset
+            //     stride,                                                     // src_stride
+            //     (uint32_t)(std::ptrdiff_t)(&cv0->color),                    // dst_offset
+            //     sizeof(ColoredVertex<TPos>),                                // dst_stride
+            //     element_count,                                              // nelements
+            //     1,                                                          // ndim
+            //     size,                                                       // src_size
+            //     vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
+            //     data.data(),                                                // src
+            //     (std::byte*)vertices.data(),                                // dst
+            //     [](uint32_t f) { return FixedArray<float, 3>{
+            //         ((f >>  8) & 0xFF) / 255.f,
+            //         ((f >> 16) & 0xFF) / 255.f,
+            //         ((f >> 24) & 0xFF) / 255.f
+            //         // 1.f, 1.f, 1.f
+            //     };});
             // strided_copy<uint8_t, float>(
             //     offset,                                                     // src_offset
             //     stride,                                                     // src_stride
@@ -386,6 +404,7 @@ struct DataBlocks {
     }
     std::vector<ColoredVertex<TPos>> vertices;
     std::list<UUVector<FixedArray<float, 2>>> uv1;
+    std::optional<UUVector<FixedArray<float, 4>>> cweight;
     ColoredVertexFeatures features = ColoredVertexFeatures::NONE;
 };
 
@@ -539,7 +558,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .uv_source = uv_source_mask,
                             .reduction = BlendMapReductionOperation::TIMES,
                             .reweight_mode = textures_color.empty()
-                                ? BlendMapReweightMode::ENABLED
+                                ? BlendMapReweightMode::DISABLED
                                 : BlendMapReweightMode::UNDEFINED
                         });
                     }
@@ -568,10 +587,13 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .offset = { op_uvso(2), op_uvso(3) },
                             .scale = { op_uvso(0), op_uvso(1) },
                             .weight = 0.f,
+                            .cweight_id = integral_cast<uint32_t>(i - 1),
                             .uv_source = BlendMapUvSource::VERTICAL0,
-                            .reduction = BlendMapReductionOperation::PLUS,
+                            .reduction = (i == 1)
+                                ? BlendMapReductionOperation::PLUS
+                                : BlendMapReductionOperation::BLEND,
                             .reweight_mode = textures_color.empty()
-                                ? BlendMapReweightMode::ENABLED
+                                ? BlendMapReweightMode::DISABLED
                                 : BlendMapReweightMode::UNDEFINED
                         });
                     }
@@ -816,6 +838,10 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             for (auto& u : uv1) {
                 u.resize(ixs_count / 3);
             }
+            std::vector<UUVector<FixedArray<float, 3>>> cweight(dbm.cweight.has_value() ? 4 : 0);
+            for (auto& c : cweight) {
+                c.resize(ixs_count / 3);
+            }
             for (uint32_t i = 0; i < ixs_count / 3; ++i) {
                 for (uint32_t j = 0; j < 3; ++j) {
                     uint16_t id = swap_endianness(reinterpret_cast<const uint16_t*>(isd.data.data())[i * 3 + j]);
@@ -825,6 +851,11 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     triangles[i](j) = dbm.vertices[id];
                     for (const auto& [k, u] : enumerate(dbm.uv1)) {
                         uv1[k][i][j] = u[id];
+                    }
+                    if (dbm.cweight.has_value()) {
+                        for (auto&& [k, b] : enumerate(cweight)) {
+                            b[i](j) = (*dbm.cweight)[id](k);
+                        }
                     }
                 }
             }
@@ -839,7 +870,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
                 UUVector<FixedArray<float, 3>>(),
                 UUVector<FixedArray<uint8_t, 3>>(),
-                std::move(uv1)));
+                std::move(uv1),
+                std::move(cweight)));
             if (!any(dbm.features & ColoredVertexFeatures::POSITION)) {
                 THROW_OR_ABORT("Vertices have no position in node \"" + node_id + '"');
             }
