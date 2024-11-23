@@ -4,7 +4,7 @@ IF "%CMAKE_BUILD_TYPE%"=="" set CMAKE_BUILD_TYPE=Release
 set BUILD_DIR=VSRecastBuild
 mkdir %BUILD_DIR%
 cd %BUILD_DIR% || exit /b
-cmake ../recastnavigation ^
+cmake ..\recastnavigation ^
     %CMAKE_OPTIONS% ^
     -DRECASTNAVIGATION_DEMO=OFF ^
     -DRECASTNAVIGATION_TESTS=OFF ^
