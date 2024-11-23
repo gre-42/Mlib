@@ -235,10 +235,10 @@ struct DataBlocks {
                 data.data(),                                                // src
                 (std::byte*)cweight->data(),                                // dst
                 [](uint32_t f) { return FixedArray<float, 4>{
-                    1.f,
-                    ((f >>  8) & 0xFF) / 255.f,
                     ((f >>  0) & 0xFF) / 255.f,
-                    ((f >> 16) & 0xFF) / 255.f
+                    ((f >>  8) & 0xFF) / 255.f,
+                    ((f >> 16) & 0xFF) / 255.f,
+                    ((f >> 24) & 0xFF) / 255.f
                 };});
             // strided_copy<uint32_t, FixedArray<float, 3>>(
             //     offset,                                                     // src_offset
@@ -513,9 +513,20 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 (shader_group_ref == "#terrain_rockbank.fx") ||
                 (shader_group_ref == "#terrain_rock_d4.fx"))
             {
+                uint32_t cweights_a[] = {UINT32_MAX, 2, 1, UINT32_MAX};
+                uint32_t cweights_b[] = {UINT32_MAX, 1, 0, 2};
+                auto* cweight_ids = (shader_group_ref == "#terrain_infield_nm.fx")
+                    ? cweights_a
+                    : cweights_b;
                 auto uv_source_mask = (shader_group_ref == "#terrain_infield_nm.fx")
                     ? BlendMapUvSource::VERTICAL0
                     : BlendMapUvSource::VERTICAL1;
+                auto reweight_mode = (shader_group_ref == "#terrain_infield_nm.fx")
+                    ? BlendMapReweightMode::ENABLED
+                    : BlendMapReweightMode::DISABLED;
+                auto reduction = (shader_group_ref == "#terrain_infield_nm.fx")
+                    ? BlendMapReductionOperation::PLUS
+                    : BlendMapReductionOperation::BLEND;
 
                 std::list<BlendMapTexture> textures_color;
 
@@ -558,7 +569,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .uv_source = uv_source_mask,
                             .reduction = BlendMapReductionOperation::TIMES,
                             .reweight_mode = textures_color.empty()
-                                ? BlendMapReweightMode::DISABLED
+                                ? reweight_mode
                                 : BlendMapReweightMode::UNDEFINED
                         });
                     }
@@ -587,13 +598,13 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .offset = { op_uvso(2), op_uvso(3) },
                             .scale = { op_uvso(0), op_uvso(1) },
                             .weight = 0.f,
-                            .cweight_id = integral_cast<uint32_t>(i - 1),
+                            .cweight_id = cweight_ids[i - 1],
                             .uv_source = BlendMapUvSource::VERTICAL0,
                             .reduction = (i == 1)
                                 ? BlendMapReductionOperation::PLUS
-                                : BlendMapReductionOperation::BLEND,
+                                : reduction,
                             .reweight_mode = textures_color.empty()
-                                ? BlendMapReweightMode::DISABLED
+                                ? reweight_mode
                                 : BlendMapReweightMode::UNDEFINED
                         });
                     }
