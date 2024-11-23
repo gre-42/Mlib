@@ -730,7 +730,10 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         },
                         .color_semantic = ColorSemantic::UNKNOWN
                     });
-            } else if (shader_group_ref == "#decal_ao_vc.fx") {
+            } else if (
+                (shader_group_ref == "#decal_ao.fx") ||
+                (shader_group_ref == "#decal_ao_vc.fx"))
+            {
                 auto diffuse = try_get_texture("TDiffuseAlphaMap");
                 auto normal = try_get_texture("TNormalMap");
                 auto specular = try_get_texture("TSpecularMap");
