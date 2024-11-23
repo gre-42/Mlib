@@ -1,9 +1,12 @@
 #include "Os.hpp"
+#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <sstream>
+#include <string>
 
 #ifdef __ANDROID__
 #include <Mlib/Android/ndk_helper/AUi.hpp>
@@ -101,26 +104,46 @@ static std::string get_path_in_files_dir(
 }
 
 LLog Mlib::linfo() {
+    static std::mutex mutex;
+    static std::string last_message;
     return LLog{
-        [](const std::string& s) {
+        [&](const std::string& s) {
             if (g_log_level >= LogLevel::INFO) {
-                LOGI("%s", s.c_str());
-            }}};
+                std::scoped_lock lock{ mutex };
+                if (s != last_message) {
+                    LOGI("%s", s.c_str());
+                    last_message = s;
+                }
+            }
+        }};
 }
 
 LLog Mlib::lwarn() {
+    static std::mutex mutex;
+    static std::string last_message;
     return LLog{
-        [](const std::string& s) {
+        [&](const std::string& s) {
             if (g_log_level >= LogLevel::WARNING) {
-                LOGW("%s", s.c_str());
-            }}};
+                std::scoped_lock lock{ mutex };
+                if (s != last_message) {
+                    LOGW("%s", s.c_str());
+                    last_message = s;
+                }
+            }
+        }};
 }
 
 LLog Mlib::lerr() {
+    static std::mutex mutex;
+    static std::string last_message;
     return LLog{
-        [](const std::string& s) {
+        [&](const std::string& s) {
             if (g_log_level >= LogLevel::ERROR) {
-                LOGE("%s", s.c_str());
+                std::scoped_lock lock{ mutex };
+                if (s != last_message) {
+                    LOGE("%s", s.c_str());
+                    last_message = s;
+                }
             }}};
 }
 
@@ -202,27 +225,43 @@ bool Mlib::is_listable(const ndk_helper::DirectoryEntry& entry) {
 #else
 
 LLog Mlib::linfo() {
+    static std::mutex mutex;
+    static std::string last_message;
     return LLog{
-        [](const std::string& s) {
+        [&](const std::string& s) {
         if (g_log_level >= LogLevel::INFO) {
-            std::cerr << "Info: " << s << std::endl;
+            std::scoped_lock lock{ mutex };
+            if (s != last_message) {
+                std::cerr << "Info: " << s << std::endl;
+                last_message = s;
+            }
         }}};
 }
 
 LLog Mlib::lwarn() {
+    static std::mutex mutex;
+    static std::string last_message;
     return LLog{
-        [](const std::string& s) {
-            if (g_log_level >= LogLevel::WARNING) {
+        [&](const std::string& s) {
+            std::scoped_lock lock{ mutex };
+            if (s != last_message) {
                 std::cerr << "Warning: " << s << std::endl;
-            }}};
+                last_message = s;
+            }
+        }};
 }
 
 LLog Mlib::lerr() {
+    static std::mutex mutex;
+    static std::string last_message;
     return LLog{
-        [](const std::string& s) {
-            if (g_log_level >= LogLevel::ERROR) {
+        [&](const std::string& s) {
+            std::scoped_lock lock{ mutex };
+            if (s != last_message) {
                 std::cerr << "Error: " << s << std::endl;
-            }}};
+                last_message = s;
+            }
+        }};
 }
 
 LLog Mlib::lraw() {

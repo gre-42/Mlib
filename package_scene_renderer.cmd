@@ -8,5 +8,6 @@ for %%I in ( ^
     VSRecastBuild\Detour\%CMAKE_BUILD_TYPE%\Detour.dll ^
     VSRecastBuild\DebugUtils\%CMAKE_BUILD_TYPE%\DebugUtils.dll ^
     VSRecastBuild\Recast\%CMAKE_BUILD_TYPE%\Recast.dll ^
+    VSZlibBuild\Release\zlib.dll ^
     glfw_vc2022\lib\glfw3.dll ^
     ) do copy %%I %BUILD_PREFIX%GVS\Bin\%CMAKE_BUILD_TYPE%\ || exit /b

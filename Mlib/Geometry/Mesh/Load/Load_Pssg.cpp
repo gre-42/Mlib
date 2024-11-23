@@ -112,7 +112,7 @@ std::istringstream uncompress_stream(
         THROW_OR_ABORT("Could not compressed data: \"" + filename + '"');
     }
 
-    uLongf clength = compressed.size();
+    auto clength = integral_cast<uLongf>(compressed.size());
     std::string uncompressed_chunk(chunk_size, '?');
     std::list<std::string> uncompressed_chunks;
     auto notify_read = [&](uLongf chunkSize){
@@ -124,7 +124,7 @@ std::istringstream uncompress_stream(
     };
     if (int ret = uncompress2_patched(
             (Bytef*)uncompressed_chunk.data(),
-            uncompressed_chunk.size(),
+            integral_cast<uLongf>(uncompressed_chunk.size()),
             (Bytef*)compressed.data(),
             &clength,
             notify_read);

@@ -203,16 +203,16 @@ struct DataBlocks {
                 THROW_OR_ABORT("Unsupported vertex data type");
             }
             strided_copy<float, TPos>(
-                offset,                                                     // src_offset
-                stride,                                                     // src_stride
-                (uint32_t)(std::ptrdiff_t)(&cv0->position),                 // dst_offset
-                sizeof(ColoredVertex<TPos>),                                // dst_stride
-                element_count,                                              // nelements
-                3,                                                          // ndim
-                size,                                                       // src_size
-                vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                data.data(),                                                // src
-                (std::byte*)vertices.data(),                                // dst
+                offset,                                                                 // src_offset
+                stride,                                                                 // src_stride
+                (uint32_t)(std::ptrdiff_t)(&cv0->position),                             // dst_offset
+                sizeof(ColoredVertex<TPos>),                                            // dst_stride
+                element_count,                                                          // nelements
+                3,                                                                      // ndim
+                size,                                                                   // src_size
+                integral_cast<uint32_t>(vertices.size() * sizeof(ColoredVertex<TPos>)), // dst_size
+                data.data(),                                                            // src
+                (std::byte*)vertices.data(),                                            // dst
                 [](float f) { return (TPos)swap_endianness(f); });
         } else if (render_type == "Color") {
             if (any(features & ColoredVertexFeatures::COLOR)) {
@@ -224,16 +224,16 @@ struct DataBlocks {
             }
             cweight.emplace(element_count);
             strided_copy<uint32_t, FixedArray<float, 4>>(
-                offset,                                                     // src_offset
-                stride,                                                     // src_stride
-                0,                                                          // dst_offset
-                sizeof(FixedArray<float, 4>),                               // dst_stride
-                element_count,                                              // nelements
-                1,                                                          // ndim
-                size,                                                       // src_size
-                cweight->size() * sizeof(FixedArray<float, 4>),             // dst_size
-                data.data(),                                                // src
-                (std::byte*)cweight->data(),                                // dst
+                offset,                                                                     // src_offset
+                stride,                                                                     // src_stride
+                0,                                                                          // dst_offset
+                sizeof(FixedArray<float, 4>),                                               // dst_stride
+                element_count,                                                              // nelements
+                1,                                                                          // ndim
+                size,                                                                       // src_size
+                integral_cast<uint32_t>(cweight->size() * sizeof(FixedArray<float, 4>)),    // dst_size
+                data.data(),                                                                // src
+                (std::byte*)cweight->data(),                                                // dst
                 [](uint32_t f) { return FixedArray<float, 4>{
                     ((f >>  0) & 0xFF) / 255.f,
                     ((f >>  8) & 0xFF) / 255.f,
@@ -274,29 +274,29 @@ struct DataBlocks {
                 UUVector<FixedArray<float, 2>> uvx(element_count);
                 if ((data_type == "half2") || (data_type == "half4")) {
                     strided_copy<uint16_t, float>(
-                        offset,                                                     // src_offset
-                        stride,                                                     // src_stride
-                        0,                                                          // dst_offset
-                        sizeof(FixedArray<float, 2>),                               // dst_stride
-                        element_count,                                              // nelements
-                        2,                                                          // ndim
-                        size,                                                       // src_size
-                        uvx.size() * sizeof(FixedArray<float, 2>),                  // dst_size
-                        data.data(),                                                // src
-                        (std::byte*)uvx.data(),                                     // dst
+                        offset,                                                             // src_offset
+                        stride,                                                             // src_stride
+                        0,                                                                  // dst_offset
+                        sizeof(FixedArray<float, 2>),                                       // dst_stride
+                        element_count,                                                      // nelements
+                        2,                                                                  // ndim
+                        size,                                                               // src_size
+                        integral_cast<uint32_t>(uvx.size() * sizeof(FixedArray<float, 2>)), // dst_size
+                        data.data(),                                                        // src
+                        (std::byte*)uvx.data(),                                             // dst
                         [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
                 } else if ((data_type == "float2") || (data_type == "float3") || (data_type == "float4")) {
                     strided_copy<float, float>(
-                        offset,                                                     // src_offset
-                        stride,                                                     // src_stride
-                        0,                                                          // dst_offset
-                        sizeof(FixedArray<float, 2>),                               // dst_stride
-                        element_count,                                              // nelements
-                        2,                                                          // ndim
-                        size,                                                       // src_size
-                        uvx.size() * sizeof(FixedArray<float, 2>),                  // dst_size
-                        data.data(),                                                // src
-                        (std::byte*)uvx.data(),                                     // dst
+                        offset,                                                             // src_offset
+                        stride,                                                             // src_stride
+                        0,                                                                  // dst_offset
+                        sizeof(FixedArray<float, 2>),                                       // dst_stride
+                        element_count,                                                      // nelements
+                        2,                                                                  // ndim
+                        size,                                                               // src_size
+                        integral_cast<uint32_t>(uvx.size() * sizeof(FixedArray<float, 2>)), // dst_size
+                        data.data(),                                                        // src
+                        (std::byte*)uvx.data(),                                             // dst
                         [](float h) { return swap_endianness(h); });
                 } else {
                     THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
@@ -306,29 +306,29 @@ struct DataBlocks {
                 features |= ColoredVertexFeatures::UV;
                 if ((data_type == "half2") || (data_type == "half4")) {
                     strided_copy<uint16_t, float>(
-                        offset,                                                     // src_offset
-                        stride,                                                     // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
-                        sizeof(ColoredVertex<TPos>),                                // dst_stride
-                        element_count,                                              // nelements
-                        2,                                                          // ndim
-                        size,                                                       // src_size
-                        vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                        data.data(),                                                // src
-                        (std::byte*)vertices.data(),                                // dst
+                        offset,                                                                 // src_offset
+                        stride,                                                                 // src_stride
+                        (uint32_t)(std::ptrdiff_t)(&cv0->uv),                                   // dst_offset
+                        sizeof(ColoredVertex<TPos>),                                            // dst_stride
+                        element_count,                                                          // nelements
+                        2,                                                                      // ndim
+                        size,                                                                   // src_size
+                        integral_cast<uint32_t>(vertices.size() * sizeof(ColoredVertex<TPos>)), // dst_size
+                        data.data(),                                                            // src
+                        (std::byte*)vertices.data(),                                            // dst
                         [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
                 } else if ((data_type == "float2") || (data_type == "float3") || (data_type == "float4")) {
                     strided_copy<float, float>(
-                        offset,                                                     // src_offset
-                        stride,                                                     // src_stride
-                        (uint32_t)(std::ptrdiff_t)(&cv0->uv),                       // dst_offset
-                        sizeof(ColoredVertex<TPos>),                                // dst_stride
-                        element_count,                                              // nelements
-                        2,                                                          // ndim
-                        size,                                                       // src_size
-                        vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                        data.data(),                                                // src
-                        (std::byte*)vertices.data(),                                // dst
+                        offset,                                                                 // src_offset
+                        stride,                                                                 // src_stride
+                        (uint32_t)(std::ptrdiff_t)(&cv0->uv),                                   // dst_offset
+                        sizeof(ColoredVertex<TPos>),                                            // dst_stride
+                        element_count,                                                          // nelements
+                        2,                                                                      // ndim
+                        size,                                                                   // src_size
+                        integral_cast<uint32_t>(vertices.size() * sizeof(ColoredVertex<TPos>)), // dst_size
+                        data.data(),                                                            // src
+                        (std::byte*)vertices.data(),                                            // dst
                         [](float h) { return swap_endianness(h); });
                 } else {
                     THROW_OR_ABORT("Unsupported ST data type: \"" + data_type + '"');
@@ -341,29 +341,29 @@ struct DataBlocks {
             features |= ColoredVertexFeatures::NORMAL;
             if (data_type == "half4") {
                 strided_copy<uint16_t, float>(
-                    offset,                                                     // src_offset
-                    stride,                                                     // src_stride
-                    (uint32_t)(std::ptrdiff_t)(&cv0->normal),                   // dst_offset
-                    sizeof(ColoredVertex<TPos>),                                // dst_stride
-                    element_count,                                              // nelements
-                    3,                                                          // ndim
-                    size,                                                       // src_size
-                    vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                    data.data(),                                                // src
-                    (std::byte*)vertices.data(),                                // dst
+                    offset,                                                                 // src_offset
+                    stride,                                                                 // src_stride
+                    (uint32_t)(std::ptrdiff_t)(&cv0->normal),                               // dst_offset
+                    sizeof(ColoredVertex<TPos>),                                            // dst_stride
+                    element_count,                                                          // nelements
+                    3,                                                                      // ndim
+                    size,                                                                   // src_size
+                    integral_cast<uint32_t>(vertices.size() * sizeof(ColoredVertex<TPos>)), // dst_size
+                    data.data(),                                                            // src
+                    (std::byte*)vertices.data(),                                            // dst
                     [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
             } else if (data_type == "float3") {
                 strided_copy<float, float>(
-                    offset,                                                     // src_offset
-                    stride,                                                     // src_stride
-                    (uint32_t)(std::ptrdiff_t)(&cv0->normal),                   // dst_offset
-                    sizeof(ColoredVertex<TPos>),                                // dst_stride
-                    element_count,                                              // nelements
-                    3,                                                          // ndim
-                    size,                                                       // src_size
-                    vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                    data.data(),                                                // src
-                    (std::byte*)vertices.data(),                                // dst
+                    offset,                                                                 // src_offset
+                    stride,                                                                 // src_stride
+                    (uint32_t)(std::ptrdiff_t)(&cv0->normal),                               // dst_offset
+                    sizeof(ColoredVertex<TPos>),                                            // dst_stride
+                    element_count,                                                          // nelements
+                    3,                                                                      // ndim
+                    size,                                                                   // src_size
+                    integral_cast<uint32_t>(vertices.size() * sizeof(ColoredVertex<TPos>)), // dst_size
+                    data.data(),                                                            // src
+                    (std::byte*)vertices.data(),                                            // dst
                     [](float h) { return swap_endianness(h); });
             } else {
                 THROW_OR_ABORT("Unsupported Normal data type: \"" + data_type + '"');
@@ -377,16 +377,16 @@ struct DataBlocks {
                 THROW_OR_ABORT("Unsupported Tangent data type");
             }
             strided_copy<uint16_t, float>(
-                offset,                                                     // src_offset
-                stride,                                                     // src_stride
-                (uint32_t)(std::ptrdiff_t)(&cv0->tangent),                  // dst_offset
-                sizeof(ColoredVertex<TPos>),                                // dst_stride
-                element_count,                                              // nelements
-                3,                                                          // ndim
-                size,                                                       // src_size
-                vertices.size() * sizeof(ColoredVertex<TPos>),              // dst_size
-                data.data(),                                                // src
-                (std::byte*)vertices.data(),                                // dst
+                offset,                                                                 // src_offset
+                stride,                                                                 // src_stride
+                (uint32_t)(std::ptrdiff_t)(&cv0->tangent),                              // dst_offset
+                sizeof(ColoredVertex<TPos>),                                            // dst_stride
+                element_count,                                                          // nelements
+                3,                                                                      // ndim
+                size,                                                                   // src_size
+                integral_cast<uint32_t>(vertices.size() * sizeof(ColoredVertex<TPos>)), // dst_size
+                data.data(),                                                            // src
+                (std::byte*)vertices.data(),                                            // dst
                 [](uint16_t h) { return std::bit_cast<float>(half_to_float(swap_endianness(h))); });
         } else if (render_type == "Binormal") {
             // Do nothing
