@@ -561,7 +561,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .color = ColormapWithModifiers{
                                     .filename = VariableAndHash{ blend_map },
                                     .color_mode = COLOR_MODE,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                 }.compute_hash()
                             },
                             .scale = { blend_uvs(0), blend_uvs(1) },
@@ -582,7 +583,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .color = ColormapWithModifiers{
                                     .filename = VariableAndHash{ op_diffuse },
                                     .color_mode = COLOR_MODE,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                 }.compute_hash(),
                                 .normal =
                                     (op_normal.empty() ||
@@ -592,7 +594,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                     : ColormapWithModifiers{
                                         .filename = VariableAndHash{ op_normal },
                                         .color_mode = COLOR_MODE,
-                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
+                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level }.compute_hash()
                             },
                             .discreteness = 0,
                             .offset = { op_uvso(2), op_uvso(3) },
@@ -635,7 +638,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ large_colour_map },
                                 .color_mode = COLOR_MODE,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                             }.compute_hash()
                         },
                         .role = BlendMapRole::DETAIL_BASE,
@@ -655,14 +659,16 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ base_diffuse },
                                 .color_mode = COLOR_MODE,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                             }.compute_hash(),
                             .normal = (base_normal.empty() || (base_normal == "default_normal_map_n.tga.dds"))
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
                                     .filename = VariableAndHash{ base_normal },
                                     .color_mode = COLOR_MODE,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level }.compute_hash()
                         },
                         .discreteness = 0,
                         .role = BlendMapRole::DETAIL_COLOR,
@@ -690,7 +696,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ blend_map },
                                 .color_mode = COLOR_MODE,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                             }.compute_hash()
                         },
                         .role = BlendMapRole::DETAIL_MASK_R,
@@ -702,14 +709,16 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .color = ColormapWithModifiers{
                                 .filename = VariableAndHash{ op_diffuse },
                                 .color_mode = COLOR_MODE,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                             }.compute_hash(),
                             .normal = (op_normal.empty() || (op_normal == "default_normal_map_n.tga.dds"))
                                 ? ColormapWithModifiers{}.compute_hash()
                                 : ColormapWithModifiers{
                                     .filename = VariableAndHash{ op_normal },
                                     .color_mode = COLOR_MODE,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS }.compute_hash()
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level }.compute_hash()
                         },
                         .discreteness = 0,
                         .weight = 0.f,
@@ -751,17 +760,20 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                         .color = ColormapWithModifiers{
                                             .filename = VariableAndHash{ diffuse },
                                             .color_mode = COLOR_MODE,
-                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                            .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                         }.compute_hash(),
                                         .specular = ColormapWithModifiers{
                                             .filename = VariableAndHash{ specular },
                                             .color_mode = COLOR_MODE,
-                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                            .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                         }.compute_hash(),
                                         .normal = ColormapWithModifiers{
                                             .filename = VariableAndHash{ normal },
                                             .color_mode = COLOR_MODE,
-                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                            .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                            .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                         }.compute_hash()
                                     }
                                 }
@@ -786,7 +798,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                     .color = ColormapWithModifiers{
                                         .filename = VariableAndHash{ diffuse },
                                         .color_mode = COLOR_MODE,
-                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                     }.compute_hash()
                                 }}},
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR}});
@@ -974,7 +987,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 ColormapWithModifiers{
                     .filename = VariableAndHash{ resource_prefix + node_id + ".dds" },
                     .color_mode = COLOR_MODE,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                 }.compute_hash(),
                 node.texture(model.schema),
                 FlipMode::NONE,
