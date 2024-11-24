@@ -507,6 +507,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 THROW_OR_ABORT("Could not find shader input with parameter name \"" + parameter_name + '"');
                 };
             if ((shader_group_ref == "#terrain_road.fx") ||
+                (shader_group_ref == "#terrain_road_flat.fx") ||
                 (shader_group_ref == "#terrain_edge_nm.fx") ||
                 (shader_group_ref == "#terrain_wsm_edge_nm.fx") ||
                 (shader_group_ref == "#terrain_infield_nm.fx") ||
