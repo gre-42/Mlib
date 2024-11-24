@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <array>
 #include <string_view>
 #include <vector>
 
