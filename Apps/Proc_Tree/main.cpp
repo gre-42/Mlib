@@ -21,14 +21,15 @@
     NOTE: this license covers this example only, proctree.cpp has different license
 */
 
+#include "proctree.h"
 #include <Mlib/Env.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <chrono>
+#include <print>
+#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
-#include <chrono>
-#include <stdexcept>
 #include <string.h>
-#include "proctree.h"
 
 using namespace Mlib;
 using namespace Proctree;

@@ -5,6 +5,7 @@ CMAKE_BUILD_TYPE ?= Release
 all: recastnavigation build
 
 build:
+	CC=gcc-14 CXX=g++-14 \
 	./build.sh ${CMAKE_BUILD_TYPE}
 
 test:
