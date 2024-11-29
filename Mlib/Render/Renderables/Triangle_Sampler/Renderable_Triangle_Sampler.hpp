@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <list>
@@ -8,8 +9,6 @@
 
 namespace Mlib {
 
-template <class TData, class TPayload, size_t tndim>
-class Bvh;
 template <class TPos>
 struct ColoredVertex;
 class TerrainStyle;

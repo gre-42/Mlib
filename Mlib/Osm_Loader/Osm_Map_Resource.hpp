@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_List.hpp>
+#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
@@ -40,8 +41,6 @@ class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 class GroundBvh;
 class ColoredVertexArrayResource;
-template <class TData, class TPayload, size_t tndim>
-class Bvh;
 
 class OsmMapResource: public ISceneNodeResource {
 public:

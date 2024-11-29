@@ -303,17 +303,17 @@ void test_bvh() {
     // });
     // lerr() << bvh;
     {
-        std::vector<std::pair<float, const int*>> result = bvh.min_distances(3, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 10.f, [](const auto& p) {return std::abs((float)p - 43.f); });
+        std::vector<std::pair<float, const int*>> result = bvh.min_distances<Payload>(3, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 10.f, [](const auto& p) {return std::abs((float)p - 43.f); });
         assert_isequal(result.size(), (size_t)3);
         assert_isequal(*result[0].second, 43);
     }
     {
-        std::vector<std::pair<float, const int*>> result = bvh.min_distances(20, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 100.f, [](const auto& p) {return std::abs((float)p - 43.f); });
+        std::vector<std::pair<float, const int*>> result = bvh.min_distances<Payload>(20, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 100.f, [](const auto& p) {return std::abs((float)p - 43.f); });
         assert_isequal(result.size(), (size_t)5);
         assert_isequal(*result[0].second, 43);
         assert_isequal(*result[4].second, 46);
     }
-    CachingBvh cvh{ bvh, Cache<BvhCacheElement<AABB, std::pair<AABB, Payload>>>{ 100 } };
+    CachingBvh cvh{ bvh, Cache<BvhCacheElement<AABB, AabbAndPayload<float, 3, Payload>>>{ 100 } };
     cvh.visit(
         AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
         AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
@@ -321,7 +321,7 @@ void test_bvh() {
             linfo() << d;
             return true;
         });
-    CachingAabbBvh<float, Payload, 3> cvh2{ bvh, 100 };
+    CachingAabbBvh<float, 3, Payload> cvh2{ bvh, 100 };
     cvh2.visit(
         AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
         AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
@@ -400,7 +400,7 @@ void test_ray_segment_intersects_aabb() {
     FixedArray<float, 3> start{ 1.f, 2.f, 3.f };
     FixedArray<float, 3> end{ 2.f, 3.f, 4.f };
 
-    RaySegment3DForAabb<float> ray{ {start, end} };
+    RaySegment3DForAabb<float, float> ray{ {start, end} };
     ray.intersects(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}));
 }
 
@@ -700,13 +700,13 @@ void test_distance_polygon_aabb() {
     FixedArray<double, 3> d{1., 3., 10.};
     Polygon3D<double, 4> poly{{a, b, c, d}};
     auto rng = welzl_rng();
-    CollisionPolygonSphere<double, 4> cps{
-        .bounding_sphere = poly.bounding_sphere(rng),
+    CollisionPolygonSphere<4> cps{
+        .bounding_sphere = poly.bounding_sphere(rng).casted<CompressedScenePos>(),
         .polygon = poly.polygon(),
         .physics_material = PhysicsMaterial::NONE,
-        .corners = poly.vertices()};
+        .corners = poly.vertices().casted<CompressedScenePos>()};
     ClosestPoint<double> cp;
-    distance_polygon_aabb<double, 4>(cps, aabb, cp);
+    distance_polygon_aabb<4>(cps, aabb, cp);
     linfo() << cp.closest_point0 << " - " << cp.closest_point1 << " - " << cp.normal << " - " << cp.distance;
 }
 

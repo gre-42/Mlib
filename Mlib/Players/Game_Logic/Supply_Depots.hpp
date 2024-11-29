@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
 #include <map>
 #include <memory>

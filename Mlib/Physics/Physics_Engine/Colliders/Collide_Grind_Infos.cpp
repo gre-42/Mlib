@@ -36,8 +36,8 @@ void Mlib::collide_grind_infos(
             n /= std::sqrt(sum(squared(n)));
             jump(o0.rbp_, o1.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point });
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg.nsubsteps) {
-            auto n = cross(p.rail_direction, FixedArray<ScenePos, 3>{ ScenePos(0), ScenePos(1), ScenePos(0) });
-            ScenePos l2 = sum(squared(n));
+            auto n = cross(p.rail_direction, FixedArray<SceneDir, 3>{ 0.f, 1.f, 0.f });
+            auto l2 = sum(squared(n));
             if (l2 < 1e-12) {
                 THROW_OR_ABORT("Rail normal too small");
             }
@@ -59,7 +59,7 @@ void Mlib::collide_grind_infos(
                             .lambda_max = -rb->mass() * cfg.velocity_lambda_min
                         }}));
                     PlaneNd<ScenePos, 3> plane{
-                        cross(n, p.rail_direction),
+                        cross(n.casted<double>(), p.rail_direction.casted<double>()),
                         p.intersection_point};
                     contact_infos.push_back(std::unique_ptr<IContactInfo>(new NormalContactInfo1{
                         rb->rbp_,

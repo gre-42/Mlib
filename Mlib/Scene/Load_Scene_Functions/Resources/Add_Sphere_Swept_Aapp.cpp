@@ -32,11 +32,11 @@ LoadSceneJsonUserFunction AddSweptSphereAabb::json_user_function = [](const Load
 void AddSweptSphereAabb::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material));
-    auto ssaabb = std::make_shared<SweptSphereAabb<float>>(
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::min) * meters,
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::max) * meters,
-        args.arguments.at<float>(KnownArgs::radius) * meters);
-    auto l = std::list{ TypedMesh<std::shared_ptr<IIntersectable<float>>>{material, ssaabb} };
+    auto ssaabb = std::make_shared<SweptSphereAabb>(
+        args.arguments.at<UFixedArray<CompressedScenePos, 3>>(KnownArgs::min) * meters,
+        args.arguments.at<UFixedArray<CompressedScenePos, 3>>(KnownArgs::max) * meters,
+        args.arguments.at<CompressedScenePos>(KnownArgs::radius) * meters);
+    auto l = std::list{ TypedMesh<std::shared_ptr<IIntersectable>>{material, ssaabb} };
     auto res = std::make_shared<IntersectableResource>(std::move(l));
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     scene_node_resources.add_resource(args.arguments.at<std::string>(KnownArgs::name), res);

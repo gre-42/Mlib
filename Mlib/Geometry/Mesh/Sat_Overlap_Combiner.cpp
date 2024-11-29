@@ -6,8 +6,8 @@
 using namespace Mlib;
 
 SatOverlapCombiner::SatOverlapCombiner(
-    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices0,
-    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices1)
+    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
+    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1)
     : keep_normal_{ false }
     , best_normal_{ uninitialized }
     , best_min_overlap_{ (ScenePos)INFINITY }
@@ -35,7 +35,7 @@ void SatOverlapCombiner::overlap_unsigned(
         overlap1);
 }
 
-void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere<ScenePos>& e1, ScenePos max_keep_normal)
+void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere& e1, ScenePos max_keep_normal)
 {
     if (max_keep_normal != -INFINITY) {
         ScenePos sat_overl = overlap_signed(-e1.normal);
@@ -47,40 +47,41 @@ void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere<ScenePo
     }
 }
 
-void SatOverlapCombiner::combine_ridges(const CollisionRidgeSphere<ScenePos>& e0, const CollisionRidgeSphere<ScenePos>& e1) {
+void SatOverlapCombiner::combine_ridges(const CollisionRidgeSphere& e0, const CollisionRidgeSphere& e1) {
     auto n = cross(e0.ray.direction, e1.ray.direction);
-    ScenePos l2 = sum(squared(n));
+    auto l2 = sum(squared(n));
     if (l2 < 1e-6) {
         return;
     }
     n /= std::sqrt(l2);
+    auto nd = n.casted<ScenePos>();
     ScenePos overlap0;
     ScenePos overlap1;
-    overlap_unsigned(n, overlap0, overlap1);
+    overlap_unsigned(nd, overlap0, overlap1);
     if (overlap0 < overlap1) {
-        if (e0.is_oriented() && (-dot0d(n, e0.normal) < e0.min_cos - 1e-4)) {
+        if (e0.is_oriented() && (-dot0d(nd, e0.normal) < e0.min_cos - 1e-4)) {
             return;
         }
-        if (e1.is_oriented() && (dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
+        if (e1.is_oriented() && (dot0d(nd, e1.normal) < e1.min_cos - 1e-4)) {
             return;
         }
         if (overlap0 < best_min_overlap_) {
             best_min_overlap_ = overlap0;
             if (!keep_normal_) {
-                best_normal_ = -n;
+                best_normal_ = -nd;
             }
         }
     } else {
-        if (e0.is_oriented() && (dot0d(n, e0.normal) < e0.min_cos - 1e-4)) {
+        if (e0.is_oriented() && (dot0d(nd, e0.normal) < e0.min_cos - 1e-4)) {
             return;
         }
-        if (e1.is_oriented() && (-dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
+        if (e1.is_oriented() && (-dot0d(nd, e1.normal) < e1.min_cos - 1e-4)) {
             return;
         }
         if (overlap1 < best_min_overlap_) {
             best_min_overlap_ = overlap1;
             if (!keep_normal_) {
-                best_normal_ = n;
+                best_normal_ = nd;
             }
         }
     }

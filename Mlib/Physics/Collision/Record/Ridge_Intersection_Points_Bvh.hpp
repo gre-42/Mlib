@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 
@@ -12,7 +12,7 @@ public:
     void insert(const FixedArray<ScenePos, 3>& intersection_point);
     bool has_neighbor(const FixedArray<ScenePos, 3>& intersection_point);
 private:
-    Bvh<ScenePos, FixedArray<ScenePos, 3>, 3> bvh_;
+    Bvh<CompressedScenePos, FixedArray<CompressedScenePos, 3>, 3> bvh_;
     ScenePos radius_;
 };
 

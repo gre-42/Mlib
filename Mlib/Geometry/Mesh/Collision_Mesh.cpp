@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 template <class TData>
-CollisionMesh<TData>::CollisionMesh(const ColoredVertexArray<TData>& mesh)
+CollisionMesh::CollisionMesh(const ColoredVertexArray<TData>& mesh)
     : name{ mesh.name }
 {
     quads.reserve(mesh.quads.size());
@@ -19,20 +19,18 @@ CollisionMesh<TData>::CollisionMesh(const ColoredVertexArray<TData>& mesh)
     lines = mesh.lines_sphere();
 }
 
-template <class TData>
-CollisionMesh<TData>::CollisionMesh(
+CollisionMesh::CollisionMesh(
     std::string name,
-    TypedMesh<std::shared_ptr<IIntersectable<TData>>> intersectable)
+    TypedMesh<std::shared_ptr<IIntersectable>> intersectable)
     : name{ name }
     , intersectable{ std::move(intersectable) }
 {}
 
-template <class TData>
-CollisionMesh<TData>::~CollisionMesh() = default;
+CollisionMesh::~CollisionMesh() = default;
 
 namespace Mlib {
 
-template class CollisionMesh<float>;
-template class CollisionMesh<double>;
+template CollisionMesh::CollisionMesh<float>(const ColoredVertexArray<float>&);
+template CollisionMesh::CollisionMesh<double>(const ColoredVertexArray<double>&);
 
 }

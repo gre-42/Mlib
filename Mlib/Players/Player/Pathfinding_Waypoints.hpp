@@ -1,6 +1,7 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <memory>
 
@@ -11,8 +12,6 @@ class FixedArray;
 template <class TPoint>
 struct PointsAndAdjacency;
 enum class WayPointLocation;
-template <class TData, class TPayload, size_t tndim>
-class Bvh;
 class Player;
 struct PhysicsEngineConfig;
 

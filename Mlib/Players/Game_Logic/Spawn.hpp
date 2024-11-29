@@ -1,5 +1,6 @@
 #pragma once
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <functional>
 #include <list>
@@ -23,8 +24,6 @@ class Scene;
 class SceneNode;
 class TeamDeathmatch;
 class DeleteNodeMutex;
-template <class TData, class TPayload, size_t tndim>
-class Bvh;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 

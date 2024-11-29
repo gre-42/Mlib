@@ -13,7 +13,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

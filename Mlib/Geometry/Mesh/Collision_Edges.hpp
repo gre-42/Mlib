@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <set>
@@ -12,8 +12,8 @@ class OrderableFixedArray;
 enum class PhysicsMaterial: uint32_t;
 
 struct OrderableEdgeSphere {
-    CollisionLineSphere<ScenePos> collision_line_sphere;
-    std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>> key() const;
+    CollisionLineSphere collision_line_sphere;
+    std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>> key() const;
     bool operator < (const OrderableEdgeSphere& other) const;
 };
 
@@ -25,15 +25,15 @@ public:
     using const_iterator = Edges::const_iterator;
     template <size_t tnvertices>
     void insert(
-        const FixedArray<ScenePos, tnvertices, 3>& tri,
+        const FixedArray<CompressedScenePos, tnvertices, 3>& tri,
         PhysicsMaterial physics_material);
     const_iterator begin() const;
     const_iterator end() const;
     size_t size() const;
 private:
     void insert(
-        const FixedArray<ScenePos, 3>& a,
-        const FixedArray<ScenePos, 3>& b,
+        const FixedArray<CompressedScenePos, 3>& a,
+        const FixedArray<CompressedScenePos, 3>& b,
         PhysicsMaterial physics_material);
     Edges edges_;
 };

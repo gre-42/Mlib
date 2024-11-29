@@ -11,7 +11,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <cstdint>
@@ -56,18 +56,127 @@ class Blended;
 template <class T>
 struct Bijection;
 
-struct PositionAndYAngle {
-    FixedArray<ScenePos, 3> position;
+struct PositionAndYAngleAndBillboardId {
+    FixedArray<CompressedScenePos, 3> position;
     float yangle;
     uint32_t billboard_id;
+    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const {
+        return AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(position);
+    }
+    PositionAndYAngleAndBillboardId& payload() {
+        return *this;
+    }
+    const PositionAndYAngleAndBillboardId& payload() const {
+        return *this;
+    }
+};
+
+struct PositionAndBillboardId {
+    FixedArray<CompressedScenePos, 3> position;
+    uint32_t billboard_id;
+    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const {
+        return AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(position);
+    }
+    PositionAndBillboardId& payload() {
+        return *this;
+    }
+    const PositionAndBillboardId& payload() const {
+        return *this;
+    }
+};
+
+class BillboardContainer {
+public:
+    auto& add(const PositionAndYAngleAndBillboardId& pyb) {
+        return pybs_.emplace_back(pyb);
+    }
+    auto& add(const PositionAndBillboardId& pb) {
+        return pbs_.emplace_back(pb);
+    }
+    void fill(auto& container) const {
+        for (const auto& d : pybs_) {
+            container.insert(d);
+        }
+        for (const auto& d : pbs_) {
+            container.insert(d);
+        }
+    }
+    bool visit(const auto& aabb, const auto& pyb_visitor, const auto& pb_visitor) const {
+        for (const auto& d : pybs_) {
+            if (aabb.intersects(d.aabb())) {
+                if (!pyb_visitor(d.payload())) {
+                    return false;
+                }
+            }
+        }
+        for (const auto& d : pbs_) {
+            if (aabb.intersects(d.aabb())) {
+                if (!pb_visitor(d.payload())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    bool visit_all(const auto& pyb_visitor, const auto& pb_visitor) const {
+        for (const auto& d : pybs_) {
+            if (!pyb_visitor(d)) {
+                return false;
+            }
+        }
+        for (const auto& d : pbs_) {
+            if (!pb_visitor(d)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    bool visit_pairs(const auto& aabb, const auto& pyb_visitor, const auto& pb_visitor) const {
+        for (const auto& d : pybs_) {
+            if (aabb.intersects(d.aabb())) {
+                if (!pyb_visitor(d)) {
+                    return false;
+                }
+            }
+        }
+        for (const auto& d : pbs_) {
+            if (aabb.intersects(d.aabb())) {
+                if (!pb_visitor(d)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    void print(std::ostream& ostr, size_t rec = 0) const {
+        for (const auto& d : pybs_) {
+            d.aabb().print(ostr, rec + 1);
+        }
+        for (const auto& d : pbs_) {
+            d.aabb().print(ostr, rec + 1);
+        }
+    }
+    bool empty() const {
+        return pybs_.empty() && pbs_.empty();
+    }
+    size_t size() const {
+        return pybs_.size() + pbs_.size();
+    }
+    void clear() {
+        pybs_.clear();
+        pbs_.clear();
+    }
+private:
+    std::vector<PositionAndYAngleAndBillboardId> pybs_;
+    std::vector<PositionAndBillboardId> pbs_;
 };
 
 struct SceneNodeInstances {
     bool is_registered;
     DanglingUniquePtr<SceneNode> scene_node;
-    ScenePos max_center_distance;
-    Bvh<ScenePos, PositionAndYAngle, 3> small_instances;
-    std::list<PositionAndYAngle> large_instances;
+    CompressedScenePos max_center_distance;
+    GenericBvh<CompressedScenePos, 3, BillboardContainer> small_instances;
+    std::list<PositionAndYAngleAndBillboardId> large_instances;
     mutable SafeAtomicSharedMutex mutex;
 };
 
@@ -244,14 +353,14 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
         const FixedArray<ScenePos, 3>& offset,
-        const PositionAndYAngle& delta_pose,
+        const PositionAndYAngleAndBillboardId& delta_pose,
         SmallInstancesQueues& instances_queues,
         const SceneGraphConfig& scene_graph_config) const;
     void append_large_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& parent_mvp,
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const FixedArray<ScenePos, 3>& offset,
-        const PositionAndYAngle& delta_pose,
+        const PositionAndYAngleAndBillboardId& delta_pose,
         LargeInstancesQueue& instances_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_lights_to_queue(

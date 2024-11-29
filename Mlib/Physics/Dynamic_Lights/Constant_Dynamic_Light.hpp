@@ -4,7 +4,7 @@
 #include <Mlib/Math/Transformation/Position_Series.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Light.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <chrono>
 #include <functional>
 

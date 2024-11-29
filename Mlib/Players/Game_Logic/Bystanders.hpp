@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <random>
 
 namespace Mlib {

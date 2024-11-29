@@ -34,7 +34,10 @@ void PathfindingWaypoints::set_waypoint(size_t waypoint_id) {
 void PathfindingWaypoints::set_waypoints(const PointsAndAdjacencyResource& waypoints)
 {
     waypoints_bvh_ = std::make_unique<Bvh<ScenePos, size_t, 3>>(
-        FixedArray<ScenePos, 3>{cfg_.bvh_max_size, cfg_.bvh_max_size, cfg_.bvh_max_size},
+        FixedArray<ScenePos, 3>{
+            funpack(cfg_.bvh_max_size),
+            funpack(cfg_.bvh_max_size),
+            funpack(cfg_.bvh_max_size)},
         cfg_.bvh_levels);
     waypoints_ = std::make_unique<PointsAndAdjacencyResource>(waypoints);
     for (const auto& [i, p] : enumerate(waypoints.points)) {

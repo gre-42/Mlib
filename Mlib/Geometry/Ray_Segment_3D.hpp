@@ -1,7 +1,9 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Math/Sqrt.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 
@@ -11,38 +13,38 @@ template <class TData, size_t tndim>
 class BoundingSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
-template <class TData, size_t tnvertices>
+template <class TPos, size_t tnvertices>
 class ConvexPolygon3D;
 
-template <class TData>
+template <class TDir, class TPos>
 class RaySegment3D {
 public:
     RaySegment3D(
-        const FixedArray<TData, 3>& start,
-        const FixedArray<TData, 3>& direction,
-        const TData& length)
+        const FixedArray<TPos, 3>& start,
+        const FixedArray<TDir, 3>& direction,
+        const TDir& length)
         : start{ start }
         , direction{ direction }
         , length{ length }
     {}
     RaySegment3D(
-        const FixedArray<TData, 3>& start,
-        const FixedArray<TData, 3>& end)
+        const FixedArray<TPos, 3>& start,
+        const FixedArray<TPos, 3>& end)
         : start{ start }
         , direction{ uninitialized }
     {
-        direction = end - start;
-        auto l2 = sum(squared(direction));
+        auto dir = funpack(end - start);
+        auto l2 = sum(squared(dir));
         if (l2 < 1e-12) {
             THROW_OR_ABORT("Could not calculate ray direction");
         }
-        length = std::sqrt(l2);
-        direction /= length;
+        length = (TDir)std::sqrt(l2);
+        direction = dir.template casted<TDir>() / length;
     }
-    explicit RaySegment3D(const FixedArray<TData, 2, 3>& vertices)
+    explicit RaySegment3D(const FixedArray<TPos, 2, 3>& vertices)
     : RaySegment3D{ vertices[0], vertices[1] }
     {}
-    bool intersects(const PlaneNd<TData, 3>& plane, TData* t, FixedArray<TData, 3>* intersection_point) const {
+    bool intersects(const PlaneNd<TPos, 3>& plane, TPos* t, FixedArray<TPos, 3>* intersection_point) const {
         auto c = dot0d(plane.normal, direction);
         if (std::abs(c) < 1e-12) {
             return false;
@@ -56,23 +58,23 @@ public:
     }
     template <size_t tnvertices>
     bool intersects(
-        const ConvexPolygon3D<TData, tnvertices>& polygon,
-        TData* t,
-        FixedArray<TData, 3>* intersection_point) const
+        const ConvexPolygon3D<TPos, tnvertices>& polygon,
+        TPos* t,
+        FixedArray<TPos, 3>* intersection_point) const
     {
         if (!intersects(polygon.plane(), t, intersection_point)) {
             return false;
         }
         return polygon.contains(*intersection_point);
     }
-    bool intersects_slow(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
+    bool intersects_slow(const AxisAlignedBoundingBox<TPos, 3>& aabb) const {
         if (aabb.contains(start) || aabb.contains(stop())) {
             return true;
         }
         auto interscts = [&](size_t axis0, size_t axis1, size_t axis2, bool mm) {
-            TData t;
-            FixedArray<TData, 3> intersection_point;
-            PlaneNd<TData, 3> plane;
+            TPos t;
+            FixedArray<TPos, 3> intersection_point;
+            PlaneNd<TPos, 3> plane;
             plane.normal(axis0) = 1;
             plane.normal(axis1) = 0;
             plane.normal(axis2) = 0;
@@ -94,55 +96,58 @@ public:
             interscts(0, 1, 2, false) || interscts(1, 2, 0, false) || interscts(2, 0, 1, false) ||
             interscts(0, 1, 2, true) || interscts(1, 2, 0, true) || interscts(2, 0, 1, true);
     }
-    FixedArray<TData, 3> stop() const {
-        return start + direction * length;
+    FixedArray<TPos, 3> stop() const {
+        return start + (direction * length).template casted<TPos>();
     }
-    FixedArray<TData, 3> center() const {
-        return start + direction * (length / TData(2));
+    FixedArray<TPos, 3> center() const {
+        return start + (direction * (length / TDir(2))).template casted<TPos>();
     }
-    RaySegment3D<ScenePos> transformed(
-        const TransformationMatrix<float, ScenePos, 3>& transformation_matrix) const
+    RaySegment3D<TDir, TPos> transformed(
+        const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix) const
     {
         return {
-            transformation_matrix.transform(start.template casted<ScenePos>()),
-            transformation_matrix.casted<ScenePos, ScenePos>().rotate(direction.template casted<ScenePos>()),
+            transformation_matrix.transform(start.template casted<ScenePos>()).template casted<TPos>(),
+            transformation_matrix.casted<TDir, TDir>().rotate(direction),
             length
         };
     }
-    template <class TResult>
-    RaySegment3D<TResult> casted() const {
+    template <class TResultDir, class TResultPos>
+    RaySegment3D<TResultDir, TResultPos> casted() const {
         return {
-            start.template casted<TResult>(),
-            direction.template casted<TResult>(),
-            (TResult)length
+            start.template casted<TResultPos>(),
+            direction.template casted<TResultDir>(),
+            (TResultDir)length
         };
     }
-    FixedArray<TData, 3> start;
-    FixedArray<TData, 3> direction;
-    TData length;
+    FixedArray<TPos, 3> start;
+    FixedArray<TDir, 3> direction;
+    TDir length;
 };
 
-template <class TData>
-class RaySegment3DForAabb: public RaySegment3D<TData> {
+template <class TDir, class TPos>
+class RaySegment3DForAabb: public RaySegment3D<TDir, TPos> {
 public:
-    using RaySegment3D<TData>::start;
-    using RaySegment3D<TData>::direction;
-    using RaySegment3D<TData>::length;
-    using RaySegment3D<TData>::stop;
-    using RaySegment3D<TData>::intersects;
-    explicit RaySegment3DForAabb(const RaySegment3D<TData>& rs3)
-        : RaySegment3D<TData>{ rs3 }
-        , inv_direction{ TData(1) / rs3.direction }
+    using RaySegment3D<TDir, TPos>::start;
+    using RaySegment3D<TDir, TPos>::direction;
+    using RaySegment3D<TDir, TPos>::length;
+    using RaySegment3D<TDir, TPos>::stop;
+    using RaySegment3D<TDir, TPos>::intersects;
+    explicit RaySegment3DForAabb(const RaySegment3D<TDir, TPos>& rs3)
+        : RaySegment3D<TDir, TPos>{ rs3 }
+        , inv_direction{ TDir(1) / rs3.direction }
     {}
-    bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
+    bool intersects(const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const {
+        return intersects(aabb.casted<TPos>());
+    }
+    bool intersects(const AxisAlignedBoundingBox<TPos, 3>& aabb) const {
         if (aabb.contains(start) || aabb.contains(stop())) {
             return true;
         }
-        auto contains1d = [&](const TData& t, size_t i) {
+        auto contains1d = [&](const TPos& t, size_t i) {
             auto x = start(i) + direction(i) * t;
             return (x >= aabb.min(i)) && (x <= aabb.max(i));
         };
-        auto contains2d = [&](const TData& t, size_t i1, size_t i2) {
+        auto contains2d = [&](const TPos& t, size_t i1, size_t i2) {
             if ((t < 0) || (t > length)) {
                 return false;
             }
@@ -160,7 +165,7 @@ public:
         return intersects0(0, 1, 2) || intersects0(1, 2, 0) || intersects0(2, 0, 1);
     }
 private:
-    FixedArray<TData, 3> inv_direction;
+    FixedArray<TDir, 3> inv_direction;
 };
 
 }

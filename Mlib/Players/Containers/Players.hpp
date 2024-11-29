@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <list>
 #include <map>

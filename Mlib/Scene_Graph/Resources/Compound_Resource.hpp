@@ -31,7 +31,7 @@ public:
     // Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
     virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const override;
-    virtual std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> get_intersectables() const override;
+    virtual std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables() const override;
 
     // Modifiers
     virtual void modify_physics_material_tags(

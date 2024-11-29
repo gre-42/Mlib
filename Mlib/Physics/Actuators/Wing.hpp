@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Actuators/Trail_Source.hpp>
 #include <Mlib/Physics/Actuators/Wing_Angle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <optional>
 
 namespace Mlib {

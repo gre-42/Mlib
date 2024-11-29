@@ -6,7 +6,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IRelative_Movable.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <memory>
 
 namespace Mlib {

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <unordered_map>
 
@@ -10,6 +10,6 @@ class FixedArray;
 struct IntersectionSceneAndContact;
 
 void collide_raycast_intersections(
-    const std::unordered_map<const FixedArray<ScenePos, 2, 3>*, IntersectionSceneAndContact>& raycast_intersections);
+    const std::unordered_map<const FixedArray<CompressedScenePos, 2, 3>*, IntersectionSceneAndContact>& raycast_intersections);
 
 }

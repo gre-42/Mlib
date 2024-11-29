@@ -43,7 +43,7 @@ bool RootNodes::visit_all(const std::function<bool(const DanglingRef<const Scene
             return false;
         }
     }
-    return small_static_nodes_bvh_.visit_all([&op](const auto& a, const auto& n) { return op(n); });
+    return small_static_nodes_bvh_.visit_all([&op](const auto& d) { return op(d.payload()); });
 }
 
 bool RootNodes::visit(

@@ -3,7 +3,7 @@
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <chrono>

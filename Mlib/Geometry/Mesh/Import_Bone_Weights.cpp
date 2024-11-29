@@ -30,7 +30,7 @@ void Mlib::import_bone_weights(
             for (const auto& v : t.flat_iterable()) {
                 bvh.insert(
                     AxisAlignedBoundingBox<float, 3>::from_point(v.position),
-                    { &v.position, vo_it });
+                    VertexAndWeights{ &v.position, vo_it });
                 ++vo_it;
             }
             ++wo_it;

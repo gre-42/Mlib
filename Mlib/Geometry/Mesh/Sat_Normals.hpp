@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <map>
 #include <vector>
@@ -8,7 +8,7 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData, size_t tnvertices>
+template <size_t tnvertices>
 struct CollisionPolygonSphere;
 class IIntersectableMesh;
 

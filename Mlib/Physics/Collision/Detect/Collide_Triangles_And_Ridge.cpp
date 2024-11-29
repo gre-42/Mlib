@@ -17,7 +17,7 @@ void Mlib::collide_triangles_and_ridge(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh0,
-    const CollisionRidgeSphere<ScenePos>& r1,
+    const CollisionRidgeSphere& r1,
     const CollisionHistory& history)
 {
     auto non_tire_line_mask =
@@ -30,10 +30,10 @@ void Mlib::collide_triangles_and_ridge(
     }
     auto collide = [&](
         PhysicsMaterial physics_material0,
-        const BoundingSphere<ScenePos, 3>& bounding_sphere0,
-        const CollisionPolygonSphere<ScenePos, 4>* q0,
-        const CollisionPolygonSphere<ScenePos, 3>* t0,
-        const IIntersectable<ScenePos>* i0)
+        const BoundingSphere<CompressedScenePos, 3>& bounding_sphere0,
+        const CollisionPolygonSphere<4>* q0,
+        const CollisionPolygonSphere<3>* t0,
+        const IIntersectable* i0)
     {
         if (!any(physics_material0 & non_tire_line_mask)) {
             return;

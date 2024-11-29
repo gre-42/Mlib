@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <string>
 
 namespace Mlib {

@@ -8,17 +8,17 @@ using namespace Mlib;
 
 ScenePos Mlib::sat_overlap_signed(
     const FixedArray<ScenePos, 3>& n,
-    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices0,
-    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices1)
+    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
+    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1)
 {
     ScenePos max0 = -INFINITY;
     ScenePos min1 = INFINITY;
     for (const auto& v : vertices0) {
-        ScenePos s = dot0d(v, n);
+        ScenePos s = dot0d(v.casted<ScenePos>(), n);
         max0 = std::max(max0, s);
     }
     for (const auto& v : vertices1) {
-        ScenePos s = dot0d(v, n);
+        ScenePos s = dot0d(v.casted<ScenePos>(), n);
         min1 = std::min(min1, s);
     }
     // o0 -> normal | o1
@@ -35,8 +35,8 @@ ScenePos Mlib::sat_overlap_signed(
  */
 void Mlib::sat_overlap_unsigned(
     const FixedArray<ScenePos, 3>& l,
-    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices0,
-    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices1,
+    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
+    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1,
     ScenePos& overlap0,
     ScenePos& overlap1)
 {
@@ -45,12 +45,12 @@ void Mlib::sat_overlap_unsigned(
     ScenePos min0 = INFINITY;
     ScenePos min1 = INFINITY;
     for (const auto& v : vertices0) {
-        ScenePos s = dot0d(v, l);
+        ScenePos s = dot0d(v.casted<ScenePos>(), l);
         max0 = std::max(max0, s);
         min0 = std::min(min0, s);
     }
     for (const auto& v : vertices1) {
-        ScenePos s = dot0d(v, l);
+        ScenePos s = dot0d(v.casted<ScenePos>(), l);
         max1 = std::max(max1, s);
         min1 = std::min(min1, s);
     }

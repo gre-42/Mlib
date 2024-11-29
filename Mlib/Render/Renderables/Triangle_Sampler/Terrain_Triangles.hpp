@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_List.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 
 namespace Mlib {

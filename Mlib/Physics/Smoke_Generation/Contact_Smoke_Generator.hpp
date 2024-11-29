@@ -2,7 +2,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <compare>
 #include <map>
 #include <string>

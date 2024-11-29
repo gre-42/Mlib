@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Record/Permanent_Node_Contact.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 

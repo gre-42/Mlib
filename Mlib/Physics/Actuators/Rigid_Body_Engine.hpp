@@ -2,7 +2,7 @@
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <iosfwd>
 #include <memory>

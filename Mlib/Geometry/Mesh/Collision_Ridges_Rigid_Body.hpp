@@ -34,17 +34,17 @@ public:
     ~CollisionRidgesRigidBody();
     template <size_t tnvertices>
     void insert(
-        const FixedArray<ScenePos, tnvertices, 3>& polygon,
+        const FixedArray<CompressedScenePos, tnvertices, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        ScenePos max_min_cos_ridge,
+        float max_min_cos_ridge,
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb);
 protected:
     void insert(
-        const FixedArray<ScenePos, 3>& a,
-        const FixedArray<ScenePos, 3>& b,
+        const FixedArray<CompressedScenePos, 3>& a,
+        const FixedArray<CompressedScenePos, 3>& b,
         const FixedArray<ScenePos, 3>& normal,
-        ScenePos max_min_cos_ridge,
+        float max_min_cos_ridge,
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb);
 };

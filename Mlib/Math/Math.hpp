@@ -1,11 +1,14 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Math/Abs.hpp>
 #include <Mlib/Math/Float_Type.hpp>
+#include <Mlib/Math/Funpack.hpp>
 #include <Mlib/Rvalue_Address.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Type_Traits/Get_Scalar.hpp>
 #include <Mlib/Type_Traits/Scalar.hpp>
 #include <climits>
+#include <concepts>
 #include <optional>
 #include <random>
 #include <sstream>
@@ -863,6 +866,16 @@ auto operator * (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
     return a->applied([&](const TData& x){ return x * b; });
 }
 
+template <class TDerived, class TData, std::integral I>
+auto operator * (const BaseDenseArray<TDerived, TData>& a, I b) {
+    return a->applied([&](const TData& x){ return x * b; });
+}
+
+template <class TDerived, class TData, std::floating_point F>
+auto operator * (const BaseDenseArray<TDerived, TData>& a, F b) {
+    return a->applied([&](const TData& x){ return x * b; });
+}
+
 template <class TDerived, class TData>
 auto operator * (const TData& a, const BaseDenseArray<TDerived, TData>& b) {
     return b * a;
@@ -870,6 +883,16 @@ auto operator * (const TData& a, const BaseDenseArray<TDerived, TData>& b) {
 
 template <class TDerived, class TData>
 auto operator / (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
+    return a->applied([&](const TData& x){ return x / b; });
+}
+
+template <class TDerived, class TData, std::integral I>
+auto operator / (const BaseDenseArray<TDerived, TData>& a, I b) {
+    return a->applied([&](const TData& x){ return x / b; });
+}
+
+template <class TDerived, class TData, std::floating_point F>
+auto operator / (const BaseDenseArray<TDerived, TData>& a, F b) {
     return a->applied([&](const TData& x){ return x / b; });
 }
 
@@ -890,7 +913,7 @@ Array<std::complex<TFloat>> operator / (const std::complex<TFloat>& a, const Arr
 
 template <class TDerived, class TData>
 auto abs(const BaseDenseArray<TDerived, TData>& a) {
-    return a->applied([&](const TData& x){ return std::abs(x); });
+    return a->applied([&](const TData& x){ return abs(x); });
 }
 
 template <class TDerived, class TData>
@@ -1102,8 +1125,9 @@ TData prod(const BaseDenseArray<TDerived, TData>& a) {
 }
 
 template <class T>
-inline T squared(const T& a) {
-    return a * a;
+inline auto squared(const T& a) {
+    auto fa = funpack(a);
+    return fa * fa;
 }
 
 template <class T>

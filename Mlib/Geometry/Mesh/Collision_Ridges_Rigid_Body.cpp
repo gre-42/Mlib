@@ -11,9 +11,9 @@ CollisionRidgesRigidBody::~CollisionRidgesRigidBody() = default;
 
 template <size_t tnvertices>
 void CollisionRidgesRigidBody::insert(
-    const FixedArray<ScenePos, tnvertices, 3>& polygon,
+    const FixedArray<CompressedScenePos, tnvertices, 3>& polygon,
     const FixedArray<ScenePos, 3>& normal,
-    ScenePos max_min_cos_ridge,
+    float max_min_cos_ridge,
     PhysicsMaterial physics_material,
     RigidBodyVehicle& rb)
 {
@@ -29,23 +29,24 @@ void CollisionRidgesRigidBody::insert(
                 rb);
         } catch (const EdgeException<ScenePos>& e) {
             throw PolygonEdgeException<ScenePos, tnvertices>{
-                polygon, i, j, e.what()};
+                polygon.template casted<ScenePos>(), i, j, e.what()};
         }
     }
 }
 
 void CollisionRidgesRigidBody::insert(
-    const FixedArray<ScenePos, 3>& a,
-    const FixedArray<ScenePos, 3>& b,
+    const FixedArray<CompressedScenePos, 3>& a,
+    const FixedArray<CompressedScenePos, 3>& b,
     const FixedArray<ScenePos, 3>& normal,
-    ScenePos max_min_cos_ridge,
+    SceneDir max_min_cos_ridge,
     PhysicsMaterial physics_material,
     RigidBodyVehicle& rb)
 {
     OrderableRidgeSphereRigidBody ridge{
         {
-            CollisionRidgeSphere<ScenePos>{
-                .bounding_sphere{BoundingSphere<ScenePos, 3>{FixedArray<ScenePos, 2, 3>{a, b}}},
+            CollisionRidgeSphere{
+                .bounding_sphere{BoundingSphere<CompressedScenePos, 3>{FixedArray<CompressedScenePos, 2, 3>{
+                    a, b}}},
                 .physics_material = physics_material,
                 .edge{a, b},
                 .ray{a, b},
@@ -59,15 +60,15 @@ void CollisionRidgesRigidBody::insert(
 namespace Mlib {
     template class CollisionRidgesBase<OrderableRidgeSphereRigidBody>;
     template void CollisionRidgesRigidBody::insert<3>(
-        const FixedArray<ScenePos, 3, 3>& polygon,
+        const FixedArray<CompressedScenePos, 3, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        ScenePos max_min_cos_ridge,
+        float max_min_cos_ridge,
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb);
     template void CollisionRidgesRigidBody::insert<4>(
-        const FixedArray<ScenePos, 4, 3>& polygon,
+        const FixedArray<CompressedScenePos, 4, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        ScenePos max_min_cos_ridge,
+        float max_min_cos_ridge,
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb);
 }

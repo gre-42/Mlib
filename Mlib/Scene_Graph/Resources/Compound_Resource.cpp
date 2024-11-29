@@ -167,8 +167,8 @@ std::list<std::shared_ptr<AnimatedColoredVertexArrays>> CompoundResource::get_re
     return result;
 }
 
-std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> CompoundResource::get_intersectables() const {
-    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> result;
+std::list<TypedMesh<std::shared_ptr<IIntersectable>>> CompoundResource::get_intersectables() const {
+    std::list<TypedMesh<std::shared_ptr<IIntersectable>>> result;
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};

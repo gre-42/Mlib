@@ -10,11 +10,9 @@ template <class TData, size_t tndim>
 class BoundingSphere;
 template <class TData, size_t tndim>
 class PlaneNd;
-template <class TData, size_t tnvertices>
+template <size_t tnvertices>
 struct CollisionPolygonSphere;
-template <class TData>
 struct CollisionLineSphere;
-template <class TData>
 struct CollisionRidgeSphere;
 
 class StaticTransformedMesh: public IIntersectableMesh {
@@ -23,36 +21,36 @@ class StaticTransformedMesh: public IIntersectableMesh {
 public:
     StaticTransformedMesh(
         std::string name,
-        const AxisAlignedBoundingBox<ScenePos, 3>& aabb,
-        const BoundingSphere<ScenePos, 3>& bounding_sphere,
-        std::vector<CollisionPolygonSphere<ScenePos, 4>>&& quads,
-        std::vector<CollisionPolygonSphere<ScenePos, 3>>&& triangles,
-        std::vector<CollisionLineSphere<ScenePos>>&& lines,
-        std::vector<CollisionLineSphere<ScenePos>>&& edges,
-        std::vector<CollisionRidgeSphere<ScenePos>>&& ridges,
-        std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>&& intersectables);
+        const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb,
+        const BoundingSphere<CompressedScenePos, 3>& bounding_sphere,
+        std::vector<CollisionPolygonSphere<4>>&& quads,
+        std::vector<CollisionPolygonSphere<3>>&& triangles,
+        std::vector<CollisionLineSphere>&& lines,
+        std::vector<CollisionLineSphere>&& edges,
+        std::vector<CollisionRidgeSphere>&& ridges,
+        std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>&& intersectables);
     ~StaticTransformedMesh();
     virtual std::string name() const override;
-    virtual bool intersects(const BoundingSphere<ScenePos, 3>& sphere) const override;
+    virtual bool intersects(const BoundingSphere<CompressedScenePos, 3>& sphere) const override;
     virtual bool intersects(const PlaneNd<ScenePos, 3>& plane) const override;
-    virtual const std::vector<CollisionPolygonSphere<ScenePos, 4>>& get_quads_sphere() const override;
-    virtual const std::vector<CollisionPolygonSphere<ScenePos, 3>>& get_triangles_sphere() const override;
-    virtual const std::vector<CollisionLineSphere<ScenePos>>& get_lines_sphere() const override;
-    virtual const std::vector<CollisionLineSphere<ScenePos>>& get_edges_sphere() const override;
-    virtual const std::vector<CollisionRidgeSphere<ScenePos>>& get_ridges_sphere() const override;
-    virtual const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& get_intersectables() const override;
-    virtual BoundingSphere<ScenePos, 3> bounding_sphere() const override;
-    virtual AxisAlignedBoundingBox<ScenePos, 3> aabb() const override;
+    virtual const std::vector<CollisionPolygonSphere<4>>& get_quads_sphere() const override;
+    virtual const std::vector<CollisionPolygonSphere<3>>& get_triangles_sphere() const override;
+    virtual const std::vector<CollisionLineSphere>& get_lines_sphere() const override;
+    virtual const std::vector<CollisionLineSphere>& get_edges_sphere() const override;
+    virtual const std::vector<CollisionRidgeSphere>& get_ridges_sphere() const override;
+    virtual const std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>& get_intersectables() const override;
+    virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
+    virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
 private:
     std::string name_;
-    AxisAlignedBoundingBox<ScenePos, 3> aabb_;
-    BoundingSphere<ScenePos, 3> bounding_sphere_;
-    std::vector<CollisionPolygonSphere<ScenePos, 4>> quads_;
-    std::vector<CollisionPolygonSphere<ScenePos, 3>> triangles_;
-    std::vector<CollisionLineSphere<ScenePos>> lines_;
-    std::vector<CollisionLineSphere<ScenePos>> edges_;
-    std::vector<CollisionRidgeSphere<ScenePos>> ridges_;
-    std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>> intersectables_;
+    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb_;
+    BoundingSphere<CompressedScenePos, 3> bounding_sphere_;
+    std::vector<CollisionPolygonSphere<4>> quads_;
+    std::vector<CollisionPolygonSphere<3>> triangles_;
+    std::vector<CollisionLineSphere> lines_;
+    std::vector<CollisionLineSphere> edges_;
+    std::vector<CollisionRidgeSphere> ridges_;
+    std::vector<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables_;
 };
 
 }

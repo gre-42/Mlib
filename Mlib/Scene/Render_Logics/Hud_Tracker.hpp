@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 

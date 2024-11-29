@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <functional>
 #include <map>

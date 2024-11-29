@@ -8,7 +8,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 using namespace Mlib;
 
@@ -23,7 +23,7 @@ BvhResource::BvhResource(
             for (const auto& p : t.flat_iterable()) {
                 aabb.extend(p.position);
             }
-            bvh_.insert(aabb, { cva, t });
+            bvh_.insert(aabb, BvhResourcePayload{ cva, t });
         }
     }
 }
@@ -39,10 +39,11 @@ static void instantiate_bvh(
     if (!bvh.data().empty()) {
         auto aabb = AxisAlignedBoundingBox<float, 3>::empty();
         std::map<std::shared_ptr<ColoredVertexArray<float>>, std::list<const FixedArray<ColoredVertex<float>, 3>*>> cvas;
-        for (const auto& [db, dv] : bvh.data()) {
-            cvas[dv.cva].push_back(&dv.triangle);
-            aabb.extend(db);
-        }
+        bvh.data().visit_all([&](const auto& d){
+            cvas[d.payload().cva].push_back(&d.payload().triangle);
+            aabb.extend(d.aabb());
+            return true;
+        });
         auto center = (aabb.min() + aabb.max()) / 2.f;
         auto node = make_unique_scene_node(
             (center - position_shift).casted<ScenePos>(),

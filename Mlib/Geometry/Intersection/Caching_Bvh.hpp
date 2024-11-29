@@ -45,8 +45,8 @@ public:
 				return e;
 			});
 		for (const auto* d : el.data) {
-			if (small_aabb.intersects(d->first)) {
-				if (!visitor(d->second)) {
+			if (small_aabb.intersects(d->aabb())) {
+				if (!visitor(d->payload())) {
 					return false;
 				}
 			}
@@ -58,15 +58,15 @@ private:
 	mutable TCache cache_;
 };
 
-template <class TData, class TPayload, size_t tndim>
+template <class TPosition, size_t tndim, class TPayload>
 using CachingAabbBvh =
 	CachingBvh<
 		Cache<
 			BvhCacheElement<
-				AxisAlignedBoundingBox<TData, tndim>,
-				std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>
+				AxisAlignedBoundingBox<TPosition, tndim>,
+				AabbAndPayload<TPosition, tndim, TPayload>
 			>
 		>,
-		Bvh<TData, TPayload, tndim>>;
+		Bvh<TPosition, TPayload, tndim>>;
 
 }

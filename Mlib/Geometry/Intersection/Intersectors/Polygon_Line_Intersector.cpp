@@ -14,12 +14,12 @@ using namespace Mlib;
 
 // Quad - ridge
 bool Mlib::intersect(
-    const CollisionPolygonSphere<ScenePos, 4>& q0,
-    const CollisionRidgeSphere<ScenePos>& r1,
+    const CollisionPolygonSphere<4>& q0,
+    const CollisionRidgeSphere& r1,
     IntersectionInfo& intersection_info)
 {
     ScenePos ray_t;
-    if (!r1.ray.intersects(q0.polygon, &ray_t, &intersection_info.intersection_point)) {
+    if (!r1.ray.casted<ScenePos, ScenePos>().intersects(q0.polygon, &ray_t, &intersection_info.intersection_point)) {
         return false;
     }
     intersection_info.normal0 = q0.polygon.plane().normal;
@@ -29,12 +29,12 @@ bool Mlib::intersect(
 
 // Triangle - ridge
 bool Mlib::intersect(
-    const CollisionPolygonSphere<ScenePos, 3>& t0,
-    const CollisionRidgeSphere<ScenePos>& r1,
+    const CollisionPolygonSphere<3>& t0,
+    const CollisionRidgeSphere& r1,
     IntersectionInfo& intersection_info)
 {
     ScenePos ray_t;
-    if (!r1.ray.intersects(t0.polygon, &ray_t, &intersection_info.intersection_point)) {
+    if (!r1.ray.casted<ScenePos, ScenePos>().intersects(t0.polygon, &ray_t, &intersection_info.intersection_point)) {
         return false;
     }
     intersection_info.normal0 = t0.polygon.plane().normal;
@@ -44,12 +44,12 @@ bool Mlib::intersect(
 
 // Quad - line
 bool Mlib::intersect(
-    const CollisionPolygonSphere<ScenePos, 4>& q0,
-    const CollisionLineSphere<ScenePos>& l1,
+    const CollisionPolygonSphere<4>& q0,
+    const CollisionLineSphere& l1,
     IntersectionInfo& intersection_info)
 {
     ScenePos ray_t;
-    if (!l1.ray.intersects(q0.polygon, &ray_t, &intersection_info.intersection_point)) {
+    if (!l1.ray.casted<ScenePos, ScenePos>().intersects(q0.polygon, &ray_t, &intersection_info.intersection_point)) {
         return false;
     }
     intersection_info.normal0 = q0.polygon.plane().normal;
@@ -59,12 +59,12 @@ bool Mlib::intersect(
 
 // Triangle - line
 bool Mlib::intersect(
-    const CollisionPolygonSphere<ScenePos, 3>& t0,
-    const CollisionLineSphere<ScenePos>& l1,
+    const CollisionPolygonSphere<3>& t0,
+    const CollisionLineSphere& l1,
     IntersectionInfo& intersection_info)
 {
     ScenePos ray_t;
-    if (!l1.ray.intersects(t0.polygon, &ray_t, &intersection_info.intersection_point)) {
+    if (!l1.ray.casted<ScenePos, ScenePos>().intersects(t0.polygon, &ray_t, &intersection_info.intersection_point)) {
         return false;
     }
     intersection_info.normal0 = t0.polygon.plane().normal;
@@ -74,8 +74,8 @@ bool Mlib::intersect(
 
 // Quad - intersectable
 bool Mlib::intersect(
-    const CollisionPolygonSphere<ScenePos, 4>& q0,
-    const IIntersectable<ScenePos>& i1,
+    const CollisionPolygonSphere<4>& q0,
+    const IIntersectable& i1,
     IntersectionInfo& intersection_info)
 {
     FixedArray<ScenePos, 3> normal = uninitialized;
@@ -92,8 +92,8 @@ bool Mlib::intersect(
 
 // Triangle - intersectable
 bool Mlib::intersect(
-    const CollisionPolygonSphere<ScenePos, 3>& t0,
-    const IIntersectable<ScenePos>& i1,
+    const CollisionPolygonSphere<3>& t0,
+    const IIntersectable& i1,
     IntersectionInfo& intersection_info)
 {
     FixedArray<ScenePos, 3> normal = uninitialized;
@@ -110,8 +110,8 @@ bool Mlib::intersect(
 
 // Intersectable - ridge
 bool Mlib::intersect(
-    const IIntersectable<ScenePos>& i0,
-    const CollisionRidgeSphere<ScenePos>& r1,
+    const IIntersectable& i0,
+    const CollisionRidgeSphere& r1,
     IntersectionInfo& intersection_info)
 {
     FixedArray<ScenePos, 3> intersection_point = uninitialized;
@@ -128,8 +128,8 @@ bool Mlib::intersect(
 
 // Intersectable - line
 bool Mlib::intersect(
-    const IIntersectable<ScenePos>& i0,
-    const CollisionLineSphere<ScenePos>& l1,
+    const IIntersectable& i0,
+    const CollisionLineSphere& l1,
     IntersectionInfo& intersection_info)
 {
     FixedArray<ScenePos, 3> intersection_point = uninitialized;
@@ -147,8 +147,8 @@ bool Mlib::intersect(
 
 // Intersectable - intersectable
 bool Mlib::intersect(
-    const IIntersectable<ScenePos>& i0,
-    const IIntersectable<ScenePos>& i1,
+    const IIntersectable& i0,
+    const IIntersectable& i1,
     IntersectionInfo& intersection_info)
 {
     FixedArray<ScenePos, 3> intersection_point = uninitialized;

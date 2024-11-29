@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <list>
 #include <map>

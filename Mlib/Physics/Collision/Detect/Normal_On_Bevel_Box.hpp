@@ -14,13 +14,13 @@ public:
         float radius);
     ~NormalOnBevelBox();
     virtual std::optional<FixedArray<float, 3>> get_surface_normal(
-        const CollisionRidgeSphere<ScenePos>& ridge,
+        const CollisionRidgeSphere& ridge,
         const FixedArray<ScenePos, 3>& position) const override;
     virtual std::optional<FixedArray<float, 3>> get_surface_normal(
-        const CollisionPolygonSphere<ScenePos, 3>& triangle,
+        const CollisionPolygonSphere<3>& triangle,
         const FixedArray<ScenePos, 3>& position) const override;
     virtual std::optional<FixedArray<float, 3>> get_surface_normal(
-        const CollisionPolygonSphere<ScenePos, 4>& quad,
+        const CollisionPolygonSphere<4>& quad,
         const FixedArray<ScenePos, 3>& position) const override;
 private:
     std::optional<FixedArray<float, 3>> get_surface_normal(

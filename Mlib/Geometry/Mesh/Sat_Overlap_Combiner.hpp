@@ -1,12 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <set>
 
 namespace Mlib {
 
-template <class TData>
 struct CollisionRidgeSphere;
 template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
@@ -14,10 +13,10 @@ class OrderableFixedArray;
 class SatOverlapCombiner {
 public:
     SatOverlapCombiner(
-        const std::set<OrderableFixedArray<ScenePos, 3>>& vertices0,
-        const std::set<OrderableFixedArray<ScenePos, 3>>& vertices1);
-    void combine_sticky_ridge(const CollisionRidgeSphere<ScenePos>& e1, ScenePos max_keep_normal);
-    void combine_ridges(const CollisionRidgeSphere<ScenePos>& e0, const CollisionRidgeSphere<ScenePos>& e1);
+        const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
+        const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1);
+    void combine_sticky_ridge(const CollisionRidgeSphere& e1, ScenePos max_keep_normal);
+    void combine_ridges(const CollisionRidgeSphere& e0, const CollisionRidgeSphere& e1);
     void combine_plane(const FixedArray<ScenePos, 3>& normal);
     inline const FixedArray<ScenePos, 3>& best_normal() const {
         return best_normal_;
@@ -35,8 +34,8 @@ private:
     FixedArray<ScenePos, 3> best_normal_;
     ScenePos best_min_overlap_;
 
-    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices0_;
-    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices1_;
+    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0_;
+    const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1_;
 };
 
 }

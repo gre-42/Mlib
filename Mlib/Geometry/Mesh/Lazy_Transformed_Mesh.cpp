@@ -23,53 +23,33 @@ using namespace Mlib;
 #endif
 
 LazyTransformedMesh::LazyTransformedMesh(
-    const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
-    const BoundingSphere<float, 3>& bounding_sphere,
-    const std::shared_ptr<CollisionMesh<float>>& collision_mesh,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix,
+    const BoundingSphere<CompressedScenePos, 3>& bounding_sphere,
+    const std::shared_ptr<CollisionMesh>& collision_mesh,
     ScenePos max_min_cos_ridge)
     : max_min_cos_ridge_{max_min_cos_ridge}
     , transformation_matrix_{ transformation_matrix }
     , transformed_bounding_sphere_{ bounding_sphere.transformed(transformation_matrix) }
-    , smesh_{ collision_mesh }
-{}
-
-LazyTransformedMesh::LazyTransformedMesh(
-    const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
-    const BoundingSphere<double, 3>& bounding_sphere,
-    const std::shared_ptr<CollisionMesh<double>>& collision_mesh,
-    ScenePos max_min_cos_ridge)
-    : max_min_cos_ridge_{ max_min_cos_ridge }
-    , transformation_matrix_{ transformation_matrix }
-    , transformed_bounding_sphere_{ bounding_sphere.transformed(transformation_matrix) }
-    , dmesh_{ collision_mesh }
+    , mesh_{ collision_mesh }
 {}
 
 LazyTransformedMesh::~LazyTransformedMesh() = default;
 
-bool LazyTransformedMesh::intersects(const BoundingSphere<ScenePos, 3>& sphere) const {
+bool LazyTransformedMesh::intersects(const BoundingSphere<CompressedScenePos, 3>& sphere) const {
     return transformed_bounding_sphere_.intersects(sphere);
 }
 
 bool LazyTransformedMesh::intersects(const PlaneNd<ScenePos, 3>& plane) const {
-    return transformed_bounding_sphere_.intersects(plane);
+    return transformed_bounding_sphere_.casted<ScenePos>().intersects(plane);
 }
 
-const std::vector<CollisionPolygonSphere<ScenePos, 4>>& LazyTransformedMesh::get_quads_sphere() const {
+const std::vector<CollisionPolygonSphere<4>>& LazyTransformedMesh::get_quads_sphere() const {
     if (!quads_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!quads_calculated_) {
-            transformed_quads_.reserve(
-                (smesh_ == nullptr ? 0 : smesh_->quads.size()) +
-                (dmesh_ == nullptr ? 0 : dmesh_->quads.size()));
-            if (smesh_ != nullptr) {
-                for (const auto& q : smesh_->quads) {
-                    transformed_quads_.push_back(q.transformed(transformation_matrix_));
-                }
-            }
-            if (dmesh_ != nullptr) {
-                for (const auto& q : dmesh_->quads) {
-                    transformed_quads_.push_back(q.transformed(transformation_matrix_));
-                }
+            transformed_quads_.reserve(mesh_->quads.size());
+            for (const auto& q : mesh_->quads) {
+                transformed_quads_.push_back(q.transformed(transformation_matrix_));
             }
             quads_calculated_ = true;
         }
@@ -78,22 +58,13 @@ const std::vector<CollisionPolygonSphere<ScenePos, 4>>& LazyTransformedMesh::get
 }
 
 
-const std::vector<CollisionPolygonSphere<ScenePos, 3>>& LazyTransformedMesh::get_triangles_sphere() const {
+const std::vector<CollisionPolygonSphere<3>>& LazyTransformedMesh::get_triangles_sphere() const {
     if (!triangles_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!triangles_calculated_) {
-            transformed_triangles_.reserve(
-                (smesh_ == nullptr ? 0 : smesh_->triangles.size()) +
-                (dmesh_ == nullptr ? 0 : dmesh_->triangles.size()));
-            if (smesh_ != nullptr) {
-                for (const auto& t : smesh_->triangles) {
-                    transformed_triangles_.push_back(t.transformed(transformation_matrix_));
-                }
-            }
-            if (dmesh_ != nullptr) {
-                for (const auto& t : dmesh_->triangles) {
-                    transformed_triangles_.push_back(t.transformed(transformation_matrix_));
-                }
+            transformed_triangles_.reserve(mesh_->triangles.size());
+            for (const auto& t : mesh_->triangles) {
+                transformed_triangles_.push_back(t.transformed(transformation_matrix_));
             }
             triangles_calculated_ = true;
         }
@@ -101,7 +72,7 @@ const std::vector<CollisionPolygonSphere<ScenePos, 3>>& LazyTransformedMesh::get
     return transformed_triangles_;
 }
 
-const std::vector<CollisionLineSphere<ScenePos>>& LazyTransformedMesh::get_edges_sphere() const {
+const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_edges_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
@@ -127,7 +98,7 @@ const std::vector<CollisionLineSphere<ScenePos>>& LazyTransformedMesh::get_edges
     return transformed_edges_;
 }
 
-const std::vector<CollisionRidgeSphere<ScenePos>>& LazyTransformedMesh::get_ridges_sphere() const {
+const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
@@ -155,25 +126,16 @@ const std::vector<CollisionRidgeSphere<ScenePos>>& LazyTransformedMesh::get_ridg
     return transformed_ridges_;
 }
 
-const std::vector<CollisionLineSphere<ScenePos>>& LazyTransformedMesh::get_lines_sphere() const {
+const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_lines_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
     if (!lines_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!lines_calculated_) {
-            transformed_lines_.reserve(
-                (smesh_ == nullptr ? 0 : smesh_->lines.size()) +
-                (dmesh_ == nullptr ? 0 : dmesh_->lines.size()));
-            if (smesh_ != nullptr) {
-                for (const auto& l2 : smesh_->lines) {
-                    transformed_lines_.push_back(l2.transformed(transformation_matrix_));
-                }
-            }
-            if (dmesh_ != nullptr) {
-                for (const auto& l2 : dmesh_->lines) {
-                    transformed_lines_.push_back(l2.transformed(transformation_matrix_));
-                }
+            transformed_lines_.reserve(mesh_->lines.size());
+            for (const auto& l2 : mesh_->lines) {
+                transformed_lines_.push_back(l2.transformed(transformation_matrix_));
             }
             lines_calculated_ = true;
         }
@@ -181,26 +143,18 @@ const std::vector<CollisionLineSphere<ScenePos>>& LazyTransformedMesh::get_lines
     return transformed_lines_;
 }
 
-const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& LazyTransformedMesh::get_intersectables() const
+const std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>& LazyTransformedMesh::get_intersectables() const
 {
     if (!intersectables_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!intersectables_calculated_) {
             transformed_intersectables_.reserve(
-                ((smesh_ == nullptr) || (smesh_->intersectable.mesh == nullptr) ? 0 : 1) +
-                ((dmesh_ == nullptr) || (dmesh_->intersectable.mesh == nullptr) ? 0 : 1));
-            if ((smesh_ != nullptr) && (smesh_->intersectable.mesh != nullptr)) {
+                ((mesh_ == nullptr) || (mesh_->intersectable.mesh == nullptr) ? 0 : 1));
+            if ((mesh_ != nullptr) && (mesh_->intersectable.mesh != nullptr)) {
                 transformed_intersectables_.emplace_back(
-                    smesh_->intersectable.physics_material,
-                    std::make_shared<TransformedIntersectable<float>>(
-                        smesh_->intersectable.mesh,
-                        transformation_matrix_));
-            }
-            if (dmesh_ != nullptr) {
-                transformed_intersectables_.emplace_back(
-                    dmesh_->intersectable.physics_material,
-                    std::make_shared<TransformedIntersectable<double>>(
-                        dmesh_->intersectable.mesh,
+                    mesh_->intersectable.physics_material,
+                    std::make_shared<TransformedIntersectable>(
+                        mesh_->intersectable.mesh,
                         transformation_matrix_));
             }
             intersectables_calculated_ = true;
@@ -209,12 +163,12 @@ const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& LazyTra
     return transformed_intersectables_;
 }
 
-BoundingSphere<ScenePos, 3> LazyTransformedMesh::bounding_sphere() const {
+BoundingSphere<CompressedScenePos, 3> LazyTransformedMesh::bounding_sphere() const {
     return transformed_bounding_sphere_;
 }
 
-AxisAlignedBoundingBox<ScenePos, 3> LazyTransformedMesh::aabb() const {
-    return AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(
+AxisAlignedBoundingBox<CompressedScenePos, 3> LazyTransformedMesh::aabb() const {
+    return AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
         transformed_bounding_sphere_.center(),
         transformed_bounding_sphere_.radius());
 }
@@ -230,7 +184,5 @@ void LazyTransformedMesh::print_info() const {
 }
 
 std::string LazyTransformedMesh::name() const {
-    return
-        (smesh_ == nullptr ? "" : smesh_->name) + "_" + 
-        (dmesh_ == nullptr ? "" : dmesh_->name);
+    return mesh_->name;
 }

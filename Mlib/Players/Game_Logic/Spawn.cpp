@@ -58,9 +58,9 @@ void Spawn::set_spawn_points(
             SpawnPoint sp2 = sp;
             sp2.position = absolute_model_matrix.transform(sp.position);
             sp2.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(sp.rotation)), R.T()));
-            spawn_points_.push_back(sp2);
-            spawn_points_bvh_split_[i]->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(sp2.position), &spawn_points_.back());
-            spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(sp2.position), &spawn_points_.back());
+            const auto* spb = &spawn_points_.emplace_back(sp2);
+            spawn_points_bvh_split_[i]->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(sp2.position), spb);
+            spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(sp2.position), spb);
             i = (i + 1) % nsubs;
         }
     }

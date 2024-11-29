@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <concepts>
 
 namespace Mlib {
 
@@ -74,6 +75,20 @@ template <class TData, size_t... tsize>
 FixedArray<TData, tsize...>& operator /= (
     FixedArray<TData, tsize...>& a,
     const TData& b)
+{
+    for (TData& v : a.flat_iterable()) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+        v /= b;
+#pragma GCC diagnostic pop
+    }
+    return a;
+}
+
+template <class TData, size_t... tsize, std::integral I>
+FixedArray<TData, tsize...>& operator /= (
+    FixedArray<TData, tsize...>& a,
+    I b)
 {
     for (TData& v : a.flat_iterable()) {
 #pragma GCC diagnostic push

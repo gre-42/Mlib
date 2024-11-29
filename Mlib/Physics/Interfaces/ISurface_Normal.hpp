@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <optional>
 
@@ -7,22 +7,21 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData>
 struct CollisionRidgeSphere;
-template <class TData, size_t tnvertices>
+template <size_t tnvertices>
 struct CollisionPolygonSphere;
 
 class ISurfaceNormal {
 public:
     virtual ~ISurfaceNormal() = default;
     virtual std::optional<FixedArray<float, 3>> get_surface_normal(
-        const CollisionRidgeSphere<ScenePos>& ridge,
+        const CollisionRidgeSphere& ridge,
         const FixedArray<ScenePos, 3>& position) const = 0;
     virtual std::optional<FixedArray<float, 3>> get_surface_normal(
-        const CollisionPolygonSphere<ScenePos, 3>& triangle,
+        const CollisionPolygonSphere<3>& triangle,
         const FixedArray<ScenePos, 3>& position) const = 0;
     virtual std::optional<FixedArray<float, 3>> get_surface_normal(
-        const CollisionPolygonSphere<ScenePos, 4>& quad,
+        const CollisionPolygonSphere<4>& quad,
         const FixedArray<ScenePos, 3>& position) const = 0;
 };
 

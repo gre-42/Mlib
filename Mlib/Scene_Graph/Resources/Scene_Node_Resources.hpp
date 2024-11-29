@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Map/Threadsafe_String_Map.hpp>
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
@@ -36,7 +36,6 @@ struct ColoredVertexArrayFilter;
 struct AnimatedColoredVertexArrays;
 template <class T>
 struct TypedMesh;
-template <class TData>
 class IIntersectable;
 struct SpawnPoint;
 struct RenderableResourceFilter;
@@ -130,7 +129,7 @@ public:
     std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays(const std::string& name) const;
     std::shared_ptr<ColoredVertexArray<float>> get_single_precision_array(const std::string& name) const;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> get_single_precision_arrays(const std::string& name) const;
-    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> get_intersectables(const std::string& name) const;
+    std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables(const std::string& name) const;
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float, float>>& poses);
     std::map<std::string, OffsetAndQuaternion<float, float>> get_relative_poses(const std::string& name, float seconds) const;
     std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_poses(const std::string& name, float seconds) const;

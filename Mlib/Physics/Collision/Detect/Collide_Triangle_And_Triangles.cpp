@@ -18,8 +18,8 @@ void Mlib::collide_triangle_and_triangles(
     RigidBodyVehicle& o1,
     const IIntersectableMesh* msh0,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const CollisionPolygonSphere<ScenePos, 4>* q0,
-    const CollisionPolygonSphere<ScenePos, 3>* t0,
+    const CollisionPolygonSphere<4>* q0,
+    const CollisionPolygonSphere<3>* t0,
     const CollisionHistory& history)
 {
     auto collide = [&](
@@ -73,7 +73,7 @@ void Mlib::collide_triangle_and_triangles(
     RigidBodyVehicle& o1,
     const IIntersectableMesh* msh0,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const std::variant<CollisionPolygonSphere<ScenePos, 3>, CollisionPolygonSphere<ScenePos, 4>>& cps0,
+    const std::variant<CollisionPolygonSphere<3>, CollisionPolygonSphere<4>>& cps0,
     const CollisionHistory& history)
 {
     collide_triangle_and_triangles(
@@ -81,7 +81,7 @@ void Mlib::collide_triangle_and_triangles(
         o1,
         msh0,
         msh1,
-        std::get_if<CollisionPolygonSphere<ScenePos, 4>>(&cps0),
-        std::get_if<CollisionPolygonSphere<ScenePos, 3>>(&cps0),
+        std::get_if<CollisionPolygonSphere<4>>(&cps0),
+        std::get_if<CollisionPolygonSphere<3>>(&cps0),
         history);
 }

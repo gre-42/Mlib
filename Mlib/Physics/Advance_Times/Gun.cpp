@@ -217,7 +217,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
                 *ams.absolute_movable,
                 scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->scvas,
                 scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->dcvas,
-                std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>>{},
+                std::list<TypedMesh<std::shared_ptr<IIntersectable>>>{},
                 CollidableMode::MOVING);
             ams.absolute_movable.release();
         }

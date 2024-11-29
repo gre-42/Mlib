@@ -529,9 +529,9 @@ void SceneNode::add_instances_child(
         name,
         (child_registration_state == ChildRegistrationState::REGISTERED),
         std::move(node),
-        0.,                                                                                 // max_center_distance
-        Bvh<ScenePos, PositionAndYAngle, 3>(fixed_full<ScenePos, 3>(ScenePos(0.1)), 10),    // small_instances
-        std::list<PositionAndYAngle>()).second)                                             // large_instances 
+        0.,                                                                                                                     // max_center_distance
+        GenericBvh<CompressedScenePos, 3, BillboardContainer>(fixed_full<CompressedScenePos, 3>(CompressedScenePos(10)), 12),   // small_instances
+        std::list<PositionAndYAngleAndBillboardId>()).second)                                                                   // large_instances 
     {
         THROW_OR_ABORT("Instances node with name " + name + " already exists");
     }
@@ -554,8 +554,8 @@ void SceneNode::add_instances_position(
     }
     if (mcd == INFINITY) {
         cit->second.large_instances.push_back(
-            PositionAndYAngle{
-                .position = position,
+            PositionAndYAngleAndBillboardId{
+                .position = position.casted<CompressedScenePos>(),
                 .yangle = yangle,
                 .billboard_id = billboard_id}
         );
@@ -563,13 +563,19 @@ void SceneNode::add_instances_position(
         if (!std::isfinite(mcd)) {
             THROW_OR_ABORT("max_center_distance is not finite");
         }
-        cit->second.max_center_distance = std::max(cit->second.max_center_distance, mcd);
-        cit->second.small_instances.insert(
-            AxisAlignedBoundingBox<ScenePos, 3>::from_point(position),
-            PositionAndYAngle{
-                .position = position,
-                .yangle = yangle,
-                .billboard_id = billboard_id});
+        cit->second.max_center_distance = std::max(cit->second.max_center_distance, (CompressedScenePos)mcd);
+        if (yangle == 0.f) {
+            cit->second.small_instances.insert(
+                PositionAndBillboardId{
+                    .position = position.casted<CompressedScenePos>(),
+                    .billboard_id = billboard_id});
+        } else {
+            cit->second.small_instances.insert(
+                PositionAndYAngleAndBillboardId{
+                    .position = position.casted<CompressedScenePos>(),
+                    .yangle = yangle,
+                    .billboard_id = billboard_id});
+        }
     }
 }
 
@@ -1051,7 +1057,7 @@ void SceneNode::append_small_instances_to_queue(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
     const FixedArray<ScenePos, 3>& offset,
-    const PositionAndYAngle& delta_pose,
+    const PositionAndYAngleAndBillboardId& delta_pose,
     SmallInstancesQueues& instances_queues,
     const SceneGraphConfig& scene_graph_config) const
 {
@@ -1060,7 +1066,7 @@ void SceneNode::append_small_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append small instances to queue for a non-static node");
     }
-    rel.t += delta_pose.position;
+    rel.t += delta_pose.position.casted<ScenePos>();
     if (delta_pose.yangle != 0) {
         rel.R = dot2d(rel.R, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
@@ -1070,7 +1076,7 @@ void SceneNode::append_small_instances_to_queue(
         (*r)->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngle{ fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX }, instances_queues, scene_graph_config);
+        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngleAndBillboardId{ fixed_zeros<CompressedScenePos, 3>(), 0.f, UINT32_MAX }, instances_queues, scene_graph_config);
     }
     for (const auto& [_, i] : un_guarded_iterator(instances_children_, lock)) {
         std::shared_lock ilock{ i.mutex };
@@ -1082,10 +1088,15 @@ void SceneNode::append_small_instances_to_queue(
         if (!i.small_instances.empty()) {
             auto camera_position = m.inverted_scaled().transform(iv.t);
             i.small_instances.visit(
-                AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(camera_position, i.max_center_distance),
-                [&, &i = i](const PositionAndYAngle& j) {
+                AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(camera_position.casted<CompressedScenePos>(), i.max_center_distance),
+                [&, &i = i](const PositionAndYAngleAndBillboardId& j) {
                     UnlockGuard ulock{ ilock };
                     i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
+                    return true;
+                },
+                [&, &i = i](const PositionAndBillboardId& j) {
+                    UnlockGuard ulock{ ilock };
+                    i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, {j.position, 0.f, j.billboard_id}, instances_queues, scene_graph_config);
                     return true;
                 });
         }
@@ -1096,7 +1107,7 @@ void SceneNode::append_large_instances_to_queue(
     const FixedArray<ScenePos, 4, 4>& parent_mvp,
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const FixedArray<ScenePos, 3>& offset,
-    const PositionAndYAngle& delta_pose,
+    const PositionAndYAngleAndBillboardId& delta_pose,
     LargeInstancesQueue& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
@@ -1105,7 +1116,7 @@ void SceneNode::append_large_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append large instances to queue for a non-static node");
     }
-    rel.t += delta_pose.position;
+    rel.t += delta_pose.position.casted<ScenePos>();
     if (delta_pose.yangle != 0) {
         rel.R = dot2d(rel.R, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
@@ -1115,7 +1126,7 @@ void SceneNode::append_large_instances_to_queue(
         (*r)->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
     }
     for (const auto& [_, i] : un_guarded_iterator(instances_children_, lock)) {
         std::shared_lock ilock{ i.mutex };
@@ -1124,11 +1135,18 @@ void SceneNode::append_large_instances_to_queue(
         for (const auto& j : un_guarded_iterator(i.large_instances, ilock)) {
             i.scene_node->append_large_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config);
         }
-        i.small_instances.visit_all([&, &i=i](const auto& aabb, const PositionAndYAngle& j){
-            UnlockGuard ulock{ ilock };
-            i.scene_node->append_large_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config);
-            return true;
-        });
+        i.small_instances.visit_all(
+            [&, &i=i](const auto& j){
+                UnlockGuard ulock{ ilock };
+                i.scene_node->append_large_instances_to_queue(mvp, m, offset, j.payload(), instances_queue, scene_graph_config);
+                return true;
+            },
+            [&, &i=i](const auto& j){
+                UnlockGuard ulock{ ilock };
+                const auto& J = j.payload();
+                i.scene_node->append_large_instances_to_queue(mvp, m, offset, {J.position, 0.f, J.billboard_id}, instances_queue, scene_graph_config);
+                return true;
+            });
     }
 }
 

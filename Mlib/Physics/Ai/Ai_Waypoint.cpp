@@ -33,7 +33,7 @@ FixedArray<ScenePos, 3> AiWaypoint::interpolated_position(
     {
         return pod + dy3;
     }
-    RaySegment3D<ScenePos> rs(waypoint_history_->rbegin()->position, pod);
+    RaySegment3D<ScenePos, ScenePos> rs(waypoint_history_->rbegin()->position, pod);
     ScenePos lambda;
     if (!ray_intersects_sphere(
         rs.start,

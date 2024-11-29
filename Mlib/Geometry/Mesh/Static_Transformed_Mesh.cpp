@@ -15,14 +15,14 @@ using namespace Mlib;
 
 StaticTransformedMesh::StaticTransformedMesh(
     std::string name,
-    const AxisAlignedBoundingBox<ScenePos, 3>& aabb,
-    const BoundingSphere<ScenePos, 3>& bounding_sphere,
-    std::vector<CollisionPolygonSphere<ScenePos, 4>>&& quads,
-    std::vector<CollisionPolygonSphere<ScenePos, 3>>&& triangles,
-    std::vector<CollisionLineSphere<ScenePos>>&& lines,
-    std::vector<CollisionLineSphere<ScenePos>>&& edges,
-    std::vector<CollisionRidgeSphere<ScenePos>>&& ridges,
-    std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>&& intersectables)
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb,
+    const BoundingSphere<CompressedScenePos, 3>& bounding_sphere,
+    std::vector<CollisionPolygonSphere<4>>&& quads,
+    std::vector<CollisionPolygonSphere<3>>&& triangles,
+    std::vector<CollisionLineSphere>&& lines,
+    std::vector<CollisionLineSphere>&& edges,
+    std::vector<CollisionRidgeSphere>&& ridges,
+    std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>&& intersectables)
     : name_{ std::move(name) }
     , aabb_{ aabb }
     , bounding_sphere_{ bounding_sphere }
@@ -36,44 +36,44 @@ StaticTransformedMesh::StaticTransformedMesh(
 
 StaticTransformedMesh::~StaticTransformedMesh() = default;
 
-bool StaticTransformedMesh::intersects(const BoundingSphere<ScenePos, 3>& sphere) const {
+bool StaticTransformedMesh::intersects(const BoundingSphere<CompressedScenePos, 3>& sphere) const {
     return bounding_sphere_.intersects(sphere);
 }
 
 bool StaticTransformedMesh::intersects(const PlaneNd<ScenePos, 3>& plane) const {
-    return bounding_sphere_.intersects(plane);
+    return bounding_sphere_.casted<ScenePos>().intersects(plane);
 }
 
-const std::vector<CollisionPolygonSphere<ScenePos, 4>>& StaticTransformedMesh::get_quads_sphere() const {
+const std::vector<CollisionPolygonSphere<4>>& StaticTransformedMesh::get_quads_sphere() const {
     return quads_;
 }
 
-const std::vector<CollisionPolygonSphere<ScenePos, 3>>& StaticTransformedMesh::get_triangles_sphere() const {
+const std::vector<CollisionPolygonSphere<3>>& StaticTransformedMesh::get_triangles_sphere() const {
     return triangles_;
 }
 
-const std::vector<CollisionLineSphere<ScenePos>>& StaticTransformedMesh::get_lines_sphere() const {
+const std::vector<CollisionLineSphere>& StaticTransformedMesh::get_lines_sphere() const {
     return lines_;
 }
 
-const std::vector<CollisionLineSphere<ScenePos>>& StaticTransformedMesh::get_edges_sphere() const {
+const std::vector<CollisionLineSphere>& StaticTransformedMesh::get_edges_sphere() const {
     return edges_;
 }
 
-const std::vector<CollisionRidgeSphere<ScenePos>>& StaticTransformedMesh::get_ridges_sphere() const {
+const std::vector<CollisionRidgeSphere>& StaticTransformedMesh::get_ridges_sphere() const {
     return ridges_;
 }
 
-const std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>& StaticTransformedMesh::get_intersectables() const
+const std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>& StaticTransformedMesh::get_intersectables() const
 {
     return intersectables_;
 }
 
-BoundingSphere<ScenePos, 3> StaticTransformedMesh::bounding_sphere() const {
+BoundingSphere<CompressedScenePos, 3> StaticTransformedMesh::bounding_sphere() const {
     return bounding_sphere_;
 }
 
-AxisAlignedBoundingBox<ScenePos, 3> StaticTransformedMesh::aabb() const {
+AxisAlignedBoundingBox<CompressedScenePos, 3> StaticTransformedMesh::aabb() const {
     return aabb_;
 }
 

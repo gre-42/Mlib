@@ -11,9 +11,9 @@ CollisionRidges::~CollisionRidges() = default;
 
 template <size_t tnvertices>
 void CollisionRidges::insert(
-    const FixedArray<ScenePos, tnvertices, 3>& tri,
+    const FixedArray<CompressedScenePos, tnvertices, 3>& tri,
     const FixedArray<ScenePos, 3>& normal,
-    ScenePos max_min_cos_ridge,
+    float max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
     for (size_t i = 0; i < tnvertices; ++i) {
@@ -27,21 +27,21 @@ void CollisionRidges::insert(
                 physics_material);
         } catch (const EdgeException<ScenePos>& e) {
             throw PolygonEdgeException<ScenePos, tnvertices>{
-                tri, i, j, e.what()};
+                tri.template casted<ScenePos>(), i, j, e.what()};
         }
     }
 }
 
 void CollisionRidges::insert(
-    const FixedArray<ScenePos, 3>& a,
-    const FixedArray<ScenePos, 3>& b,
+    const FixedArray<CompressedScenePos, 3>& a,
+    const FixedArray<CompressedScenePos, 3>& b,
     const FixedArray<ScenePos, 3>& normal,
-    ScenePos max_min_cos_ridge,
+    float max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
     OrderableRidgeSphereBase ridge{
-        CollisionRidgeSphere<ScenePos>{
-            .bounding_sphere{BoundingSphere<ScenePos, 3>{FixedArray<ScenePos, 2, 3>{a, b}}},
+        CollisionRidgeSphere{
+            .bounding_sphere{BoundingSphere<CompressedScenePos, 3>{FixedArray<CompressedScenePos, 2, 3>{a, b}}},
             .physics_material = physics_material,
             .edge{a, b},
             .ray{a, b},
@@ -55,13 +55,13 @@ void CollisionRidges::insert(
 namespace Mlib {
     template class CollisionRidgesBase<OrderableRidgeSphereBase>;
     template void CollisionRidges::insert<3>(
-        const FixedArray<ScenePos, 3, 3>& polygon,
+        const FixedArray<CompressedScenePos, 3, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        ScenePos max_min_cos_ridge,
+        float max_min_cos_ridge,
         PhysicsMaterial physics_material);
     template void CollisionRidges::insert<4>(
-        const FixedArray<ScenePos, 4, 3>& polygon,
+        const FixedArray<CompressedScenePos, 4, 3>& polygon,
         const FixedArray<ScenePos, 3>& normal,
-        ScenePos max_min_cos_ridge,
+        float max_min_cos_ridge,
         PhysicsMaterial physics_material);
 }

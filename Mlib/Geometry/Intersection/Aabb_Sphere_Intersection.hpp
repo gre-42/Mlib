@@ -18,8 +18,8 @@ bool aabb_intersects_sphere(
     if (any(distance1 > sphere.radius())) {
         return false;
     }
-    auto distance2 = sum(squared(distance1));
-    return distance2 <= squared(sphere.radius());
+    auto distance2 = sum(squared(funpack(distance1)));
+    return distance2 <= squared(funpack(sphere.radius()));
 }
 
 }

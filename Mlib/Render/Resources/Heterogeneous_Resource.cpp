@@ -118,7 +118,7 @@ std::list<std::shared_ptr<AnimatedColoredVertexArrays>> HeterogeneousResource::g
     return { acvas };
 }
 
-std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> HeterogeneousResource::get_intersectables() const {
+std::list<TypedMesh<std::shared_ptr<IIntersectable>>> HeterogeneousResource::get_intersectables() const {
     return {};
 }
 

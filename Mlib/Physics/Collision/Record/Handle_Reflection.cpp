@@ -123,7 +123,7 @@ static void handle_extended_reflection(
             }
             auto& tire = c.o1.tires_.at(c.tire_id1);
             if (tire.rbp != nullptr) {
-                float fsap = -(float)dot0d(tire.rbp->abs_position() - intersection_point, c.l1->ray.direction) - tire.radius;
+                float fsap = -(float)dot0d(tire.rbp->abs_position() - intersection_point, c.l1->ray.direction.casted<ScenePos>()) - tire.radius;
                 if (fsap < 0.f) {
                     auto ci = std::make_unique<AttachedWheelNormalContactInfo1>(
                         AttachedWheel{ c.o1.rbp_, *tire.rbp, tire.vertical_line },
@@ -317,8 +317,8 @@ void Mlib::handle_reflection(
     } else if (!c.l1_is_normal) {
         assert_true(c.r1 != nullptr);
         IntersectionScene cf{ c };
-        std::optional<CollisionPolygonSphere<ScenePos, 4>> q0f;
-        std::optional<CollisionPolygonSphere<ScenePos, 3>> t0f;
+        std::optional<CollisionPolygonSphere<4>> q0f;
+        std::optional<CollisionPolygonSphere<3>> t0f;
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
                 THROW_OR_ABORT("Two-sided materials require a convex collision partner (case 0). Consider using collision-normals.");
@@ -350,7 +350,7 @@ void Mlib::handle_reflection(
             THROW_OR_ABORT("Lines require a collision partner with either normals or plane normals");
         }
         normal = N0->normal;
-        overlap = -(dot0d(c.l1->line[1], normal) + N0->intercept);
+        overlap = -(dot0d(c.l1->line[1].casted<ScenePos>(), normal) + N0->intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (overlap < 0) {
                 normal = -normal;

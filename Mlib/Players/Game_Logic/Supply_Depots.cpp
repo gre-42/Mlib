@@ -20,7 +20,10 @@ SupplyDepots::SupplyDepots(
     AdvanceTimes& advance_times,
     Players& players,
     const PhysicsEngineConfig& cfg)
-    : bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
+    : bvh_{{funpack(cfg.bvh_max_size),
+            funpack(cfg.bvh_max_size),
+            funpack(cfg.bvh_max_size)},
+        cfg.bvh_levels }
     , advance_times_{ advance_times }
     , players_{ players }
     , cfg_{ cfg }
@@ -30,9 +33,10 @@ SupplyDepots::~SupplyDepots()
 {}
 
 void SupplyDepots::reset_cooldown() {
-    bvh_.visit_all([](const auto& aabb, SupplyDepot& supply_depot){
-        supply_depot.time_since_last_visit = supply_depot.cooldown;
-        supply_depot.node->color_style(VariableAndHash<std::string>{""}).emissive = -1.f;
+    bvh_.visit_all([](const auto& d){
+        auto& payload = const_cast<SupplyDepot&>(d.payload());
+        payload.time_since_last_visit = payload.cooldown;
+        payload.node->color_style(VariableAndHash<std::string>{""}).emissive = -1.f;
         return true;
     });
 }
@@ -41,7 +45,7 @@ bool SupplyDepots::visit_supply_depots(
     const FixedArray<ScenePos, 3> position,
     const std::function<bool(const SupplyDepot&)>& visitor) const
 {
-    BoundingSphere<ScenePos, 3> bs(position, cfg_.supply_depot_attraction_radius);
+    BoundingSphere<ScenePos, 3> bs(position, funpack(cfg_.supply_depot_attraction_radius));
     return bvh_.visit(
         AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(bs.center(), bs.radius()),
         [&](const SupplyDepot& supply_depot)
@@ -67,7 +71,8 @@ bool SupplyDepots::visit_supply_depots(
 }
 
 void SupplyDepots::handle_supply_depots(float dt) {
-    bvh_.visit_all([&dt](const auto& aabb, SupplyDepot& supply_depot){
+    bvh_.visit_all([&dt](const auto& entry){
+        auto& supply_depot = const_cast<SupplyDepot&>(entry.payload());
         bool old_cd = supply_depot.is_cooling_down();
         supply_depot.time_since_last_visit += dt;
         if (old_cd && !supply_depot.is_cooling_down()) {

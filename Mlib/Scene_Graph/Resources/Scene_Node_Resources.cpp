@@ -382,7 +382,7 @@ float SceneNodeResources::get_animation_duration(const std::string& name) const 
     }
 }
 
-std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> SceneNodeResources::get_intersectables(const std::string& name) const {
+std::list<TypedMesh<std::shared_ptr<IIntersectable>>> SceneNodeResources::get_intersectables(const std::string& name) const {
     auto resource = get_resource(name);
     try {
         return resource->get_intersectables();

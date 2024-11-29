@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -9,26 +10,25 @@ namespace Mlib {
 
 template <class TPos>
 class ColoredVertexArray;
-template <class TData>
-class IIntersectable;
 template <class T>
 struct TypedMesh;
+class IIntersectable;
 
-template <class TData>
 class CollisionMesh {
     CollisionMesh(const CollisionMesh&) = delete;
     CollisionMesh& operator = (const CollisionMesh&) = delete;
 public:
+    template <class TData>
     explicit CollisionMesh(const ColoredVertexArray<TData>& mesh);
     CollisionMesh(
         std::string name,
-        TypedMesh<std::shared_ptr<IIntersectable<TData>>> intersectable);
+        TypedMesh<std::shared_ptr<IIntersectable>> intersectable);
     ~CollisionMesh();
     std::string name;
-    std::vector<CollisionPolygonSphere<TData, 4>> quads;
-    std::vector<CollisionPolygonSphere<TData, 3>> triangles;
-    std::vector<CollisionLineSphere<TData>> lines;
-    TypedMesh<std::shared_ptr<IIntersectable<TData>>> intersectable;
+    std::vector<CollisionPolygonSphere<4>> quads;
+    std::vector<CollisionPolygonSphere<3>> triangles;
+    std::vector<CollisionLineSphere> lines;
+    TypedMesh<std::shared_ptr<IIntersectable>> intersectable;
 };
 
 }

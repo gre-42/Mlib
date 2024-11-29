@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <list>
@@ -26,7 +26,6 @@ struct TypedMesh;
 struct AnimatedColoredVertexArrays;
 template <class TPos>
 class ColoredVertexArray;
-template <class TData>
 class IIntersectable;
 class Scene;
 class SceneNode;
@@ -64,7 +63,7 @@ public:
     // Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const;
     virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const;
-    virtual std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> get_intersectables() const;
+    virtual std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables() const;
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance);

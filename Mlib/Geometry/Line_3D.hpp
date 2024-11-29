@@ -13,19 +13,21 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 template <class TPos>
 struct ColoredVertex;
-template <class TData>
+template <class TDir, class TPos>
 class RaySegment3D;
 
 template <class TPos>
 class Line3D {
 public:
-    explicit Line3D(const FixedArray<ColoredVertex<TPos>, 2>& vertices);
+    template <class TPos2>
+    explicit Line3D(const FixedArray<ColoredVertex<TPos2>, 2>& vertices);
     template <class TPos2, class TPosTransform>
     Line3D(
         const FixedArray<ColoredVertex<TPos2>, 2>& vertices,
         const TransformationMatrix<float, TPosTransform, 3>& transformation);
     const FixedArray<TPos, 2, 3>& vertices() const;
-    RaySegment3D<TPos> ray() const;
+    template <class TDir>
+    RaySegment3D<TDir, TPos> ray() const;
     BoundingSphere<TPos, 3> bounding_sphere() const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
 private:

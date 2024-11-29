@@ -5,7 +5,7 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <mutex>
 #include <string>
 

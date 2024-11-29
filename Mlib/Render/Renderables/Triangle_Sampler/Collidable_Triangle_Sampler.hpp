@@ -1,14 +1,13 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 
 class TerrainStyles;
 struct TerrainTriangles;
 class HeterogeneousResource;
-template <class TData, class TPayload, size_t tndim>
-class Bvh;
 enum class UpAxis;
 
 class CollidableTriangleSampler {

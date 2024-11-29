@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <memory>
 

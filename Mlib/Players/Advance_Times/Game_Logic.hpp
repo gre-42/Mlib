@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Players/Game_Logic/Bystanders.hpp>
@@ -17,8 +18,6 @@ enum class Focus;
 class Scene;
 class SceneNode;
 class AdvanceTimes;
-template <class TData, class TPayload, size_t tndim>
-class Bvh;
 class DeleteNodeMutex;
 
 class GameLogic: public IAdvanceTime, public virtual DanglingBaseClass {

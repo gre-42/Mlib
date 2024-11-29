@@ -28,7 +28,9 @@ bool FuzzySetOfPoints<TData, tndim>::insert(const FixedArray<TData, tndim>& p, s
         THROW_OR_ABORT2((PointException{ p, "Detected problematic fuzzy point distance" }));
     } else {
         index = bvh_size_++;
-        bvh_.insert(AxisAlignedBoundingBox<TData, tndim>::from_point(p), { p, index });
+        bvh_.insert(
+            AxisAlignedBoundingBox<TData, tndim>::from_point(p),
+            std::pair<FixedArray<TData, tndim>, size_t>{ p, index });
         return true;
     }
 }

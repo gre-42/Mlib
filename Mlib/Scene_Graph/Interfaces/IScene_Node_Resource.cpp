@@ -38,7 +38,7 @@ std::list<std::shared_ptr<AnimatedColoredVertexArrays>> ISceneNodeResource::get_
     THROW_OR_ABORT("get_rendering_arrays not implemented");
 }
 
-std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> ISceneNodeResource::get_intersectables() const {
+std::list<TypedMesh<std::shared_ptr<IIntersectable>>> ISceneNodeResource::get_intersectables() const {
     THROW_OR_ABORT("get_intersectables not implemented");
 }
 

@@ -6,13 +6,13 @@ namespace Mlib {
 class IntersectableResource: public ISceneNodeResource {
 public:
     explicit IntersectableResource(
-        std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>>&& intersectables);
+        std::list<TypedMesh<std::shared_ptr<IIntersectable>>>&& intersectables);
 
     // Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
-    virtual std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> get_intersectables() const override;
+    virtual std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables() const override;
 private:
-    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> intersectables_;
+    std::list<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables_;
 };
 
 }

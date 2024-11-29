@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t tnvertices>
+template <class TPos, size_t tnvertices>
 class ConvexPolygon3D;
 template <class TData, size_t tndim>
 class BoundingSphere;

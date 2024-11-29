@@ -3,7 +3,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable_With_Style.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <memory>
 
 namespace Mlib {

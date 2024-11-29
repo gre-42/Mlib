@@ -15,7 +15,7 @@ VertexDistances Mlib::get_farthest_distances(
         .max = -(ScenePos)INFINITY
     };
     for (const auto& v : mesh.get_vertices()) {
-        auto dist = dot0d(v, plane.normal) + plane.intercept;
+        auto dist = dot0d(v.casted<ScenePos>(), plane.normal) + plane.intercept;
         res.min = std::min(res.min, dist);
         res.max = std::max(res.max, dist);
     }

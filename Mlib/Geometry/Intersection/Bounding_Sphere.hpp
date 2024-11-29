@@ -3,6 +3,8 @@
 #include <Mlib/Default_Uninitialized.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Max.hpp>
+#include <Mlib/Math/Sqrt.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Uninitialized.hpp>
@@ -44,11 +46,11 @@ public:
         const TIterable& iterator_begin,
         const TIterable& iterator_end)
     {
-        TData radius2 = 0;
+        auto radius2 = funpack_t<TData>(0);
         for (auto it = iterator_begin; it != iterator_end; ++it) {
-            radius2 = std::max(radius2, sum(squared(*it - center)));
+            radius2 = max(radius2, sum(squared(*it - center)));
         }
-        return BoundingSphere(center, std::sqrt(radius2));
+        return BoundingSphere(center, (TData)std::sqrt(radius2));
     }
     template <class TIterable>
     static BoundingSphere from_iterator(
@@ -64,7 +66,7 @@ public:
         if (nelements == 0) {
             THROW_OR_ABORT("Bounding sphere received no elements");
         }
-        center /= (TData)nelements;
+        center /= nelements;
         return from_center_and_iterator(center, iterator_begin, iterator_end);
     }
     bool contains(const FixedArray<TData, tndim>& other, const TData& tolerance = TData(0)) const {
@@ -81,15 +83,15 @@ public:
         radius_ = std::max(radius_, std::sqrt(sum(squared(other.center_ - center_))) + other.radius_);
     }
     template <class TDir, class TPos>
-    BoundingSphere<TPos, tndim> transformed(const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const {
-        return BoundingSphere<TPos, tndim>{
-            transformation_matrix.transform(center_.template casted<TPos>()),
+    BoundingSphere<TData, tndim> transformed(const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const {
+        return BoundingSphere<TData, tndim>{
+            transformation_matrix.transform(center_.template casted<TPos>()).template casted<TData>(),
             radius_};
     }
     template <class TDir, class TPos>
-    BoundingSphere<TPos, tndim> itransformed(const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const {
-        return BoundingSphere<TPos, tndim>{
-            transformation_matrix.itransform(center_.template casted<TPos>()),
+    BoundingSphere<TData, tndim> itransformed(const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const {
+        return BoundingSphere<TData, tndim>{
+            transformation_matrix.itransform(center_.template casted<TPos>()).template casted<TData>(),
             radius_};
     }
     inline const FixedArray<TData, tndim>& center() const {

@@ -12,27 +12,23 @@
 
 using namespace Mlib;
 
-template <class TData>
-TransformedIntersectable<TData>::TransformedIntersectable(
-    std::shared_ptr<IIntersectable<TData>> child,
+TransformedIntersectable::TransformedIntersectable(
+    std::shared_ptr<IIntersectable> child,
     const TransformationMatrix<float, ScenePos, 3>& trafo)
     : child_{ child }
     , trafo_{ trafo }
 {}
 
-template <class TData>
-BoundingSphere<ScenePos, 3> TransformedIntersectable<TData>::bounding_sphere() const {
+BoundingSphere<CompressedScenePos, 3> TransformedIntersectable::bounding_sphere() const {
     return child_->bounding_sphere().transformed(trafo_);
 }
 
-template <class TData>
-AxisAlignedBoundingBox<ScenePos, 3> TransformedIntersectable<TData>::aabb() const {
-    return child_->aabb().template casted<ScenePos>().transformed(trafo_);
+AxisAlignedBoundingBox<CompressedScenePos, 3> TransformedIntersectable::aabb() const {
+    return child_->aabb().template casted<ScenePos>().transformed(trafo_).casted<CompressedScenePos>();
 }
 
-template <class TData>
-bool TransformedIntersectable<TData>::intersects(
-    const CollisionPolygonSphere<ScenePos, 4>& q,
+bool TransformedIntersectable::intersects(
+    const CollisionPolygonSphere<4>& q,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<ScenePos, 3>& normal) const
@@ -40,9 +36,8 @@ bool TransformedIntersectable<TData>::intersects(
     return intersects_any_wo_ray_t(q, overlap, intersection_point, normal);
 }
 
-template <class TData>
-bool TransformedIntersectable<TData>::intersects(
-    const CollisionPolygonSphere<ScenePos, 3>& t,
+bool TransformedIntersectable::intersects(
+    const CollisionPolygonSphere<3>& t,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<ScenePos, 3>& normal) const
@@ -50,9 +45,8 @@ bool TransformedIntersectable<TData>::intersects(
     return intersects_any_wo_ray_t(t, overlap, intersection_point, normal);
 }
 
-template <class TData>
-bool TransformedIntersectable<TData>::intersects(
-    const CollisionRidgeSphere<ScenePos>& r1,
+bool TransformedIntersectable::intersects(
+    const CollisionRidgeSphere& r1,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<ScenePos, 3>& normal) const
@@ -60,9 +54,8 @@ bool TransformedIntersectable<TData>::intersects(
     return intersects_any_wo_ray_t(r1, overlap, intersection_point, normal);
 }
 
-template <class TData>
-bool TransformedIntersectable<TData>::intersects(
-    const CollisionLineSphere<ScenePos>& l1,
+bool TransformedIntersectable::intersects(
+    const CollisionLineSphere& l1,
     ScenePos& overlap,
     ScenePos& ray_t,
     FixedArray<ScenePos, 3>& intersection_point,
@@ -71,23 +64,22 @@ bool TransformedIntersectable<TData>::intersects(
     return intersects_any_with_ray_t(l1, overlap, ray_t, intersection_point, normal);
 }
 
-template <class TData>
-bool TransformedIntersectable<TData>::intersects(
-    const IIntersectable<ScenePos>& intersectable,
+bool TransformedIntersectable::intersects(
+    const IIntersectable& intersectable,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<ScenePos, 3>& normal) const
 {
-    auto* o = dynamic_cast<const TransformedIntersectable<TData>*>(&intersectable);
+    auto* o = dynamic_cast<const TransformedIntersectable*>(&intersectable);
     if (o == nullptr) {
         THROW_OR_ABORT("TransformedIntersectable can only intersect children of the same type");
     }
-    TData c_overlap;
-    FixedArray<TData, 3> c_intersection_point = uninitialized;
-    FixedArray<TData, 3> c_normal = uninitialized;
+    ScenePos c_overlap;
+    FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
+    FixedArray<ScenePos, 3> c_normal = uninitialized;
     bool intersects = child_->intersects(
         *o->child_,
-        (trafo_.inverted() * o->trafo_).template casted<float, TData>(),
+        (trafo_.inverted() * o->trafo_).template casted<float, ScenePos>(),
         c_overlap,
         c_intersection_point,
         c_normal);
@@ -100,9 +92,8 @@ bool TransformedIntersectable<TData>::intersects(
     return true;
 }
 
-template <class TData>
-bool TransformedIntersectable<TData>::intersects(
-    const IIntersectable<ScenePos>& intersectable,
+bool TransformedIntersectable::intersects(
+    const IIntersectable& intersectable,
     const TransformationMatrix<float, ScenePos, 3>& trafo,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
@@ -111,23 +102,22 @@ bool TransformedIntersectable<TData>::intersects(
     THROW_OR_ABORT("TransformedIIntersectable received additional transformation matrix");
 }
 
-template <class TData>
 template <class TOther>
-bool TransformedIntersectable<TData>::intersects_any_wo_ray_t(
+bool TransformedIntersectable::intersects_any_wo_ray_t(
     const TOther& o,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<ScenePos, 3>& normal) const
 {
-    auto tbs = o.bounding_sphere.itransformed(trafo_).template casted<TData>();
-    if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
+    auto tbs = o.bounding_sphere.itransformed(trafo_);
+    if (!aabb_intersects_sphere(child_->aabb().casted<ScenePos>(), tbs.template casted<ScenePos>())) {
         return false;
     }
-    TData c_overlap;
-    FixedArray<TData, 3> c_intersection_point = uninitialized;
-    FixedArray<TData, 3> c_normal = uninitialized;
+    ScenePos c_overlap;
+    FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
+    FixedArray<ScenePos, 3> c_normal = uninitialized;
     bool intersects = child_->intersects(
-        o.transformed(trafo_.inverted()).template casted<TData>(),
+        o.transformed(trafo_.inverted()),
         c_overlap,
         c_intersection_point,
         c_normal);
@@ -140,25 +130,24 @@ bool TransformedIntersectable<TData>::intersects_any_wo_ray_t(
     return true;
 }
 
-template <class TData>
 template <class TOther>
-bool TransformedIntersectable<TData>::intersects_any_with_ray_t(
+bool TransformedIntersectable::intersects_any_with_ray_t(
     const TOther& o,
     ScenePos& overlap,
     ScenePos& ray_t,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<ScenePos, 3>& normal) const
 {
-    auto tbs = o.bounding_sphere.itransformed(trafo_).template casted<TData>();
+    auto tbs = o.bounding_sphere.itransformed(trafo_);
     if (!aabb_intersects_sphere(child_->aabb(), tbs)) {
         return false;
     }
-    TData c_overlap;
-    TData c_ray_t;
-    FixedArray<TData, 3> c_intersection_point = uninitialized;
-    FixedArray<TData, 3> c_normal = uninitialized;
+    ScenePos c_overlap;
+    ScenePos c_ray_t;
+    FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
+    FixedArray<ScenePos, 3> c_normal = uninitialized;
     bool intersects = child_->intersects(
-        o.transformed(trafo_.inverted()).template casted<TData>(),
+        o.transformed(trafo_.inverted()),
         c_overlap,
         c_ray_t,
         c_intersection_point,
@@ -171,13 +160,6 @@ bool TransformedIntersectable<TData>::intersects_any_with_ray_t(
     intersection_point = trafo_.transform(c_intersection_point.template casted<float>()).template casted<ScenePos>();
     normal = trafo_.rotate(c_normal.template casted<float>()).template casted<ScenePos>();
     return true;
-}
-
-namespace Mlib {
-
-template class TransformedIntersectable<double>;
-template class TransformedIntersectable<float>;
-
 }
 
 #ifdef __GNUC__

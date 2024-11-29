@@ -8,158 +8,146 @@
 
 using namespace Mlib;
 
-template <class TData>
-SweptSphereAabb<TData>::SweptSphereAabb(
-    const FixedArray<TData, 3>& min,
-    const FixedArray<TData, 3>& max,
-    const TData& radius)
-    : aabb_small_{ AxisAlignedBoundingBox<TData, 3>::from_min_max(min + radius, max - radius) }
-    , aabb_large_{ AxisAlignedBoundingBox<TData, 3>::from_min_max(min, max) }
+SweptSphereAabb::SweptSphereAabb(
+    const FixedArray<CompressedScenePos, 3>& min,
+    const FixedArray<CompressedScenePos, 3>& max,
+    const CompressedScenePos& radius)
+    : aabb_small_{ AxisAlignedBoundingBox<CompressedScenePos, 3>::from_min_max(min + radius, max - radius) }
+    , aabb_large_{ AxisAlignedBoundingBox<CompressedScenePos, 3>::from_min_max(min, max) }
     , radius_{ radius }
-    , bounding_sphere_{ FixedArray<TData, 2, 3>{ min, max } }
+    , bounding_sphere_{ FixedArray<CompressedScenePos, 2, 3>{ min, max } }
 {
-    if (any(aabb_small_.max() - aabb_small_.min() < (TData)0)) {
+    if (any(aabb_small_.max() - aabb_small_.min() < (CompressedScenePos)0)) {
         THROW_OR_ABORT("SweptSphereAabb: AABB too small for the given radius");
     }
 }
 
-template <class TData>
-BoundingSphere<TData, 3> SweptSphereAabb<TData>::bounding_sphere() const {
+BoundingSphere<CompressedScenePos, 3> SweptSphereAabb::bounding_sphere() const {
     return bounding_sphere_;
 }
 
-template <class TData>
-AxisAlignedBoundingBox<TData, 3> SweptSphereAabb<TData>::aabb() const {
+AxisAlignedBoundingBox<CompressedScenePos, 3> SweptSphereAabb::aabb() const {
     return aabb_large_;
 }
 
-template <class TData>
-bool SweptSphereAabb<TData>::intersects(
-    const CollisionPolygonSphere<TData, 4>& q,
-    TData& overlap,
-    FixedArray<TData, 3>& intersection_point,
-    FixedArray<TData, 3>& normal) const
+bool SweptSphereAabb::intersects(
+    const CollisionPolygonSphere<4>& q,
+    ScenePos& overlap,
+    FixedArray<ScenePos, 3>& intersection_point,
+    FixedArray<ScenePos, 3>& normal) const
 {
-    if (!aabb_large_.intersects(AxisAlignedBoundingBox<TData, 3>::from_points(q.corners))) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(q.corners))) {
         return false;
     }
-    ClosestPoint<TData> closest_point;
-    distance_polygon_aabb(q, aabb_small_, closest_point);
-    if (closest_point.distance <= radius_) {
-        intersection_point = closest_point.closest_point0;
+    ClosestPoint<ScenePos> closest_point;
+    distance_polygon_aabb(q, aabb_small_.casted<ScenePos>(), closest_point);
+    if (closest_point.distance <= (ScenePos)radius_) {
+        intersection_point = closest_point.closest_point0.casted<ScenePos>();
         normal = closest_point.normal;
-        overlap = radius_ - closest_point.distance;
+        overlap = ScenePos(radius_) - closest_point.distance;
         return true;
     } else {
         return false;
     }
 }
 
-template <class TData>
-bool SweptSphereAabb<TData>::intersects(
-    const CollisionPolygonSphere<TData, 3>& t,
-    TData& overlap,
-    FixedArray<TData, 3>& intersection_point,
-    FixedArray<TData, 3>& normal) const
+bool SweptSphereAabb::intersects(
+    const CollisionPolygonSphere<3>& t,
+    ScenePos& overlap,
+    FixedArray<ScenePos, 3>& intersection_point,
+    FixedArray<ScenePos, 3>& normal) const
 {
-    if (!aabb_large_.intersects(AxisAlignedBoundingBox<TData, 3>::from_points(t.corners))) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(t.corners))) {
         return false;
     }
-    ClosestPoint<TData> closest_point;
-    distance_polygon_aabb(t, aabb_small_, closest_point);
-    if (closest_point.distance <= radius_) {
-        intersection_point = closest_point.closest_point0;
+    ClosestPoint<ScenePos> closest_point;
+    distance_polygon_aabb(t, aabb_small_.casted<ScenePos>(), closest_point);
+    if (closest_point.distance <= (ScenePos)radius_) {
+        intersection_point = closest_point.closest_point0.casted<ScenePos>();
         normal = closest_point.normal;
-        overlap = radius_ - closest_point.distance;
+        overlap = ScenePos(radius_) - closest_point.distance;
         return true;
     } else {
         return false;
     }
 }
 
-template <class TData>
-bool SweptSphereAabb<TData>::intersects(
-    const CollisionRidgeSphere<TData>& r1,
-    TData& overlap,
-    FixedArray<TData, 3>& intersection_point,
-    FixedArray<TData, 3>& normal) const
+bool SweptSphereAabb::intersects(
+    const CollisionRidgeSphere& r1,
+    ScenePos& overlap,
+    FixedArray<ScenePos, 3>& intersection_point,
+    FixedArray<ScenePos, 3>& normal) const
 {
-    if (!aabb_large_.intersects(AxisAlignedBoundingBox<TData, 3>::from_points(r1.edge))) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(r1.edge))) {
         return false;
     }
-    ClosestPoint<TData> closest_point;
-    distance_line_aabb(r1.ray, aabb_small_, closest_point);
-    if (closest_point.distance <= radius_) {
-        intersection_point = closest_point.closest_point0;
-        normal = closest_point.normal;
-        overlap = radius_ - closest_point.distance;
+    ClosestPoint<ScenePos> closest_point;
+    distance_line_aabb(r1.ray.casted<ScenePos, ScenePos>(), aabb_small_.casted<ScenePos>(), closest_point);
+    if (closest_point.distance <= (ScenePos)radius_) {
+        intersection_point = closest_point.closest_point0.casted<ScenePos>();
+        normal = closest_point.normal.casted<ScenePos>();
+        overlap = ScenePos(radius_) - closest_point.distance;
         return true;
     } else {
         return false;
     }
 }
 
-template <class TData>
-bool SweptSphereAabb<TData>::intersects(
-    const CollisionLineSphere<TData>& l1,
-    TData& overlap,
-    TData& ray_t,
-    FixedArray<TData, 3>& intersection_point,
-    FixedArray<TData, 3>& normal) const
+bool SweptSphereAabb::intersects(
+    const CollisionLineSphere& l1,
+    ScenePos& overlap,
+    ScenePos& ray_t,
+    FixedArray<ScenePos, 3>& intersection_point,
+    FixedArray<ScenePos, 3>& normal) const
 {
-    if (!aabb_large_.intersects(AxisAlignedBoundingBox<TData, 3>::from_points(l1.line))) {
+    if (!aabb_large_.intersects(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(l1.line))) {
         return false;
     }
     ray_t = NAN;
-    ClosestPoint<TData> closest_point;
-    distance_line_aabb(l1.ray, aabb_small_, closest_point);
-    if (closest_point.distance <= radius_) {
-        intersection_point = closest_point.closest_point0;
-        normal = closest_point.normal;
-        overlap = radius_ - closest_point.distance;
+    ClosestPoint<ScenePos> closest_point;
+    distance_line_aabb(l1.ray.casted<ScenePos, ScenePos>(), aabb_small_.casted<ScenePos>(), closest_point);
+    if (closest_point.distance <= (ScenePos)radius_) {
+        intersection_point = closest_point.closest_point0.casted<ScenePos>();
+        normal = closest_point.normal.casted<ScenePos>();
+        overlap = ScenePos(radius_) - closest_point.distance;
         return true;
     } else {
         return false;
     }
 }
 
-template <class TData>
-bool SweptSphereAabb<TData>::intersects(
-    const IIntersectable<TData>& intersectable,
-    TData& overlap,
-    FixedArray<TData, 3>& intersection_point,
-    FixedArray<TData, 3>& normal) const
+bool SweptSphereAabb::intersects(
+    const IIntersectable& intersectable,
+    ScenePos& overlap,
+    FixedArray<ScenePos, 3>& intersection_point,
+    FixedArray<ScenePos, 3>& normal) const
 {
     THROW_OR_ABORT("Sphere swept AABB called without transformation");
 }
 
-template <class TData>
-bool SweptSphereAabb<TData>::intersects(
-    const IIntersectable<TData>& intersectable,
-    const TransformationMatrix<float, TData, 3>& trafo,
-    TData& overlap,
-    FixedArray<TData, 3>& intersection_point,
-    FixedArray<TData, 3>& normal) const
+bool SweptSphereAabb::intersects(
+    const IIntersectable& intersectable,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
+    ScenePos& overlap,
+    FixedArray<ScenePos, 3>& intersection_point,
+    FixedArray<ScenePos, 3>& normal) const
 {
-    const auto* c = dynamic_cast<const SweptSphereAabb<TData>*>(&intersectable);
+    const auto* c = dynamic_cast<const SweptSphereAabb*>(&intersectable);
     if (c == nullptr) {
         THROW_OR_ABORT("SweptSphereAabb can only intersect objects of type SweptSphereAabb");
     }
-    ClosestPoint<TData> closest_point;
-    distance_aabb_aabb(aabb_small_, c->aabb_small_, trafo, closest_point);
+    ClosestPoint<ScenePos> closest_point;
+    distance_aabb_aabb(aabb_small_.casted<ScenePos>(), c->aabb_small_.casted<ScenePos>(), trafo, closest_point);
     auto sum_radius = radius_ + c->radius_;
-    if (closest_point.distance <= sum_radius) {
-        intersection_point = lerp(closest_point.closest_point0, closest_point.closest_point1, radius_ / sum_radius);
-        normal = closest_point.normal;
-        overlap = closest_point.distance - sum_radius;
+    if (closest_point.distance <= (ScenePos)sum_radius) {
+        intersection_point = lerp(
+            closest_point.closest_point0.casted<ScenePos>(),
+            closest_point.closest_point1.casted<ScenePos>(),
+            (ScenePos)radius_ / (ScenePos)(sum_radius));
+        normal = closest_point.normal.casted<ScenePos>();
+        overlap = closest_point.distance - (ScenePos)sum_radius;
         return true;
     } else {
         return false;
     }
-}
-
-namespace Mlib {
-
-template class SweptSphereAabb<float>;
-
 }

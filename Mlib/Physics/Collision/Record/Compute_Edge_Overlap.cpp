@@ -64,7 +64,7 @@ bool Mlib::compute_edge_overlap(
             using Corners0 = std::remove_reference_t<decltype(corners0)>;
             static_assert(Corners0::ndim() == 2);
             size_t ncorners = Corners0::template static_shape<0>();
-            std::vector<CollisionRidgeSphere<ScenePos>> ridges;
+            std::vector<CollisionRidgeSphere> ridges;
             ridges.reserve(ncorners);
             for (size_t i = 0; i < ncorners; ++i) {
                 auto a = OrderableFixedArray{corners0[i]};
@@ -81,14 +81,14 @@ bool Mlib::compute_edge_overlap(
             }
             StaticTransformedMesh stm(
                 "temp",
-                AxisAlignedBoundingBox<ScenePos, 3>::from_points(corners0),
-                BoundingSphere<ScenePos, 3>{corners0},
-                (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<ScenePos, 4>>{*c.q0} : std::vector<CollisionPolygonSphere<ScenePos, 4>>(),
-                (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<ScenePos, 3>>{*c.t0} : std::vector<CollisionPolygonSphere<ScenePos, 3>>(),
-                std::vector<CollisionLineSphere<ScenePos>>(),
-                std::vector<CollisionLineSphere<ScenePos>>(),
+                AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(corners0),
+                BoundingSphere<CompressedScenePos, 3>{corners0},
+                (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<4>>{*c.q0} : std::vector<CollisionPolygonSphere<4>>(),
+                (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<3>>{*c.t0} : std::vector<CollisionPolygonSphere<3>>(),
+                std::vector<CollisionLineSphere>(),
+                std::vector<CollisionLineSphere>(),
                 std::move(ridges),
-                std::vector<TypedMesh<std::shared_ptr<IIntersectable<ScenePos>>>>());
+                std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>());
 
             assert_true(c.r1 != nullptr);
             try {

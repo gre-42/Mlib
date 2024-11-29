@@ -9,11 +9,12 @@
 using namespace Mlib;
 
 template <class TPos>
+template <class TPos2>
 Line3D<TPos>::Line3D(
-    const FixedArray<ColoredVertex<TPos>, 2>& vertices)
+    const FixedArray<ColoredVertex<TPos2>, 2>& vertices)
     : vertices_{
-        vertices(0).position,
-        vertices(1).position }
+        vertices(0).position.template casted<TPos>(),
+        vertices(1).position.template casted<TPos>() }
 {}
 
 template <class TPos>
@@ -32,8 +33,9 @@ const FixedArray<TPos, 2, 3>& Line3D<TPos>::vertices() const {
 }
 
 template <class TPos>
-RaySegment3D<TPos> Line3D<TPos>::ray() const {
-    return RaySegment3D<TPos>{vertices_};
+template <class TDir>
+RaySegment3D<TDir, TPos> Line3D<TPos>::ray() const {
+    return RaySegment3D<TDir, TPos>{vertices_};
 }
 
 template <class TPos>
@@ -52,6 +54,10 @@ namespace Mlib {
 template class Line3D<float>;
 template class Line3D<double>;
 
+template Line3D<float>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
+template Line3D<double>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
+template Line3D<double>::Line3D(const FixedArray<ColoredVertex<double>, 2>& vertices);
+
 template Line3D<double>::Line3D(
     const FixedArray<ColoredVertex<float>, 2>& vertices,
     const TransformationMatrix<float, double, 3>& transformation);
@@ -61,5 +67,7 @@ template Line3D<double>::Line3D(
 template Line3D<float>::Line3D(
     const FixedArray<ColoredVertex<float>, 2>& vertices,
     const TransformationMatrix<float, float, 3>& transformation);
+
+template RaySegment3D<float, double> Line3D<double>::ray() const;
 
 }

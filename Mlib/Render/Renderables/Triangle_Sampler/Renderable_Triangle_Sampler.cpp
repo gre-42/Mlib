@@ -121,8 +121,8 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         };
         if (orthographic) {
             if (terrain_style.config.size_classification == SizeClassification::LARGE) {
-                triangle_bvh.visit_all([&traverse_triangle](const auto& aabb, const TriangleAndSeed& t){
-                    traverse_triangle(t);
+                triangle_bvh.visit_all([&traverse_triangle](const auto& d){
+                    traverse_triangle(d.payload());
                     return true;
                 });
             }

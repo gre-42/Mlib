@@ -3,7 +3,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 

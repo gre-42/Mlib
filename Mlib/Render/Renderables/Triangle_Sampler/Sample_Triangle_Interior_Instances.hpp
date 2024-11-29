@@ -1,8 +1,9 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <memory>
 
@@ -21,8 +22,6 @@ class ColoredVertexArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct SceneGraphConfig;
-template <class TData, class TPayload, size_t tndim>
-class Bvh;
 enum class UpAxis;
 
 class TriangleInteriorInstancesSampler {

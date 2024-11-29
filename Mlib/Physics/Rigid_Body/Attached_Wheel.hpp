@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 

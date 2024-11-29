@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cmath>
 
 namespace Mlib {
@@ -19,10 +20,10 @@ struct PhysicsEngineConfig {
     bool print_residual_time = false;
 
     // BVH
-    float static_radius = 20.f * meters;
-    float bvh_max_size = 2.f * meters;
+    CompressedScenePos static_radius = 20.f * meters;
+    CompressedScenePos bvh_max_size = 2.f * meters;
     size_t bvh_levels = 15;
-    float supply_depot_attraction_radius = 10.0 * meters;
+    CompressedScenePos supply_depot_attraction_radius = 10.0 * meters;
 
     // Collision/Friction misc.
     float max_extra_friction = 0;

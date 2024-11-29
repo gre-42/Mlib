@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <memory>
 

@@ -7,7 +7,7 @@
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Primitive_Dimensions.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/To_Underlying.hpp>
 #include <atomic>
@@ -21,13 +21,11 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-template <class TData, size_t tnvertices>
+template <size_t tnvertices>
 struct CollisionPolygonSphere;
-template <class TData, size_t tnvertices>
+template <size_t tnvertices>
 struct CollisionPolygonAabb;
-template <class TData>
 struct CollisionLineSphere;
-template <class TData>
 struct CollisionLineAabb;
 struct BoneWeight;
 template <class TPos>
@@ -106,22 +104,22 @@ public:
         const std::string& suffix) const;
     template <size_t tnvertices>
     void polygon_sphere(
-        std::vector<CollisionPolygonSphere<TPos, tnvertices>>& collision_polygons) const;
-    void quads_sphere(std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons) const;
-    void triangles_sphere(std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons) const;
-    template <size_t tnvertices, class TPosResult, class TPosTransform>
-    std::vector<CollisionPolygonAabb<TPosResult, tnvertices>> transformed_polygon_bbox(
+        std::vector<CollisionPolygonSphere<tnvertices>>& collision_polygons) const;
+    void quads_sphere(std::vector<CollisionPolygonSphere<4>>& collision_polygons) const;
+    void triangles_sphere(std::vector<CollisionPolygonSphere<3>>& collision_polygons) const;
+    template <size_t tnvertices, class TPosTransform>
+    std::vector<CollisionPolygonAabb<tnvertices>> transformed_polygon_bbox(
         const TransformationMatrix<float, TPosTransform, 3>& tm) const;
-    template <class TPosResult, class TPosTransform>
-    std::vector<CollisionPolygonAabb<TPosResult, 4>> transformed_quads_bbox(
+    template <class TPosTransform>
+    std::vector<CollisionPolygonAabb<4>> transformed_quads_bbox(
         const TransformationMatrix<float, TPosTransform, 3>& tm) const;
-    template <class TPosResult, class TPosTransform>
-    std::vector<CollisionPolygonAabb<TPosResult, 3>> transformed_triangles_bbox(
+    template <class TPosTransform>
+    std::vector<CollisionPolygonAabb<3>> transformed_triangles_bbox(
         const TransformationMatrix<float, TPosTransform, 3>& tm) const;
-    template <class TPosResult, class TPosTransform>
-    std::vector<CollisionLineAabb<TPosResult>> transformed_lines_bbox(
+    template <class TPosTransform>
+    std::vector<CollisionLineAabb> transformed_lines_bbox(
         const TransformationMatrix<float, TPosTransform, 3>& tm) const;
-    std::vector<CollisionLineSphere<TPos>> lines_sphere() const;
+    std::vector<CollisionLineSphere> lines_sphere() const;
     void downsample_triangles(size_t n);
     std::shared_ptr<ColoredVertexArray> generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
     std::shared_ptr<ColoredVertexArray> generate_contour_edges() const;

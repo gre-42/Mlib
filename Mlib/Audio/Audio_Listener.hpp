@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Entity_State.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <optional>
 

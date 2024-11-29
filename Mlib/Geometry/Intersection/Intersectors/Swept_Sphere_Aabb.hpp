@@ -5,52 +5,51 @@
 
 namespace Mlib {
 
-template <class TData>
-class SweptSphereAabb: public IIntersectable<TData> {
+class SweptSphereAabb: public IIntersectable {
 public:
     SweptSphereAabb(
-        const FixedArray<TData, 3>& min,
-        const FixedArray<TData, 3>& max,
-        const TData& radius);
-    virtual BoundingSphere<TData, 3> bounding_sphere() const;
-    virtual AxisAlignedBoundingBox<TData, 3> aabb() const;
+        const FixedArray<CompressedScenePos, 3>& min,
+        const FixedArray<CompressedScenePos, 3>& max,
+        const CompressedScenePos& radius);
+    virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const;
+    virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const;
     virtual bool intersects(
-        const CollisionPolygonSphere<TData, 4>& q,
-        TData& overlap,
-        FixedArray<TData, 3>& intersection_point,
-        FixedArray<TData, 3>& normal) const;
+        const CollisionPolygonSphere<4>& q,
+        ScenePos& overlap,
+        FixedArray<ScenePos, 3>& intersection_point,
+        FixedArray<ScenePos, 3>& normal) const;
     virtual bool intersects(
-        const CollisionPolygonSphere<TData, 3>& t,
-        TData& overlap,
-        FixedArray<TData, 3>& intersection_point,
-        FixedArray<TData, 3>& normal) const;
+        const CollisionPolygonSphere<3>& t,
+        ScenePos& overlap,
+        FixedArray<ScenePos, 3>& intersection_point,
+        FixedArray<ScenePos, 3>& normal) const;
     virtual bool intersects(
-        const CollisionRidgeSphere<TData>& r1,
-        TData& overlap,
-        FixedArray<TData, 3>& intersection_point,
-        FixedArray<TData, 3>& normal) const;
+        const CollisionRidgeSphere& r1,
+        ScenePos& overlap,
+        FixedArray<ScenePos, 3>& intersection_point,
+        FixedArray<ScenePos, 3>& normal) const;
     virtual bool intersects(
-        const CollisionLineSphere<TData>& l1,
-        TData& overlap,
-        TData& ray_t,
-        FixedArray<TData, 3>& intersection_point,
-        FixedArray<TData, 3>& normal) const;
+        const CollisionLineSphere& l1,
+        ScenePos& overlap,
+        ScenePos& ray_t,
+        FixedArray<ScenePos, 3>& intersection_point,
+        FixedArray<ScenePos, 3>& normal) const;
     virtual bool intersects(
-        const IIntersectable<TData>& intersectable,
-        TData& overlap,
-        FixedArray<TData, 3>& intersection_point,
-        FixedArray<TData, 3>& normal) const;
+        const IIntersectable& intersectable,
+        ScenePos& overlap,
+        FixedArray<ScenePos, 3>& intersection_point,
+        FixedArray<ScenePos, 3>& normal) const;
     virtual bool intersects(
-        const IIntersectable<TData>& intersectable,
-        const TransformationMatrix<float, TData, 3>& trafo,
-        TData& overlap,
-        FixedArray<TData, 3>& intersection_point,
-        FixedArray<TData, 3>& normal) const;
+        const IIntersectable& intersectable,
+        const TransformationMatrix<float, ScenePos, 3>& trafo,
+        ScenePos& overlap,
+        FixedArray<ScenePos, 3>& intersection_point,
+        FixedArray<ScenePos, 3>& normal) const;
 private:
-    AxisAlignedBoundingBox<TData, 3> aabb_small_;
-    AxisAlignedBoundingBox<TData, 3> aabb_large_;
-    TData radius_;
-    BoundingSphere<TData, 3> bounding_sphere_;
+    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb_small_;
+    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb_large_;
+    CompressedScenePos radius_;
+    BoundingSphere<CompressedScenePos, 3> bounding_sphere_;
 };
 
 }

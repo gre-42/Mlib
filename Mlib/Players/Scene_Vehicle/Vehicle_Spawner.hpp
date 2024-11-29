@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <chrono>
 #include <functional>
 #include <list>

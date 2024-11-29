@@ -2,7 +2,7 @@
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Sequence.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <vector>
 
 namespace Mlib {

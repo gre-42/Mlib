@@ -74,7 +74,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
-    std::list<TypedMesh<std::shared_ptr<IIntersectable<float>>>> intersectables;
+    std::list<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables;
     if (auto hbs = args.arguments.try_at_non_null(KnownArgs::hitboxes); hbs.has_value()) {
         {
             PhysicsResourceFilter filter{

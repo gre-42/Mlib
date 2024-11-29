@@ -1,7 +1,25 @@
 #pragma once
+#include <Mlib/Scaled_Integer.hpp>
 #include <type_traits>
 
 namespace Mlib {
+
+struct IsScalarHelper {
+    static const bool value = true;
+};
+
+struct IsNotScalarHelper {
+    static const bool value = false;
+};
+
+template <class T>
+IsNotScalarHelper is_scalar_helper(const T&);
+
+template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
+IsScalarHelper is_scalar_helper(const ScaledInteger<TInt, numerator, denominator>&);
+
+template <class T>
+IsScalarHelper is_scalar_helper(const T&) requires std::is_scalar_v<T>;
 
 template <class T>
 struct ScalarType;
@@ -11,17 +29,18 @@ struct ScalarTypeRecursion;
 
 template <class T>
 struct ScalarTypeRecursion<T, true> {
-    typedef T value_type;
+    using value_type = T;
 };
 
 template <class T>
 struct ScalarTypeRecursion<T, false> {
-    typedef typename T::value_type value_type;
+    using value_type = T::value_type;
 };
 
 template <class T>
 struct ScalarType {
-    typedef typename ScalarTypeRecursion<T, std::is_scalar<T>::value>::value_type value_type;
+    static const T& func();
+    using value_type = ScalarTypeRecursion<T, decltype(is_scalar_helper(func()))::value>::value_type;
 };
 
 template <class T>

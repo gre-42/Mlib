@@ -53,7 +53,7 @@ void distance_point_aabb(
 
 template <class TData>
 void distance_interior_line_aabb(
-    const RaySegment3D<TData>& ray,
+    const RaySegment3D<TData, TData>& ray,
     const AxisAlignedBoundingBox<TData, 3>& aabb,
     ClosestPoint<TData>& closest_point)
 {
@@ -89,7 +89,7 @@ void distance_interior_line_aabb(
 
 template <class TData>
 void distance_line_aabb(
-    const RaySegment3D<TData>& ray,
+    const RaySegment3D<TData, TData>& ray,
     const AxisAlignedBoundingBox<TData, 3>& aabb,
     ClosestPoint<TData>& closest_point)
 {
@@ -116,30 +116,30 @@ void distance_interior_polygon_aabb(
     });
 }
 
-template <class TData, size_t tnvertices>
+template <size_t tnvertices>
 void distance_polygon_aabb(
-    const CollisionPolygonSphere<TData, tnvertices>& polygon,
-    const AxisAlignedBoundingBox<TData, 3>& aabb,
-    ClosestPoint<TData>& closest_point)
+    const CollisionPolygonSphere<tnvertices>& polygon,
+    const AxisAlignedBoundingBox<ScenePos, 3>& aabb,
+    ClosestPoint<ScenePos>& closest_point)
 {
     // Point
     for (const auto& p : polygon.corners.row_iterable()) {
-        distance_point_aabb(p, aabb, closest_point);
+        distance_point_aabb(p.template casted<ScenePos>(), aabb, closest_point);
     }
     // Line
     for (size_t i = 0; i < tnvertices; ++i) {
         distance_interior_line_aabb(
-            RaySegment3D<TData>{
-                polygon.corners[i],
-                polygon.corners[(i + 1) % tnvertices]
+            RaySegment3D<ScenePos, ScenePos>{
+                polygon.corners[i].template casted<ScenePos>(),
+                polygon.corners[(i + 1) % tnvertices].template casted<ScenePos>()
             },
-            aabb,
+            aabb.template casted<ScenePos>(),
             closest_point);
     }
     // Plane
     distance_interior_polygon_aabb(
         polygon.polygon,
-        aabb,
+        aabb.template casted<ScenePos>(),
         closest_point);
 }
 

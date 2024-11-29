@@ -3,7 +3,7 @@
 #include <Mlib/Audio/Cross_Fade.hpp>
 #endif
 #include <Mlib/Physics/Actuators/Engine_Event_Listener.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <functional>
 #include <memory>
 #include <string>

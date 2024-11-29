@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -16,14 +16,11 @@ enum class CollisionType;
 enum class PhysicsMaterial: uint32_t;
 struct IntersectionSceneAndContact;
 struct CollisionHistory;
-template <class TData, size_t tnvertices>
+template <size_t tnvertices>
 struct CollisionPolygonSphere;
-template <class TData>
 struct CollisionRidgeSphere;
-template <class TData>
 struct CollisionLineSphere;
 struct SurfaceContactInfo;
-template <class TData>
 class IIntersectable;
 
 struct IntersectionScene {
@@ -31,12 +28,12 @@ struct IntersectionScene {
     RigidBodyVehicle& o1;
     const IIntersectableMesh* mesh0;
     const IIntersectableMesh* mesh1;
-    const CollisionLineSphere<ScenePos>* l1;
-    const CollisionRidgeSphere<ScenePos>* r1;
-    const IIntersectable<ScenePos>* i1 = nullptr;
-    const CollisionPolygonSphere<ScenePos, 4>* q0;
-    const CollisionPolygonSphere<ScenePos, 3>* t0;
-    const IIntersectable<ScenePos>* i0 = nullptr;
+    const CollisionLineSphere* l1;
+    const CollisionRidgeSphere* r1;
+    const IIntersectable* i1 = nullptr;
+    const CollisionPolygonSphere<4>* q0;
+    const CollisionPolygonSphere<3>* t0;
+    const IIntersectable* i0 = nullptr;
     size_t tire_id1;
     PhysicsMaterial mesh0_material;
     PhysicsMaterial mesh1_material;

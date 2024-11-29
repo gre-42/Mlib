@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -7,7 +7,6 @@ namespace Mlib {
 struct IntersectionScene;
 template <class TData, size_t tndim>
 class PlaneNd;
-template <class TData>
 struct CollisionRidgeSphere;
 template <typename TData, size_t... tshape>
 class FixedArray;

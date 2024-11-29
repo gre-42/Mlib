@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <functional>
 
 namespace Mlib {

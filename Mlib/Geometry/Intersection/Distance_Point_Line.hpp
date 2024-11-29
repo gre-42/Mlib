@@ -101,7 +101,7 @@ void distance_point_to_line(
 template <class TData, size_t tndim>
 void closest_point_to_line(
     const FixedArray<TData, tndim>& pt,
-    const RaySegment3D<TData>& ray,
+    const RaySegment3D<TData, TData>& ray,
     TData& l,
     FixedArray<TData, tndim>& closest_point)
 {

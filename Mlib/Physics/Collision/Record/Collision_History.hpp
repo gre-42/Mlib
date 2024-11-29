@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <chrono>
 #include <list>
 #include <map>
@@ -23,7 +23,6 @@ struct IntersectionSceneAndContact;
 class RigidBodyVehicle;
 struct GrindInfo;
 class BaseLog;
-template <class TData>
 struct CollisionRidgeSphere;
 struct StaticWorld;
 class SurfaceContactDb;
@@ -38,11 +37,11 @@ struct CollisionHistory {
     ITrailRenderer& tr;
     std::list<Beacon>* beacons;
     std::list<std::unique_ptr<IContactInfo>>& contact_infos;
-    std::unordered_map<const FixedArray<ScenePos, 2, 3>*, IntersectionSceneAndContact>& raycast_intersections;
+    std::unordered_map<const FixedArray<CompressedScenePos, 2, 3>*, IntersectionSceneAndContact>& raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>>& concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos;
     std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>>& ridge_intersection_points;
-    const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere<ScenePos>*>& ridge_map;
+    const std::map<std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>, const CollisionRidgeSphere*>& ridge_map;
     BaseLog* base_log;
 };
 

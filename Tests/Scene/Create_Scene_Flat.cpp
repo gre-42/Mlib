@@ -115,13 +115,13 @@ void Mlib::create_scene_flat(
             .physics_material = PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
             .rectangle_triangulation_mode = RectangleTriangulationMode::DISABLED,
             .werror = true});
-    using TSI = TypedMesh<std::shared_ptr<IIntersectable<float>>>;
+    using TSI = TypedMesh<std::shared_ptr<IIntersectable>>;
     std::list<TSI> intersectables1 = {
         TSI{ PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
-             std::make_shared<SweptSphereAabb<float>>(
-                -fixed_ones<float, 3>(),
-                fixed_ones<float, 3>(),
-                0.5f) }
+             std::make_shared<SweptSphereAabb>(
+                -fixed_ones<CompressedScenePos, 3>(),
+                fixed_ones<CompressedScenePos, 3>(),
+                (CompressedScenePos)0.5f) }
     };
 
     RenderingContextStack::primary_scene_node_resources().add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles0));
