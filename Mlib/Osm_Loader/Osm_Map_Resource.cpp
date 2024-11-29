@@ -167,7 +167,7 @@ OsmMapResource::OsmMapResource(
     std::list<std::shared_ptr<TriangleList<double>>> tls_buildings;
     std::list<std::shared_ptr<TriangleList<double>>> tls_wall_barriers;
     std::map<OrderableFixedArray<double, 2>, NodeHeightBinding> node_height_bindings;
-    std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>> vertex_height_bindings;
+    std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;

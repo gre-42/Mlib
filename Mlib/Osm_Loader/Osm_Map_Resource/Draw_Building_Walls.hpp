@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Math/Interp_Fwd.hpp>
 #include <list>
-#include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -23,7 +23,7 @@ struct BarrierStyle;
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList<double>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
-    std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
+    std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     const Material& material,
     const Morphology& morphology,
     const std::list<Building>& buildings,

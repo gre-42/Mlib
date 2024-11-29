@@ -30,7 +30,7 @@ enum class SmoothingClass {
 void Mlib::smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
     const std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
-    std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
+    std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const NormalizedPointsFixed<double>& normalized_points,

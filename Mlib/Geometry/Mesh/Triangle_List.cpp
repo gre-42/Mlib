@@ -12,7 +12,8 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
-#include <map>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace Mlib;
 
@@ -281,7 +282,7 @@ void TriangleList<TPos>::extrude(
 
     // Only relevant if "source_triangles != nullptr".
     // Map "edge -> vertices" for different uv-coordinates.
-    std::map<std::pair<O, O>, std::pair<const ColoredVertex<TPos>*, const ColoredVertex<TPos>*>> edge_map;
+    std::unordered_map<std::pair<O, O>, std::pair<const ColoredVertex<TPos>*, const ColoredVertex<TPos>*>> edge_map;
     if (source_triangles != nullptr) {
         for (const auto& l : *source_triangles) {
             for (const auto& t : l->triangles) {
@@ -298,8 +299,8 @@ void TriangleList<TPos>::extrude(
             tris.push_back(&t);
         }
     }
-    std::set<std::pair<O, O>> contour_edges = find_contour_edges(tris);
-    std::set<O> moved_vertices;
+    std::unordered_set<std::pair<O, O>> contour_edges = find_contour_edges(tris);
+    std::unordered_set<O> moved_vertices;
     for (auto& t : tris) {
         FixedArray<ColoredVertex<TPos>, 3> t_old = *t;
         FixedArray<bool, 3> is_clamped{
@@ -507,8 +508,24 @@ void TriangleList<TPos>::ambient_occlusion_by_curvature(
 }
 
 template <class TPos>
+struct VertexMovement {
+    FixedArray<TPos, 3> amount = uninitialized;
+    std::list<FixedArray<TPos, 3>*> vertices;
+};
+
+template <class TPos>
+struct AdjacentTriangles {
+    const FixedArray<TPos, 3>* ei;
+    const FixedArray<TPos, 3>* ej;
+    const FixedArray<TPos, 3>* n0;
+    const FixedArray<TPos, 3>* n1;
+    FixedArray<TPos, 3>* movement_i;
+    FixedArray<TPos, 3>* movement_j;
+};
+
+template <class TPos>
 void TriangleList<TPos>::smoothen_edges(
-    std::map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
+    std::unordered_map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
     const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
     const std::list<FixedArray<TPos, 3>*>& smoothed_vertices,
@@ -517,8 +534,8 @@ void TriangleList<TPos>::smoothen_edges(
     bool move_only_z,
     float decay)
 {
-    typedef OrderableFixedArray<TPos, 2> Vertex2;
-    std::set<Vertex2> excluded_vertices;
+    using Vertex2 = OrderableFixedArray<TPos, 2>;
+    std::unordered_set<Vertex2> excluded_vertices;
     for (const auto& tl : excluded_triangle_lists) {
         for (const auto& t : tl->triangles) {
             for (const auto& v : t.flat_iterable()) {
@@ -526,66 +543,101 @@ void TriangleList<TPos>::smoothen_edges(
             }
         }
     }
-    for (size_t i = 0; i < niterations; ++i) {
-        typedef OrderableFixedArray<TPos, 3> Vertex3;
-        typedef OrderableFixedArray<Vertex3, 2> Edge3;
-        std::map<Edge3, Vertex3> edge_neighbors;
-        std::map<Vertex2, FixedArray<TPos, 3>> vertex_movement;
+    std::unordered_map<Vertex2, VertexMovement<TPos>> vertex_movement;
+    for (const auto& s : smoothed_vertices) {
+        Vertex2 vc{ uninitialized };
+        auto hit = vertex_height_bindings.find(s);
+        if (hit != vertex_height_bindings.end()) {
+            vc = hit->second.value();
+        } else {
+            vc = Vertex2{ (*s)(0), (*s)(1) };
+        }
+        if (excluded_vertices.contains(vc)) {
+            continue;
+        }
+        auto& m = vertex_movement[vc];
+        if (m.vertices.empty()) {
+            m.amount = 0;
+        }
+        m.vertices.push_back(s);
+    }
+    using Vertex3 = FixedArray<TPos, 3>;
+    using Edge3 = OrderableFixedArray<TPos, 2, 3>;
+    std::unordered_map<Edge3, AdjacentTriangles<TPos>> adjacent_triangles;
+    {
         for (const auto& l : edge_triangle_lists) {
             for (const auto& t : l->triangles) {
                 auto insert_edge = [&](size_t i, size_t j, size_t n){
-                    Vertex3 ei{t(i).position};
-                    Vertex3 ej{t(j).position};
-                    Vertex3 nn{t(n).position};
-                    auto it = edge_neighbors.find(Edge3{ej, ei});
-                    if (it == edge_neighbors.end()) {
-                        edge_neighbors.insert({Edge3{ei, ej}, nn});
+                    const auto& ei = t(i).position;
+                    const auto& ej = t(j).position;
+                    const auto& nn = t(n).position;
+                    Vertex2 ei2{ ei(0), ei(1) };
+                    Edge3 esi{ OrderableFixedArray{*ej}, OrderableFixedArray{*ei} };
+                    Edge3 esj{ OrderableFixedArray{*ei}, OrderableFixedArray{*ej} };
+                    auto it = adjacent_triangles.find(esj);
+                    if (it == adjacent_triangles.end()) {
+                        const auto at = adjacent_triangles.try_emplace(esi, AdjacentTriangles<TPos>{});
+                        if (!at.second) {
+                            verbose_abort("smoothen_edges internal error");
+                        }
+                        at.first->second.ei = &ei;
+                        at.first->second.ej = &ej;
+                        at.first->second.n0 = &nn;
+                        at.first->second.n1 = nullptr;
+                        if (!excluded_vertices.contains(ei2)) {
+                            at.first->second.movement_i = &vertex_movement[ei2].amount;
+                        } else {
+                            at.first->second.movement_i = nullptr;
+                        }
+                        at.first->second.movement_j = nullptr;
                     } else {
-                        FixedArray<TPos, 3> n0 = triangle_normal<TPos>({ej, ei, it->second});
-                        FixedArray<TPos, 3> n1 = triangle_normal<TPos>({ei, ej, nn});
-                        FixedArray<TPos, 3> cn = (it->second + nn) / TPos(2);
-                        FixedArray<TPos, 3> ce = (ei + ej) / TPos(2);
-                        FixedArray<TPos, 3> v = cn - ce;
-                        FixedArray<TPos, 3> n01 = (n0 + n1) / TPos(2);
-                        n01 /= std::sqrt(sum(squared(n01)));
-                        TPos n0n1 = dot0d(n0, n1);
-                        if (n0n1 >=0 && n0n1 < 1) {
-                            TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
-                            if (auto e = Vertex2{ei(0), ei(1)}; !excluded_vertices.contains(e)) {
-                                auto it = vertex_movement.try_emplace(e, fixed_zeros<TPos, 3>()).first;
-                                it->second += TPos(smoothness) * n01 * shift;
-                            }
-                            if (auto e = Vertex2{ej(0), ej(1)}; !excluded_vertices.contains(e)) {
-                                auto it = vertex_movement.try_emplace(e, fixed_zeros<TPos, 3>()).first;
-                                it->second += TPos(smoothness) * n01 * shift;
-                            }
+                        if (it->second.n1 != nullptr) {
+                            THROW_OR_ABORT("More than 2 triangles share the same edge");
+                        }
+                        it->second.n1 = &nn;
+                        if (!excluded_vertices.contains(ei2)) {
+                            it->second.movement_j = &vertex_movement[ei2].amount;
                         }
                     }
-                };
+                    };
                 insert_edge(0, 1, 2);
                 insert_edge(1, 2, 0);
                 insert_edge(2, 0, 1);
             }
         }
-        for (const auto& s : smoothed_vertices) {
-            Vertex2 vc{ uninitialized };
-            auto hit = vertex_height_bindings.find(s);
-            if (hit != vertex_height_bindings.end()) {
-                vc = hit->second.value();
-            } else {
-                vc = Vertex2{(*s)(0), (*s)(1)};
-            }
-            auto mit = vertex_movement.find(vc);
-            if (mit != vertex_movement.end()) {
-                if (move_only_z) {
-                    (*s)(2) += mit->second(2);
-                } else {
-                    *s += mit->second;
-                    if (hit != vertex_height_bindings.end()) {
-                        hit->second.value() += FixedArray<TPos, 2>{ mit->second(0), mit->second(1) };
-                    }
+    }
+    std::erase_if(adjacent_triangles, [](const auto& it) {
+        return (it.second.n1 == nullptr) || ((it.second.movement_i == nullptr) && (it.second.movement_j == nullptr));
+        });
+    for (size_t i = 0; i < niterations; ++i) {
+        for (auto& [_, t] : adjacent_triangles) {
+            const Vertex3& ei = *t.ej;
+            const Vertex3& ej = *t.ei;
+            const Vertex3& nx = *t.n0;
+            const Vertex3& nn = *t.n1;
+            FixedArray<TPos, 3> n0 = triangle_normal<TPos>({ej, ei, nx});
+            FixedArray<TPos, 3> n1 = triangle_normal<TPos>({ei, ej, nn});
+            FixedArray<TPos, 3> cn = (nx + nn) / TPos(2);
+            FixedArray<TPos, 3> ce = (ei + ej) / TPos(2);
+            FixedArray<TPos, 3> v = cn - ce;
+            FixedArray<TPos, 3> n01 = (n0 + n1) / TPos(2);
+            n01 /= std::sqrt(sum(squared(n01)));
+            TPos n0n1 = dot0d(n0, n1);
+            if (n0n1 >=0 && n0n1 < 1) {
+                TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
+                if (t.movement_i != nullptr) {
+                    *t.movement_i += TPos(smoothness) * n01 * shift;
+                }
+                if (t.movement_j != nullptr) {
+                    *t.movement_j += TPos(smoothness) * n01 * shift;
                 }
             }
+        }
+        for (auto& [_, m] : vertex_movement) {
+            for (auto& n : m.vertices) {
+                *n += m.amount;
+            }
+            m.amount = 0;
         }
         smoothness *= decay;
     }

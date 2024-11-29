@@ -12,9 +12,9 @@
 #include <cereal/access.hpp>
 #include <cstdint>
 #include <list>
-#include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 namespace Mlib {
@@ -157,7 +157,7 @@ public:
         const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
         float strength);
     static void smoothen_edges(
-        std::map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
+        std::unordered_map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
         const std::list<FixedArray<TPos, 3>*>& smoothed_vertices,

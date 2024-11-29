@@ -3,11 +3,12 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
+#include <Mlib/Hash_Of_Pair.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace Mlib {
 
@@ -21,11 +22,11 @@ enum class ContourDetectionStrategy {
 };
 
 template <class TPos>
-std::set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
+std::unordered_set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
     find_contour_edges(const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles);
 
 template <class TPos>
-std::set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
+std::unordered_set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
     find_contour_edges(const std::list<FixedArray<ColoredVertex<TPos>, 3>*>& triangles);
 
 template <class TPos>
@@ -48,8 +49,8 @@ void extract_triangles_inside_contours(
 
     inner_triangles.resize(contours.size());
 
-    std::map<std::pair<TPoint, TPoint>, size_t> contour_edges;
-    std::map<std::pair<TPoint, TPoint>, size_t> inner_edges;
+    std::unordered_map<std::pair<TPoint, TPoint>, size_t> contour_edges;
+    std::unordered_map<std::pair<TPoint, TPoint>, size_t> inner_edges;
     // Convert contour pathes to edges, asserting that the contours are closed.
     for (size_t contour_id = 0; contour_id < contours.size(); ++contour_id) {
         const auto& contour = contours[contour_id];
