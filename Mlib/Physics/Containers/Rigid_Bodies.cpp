@@ -88,7 +88,7 @@ void RigidBodies::add_rigid_body(
         auto add_hitboxes = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes) {
             for (auto& m : hitboxes) {
                 if (any(m->morphology.physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
-                    for (const auto& t : m->template transformed_lines_bbox(rb.get_new_absolute_model_matrix())) {
+                    for (const auto& t : m->transformed_lines_bbox(rb.get_new_absolute_model_matrix())) {
                         line_bvh_.insert(t.aabb, RigidBodyAndCollisionLineSphere{ rb, t.base });
                     }
                 } else {

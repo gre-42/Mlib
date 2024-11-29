@@ -176,9 +176,9 @@ struct AttributeIndexCalculator {
         result.idx_interior_mapping_multiplier = result.idx_interior_mapping_bottom_left + has_interior_mapping_bottom_left;
         result.idx_uv_0 = result.idx_interior_mapping_multiplier + has_interior_mapping_multiplier;
         result.idx_uv_1 = result.idx_uv_0 + 1;
-        result.uv_count = nuvs;
-        result.idx_cweight_0 = result.idx_uv_0 + nuvs;
-        result.cweight_count = ncweights;
+        result.uv_count = integral_cast<GLuint>(nuvs);
+        result.idx_cweight_0 = result.idx_uv_0 + integral_cast<GLuint>(nuvs);
+        result.cweight_count = integral_cast<GLuint>(ncweights);
         return result;
     }
 };
@@ -2273,8 +2273,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
                 }
                 va.uv1_buffer(i).set(uv1, task_location);
             }
-            CHK(glEnableVertexAttribArray(attr_ids.idx_uv_1 + i));
-            CHK(glVertexAttribPointer(attr_ids.idx_uv_1 + i, 2, GL_FLOAT, GL_FALSE, sizeof(FixedArray<float, 2>), nullptr));
+            CHK(glEnableVertexAttribArray(integral_cast<GLuint>(attr_ids.idx_uv_1 + i)));
+            CHK(glVertexAttribPointer(integral_cast<GLuint>(attr_ids.idx_uv_1 + i), 2, GL_FLOAT, GL_FALSE, sizeof(FixedArray<float, 2>), nullptr));
         }
     }
     {
@@ -2290,8 +2290,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
                 }
                 va.cweight_buffer(i).set(cweight, task_location);
             }
-            CHK(glEnableVertexAttribArray(attr_ids.idx_cweight_0 + i));
-            CHK(glVertexAttribPointer(attr_ids.idx_cweight_0 + i, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
+            CHK(glEnableVertexAttribArray(integral_cast<GLuint>(attr_ids.idx_cweight_0 + i)));
+            CHK(glVertexAttribPointer(integral_cast<GLuint>(attr_ids.idx_cweight_0 + i), 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
         }
     }
     if (instances_ != nullptr) {

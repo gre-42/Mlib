@@ -21,13 +21,14 @@
     NOTE: this license covers this example only, proctree.cpp has different license
 */
 
+#include <Mlib/Env.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <stdio.h>
 #include <stdlib.h>
 #include <chrono>
 #include <stdexcept>
 #include <string.h>
 #include "proctree.h"
-#include <Mlib/Env.hpp>
 
 using namespace Mlib;
 using namespace Proctree;
@@ -53,38 +54,26 @@ void benchmark()
     }
 }
 
-void draw_arrays(FILE * pFile, int vertCount, fvec3 * vert, fvec3 * normal, fvec2 * uv, int faceCount, ivec3 * face, int faceOffset, const fvec3& position, bool rotate90) {
+void draw_arrays(std::ostream& file, int vertCount, fvec3 * vert, fvec3 * normal, fvec2 * uv, int faceCount, ivec3 * face, int faceOffset, const fvec3& position, bool rotate90) {
     for (int i = 0; i < vertCount; i++) {
-        int res = fprintf(pFile, "v %+3.3f %+3.3f %+3.3f\n",
+        std::print(file, "v %{:3f} %{:3f} %{:3f}\n",
             (rotate90 ? -vert[i].z : vert[i].x) + position.x,
             vert[i].y + position.y,
             (rotate90 ? vert[i].x : vert[i].z) + position.z);
-        if (res < 0) {
-            std::runtime_error(strerror(errno));
-        }
     }
     for (int i = 0; i < vertCount; ++i) {
-        int res = fprintf(pFile, "vn %+3.3f %+3.3f %+3.3f\n", normal[i].x, normal[i].y, normal[i].z);
-        if (res < 0) {
-            std::runtime_error(strerror(errno));
-        }
+        std::print(file, "vn %{:3f} %{:3f} %{:3f}\n", normal[i].x, normal[i].y, normal[i].z);
     }
     for (int i = 0; i < vertCount; ++i) {
-        int res = fprintf(pFile, "vt %+3.3f %+3.3f\n", uv[i].u, uv[i].v);
-        if (res < 0) {
-            std::runtime_error(strerror(errno));
-        }
+        std::print(file, "vt %{:3f} %{:3f}\n", uv[i].u, uv[i].v);
     }
     for (int i = 0; i < faceCount; ++i) {
-        int res = fprintf(
-            pFile,
-            "f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+        std::print(
+            file,
+            "f {:d}/{:d}/{:d} {:d}/{:d}/{:d} {:d}/{:d}/{:d}\n",
             face[i].x + 1 + faceOffset, face[i].x + 1 + faceOffset, face[i].x + 1 + faceOffset,
             face[i].y + 1 + faceOffset, face[i].y + 1 + faceOffset, face[i].y + 1 + faceOffset,
             face[i].z + 1 + faceOffset, face[i].z + 1 + faceOffset, face[i].z + 1 + faceOffset);
-        if (res < 0) {
-            std::runtime_error(strerror(errno));
-        }
     }
 }
 
@@ -136,32 +125,31 @@ void basic_use()
     // 4) Use the data
 
     {
-        FILE * pFile = fopen("tree.obj", "w");
-        if (pFile == nullptr) {
-            throw std::runtime_error("Could not open tree.obj for write");
+        auto file = create_ofstream("tree.obj");
+        if (file->fail()) {
+            verbose_abort("Could not open tree.obj for write");
         }
-        fprintf(pFile, "mtllib tree.mtl\n");
+        *file << "mtllib tree.mtl\n";
         int faceOffset = 0;
         fvec3 position{float(-ntrees) * tree_distance / 2.f, 0.f, 0.f};
         int seed0 = getenv_default_int("mSeed", 1);
         if (seed0 == 0) {
-            fclose(pFile);
-            throw std::runtime_error("mSeed=0 not allowed");
+            verbose_abort("mSeed=0 not allowed");
         }
         for (int i = 0; i < ntrees; ++i) {
             srand((unsigned int)(seed0 + i));
             tree.generate();
-            fprintf(pFile, "g Tree%d\n", i);
-            fprintf(pFile, "o Tree%d\n", i);
-            fprintf(pFile, "usemtl tree\n");
-            draw_arrays(pFile, tree.mVertCount, tree.mVert, tree.mNormal, tree.mUV, tree.mFaceCount, tree.mFace, faceOffset, position, i % 2);
+            std::print(*file, "g Tree{:d}\n", i);
+            std::print(*file, "o Tree{:d}\n", i);
+            std::print(*file, "usemtl tree\n");
+            draw_arrays(*file, tree.mVertCount, tree.mVert, tree.mNormal, tree.mUV, tree.mFaceCount, tree.mFace, faceOffset, position, i % 2);
             faceOffset += tree.mVertCount;
-            fprintf(pFile, "\n");
+            std::print(*file, "\n");
 
-            fprintf(pFile, "g Twig%d\n", i);
-            fprintf(pFile, "o Twig%d\n", i);
-            fprintf(pFile, "usemtl twig\n");
-            draw_arrays(pFile, tree.mTwigVertCount, tree.mTwigVert, tree.mTwigNormal, tree.mTwigUV, tree.mTwigFaceCount, tree.mTwigFace, faceOffset, position, i % 2);
+            std::print(*file, "g Twig{:d}\n", i);
+            std::print(*file, "o Twig{:d}\n", i);
+            std::print(*file, "usemtl twig\n");
+            draw_arrays(*file, tree.mTwigVertCount, tree.mTwigVert, tree.mTwigNormal, tree.mTwigUV, tree.mTwigFaceCount, tree.mTwigFace, faceOffset, position, i % 2);
             faceOffset += tree.mTwigVertCount;
 
             position.x += tree_distance;
@@ -172,26 +160,28 @@ void basic_use()
         // Note: You can change the properties and call generate to change the data,
         // no need to delete the tree object in between.
 
-        if (fclose(pFile) < 0) {
-            throw std::runtime_error("Could not close file");
+        file->flush();
+        if (file->fail()) {
+            verbose_abort("Could not write to file tree.obj");
         }
     }
     {
-        FILE * pFile = fopen("tree.mtl", "w");
-        if (pFile == nullptr) {
-            throw std::runtime_error("Could not open tree.mtl for write");
+        auto file = create_ofstream("tree.mtl");
+        if (file->fail()) {
+            verbose_abort("Could not open tree.mtl for write");
         }
-        fprintf(pFile, "newmtl tree\n");
-        fprintf(pFile, "map_Kd %s\n", trunk_diffuse.c_str());
-        if (!trunk_normal.empty()) fprintf(pFile, "map_Bump %s\n", trunk_normal.c_str());
-        fprintf(pFile, "\n");
-        fprintf(pFile, "newmtl twig\n");
-        fprintf(pFile, "map_Kd %s\n", twig_diffuse.c_str());
-        fprintf(pFile, "map_d %s\n", twig_diffuse.c_str());
-        if (!twig_normal.empty()) fprintf(pFile, "map_Bump %s\n", twig_normal.c_str());
+        std::print(*file, "newmtl tree\n");
+        std::print(*file, "map_Kd {:s}\n", trunk_diffuse);
+        if (!trunk_normal.empty()) std::print(*file, "map_Bump {:s}\n", trunk_normal);
+        std::print(*file, "\n");
+        std::print(*file, "newmtl twig\n");
+        std::print(*file, "map_Kd {:s}\n", twig_diffuse);
+        std::print(*file, "map_d {:s}\n", twig_diffuse);
+        if (!twig_normal.empty()) std::print(*file, "map_Bump {:s}\n", twig_normal);
 
-        if (fclose(pFile) < 0) {
-            throw std::runtime_error("Could not close file");
+        file->flush();
+        if (file->fail()) {
+            verbose_abort("Could not write to file tree.mtl");
         }
     }
 }

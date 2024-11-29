@@ -27,7 +27,7 @@ public:
         const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix,
         const BoundingSphere<CompressedScenePos, 3>& bounding_sphere,
         const std::shared_ptr<CollisionMesh>& collision_mesh,
-        ScenePos max_min_cos_ridge);
+        SceneDir max_min_cos_ridge);
     ~LazyTransformedMesh();
     virtual std::string name() const override;
     virtual bool intersects(const BoundingSphere<CompressedScenePos, 3>& sphere) const override;
@@ -42,7 +42,7 @@ public:
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
     void print_info() const;
 private:
-    ScenePos max_min_cos_ridge_;
+    SceneDir max_min_cos_ridge_;
     const TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
     BoundingSphere<CompressedScenePos, 3> transformed_bounding_sphere_;
     std::shared_ptr<CollisionMesh> mesh_;

@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Stats/Fixed_Random_Arrays.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <stdexcept>
@@ -17,40 +18,28 @@ struct Vertex {
 };
 
 void draw_arrays(
-    FILE * pFile,
+    std::ostream& file,
     const std::vector<Vertex>& vertices,
     const std::vector<FixedArray<size_t, 4>>& faces,
     size_t faceOffset)
 {
     for (const Vertex& v : vertices) {
-        int res = fprintf(pFile, "v %+3.3f %+3.3f %+3.3f\n", v.position(0), v.position(1), v.position(2));
-        if (res < 0) {
-            std::runtime_error(strerror(errno));
-        }
+        std::print(file, "v {:3f} {:3f} {:3f}\n", v.position(0), v.position(1), v.position(2));
     }
     for (const Vertex& v : vertices) {
-        int res = fprintf(pFile, "vn %+3.3f %+3.3f %+3.3f\n", v.normal(0), v.normal(1), v.normal(2));
-        if (res < 0) {
-            std::runtime_error(strerror(errno));
-        }
+        std::print(file, "vn {:3f} {:3f} {:3f}\n", v.normal(0), v.normal(1), v.normal(2));
     }
     for (const Vertex& v : vertices) {
-        int res = fprintf(pFile, "vt %+3.3f %+3.3f\n", v.uv(0), v.uv(1));
-        if (res < 0) {
-            std::runtime_error(strerror(errno));
-        }
+        std::print(file, "vt {:3f} {:3f}\n", v.uv(0), v.uv(1));
     }
     for (const FixedArray<size_t, 4>& f : faces) {
-        int res = fprintf(
-            pFile,
-            "f %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu\n",
+        std::print(
+            file,
+            "f {}/{}/{} {}/{}/{} {}/{}/{} {}/{}/{}\n",
             f(0) + 1 + faceOffset, f(0) + 1 + faceOffset, f(0) + 1 + faceOffset,
             f(1) + 1 + faceOffset, f(1) + 1 + faceOffset, f(1) + 1 + faceOffset,
             f(2) + 1 + faceOffset, f(2) + 1 + faceOffset, f(2) + 1 + faceOffset,
             f(3) + 1 + faceOffset, f(3) + 1 + faceOffset, f(3) + 1 + faceOffset);
-        if (res < 0) {
-            std::runtime_error(strerror(errno));
-        }
     }
 }
 
@@ -102,31 +91,33 @@ int main(int argc, char **argv)
         safe_stou(args.named_value("--nplanes")),
         safe_stou(args.named_value("--seed")));
     {
-        FILE * pFile = fopen("bush.obj", "w");
-        if (pFile == nullptr) {
-            throw std::runtime_error("Could not open bush.obj for write");
+        auto file = create_ofstream("bush.obj");
+        if (file->fail()) {
+            verbose_abort("Could not open bush.obj for write");
         }
-        fprintf(pFile, "mtllib bush.mtl\n");
-        fprintf(pFile, "g Tree\n");
-        fprintf(pFile, "o Tree\n");
-        fprintf(pFile, "usemtl twig\n");
-        draw_arrays(pFile, bush.vertices, bush.faces, 0);
+        std::print(*file, "mtllib bush.mtl\n");
+        std::print(*file, "g Tree\n");
+        std::print(*file, "o Tree\n");
+        std::print(*file, "usemtl twig\n");
+        draw_arrays(*file, bush.vertices, bush.faces, 0);
 
-        if (fclose(pFile) < 0) {
-            throw std::runtime_error("Could not close file");
+        file->flush();
+        if (file->fail()) {
+            verbose_abort("Could not write to bush.obj");
         }
     }
     {
-        FILE * pFile = fopen("bush.mtl", "w");
-        if (pFile == nullptr) {
-            throw std::runtime_error("Could not open bush.mtl for write");
+        auto file = create_ofstream("bush.mtl");
+        if (file->fail()) {
+            verbose_abort("Could not open bush.mtl for write");
         }
-        fprintf(pFile, "newmtl twig\n");
-        fprintf(pFile, "map_Kd twig.png\n");
-        fprintf(pFile, "map_d twig.png\n");
+        std::print(*file, "newmtl twig\n");
+        std::print(*file, "map_Kd twig.png\n");
+        std::print(*file, "map_d twig.png\n");
 
-        if (fclose(pFile) < 0) {
-            throw std::runtime_error("Could not close file");
+        file->flush();
+        if (file->fail()) {
+            verbose_abort("Could not write to bush.mtl");
         }
     }
 }

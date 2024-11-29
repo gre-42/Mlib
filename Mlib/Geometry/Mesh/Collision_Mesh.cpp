@@ -30,7 +30,7 @@ CollisionMesh::~CollisionMesh() = default;
 
 namespace Mlib {
 
-template CollisionMesh::CollisionMesh<float>(const ColoredVertexArray<float>&);
-template CollisionMesh::CollisionMesh<double>(const ColoredVertexArray<double>&);
+template CollisionMesh::CollisionMesh(const ColoredVertexArray<float>&);
+template CollisionMesh::CollisionMesh(const ColoredVertexArray<double>&);
 
 }

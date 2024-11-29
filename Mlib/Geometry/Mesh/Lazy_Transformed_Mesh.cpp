@@ -26,7 +26,7 @@ LazyTransformedMesh::LazyTransformedMesh(
     const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix,
     const BoundingSphere<CompressedScenePos, 3>& bounding_sphere,
     const std::shared_ptr<CollisionMesh>& collision_mesh,
-    ScenePos max_min_cos_ridge)
+    SceneDir max_min_cos_ridge)
     : max_min_cos_ridge_{max_min_cos_ridge}
     , transformation_matrix_{ transformation_matrix }
     , transformed_bounding_sphere_{ bounding_sphere.transformed(transformation_matrix) }
