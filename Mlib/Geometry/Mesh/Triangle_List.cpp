@@ -578,7 +578,8 @@ void TriangleList<TPos>::smoothen_edges(
                     if (it == adjacent_triangles.end()) {
                         const auto at = adjacent_triangles.try_emplace(esi, AdjacentTriangles<TPos>{});
                         if (!at.second) {
-                            verbose_abort("smoothen_edges internal error");
+                            lwarn() << "More than 2 triangles share the same edge (0)";
+                            return;
                         }
                         at.first->second.ei = &ei;
                         at.first->second.ej = &ej;
@@ -592,7 +593,8 @@ void TriangleList<TPos>::smoothen_edges(
                         at.first->second.movement_j = nullptr;
                     } else {
                         if (it->second.n1 != nullptr) {
-                            THROW_OR_ABORT("More than 2 triangles share the same edge");
+                            lwarn() << "More than 2 triangles share the same edge (1)";
+                            return;
                         }
                         it->second.n1 = &nn;
                         if (!excluded_vertices.contains(ei2)) {
