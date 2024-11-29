@@ -85,7 +85,7 @@ public:
 };
 
 template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-ScaledInteger<TInt, numerator, denominator> operator + (
+inline ScaledInteger<TInt, numerator, denominator> operator + (
     const ScaledInteger<TInt, numerator, denominator>& a,
     const ScaledInteger<TInt, numerator, denominator>& b)
 {
@@ -93,7 +93,7 @@ ScaledInteger<TInt, numerator, denominator> operator + (
 }
 
 template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-ScaledInteger<TInt, numerator, denominator> operator - (
+inline ScaledInteger<TInt, numerator, denominator> operator - (
         const ScaledInteger<TInt, numerator, denominator>& a,
         const ScaledInteger<TInt, numerator, denominator>& b)
 {
@@ -101,7 +101,7 @@ ScaledInteger<TInt, numerator, denominator> operator - (
 }
 
 // template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-// ScaledInteger<TInt, numerator, denominator> operator * (
+// inline ScaledInteger<TInt, numerator, denominator> operator * (
 //     const ScaledInteger<TInt, numerator, denominator>& a,
 //     const ScaledInteger<TInt, numerator, denominator>& b)
 // {
@@ -110,7 +110,7 @@ ScaledInteger<TInt, numerator, denominator> operator - (
 // }
 
 template <class TInt, std::intmax_t numerator, std::intmax_t denominator, std::integral I>
-ScaledInteger<TInt, numerator, denominator> operator * (
+inline ScaledInteger<TInt, numerator, denominator> operator * (
     const ScaledInteger<TInt, numerator, denominator>& a,
     I b)
 {
@@ -118,7 +118,7 @@ ScaledInteger<TInt, numerator, denominator> operator * (
 }
 
 template <class TInt, std::intmax_t numerator, std::intmax_t denominator, std::floating_point F>
-ScaledInteger<TInt, numerator, denominator> operator * (
+inline ScaledInteger<TInt, numerator, denominator> operator * (
     const ScaledInteger<TInt, numerator, denominator>& a,
     F b)
 {
@@ -126,7 +126,7 @@ ScaledInteger<TInt, numerator, denominator> operator * (
 }
 
 template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-ScaledInteger<TInt, numerator, denominator> operator / (
+inline ScaledInteger<TInt, numerator, denominator> operator / (
     const ScaledInteger<TInt, numerator, denominator>& a,
     TInt b)
 {
@@ -134,7 +134,7 @@ ScaledInteger<TInt, numerator, denominator> operator / (
 }
 
 // template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-// ScaledInteger<TInt, numerator, denominator> operator / (
+// inline ScaledInteger<TInt, numerator, denominator> operator / (
 //         const ScaledInteger<TInt, numerator, denominator>& a,
 //         const ScaledInteger<TInt, numerator, denominator>& b)
 // {
@@ -143,7 +143,7 @@ ScaledInteger<TInt, numerator, denominator> operator / (
 // }
 
 template <class TInt, std::intmax_t numerator, std::intmax_t denominator, std::integral I>
-ScaledInteger<TInt, numerator, denominator>& operator /= (
+inline ScaledInteger<TInt, numerator, denominator>& operator /= (
     ScaledInteger<TInt, numerator, denominator>& a,
     I n)
 {
@@ -152,7 +152,7 @@ ScaledInteger<TInt, numerator, denominator>& operator /= (
 }
 
 template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-ScaledInteger<TInt, numerator, denominator>& operator *= (
+inline ScaledInteger<TInt, numerator, denominator>& operator *= (
     ScaledInteger<TInt, numerator, denominator>& a,
     TInt n)
 {
@@ -161,7 +161,7 @@ ScaledInteger<TInt, numerator, denominator>& operator *= (
 }
 
 template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-std::ostream& operator << (std::ostream& ostr, const ScaledInteger<TInt, numerator, denominator>& i) {
+inline std::ostream& operator << (std::ostream& ostr, const ScaledInteger<TInt, numerator, denominator>& i) {
     i.print(ostr);
     return ostr;
 }
