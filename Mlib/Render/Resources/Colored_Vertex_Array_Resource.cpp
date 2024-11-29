@@ -1571,7 +1571,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles)
     : ColoredVertexArrayResource{ std::list<std::shared_ptr<ColoredVertexArray<float>>>{}, dtriangles }
 {}
-    
+
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles)
@@ -1864,7 +1864,7 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
         .ncweights = cva.cweight.size()
     };
 }
-    
+
 const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const RenderProgramIdentifier& id,
     const ColoredVertexArray<float>& cva,
