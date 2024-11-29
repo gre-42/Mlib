@@ -1855,6 +1855,7 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
         .has_bone_indices = !triangles_res_->bone_indices.empty(),
         .has_bone_weights = !triangles_res_->bone_indices.empty(),
         .has_texture_layer =
+            ((instances_ != nullptr) && instances_->at(&cva)->has_continuous_texture_layer()) ||
             !cva.continuous_triangle_texture_layers.empty() ||
             !cva.discrete_triangle_texture_layers.empty(),
         .has_interior_mapping_bottom_left = !cva.material.interior_textures.empty(),
