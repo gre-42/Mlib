@@ -13,15 +13,15 @@
 
 namespace Mlib {
 
-template <class TData>
+template <class TDir, class TPos>
 class ClosestPoint {
 public:
     ClosestPoint()
         : distance{ INFINITY }
     {}
     void update(
-        const FixedArray<TData, 3>& candidate0,
-        const FixedArray<TData, 3>& candidate1)
+        const FixedArray<TPos, 3>& candidate0,
+        const FixedArray<TPos, 3>& candidate1)
     {
         auto dir = candidate0 - candidate1;
         auto dist2 = sum(squared(dir));
@@ -32,35 +32,35 @@ public:
             closest_point0 = candidate0;
             closest_point1 = candidate1;
             distance = std::sqrt(dist2);
-            normal = dir / distance;
+            normal = (dir / distance).template casted<TDir>();
         }
     }
-    FixedArray<TData, 3> closest_point0 = uninitialized;
-    FixedArray<TData, 3> closest_point1 = uninitialized;
-    FixedArray<TData, 3> normal = uninitialized;
-    TData distance;
+    FixedArray<TPos, 3> closest_point0 = uninitialized;
+    FixedArray<TPos, 3> closest_point1 = uninitialized;
+    FixedArray<TDir, 3> normal = uninitialized;
+    TPos distance;
 };
 
-template <class TData>
+template <class TDir, class TPos>
 void distance_point_aabb(
-    const FixedArray<TData, 3>& point,
-    const AxisAlignedBoundingBox<TData, 3>& aabb,
-    ClosestPoint<TData>& closest_point)
+    const FixedArray<TPos, 3>& point,
+    const AxisAlignedBoundingBox<TPos, 3>& aabb,
+    ClosestPoint<TDir, TPos>& closest_point)
 {
     // Point-volume
     closest_point.update(point, aabb.closest_point(point));
 }
 
-template <class TData>
+template <class TDir, class TPos>
 void distance_interior_line_aabb(
-    const RaySegment3D<TData, TData>& ray,
-    const AxisAlignedBoundingBox<TData, 3>& aabb,
-    ClosestPoint<TData>& closest_point)
+    const RaySegment3D<TDir, TPos>& ray,
+    const AxisAlignedBoundingBox<TPos, 3>& aabb,
+    ClosestPoint<TDir, TPos>& closest_point)
 {
     // Line-point
-    aabb.for_each_corner([&](const FixedArray<TData, 3>& corner){
-        FixedArray<TData, 3> cp = uninitialized;
-        TData ray_t;
+    aabb.for_each_corner([&](const FixedArray<TPos, 3>& corner){
+        FixedArray<TPos, 3> cp = uninitialized;
+        TPos ray_t;
         closest_point_to_line(corner, ray, ray_t, cp);
         if ((ray_t >= 0) && (ray_t <= ray.length)) {
             closest_point.update(cp, corner);
@@ -69,11 +69,11 @@ void distance_interior_line_aabb(
     });
 
     // Line-line
-    auto line = FixedArray<TData, 2, 3>{ ray.start, ray.stop() };
+    auto line = FixedArray<TPos, 2, 3>{ ray.start, ray.stop() };
     aabb.for_each_edge([&](const auto& e1){
-        FixedArray<TData, 3> p0 = uninitialized;
-        FixedArray<TData, 3> p1 = uninitialized;
-        TData dist;
+        FixedArray<TPos, 3> p0 = uninitialized;
+        FixedArray<TPos, 3> p1 = uninitialized;
+        TPos dist;
         if (!distance_line_line(line, e1, dist)) {
             return true;
         }
@@ -87,30 +87,31 @@ void distance_interior_line_aabb(
     });
 }
 
-template <class TData>
+template <class TDir, class TPos>
 void distance_line_aabb(
-    const RaySegment3D<TData, TData>& ray,
-    const AxisAlignedBoundingBox<TData, 3>& aabb,
-    ClosestPoint<TData>& closest_point)
+    const RaySegment3D<TDir, TPos>& ray,
+    const AxisAlignedBoundingBox<TPos, 3>& aabb,
+    ClosestPoint<TDir, TPos>& closest_point)
 {
     distance_point_aabb(ray.start, aabb, closest_point);
     distance_point_aabb(ray.stop(), aabb, closest_point);
     distance_interior_line_aabb(ray, aabb, closest_point);
 }
 
-template <class TData, size_t tnvertices>
+template <class TDir, class TPos, size_t tnvertices>
 void distance_interior_polygon_aabb(
-    const ConvexPolygon3D<TData, tnvertices>& polygon,
-    const AxisAlignedBoundingBox<TData, 3>& aabb,
-    ClosestPoint<TData>& closest_point)
+    const ConvexPolygon3D<TDir, TPos, tnvertices>& polygon,
+    const AxisAlignedBoundingBox<TPos, 3>& aabb,
+    ClosestPoint<TDir, TPos>& closest_point)
 {
     // Plane-point
-    aabb.for_each_corner([&](const FixedArray<TData, 3>& corner){
+    aabb.for_each_corner([&](const FixedArray<TPos, 3>& corner){
         if (polygon.contains(corner)) {
-            auto proj = corner;
-            const auto& n = polygon.plane().normal;
-            proj -= n * (dot0d(n, corner) + polygon.plane().intercept);
-            closest_point.update(proj, corner);
+            using I = funpack_t<TPos>;
+            auto proj = corner.template casted<I>();
+            auto n = polygon.plane().normal.template casted<I>();
+            proj -= n * (dot0d(n, proj) + (I)polygon.plane().intercept);
+            closest_point.update(proj.template casted<TPos>(), corner);
         }
         return true;
     });
@@ -120,7 +121,7 @@ template <size_t tnvertices>
 void distance_polygon_aabb(
     const CollisionPolygonSphere<tnvertices>& polygon,
     const AxisAlignedBoundingBox<ScenePos, 3>& aabb,
-    ClosestPoint<ScenePos>& closest_point)
+    ClosestPoint<SceneDir, ScenePos>& closest_point)
 {
     // Point
     for (const auto& p : polygon.corners.row_iterable()) {
@@ -129,7 +130,7 @@ void distance_polygon_aabb(
     // Line
     for (size_t i = 0; i < tnvertices; ++i) {
         distance_interior_line_aabb(
-            RaySegment3D<ScenePos, ScenePos>{
+            RaySegment3D<SceneDir, ScenePos>{
                 polygon.corners[i].template casted<ScenePos>(),
                 polygon.corners[(i + 1) % tnvertices].template casted<ScenePos>()
             },
@@ -138,19 +139,19 @@ void distance_polygon_aabb(
     }
     // Plane
     distance_interior_polygon_aabb(
-        polygon.polygon,
+        polygon.polygon.template casted<SceneDir, ScenePos>(),
         aabb.template casted<ScenePos>(),
         closest_point);
 }
 
-template <class TData>
+template <class TDir, class TPos>
 void distance_aabb_aabb(
-    const AxisAlignedBoundingBox<TData, 3>& aabb0,
-    const AxisAlignedBoundingBox<TData, 3>& aabb1,
-    const TransformationMatrix<float, TData, 3>& trafo1,
-    ClosestPoint<TData>& closest_point)
+    const AxisAlignedBoundingBox<TPos, 3>& aabb0,
+    const AxisAlignedBoundingBox<TPos, 3>& aabb1,
+    const TransformationMatrix<TDir, TPos, 3>& trafo1,
+    ClosestPoint<TDir, TPos>& closest_point)
 {
-    aabb1.for_each_corner([&](const FixedArray<TData, 3>& corner1){
+    aabb1.for_each_corner([&](const FixedArray<TPos, 3>& corner1){
         distance_point_aabb(trafo1.transform(corner1), aabb0, closest_point);
         return true;
     });
@@ -159,8 +160,11 @@ void distance_aabb_aabb(
         distance_line_aabb({te[0], te[1]}, aabb0, closest_point);
         return true;
     });
-    aabb1.for_each_face([&](const auto& p){
-        distance_interior_polygon_aabb(p.transformed(trafo1), aabb0, closest_point);
+    aabb1.template for_each_face<float>([&](const auto& p){
+        distance_interior_polygon_aabb(
+            p.transformed(trafo1),
+            aabb0,
+            closest_point);
         return true;
     });
 }

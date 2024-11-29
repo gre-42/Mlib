@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t tndim>
+template <class TPos, size_t tndim>
 class BoundingSphere;
 
 struct GlLookatBoundingSphere {

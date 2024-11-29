@@ -10,7 +10,7 @@ namespace Mlib {
 
 class RigidBodyVehicle;
 class IIntersectableMesh;
-template <class TData, size_t n>
+template <class TDir, class TPos, size_t tndim>
 class PlaneNd;
 enum class CollisionType;
 enum class PhysicsMaterial: uint32_t;

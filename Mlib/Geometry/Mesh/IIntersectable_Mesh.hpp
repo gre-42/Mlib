@@ -8,9 +8,9 @@
 
 namespace Mlib {
 
-template <class TData, size_t tndim>
+template <class TPos, size_t tndim>
 class BoundingSphere;
-template <class TData, size_t tndim>
+template <class TDir, class TPos, size_t tndim>
 class PlaneNd;
 template <size_t tnvertices>
 struct CollisionPolygonSphere;
@@ -32,7 +32,7 @@ public:
     virtual std::string name() const = 0;
     bool intersects(const IIntersectableMesh& other) const;
     virtual bool intersects(const BoundingSphere<CompressedScenePos, 3>& sphere) const = 0;
-    virtual bool intersects(const PlaneNd<ScenePos, 3>& plane) const = 0;
+    virtual bool intersects(const PlaneNd<SceneDir, CompressedScenePos, 3>& plane) const = 0;
     template <size_t tnvertices>
     inline const std::vector<CollisionPolygonSphere<tnvertices>>& get_polygons_sphere() const {
         if constexpr (tnvertices == 4) {

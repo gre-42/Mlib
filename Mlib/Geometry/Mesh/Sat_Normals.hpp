@@ -16,7 +16,7 @@ void get_overlap(
     const IIntersectableMesh& mesh0,
     const IIntersectableMesh& mesh1,
     ScenePos& min_overlap,
-    FixedArray<ScenePos, 3>& normal);
+    FixedArray<SceneDir, 3>& normal);
 
 class SatTracker {
 public:
@@ -24,12 +24,12 @@ public:
         const IIntersectableMesh& mesh0,
         const IIntersectableMesh& mesh1,
         ScenePos& min_overlap,
-        FixedArray<ScenePos, 3>& normal) const;
+        FixedArray<SceneDir, 3>& normal) const;
 private:
     mutable std::map<
         const IIntersectableMesh*,
         std::map<const IIntersectableMesh*,
-            std::pair<ScenePos, FixedArray<ScenePos, 3>>>> collision_planes_;
+            std::pair<ScenePos, FixedArray<SceneDir, 3>>>> collision_planes_;
 };
 
 }

@@ -19,7 +19,7 @@ enum class PhysicsMaterial: uint32_t;
 template <size_t tnvertices>
 struct CollisionPolygonSphere {
     BoundingSphere<CompressedScenePos, 3> bounding_sphere;
-    ConvexPolygon3D<ScenePos, tnvertices> polygon;
+    ConvexPolygon3D<SceneDir, CompressedScenePos, tnvertices> polygon;
     PhysicsMaterial physics_material;
     FixedArray<CompressedScenePos, tnvertices, 3> corners;
     inline CollisionPolygonSphere<tnvertices> operator - () const {
@@ -36,8 +36,9 @@ struct CollisionPolygonSphere {
         return {
             .bounding_sphere = bounding_sphere.transformed(transformation_matrix),
             .polygon = polygon
-                .template casted<ScenePos>()
-                .transformed(transformation_matrix),
+                .template casted<SceneDir, ScenePos>()
+                .transformed(transformation_matrix)
+                .template casted<SceneDir, CompressedScenePos>(),
             .physics_material = physics_material,
             .corners = transformation_matrix
                 .transform(corners.template casted<ScenePos>())

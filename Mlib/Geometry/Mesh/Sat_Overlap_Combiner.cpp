@@ -15,7 +15,7 @@ SatOverlapCombiner::SatOverlapCombiner(
     , vertices1_{ vertices1 }
 {}
 
-ScenePos SatOverlapCombiner::overlap_signed(const FixedArray<ScenePos, 3>& normal) const {
+ScenePos SatOverlapCombiner::overlap_signed(const FixedArray<SceneDir, 3>& normal) const {
     return sat_overlap_signed(
         normal,
         vertices0_,
@@ -23,7 +23,7 @@ ScenePos SatOverlapCombiner::overlap_signed(const FixedArray<ScenePos, 3>& norma
 }
 
 void SatOverlapCombiner::overlap_unsigned(
-    const FixedArray<ScenePos, 3>& normal,
+    const FixedArray<SceneDir, 3>& normal,
     ScenePos& overlap0,
     ScenePos& overlap1) const
 {
@@ -54,40 +54,39 @@ void SatOverlapCombiner::combine_ridges(const CollisionRidgeSphere& e0, const Co
         return;
     }
     n /= std::sqrt(l2);
-    auto nd = n.casted<ScenePos>();
     ScenePos overlap0;
     ScenePos overlap1;
-    overlap_unsigned(nd, overlap0, overlap1);
+    overlap_unsigned(n, overlap0, overlap1);
     if (overlap0 < overlap1) {
-        if (e0.is_oriented() && (-dot0d(nd, e0.normal) < e0.min_cos - 1e-4)) {
+        if (e0.is_oriented() && (-dot0d(n, e0.normal) < e0.min_cos - 1e-4)) {
             return;
         }
-        if (e1.is_oriented() && (dot0d(nd, e1.normal) < e1.min_cos - 1e-4)) {
+        if (e1.is_oriented() && (dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
             return;
         }
         if (overlap0 < best_min_overlap_) {
             best_min_overlap_ = overlap0;
             if (!keep_normal_) {
-                best_normal_ = -nd;
+                best_normal_ = -n;
             }
         }
     } else {
-        if (e0.is_oriented() && (dot0d(nd, e0.normal) < e0.min_cos - 1e-4)) {
+        if (e0.is_oriented() && (dot0d(n, e0.normal) < e0.min_cos - 1e-4)) {
             return;
         }
-        if (e1.is_oriented() && (-dot0d(nd, e1.normal) < e1.min_cos - 1e-4)) {
+        if (e1.is_oriented() && (-dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
             return;
         }
         if (overlap1 < best_min_overlap_) {
             best_min_overlap_ = overlap1;
             if (!keep_normal_) {
-                best_normal_ = nd;
+                best_normal_ = n;
             }
         }
     }
 }
 
-void SatOverlapCombiner::combine_plane(const FixedArray<ScenePos, 3>& normal) {
+void SatOverlapCombiner::combine_plane(const FixedArray<SceneDir, 3>& normal) {
     ScenePos sat_overl = overlap_signed(normal);
     if (sat_overl < best_min_overlap_) {
         best_min_overlap_ = sat_overl;

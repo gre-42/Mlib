@@ -39,7 +39,7 @@ const FixedArray<TPos, 4, 3>& Quad3D<TPos>::vertices() const {
 }
 
 template <class TPos>
-ConvexPolygon3D<TPos, 4> Quad3D<TPos>::polygon() const {
+ConvexPolygon3D<TPos, TPos, 4> Quad3D<TPos>::polygon() const {
     return { vertices_ };
 }
 

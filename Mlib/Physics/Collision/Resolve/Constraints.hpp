@@ -47,7 +47,7 @@ struct PlaneEqualityConstraint {
 };
 
 struct NormalImpulse {
-    FixedArray<ScenePos, 3> normal;
+    FixedArray<SceneDir, 3> normal;
     float lambda_total = 0;
 };
 

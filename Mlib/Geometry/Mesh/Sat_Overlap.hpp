@@ -15,12 +15,12 @@ class OrderableFixedArray;
 //     const IIntersectableMesh& mesh1);
 
 ScenePos sat_overlap_signed(
-    const FixedArray<ScenePos, 3>& n,
+    const FixedArray<SceneDir, 3>& n,
     const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
     const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1);
 
 void sat_overlap_unsigned(
-    const FixedArray<ScenePos, 3>& l,
+    const FixedArray<SceneDir, 3>& l,
     const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
     const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1,
     ScenePos& overlap0,

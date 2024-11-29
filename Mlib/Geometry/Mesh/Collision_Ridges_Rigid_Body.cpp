@@ -12,7 +12,7 @@ CollisionRidgesRigidBody::~CollisionRidgesRigidBody() = default;
 template <size_t tnvertices>
 void CollisionRidgesRigidBody::insert(
     const FixedArray<CompressedScenePos, tnvertices, 3>& polygon,
-    const FixedArray<ScenePos, 3>& normal,
+    const FixedArray<SceneDir, 3>& normal,
     float max_min_cos_ridge,
     PhysicsMaterial physics_material,
     RigidBodyVehicle& rb)
@@ -37,7 +37,7 @@ void CollisionRidgesRigidBody::insert(
 void CollisionRidgesRigidBody::insert(
     const FixedArray<CompressedScenePos, 3>& a,
     const FixedArray<CompressedScenePos, 3>& b,
-    const FixedArray<ScenePos, 3>& normal,
+    const FixedArray<SceneDir, 3>& normal,
     SceneDir max_min_cos_ridge,
     PhysicsMaterial physics_material,
     RigidBodyVehicle& rb)
@@ -61,13 +61,13 @@ namespace Mlib {
     template class CollisionRidgesBase<OrderableRidgeSphereRigidBody>;
     template void CollisionRidgesRigidBody::insert<3>(
         const FixedArray<CompressedScenePos, 3, 3>& polygon,
-        const FixedArray<ScenePos, 3>& normal,
+        const FixedArray<SceneDir, 3>& normal,
         float max_min_cos_ridge,
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb);
     template void CollisionRidgesRigidBody::insert<4>(
         const FixedArray<CompressedScenePos, 4, 3>& polygon,
-        const FixedArray<ScenePos, 3>& normal,
+        const FixedArray<SceneDir, 3>& normal,
         float max_min_cos_ridge,
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb);

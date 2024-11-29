@@ -17,48 +17,48 @@ public:
         const CollisionPolygonSphere<4>& q,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const override;
+        FixedArray<SceneDir, 3>& normal) const override;
     virtual bool intersects(
         const CollisionPolygonSphere<3>& t,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const override;
+        FixedArray<SceneDir, 3>& normal) const override;
     virtual bool intersects(
         const CollisionRidgeSphere& r1,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const override;
+        FixedArray<SceneDir, 3>& normal) const override;
     virtual bool intersects(
         const CollisionLineSphere& l1,
         ScenePos& overlap,
         ScenePos& ray_t,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const override;
+        FixedArray<SceneDir, 3>& normal) const override;
     virtual bool intersects(
         const IIntersectable& intersectable,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const override;
+        FixedArray<SceneDir, 3>& normal) const override;
     virtual bool intersects(
         const IIntersectable& intersectable,
         const TransformationMatrix<float, ScenePos, 3>& trafo,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const override;
+        FixedArray<SceneDir, 3>& normal) const override;
 private:
     template <class TOther>
     bool intersects_any_wo_ray_t(
         const TOther& o,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const;
+        FixedArray<SceneDir, 3>& normal) const;
     template <class TOther>
     bool intersects_any_with_ray_t(
         const TOther& o,
         ScenePos& overlap,
         ScenePos& ray_t,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const;
+        FixedArray<SceneDir, 3>& normal) const;
     std::shared_ptr<IIntersectable> child_;
     TransformationMatrix<float, ScenePos, 3> trafo_;
 };

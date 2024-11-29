@@ -702,10 +702,10 @@ void test_distance_polygon_aabb() {
     auto rng = welzl_rng();
     CollisionPolygonSphere<4> cps{
         .bounding_sphere = poly.bounding_sphere(rng).casted<CompressedScenePos>(),
-        .polygon = poly.polygon(),
+        .polygon = poly.polygon().casted<SceneDir, CompressedScenePos>(),
         .physics_material = PhysicsMaterial::NONE,
         .corners = poly.vertices().casted<CompressedScenePos>()};
-    ClosestPoint<double> cp;
+    ClosestPoint<SceneDir, ScenePos> cp;
     distance_polygon_aabb<4>(cps, aabb, cp);
     linfo() << cp.closest_point0 << " - " << cp.closest_point1 << " - " << cp.normal << " - " << cp.distance;
 }

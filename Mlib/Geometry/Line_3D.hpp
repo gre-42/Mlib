@@ -3,9 +3,9 @@
 
 namespace Mlib {
 
-template <class TData, size_t tndim>
+template <class TDir, class TPos, size_t tndim>
 class PlaneNd;
-template <class TData, size_t tndim>
+template <class TPos, size_t tndim>
 class BoundingSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;

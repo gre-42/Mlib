@@ -23,9 +23,9 @@ struct CollisionRidgeSphere {
     PhysicsMaterial physics_material;
     FixedArray<CompressedScenePos, 2, 3> edge;
     RaySegment3D<SceneDir, CompressedScenePos> ray;
-    FixedArray<ScenePos, 3> normal;
+    FixedArray<SceneDir, 3> normal;
     float min_cos;
-    FixedArray<ScenePos, 3> tangent() const;
+    FixedArray<SceneDir, 3> tangent() const;
     bool is_touchable(SingleFaceBehavior behavior) const;
     bool is_oriented() const;
     void combine(const CollisionRidgeSphere& other, float max_min_cos_ridge);

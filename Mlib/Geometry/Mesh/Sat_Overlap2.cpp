@@ -19,7 +19,7 @@ static void compute_relevant_polygons(
     relevant_polygons0.reserve(triangles0.size());
     for (const auto& t0 : triangles0) {
         if (e1.bounding_sphere.intersects(t0.bounding_sphere) &&
-            e1.bounding_sphere.casted<ScenePos>().intersects(t0.polygon.plane()))
+            e1.bounding_sphere.intersects(t0.polygon.plane()))
         {
             relevant_polygons0.push_back(&t0);
         }
@@ -31,7 +31,7 @@ void Mlib::get_overlap2(
     const CollisionRidgeSphere& e1,
     ScenePos max_keep_normal,
     ScenePos& min_overlap,
-    FixedArray<ScenePos, 3>& normal)
+    FixedArray<SceneDir, 3>& normal)
 {
     CollisionVertices vertices1;
     std::vector<const CollisionRidgeSphere*> relevant_edges0;

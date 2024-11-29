@@ -14,6 +14,6 @@ void get_overlap2(
     const CollisionRidgeSphere& e1,
     ScenePos max_keep_normal,
     ScenePos& min_overlap,
-    FixedArray<ScenePos, 3>& normal);
+    FixedArray<SceneDir, 3>& normal);
 
 }

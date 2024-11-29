@@ -31,7 +31,7 @@ public:
     ~LazyTransformedMesh();
     virtual std::string name() const override;
     virtual bool intersects(const BoundingSphere<CompressedScenePos, 3>& sphere) const override;
-    virtual bool intersects(const PlaneNd<ScenePos, 3>& plane) const override;
+    virtual bool intersects(const PlaneNd<SceneDir, CompressedScenePos, 3>& plane) const override;
     virtual const std::vector<CollisionPolygonSphere<4>>& get_quads_sphere() const override;
     virtual const std::vector<CollisionPolygonSphere<3>>& get_triangles_sphere() const override;
     virtual const std::vector<CollisionLineSphere>& get_lines_sphere() const override;

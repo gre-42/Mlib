@@ -26,34 +26,34 @@ public:
         const CollisionPolygonSphere<4>& q,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const = 0;
+        FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool intersects(
         const CollisionPolygonSphere<3>& t,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const = 0;
+        FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool intersects(
         const CollisionRidgeSphere& r1,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const = 0;
+        FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool intersects(
         const CollisionLineSphere& l1,
         ScenePos& overlap,
         ScenePos& ray_t,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const = 0;
+        FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool intersects(
         const IIntersectable& intersectable,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const = 0;
+        FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool intersects(
         const IIntersectable& intersectable,
         const TransformationMatrix<float, ScenePos, 3>& trafo,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
-        FixedArray<ScenePos, 3>& normal) const = 0;
+        FixedArray<SceneDir, 3>& normal) const = 0;
 };
 
 }

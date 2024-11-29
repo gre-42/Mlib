@@ -17,14 +17,14 @@ public:
     template <size_t tnvertices>
     void insert(
         const FixedArray<CompressedScenePos, tnvertices, 3>& polygon,
-        const FixedArray<ScenePos, 3>& normal,
+        const FixedArray<SceneDir, 3>& normal,
         float max_min_cos_ridge,
         PhysicsMaterial physics_material);
 protected:
     void insert(
         const FixedArray<CompressedScenePos, 3>& a,
         const FixedArray<CompressedScenePos, 3>& b,
-        const FixedArray<ScenePos, 3>& normal,
+        const FixedArray<SceneDir, 3>& normal,
         float max_min_cos_ridge,
         PhysicsMaterial physics_material);
 };

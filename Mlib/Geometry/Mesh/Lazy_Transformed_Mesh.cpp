@@ -39,8 +39,8 @@ bool LazyTransformedMesh::intersects(const BoundingSphere<CompressedScenePos, 3>
     return transformed_bounding_sphere_.intersects(sphere);
 }
 
-bool LazyTransformedMesh::intersects(const PlaneNd<ScenePos, 3>& plane) const {
-    return transformed_bounding_sphere_.casted<ScenePos>().intersects(plane);
+bool LazyTransformedMesh::intersects(const PlaneNd<SceneDir, CompressedScenePos, 3>& plane) const {
+    return transformed_bounding_sphere_.intersects(plane);
 }
 
 const std::vector<CollisionPolygonSphere<4>>& LazyTransformedMesh::get_quads_sphere() const {

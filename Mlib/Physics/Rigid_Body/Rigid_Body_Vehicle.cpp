@@ -337,7 +337,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 *tire.rbp,
                 BoundedShockAbsorberConstraint{
                     .constraint{
-                        .normal_impulse{.normal = -abs_vertical_line.casted<ScenePos>()},
+                        .normal_impulse{.normal = -abs_vertical_line},
                         .fit = 1.f,
                         .distance = dot0d((abs_vehicle_mount_0 - tire.rbp->abs_position()).casted<float>(), abs_vertical_line),
                         .Ks = tire.sKs,

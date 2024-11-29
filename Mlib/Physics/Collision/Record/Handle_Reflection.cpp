@@ -25,7 +25,7 @@ using namespace Mlib;
 
 static void handle_standard_reflection(
     const IntersectionScene& c,
-    const FixedArray<ScenePos, 3>& normal,
+    const FixedArray<SceneDir, 3>& normal,
     const FixedArray<ScenePos, 3>& intersection_point,
     float overlap)
 {
@@ -60,7 +60,7 @@ static void handle_standard_reflection(
 
 static void handle_extended_reflection(
     const IntersectionScene& c,
-    const FixedArray<ScenePos, 3>& normal,
+    const FixedArray<SceneDir, 3>& normal,
     const FixedArray<ScenePos, 3>& intersection_point,
     float overlap,
     float surface_stiction_factor)
@@ -308,7 +308,7 @@ void Mlib::handle_reflection(
     // if (c.beacons != nullptr) {
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
-    FixedArray<ScenePos, 3> normal = uninitialized;
+    FixedArray<SceneDir, 3> normal = uninitialized;
     ScenePos overlap = INFINITY;
     if (iinfo.no.has_value()) {
         sat_used = true;
@@ -350,7 +350,7 @@ void Mlib::handle_reflection(
             THROW_OR_ABORT("Lines require a collision partner with either normals or plane normals");
         }
         normal = N0->normal;
-        overlap = -(dot0d(c.l1->line[1].casted<ScenePos>(), normal) + N0->intercept);
+        overlap = -(dot0d(c.l1->line[1].casted<ScenePos>(), normal.casted<ScenePos>()) + (ScenePos)N0->intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (overlap < 0) {
                 normal = -normal;
@@ -382,7 +382,7 @@ void Mlib::handle_reflection(
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) ||
             any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
         {
-            FixedArray<ScenePos, 3> round_normal = uninitialized;
+            FixedArray<SceneDir, 3> round_normal = uninitialized;
             assert_true(c.r1 != nullptr);
             if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) &&
                 any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
@@ -391,7 +391,7 @@ void Mlib::handle_reflection(
                     THROW_OR_ABORT("Round materials require a plane normal (0)");
                 }
                 round_normal = N0->normal - c.r1->normal;
-                ScenePos nl2 = sum(squared(round_normal));
+                SceneDir nl2 = sum(squared(round_normal));
                 if (nl2 < 1e-12) {
                     THROW_OR_ABORT("Normal is too small in collision of round objects (objects might be unseparated)");
                 }

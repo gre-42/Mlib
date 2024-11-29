@@ -6,7 +6,7 @@ namespace Mlib {
 struct AnimatedColoredVertexArrays;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
-template <class TData, size_t tndim>
+template <class TPos, size_t tndim>
 class BoundingSphere;
 
 void set_bounds(

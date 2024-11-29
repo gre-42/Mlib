@@ -40,8 +40,8 @@ bool StaticTransformedMesh::intersects(const BoundingSphere<CompressedScenePos, 
     return bounding_sphere_.intersects(sphere);
 }
 
-bool StaticTransformedMesh::intersects(const PlaneNd<ScenePos, 3>& plane) const {
-    return bounding_sphere_.casted<ScenePos>().intersects(plane);
+bool StaticTransformedMesh::intersects(const PlaneNd<SceneDir, CompressedScenePos, 3>& plane) const {
+    return bounding_sphere_.intersects(plane);
 }
 
 const std::vector<CollisionPolygonSphere<4>>& StaticTransformedMesh::get_quads_sphere() const {

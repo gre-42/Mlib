@@ -4,8 +4,8 @@
 
 using namespace Mlib;
 
-FixedArray<ScenePos, 3> CollisionRidgeSphere::tangent() const {
-    return cross(ray.direction.casted<ScenePos>(), normal);
+FixedArray<SceneDir, 3> CollisionRidgeSphere::tangent() const {
+    return cross(ray.direction, normal);
 }
 
 bool CollisionRidgeSphere::is_touchable(SingleFaceBehavior behavior) const {

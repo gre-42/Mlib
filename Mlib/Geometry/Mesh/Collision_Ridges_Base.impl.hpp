@@ -12,10 +12,10 @@ CollisionRidgesBase<TOrderableRidgeSphere>::~CollisionRidgesBase() = default;
 template <class TOrderableRidgeSphere>
 void CollisionRidgesBase<TOrderableRidgeSphere>::insert(
     const TOrderableRidgeSphere& ridge,
-    ScenePos max_min_cos_ridge)
+    SceneDir max_min_cos_ridge)
 {
     const auto& ridge_normal = ridge.collision_ridge_sphere.normal;
-    if (all(abs(ridge_normal) < ScenePos(1e-12))) {
+    if (all(abs(ridge_normal) < 1e-12f)) {
         THROW_OR_ABORT("Ridge has triangle-normal close to or equal 0");
     }
     if (ridge.collision_ridge_sphere.min_cos != RIDGE_SINGLE_FACE) {

@@ -282,7 +282,7 @@ void ColoredVertexArray<TPos>::polygon_sphere(
         Polygon3D<TPos, tnvertices> poly{ q };
         collision_polygons.push_back(CollisionPolygonSphere<tnvertices>{
             .bounding_sphere = poly.bounding_sphere(rng).template casted<CompressedScenePos>(),
-            .polygon = poly.polygon().template casted<ScenePos>(),
+            .polygon = poly.polygon().template casted<SceneDir, CompressedScenePos>(),
             .physics_material = morphology.physics_material,
             .corners = poly.vertices().template casted<CompressedScenePos>()
         });
@@ -312,7 +312,7 @@ std::vector<CollisionPolygonAabb<tnvertices>> ColoredVertexArray<TPos>::transfor
         res.push_back(CollisionPolygonAabb<tnvertices>{
             .base = CollisionPolygonSphere<tnvertices>{
                 .bounding_sphere = poly.bounding_sphere(rng).template casted<CompressedScenePos>(),
-                .polygon = poly.polygon(),
+                .polygon = poly.polygon().template casted<SceneDir, CompressedScenePos>(),
                 .physics_material = morphology.physics_material,
                 .corners = poly.vertices().template casted<CompressedScenePos>()
             },

@@ -29,7 +29,7 @@ void ContactSmokeGenerator::notify_destroyed(const RigidBodyVehicle& destroyed_o
 void ContactSmokeGenerator::notify_contact(
     const FixedArray<ScenePos, 3>& intersection_point,
     const FixedArray<float, 3>& rotation,
-    const FixedArray<ScenePos, 3>& surface_normal,
+    const FixedArray<SceneDir, 3>& surface_normal,
     const IntersectionScene& c)
 {
     if (c.history.burn_in) {

@@ -11,7 +11,7 @@ namespace Mlib {
 
 template <class TPos>
 struct ColoredVertex;
-template <class TData, size_t tndim>
+template <class TDir, class TPos, size_t tndim>
 class PlaneNd;
 template <class TPos>
 class ColoredVertexArray;
@@ -29,7 +29,7 @@ void ambient_occlusion_by_curvature(
     for (const FixedArray<ColoredVertex<TPos>, 3>* tp : cvl) {
         const FixedArray<ColoredVertex<TPos>, 3>& t = *tp;
         for (size_t i = 0; i < 3; ++i) {
-            PlaneNd<TPos, 3> plane{t(i).normal.template casted<TPos>(), t(i).position};
+            PlaneNd<TPos, TPos, 3> plane{t(i).normal.template casted<TPos>(), t(i).position};
             std::pair<size_t, float>& curvature = curvatures[PV{OrderableFixedArray{t(i).position}, OrderableFixedArray{t(i).normal}}];
             for (size_t j = 1; j < 3; ++j) {
                 auto n = dot0d(t((i + j) % 3).position, plane.normal) + plane.intercept;

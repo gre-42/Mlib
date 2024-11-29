@@ -24,7 +24,7 @@ void Mlib::collide_triangle_and_triangles(
 {
     auto collide = [&](
         const auto& bounding_sphere0,
-        const PlaneNd<ScenePos, 3>* plane0,
+        const PlaneNd<SceneDir, CompressedScenePos, 3>* plane0,
         PhysicsMaterial physics_material0)
     {
         // Mesh-sphere <-> triangle-sphere intersection

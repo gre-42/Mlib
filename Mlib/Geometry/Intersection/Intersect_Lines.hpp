@@ -4,22 +4,23 @@
 
 namespace Mlib {
 
-template <class TData>
+// From: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Using_homogeneous_coordinates
+template <class TPos>
 bool intersect_planes(
-    FixedArray<TData, 2>& intersection,
-    const PlaneNd<TData, 2>& pl0,
-    const PlaneNd<TData, 2>& pl1,
-    const TData& width0,
-    const TData& width1)
+    FixedArray<TPos, 2>& intersection,
+    const PlaneNd<TPos, TPos, 2>& pl0,
+    const PlaneNd<TPos, TPos, 2>& pl1,
+    const TPos& width0,
+    const TPos& width1)
 {
-    FixedArray<FixedArray<TData, 3>, 2> ppl{
-        FixedArray<TData, 3>{pl0.normal(0), pl0.normal(1), pl0.intercept + width0 / 2},
-        FixedArray<TData, 3>{pl1.normal(0), pl1.normal(1), pl1.intercept + width1 / 2}};
-    auto res = cross(ppl(0), ppl(1));
+    FixedArray<TPos, 2, 3> ppl{
+        FixedArray<TPos, 3>{pl0.normal(0), pl0.normal(1), pl0.intercept + width0 / 2},
+        FixedArray<TPos, 3>{pl1.normal(0), pl1.normal(1), pl1.intercept + width1 / 2}};
+    auto res = cross(ppl[0], ppl[1]);
     if (std::abs(res(2)) < 1e-7) {
         return false;
     }
-    intersection = FixedArray<TData, 2>{
+    intersection = FixedArray<TPos, 2>{
         res(0) / res(2),
         res(1) / res(2) };
     return true;
@@ -37,9 +38,9 @@ bool intersect_rays(
 {
     FixedArray<TData, 2> n0{ v0(1), -v0(0) };
     FixedArray<TData, 2> n1{ v1(1), -v1(0) };
-    FixedArray<PlaneNd<TData, 2>, 2> pl{
-        PlaneNd<TData, 2>{ n0, p0 },
-        PlaneNd<TData, 2>{ n1, p1 }};
+    FixedArray<PlaneNd<TData, TData, 2>, 2> pl{
+        PlaneNd<TData, TData, 2>{ n0, p0 },
+        PlaneNd<TData, TData, 2>{ n1, p1 }};
     return intersect_planes(intersection, pl(0), pl(1), width0, width1);
 }
 
@@ -65,9 +66,9 @@ bool intersect_lines(
             }
         }
     }
-    FixedArray<PlaneNd<TData, 2>, 2> pl{
-        PlaneNd<TData, 2>{l0, compute_center},
-        PlaneNd<TData, 2>{l1, compute_center}};
+    FixedArray<PlaneNd<TData, TData, 2>, 2> pl{
+        PlaneNd<TData, TData, 2>{l0, compute_center},
+        PlaneNd<TData, TData, 2>{l1, compute_center}};
     if (!intersect_planes(intersection, pl(0), pl(1), width0, width1)) {
         return false;
     }

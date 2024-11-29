@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t tndim>
+template <class TDir, class TPos, size_t tndim>
 class PlaneNd;
 class IIntersectableMesh;
 
@@ -15,6 +15,6 @@ struct VertexDistances {
 
 VertexDistances get_farthest_distances(
     const IIntersectableMesh& mesh,
-    const PlaneNd<ScenePos, 3>& plane);
+    const PlaneNd<SceneDir, CompressedScenePos, 3>& plane);
 
 }

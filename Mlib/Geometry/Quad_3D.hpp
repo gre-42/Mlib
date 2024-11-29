@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-template <class TPos, size_t tnvertices>
+template <class TDir, class TPos, size_t tnvertices>
 class ConvexPolygon3D;
-template <class TData, size_t tndim>
+template <class TPos, size_t tndim>
 class BoundingSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
@@ -25,7 +25,7 @@ public:
         const FixedArray<ColoredVertex<TPos2>, 4>& vertices,
         const TransformationMatrix<float, TPosTransform, 3>& transformation);
     const FixedArray<TPos, 4, 3>& vertices() const;
-    ConvexPolygon3D<TPos, 4> polygon() const;
+    ConvexPolygon3D<TPos, TPos, 4> polygon() const;
     BoundingSphere<TPos, 3> bounding_sphere(std::minstd_rand& rng) const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
 private:

@@ -227,42 +227,42 @@ public:
         }
         return true;
     }
-    template <class TOperation>
+    template <class TDir, class TOperation>
     bool for_each_face(const TOperation& op) const {
         static_assert(tndim == 3);
-        auto faces = std::array<ConvexPolygon3D<TData, 4>, 6>{
+        auto faces = std::array<ConvexPolygon3D<TDir, TData, 4>, 6>{
             // x-
-            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+            ConvexPolygon3D<TDir, TData, 4>{FixedArray<TData, 4, 3>{
                 FixedArray<TData, 3>{min(0), min(1), min(2)},
                 FixedArray<TData, 3>{min(0), max(1), min(2)},
                 FixedArray<TData, 3>{min(0), max(1), max(2)},
                 FixedArray<TData, 3>{min(0), min(1), max(2)}}},
             // x+
-            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+            ConvexPolygon3D<TDir, TData, 4>{FixedArray<TData, 4, 3>{
                 FixedArray<TData, 3>{max(0), min(1), min(2)},
                 FixedArray<TData, 3>{max(0), max(1), min(2)},
                 FixedArray<TData, 3>{max(0), max(1), max(2)},
                 FixedArray<TData, 3>{max(0), min(1), max(2)}}},
             // y-
-            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+            ConvexPolygon3D<TDir, TData, 4>{FixedArray<TData, 4, 3>{
                 FixedArray<TData, 3>{min(0), min(1), min(2)},
                 FixedArray<TData, 3>{max(0), min(1), min(2)},
                 FixedArray<TData, 3>{max(0), min(1), max(2)},
                 FixedArray<TData, 3>{min(0), min(1), max(2)}}},
             // y+
-            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+            ConvexPolygon3D<TDir, TData, 4>{FixedArray<TData, 4, 3>{
                 FixedArray<TData, 3>{min(0), max(1), min(2)},
                 FixedArray<TData, 3>{max(0), max(1), min(2)},
                 FixedArray<TData, 3>{max(0), max(1), max(2)},
                 FixedArray<TData, 3>{min(0), max(1), max(2)}}},
             // z-
-            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+            ConvexPolygon3D<TDir, TData, 4>{FixedArray<TData, 4, 3>{
                 FixedArray<TData, 3>{min(0), min(1), min(2)},
                 FixedArray<TData, 3>{max(0), min(1), min(2)},
                 FixedArray<TData, 3>{max(0), max(1), min(2)},
                 FixedArray<TData, 3>{min(0), max(1), min(2)}}},
             // z+
-            ConvexPolygon3D<TData, 4>{FixedArray<TData, 4, 3>{
+            ConvexPolygon3D<TDir, TData, 4>{FixedArray<TData, 4, 3>{
                 FixedArray<TData, 3>{min(0), min(1), max(2)},
                 FixedArray<TData, 3>{max(0), min(1), max(2)},
                 FixedArray<TData, 3>{max(0), max(1), max(2)},

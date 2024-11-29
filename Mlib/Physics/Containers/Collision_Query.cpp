@@ -51,7 +51,7 @@ bool CollisionQuery::can_see(
                     ScenePos t;
                     FixedArray<ScenePos, 3> intersection_pt = uninitialized;
                     if (ray.intersects(
-                        polygon0.polygon,
+                        polygon0.polygon.template casted<ScenePos, ScenePos>(),
                         &t,
                         &intersection_pt))
                     {
@@ -101,14 +101,14 @@ bool CollisionQuery::can_see(
             }
             for (const auto& t0 : rm0.mesh.mesh->get_triangles_sphere()) {
                 if (!bs.intersects(t0.bounding_sphere) ||
-                    !bs.casted<ScenePos>().intersects(t0.polygon.plane()))
+                    !bs.intersects(t0.polygon.plane()))
                 {
                     continue;
                 }
                 ScenePos t;
                 FixedArray<ScenePos, 3> intersection_pt = uninitialized;
                 if (ray.intersects(
-                    t0.polygon,
+                    t0.polygon.template casted<ScenePos, ScenePos>(),
                     &t,
                     &intersection_pt))
                 {
@@ -153,7 +153,7 @@ bool CollisionQuery::can_see(
                     ScenePos t;
                     FixedArray<ScenePos, 3> intersection_pt = uninitialized;
                     if (ray.intersects(
-                        ctp.polygon,
+                        ctp.polygon.template casted<ScenePos, ScenePos>(),
                         &t,
                         &intersection_pt))
                     {

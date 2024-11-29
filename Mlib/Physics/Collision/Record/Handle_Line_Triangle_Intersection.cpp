@@ -172,7 +172,7 @@ void Mlib::handle_line_triangle_intersection(
             THROW_OR_ABORT("Grind collision requires a ray");
         }
         FixedArray<float, 3> d3 = (iinfo.intersection_point - c.o0.abs_grind_point()).casted<float>();
-        if (std::abs(dot0d(X1->direction.casted<ScenePos>(), N0->normal)) < c.history.cfg.max_grind_cos) {
+        if (std::abs(dot0d(X1->direction, N0->normal)) < c.history.cfg.max_grind_cos) {
             return;
         }
         bool direction_ok = false;

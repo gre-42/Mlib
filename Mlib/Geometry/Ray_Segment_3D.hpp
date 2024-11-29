@@ -7,13 +7,13 @@
 
 namespace Mlib {
 
-template <class TData, size_t tndim>
+template <class TDir, class TPos, size_t tndim>
 class PlaneNd;
-template <class TData, size_t tndim>
+template <class TPos, size_t tndim>
 class BoundingSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
-template <class TPos, size_t tnvertices>
+template <class TDir, class TPos, size_t tnvertices>
 class ConvexPolygon3D;
 
 template <class TDir, class TPos>
@@ -44,7 +44,7 @@ public:
     explicit RaySegment3D(const FixedArray<TPos, 2, 3>& vertices)
     : RaySegment3D{ vertices[0], vertices[1] }
     {}
-    bool intersects(const PlaneNd<TPos, 3>& plane, TPos* t, FixedArray<TPos, 3>* intersection_point) const {
+    bool intersects(const PlaneNd<TDir, TPos, 3>& plane, TPos* t, FixedArray<TPos, 3>* intersection_point) const {
         auto c = dot0d(plane.normal, direction);
         if (std::abs(c) < 1e-12) {
             return false;
@@ -58,7 +58,7 @@ public:
     }
     template <size_t tnvertices>
     bool intersects(
-        const ConvexPolygon3D<TPos, tnvertices>& polygon,
+        const ConvexPolygon3D<TDir, TPos, tnvertices>& polygon,
         TPos* t,
         FixedArray<TPos, 3>* intersection_point) const
     {
@@ -74,7 +74,7 @@ public:
         auto interscts = [&](size_t axis0, size_t axis1, size_t axis2, bool mm) {
             TPos t;
             FixedArray<TPos, 3> intersection_point;
-            PlaneNd<TPos, 3> plane;
+            PlaneNd<TDir, TPos, 3> plane;
             plane.normal(axis0) = 1;
             plane.normal(axis1) = 0;
             plane.normal(axis2) = 0;

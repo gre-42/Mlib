@@ -98,15 +98,17 @@ void distance_point_to_line(
     dir /= distance;
 }
 
-template <class TData, size_t tndim>
+template <class TDir, class TPos, size_t tndim>
 void closest_point_to_line(
-    const FixedArray<TData, tndim>& pt,
-    const RaySegment3D<TData, TData>& ray,
-    TData& l,
-    FixedArray<TData, tndim>& closest_point)
+    const FixedArray<TPos, tndim>& pt,
+    const RaySegment3D<TDir, TPos>& ray,
+    TPos& l,
+    FixedArray<TPos, tndim>& closest_point)
 {
-    l = dot0d(pt - ray.start, ray.direction);
-    closest_point = ray.start + ray.direction * std::clamp<TData>(l, 0, ray.length);
+    using I = funpack_t<TPos>;
+    auto r = ray.template casted<I, I>();
+    l = dot0d(pt - ray.start, r.direction);
+    closest_point = ray.start + r.direction * std::clamp<I>(l, 0, ray.length);
 }
 
 }

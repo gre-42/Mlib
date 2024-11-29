@@ -78,25 +78,25 @@ public:
         }
         return true;
     }
-    const PlaneNd<TData, 3>& near_plane() const {
+    const PlaneNd<TData, TData, 3>& near_plane() const {
         return planes(NEAR);
     }
-    const PlaneNd<TData, 3>& far_plane() const {
+    const PlaneNd<TData, TData, 3>& far_plane() const {
         return planes(FAR);
     }
-    const PlaneNd<TData, 3>& bottom_plane() const {
+    const PlaneNd<TData, TData, 3>& bottom_plane() const {
         return planes(BOTTOM);
     }
-    const PlaneNd<TData, 3>& top_plane() const {
+    const PlaneNd<TData, TData, 3>& top_plane() const {
         return planes(TOP);
     }
-    const PlaneNd<TData, 3>& left_plane() const {
+    const PlaneNd<TData, TData, 3>& left_plane() const {
         return planes(LEFT);
     }
-    const PlaneNd<TData, 3>& right_plane() const {
+    const PlaneNd<TData, TData, 3>& right_plane() const {
         return planes(RIGHT);
     }
-    FixedArray<PlaneNd<TData, 3>, 6> planes;
+    FixedArray<PlaneNd<TData, TData, 3>, 6> planes;
 };
 
 template <class TData>

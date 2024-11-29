@@ -38,7 +38,7 @@ const FixedArray<TPos, 3, 3>& Triangle3D<TPos>::vertices() const {
 }
 
 template <class TPos>
-ConvexPolygon3D<TPos, 3> Triangle3D<TPos>::polygon() const {
+ConvexPolygon3D<TPos, TPos, 3> Triangle3D<TPos>::polygon() const {
     return { vertices_ };
 }
 

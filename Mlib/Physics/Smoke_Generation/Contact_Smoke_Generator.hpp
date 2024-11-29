@@ -26,7 +26,7 @@ public:
     void notify_contact(
         const FixedArray<ScenePos, 3>& intersection_point,
         const FixedArray<float, 3>& rotation,
-        const FixedArray<ScenePos, 3>& surface_normal,
+        const FixedArray<SceneDir, 3>& surface_normal,
         const IntersectionScene& c);
     void advance_time(float dt);
 private:

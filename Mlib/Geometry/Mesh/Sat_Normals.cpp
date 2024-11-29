@@ -48,7 +48,7 @@ void Mlib::get_overlap(
     const IIntersectableMesh& mesh0,
     const IIntersectableMesh& mesh1,
     ScenePos& min_overlap,
-    FixedArray<ScenePos, 3>& normal)
+    FixedArray<SceneDir, 3>& normal)
 {
     std::vector<const CollisionRidgeSphere*> relevant_edges0;
     std::vector<const CollisionRidgeSphere*> relevant_edges1;
@@ -96,7 +96,7 @@ void SatTracker::get_collision_plane(
     const IIntersectableMesh& mesh0,
     const IIntersectableMesh& mesh1,
     ScenePos& min_overlap,
-    FixedArray<ScenePos, 3>& normal) const
+    FixedArray<SceneDir, 3>& normal) const
 {
     if (&mesh0 == &mesh1) {
         THROW_OR_ABORT("Mesh compared to itself");
@@ -110,12 +110,12 @@ void SatTracker::get_collision_plane(
         collision_planes_.insert(std::make_pair(
             &mesh0,
             std::map<const IIntersectableMesh*,
-                std::pair<ScenePos, FixedArray<ScenePos, 3>>>()));
+                std::pair<ScenePos, FixedArray<SceneDir, 3>>>()));
     }
     auto& collision_planes_m0 = collision_planes_.at(&mesh0);
     if (collision_planes_m0.find(&mesh1) == collision_planes_m0.end()) {
         ScenePos min_overlap;
-        FixedArray<ScenePos, 3> normal = uninitialized;
+        FixedArray<SceneDir, 3> normal = uninitialized;
         get_overlap(mesh0, mesh1, min_overlap, normal);
         // lerr() << "min_overlap " << min_overlap << " best_triangle " << best_triangle << " best normal " << triangle_normal(best_triangle);
         collision_planes_m0.insert(std::make_pair(&mesh1, std::make_pair(min_overlap, normal)));

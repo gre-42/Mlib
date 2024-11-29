@@ -53,7 +53,7 @@ public:
 protected:
     void insert(
         const TOrderableRidgeSphere& ridge,
-        ScenePos max_min_cos_ridge);
+        SceneDir max_min_cos_ridge);
 private:
     Ridges ridges_;
 };

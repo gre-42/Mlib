@@ -7,18 +7,18 @@
 using namespace Mlib;
 
 ScenePos Mlib::sat_overlap_signed(
-    const FixedArray<ScenePos, 3>& n,
+    const FixedArray<SceneDir, 3>& n,
     const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
     const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1)
 {
     ScenePos max0 = -INFINITY;
     ScenePos min1 = INFINITY;
     for (const auto& v : vertices0) {
-        ScenePos s = dot0d(v.casted<ScenePos>(), n);
+        ScenePos s = dot0d(v.casted<ScenePos>(), n.casted<ScenePos>());
         max0 = std::max(max0, s);
     }
     for (const auto& v : vertices1) {
-        ScenePos s = dot0d(v.casted<ScenePos>(), n);
+        ScenePos s = dot0d(v.casted<ScenePos>(), n.casted<ScenePos>());
         min1 = std::min(min1, s);
     }
     // o0 -> normal | o1
@@ -34,7 +34,7 @@ ScenePos Mlib::sat_overlap_signed(
 /*  From: https://docs.godotengine.org/en/stable/tutorials/math/vectors_advanced.html#collision-detection-in-3d
  */
 void Mlib::sat_overlap_unsigned(
-    const FixedArray<ScenePos, 3>& l,
+    const FixedArray<SceneDir, 3>& l,
     const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
     const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1,
     ScenePos& overlap0,
@@ -45,12 +45,12 @@ void Mlib::sat_overlap_unsigned(
     ScenePos min0 = INFINITY;
     ScenePos min1 = INFINITY;
     for (const auto& v : vertices0) {
-        ScenePos s = dot0d(v.casted<ScenePos>(), l);
+        ScenePos s = dot0d(v.casted<ScenePos>(), l.casted<ScenePos>());
         max0 = std::max(max0, s);
         min0 = std::min(min0, s);
     }
     for (const auto& v : vertices1) {
-        ScenePos s = dot0d(v.casted<ScenePos>(), l);
+        ScenePos s = dot0d(v.casted<ScenePos>(), l.casted<ScenePos>());
         max1 = std::max(max1, s);
         min1 = std::min(min1, s);
     }

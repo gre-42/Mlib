@@ -58,15 +58,15 @@ void Mlib::collide_grind_infos(
                             .lambda_min = rb->mass() * cfg.velocity_lambda_min,
                             .lambda_max = -rb->mass() * cfg.velocity_lambda_min
                         }}));
-                    PlaneNd<ScenePos, 3> plane{
-                        cross(n.casted<double>(), p.rail_direction.casted<double>()),
+                    PlaneNd<SceneDir, ScenePos, 3> plane{
+                        cross(n, p.rail_direction),
                         p.intersection_point};
                     contact_infos.push_back(std::unique_ptr<IContactInfo>(new NormalContactInfo1{
                         rb->rbp_,
                         BoundedPlaneInequalityConstraint{
                             .constraint = PlaneInequalityConstraint{
                                 .normal_impulse = NormalImpulse{.normal = plane.normal},
-                                .overlap = -float(dot0d(rb->abs_grind_point(), plane.normal) + plane.intercept)},
+                                .overlap = -float(dot0d(rb->abs_grind_point(), plane.normal.casted<ScenePos>()) + plane.intercept)},
                             .lambda_min = rb->mass() * cfg.velocity_lambda_min,
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
@@ -97,8 +97,8 @@ void Mlib::collide_grind_infos(
                             .lambda_min = (rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg.velocity_lambda_min,
                             .lambda_max = -(rb->mass() * p.rail_rb->mass()) / (rb->mass() + p.rail_rb->mass()) * cfg.velocity_lambda_min
                         }}));
-                    PlaneNd<ScenePos, 3> plane{
-                        cross(n, p.rail_direction).casted<ScenePos>(),
+                    PlaneNd<SceneDir, ScenePos, 3> plane{
+                        cross(n, p.rail_direction),
                         p.intersection_point};
                     contact_infos.push_back(std::unique_ptr<IContactInfo>(new NormalContactInfo2{
                         rb->rbp_,
@@ -106,7 +106,7 @@ void Mlib::collide_grind_infos(
                         BoundedPlaneInequalityConstraint{
                             .constraint = PlaneInequalityConstraint{
                                 .normal_impulse = NormalImpulse{.normal = plane.normal},
-                                .overlap = -float(dot0d(rb->abs_grind_point(), plane.normal) + plane.intercept)},
+                                .overlap = -float(dot0d(rb->abs_grind_point(), plane.normal.casted<ScenePos>()) + plane.intercept)},
                             .lambda_min = rb->mass() * cfg.velocity_lambda_min,
                             .lambda_max = 0},
                         rb->abs_grind_point()}));

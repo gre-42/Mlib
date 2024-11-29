@@ -29,7 +29,7 @@ void Mlib::collide_triangle_and_edges(
                 if (!r1.bounding_sphere.intersects(cps0.bounding_sphere)) {
                     continue;
                 }
-                if (!r1.bounding_sphere.casted<ScenePos>().intersects(cps0.polygon.plane())) {
+                if (!r1.bounding_sphere.intersects(cps0.polygon.plane())) {
                     continue;
                 }
                 handle_line_triangle_intersection(IntersectionScene{
