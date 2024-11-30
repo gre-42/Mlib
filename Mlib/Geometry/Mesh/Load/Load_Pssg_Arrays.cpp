@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <half/half.h>
 #include <list>
+#include <unordered_set>
 
 using namespace Mlib;
 
@@ -506,36 +507,49 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 }
                 THROW_OR_ABORT("Could not find shader input with parameter name \"" + parameter_name + '"');
                 };
-            if ((shader_group_ref == "#terrain_road.fx") ||
+            if ((shader_group_ref == "#terrain_simple.fx") ||
+                (shader_group_ref == "#terrain_simple_nm.fx") ||
+                (shader_group_ref == "#terrain_road.fx") ||
                 (shader_group_ref == "#terrain_road_flat.fx") ||
                 (shader_group_ref == "#terrain_edge_nm.fx") ||
                 (shader_group_ref == "#terrain_wsm_edge_nm.fx") ||
+                (shader_group_ref == "#terrain_infield.fx") ||
                 (shader_group_ref == "#terrain_infield_nm.fx") ||
                 (shader_group_ref == "#terrain_rockbank.fx") ||
                 (shader_group_ref == "#terrain_rock_d4.fx"))
             {
+                bool infield = (shader_group_ref == "#terrain_infield.fx");
+                bool infield_nm = (shader_group_ref == "#terrain_infield_nm.fx");
+                bool infield_any = infield || infield_nm;
+                bool rock = (shader_group_ref == "#terrain_rock_d4.fx");
+                bool simple = (shader_group_ref == "#terrain_simple.fx");
+                bool simple_nm = (shader_group_ref == "#terrain_simple_nm.fx");
+                bool simple_any = simple || simple_nm;
                 uint32_t cweights_a[] = {UINT32_MAX, 2, 1, UINT32_MAX};
                 uint32_t cweights_b[] = {UINT32_MAX, 1, 0, 2};
-                auto* cweight_ids = (shader_group_ref == "#terrain_infield_nm.fx")
+                auto* cweight_ids = infield_any
                     ? cweights_a
                     : cweights_b;
-                auto uv_source_mask = (shader_group_ref == "#terrain_infield_nm.fx")
+                auto uv_source_mask = infield_any
                     ? BlendMapUvSource::VERTICAL0
                     : BlendMapUvSource::VERTICAL1;
-                auto reweight_mode = (shader_group_ref == "#terrain_infield_nm.fx")
+                auto reweight_mode = infield_any
                     ? BlendMapReweightMode::ENABLED
                     : BlendMapReweightMode::DISABLED;
-                auto reduction = (shader_group_ref == "#terrain_infield_nm.fx")
+                auto reduction = infield_any
                     ? BlendMapReductionOperation::PLUS
                     : BlendMapReductionOperation::BLEND;
 
                 std::list<BlendMapTexture> textures_color;
 
-                auto blend_uvs = (shader_group_ref == "#terrain_rock_d4.fx")
+                auto blend_uvs = rock
                     ? FixedArray<float, 4>{ 1.f, 1.f, 0.f, 0.f }
                     : get_attribute("BlendMaskUVScale").template array<float, 4>();
                 
-                size_t ntextures = (shader_group_ref == "#terrain_rock_d4.fx")
+                size_t ntextures =
+                    simple_any
+                    ? 1
+                    : rock
                     ? 3
                     : 4;
                 for (size_t i = 1; i <= ntextures; ++i) {
@@ -544,11 +558,13 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     if (op_diffuse.empty()) {
                         continue;
                     }
-                    auto op_uvso = (shader_group_ref == "#terrain_rock_d4.fx")
+                    auto op_uvso = rock
                         ? FixedArray<float, 4>{ 1.f, 1.f, 0.f, 0.f }
                         : get_attribute("Map" + s + "UVScaleAndOffset").template array<float, 4>();
 
-                    auto op_normal = try_get_texture("TNormalMap" + s);
+                    auto op_normal = (infield || simple)
+                        ? ""
+                        : try_get_texture("TNormalMap" + s);
 
                     if (i != 1) {
                         auto blend_map = try_get_texture("TBlendMap" + s);
@@ -567,6 +583,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 }.compute_hash()
                             },
                             .scale = { blend_uvs(0), blend_uvs(1) },
+                            .min_detail_weight = infield_any
+                                ? 0.01f
+                                : 0.f,
                             .role = BlendMapRole::DETAIL_MASK_R,
                             .uv_source = uv_source_mask,
                             .reduction = BlendMapReductionOperation::TIMES,
@@ -603,6 +622,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .scale = { op_uvso(0), op_uvso(1) },
                             .weight = 0.f,
                             .cweight_id = cweight_ids[i - 1],
+                            .min_detail_weight = infield_any
+                                ? 0.01f
+                                : 0.f,
                             .uv_source = BlendMapUvSource::VERTICAL0,
                             .reduction = (i == 1)
                                 ? BlendMapReductionOperation::PLUS

@@ -1108,6 +1108,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     THROW_OR_ABORT("cweight index too large");
                 }
                 sstr << "            weight *= cweight" << t->cweight_id << ';' << std::endl;
+                if (t->min_detail_weight != 0.f) {
+                    sstr << "            weight = max(weight, " << t->min_detail_weight << ");" << std::endl;
+                }
             }
             if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
                 char c;

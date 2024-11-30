@@ -31,6 +31,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
+#include <Mlib/Render/Ui/Static_Renderable_Hider.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -348,7 +349,8 @@ int main(int argc, char** argv) {
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
         "    [--audio_alpha <value>]\n"
-        "    [--with_hider]\n"
+        "    [--tty_hider]\n"
+        "    [--show_only <name>]\n"
         "    [--check_gl_errors]\n"
         "    [--verbose]",
         {"--wire_frame",
@@ -379,7 +381,7 @@ int main(int argc, char** argv) {
          "--print_search_time",
          "--no_control_physics_fps",
          "--fxaa",
-         "--with_hider",
+         "--tty_hider",
          "--check_gl_errors",
          "--verbose"},
         {"--app_reldir",
@@ -427,7 +429,8 @@ int main(int argc, char** argv) {
          "--audio_alpha",
          "--bloom_x",
          "--bloom_y",
-         "--bloom_threshold"});
+         "--bloom_threshold",
+         "--show_only"});
     try {
         const auto args = parser.parsed(argc, argv);
         if (args.has_named_value("--app_reldir")) {
@@ -533,12 +536,23 @@ int main(int argc, char** argv) {
             ui_focus.submenu_headers.clear();
 
             TtyRenderableHider tty_renderable_hider{ button_states };
+            StaticRenderableHider static_renderable_hider{ args.named_value("--show_only", "") };
+            IRenderableHider* renderable_hider = nullptr;
+            if (args.has_named("--tty_hider")) {
+                renderable_hider = &tty_renderable_hider;
+            }
+            if (args.has_named_value("--show_only")) {
+                if (renderable_hider != nullptr) {
+                    THROW_OR_ABORT("Both --tty_hider and --show_only were specified");
+                }
+                renderable_hider = &static_renderable_hider;
+            }
 
             SceneGraphConfig scene_graph_config{
                 .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
                 .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
                 .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600")),
-                .renderable_hider = args.has_named("--with_hider") ? &tty_renderable_hider : nullptr };
+                .renderable_hider = renderable_hider };
 
             PhysicsEngineConfig physics_engine_config{
                 .dt = physics_dt * seconds,

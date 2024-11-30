@@ -23,10 +23,11 @@ struct ResourceGroupBuffers {
 Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
     Model result;
     if (auto magic7 = read_binary<uint32_t>(istr, "magic7", verbosity); magic7 != 7) {
-        THROW_OR_ABORT("Invalid magic number 7 in grs-file");
+        THROW_OR_ABORT("Invalid magic number 7 in grs-file: " + std::to_string(magic7));
     }
-    if (auto magic8 = read_binary<uint32_t>(istr, "magic8", verbosity); magic8 != 8) {
-        THROW_OR_ABORT("Invalid magic number 8 in grs-file");
+    auto magic68 = read_binary<uint32_t>(istr, "magic6/8", verbosity);
+    if ((magic68 != 6) && (magic68 != 8)) {
+        THROW_OR_ABORT("Invalid magic number 6 or 8 in grs-file: " + std::to_string(magic68));
     }
     seek_relative_positive(istr, 2408, verbosity);
     auto resource_group_buffers = read_binary<ResourceGroupBuffers>(istr, "resource groups", verbosity);
@@ -53,8 +54,10 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
             group.elements.emplace_back(std::move(element_name));
         }
     }
-    if (auto magic8 = read_binary<uint32_t>(istr, "magic8", verbosity); magic8 != 8) {
-        THROW_OR_ABORT("Invalid magic number 8 in grs-file");
+    if (auto magic68_2 = read_binary<uint32_t>(istr, "magic6/8 2", verbosity); magic68_2 != magic68) {
+        THROW_OR_ABORT(std::format(
+            "Invalid repeated magic number 6 or 8 in grs-file. "
+            "First: {}, second: {}", magic68, magic68_2));
     }
     {
         auto cell0_address = read_binary<uint32_t>(istr, "address of cell 0", verbosity);
