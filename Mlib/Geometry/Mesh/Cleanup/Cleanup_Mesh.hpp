@@ -20,7 +20,7 @@ public:
         const TPos& min_vertex_distance,
         bool modulo_uv);
 private:
-    Bvh<TPos, FixedArray<TPos, 3>, 3> bvh_;
+    PointVectorBvh<TPos, 3> bvh_;
 };
 
 }

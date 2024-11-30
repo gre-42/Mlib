@@ -419,27 +419,20 @@ private:
     TPayload payload_;
 };
 
-template <class TPosition, size_t tndim, class TPayload>
-class PointAndPayload {
+template <class TPosition, size_t tndim>
+class PointWithoutPayload {
 public:
-    PointAndPayload(
-        const FixedArray<TPosition, tndim>& point,
-        const TPayload& payload)
+    PointWithoutPayload(const FixedArray<TPosition, tndim>& point)
         : point_{ point }
-        , payload_{ payload }
     {}
     inline auto aabb() const {
         return AxisAlignedBoundingBox<TPosition, tndim>::from_point(point_);
     }
     inline const auto& payload() const {
-        return payload_;
-    }
-    inline auto& payload() {
-        return payload_;
+        return point_;
     }
 private:
     FixedArray<TPosition, tndim> point_;
-    TPayload payload_;
 };
 
 template <class TContainer>

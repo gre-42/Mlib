@@ -86,7 +86,18 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
             };
             scene.append_static_filtered_to_queue(float_queue, double_queue, filter);
         }
-        std::list<std::shared_ptr<ColoredVertexArray<ScenePos>>> hitboxes;
+        auto add_rigid_cuboid = [&](const auto& cva, const std::string& name){
+            auto rb = rigid_cuboid(
+                object_pool,
+                name,                       // name
+                "none",                     // asset_id
+                INFINITY,                   // mass
+                fixed_ones<float, 3>(),     // size
+                fixed_ones<float, 3>());    // com
+            rb->set_absolute_model_matrix(TransformationMatrix<float, ScenePos, 3>::identity());
+            physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, { cva }, {}, CollidableMode::STATIC);
+            rb.release();
+            };
         {
             auto filter = PhysicsMaterial::NONE;
             auto min_vertex_distance = args.arguments.at<ScenePos>(KnownArgs::min_vertex_distance);
@@ -96,26 +107,16 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 auto cva = q->transformed<ScenePos>(t, "_ipl_float");
                 cleanup(*cva, filter, min_vertex_distance, modulo_uv);
                 if (!cva->empty()) {
-                    hitboxes.push_back(cva);
+                    add_rigid_cuboid(cva, "ipl_static_float");
                 }
             }
             for (const auto& [t, q] : double_queue) {
                 auto cva = q->transformed<double>(t, "_ipl_double");
                 cleanup(*cva, filter, min_vertex_distance, modulo_uv);
                 if (!cva->empty()) {
-                    hitboxes.push_back(cva);
+                    add_rigid_cuboid(cva, "ipl_static_double");
                 }
             }
         }
-        auto rb = rigid_cuboid(
-            object_pool,
-            "ipl_static",               // name
-            "none",                     // asset_id
-            INFINITY,                   // mass
-            fixed_ones<float, 3>(),     // size
-            fixed_ones<float, 3>());    // com
-        rb->set_absolute_model_matrix(TransformationMatrix<float, ScenePos, 3>::identity());
-        physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, hitboxes, {}, CollidableMode::STATIC);
-        rb.release();
     }
 }

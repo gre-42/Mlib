@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <cstdint>
 #include <list>
 #include <vector>
 
@@ -11,8 +12,8 @@ class GenericBvh;
 template <class TPosition, size_t tndim, class TPayload>
 class AabbAndPayload;
 
-template <class TPosition, size_t tndim, class TPayload>
-class PointAndPayload;
+template <class TPosition, size_t tndim>
+class PointWithoutPayload;
 
 template <class TContainer>
 class PayloadContainer;
@@ -23,10 +24,10 @@ using Bvh = GenericBvh<
     tndim,
     PayloadContainer<std::list<AabbAndPayload<TPosition, tndim, TPayload>>>>;
 
-template <class TPosition, class TPayload, size_t tndim>
+template <class TPosition, size_t tndim>
 using PointVectorBvh = GenericBvh<
     TPosition,
     tndim,
-    std::vector<PointAndPayload<TPosition, tndim, TPayload>>>;
+    PayloadContainer<std::vector<PointWithoutPayload<TPosition, tndim>>>>;
 
 }

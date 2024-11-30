@@ -951,6 +951,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 // }
             }
             if (!any(dbm.features & ColoredVertexFeatures::TANGENT)) {
+                auto te = TriangleTangentErrorBehavior::WARN;
                 for (auto& t : cva.triangles) {
                     auto ta = triangle_tangent(
                         t(0).position,
@@ -959,9 +960,12 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         t(0).uv.template casted<TResourcePos>(),
                         t(1).uv.template casted<TResourcePos>(),
                         t(2).uv.template casted<TResourcePos>(),
-                        TriangleTangentErrorBehavior::WARN).template casted<float>();
+                        te).template casted<float>();
                     for (auto& v : t.flat_iterable()) {
                         v.tangent = ta;
+                    }
+                    if (all(ta == 0.f)) {
+                        te = TriangleTangentErrorBehavior::ZERO;
                     }
                 }
             }

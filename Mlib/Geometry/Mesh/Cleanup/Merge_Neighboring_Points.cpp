@@ -10,7 +10,7 @@ using namespace Mlib;
 template <class TPos>
 void Mlib::merge_neighboring_points(
     ColoredVertexArray<TPos>& cva,
-    Bvh<TPos, FixedArray<TPos, 3>, 3>& bvh,
+    PointVectorBvh<TPos, 3>& bvh,
     const TPos& max_distance)
 {
     // linfo() << "Merging: " << cva.name;
@@ -33,7 +33,7 @@ void Mlib::merge_neighboring_points(
                     v.position = *neighbor;
                 }
             } else {
-                bvh.insert(AxisAlignedBoundingBox<TPos, 3>::from_point(v.position), v.position);
+                bvh.insert(PointWithoutPayload{ v.position });
             }
         }
     }
@@ -41,6 +41,6 @@ void Mlib::merge_neighboring_points(
 }
 
 namespace Mlib {
-    template void merge_neighboring_points<float>(ColoredVertexArray<float>& cva, Bvh<float, FixedArray<float, 3>, 3>& bvh, const float& min_distance);
-    template void merge_neighboring_points<double>(ColoredVertexArray<double>& cva, Bvh<double, FixedArray<double, 3>, 3>& bvh, const double& min_distance);
+    template void merge_neighboring_points<float>(ColoredVertexArray<float>& cva, PointVectorBvh<float, 3>& bvh, const float& min_distance);
+    template void merge_neighboring_points<double>(ColoredVertexArray<double>& cva, PointVectorBvh<double, 3>& bvh, const double& min_distance);
 }

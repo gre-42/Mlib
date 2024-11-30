@@ -30,13 +30,15 @@ public:
         it->second += normal;
     }
     void compute_vertex_normals(NormalVectorErrorBehavior zero_behavior) {
+        auto zb = zero_behavior;
         for (auto& [_, n] : vertices_) {
             auto len = std::sqrt(sum(squared(n)));
             if (len < 1e-12) {
-                if (any(zero_behavior & NormalVectorErrorBehavior::WARN)) {
+                if (any(zb & NormalVectorErrorBehavior::WARN)) {
                     lwarn() << "Normal is zero";
+                    zb = NormalVectorErrorBehavior::ZERO;
                 }
-                if (any(zero_behavior & NormalVectorErrorBehavior::THROW)) {
+                if (any(zb & NormalVectorErrorBehavior::THROW)) {
                     THROW_OR_ABORT("Normal is zero");
                 }
                 n = 0.f;

@@ -530,7 +530,7 @@ void SceneNode::add_instances_child(
         (child_registration_state == ChildRegistrationState::REGISTERED),
         std::move(node),
         0.,                                                                                                                     // max_center_distance
-        GenericBvh<CompressedScenePos, 3, BillboardContainer>(fixed_full<CompressedScenePos, 3>(CompressedScenePos(10)), 12),   // small_instances
+        GenericBvh<CompressedScenePos, 3, BillboardContainer>(fixed_full<CompressedScenePos, 3>(CompressedScenePos(10.f)), 12), // small_instances
         std::list<PositionAndYAngleAndBillboardId>()).second)                                                                   // large_instances 
     {
         THROW_OR_ABORT("Instances node with name " + name + " already exists");
