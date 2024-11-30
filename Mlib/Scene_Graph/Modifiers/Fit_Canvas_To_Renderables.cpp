@@ -29,7 +29,7 @@ void Mlib::fit_canvas_to_renderables(
         }
         return true;
     });
-    if (any(aabb.min() >= aabb.max())) {
+    if (any(aabb.min >= aabb.max)) {
         THROW_OR_ABORT("Scene AABB not positive");
     }
     camera.set_left_plane((float)aabb.min(0));

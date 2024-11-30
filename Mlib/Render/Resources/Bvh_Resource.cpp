@@ -44,7 +44,7 @@ static void instantiate_bvh(
             aabb.extend(d.aabb());
             return true;
         });
-        auto center = (aabb.min() + aabb.max()) / 2.f;
+        auto center = aabb.center();
         auto node = make_unique_scene_node(
             (center - position_shift).casted<ScenePos>(),
             fixed_zeros<float, 3>(),
@@ -88,7 +88,7 @@ static void instantiate_bvh(
     size_t i = 0;
     for (const auto& [cb, cv] : bvh.children()) {
         auto node = make_unique_scene_node(
-            ((cb.min() + cb.max()) / 2.f - position_shift).casted<ScenePos>(),
+            (cb.center() - position_shift).casted<ScenePos>(),
             fixed_zeros<float, 3>(),
             1.f);
         instantiate_bvh(

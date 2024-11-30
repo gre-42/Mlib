@@ -1,33 +1,67 @@
+#pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Scaled_Integer.hpp>
 #include <concepts>
 #include <eve/std.hpp>
 
 namespace Mlib {
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-auto all_le(
-    const FixedArray<ScaledInteger<TInt, numerator, denominator>, 3>& a,
-    const FixedArray<ScaledInteger<TInt, numerator, denominator>, 3>& b)
-{
-    eve::experimental::fixed_size_simd<TInt, 4> ea;
-    ea.set(0, a(0).count);
-    ea.set(1, a(1).count);
-    ea.set(2, a(2).count);
-    ea.set(3, 0);
+template <std::intmax_t numerator, std::intmax_t denominator>
+class PaddedFixedArray3Int32: public FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3> {
+public:
+    using FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3>::FixedArray;
+    PaddedFixedArray3Int32(const FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3>& other)
+        : FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3>{ other }
+    {}
+    int32_t padding = 0;
+};
 
-    eve::experimental::fixed_size_simd<TInt, 4> eb;
-    eb.set(0, b(0).count);
-    eb.set(1, b(1).count);
-    eb.set(2, b(2).count);
-    eb.set(3, 0);
+template <std::floating_point TData, size_t tndim>
+static FixedArray<TData, tndim> get_padded_fixed_array(const FixedArray<TData, tndim>&) {
+    verbose_abort("xx");
+}
+
+template <std::intmax_t numerator, std::intmax_t denominator, size_t tndim>
+static PaddedFixedArray3Int32<numerator, denominator> get_padded_fixed_array(
+    const FixedArray<ScaledInteger<int32_t, numerator, denominator>, tndim>&)
+{
+    verbose_abort("xx");
+}
+
+template <class TData, size_t tndim>
+struct padded_fixed_array 
+{
+    static const FixedArray<TData, tndim>& f();
+    using type = decltype(get_padded_fixed_array(f()));
+};
+
+template <class TData, size_t tndim>
+using padded_fixed_array_t = padded_fixed_array<TData, tndim>::type;
+
+template <std::intmax_t numerator, std::intmax_t denominator>
+bool all_le(
+    const PaddedFixedArray3Int32<numerator, denominator>& a,
+    const PaddedFixedArray3Int32<numerator, denominator>& b)
+{
+    eve::experimental::fixed_size_simd<int32_t, 4> ea(
+        a(0).count,
+        a(1).count,
+        a(2).count,
+        a.padding);
+
+    eve::experimental::fixed_size_simd<int32_t, 4> eb(
+        b(0).count,
+        b(1).count,
+        b(2).count,
+        b.padding);
     return eve::all(ea <= eb);
 }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-auto all_ge(
-    const FixedArray<ScaledInteger<TInt, numerator, denominator>, 3>& a,
-    const FixedArray<ScaledInteger<TInt, numerator, denominator>, 3>& b)
+template <std::intmax_t numerator, std::intmax_t denominator>
+bool all_ge(
+    const PaddedFixedArray3Int32<numerator, denominator>& a,
+    const PaddedFixedArray3Int32<numerator, denominator>& b)
 {
     return all_le(b, a);
 }

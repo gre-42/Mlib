@@ -1,8 +1,11 @@
 #pragma once
 #include <cmath>
 #include <concepts>
+#include <concepts>
+#include <cstdint>
 #include <iosfwd>
 #include <iostream>
+#include <limits>
 #include <ratio>
 
 namespace Mlib {
@@ -19,7 +22,7 @@ template <class T>
 using intermediate_type = IntermediateType<T>::type;
 
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 class ScaledInteger {
 public:
     using float_type = intermediate_type<TInt>;
@@ -84,7 +87,7 @@ public:
     TInt count;
 };
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 inline ScaledInteger<TInt, numerator, denominator> operator + (
     const ScaledInteger<TInt, numerator, denominator>& a,
     const ScaledInteger<TInt, numerator, denominator>& b)
@@ -92,7 +95,7 @@ inline ScaledInteger<TInt, numerator, denominator> operator + (
     return { a.count + b.count };
 }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 inline ScaledInteger<TInt, numerator, denominator> operator - (
         const ScaledInteger<TInt, numerator, denominator>& a,
         const ScaledInteger<TInt, numerator, denominator>& b)
@@ -109,7 +112,7 @@ inline ScaledInteger<TInt, numerator, denominator> operator - (
 //     return { (I)a * (I)b };
 // }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator, std::integral I>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator, std::integral I>
 inline ScaledInteger<TInt, numerator, denominator> operator * (
     const ScaledInteger<TInt, numerator, denominator>& a,
     I b)
@@ -117,7 +120,7 @@ inline ScaledInteger<TInt, numerator, denominator> operator * (
     return { (TInt)(a.count * b) };
 }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator, std::floating_point F>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator, std::floating_point F>
 inline ScaledInteger<TInt, numerator, denominator> operator * (
     const ScaledInteger<TInt, numerator, denominator>& a,
     F b)
@@ -125,7 +128,7 @@ inline ScaledInteger<TInt, numerator, denominator> operator * (
     return { (TInt)(std::round(a.count * b)) };
 }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 inline ScaledInteger<TInt, numerator, denominator> operator / (
     const ScaledInteger<TInt, numerator, denominator>& a,
     TInt b)
@@ -133,7 +136,7 @@ inline ScaledInteger<TInt, numerator, denominator> operator / (
     return { a.count / b };
 }
 
-// template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
+// template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 // inline ScaledInteger<TInt, numerator, denominator> operator / (
 //         const ScaledInteger<TInt, numerator, denominator>& a,
 //         const ScaledInteger<TInt, numerator, denominator>& b)
@@ -142,7 +145,7 @@ inline ScaledInteger<TInt, numerator, denominator> operator / (
 //     return { (I)a / (I)b };
 // }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator, std::integral I>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator, std::integral I>
 inline ScaledInteger<TInt, numerator, denominator>& operator /= (
     ScaledInteger<TInt, numerator, denominator>& a,
     I n)
@@ -151,7 +154,7 @@ inline ScaledInteger<TInt, numerator, denominator>& operator /= (
     return a;
 }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 inline ScaledInteger<TInt, numerator, denominator>& operator *= (
     ScaledInteger<TInt, numerator, denominator>& a,
     TInt n)
@@ -160,10 +163,19 @@ inline ScaledInteger<TInt, numerator, denominator>& operator *= (
     return a;
 }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 inline std::ostream& operator << (std::ostream& ostr, const ScaledInteger<TInt, numerator, denominator>& i) {
     i.print(ostr);
     return ostr;
 }
 
+}
+
+namespace std {
+    template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
+    class numeric_limits<Mlib::ScaledInteger<TInt, numerator, denominator>> {
+    public:
+        static Mlib::ScaledInteger<TInt, numerator, denominator> lowest() { return { std::numeric_limits<TInt>::lowest() }; };
+        static Mlib::ScaledInteger<TInt, numerator, denominator> max() { return { std::numeric_limits<TInt>::max() }; };
+    };
 }

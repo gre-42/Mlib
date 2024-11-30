@@ -510,10 +510,12 @@ void test_fixed_sum() {
 
 void test_simd() {
     using S = ScaledInteger<int32_t, 1, 5>;
-    FixedArray<S, 3> a{ (S)1, (S)2, (S)3 };
-    FixedArray<S, 3> b{ (S)10, (S)20, (S)30 };
+    using V = padded_fixed_array_t<S, 3>;
+    V a{ (S)1, (S)2, (S)3 };
+    V b{ (S)10, (S)20, (S)30 };
     linfo() << (int)all_le(a, b);
     linfo() << (int)all_ge(a, b);
+    linfo() << std::numeric_limits<S>::min();
 }
 
 int main(int argc, const char** argv) {

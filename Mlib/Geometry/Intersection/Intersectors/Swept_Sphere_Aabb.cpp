@@ -17,7 +17,7 @@ SweptSphereAabb::SweptSphereAabb(
     , radius_{ radius }
     , bounding_sphere_{ FixedArray<CompressedScenePos, 2, 3>{ min, max } }
 {
-    if (any(aabb_small_.max() - aabb_small_.min() < (CompressedScenePos)0)) {
+    if (any(aabb_small_.size() < (CompressedScenePos)0)) {
         THROW_OR_ABORT("SweptSphereAabb: AABB too small for the given radius");
     }
 }

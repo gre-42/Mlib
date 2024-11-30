@@ -165,7 +165,7 @@ public:
                 // to traverse the child "c".
                 size_t nintersections = 0;
                 for (const auto& other : children_) {
-                    if (c.first.contains((other.first.min() + other.first.max()) / 2)) {
+                    if (c.first.contains(other.first.center())) {
                         ++nintersections;
                     }
                 }
@@ -334,8 +334,8 @@ public:
     {
         static_assert(tndim >= 2);
         auto plot_aabb_raw = [&](const AxisAlignedBoundingBox<TPosition, tndim>& aabb) {
-            FixedArray<TPosition, tndim> a = aabb.min() - origin;
-            FixedArray<TPosition, tndim> b = aabb.max() - origin;
+            FixedArray<TPosition, tndim> a = aabb.min - origin;
+            FixedArray<TPosition, tndim> b = aabb.max - origin;
             // svg.template draw_path<TPosition>(
             //     { a(axis0), b(axis0), b(axis0), a(axis0), a(axis0) },
             //     { a(axis1), a(axis1), b(axis1), b(axis1), a(axis1) },
@@ -345,8 +345,8 @@ public:
                 stroke_width);
         };
         auto plot_aabb = [&](const AxisAlignedBoundingBox<TPosition, tndim>& aabb) {
-            if (all(aabb.min() == aabb.max())) {
-                plot_aabb_raw(AxisAlignedBoundingBox<TPosition, tndim>::from_center_and_radius(aabb.min(), stroke_width));
+            if (all(aabb.min == aabb.max)) {
+                plot_aabb_raw(AxisAlignedBoundingBox<TPosition, tndim>::from_center_and_radius(aabb.min, stroke_width));
             } else {
                 plot_aabb_raw(aabb);
             }
@@ -366,7 +366,7 @@ public:
         std::ofstream ofs{ filename };
         auto sz = aabb().template casted<TSize>().size();
         Svg<TSize> svg{ ofs, sz(axis0), sz(axis1) };
-        plot_bvh(aabb().min(), svg, axis0, axis1);
+        plot_bvh(aabb().min, svg, axis0, axis1);
         svg.finish();
         ofs.flush();
         if (ofs.fail()) {

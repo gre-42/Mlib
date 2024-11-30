@@ -61,14 +61,14 @@ public:
         }
     }
     bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
-        if ((all(aabb.min() == fixed_full<TData, 3>(-INFINITY))) &&
-            (all(aabb.max() == fixed_full<TData, 3>(INFINITY))))
+        if ((all(aabb.min == fixed_full<TData, 3>(-INFINITY))) &&
+            (all(aabb.max == fixed_full<TData, 3>(INFINITY))))
         {
             return true;
         }
         // From: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
-        auto center = (aabb.min() + aabb.max()) / (TData)2;
-        auto extents = aabb.max() - center;
+        auto center = aabb.center();
+        auto extents = aabb.max - center;
         for (const auto& plane : planes.flat_iterable()) {
             // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
             TData r = dot0d(extents, abs(plane.normal));

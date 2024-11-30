@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Simd.hpp>
 #include <Mlib/Stats/Clamped.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Uninitialized.hpp>
@@ -24,13 +25,13 @@ class AxisAlignedBoundingBox {
     friend class AxisAlignedBoundingBox; 
 public:
     AxisAlignedBoundingBox(Uninitialized)
-        : min_{ uninitialized }
-        , max_{ uninitialized }
+        : min{ uninitialized }
+        , max{ uninitialized }
     {}
     static AxisAlignedBoundingBox empty() {
         return AxisAlignedBoundingBox{
-            fixed_full<TData, tndim>(INFINITY),
-            fixed_full<TData, tndim>(-INFINITY)};
+            fixed_full<TData, tndim>(std::numeric_limits<TData>::max()),
+            fixed_full<TData, tndim>(std::numeric_limits<TData>::lowest())};
     }
     static AxisAlignedBoundingBox from_min_max(
         const FixedArray<TData, tndim>& min,
@@ -72,53 +73,54 @@ public:
         return result;
     }
     bool intersects(const AxisAlignedBoundingBox& other) const {
-        // return all(max_ >= other.min_) && all(min_ <= other.max_);
-        for (size_t i = 0; i < tndim; ++i) {
-            if (max_(i) < other.min_(i)) {
-                return false;
-            }
-        }
-        for (size_t i = 0; i < tndim; ++i) {
-            if (min_(i) > other.max_(i)) {
-                return false;
-            }
-        }
-        return true;
+        // return all(max >= other.min) && all(min <= other.max);
+        return all_ge(max, other.min) && all_le(min, other.max);
+        // for (size_t i = 0; i < tndim; ++i) {
+        //     if (max(i) < other.min(i)) {
+        //         return false;
+        //     }
+        // }
+        // for (size_t i = 0; i < tndim; ++i) {
+        //     if (min(i) > other.max(i)) {
+        //         return false;
+        //     }
+        // }
+        // return true;
     }
     bool contains(const AxisAlignedBoundingBox& other) const {
-        // return all(max_ >= other.max_) && all(min_ <= other.min_);
+        // return all(max >= other.max) && all(min <= other.min);
         for (size_t i = 0; i < tndim; ++i) {
-            if (max_(i) < other.max_(i)) {
+            if (max(i) < other.max(i)) {
                 return false;
             }
-            if (min_(i) > other.min_(i)) {
+            if (min(i) > other.min(i)) {
                 return false;
             }
         }
         return true;
     }
     bool contains(const FixedArray<TData, tndim>& point) const {
-        // return all(max_ >= point) && all(min_ <= point);
+        // return all(max >= point) && all(min <= point);
         for (size_t i = 0; i < tndim; ++i) {
-            if (max_(i) < point(i)) {
+            if (max(i) < point(i)) {
                 return false;
             }
-            if (min_(i) > point(i)) {
+            if (min(i) > point(i)) {
                 return false;
             }
         }
         return true;
     }
     FixedArray<TData, tndim> closest_point(const FixedArray<TData, tndim>& point) const {
-        return clamped(point, min(), max());
+        return clamped(point, min, max);
     }
     void extend(const AxisAlignedBoundingBox& other) {
-        min_ = minimum(min_, other.min_);
-        max_ = maximum(max_, other.max_);
+        min = minimum(min, other.min);
+        max = maximum(max, other.max);
     }
     void extend(const FixedArray<TData, tndim>& point) {
-        min_ = minimum(min_, point);
-        max_ = maximum(max_, point);
+        min = minimum(min, point);
+        max = maximum(max, point);
     }
     template <class TDir, class TPos>
     AxisAlignedBoundingBox<TPos, tndim> transformed(
@@ -133,29 +135,17 @@ public:
     }
     AxisAlignedBoundingBox translated(const FixedArray<TData, tndim>& translation) const
     {
-        return AxisAlignedBoundingBox(min_ + translation, max_ + translation);
+        return AxisAlignedBoundingBox(min + translation, max + translation);
     }
     FixedArray<TData, tndim> center() const {
-        return (min_ + max_) * TData{ 0.5 };
+        return (min + max) / 2;
     }
     FixedArray<TData, tndim> size() const {
-        return max_ - min_;
+        return max - min;
     }
     void print(std::ostream& ostr, size_t rec = 0) const {
         std::string indent(rec, ' ');
-        ostr << indent << "bounds " << min_ << " -- " << max_;
-    }
-    inline const FixedArray<TData, tndim>& min() const {
-        return min_;
-    }
-    inline const FixedArray<TData, tndim>& max() const {
-        return max_;
-    }
-    inline const TData& min(size_t i) const {
-        return min_(i);
-    }
-    inline const TData& max(size_t i) const {
-        return max_(i);
+        ostr << indent << "bounds " << min << " -- " << max;
     }
     template <class TOperation>
     bool for_each_corner(const TOperation& op) const {
@@ -280,13 +270,15 @@ public:
     template <class TResultData>
     AxisAlignedBoundingBox<TResultData, tndim> casted() const {
         return AxisAlignedBoundingBox<TResultData, tndim>(
-            min_.template casted<TResultData>(),
-            max_.template casted<TResultData>());
+            min.template casted<TResultData>(),
+            max.template casted<TResultData>());
     }
+    padded_fixed_array_t<TData, tndim> min;
+    padded_fixed_array_t<TData, tndim> max;
 private:
     AxisAlignedBoundingBox(const FixedArray<TData, tndim>& min, const FixedArray<TData, tndim>& max)
-        : min_{min}
-        , max_{max}
+        : min{ min }
+        , max{ max }
     {}
     template <class TOperation>
     bool for_each_corner(
@@ -298,19 +290,17 @@ private:
         if (ndim0 == tndim) {
             return op(corner);
         } else {
-            corner(ndim0) = min_(ndim0);
+            corner(ndim0) = min(ndim0);
             if (!for_each_corner(op, ndim0 + 1, corner)) {
                 return false;
             }
-            corner(ndim0) = max_(ndim0);
+            corner(ndim0) = max(ndim0);
             if (!for_each_corner(op, ndim0 + 1, corner)) {
                 return false;
             }
             return true;
         }
     }
-    FixedArray<TData, tndim> min_;
-    FixedArray<TData, tndim> max_;
 };
 
 template <class TData, size_t tndim>

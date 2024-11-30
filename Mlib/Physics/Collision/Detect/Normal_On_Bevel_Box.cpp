@@ -46,8 +46,8 @@ std::optional<FixedArray<float, 3>> NormalOnBevelBox::get_surface_normal(
 {
     auto trafo = rbp_.abs_transformation();
     auto rel_pos = trafo.itransform(position).casted<float>();
-    auto dmax = rel_pos - (aabb_.max() - radius_);
-    auto dmin = rel_pos - (aabb_.min() + radius_);
+    auto dmax = rel_pos - (aabb_.max - radius_);
+    auto dmin = rel_pos - (aabb_.min + radius_);
     auto sign = (dmax > -1e-6f).casted<float>() - (dmin < 1e-6f).casted<float>();
     if (sum(abs(sign)) < 2.f) {
         return std::nullopt;

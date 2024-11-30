@@ -49,7 +49,7 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
                     auto p16s = p16.p;
                     std::swap(p16s(1), p16s(2));
                     auto p =
-                        cell.aabb.min().casted<ScenePos>() +
+                        cell.aabb.min.casted<ScenePos>() +
                         cell.aabb.size().casted<ScenePos>() *
                         p16s.casted<ScenePos>() / double{ UINT16_MAX };
                     FixedArray<ScenePos, 3> intersection_point = uninitialized;
@@ -71,7 +71,7 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 continue;
                 if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
                     auto p =
-                        cell.aabb.min().casted<double>() +
+                        cell.aabb.min.casted<double>() +
                         cell.aabb.size().casted<double>() *
                         p8.p.casted<double>() / double{ UINT8_MAX };
                     bri.add_parsed_resource_name(p, *prn, 0.f, 1.f);
