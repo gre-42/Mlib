@@ -89,6 +89,7 @@ for path, dirs, files in os.walk('.'):
         'bullet3',
         'cereal',
         'zlib',
+        'eve',
         '.cxx'}]
     files[:] = [f for f in files if f not in {
         'Array.hpp',

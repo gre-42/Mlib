@@ -17,6 +17,7 @@
 #include <Mlib/Math/Power_Iteration/Qdq.hpp>
 #include <Mlib/Math/Power_Iteration/Svd.hpp>
 #include <Mlib/Math/Set_Difference.hpp>
+#include <Mlib/Math/Simd.hpp>
 #include <Mlib/Math/Sort_Svd.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Math/Svd_Jacobi.hpp>
@@ -507,6 +508,14 @@ void test_fixed_sum() {
     linfo() << mean<0>(a);
 }
 
+void test_simd() {
+    using S = ScaledInteger<int32_t, 1, 5>;
+    FixedArray<S, 3> a{ (S)1, (S)2, (S)3 };
+    FixedArray<S, 3> b{ (S)10, (S)20, (S)30 };
+    linfo() << (int)all_le(a, b);
+    linfo() << (int)all_ge(a, b);
+}
+
 int main(int argc, const char** argv) {
     try {
         test_blocking_transposed();
@@ -548,6 +557,7 @@ int main(int argc, const char** argv) {
         test_least_common_multiple();
         test_quaternion_series();
         test_fixed_sum();
+        test_simd();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;

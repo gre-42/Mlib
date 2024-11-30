@@ -77,6 +77,8 @@ public:
             if (max_(i) < other.min_(i)) {
                 return false;
             }
+        }
+        for (size_t i = 0; i < tndim; ++i) {
             if (min_(i) > other.max_(i)) {
                 return false;
             }

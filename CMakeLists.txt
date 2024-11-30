@@ -65,6 +65,8 @@ find_package(OpenCV OPTIONAL_COMPONENTS features2d)
 if (WITH_OPENSSL)
     find_package(OpenSSL)
 endif()
+set(MlibEve_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/eve/include)
+set(MlibEve_FOUND true)
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     # Alternative OpenAL-implementation: openal.org
     # find_package(OpenAL REQUIRED)

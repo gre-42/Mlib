@@ -7,6 +7,6 @@
 [submodule "zlib"]
 	path = zlib
 	url = https://github.com/madler/zlib.git
-[submodule "std-simd"]
-	path = std-simd
-	url = https://github.com/VcDevel/std-simd.git
+[submodule "eve"]
+	path = eve
+	url = https://github.com/jfalcou/eve.git
