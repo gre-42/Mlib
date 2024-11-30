@@ -515,7 +515,7 @@ void test_simd() {
     V b{ (S)10, (S)20, (S)30 };
     linfo() << (int)all_le(a, b);
     linfo() << (int)all_ge(a, b);
-    linfo() << std::numeric_limits<S>::min();
+    linfo() << std::numeric_limits<S>::lowest();
 }
 
 int main(int argc, const char** argv) {
