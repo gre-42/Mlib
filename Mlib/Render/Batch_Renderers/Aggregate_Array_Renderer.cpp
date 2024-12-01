@@ -277,7 +277,8 @@ void AggregateArrayRenderer::update_aggregates(
             std::move(continuous_texture_layers),
             std::move(discrete_texture_layers),
             std::vector<UUVector<FixedArray<float, 3, 2>>>(),
-            std::vector<UUVector<FixedArray<float, 3>>>()));
+            std::vector<UUVector<FixedArray<float, 3>>>(),
+            UUVector<FixedArray<float, 3>>()));
     }
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,

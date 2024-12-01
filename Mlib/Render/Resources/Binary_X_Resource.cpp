@@ -68,7 +68,8 @@ BinaryXResource::BinaryXResource(
             UUVector<FixedArray<float, 3>>(),
             UUVector<FixedArray<uint8_t, 3>>(),
             std::vector<UUVector<FixedArray<float, 3, 2>>>(),
-            std::vector<UUVector<FixedArray<float, 3>>>()));
+            std::vector<UUVector<FixedArray<float, 3>>>(),
+            UUVector<FixedArray<float, 3>>()));
 
     rva_90_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray<float>>(
@@ -83,7 +84,8 @@ BinaryXResource::BinaryXResource(
             UUVector<FixedArray<float, 3>>(),
             UUVector<FixedArray<uint8_t, 3>>(),
             std::vector<UUVector<FixedArray<float, 3, 2>>>(),
-            std::vector<UUVector<FixedArray<float, 3>>>()));
+            std::vector<UUVector<FixedArray<float, 3>>>(),
+            UUVector<FixedArray<float, 3>>()));
 }
 
 BinaryXResource::~BinaryXResource()

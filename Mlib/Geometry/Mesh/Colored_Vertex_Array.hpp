@@ -54,6 +54,7 @@ public:
         UUVector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
         std::vector<UUVector<FixedArray<float, 3, 2>>>&& uv1,
         std::vector<UUVector<FixedArray<float, 3>>>&& cweight,
+        UUVector<FixedArray<float, 3>>&& alpha,
         const AxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
         const BoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
@@ -69,6 +70,7 @@ public:
     UUVector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
     std::vector<UUVector<FixedArray<float, 3, 2>>> uv1;
     std::vector<UUVector<FixedArray<float, 3>>> cweight;
+    UUVector<FixedArray<float, 3>> alpha;
     
     template <PrimitiveDimensions tdims>
     UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() {
@@ -161,6 +163,7 @@ public:
         UUVector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
         std::vector<UUVector<FixedArray<float, 3, 2>>> uv1;
         std::vector<UUVector<FixedArray<float, 3>>> cweight;
+        UUVector<FixedArray<float, 3>> alpha;
 
         archive(name);
         archive(material);
@@ -174,6 +177,7 @@ public:
         archive(discrete_triangle_texture_layers);
         archive(uv1);
         archive(cweight);
+        archive(alpha);
 
         construct(
             name,
@@ -187,7 +191,8 @@ public:
             std::move(continuous_triangle_texture_layers),
             std::move(discrete_triangle_texture_layers),
             std::move(uv1),
-            std::move(cweight));
+            std::move(cweight),
+            std::move(alpha));
     }
 private:
     template <PrimitiveDimensions tfirst_dim>

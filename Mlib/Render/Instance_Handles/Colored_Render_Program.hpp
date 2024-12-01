@@ -72,6 +72,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> interior_size;
     size_t nuv_indices;
     size_t ncweights;
+    bool has_alpha;
     std::vector<float> continuous_layer_x;
     std::vector<float> continuous_layer_y;
     bool has_horizontal_detailmap;

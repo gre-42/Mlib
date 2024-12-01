@@ -48,6 +48,7 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
         UUVector<FixedArray<uint8_t, 3>>{},                         // discrete_triangle_texture_layers
         std::vector<UUVector<FixedArray<float, 3, 2>>>{},           // uv1
         std::vector<UUVector<FixedArray<float, 3>>>{},              // cweight
+        UUVector<FixedArray<float, 3>>(),                           // alpha
         &aabb,
         &bounding_sphere);
 }

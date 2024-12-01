@@ -22,14 +22,12 @@ using namespace Mlib;
 DistantTriangleHider::DistantTriangleHider(
     std::shared_ptr<ColoredVertexArray<float>> cva,
     size_t ntriangles,
-    size_t nuv1s,
-    size_t ncweights,
     std::shared_ptr<IArrayBuffer> inherited_vertices)
     : inherited_vertices_{ std::move(inherited_vertices) }
     , vertices_{ inherited_vertices_ == nullptr ? std::make_shared<BufferBackgroundCopy>() : nullptr }
     , vertex_buffer_{ inherited_vertices_ == nullptr ? *vertices_ : *inherited_vertices_ }
-    , uv1_( nuv1s )
-    , cweight_{ ncweights }
+    , uv1_( cva->uv1.size() )
+    , cweight_{ cva->cweight.size() }
     , cva_{ std::move(cva) }
     , ntriangles_{ ntriangles }
 {
@@ -43,6 +41,7 @@ DistantTriangleHider::DistantTriangleHider(
     for (auto& c : cweight_) {
         va_.add_array_buffer(c);
     }
+    va_.add_array_buffer(alpha_);
 }
 
 void DistantTriangleHider::update(std::chrono::steady_clock::time_point time) {
@@ -109,6 +108,10 @@ IArrayBuffer& DistantTriangleHider::cweight_buffer(size_t i) {
         THROW_OR_ABORT("cweight index too large");
     }
     return cweight_[i];
+}
+
+IArrayBuffer& DistantTriangleHider::alpha_buffer() {
+    return alpha_;
 }
 
 void DistantTriangleHider::delete_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {

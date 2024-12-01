@@ -82,14 +82,15 @@ void strided_copy(
 }
 
 enum class ColorSemantic {
-    RGB,
-    UNKNOWN
+    RGBA,
+    TEXTURE_WEIGHTS,
+    UNUSED
 };
 
 struct Shader {
     PhysicsMaterial physics_material = BASE_VISIBLE_TERRAIN_MATERIAL;
     Material render_material;
-    ColorSemantic color_semantic = ColorSemantic::RGB;
+    ColorSemantic color_semantic = ColorSemantic::RGBA;
 };
 
 template <class TInstancePos, class TResourcePos>
@@ -125,12 +126,21 @@ void add_instantiables(
                     }
                     resource.morphology.physics_material = shader_object->physics_material;
                     resource.material = shader_object->render_material;
-                    if (shader_object->color_semantic == ColorSemantic::UNKNOWN) {
+                    switch (shader_object->color_semantic) {
+                    case ColorSemantic::RGBA:
+                        // Do nothing
+                        break;
+                    case ColorSemantic::TEXTURE_WEIGHTS:
+                    case ColorSemantic::UNUSED:
                         for (auto& t : resource.triangles) {
                             for (auto& v : t.flat_iterable()) {
                                 v.color = 1.f;
                             }
                         }
+                        resource.alpha.clear();
+                        break;
+                    default:
+                        THROW_OR_ABORT("Unknown color semantic");
                     }
                 }
                 auto scale = sqrt(sum<0>(squared(mc.R)));
@@ -528,9 +538,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 bool simple_any = simple || simple_nm;
                 uint32_t cweights_a[] = {UINT32_MAX, 2, 1, UINT32_MAX};
                 uint32_t cweights_b[] = {UINT32_MAX, 1, 0, 2};
-                auto* cweight_ids = infield_any
-                    ? cweights_a
-                    : cweights_b;
+                auto* cweight_ids =
+                    infield_any ? cweights_a :
+                    cweights_b;
                 auto uv_source_mask = infield_any
                     ? BlendMapUvSource::VERTICAL0
                     : BlendMapUvSource::VERTICAL1;
@@ -548,11 +558,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     : get_attribute("BlendMaskUVScale").template array<float, 4>();
                 
                 size_t ntextures =
-                    simple_any
-                    ? 1
-                    : rock
-                    ? 3
-                    : 4;
+                    simple_any ? 1 :
+                    rock ? 3 :
+                    4;
                 for (size_t i = 1; i <= ntextures; ++i) {
                     std::string s = std::to_string(i);
                     auto op_diffuse = try_get_texture("TDiffuseSpecMap" + s);
@@ -649,7 +657,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .fog_distances = OrderableFixedArray{ cfg.fog_distances },
                                 .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }}
                         },
-                        .color_semantic = ColorSemantic::UNKNOWN
+                        .color_semantic = ColorSemantic::TEXTURE_WEIGHTS
                     });
             } else if (shader_group_ref == "#terrain_track_vista_d4.fx")
             {
@@ -767,7 +775,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .fog_distances = OrderableFixedArray{ cfg.fog_distances },
                                 .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }}
                         },
-                        .color_semantic = ColorSemantic::UNKNOWN
+                        .color_semantic = ColorSemantic::UNUSED
                     });
             } else if (
                 (shader_group_ref == "#decal_ao.fx") ||
@@ -814,7 +822,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 .fog_distances = OrderableFixedArray{ cfg.fog_distances },
                                 .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }}
                         },
-                        .color_semantic = ColorSemantic::UNKNOWN
+                        .color_semantic = ColorSemantic::RGBA
                     });
             } else if (shader_group_ref == "#terrain_lod.fx")
             {
@@ -901,7 +909,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             for (auto& u : uv1) {
                 u.resize(ixs_count / 3);
             }
-            std::vector<UUVector<FixedArray<float, 3>>> cweight(dbm.cweight.has_value() ? 4 : 0);
+            std::vector<UUVector<FixedArray<float, 3>>> cweight(dbm.cweight.has_value() ? 3 : 0);
+            UUVector<FixedArray<float, 3>> alpha(dbm.cweight.has_value() ? ixs_count / 3 : 0);
             for (auto& c : cweight) {
                 c.resize(ixs_count / 3);
             }
@@ -919,6 +928,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         for (auto&& [k, b] : enumerate(cweight)) {
                             b[i](j) = (*dbm.cweight)[id](k);
                         }
+                        alpha[i](j) = (*dbm.cweight)[id](0);
                     }
                 }
             }
@@ -934,7 +944,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 UUVector<FixedArray<float, 3>>(),
                 UUVector<FixedArray<uint8_t, 3>>(),
                 std::move(uv1),
-                std::move(cweight)));
+                std::move(cweight),
+                std::move(alpha)));
             if (!any(dbm.features & ColoredVertexFeatures::POSITION)) {
                 THROW_OR_ABORT("Vertices have no position in node \"" + node_id + '"');
             }

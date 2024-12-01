@@ -100,6 +100,10 @@ IArrayBuffer& AnimatedTextureLayer::cweight_buffer(size_t i) {
     THROW_OR_ABORT("AnimatedTextureLayer has no cweight_buffer");
 }
 
+IArrayBuffer& AnimatedTextureLayer::alpha_buffer() {
+    THROW_OR_ABORT("AnimatedTextureLayer has no alpha_buffer");
+}
+
 void AnimatedTextureLayer::append(
     const FixedArray<ColoredVertex<float>, 3>& triangle,
     const FixedArray<float, 3>& time,

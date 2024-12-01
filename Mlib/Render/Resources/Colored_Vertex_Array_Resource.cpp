@@ -142,6 +142,7 @@ struct AttributeIndices {
     GLuint uv_count;
     GLuint idx_cweight_0;
     GLuint cweight_count;
+    GLuint idx_alpha;
 };
 
 struct AttributeIndexCalculator {
@@ -159,6 +160,7 @@ struct AttributeIndexCalculator {
     bool has_interior_mapping_multiplier;
     size_t nuvs;
     size_t ncweights;
+    bool has_alpha;
 
     AttributeIndices build() const {
         AttributeIndices result;
@@ -177,8 +179,9 @@ struct AttributeIndexCalculator {
         result.idx_uv_0 = result.idx_interior_mapping_multiplier + has_interior_mapping_multiplier;
         result.idx_uv_1 = result.idx_uv_0 + 1;
         result.uv_count = integral_cast<GLuint>(nuvs);
-        result.idx_cweight_0 = result.idx_uv_0 + integral_cast<GLuint>(nuvs);
+        result.idx_cweight_0 = result.idx_uv_0 + result.uv_count;
         result.cweight_count = integral_cast<GLuint>(ncweights);
+        result.idx_alpha = result.idx_cweight_0 + result.cweight_count;
         return result;
     }
 };
@@ -192,6 +195,7 @@ static GenShaderText vertex_shader_text_gen{[](
     const NotSortedStruct<AttributeIndices>& attr_ids,
     size_t nuv_indices,
     size_t ncweight_indices,
+    bool has_alpha,
     size_t texture_modifier_hash,
     size_t nlights,
     size_t nskidmarks,
@@ -242,6 +246,9 @@ static GenShaderText vertex_shader_text_gen{[](
     for (size_t i = 0; i < ncweight_indices; ++i) {
         sstr << "layout (location=" << (attr_ids->idx_cweight_0 + i) << ") in float vCWeight" << i << ";" << std::endl;
     }
+    if (has_alpha) {
+        sstr << "layout (location=" << (attr_ids->idx_alpha) << ") in float vAlpha;" << std::endl;
+    }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_normalmap || fragments_depend_on_normal) {
         sstr << "layout (location=" << attr_ids->idx_normal << ") in vec3 vNormal;" << std::endl;
     }
@@ -272,6 +279,8 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "uniform vec4 alpha_distances[" << nbillboard_ids << "];" << std::endl;
             sstr << "out float alpha_fac_v;" << std::endl;
         }
+    } else if (has_alpha) {
+        sstr << "out float alpha_fac_v;" << std::endl;
     }
     if (nbones != 0) {
         sstr << "layout (location=" << attr_ids->idx_bone_indices << ") in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
@@ -457,6 +466,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "            alpha_fac_v = 1.0;" << std::endl;
         sstr << "        }" << std::endl;
         sstr << "    }" << std::endl;
+        if (has_alpha) {
+            sstr << "    alpha_fac_v *= vAlpha;" << std::endl;
+        }
+    } else if (has_alpha) {
+        sstr << "    alpha_fac_v = vAlpha;" << std::endl;
     }
     if (has_uv_offset_u) {
         for (size_t i = 0; i < nuv_indices; ++i) {
@@ -551,6 +565,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedStruct<AttributeIndices>& attr_ids,
     size_t nuv_indices,
     size_t ncweights,
+    bool has_alpha,
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y,
     size_t texture_modifier_hash,
@@ -638,7 +653,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "in float cweight" << i << ";" << std::endl;
     }
     sstr << "out vec4 frag_color;" << std::endl;
-    if ((nbillboard_ids != 0) && !orthographic) {
+    if (has_alpha || ((nbillboard_ids != 0) && !orthographic)) {
         sstr << "in float alpha_fac_v;" << std::endl;
     }
     if (reflection_strength != 0.f) {
@@ -918,7 +933,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     };
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    if ((nbillboard_ids != 0) && !orthographic) {
+    if (has_alpha || ((nbillboard_ids != 0) && !orthographic)) {
         sstr << "    float alpha_fac = alpha_fac_v;" << std::endl;
     } else {
         sstr << "    float alpha_fac = 1.0;" << std::endl;
@@ -1864,7 +1879,8 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
         .has_interior_mapping_bottom_left = !cva.material.interior_textures.empty(),
         .has_interior_mapping_multiplier = !cva.material.interior_textures.empty(),
         .nuvs = cva.uv1.size() + 1,
-        .ncweights = cva.cweight.size()
+        .ncweights = cva.cweight.size(),
+        .has_alpha = !cva.alpha.empty()
     };
 }
 
@@ -1899,6 +1915,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedStruct{ attr_ids },
         id.nuv_indices,
         id.ncweights,
+        id.has_alpha,
         id.texture_modifiers_hash,
         id.nlights,
         id.nskidmarks,
@@ -1941,6 +1958,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedStruct{ attr_ids },
         id.nuv_indices,
         id.ncweights,
+        id.has_alpha,
         id.continuous_layer_x,
         id.continuous_layer_y,
         id.texture_modifiers_hash,
@@ -2227,8 +2245,6 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
             si = std::make_unique<DistantTriangleHider>(
                 cva,
                 cva->triangles.size(),
-                cva->uv1.size(),
-                cva->cweight.size(),
                 inherited_vertices);
             return *si;
         } else {
@@ -2296,6 +2312,18 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
             CHK(glEnableVertexAttribArray(integral_cast<GLuint>(attr_ids.idx_cweight_0 + i)));
             CHK(glVertexAttribPointer(integral_cast<GLuint>(attr_ids.idx_cweight_0 + i), 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
         }
+    }
+    if (!cva->alpha.empty()) {
+        if (va.alpha_buffer().is_awaited()) {
+            va.alpha_buffer().bind();
+        } else {
+            if (cva->alpha.size() != cva->triangles.size()) {
+                THROW_OR_ABORT("#alpha != #triangles");
+            }
+            va.alpha_buffer().set(cva->alpha, task_location);
+        }
+        CHK(glEnableVertexAttribArray(integral_cast<GLuint>(attr_ids.idx_alpha)));
+        CHK(glVertexAttribPointer(integral_cast<GLuint>(attr_ids.idx_alpha), 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
     }
     if (instances_ != nullptr) {
         instances_->at(cva.get())->bind(
