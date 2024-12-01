@@ -6,7 +6,12 @@
 
 namespace Mlib {
 
-template <class TPosition, size_t tndim, class TData>
+enum class AabbExtensionDirection {
+    BIDIRECTIONAL,
+    POSITIVE
+};
+
+template <class TPosition, size_t tndim, class TData, AabbExtensionDirection extension_dir>
 class GenericBvh;
 
 template <class TPosition, size_t tndim, class TPayload>
@@ -22,12 +27,14 @@ template <class TPosition, class TPayload, size_t tndim>
 using Bvh = GenericBvh<
     TPosition,
     tndim,
-    PayloadContainer<std::list<AabbAndPayload<TPosition, tndim, TPayload>>>>;
+    PayloadContainer<std::list<AabbAndPayload<TPosition, tndim, TPayload>>>,
+    AabbExtensionDirection::BIDIRECTIONAL>;
 
 template <class TPosition, size_t tndim>
 using PointVectorBvh = GenericBvh<
     TPosition,
     tndim,
-    PayloadContainer<std::vector<PointWithoutPayload<TPosition, tndim>>>>;
+    PayloadContainer<std::vector<PointWithoutPayload<TPosition, tndim>>>,
+    AabbExtensionDirection::BIDIRECTIONAL>;
 
 }

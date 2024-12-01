@@ -35,7 +35,7 @@ enum class BvhDataRadiusType {
 /**
  * Bounding volume hierarchy
  */
-template <class TPosition, size_t tndim, class TData>
+template <class TPosition, size_t tndim, class TData, AabbExtensionDirection extension_direction>
 class GenericBvh {
 public:
     explicit GenericBvh(const FixedArray<TPosition, tndim>& max_size, size_t level)
@@ -53,6 +53,11 @@ public:
             return &data_.add(entry).payload();
         }
         for (auto& c : children_) {
+            if ((extension_direction == AabbExtensionDirection::POSITIVE) &&
+                any(entry.aabb().min < c.first.min))
+            {
+                continue;
+            }
             AxisAlignedBoundingBox<TPosition, tndim> bb = c.first;
             bb.extend(entry.aabb());
             // if (all(bb.size() <= TPosition(level_) * max_size_)) {
@@ -294,7 +299,7 @@ public:
 
     GenericBvh repackaged(const FixedArray<TPosition, tndim>& max_size, size_t level) const
     {
-        GenericBvh<TPosition, tndim, TData> result{ max_size, level };
+        GenericBvh result{ max_size, level };
         fill(result);
         return result;
     }
@@ -390,8 +395,8 @@ private:
     std::list<std::pair<AxisAlignedBoundingBox<TPosition, tndim>, GenericBvh>> children_;
 };
 
-template <class TPosition, size_t tndim, class TData>
-std::ostream& operator << (std::ostream& ostr, const GenericBvh<TPosition, tndim, TData>& bvh) {
+template <class TPosition, size_t tndim, class TData, AabbExtensionDirection extension_direction>
+std::ostream& operator << (std::ostream& ostr, const GenericBvh<TPosition, tndim, TData, extension_direction>& bvh) {
     bvh.print(ostr, BvhPrintingOptions{});
     return ostr;
 }

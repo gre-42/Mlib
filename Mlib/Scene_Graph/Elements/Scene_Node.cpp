@@ -529,9 +529,9 @@ void SceneNode::add_instances_child(
         name,
         (child_registration_state == ChildRegistrationState::REGISTERED),
         std::move(node),
-        0.,                                                                                                                     // max_center_distance
-        GenericBvh<CompressedScenePos, 3, BillboardContainer>(fixed_full<CompressedScenePos, 3>(CompressedScenePos(10.f)), 12), // small_instances
-        std::list<PositionAndYAngleAndBillboardId>()).second)                                                                   // large_instances 
+        0.,                                                                                                     // max_center_distance
+        SceneNodeInstances::SmallInstances(fixed_full<CompressedScenePos, 3>(CompressedScenePos(15.f)), 12),    // small_instances
+        std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>>()).second)                               // large_instances 
     {
         THROW_OR_ABORT("Instances node with name " + name + " already exists");
     }
@@ -1057,7 +1057,7 @@ void SceneNode::append_small_instances_to_queue(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
     const FixedArray<ScenePos, 3>& offset,
-    const PositionAndYAngleAndBillboardId& delta_pose,
+    const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
     SmallInstancesQueues& instances_queues,
     const SceneGraphConfig& scene_graph_config) const
 {
@@ -1089,12 +1089,12 @@ void SceneNode::append_small_instances_to_queue(
             auto camera_position = m.inverted_scaled().transform(iv.t);
             i.small_instances.visit(
                 AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(camera_position.casted<CompressedScenePos>(), i.max_center_distance),
-                [&, &i = i](const PositionAndYAngleAndBillboardId& j) {
+                [&, &i = i](const PositionAndYAngleAndBillboardId<CompressedScenePos>& j) {
                     UnlockGuard ulock{ ilock };
                     i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
                     return true;
                 },
-                [&, &i = i](const PositionAndBillboardId& j) {
+                [&, &i = i](const PositionAndBillboardId<CompressedScenePos>& j) {
                     UnlockGuard ulock{ ilock };
                     i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, {j.position, 0.f, j.billboard_id}, instances_queues, scene_graph_config);
                     return true;
@@ -1107,7 +1107,7 @@ void SceneNode::append_large_instances_to_queue(
     const FixedArray<ScenePos, 4, 4>& parent_mvp,
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const FixedArray<ScenePos, 3>& offset,
-    const PositionAndYAngleAndBillboardId& delta_pose,
+    const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
     LargeInstancesQueue& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {

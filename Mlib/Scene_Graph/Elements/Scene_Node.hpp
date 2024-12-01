@@ -56,62 +56,111 @@ class Blended;
 template <class T>
 struct Bijection;
 
+template <class TPosition>
 struct PositionAndYAngleAndBillboardId {
-    FixedArray<CompressedScenePos, 3> position;
-    float yangle;
+    FixedArray<TPosition, 3> position;
+    SceneDir yangle;
     uint32_t billboard_id;
-    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const {
-        return AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(position);
+    inline AxisAlignedBoundingBox<TPosition, 3> aabb() const {
+        return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
     }
-    PositionAndYAngleAndBillboardId& payload() {
+    inline PositionAndYAngleAndBillboardId& payload() {
         return *this;
     }
-    const PositionAndYAngleAndBillboardId& payload() const {
+    inline const PositionAndYAngleAndBillboardId& payload() const {
         return *this;
     }
 };
 
-struct PositionAndBillboardId {
-    FixedArray<CompressedScenePos, 3> position;
-    uint32_t billboard_id;
-    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const {
-        return AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(position);
+inline PositionAndYAngleAndBillboardId<CompressedScenePos> operator + (
+    const PositionAndYAngleAndBillboardId<UnsignedHalfCompressedScenePos>& a,
+    const FixedArray<CompressedScenePos, 3>& reference)
+{
+    return { a.position.casted<CompressedScenePos>() + reference, a.yangle, a.billboard_id };
+}
+
+inline PositionAndYAngleAndBillboardId<UnsignedHalfCompressedScenePos> operator - (
+    const PositionAndYAngleAndBillboardId<CompressedScenePos>& a,
+    const FixedArray<CompressedScenePos, 3>& reference)
+{
+    auto p = a.position - reference;
+    auto cp = p.casted<UnsignedHalfCompressedScenePos>();
+    if (any(cp.casted<CompressedScenePos>() != p)) {
+        THROW_OR_ABORT("PositionAndYAngleAndBillboardId: Could not compress scene position");
     }
-    PositionAndBillboardId& payload() {
+    return { cp, a.yangle, a.billboard_id };
+}
+
+template <class TPosition>
+struct PositionAndBillboardId {
+    FixedArray<TPosition, 3> position;
+    uint32_t billboard_id;
+    inline AxisAlignedBoundingBox<TPosition, 3> aabb() const
+    {
+        return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
+    }
+    inline PositionAndBillboardId& payload() {
         return *this;
     }
-    const PositionAndBillboardId& payload() const {
+    inline const PositionAndBillboardId& payload() const {
         return *this;
     }
 };
+
+inline PositionAndBillboardId<CompressedScenePos> operator + (
+    const PositionAndBillboardId<UnsignedHalfCompressedScenePos>& a,
+    const FixedArray<CompressedScenePos, 3>& reference)
+{
+    return { a.position.casted<CompressedScenePos>() + reference, a.billboard_id };
+}
+
+inline PositionAndBillboardId<UnsignedHalfCompressedScenePos> operator - (
+    const PositionAndBillboardId<CompressedScenePos>& a,
+    const FixedArray<CompressedScenePos, 3>& reference)
+{
+    auto p = a.position - reference;
+    auto cp = p.casted<UnsignedHalfCompressedScenePos>();
+    if (any(cp.casted<CompressedScenePos>() != p)) {
+        THROW_OR_ABORT("PositionAndBillboardId: Could not compress scene position");
+    }
+    return { cp, a.billboard_id };
+}
 
 class BillboardContainer {
 public:
-    auto& add(const PositionAndYAngleAndBillboardId& pyb) {
-        return pybs_.emplace_back(pyb);
+    auto& add(const PositionAndYAngleAndBillboardId<CompressedScenePos>& pyb) {
+        if (empty()) {
+            reference_point_ = pyb.aabb().min;
+        }
+        return pybs_.emplace_back(pyb - reference_point_);
     }
-    auto& add(const PositionAndBillboardId& pb) {
-        return pbs_.emplace_back(pb);
+    auto& add(const PositionAndBillboardId<CompressedScenePos>& pb) {
+        if (empty()) {
+            reference_point_ = pb.aabb().min;
+        }
+        return pbs_.emplace_back(pb - reference_point_);
     }
     void fill(auto& container) const {
         for (const auto& d : pybs_) {
-            container.insert(d);
+            container.insert(d + reference_point_);
         }
         for (const auto& d : pbs_) {
-            container.insert(d);
+            container.insert(d + reference_point_);
         }
     }
     bool visit(const auto& aabb, const auto& pyb_visitor, const auto& pb_visitor) const {
         for (const auto& d : pybs_) {
-            if (aabb.intersects(d.aabb())) {
-                if (!pyb_visitor(d.payload())) {
+            auto ud = d + reference_point_;
+            if (aabb.intersects(ud.aabb())) {
+                if (!pyb_visitor(ud.payload())) {
                     return false;
                 }
             }
         }
         for (const auto& d : pbs_) {
-            if (aabb.intersects(d.aabb())) {
-                if (!pb_visitor(d.payload())) {
+            auto ud = d + reference_point_;
+            if (aabb.intersects(ud.aabb())) {
+                if (!pb_visitor(ud.payload())) {
                     return false;
                 }
             }
@@ -120,12 +169,12 @@ public:
     }
     bool visit_all(const auto& pyb_visitor, const auto& pb_visitor) const {
         for (const auto& d : pybs_) {
-            if (!pyb_visitor(d)) {
+            if (!pyb_visitor(d + reference_point_)) {
                 return false;
             }
         }
         for (const auto& d : pbs_) {
-            if (!pb_visitor(d)) {
+            if (!pb_visitor(d + reference_point_)) {
                 return false;
             }
         }
@@ -133,15 +182,17 @@ public:
     }
     bool visit_pairs(const auto& aabb, const auto& pyb_visitor, const auto& pb_visitor) const {
         for (const auto& d : pybs_) {
-            if (aabb.intersects(d.aabb())) {
-                if (!pyb_visitor(d)) {
+            auto ud = d + reference_point_;
+            if (aabb.intersects(ud.aabb())) {
+                if (!pyb_visitor(ud)) {
                     return false;
                 }
             }
         }
         for (const auto& d : pbs_) {
-            if (aabb.intersects(d.aabb())) {
-                if (!pb_visitor(d)) {
+            auto ud = d + reference_point_;
+            if (aabb.intersects(ud.aabb())) {
+                if (!pb_visitor(ud)) {
                     return false;
                 }
             }
@@ -150,10 +201,10 @@ public:
     }
     void print(std::ostream& ostr, size_t rec = 0) const {
         for (const auto& d : pybs_) {
-            d.aabb().print(ostr, rec + 1);
+            (d + reference_point_).aabb().print(ostr, rec + 1);
         }
         for (const auto& d : pbs_) {
-            d.aabb().print(ostr, rec + 1);
+            (d + reference_point_).aabb().print(ostr, rec + 1);
         }
     }
     bool empty() const {
@@ -167,16 +218,19 @@ public:
         pbs_.clear();
     }
 private:
-    std::vector<PositionAndYAngleAndBillboardId> pybs_;
-    std::vector<PositionAndBillboardId> pbs_;
+    FixedArray<CompressedScenePos, 3> reference_point_ = uninitialized;
+    std::vector<PositionAndYAngleAndBillboardId<UnsignedHalfCompressedScenePos>> pybs_;
+    std::vector<PositionAndBillboardId<UnsignedHalfCompressedScenePos>> pbs_;
 };
 
 struct SceneNodeInstances {
+    using SmallInstances = GenericBvh<CompressedScenePos, 3, BillboardContainer, AabbExtensionDirection::POSITIVE>;
+
     bool is_registered;
     DanglingUniquePtr<SceneNode> scene_node;
     CompressedScenePos max_center_distance;
-    GenericBvh<CompressedScenePos, 3, BillboardContainer> small_instances;
-    std::list<PositionAndYAngleAndBillboardId> large_instances;
+    SmallInstances small_instances;
+    std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>> large_instances;
     mutable SafeAtomicSharedMutex mutex;
 };
 
@@ -353,14 +407,14 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
         const FixedArray<ScenePos, 3>& offset,
-        const PositionAndYAngleAndBillboardId& delta_pose,
+        const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
         SmallInstancesQueues& instances_queues,
         const SceneGraphConfig& scene_graph_config) const;
     void append_large_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& parent_mvp,
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const FixedArray<ScenePos, 3>& offset,
-        const PositionAndYAngleAndBillboardId& delta_pose,
+        const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
         LargeInstancesQueue& instances_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_lights_to_queue(

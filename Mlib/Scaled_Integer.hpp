@@ -18,9 +18,13 @@ struct IntermediateType<int32_t> {
     using type = double;
 };
 
+template <>
+struct IntermediateType<uint16_t> {
+    using type = float;
+};
+
 template <class T>
 using intermediate_type = IntermediateType<T>::type;
-
 
 template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 class ScaledInteger {
@@ -51,6 +55,10 @@ public:
     template <std::floating_point TFloat>
     inline explicit operator TFloat () const {
         return TFloat(count) * numerator / denominator;
+    }
+    template <class TInt2>
+    inline explicit operator ScaledInteger<TInt2, numerator, denominator> () const {
+        return { (TInt2)count };
     }
     inline ScaledInteger& operator += (const ScaledInteger& other) {
         count += other.count;
