@@ -200,7 +200,7 @@ static GenShaderText vertex_shader_text_gen{[](
     size_t nlights,
     size_t nskidmarks,
     size_t ntextures_color,
-    uint32_t nbillboard_ids,
+    BillboardId nbillboard_ids,
     bool has_lightmap_color,
     bool has_lightmap_depth,
     bool has_normalmap,
@@ -268,7 +268,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "const vec3 instancePosition = vec3(0.0, 0.0, 0.0);" << std::endl;
     }
     if (nbillboard_ids != 0) {
-        sstr << "layout (location=" << attr_ids->idx_billboard_ids << ") in uint billboard_id;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_billboard_ids << ") in mediump uint billboard_id;" << std::endl;
         sstr << "uniform vec3 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;

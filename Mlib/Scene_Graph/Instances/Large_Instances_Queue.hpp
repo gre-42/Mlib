@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <list>
@@ -32,7 +33,7 @@ public:
         const FixedArray<ScenePos, 4, 4>& mvp,
         const TransformationMatrix<float, ScenePos, 3>& m,
         const FixedArray<ScenePos, 3>& offset,
-        uint32_t billboard_id,
+        BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         InvisibilityHandling invisibility_handling);
     const std::list<TransformedColoredVertexArray>& queue() const;

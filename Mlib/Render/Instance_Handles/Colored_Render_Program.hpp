@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
@@ -85,7 +86,7 @@ struct RenderProgramIdentifier {
     bool has_continuous_texture_layer;
     bool has_discrete_vertex_texture_layer;
     bool has_discrete_atlas_texture_layer;
-    uint32_t nbillboard_ids;
+    BillboardId nbillboard_ids;
     bool reorient_normals;
     bool reorient_uv0;
     OrderableFixedArray<float, 3> emissive;

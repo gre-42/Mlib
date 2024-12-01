@@ -10,7 +10,7 @@ struct Hitbox {
     FixedArray<double, 3> position;
     float yangle = 0.f;
     float scale = 1.f;  // Currently not used
-    uint32_t billboard_id;
+    BillboardId billboard_id;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(position);

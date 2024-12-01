@@ -268,7 +268,7 @@ void Mlib::add_beacons_to_raceways(
     auto resource_name = VariableAndHash<std::string>{ "raceway_beacon" };
     ParsedResourceName prn{
         .name = resource_name,
-        .billboard_id = UINT32_MAX,
+        .billboard_id = BILLBOARD_ID_NONE,
         .yangle = 0.f,
         .probability = NAN,
         .aggregate_mode = scene_node_resources.aggregate_mode(*resource_name),

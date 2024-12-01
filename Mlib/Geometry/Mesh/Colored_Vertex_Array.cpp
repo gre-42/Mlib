@@ -631,7 +631,7 @@ void ColoredVertexArray<TPos>::set_bounds(
 }
 
 template <class TPos>
-ScenePos ColoredVertexArray<TPos>::max_center_distance(uint32_t billboard_id) const {
+ScenePos ColoredVertexArray<TPos>::max_center_distance(BillboardId billboard_id) const {
     return material.max_center_distance(billboard_id, morphology);
 }
 

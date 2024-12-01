@@ -7,7 +7,7 @@ using namespace Mlib;
 
 DynamicBillboardIds::DynamicBillboardIds(
     size_t max_num_instances,
-    uint32_t num_billboard_atlas_components)
+    BillboardId num_billboard_atlas_components)
     : DynamicBase<value_type>{ max_num_instances }
     , num_billboard_atlas_components_{ num_billboard_atlas_components }
 {}
@@ -25,6 +25,7 @@ void DynamicBillboardIds::bind(GLuint attribute_index) const {
     DynamicBase<value_type>::bind();
 
     CHK(glEnableVertexAttribArray(attribute_index));
-    CHK(glVertexAttribIPointer(attribute_index, 1, GL_UNSIGNED_INT, sizeof(value_type), nullptr));
+    static_assert(std::is_same_v<BillboardId, uint16_t>);
+    CHK(glVertexAttribIPointer(attribute_index, 1, GL_UNSIGNED_SHORT, sizeof(value_type), nullptr));
     CHK(glVertexAttribDivisor(attribute_index, 1));
 }

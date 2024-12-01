@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
@@ -77,9 +78,9 @@ struct Material {
     bool has_normalmap() const;
     bool fragments_depend_on_distance() const;
     bool fragments_depend_on_normal() const;
-    const BillboardAtlasInstance& billboard_atlas_instance(uint32_t billboard_id) const;
-    ScenePos max_center_distance(uint32_t billboard_id, const Morphology& morphology) const;
-    ExternalRenderPassType get_occluder_pass(uint32_t billboard_id) const;
+    const BillboardAtlasInstance& billboard_atlas_instance(BillboardId billboard_id) const;
+    ScenePos max_center_distance(BillboardId billboard_id, const Morphology& morphology) const;
+    ExternalRenderPassType get_occluder_pass(BillboardId billboard_id) const;
     std::string identifier() const;
     inline auto rendering_sorting_key() const {
         return std::make_tuple(blend_mode, continuous_blending_z_order, depth_func);

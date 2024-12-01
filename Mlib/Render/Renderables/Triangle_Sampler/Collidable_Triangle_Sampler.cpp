@@ -71,7 +71,7 @@ void CollidableTriangleSampler::add_near_hitboxes(
                                 .position = p,
                                 .yangle = 0.f,
                                 .scale = 1.f,
-                                .billboard_id = UINT32_MAX});
+                                .billboard_id = BILLBOARD_ID_NONE});
                     }
                 });
         }
@@ -141,7 +141,7 @@ void CollidableTriangleSampler::add_far_hitboxes(
                                 .position = p,
                                 .yangle = 0.f,
                                 .scale = 1.f,
-                                .billboard_id = UINT32_MAX});
+                                .billboard_id = BILLBOARD_ID_NONE});
                     }
                     hri.bri->add_parsed_resource_name(
                         p,

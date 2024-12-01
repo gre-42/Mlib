@@ -10,7 +10,7 @@ using namespace Mlib;
 StaticInstanceBuffers::StaticInstanceBuffers(
     TransformationMode transformation_mode,
     std::vector<TransformationAndBillboardId>&& instances_moved_from,
-    uint32_t num_billboard_atlas_components,
+    BillboardId num_billboard_atlas_components,
     const std::string& name)
     : instances_{ std::move(instances_moved_from) }
     , position_yangles_{ instances_ }

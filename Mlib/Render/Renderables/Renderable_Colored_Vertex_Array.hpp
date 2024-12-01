@@ -61,14 +61,14 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
         const FixedArray<ScenePos, 3>& offset,
-        uint32_t billboard_id,
+        BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         SmallInstancesQueues& instances_queues) const override;
     virtual void append_large_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
         const TransformationMatrix<float, ScenePos, 3>& m,
         const FixedArray<ScenePos, 3>& offset,
-        uint32_t billboard_id,
+        BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         LargeInstancesQueue& instances_queue) const override;
     virtual void extend_aabb(
@@ -77,7 +77,7 @@ public:
         AxisAlignedBoundingBox<ScenePos, 3>& aabb) const override;
     virtual AxisAlignedBoundingBox<ScenePos, 3> aabb() const override;
     virtual BoundingSphere<ScenePos, 3> bounding_sphere() const override;
-    virtual ScenePos max_center_distance(uint32_t billboard_id) const override;
+    virtual ScenePos max_center_distance(BillboardId billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
 private:
     UUVector<OffsetAndQuaternion<float, float>> calculate_absolute_bone_transformations(const AnimationState* animation_state) const;

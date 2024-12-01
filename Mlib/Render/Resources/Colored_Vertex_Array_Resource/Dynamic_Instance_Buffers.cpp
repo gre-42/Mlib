@@ -16,7 +16,7 @@ using namespace Mlib;
 DynamicInstanceBuffers::DynamicInstanceBuffers(
     TransformationMode transformation_mode,
     size_t max_num_instances,
-    uint32_t num_billboard_atlas_components,
+    BillboardId num_billboard_atlas_components,
     bool has_per_instance_continuous_texture_layer,
     ClearOnUpdate clear_on_update)
     : position_yangles_{ max_num_instances }

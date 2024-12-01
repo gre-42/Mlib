@@ -33,7 +33,7 @@ public:
     DynamicInstanceBuffers(
         TransformationMode transformation_mode,
         size_t max_num_instances,
-        uint32_t num_billboard_atlas_components,
+        BillboardId num_billboard_atlas_components,
         bool has_per_instance_continuous_texture_layer,
         ClearOnUpdate clear_on_update);
     virtual ~DynamicInstanceBuffers() override;
@@ -70,7 +70,7 @@ private:
     DynamicBillboardIds billboard_ids_;
     std::optional<DynamicInstanceContinuousTextureLayer> texture_layers_;
     size_t max_num_instances_;
-    uint32_t num_billboard_atlas_components_;
+    BillboardId num_billboard_atlas_components_;
     bool has_per_instance_continuous_texture_layer_;
     size_t tmp_num_instances_;
     GLsizei gl_num_instances_;

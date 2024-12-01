@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Transformation/Quaternion_Series.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -60,7 +61,7 @@ template <class TPosition>
 struct PositionAndYAngleAndBillboardId {
     FixedArray<TPosition, 3> position;
     SceneDir yangle;
-    uint32_t billboard_id;
+    BillboardId billboard_id;
     inline AxisAlignedBoundingBox<TPosition, 3> aabb() const {
         return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
     }
@@ -94,7 +95,7 @@ inline PositionAndYAngleAndBillboardId<UnsignedHalfCompressedScenePos> operator 
 template <class TPosition>
 struct PositionAndBillboardId {
     FixedArray<TPosition, 3> position;
-    uint32_t billboard_id;
+    uint16_t billboard_id;
     inline AxisAlignedBoundingBox<TPosition, 3> aabb() const
     {
         return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
@@ -106,6 +107,7 @@ struct PositionAndBillboardId {
         return *this;
     }
 };
+static_assert(sizeof(PositionAndBillboardId<UnsignedHalfCompressedScenePos>) == 8);
 
 inline PositionAndBillboardId<CompressedScenePos> operator + (
     const PositionAndBillboardId<UnsignedHalfCompressedScenePos>& a,
@@ -354,7 +356,7 @@ public:
         const std::string& name,
         const FixedArray<ScenePos, 3>& position,
         float yangle,
-        uint32_t billboard_id);
+        BillboardId billboard_id);
     void optimize_instances_search_time(std::ostream& ostr) const;
     bool has_camera() const;
     void set_camera(std::unique_ptr<Camera>&& camera);
@@ -461,7 +463,7 @@ public:
         std::chrono::steady_clock::duration dt) const;
     std::optional<AxisAlignedBoundingBox<ScenePos, 3>> relative_aabb() const;
     BoundingSphere<ScenePos, 3> relative_bounding_sphere() const;
-    ScenePos max_center_distance(uint32_t billboard_id) const;
+    ScenePos max_center_distance(BillboardId billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const VariableAndHash<std::string>& name) const;
     ColorStyle& color_style(const VariableAndHash<std::string>& name);

@@ -280,7 +280,7 @@ void RenderableColoredVertexArray::render_cva(
     VisibilityCheck vc{ mvp_f };
     if (rcva_->instances_ == nullptr) {
         FrustumVisibilityCheck fvc{vc};
-        if (!fvc.is_visible(cva->name, cva->material, cva->morphology, UINT32_MAX, scene_graph_config, render_pass.external.pass, cva->aabb()))
+        if (!fvc.is_visible(cva->name, cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, render_pass.external.pass, cva->aabb()))
         {
             // lerr() << ", skipped (2)";
             return;
@@ -660,7 +660,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_continuous_texture_layer = has_continuous_texture_layer,
             .has_discrete_vertex_texture_layer = si.has_discrete_triangle_texture_layers(),
             .has_discrete_atlas_texture_layer = has_discrete_atlas_texture_layer,
-            .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
+            .nbillboard_ids = integral_cast<BillboardId>(cva->material.billboard_atlas_instances.size()),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
             .emissive = OrderableFixedArray{emissive},
@@ -1286,7 +1286,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
-        if (vc.is_visible(cva->name, cva->material, cva->morphology, UINT32_MAX, scene_graph_config, external_render_pass.pass))
+        if (vc.is_visible(cva->name, cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, external_render_pass.pass))
         {
             TransformationMatrix<float, ScenePos, 3> mo{m.R, m.t - offset};
             aggregate_queue.push_back({ (float)vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });
@@ -1311,7 +1311,7 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
     const TransformationMatrix<float, ScenePos, 3>& m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
     const FixedArray<ScenePos, 3>& offset,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     SmallInstancesQueues& instances_queues) const
 {
@@ -1328,7 +1328,7 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
     const FixedArray<ScenePos, 4, 4>& mvp,
     const TransformationMatrix<float, ScenePos, 3>& m,
     const FixedArray<ScenePos, 3>& offset,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     LargeInstancesQueue& instances_queue) const
 {
@@ -1384,7 +1384,7 @@ BoundingSphere<ScenePos, 3> RenderableColoredVertexArray::bounding_sphere() cons
     return bounding_sphere_;
 }
 
-ScenePos RenderableColoredVertexArray::max_center_distance(uint32_t billboard_id) const {
+ScenePos RenderableColoredVertexArray::max_center_distance(BillboardId billboard_id) const {
     ScenePos result = 0.;
     for (const auto& cva : aggregate_off_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
     for (const auto& cva : aggregate_once_) { result = std::max(result, cva->max_center_distance(billboard_id)); }

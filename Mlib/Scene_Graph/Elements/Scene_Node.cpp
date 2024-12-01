@@ -541,7 +541,7 @@ void SceneNode::add_instances_position(
     const std::string& name,
     const FixedArray<ScenePos, 3>& position,
     float yangle,
-    uint32_t billboard_id)
+    BillboardId billboard_id)
 {
     std::scoped_lock lock{ mutex_ };
     auto cit = instances_children_.find(name);
@@ -1076,7 +1076,7 @@ void SceneNode::append_small_instances_to_queue(
         (*r)->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngleAndBillboardId{ fixed_zeros<CompressedScenePos, 3>(), 0.f, UINT32_MAX }, instances_queues, scene_graph_config);
+        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngleAndBillboardId{ fixed_zeros<CompressedScenePos, 3>(), 0.f, BILLBOARD_ID_NONE }, instances_queues, scene_graph_config);
     }
     for (const auto& [_, i] : un_guarded_iterator(instances_children_, lock)) {
         std::shared_lock ilock{ i.mutex };
@@ -1126,7 +1126,7 @@ void SceneNode::append_large_instances_to_queue(
         (*r)->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), 0.f, BILLBOARD_ID_NONE}, instances_queue, scene_graph_config);
     }
     for (const auto& [_, i] : un_guarded_iterator(instances_children_, lock)) {
         std::shared_lock ilock{ i.mutex };
@@ -1469,7 +1469,7 @@ BoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
     return result;
 }
 
-ScenePos SceneNode::max_center_distance(uint32_t billboard_id) const {
+ScenePos SceneNode::max_center_distance(BillboardId billboard_id) const {
     std::shared_lock lock{ mutex_ };
     if (!instances_children_.empty()) {
         return INFINITY;
@@ -1479,7 +1479,7 @@ ScenePos SceneNode::max_center_distance(uint32_t billboard_id) const {
         result = std::max(result, (*r)->max_center_distance(billboard_id));
     }
     for (const auto& [_, c] : children_) {
-        auto cb = c.scene_node->max_center_distance(UINT32_MAX);
+        auto cb = c.scene_node->max_center_distance(BILLBOARD_ID_NONE);
         if (cb == INFINITY) {
             return INFINITY;
         }

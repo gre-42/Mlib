@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <vector>
 
@@ -12,16 +13,15 @@ class StaticBillboardIds {
 
 public:
     StaticBillboardIds(const std::vector<TransformationAndBillboardId> &instances,
-                       uint32_t num_billboard_atlas_components);
+                       BillboardId num_billboard_atlas_components);
     ~StaticBillboardIds();
     bool copy_in_progress() const;
     void wait() const;
     void bind(GLuint attribute_index, TaskLocation task_location) const;
 
 private:
-    using BillboardId = uint32_t;
     const std::vector<TransformationAndBillboardId> &instances_;
-    uint32_t num_billboard_atlas_components_;
+    BillboardId num_billboard_atlas_components_;
     std::vector<BillboardId> billboard_ids_;
     mutable BufferBackgroundCopy buffer_;
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <list>
@@ -16,7 +17,7 @@ enum class AggregateMode;
 
 struct ParsedResourceName {
     VariableAndHash<std::string> name;
-    uint32_t billboard_id;
+    BillboardId billboard_id;
     float yangle;
     float probability;
     float probability1;

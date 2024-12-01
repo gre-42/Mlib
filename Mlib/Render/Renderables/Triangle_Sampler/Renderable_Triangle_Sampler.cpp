@@ -62,7 +62,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     const TransformationMatrix<float, ScenePos, 3>& m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
     const FixedArray<ScenePos, 3>& offset,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     SmallInstancesQueues& instances_queue) const
 {
@@ -230,6 +230,6 @@ void RenderableTriangleSampler::extend_aabb(
     // Not yet implemented
 }
 
-ScenePos RenderableTriangleSampler::max_center_distance(uint32_t billboard_id) const {
+ScenePos RenderableTriangleSampler::max_center_distance(BillboardId billboard_id) const {
     return INFINITY;
 }

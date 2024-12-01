@@ -15,13 +15,13 @@ bool Mlib::is_visible(
     const std::string& object_name,
     const Material& material,
     const Morphology& morphology,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const Frustum3<TData>* frustum,
     const AxisAlignedBoundingBox<TData, 3>* aabb)
 {
-    assert_true((billboard_id != UINT32_MAX) || material.billboard_atlas_instances.empty());
+    assert_true((billboard_id != BILLBOARD_ID_NONE) || material.billboard_atlas_instances.empty());
     if ((scene_graph_config.renderable_hider != nullptr) &&
         !scene_graph_config.renderable_hider->is_visible(object_name))
     {
@@ -62,7 +62,7 @@ template bool Mlib::is_visible<float>(
     const std::string& object_name,
     const Material& material,
     const Morphology& morphology,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const Frustum3<float>* frustum,
@@ -73,7 +73,7 @@ template bool Mlib::is_visible<double>(
     const std::string& object_name,
     const Material& material,
     const Morphology& morphology,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const Frustum3<double>* frustum,

@@ -19,7 +19,7 @@ public:
     StaticInstanceBuffers(
         TransformationMode transformation_mode,
         std::vector<TransformationAndBillboardId>&& instances,
-        uint32_t num_billboard_atlas_components,
+        BillboardId num_billboard_atlas_components,
         const std::string& name);
     virtual ~StaticInstanceBuffers() override;
     virtual bool copy_in_progress() const override;
@@ -40,7 +40,7 @@ private:
     StaticPosition position_;
     StaticRotationQuaternion rotation_quaternion;
     StaticBillboardIds billboard_ids_;
-    uint32_t num_billboard_atlas_components_;
+    BillboardId num_billboard_atlas_components_;
     TransformationMode transformation_mode_;
 };
 

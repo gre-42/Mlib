@@ -1,4 +1,5 @@
 #include "Add_Models_To_Model_Nodes.hpp"
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
@@ -57,7 +58,7 @@ void Mlib::add_models_to_model_nodes(
             auto iit = tags.find("max_imposter_texture_size");
             ParsedResourceName prn{
                 .name = VariableAndHash{ match[1].str() },
-                .billboard_id = match[2].matched ? safe_sto<uint32_t>(match[2].str()) : UINT32_MAX,
+                .billboard_id = match[2].matched ? safe_stox<BillboardId>(match[2].str()) : BILLBOARD_ID_NONE,
                 .yangle = 0.f,
                 .probability = NAN,
                 .aggregate_mode = resources.aggregate_mode(match[1].str()),

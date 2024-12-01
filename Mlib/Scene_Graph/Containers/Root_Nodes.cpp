@@ -105,7 +105,7 @@ void RootNodes::add_root_node(
         THROW_OR_ABORT("Unsupported scene node state: " + std::to_string(int(scene_node_state)));
     }
     auto ref = scene_node.ref(DP_LOC);
-    auto md = scene_node->max_center_distance(UINT32_MAX);
+    auto md = scene_node->max_center_distance(BILLBOARD_ID_NONE);
     scene_node->set_scene_and_state(scene_, scene_node_state);
     if (!node_container_.try_emplace(name, std::move(scene_node)).second) {
         verbose_abort("Could not insert into node container: \"" + name + '"');
@@ -133,7 +133,7 @@ void RootNodes::move_node_to_bvh(const std::string& name) {
         nodes_under_construction_.insert(std::move(m));
         THROW_OR_ABORT("Node \"" + name + "\" is not static");
     }
-    auto md = m.mapped()->max_center_distance(UINT32_MAX);
+    auto md = m.mapped()->max_center_distance(BILLBOARD_ID_NONE);
     if (md == 0.f) {
         nodes_under_construction_.insert(std::move(m));
         THROW_OR_ABORT("Node \"" + name + "\" has radius=0");

@@ -29,7 +29,7 @@ ParticlesInstance::ParticlesInstance(
     , dynamic_instance_buffers_{ std::make_shared<DynamicInstanceBuffers>(
         triangles->material.transformation_mode,
         max_num_instances,
-        integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size()),
+        integral_cast<BillboardId>(triangles->material.billboard_atlas_instances.size()),
         get_has_per_instance_continuous_texture_layer(*triangles),
         get_clear_on_update(substrate)) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(triangles, dynamic_instance_buffers_) }

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Billboard_Id.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -24,7 +25,7 @@ public:
         const std::string& object_name,
         const Material& material,
         const Morphology& morphology,
-        uint32_t billboard_id,
+        BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         ExternalRenderPassType external_render_pass,
         const AxisAlignedBoundingBox<TData, 3>& aabb) const;

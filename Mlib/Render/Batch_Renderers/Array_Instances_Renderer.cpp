@@ -54,7 +54,7 @@ void ArrayInstancesRenderer::update_instances(
         cva_instances->insert({a.get(), std::make_shared<StaticInstanceBuffers>(
             a->material.transformation_mode,
             std::vector(ts.begin(), ts.end()),
-            integral_cast<uint32_t>(a->material.billboard_atlas_instances.size()),
+            integral_cast<BillboardId>(a->material.billboard_atlas_instances.size()),
             a->name)});
     }
     std::shared_ptr<ColoredVertexArrayResource> rcva;

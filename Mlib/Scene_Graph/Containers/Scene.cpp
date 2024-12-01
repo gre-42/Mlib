@@ -610,7 +610,7 @@ void Scene::render(
                             }
                             LargeInstancesQueue instances_queue{external_render_pass.pass};
                             for (const auto& node : nodes) {
-                                node->append_large_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                                node->append_large_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), 0.f, BILLBOARD_ID_NONE}, instances_queue, scene_graph_config);
                             }
                             large_instances_renderer->update_instances(iv.t, instances_queue.queue(), task_location);
                         });
@@ -695,7 +695,7 @@ void Scene::render(
                                     external_render_pass.pass,
                                     black_render_passes};
                                 for (const auto& node : nodes) {
-                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), 0.f, BILLBOARD_ID_NONE}, instances_queues, scene_graph_config);
                                 }
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->update_instances(

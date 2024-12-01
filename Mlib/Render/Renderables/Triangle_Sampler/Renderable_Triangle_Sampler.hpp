@@ -41,14 +41,14 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
         const FixedArray<ScenePos, 3>& offset,
-        uint32_t billboard_id,
+        BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         SmallInstancesQueues& instances_queue) const override;
     virtual void extend_aabb(
         const TransformationMatrix<float, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<ScenePos, 3>& aabb) const override;
-    virtual ScenePos max_center_distance(uint32_t billboard_id) const override;
+    virtual ScenePos max_center_distance(BillboardId billboard_id) const override;
 private:
     const SceneNodeResources& scene_node_resources_;
     const TerrainStyles& terrain_styles_;

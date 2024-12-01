@@ -27,7 +27,7 @@ void SmallInstancesQueues::insert(
     const FixedArray<ScenePos, 4, 4>& mvp,
     const TransformationMatrix<float, ScenePos, 3>& m,
     const FixedArray<ScenePos, 3>& offset,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config)
 {
     TransformationMatrix<float, float, 3> m_shifted{m.R, (m.t - offset).casted<float>()};

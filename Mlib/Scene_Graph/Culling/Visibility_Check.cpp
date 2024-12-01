@@ -22,7 +22,7 @@ bool VisibilityCheck<TData>::is_visible(
     const std::string& object_name,
     const Material& material,
     const Morphology& morphology,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass) const
 {
@@ -41,11 +41,11 @@ bool VisibilityCheck<TData>::is_visible(TData max_center_distance) const
 template <class TData>
 bool VisibilityCheck<TData>::black_is_visible(
     const Material& material,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass) const
 {
-    assert_true((billboard_id != UINT32_MAX) || material.billboard_atlas_instances.empty());
+    assert_true((billboard_id != BILLBOARD_ID_NONE) || material.billboard_atlas_instances.empty());
     if ((external_render_pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
         (external_render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
         (external_render_pass == ExternalRenderPassType::DIRTMAP))
@@ -57,7 +57,7 @@ bool VisibilityCheck<TData>::black_is_visible(
     {
         THROW_OR_ABORT("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass));
     }
-    ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
+    ExternalRenderPassType occluder_pass = (billboard_id != BILLBOARD_ID_NONE)
         ? material.billboard_atlas_instance(billboard_id).occluder_pass
         : material.occluder_pass;
     if ((occluder_pass & external_render_pass) != external_render_pass) {

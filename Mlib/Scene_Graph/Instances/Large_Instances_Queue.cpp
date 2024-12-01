@@ -29,7 +29,7 @@ void LargeInstancesQueue::insert(
     const FixedArray<ScenePos, 4, 4>& mvp,
     const TransformationMatrix<float, ScenePos, 3>& m,
     const FixedArray<ScenePos, 3>& offset,
-    uint32_t billboard_id,
+    BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     InvisibilityHandling invisibility_handling)
 {
@@ -42,7 +42,7 @@ void LargeInstancesQueue::insert(
         } else if (render_pass_ == ExternalRenderPassType::DIRTMAP) {
             continue;
         } else if (any(render_pass_ & ExternalRenderPassType::IS_GLOBAL_MASK)) {
-            ExternalRenderPassType occluder_pass = (billboard_id != UINT32_MAX)
+            ExternalRenderPassType occluder_pass = (billboard_id != BILLBOARD_ID_NONE)
                 ? scva->material.billboard_atlas_instance(billboard_id).occluder_pass
                 : scva->material.occluder_pass;
             if (!any(occluder_pass & ExternalRenderPassType::IS_GLOBAL_MASK)) {

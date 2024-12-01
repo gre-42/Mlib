@@ -190,7 +190,7 @@ void HeterogeneousResource::generate_instances() {
                 tri(0).position.casted<ScenePos>(),
                 ParsedResourceName{
                     .name = VariableAndHash{ match[1].str() },
-                    .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
+                    .billboard_id = match[2].matched ? safe_stox<BillboardId>(match[2].str()) : BILLBOARD_ID_NONE,
                     .yangle = 0.f,
                     .probability = NAN,
                     .probability1 = NAN,

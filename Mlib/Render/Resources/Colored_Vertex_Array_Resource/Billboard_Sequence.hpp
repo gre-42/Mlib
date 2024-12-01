@@ -1,11 +1,11 @@
 #pragma once
-#include <cstdint>
+#include <Mlib/Billboard_Id.hpp>
 #include <vector>
 
 namespace Mlib {
 
 struct BillboardSequence {
-    std::vector<uint32_t> billboard_ids;
+    std::vector<BillboardId> billboard_ids;
     float duration;
     float final_texture_w;
 };

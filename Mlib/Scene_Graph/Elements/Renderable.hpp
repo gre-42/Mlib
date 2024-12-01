@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Scene_Precision.hpp>
@@ -74,14 +75,14 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
         const FixedArray<ScenePos, 3>& offset,
-        uint32_t billboard_id,
+        BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         SmallInstancesQueues& instances_queues) const;
     virtual void append_large_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
         const TransformationMatrix<float, ScenePos, 3>& m,
         const FixedArray<ScenePos, 3>& offset,
-        uint32_t billboard_id,
+        BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         LargeInstancesQueue& instances_queue) const;
     virtual void extend_aabb(
@@ -100,7 +101,7 @@ public:
             static_assert(sizeof(TBoundingPrimitive) == 0, "Unknown bounding primitive");
         }
     }
-    virtual ScenePos max_center_distance(uint32_t billboard_id) const;
+    virtual ScenePos max_center_distance(BillboardId billboard_id) const;
 };
 
 }

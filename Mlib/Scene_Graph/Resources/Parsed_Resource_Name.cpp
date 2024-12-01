@@ -1,5 +1,6 @@
 #include "Parsed_Resource_Name.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -41,7 +42,7 @@ ParsedResourceName Mlib::parse_resource_name(
     }
     ParsedResourceName result{
         .name = VariableAndHash{ match[NAME].str() },
-        .billboard_id = match[BILLBOARD_ID].matched ? safe_stou(match[BILLBOARD_ID].str()) : UINT32_MAX,
+        .billboard_id = match[BILLBOARD_ID].matched ? safe_stox<BillboardId>(match[BILLBOARD_ID].str()) : BILLBOARD_ID_NONE,
         .yangle = match[YANGLE].matched ? safe_stof(match[YANGLE].str()) * degrees : 0.f,
         .probability = match[PROBABILITY].matched ? safe_stof(match[PROBABILITY].str()) : 1.f,
         .probability1 = match[PROBABILITY1].matched ? safe_stof(match[PROBABILITY1].str()) : 1.f,
