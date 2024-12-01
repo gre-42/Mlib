@@ -512,6 +512,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 (shader_group_ref == "#terrain_road.fx") ||
                 (shader_group_ref == "#terrain_road_flat.fx") ||
                 (shader_group_ref == "#terrain_edge_nm.fx") ||
+                (shader_group_ref == "#terrain_wsm_blend_nm.fx") ||
                 (shader_group_ref == "#terrain_wsm_edge_nm.fx") ||
                 (shader_group_ref == "#terrain_infield.fx") ||
                 (shader_group_ref == "#terrain_infield_nm.fx") ||
