@@ -8,10 +8,10 @@
 namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
-static const float RIDGE_SPECIAL_THRESHOLD = 2.f;
-static const float RIDGE_SINGLE_FACE = 3.f;
-static const float RIDGE_UNTOUCHABLE = 4.f;
-static const float RIDGE_360 = 5.f;
+static const SceneDir RIDGE_SPECIAL_THRESHOLD = 2.f;
+static const SceneDir RIDGE_SINGLE_FACE = 3.f;
+static const SceneDir RIDGE_UNTOUCHABLE = 4.f;
+static const SceneDir RIDGE_360 = 5.f;
 
 enum class SingleFaceBehavior {
     TOUCHABLE,
@@ -24,11 +24,11 @@ struct CollisionRidgeSphere {
     FixedArray<CompressedScenePos, 2, 3> edge;
     RaySegment3D<SceneDir, CompressedScenePos> ray;
     FixedArray<SceneDir, 3> normal;
-    float min_cos;
+    SceneDir min_cos;
     FixedArray<SceneDir, 3> tangent() const;
     bool is_touchable(SingleFaceBehavior behavior) const;
     bool is_oriented() const;
-    void combine(const CollisionRidgeSphere& other, float max_min_cos_ridge);
+    void combine(const CollisionRidgeSphere& other, SceneDir max_min_cos_ridge);
     void finalize();
     CollisionRidgeSphere transformed(const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const;
 };
