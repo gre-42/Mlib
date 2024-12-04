@@ -21,21 +21,21 @@ NormalOnBevelBox::NormalOnBevelBox(
 NormalOnBevelBox::~NormalOnBevelBox() = default;
 
 std::optional<FixedArray<float, 3>> NormalOnBevelBox::get_surface_normal(
-    const CollisionRidgeSphere& ridge,
+    const CollisionRidgeSphere<CompressedScenePos>& ridge,
     const FixedArray<ScenePos, 3>& position) const
 {
     return get_surface_normal(position);
 }
 
 std::optional<FixedArray<float, 3>> NormalOnBevelBox::get_surface_normal(
-    const CollisionPolygonSphere<3>& triangle,
+    const CollisionPolygonSphere<CompressedScenePos, 3>& triangle,
     const FixedArray<ScenePos, 3>& position) const
 {
     return get_surface_normal(position);
 }
 
 std::optional<FixedArray<float, 3>> NormalOnBevelBox::get_surface_normal(
-    const CollisionPolygonSphere<4>& quad,
+    const CollisionPolygonSphere<CompressedScenePos, 4>& quad,
     const FixedArray<ScenePos, 3>& position) const
 {
     return get_surface_normal(position);

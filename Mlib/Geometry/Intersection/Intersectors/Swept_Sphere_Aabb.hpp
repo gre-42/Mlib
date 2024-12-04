@@ -14,22 +14,22 @@ public:
     virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const;
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const;
     virtual bool intersects(
-        const CollisionPolygonSphere<4>& q,
+        const CollisionPolygonSphere<CompressedScenePos, 4>& q,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const;
     virtual bool intersects(
-        const CollisionPolygonSphere<3>& t,
+        const CollisionPolygonSphere<CompressedScenePos, 3>& t,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const;
     virtual bool intersects(
-        const CollisionRidgeSphere& r1,
+        const CollisionRidgeSphere<CompressedScenePos>& r1,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const;
     virtual bool intersects(
-        const CollisionLineSphere& l1,
+        const CollisionLineSphere<CompressedScenePos>& l1,
         ScenePos& overlap,
         ScenePos& ray_t,
         FixedArray<ScenePos, 3>& intersection_point,

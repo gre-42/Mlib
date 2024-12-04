@@ -89,9 +89,9 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                     t.triangle(0).position,
                     t.triangle(1).position,
                     t.triangle(2).position}};
-                TranslationMatrix<ScenePos, 3> mc_rel{ bs.center() };
+                TranslationMatrix<ScenePos, 3> mc_rel{ bs.center };
                 auto mvp_center = mvp * mc_rel;
-                if (!VisibilityCheck{ mvp_center }.is_visible(ScenePos(2) * bs.radius() / scale_ + max_distance_to_camera)) {
+                if (!VisibilityCheck{ mvp_center }.is_visible(ScenePos(2) * bs.radius / scale_ + max_distance_to_camera)) {
                     return;
                 }
             }

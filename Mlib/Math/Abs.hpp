@@ -14,7 +14,7 @@ template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
 ScaledInteger<TInt, numerator, denominator> abs(
     const ScaledInteger<TInt, numerator, denominator>& a)
 {
-    return { std::abs(a.count) };
+    return ScaledInteger<TInt, numerator, denominator>::from_count(std::abs(a.count));
 }
 
 }

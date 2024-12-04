@@ -30,7 +30,7 @@ public:
         : PlaneNd{ triangle_normal(triangle).template casted<TDir>(), compute_center ? mean<0>(triangle) : triangle[0] }
     {}
     template <class TTPos>
-    PlaneNd transformed(const TransformationMatrix<TDir, TTPos, 3>& transformation_matrix) const {
+    PlaneNd transformed(const TransformationMatrix<TDir, TTPos, tndim>& transformation_matrix) const {
         PlaneNd result = uninitialized;
         const auto& n0 = normal;
         const auto& i0 = intercept;
@@ -40,6 +40,12 @@ public:
         i1 = (TPos)(i0 - dot0d(n1.template casted<TTPos>(), transformation_matrix.t));
         // i1 = -dot0d(n1, trafo(n0 * (-i0))) = -dot0d(n1, -i0 * n1 + t) = i0 - dot0d(n1, t)
         return result;
+    }
+    PlaneNd operator + (const FixedArray<TPos, tndim>& offset) {
+        using I = funpack_t<TPos>;
+        auto n = normal.template casted<I>();
+        auto o = offset.template casted<I>();
+        return { normal, intercept - (TPos)dot0d(n, o) };
     }
     PlaneNd operator - () const {
         return { -normal, -intercept };

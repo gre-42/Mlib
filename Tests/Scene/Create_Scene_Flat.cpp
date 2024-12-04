@@ -120,8 +120,8 @@ void Mlib::create_scene_flat(
     std::list<TSI> intersectables1 = {
         TSI{ PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
              std::make_shared<SweptSphereAabb>(
-                -fixed_ones<CompressedScenePos, 3>(),
-                fixed_ones<CompressedScenePos, 3>(),
+                -fixed_full<CompressedScenePos, 3>(1.f),
+                fixed_full<CompressedScenePos, 3>(1.f),
                 (CompressedScenePos)0.5f) }
     };
 

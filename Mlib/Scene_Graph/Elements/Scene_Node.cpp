@@ -1461,7 +1461,7 @@ BoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_bounding_sphere();
-        if (cb.radius() != 0.) {
+        if (cb.radius != 0.) {
             auto m = c.scene_node->relative_model_matrix();
             result.extend(cb.transformed(m));
         }

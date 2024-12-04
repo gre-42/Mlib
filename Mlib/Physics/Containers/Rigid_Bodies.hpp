@@ -1,12 +1,15 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Rigid_Body.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Iterator/Iterable_Wrapper.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Physics/Containers/Elements/Collision_Line_Sphere.hpp>
+#include <Mlib/Physics/Containers/Elements/Collision_Ridge_Sphere.hpp>
+#include <Mlib/Physics/Containers/Elements/Collision_Triangle_Sphere.hpp>
+#include <Mlib/Physics/Containers/Ridge_Map.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <functional>
@@ -47,21 +50,6 @@ struct RigidBodyAndIntersectableMesh {
     TypedMesh<std::shared_ptr<IIntersectableMesh>> mesh;
 };
 
-struct RigidBodyAndCollisionTriangleSphere {
-    RigidBodyVehicle& rb;
-    std::variant<CollisionPolygonSphere<3>, CollisionPolygonSphere<4>> ctp;
-};
-
-struct RigidBodyAndCollisionLineSphere {
-    RigidBodyVehicle& rb;
-    CollisionLineSphere clp;
-};
-
-struct RigidBodyAndCollisionRidgeSphere {
-    RigidBodyVehicle& rb;
-    CollisionRidgeSphere crp;
-};
-
 enum class CollisionRidgeBakingStatus {
     NOT_BAKED,
     BAKED,
@@ -71,6 +59,25 @@ enum class CollisionRidgeBakingStatus {
 class RigidBodies {
     friend class PhysicsEngine;
 public:
+    using TriangleBvh = CompressedBvh<
+        CompressedScenePos,
+        HalfCompressedScenePos,
+        RigidBodyAndCollisionTriangleSphere<CompressedScenePos>,
+        RigidBodyAndCollisionTriangleSphere<HalfCompressedScenePos>,
+        3>;
+    using RidgeBvh = CompressedBvh<
+        CompressedScenePos,
+        HalfCompressedScenePos,
+        RigidBodyAndCollisionRidgeSphere<CompressedScenePos>,
+        RigidBodyAndCollisionRidgeSphere<HalfCompressedScenePos>,
+        3>;
+    using LineBvh = CompressedBvh<
+        CompressedScenePos,
+        HalfCompressedScenePos,
+        RigidBodyAndCollisionLineSphere<CompressedScenePos>,
+        RigidBodyAndCollisionLineSphere<HalfCompressedScenePos>,
+        3>;
+
     explicit RigidBodies(const PhysicsEngineConfig& cfg);
     ~RigidBodies();
     void add_rigid_body(
@@ -88,10 +95,10 @@ public:
     IterableWrapper<std::list<RigidBodyAndMeshes>> objects() const;
     IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
     const Bvh<CompressedScenePos, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
-    const Bvh<CompressedScenePos, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
-    const Bvh<CompressedScenePos, RigidBodyAndCollisionRidgeSphere, 3>& ridge_bvh() const;
-    const std::map<std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>, const CollisionRidgeSphere*>& ridge_map();
-    const Bvh<CompressedScenePos, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
+    const TriangleBvh& triangle_bvh() const;
+    const RidgeBvh& ridge_bvh() const;
+    RidgeMap& ridge_map();
+    const LineBvh& line_bvh() const;
     bool empty() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
@@ -104,10 +111,10 @@ private:
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     // BVHs. Do not forget to .clear() the BVHs in the "delete_rigid_body" method.
     Bvh<CompressedScenePos, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
-    Bvh<CompressedScenePos, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
-    mutable Bvh<CompressedScenePos, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
-    mutable std::map<std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>, const CollisionRidgeSphere*> ridge_map_;
-    Bvh<CompressedScenePos, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
+    TriangleBvh triangle_bvh_;
+    mutable RidgeBvh ridge_bvh_;
+    mutable RidgeMap ridge_map_;
+    LineBvh line_bvh_;
     mutable CollisionRidgesRigidBody collision_ridges_;
     mutable CollisionRidgeBakingStatus collision_ridges_baking_status_;
 };

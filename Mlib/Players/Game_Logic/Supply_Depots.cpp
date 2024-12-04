@@ -47,7 +47,7 @@ bool SupplyDepots::visit_supply_depots(
 {
     BoundingSphere<ScenePos, 3> bs(position, funpack(cfg_.supply_depot_attraction_radius));
     return bvh_.visit(
-        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(bs.center(), bs.radius()),
+        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(bs.center, bs.radius),
         [&](const SupplyDepot& supply_depot)
         {
             if (supply_depot.is_cooling_down()) {
@@ -111,7 +111,7 @@ void SupplyDepots::add_supply_depot(
     float cooldown)
 {
     auto center = scene_node->absolute_model_matrix().t;
-    auto payload = bvh_.insert(
+    auto& element = bvh_.insert(
         AxisAlignedBoundingBox<ScenePos, 3>::from_point(center),
         SupplyDepot{
             .node = scene_node,
@@ -126,6 +126,6 @@ void SupplyDepots::add_supply_depot(
         FixedArray<float, 3>{0.f, 2.f * rpm, 0.f});
     scene_node->add_color_style(std::make_unique<ColorStyle>());
     scene_node->set_relative_movable({ rt, CURRENT_SOURCE_LOCATION });
-    payload->node_on_clear->add([this](){ bvh_.clear(); }, CURRENT_SOURCE_LOCATION);
+    element.payload().node_on_clear->add([this](){ bvh_.clear(); }, CURRENT_SOURCE_LOCATION);
     advance_times_.add_advance_time({ rt, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

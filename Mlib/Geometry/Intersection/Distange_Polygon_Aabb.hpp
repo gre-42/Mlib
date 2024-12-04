@@ -109,8 +109,8 @@ void distance_interior_polygon_aabb(
         if (polygon.contains(corner)) {
             using I = funpack_t<TPos>;
             auto proj = corner.template casted<I>();
-            auto n = polygon.plane().normal.template casted<I>();
-            proj -= n * (dot0d(n, proj) + (I)polygon.plane().intercept);
+            auto n = polygon.plane.normal.template casted<I>();
+            proj -= n * (dot0d(n, proj) + (I)polygon.plane.intercept);
             closest_point.update(proj.template casted<TPos>(), corner);
         }
         return true;
@@ -119,7 +119,7 @@ void distance_interior_polygon_aabb(
 
 template <size_t tnvertices>
 void distance_polygon_aabb(
-    const CollisionPolygonSphere<tnvertices>& polygon,
+    const CollisionPolygonSphere<CompressedScenePos, tnvertices>& polygon,
     const AxisAlignedBoundingBox<ScenePos, 3>& aabb,
     ClosestPoint<SceneDir, ScenePos>& closest_point)
 {

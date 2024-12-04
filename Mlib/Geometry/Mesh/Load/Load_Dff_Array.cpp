@@ -78,7 +78,7 @@ DffArrays<TPosition> Mlib::load_dff(
                 material.color(1) / 255.f,
                 material.color(2) / 255.f };
             const auto& ide = dddb.get_item(a.frame->name);
-            auto center_distances = ide.center_distances(morph_target.bounding_sphere.radius());
+            auto center_distances = ide.center_distances(morph_target.bounding_sphere.radius);
             auto& tl = tls.emplace_back(
                 name + "_" + a.frame->name,
                 Material{

@@ -511,8 +511,8 @@ void test_fixed_sum() {
 void test_simd() {
     using S = ScaledInteger<int32_t, 1, 5>;
     using V = padded_fixed_array_t<S, 3>;
-    V a{ (S)1, (S)2, (S)3 };
-    V b{ (S)10, (S)20, (S)30 };
+    V a{ (S)1.f, (S)2.f, (S)3.f };
+    V b{ (S)10.f, (S)20.f, (S)30.f };
     linfo() << (int)all_le(a, b);
     linfo() << (int)all_ge(a, b);
     linfo() << std::numeric_limits<S>::lowest();

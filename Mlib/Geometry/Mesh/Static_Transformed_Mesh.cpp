@@ -17,11 +17,11 @@ StaticTransformedMesh::StaticTransformedMesh(
     std::string name,
     const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb,
     const BoundingSphere<CompressedScenePos, 3>& bounding_sphere,
-    std::vector<CollisionPolygonSphere<4>>&& quads,
-    std::vector<CollisionPolygonSphere<3>>&& triangles,
-    std::vector<CollisionLineSphere>&& lines,
-    std::vector<CollisionLineSphere>&& edges,
-    std::vector<CollisionRidgeSphere>&& ridges,
+    std::vector<CollisionPolygonSphere<CompressedScenePos, 4>>&& quads,
+    std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>&& triangles,
+    std::vector<CollisionLineSphere<CompressedScenePos>>&& lines,
+    std::vector<CollisionLineSphere<CompressedScenePos>>&& edges,
+    std::vector<CollisionRidgeSphere<CompressedScenePos>>&& ridges,
     std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>&& intersectables)
     : name_{ std::move(name) }
     , aabb_{ aabb }
@@ -44,23 +44,23 @@ bool StaticTransformedMesh::intersects(const PlaneNd<SceneDir, CompressedScenePo
     return bounding_sphere_.intersects(plane);
 }
 
-const std::vector<CollisionPolygonSphere<4>>& StaticTransformedMesh::get_quads_sphere() const {
+const std::vector<CollisionPolygonSphere<CompressedScenePos, 4>>& StaticTransformedMesh::get_quads_sphere() const {
     return quads_;
 }
 
-const std::vector<CollisionPolygonSphere<3>>& StaticTransformedMesh::get_triangles_sphere() const {
+const std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>& StaticTransformedMesh::get_triangles_sphere() const {
     return triangles_;
 }
 
-const std::vector<CollisionLineSphere>& StaticTransformedMesh::get_lines_sphere() const {
+const std::vector<CollisionLineSphere<CompressedScenePos>>& StaticTransformedMesh::get_lines_sphere() const {
     return lines_;
 }
 
-const std::vector<CollisionLineSphere>& StaticTransformedMesh::get_edges_sphere() const {
+const std::vector<CollisionLineSphere<CompressedScenePos>>& StaticTransformedMesh::get_edges_sphere() const {
     return edges_;
 }
 
-const std::vector<CollisionRidgeSphere>& StaticTransformedMesh::get_ridges_sphere() const {
+const std::vector<CollisionRidgeSphere<CompressedScenePos>>& StaticTransformedMesh::get_ridges_sphere() const {
     return ridges_;
 }
 

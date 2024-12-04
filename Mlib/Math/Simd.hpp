@@ -17,6 +17,16 @@ public:
     int32_t padding = 0;
 };
 
+template <std::intmax_t numerator, std::intmax_t denominator>
+class PaddedFixedArray3Int16: public FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3> {
+public:
+    using FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3>::FixedArray;
+    PaddedFixedArray3Int16(const FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3>& other)
+        : FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3>{ other }
+    {}
+    int16_t padding = 0;
+};
+
 template <std::floating_point TData, size_t tndim>
 static FixedArray<TData, tndim> get_padded_fixed_array(const FixedArray<TData, tndim>&) {
     verbose_abort("xx");
@@ -25,6 +35,13 @@ static FixedArray<TData, tndim> get_padded_fixed_array(const FixedArray<TData, t
 template <std::intmax_t numerator, std::intmax_t denominator, size_t tndim>
 static PaddedFixedArray3Int32<numerator, denominator> get_padded_fixed_array(
     const FixedArray<ScaledInteger<int32_t, numerator, denominator>, tndim>&)
+{
+    verbose_abort("xx");
+}
+
+template <std::intmax_t numerator, std::intmax_t denominator, size_t tndim>
+static PaddedFixedArray3Int16<numerator, denominator> get_padded_fixed_array(
+    const FixedArray<ScaledInteger<int16_t, numerator, denominator>, tndim>&)
 {
     verbose_abort("xx");
 }
@@ -62,6 +79,33 @@ template <std::intmax_t numerator, std::intmax_t denominator>
 bool all_ge(
     const PaddedFixedArray3Int32<numerator, denominator>& a,
     const PaddedFixedArray3Int32<numerator, denominator>& b)
+{
+    return all_le(b, a);
+}
+
+template <std::intmax_t numerator, std::intmax_t denominator>
+bool all_le(
+    const PaddedFixedArray3Int16<numerator, denominator>& a,
+    const PaddedFixedArray3Int16<numerator, denominator>& b)
+{
+    eve::experimental::fixed_size_simd<int16_t, 4> ea(
+        a(0).count,
+        a(1).count,
+        a(2).count,
+        a.padding);
+
+    eve::experimental::fixed_size_simd<int16_t, 4> eb(
+        b(0).count,
+        b(1).count,
+        b(2).count,
+        b.padding);
+    return eve::all(ea <= eb);
+}
+
+template <std::intmax_t numerator, std::intmax_t denominator>
+bool all_ge(
+    const PaddedFixedArray3Int16<numerator, denominator>& a,
+    const PaddedFixedArray3Int16<numerator, denominator>& b)
 {
     return all_le(b, a);
 }

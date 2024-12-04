@@ -89,7 +89,7 @@ void RigidBodies::add_rigid_body(
             for (auto& m : hitboxes) {
                 if (any(m->morphology.physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
                     for (const auto& t : m->transformed_lines_bbox(rb.get_new_absolute_model_matrix())) {
-                        line_bvh_.insert(t.aabb, RigidBodyAndCollisionLineSphere{ rb, t.base });
+                        line_bvh_.insert(t.aabb, RigidBodyAndCollisionLineSphere<CompressedScenePos>{ rb, t.base });
                     }
                 } else {
                     bool is_convex = any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX);
@@ -109,9 +109,9 @@ void RigidBodies::add_rigid_body(
                         auto get_transformed = [&]<size_t tnvertices>(){
                             auto transformed = m->template transformed_polygon_bbox<tnvertices>(
                                 rb.get_new_absolute_model_matrix());
-                            std::vector<CollisionPolygonSphere<tnvertices>> bases;
+                            std::vector<CollisionPolygonSphere<CompressedScenePos, tnvertices>> bases;
                             bases.reserve(transformed.size());
-                            for (const CollisionPolygonAabb<tnvertices>& t : transformed) {
+                            for (const CollisionPolygonAabb<CompressedScenePos, tnvertices>& t : transformed) {
                                 bases.push_back(t.base);
                             }
                             for (const auto& t : bases) {
@@ -122,16 +122,16 @@ void RigidBodies::add_rigid_body(
                                 }
                                 collision_ridges.insert(
                                     t.corners,
-                                    t.polygon.plane().normal,
+                                    t.polygon.plane.normal,
                                     cfg_.max_min_cos_ridge,
                                     t.physics_material);
                             }
                             return bases;
                         };
-                        std::vector<CollisionPolygonSphere<4>> quads = get_transformed.template operator()<4>();
-                        std::vector<CollisionPolygonSphere<3>> triangles = get_transformed.template operator()<3>();
-                        std::vector<CollisionRidgeSphere> ridges;
-                        std::vector<CollisionLineSphere> lines;
+                        std::vector<CollisionPolygonSphere<CompressedScenePos, 4>> quads = get_transformed.template operator()<4>();
+                        std::vector<CollisionPolygonSphere<CompressedScenePos, 3>> triangles = get_transformed.template operator()<3>();
+                        std::vector<CollisionRidgeSphere<CompressedScenePos>> ridges;
+                        std::vector<CollisionLineSphere<CompressedScenePos>> lines;
                         std::vector<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables;
 
                         auto aabb =
@@ -161,7 +161,7 @@ void RigidBodies::add_rigid_body(
                                         std::move(quads),
                                         std::move(triangles),
                                         std::move(lines),
-                                        std::vector<CollisionLineSphere>{},
+                                        std::vector<CollisionLineSphere<CompressedScenePos>>{},
                                         std::move(ridges),
                                         std::move(intersectables))}});
                     } else {
@@ -172,7 +172,7 @@ void RigidBodies::add_rigid_body(
                             auto transformed = m->template transformed_polygon_bbox<tnvertices>(
                                 rb.get_new_absolute_model_matrix());
                             for (const auto& t : transformed) {
-                                triangle_bvh_.insert(t.aabb, RigidBodyAndCollisionTriangleSphere{ rb, t.base });
+                                triangle_bvh_.insert(t.aabb, RigidBodyAndCollisionTriangleSphere<CompressedScenePos>{ rb, t.base });
                             }
                             if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
                                 THROW_OR_ABORT("Collision ridges already baked");
@@ -180,7 +180,7 @@ void RigidBodies::add_rigid_body(
                             for (const auto& t : transformed) {
                                 collision_ridges_.insert(
                                     t.base.corners,
-                                    t.base.polygon.plane().normal,
+                                    t.base.polygon.plane.normal,
                                     cfg_.max_min_cos_ridge,
                                     t.base.physics_material,
                                     rb);
@@ -370,11 +370,11 @@ const Bvh<CompressedScenePos, RigidBodyAndIntersectableMesh, 3>& RigidBodies::co
     return convex_mesh_bvh_;
 }
 
-const Bvh<CompressedScenePos, RigidBodyAndCollisionTriangleSphere, 3>& RigidBodies::triangle_bvh() const {
+const RigidBodies::TriangleBvh& RigidBodies::triangle_bvh() const {
     return triangle_bvh_;
 }
 
-const Bvh<CompressedScenePos, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() const {
+const RigidBodies::LineBvh& RigidBodies::line_bvh() const {
     return line_bvh_;
 }
 
@@ -389,13 +389,12 @@ void RigidBodies::bake_collision_ridges_if_necessary() const {
     }
 }
 
-const Bvh<CompressedScenePos, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh() const {
+const RigidBodies::RidgeBvh& RigidBodies::ridge_bvh() const {
     bake_collision_ridges_if_necessary();
     return ridge_bvh_;
 }
 
-const std::map<std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>, const CollisionRidgeSphere*>& RigidBodies::ridge_map()
-{
+RidgeMap& RigidBodies::ridge_map() {
     bake_collision_ridges_if_necessary();
     return ridge_map_;
 }
@@ -408,25 +407,28 @@ void RigidBodies::bake_collision_ridges() const
         if (!e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHABLE)) {
             continue;
         }
-        auto* r = ridge_bvh_.insert(
+        RigidBodyAndCollisionRidgeSphere<CompressedScenePos> rcs{
+            .rb = e.rb,
+            .crp = e.collision_ridge_sphere};
+        rcs.crp.finalize();
+        ridge_bvh_.insert(
             AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(e.collision_ridge_sphere.edge),
-            RigidBodyAndCollisionRidgeSphere{
-                .rb = e.rb,
-                .crp = e.collision_ridge_sphere});
-        r->crp.finalize();
-        auto a = OrderableFixedArray{ r->crp.edge[0] };
-        auto b = OrderableFixedArray{ r->crp.edge[1] };
-        if (a < b) {
-            if (!ridge_map_.insert({ {a, b}, &r->crp }).second) {
-                std::stringstream sstr;
-                sstr << "Could not insert into ridge-map. Edge: " << a << " <-> " << b << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
-                THROW_OR_ABORT(sstr.str());
-            }
-        } else {
-            if (!ridge_map_.insert({ {b, a}, &r->crp }).second) {
-                std::stringstream sstr;
-                sstr << "Could not insert into ridge-map. Edge: " << b << " <-> " << a << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
-                THROW_OR_ABORT(sstr.str());
+            rcs);
+        if (cfg_.enable_ridge_map) {
+            auto a = OrderableFixedArray{ e.collision_ridge_sphere.edge[0] };
+            auto b = OrderableFixedArray{ e.collision_ridge_sphere.edge[1] };
+            if (a < b) {
+                if (auto it = ridge_map_.insert({ {a, b}, rcs }); !it.second) {
+                    std::stringstream sstr;
+                    sstr << "Could not insert into ridge-map. Edge: " << a << " <-> " << b << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << it.first->second.rb.name() << '"';
+                    THROW_OR_ABORT(sstr.str());
+                }
+            } else {
+                if (auto it = ridge_map_.insert({ {b, a}, rcs }); !it.second) {
+                    std::stringstream sstr;
+                    sstr << "Could not insert into ridge-map. Edge: " << b << " <-> " << a << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << it.first->second.rb.name() << '"';
+                    THROW_OR_ABORT(sstr.str());
+                }
             }
         }
     }

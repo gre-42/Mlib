@@ -7,6 +7,7 @@ namespace Mlib {
 struct IntersectionScene;
 template <class TDir, class TPos, size_t tndim>
 class PlaneNd;
+template <class TPosition>
 struct CollisionRidgeSphere;
 template <typename TData, size_t... tshape>
 class FixedArray;

@@ -16,13 +16,13 @@ namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
 
-template <size_t tnvertices>
+template <class TPosition, size_t tnvertices>
 struct CollisionPolygonSphere {
-    BoundingSphere<CompressedScenePos, 3> bounding_sphere;
-    ConvexPolygon3D<SceneDir, CompressedScenePos, tnvertices> polygon;
+    BoundingSphere<TPosition, 3> bounding_sphere;
+    ConvexPolygon3D<SceneDir, TPosition, tnvertices> polygon;
     PhysicsMaterial physics_material;
-    FixedArray<CompressedScenePos, tnvertices, 3> corners;
-    inline CollisionPolygonSphere<tnvertices> operator - () const {
+    FixedArray<TPosition, tnvertices, 3> corners;
+    inline CollisionPolygonSphere<TPosition, tnvertices> operator - () const {
         return {
             .bounding_sphere = bounding_sphere,
             .polygon = -polygon,
@@ -30,7 +30,7 @@ struct CollisionPolygonSphere {
             .corners = corners
         };
     }
-    CollisionPolygonSphere<tnvertices> transformed(
+    CollisionPolygonSphere<TPosition, tnvertices> transformed(
         const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix) const
     {
         return {
@@ -38,28 +38,54 @@ struct CollisionPolygonSphere {
             .polygon = polygon
                 .template casted<SceneDir, ScenePos>()
                 .transformed(transformation_matrix)
-                .template casted<SceneDir, CompressedScenePos>(),
+                .template casted<SceneDir, TPosition>(),
             .physics_material = physics_material,
             .corners = transformation_matrix
                 .transform(corners.template casted<ScenePos>())
-                .template casted<CompressedScenePos>()
+                .template casted<TPosition>()
         };
     }
-    // template <class TResult>
-    // CollisionPolygonSphere<TResult, tnvertices> casted() const {
-    //     return {
-    //         bounding_sphere.template casted<TResult>(),
-    //         polygon.template casted<TResult>(),
-    //         physics_material,
-    //         corners.template casted<TResult>()
-    //     };
-    // }
+    template <class TResult>
+    inline CollisionPolygonSphere<TResult, tnvertices> casted() const {
+        return {
+            bounding_sphere.template casted<TResult>(),
+            polygon.template casted<SceneDir, TResult>(),
+            physics_material,
+            corners.template casted<TResult>()
+        };
+    }
 };
 
-template <size_t tnvertices>
+template <class TPosition, size_t tnvertices>
+CollisionPolygonSphere<TPosition, tnvertices>
+    operator + (
+        const CollisionPolygonSphere<TPosition, tnvertices>& a,
+        const FixedArray<TPosition, 3>& d)
+{
+    auto corners = a.corners;
+    for (size_t r = 0; r < tnvertices; ++r) {
+        corners[r] += d;
+    }
+    return {
+        a.bounding_sphere + d,
+        a.polygon + d,
+        a.physics_material,
+        corners};
+}
+
+template <class TPosition, size_t tnvertices>
+CollisionPolygonSphere<TPosition, tnvertices>
+    operator - (
+        const CollisionPolygonSphere<TPosition, tnvertices>& a,
+        const FixedArray<TPosition, 3>& d)
+{
+    return a + (-d);
+}
+
+template <class TPosition, size_t tnvertices>
 struct CollisionPolygonAabb {
-    CollisionPolygonSphere<tnvertices> base;
-    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb;
+    CollisionPolygonSphere<TPosition, tnvertices> base;
+    AxisAlignedBoundingBox<TPosition, 3> aabb;
 };
 
 }

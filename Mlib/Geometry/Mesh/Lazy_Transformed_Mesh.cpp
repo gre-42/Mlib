@@ -43,7 +43,7 @@ bool LazyTransformedMesh::intersects(const PlaneNd<SceneDir, CompressedScenePos,
     return transformed_bounding_sphere_.intersects(plane);
 }
 
-const std::vector<CollisionPolygonSphere<4>>& LazyTransformedMesh::get_quads_sphere() const {
+const std::vector<CollisionPolygonSphere<CompressedScenePos, 4>>& LazyTransformedMesh::get_quads_sphere() const {
     if (!quads_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!quads_calculated_) {
@@ -58,7 +58,7 @@ const std::vector<CollisionPolygonSphere<4>>& LazyTransformedMesh::get_quads_sph
 }
 
 
-const std::vector<CollisionPolygonSphere<3>>& LazyTransformedMesh::get_triangles_sphere() const {
+const std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>& LazyTransformedMesh::get_triangles_sphere() const {
     if (!triangles_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!triangles_calculated_) {
@@ -72,7 +72,7 @@ const std::vector<CollisionPolygonSphere<3>>& LazyTransformedMesh::get_triangles
     return transformed_triangles_;
 }
 
-const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_edges_sphere() const {
+const std::vector<CollisionLineSphere<CompressedScenePos>>& LazyTransformedMesh::get_edges_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
@@ -98,7 +98,7 @@ const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_edges_sphere() 
     return transformed_edges_;
 }
 
-const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere() const {
+const std::vector<CollisionRidgeSphere<CompressedScenePos>>& LazyTransformedMesh::get_ridges_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
@@ -109,10 +109,10 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
         if (!ridges_calculated_) {
             CollisionRidges ridges;
             for (const auto& q3 : transformed_quads_) {
-                ridges.insert(q3.corners, q3.polygon.plane().normal, max_min_cos_ridge_, q3.physics_material);
+                ridges.insert(q3.corners, q3.polygon.plane.normal, max_min_cos_ridge_, q3.physics_material);
             }
             for (const auto& t3 : transformed_triangles_) {
-                ridges.insert(t3.corners, t3.polygon.plane().normal, max_min_cos_ridge_, t3.physics_material);
+                ridges.insert(t3.corners, t3.polygon.plane.normal, max_min_cos_ridge_, t3.physics_material);
             }
             transformed_ridges_.reserve(ridges.size());
             for (const auto& e : ridges) {
@@ -126,7 +126,7 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
     return transformed_ridges_;
 }
 
-const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_lines_sphere() const {
+const std::vector<CollisionLineSphere<CompressedScenePos>>& LazyTransformedMesh::get_lines_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
@@ -169,8 +169,8 @@ BoundingSphere<CompressedScenePos, 3> LazyTransformedMesh::bounding_sphere() con
 
 AxisAlignedBoundingBox<CompressedScenePos, 3> LazyTransformedMesh::aabb() const {
     return AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
-        transformed_bounding_sphere_.center(),
-        transformed_bounding_sphere_.radius());
+        transformed_bounding_sphere_.center,
+        transformed_bounding_sphere_.radius);
 }
 
 #ifdef __GNUC__
@@ -179,8 +179,8 @@ AxisAlignedBoundingBox<CompressedScenePos, 3> LazyTransformedMesh::aabb() const 
 
 void LazyTransformedMesh::print_info() const {
     lerr() << "LazyTransformedMesh";
-    lerr() << transformed_bounding_sphere_.center();
-    lerr() << transformed_bounding_sphere_.radius();
+    lerr() << transformed_bounding_sphere_.center;
+    lerr() << transformed_bounding_sphere_.radius;
 }
 
 std::string LazyTransformedMesh::name() const {

@@ -114,7 +114,8 @@ void test_physics_engine(unsigned int seed) {
         .dt = getenv_default_float("DT", 0.01667f) * seconds,
         .stiction_coefficient = getenv_default_float("FRICTION", 1.f),
         .friction_coefficient = getenv_default_float("FRICTION", 1.f),
-        .nsubsteps = getenv_default_size_t("NSUBSTEPS", 20)
+        .nsubsteps = getenv_default_size_t("NSUBSTEPS", 20),
+        .enable_ridge_map = true
     };
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene

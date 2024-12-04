@@ -11,6 +11,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
+#include <Mlib/Physics/Containers/Elements/Collision_Ridge_Sphere.hpp>
 #include <Mlib/Physics/Interfaces/ICollision_Normal_Modifier.hpp>
 #include <Mlib/Physics/Interfaces/ISurface_Normal.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
@@ -25,10 +26,10 @@ bool Mlib::compute_edge_overlap(
     ScenePos& overlap,
     FixedArray<SceneDir, 3>& normal)
 {
-    if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
+    if ((c.q0.has_value()) == (c.t0.has_value())) {
         THROW_OR_ABORT("compute_edge_overlap: Not exactly one of q0/t0 are set");
     }
-    const auto& N0 = (c.t0 != nullptr) ? c.t0->polygon.plane() : c.q0->polygon.plane();
+    const auto& N0 = (c.t0.has_value()) ? c.t0->polygon.plane : c.q0->polygon.plane;
 
     if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
@@ -64,7 +65,7 @@ bool Mlib::compute_edge_overlap(
             using Corners0 = std::remove_reference_t<decltype(corners0)>;
             static_assert(Corners0::ndim() == 2);
             size_t ncorners = Corners0::template static_shape<0>();
-            std::vector<CollisionRidgeSphere> ridges;
+            std::vector<CollisionRidgeSphere<CompressedScenePos>> ridges;
             ridges.reserve(ncorners);
             for (size_t i = 0; i < ncorners; ++i) {
                 auto a = OrderableFixedArray{corners0[i]};
@@ -77,20 +78,20 @@ bool Mlib::compute_edge_overlap(
                     // so failure is expected.
                     continue;
                 }
-                ridges.push_back(*it->second);
+                ridges.push_back(it->second.crp);
             }
             StaticTransformedMesh stm(
                 "temp",
                 AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(corners0),
                 BoundingSphere<CompressedScenePos, 3>{corners0},
-                (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<4>>{*c.q0} : std::vector<CollisionPolygonSphere<4>>(),
-                (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<3>>{*c.t0} : std::vector<CollisionPolygonSphere<3>>(),
-                std::vector<CollisionLineSphere>(),
-                std::vector<CollisionLineSphere>(),
+                (c.q0.has_value()) ? std::vector<CollisionPolygonSphere<CompressedScenePos, 4>>{*c.q0} : std::vector<CollisionPolygonSphere<CompressedScenePos, 4>>(),
+                (c.t0.has_value()) ? std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>{*c.t0} : std::vector<CollisionPolygonSphere<CompressedScenePos, 3>>(),
+                std::vector<CollisionLineSphere<CompressedScenePos>>(),
+                std::vector<CollisionLineSphere<CompressedScenePos>>(),
                 std::move(ridges),
                 std::vector<TypedMesh<std::shared_ptr<IIntersectable>>>());
 
-            assert_true(c.r1 != nullptr);
+            assert_true(c.r1.has_value());
             try {
                 // get_overlap(stm, *c.mesh1, overlap, normal);
                 get_overlap2(stm, *c.r1, -INFINITY, overlap, normal);
@@ -99,10 +100,10 @@ bool Mlib::compute_edge_overlap(
                     "Could not compute collision plane of temporary mesh and edge: " + std::string(e.what()));
             }
             };
-        if (c.q0 != nullptr) {
+        if (c.q0.has_value()) {
             reflect(c.q0->corners);
         }
-        if (c.t0 != nullptr) {
+        if (c.t0.has_value()) {
             reflect(c.t0->corners);
         }
         if (overlap == INFINITY) {
@@ -136,7 +137,7 @@ bool Mlib::compute_edge_overlap(
     {
         sat_used = true;
         assert_true(c.mesh0 != nullptr);
-        assert_true(c.r1 != nullptr);
+        assert_true(c.r1.has_value());
         try {
             get_overlap2(*c.mesh0, *c.r1, c.history.cfg.max_keep_normal, overlap, normal);
         } catch (const std::runtime_error& e) {
@@ -155,7 +156,7 @@ bool Mlib::compute_edge_overlap(
         }
         if (any(c.mesh1_material & PhysicsMaterial::ATTR_SLIPPERY)) {
             if (c.o0.has_surface_normal()) {
-                auto n1 = (c.t0 != nullptr)
+                auto n1 = (c.t0.has_value())
                     ? c.o0.get_surface_normal().get_surface_normal(*c.t0, intersection_point)
                     : c.o0.get_surface_normal().get_surface_normal(*c.q0, intersection_point);
                 if (n1.has_value()) {

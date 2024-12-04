@@ -17,8 +17,8 @@ static void collide(
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionHistory& history,
     PhysicsMaterial line_mask,
-    const CollisionPolygonSphere<4>* q0,
-    const CollisionPolygonSphere<3>* t0)
+    const CollisionPolygonSphere<CompressedScenePos, 4>* q0,
+    const CollisionPolygonSphere<CompressedScenePos, 3>* t0)
 {
     collide_triangle_and_triangles(
         o0,

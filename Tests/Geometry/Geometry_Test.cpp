@@ -457,14 +457,14 @@ void test_triangulate_3d_1() {
         TransformationMatrix<float, float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 1.f, 0.f}}
     };
 
-    Array<FixedArray<FixedArray<float, 3>, 3>> mesh = triangulate_3d(
+    Array<FixedArray<float, 3, 3>> mesh = triangulate_3d(
         points,
         10.f,   // boundary_radius
         0.1f,   // z_thickness
         0.1f);  // cos_min_angle
 
     assert_allequal(
-        Array<float>{ Array<FixedArray<float, 3>>{ mesh } },
+        Array<float>{ mesh },
         Array<float>{ Array<FixedArray<float, 3>>{
             Array<FixedArray<FixedArray<float, 3>, 3>>{
                 FixedArray<FixedArray<float, 3>, 3>{
@@ -491,14 +491,14 @@ void test_triangulate_3d_2() {
         generate_point_observation({1.f, 1.f, 0.f})
     };
 
-    Array<FixedArray<FixedArray<float, 3>, 3>> mesh = triangulate_3d(
+    Array<FixedArray<float, 3, 3>> mesh = triangulate_3d(
         points,
         1.f,    // boundary_radius
         10.f,   // z_thickness
         -10.f); // cos_min_angle
 
     assert_allequal(
-        Array<float>{ Array<FixedArray<float, 3>>{ mesh } },
+        Array<float>{ mesh },
         Array<float>{ Array<FixedArray<float, 3>>{
             Array<FixedArray<FixedArray<float, 3>, 3>>{
                 FixedArray<FixedArray<float, 3>, 3>{
@@ -614,8 +614,8 @@ void test_welzl_triangle() {
     auto rng = welzl_rng();
     std::vector<const FixedArray<float, 2>*> a_b_c{&a, &b, &c};
     std::vector<const FixedArray<float, 2>*> a_c{&a, &c};
-    assert_allequal(welzl_from_vector<float, 2>(a_b_c, rng).center(), (a + c) / 2.f);
-    assert_allequal(welzl_from_vector<float, 2>(a_c, rng).center(), (a + c) / 2.f);
+    assert_allequal(welzl_from_vector<float, 2>(a_b_c, rng).center, (a + c) / 2.f);
+    assert_allequal(welzl_from_vector<float, 2>(a_c, rng).center, (a + c) / 2.f);
 }
 
 void test_welzl_tetrahedron() {
@@ -626,8 +626,8 @@ void test_welzl_tetrahedron() {
     auto rng = welzl_rng();
     std::vector<const FixedArray<float, 3>*> a_b_c_d{&a, &b, &c, &d};
     std::vector<const FixedArray<float, 3>*> a_c{&a, &c};
-    assert_allequal(welzl_from_vector<float, 3>(a_b_c_d, rng).center(), (a + c) / 2.f);
-    assert_allequal(welzl_from_vector<float, 3>(a_c, rng).center(), (a + c) / 2.f);
+    assert_allequal(welzl_from_vector<float, 3>(a_b_c_d, rng).center, (a + c) / 2.f);
+    assert_allequal(welzl_from_vector<float, 3>(a_c, rng).center, (a + c) / 2.f);
 }
 
 void test_shortest_path() {
@@ -700,7 +700,7 @@ void test_distance_polygon_aabb() {
     FixedArray<double, 3> d{1., 3., 10.};
     Polygon3D<double, 4> poly{{a, b, c, d}};
     auto rng = welzl_rng();
-    CollisionPolygonSphere<4> cps{
+    CollisionPolygonSphere<CompressedScenePos, 4> cps{
         .bounding_sphere = poly.bounding_sphere(rng).casted<CompressedScenePos>(),
         .polygon = poly.polygon().casted<SceneDir, CompressedScenePos>(),
         .physics_material = PhysicsMaterial::NONE,

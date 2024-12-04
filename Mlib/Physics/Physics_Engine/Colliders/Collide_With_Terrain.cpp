@@ -50,7 +50,7 @@ void Mlib::collide_with_terrain(
                 }
                 rigid_bodies.triangle_bvh().visit(
                     msh1.mesh->aabb(),
-                    [&](const RigidBodyAndCollisionTriangleSphere& t0){
+                    [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0){
                         return std::visit([&](const auto& ctp)
                             {
                                 if (any(ctp.physics_material & PhysicsMaterial::ATTR_CONVEX) &&
@@ -93,7 +93,7 @@ void Mlib::collide_with_terrain(
                     });
                 rigid_bodies.ridge_bvh().visit(
                     msh1.mesh->aabb(),
-                    [&](const RigidBodyAndCollisionRidgeSphere& e0){
+                    [&](const RigidBodyAndCollisionRidgeSphere<CompressedScenePos>& e0){
                         collide_triangles_and_ridge(
                             o1.rigid_body.get(),
                             e0.rb,
@@ -105,7 +105,7 @@ void Mlib::collide_with_terrain(
             } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_GRIND_CONTACT)) {
                 rigid_bodies.line_bvh().visit(
                     msh1.mesh->aabb(),
-                    [&](const RigidBodyAndCollisionLineSphere& l0){
+                    [&](const RigidBodyAndCollisionLineSphere<CompressedScenePos>& l0){
                         collide_line_and_triangles(
                             l0.rb,
                             o1.rigid_body.get(),

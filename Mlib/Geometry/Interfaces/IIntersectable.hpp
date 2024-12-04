@@ -8,9 +8,11 @@ template <class ScenePos, size_t tndim>
 class BoundingSphere;
 template <class ScenePos, size_t tndim>
 class AxisAlignedBoundingBox;
-template <size_t tnvertices>
+template <class TPosition, size_t tnvertices>
 struct CollisionPolygonSphere;
+template <class TPosition>
 struct CollisionRidgeSphere;
+template <class TPosition>
 struct CollisionLineSphere;
 template <typename ScenePos, size_t... tshape>
 class FixedArray;
@@ -23,22 +25,22 @@ public:
     virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const = 0;
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const = 0;
     virtual bool intersects(
-        const CollisionPolygonSphere<4>& q,
+        const CollisionPolygonSphere<CompressedScenePos, 4>& q,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool intersects(
-        const CollisionPolygonSphere<3>& t,
+        const CollisionPolygonSphere<CompressedScenePos, 3>& t,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool intersects(
-        const CollisionRidgeSphere& r1,
+        const CollisionRidgeSphere<CompressedScenePos>& r1,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool intersects(
-        const CollisionLineSphere& l1,
+        const CollisionLineSphere<CompressedScenePos>& l1,
         ScenePos& overlap,
         ScenePos& ray_t,
         FixedArray<ScenePos, 3>& intersection_point,

@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Pointer_To_Optional.hpp>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ void Mlib::collide_triangles_and_ridge(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh0,
-    const CollisionRidgeSphere& r1,
+    const CollisionRidgeSphere<CompressedScenePos>& r1,
     const CollisionHistory& history)
 {
     auto non_tire_line_mask =
@@ -31,8 +32,8 @@ void Mlib::collide_triangles_and_ridge(
     auto collide = [&](
         PhysicsMaterial physics_material0,
         const BoundingSphere<CompressedScenePos, 3>& bounding_sphere0,
-        const CollisionPolygonSphere<4>* q0,
-        const CollisionPolygonSphere<3>* t0,
+        const CollisionPolygonSphere<CompressedScenePos, 4>* q0,
+        const CollisionPolygonSphere<CompressedScenePos, 3>* t0,
         const IIntersectable* i0)
     {
         if (!any(physics_material0 & non_tire_line_mask)) {
@@ -46,10 +47,10 @@ void Mlib::collide_triangles_and_ridge(
             .o1 = o1,
             .mesh0 = msh0.mesh.get(),
             .mesh1 = nullptr,
-            .l1 = nullptr,
-            .r1 = &r1,
-            .q0 = q0,
-            .t0 = t0,
+            .l1 = std::nullopt,
+            .r1 = r1,
+            .q0 = pointer_to_optional(q0),
+            .t0 = pointer_to_optional(t0),
             .i0 = i0,
             .tire_id1 = SIZE_MAX,
             .mesh0_material = physics_material0,

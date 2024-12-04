@@ -4,11 +4,13 @@
 
 using namespace Mlib;
 
-FixedArray<SceneDir, 3> CollisionRidgeSphere::tangent() const {
+template <class TPosition>
+FixedArray<SceneDir, 3> CollisionRidgeSphere<TPosition>::tangent() const {
     return cross(ray.direction, normal);
 }
 
-bool CollisionRidgeSphere::is_touchable(SingleFaceBehavior behavior) const {
+template <class TPosition>
+bool CollisionRidgeSphere<TPosition>::is_touchable(SingleFaceBehavior behavior) const {
     if ((behavior == SingleFaceBehavior::UNTOUCHABLE) &&
         (min_cos == RIDGE_SINGLE_FACE) &&
         !any(physics_material & PhysicsMaterial::ATTR_TWO_SIDED))
@@ -18,7 +20,8 @@ bool CollisionRidgeSphere::is_touchable(SingleFaceBehavior behavior) const {
     return min_cos != RIDGE_UNTOUCHABLE;
 }
 
-bool CollisionRidgeSphere::is_oriented() const {
+template <class TPosition>
+bool CollisionRidgeSphere<TPosition>::is_oriented() const {
     if (min_cos == RIDGE_SINGLE_FACE) {
         THROW_OR_ABORT("CollisionRidgeSphere has not been finalized");
     }
@@ -28,8 +31,9 @@ bool CollisionRidgeSphere::is_oriented() const {
     return min_cos < RIDGE_SPECIAL_THRESHOLD;
 }
 
-void CollisionRidgeSphere::combine(
-    const CollisionRidgeSphere& other,
+template <class TPosition>
+void CollisionRidgeSphere<TPosition>::combine(
+    const CollisionRidgeSphere<CompressedScenePos>& other,
     SceneDir max_min_cos_ridge)
 {
     if (other.min_cos != RIDGE_SINGLE_FACE) {
@@ -81,7 +85,8 @@ void CollisionRidgeSphere::combine(
     min_cos = dot0d(normal, other_normal_f);
 }
 
-void CollisionRidgeSphere::finalize() {
+template <class TPosition>
+void CollisionRidgeSphere<TPosition>::finalize() {
     if (min_cos == RIDGE_UNTOUCHABLE) {
         THROW_OR_ABORT("Attempt to finalize an untouchable ridge");
     }
@@ -91,37 +96,21 @@ void CollisionRidgeSphere::finalize() {
     }
 }
 
-CollisionRidgeSphere CollisionRidgeSphere::transformed(const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const {
+template <class TPosition>
+CollisionRidgeSphere<TPosition> CollisionRidgeSphere<TPosition>::transformed(const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const {
     return CollisionRidgeSphere{
-        bounding_sphere.casted<ScenePos>().transformed(trafo).casted<CompressedScenePos>(),
+        bounding_sphere.template casted<ScenePos>().transformed(trafo).template casted<TPosition>(),
         physics_material,
-        trafo.transform(edge.casted<ScenePos>()).casted<CompressedScenePos>(),
-        ray.casted<SceneDir, ScenePos>().transformed(trafo).casted<SceneDir, CompressedScenePos>(),
+        trafo.transform(edge.template casted<ScenePos>()).template casted<TPosition>(),
+        ray.template casted<SceneDir, ScenePos>().transformed(trafo).template casted<SceneDir, TPosition>(),
         trafo.rotate(normal),
         min_cos
     };
 }
 
-// template <class TResult>
-// CollisionRidgeSphere<TResult> CollisionRidgeSphere<TData>::casted() const {
-//     return CollisionRidgeSphere<TResult>{
-//         .bounding_sphere = bounding_sphere.template casted<TResult>(),
-//         .physics_material = physics_material,
-//         .edge = edge.template casted<TResult>(),
-//         .ray = ray.template casted<TResult>(),
-//         .normal = normal.template casted<TResult>(),
-//         .min_cos = (TResult)min_cos
-//     };
-// }
+namespace Mlib {
 
-// namespace Mlib {
-// 
-// template struct CollisionRidgeSphere<float>;
-// template struct CollisionRidgeSphere<double>;
-// template CollisionRidgeSphere<double> CollisionRidgeSphere<float>::transformed(const TransformationMatrix<float, double, 3>&) const;
-// template CollisionRidgeSphere<double> CollisionRidgeSphere<double>::transformed(const TransformationMatrix<float, double, 3>&) const;
-// template CollisionRidgeSphere<double> CollisionRidgeSphere<double>::casted() const;
-// template CollisionRidgeSphere<float> CollisionRidgeSphere<double>::casted() const;
-// template CollisionRidgeSphere<float> CollisionRidgeSphere<float>::casted() const;
-// 
-// }
+template struct CollisionRidgeSphere<HalfCompressedScenePos>;
+template struct CollisionRidgeSphere<CompressedScenePos>;
+
+}

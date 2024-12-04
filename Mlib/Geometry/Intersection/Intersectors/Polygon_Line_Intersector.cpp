@@ -14,8 +14,8 @@ using namespace Mlib;
 
 // Quad - ridge
 bool Mlib::intersect(
-    const CollisionPolygonSphere<4>& q0,
-    const CollisionRidgeSphere& r1,
+    const CollisionPolygonSphere<CompressedScenePos, 4>& q0,
+    const CollisionRidgeSphere<CompressedScenePos>& r1,
     IntersectionInfo& intersection_info)
 {
     ScenePos ray_t;
@@ -23,15 +23,15 @@ bool Mlib::intersect(
     if (!r1.ray.casted<ScenePos, ScenePos>().intersects(q0c_polygon, &ray_t, &intersection_info.intersection_point)) {
         return false;
     }
-    intersection_info.normal0 = q0.polygon.plane().normal;
+    intersection_info.normal0 = q0.polygon.plane.normal;
     intersection_info.ray_t = ray_t;
     return true;
 }
 
 // Triangle - ridge
 bool Mlib::intersect(
-    const CollisionPolygonSphere<3>& t0,
-    const CollisionRidgeSphere& r1,
+    const CollisionPolygonSphere<CompressedScenePos, 3>& t0,
+    const CollisionRidgeSphere<CompressedScenePos>& r1,
     IntersectionInfo& intersection_info)
 {
     ScenePos ray_t;
@@ -39,15 +39,15 @@ bool Mlib::intersect(
     if (!r1.ray.casted<ScenePos, ScenePos>().intersects(t0c_polygon, &ray_t, &intersection_info.intersection_point)) {
         return false;
     }
-    intersection_info.normal0 = t0.polygon.plane().normal;
+    intersection_info.normal0 = t0.polygon.plane.normal;
     intersection_info.ray_t = ray_t;
     return true;
 }
 
 // Quad - line
 bool Mlib::intersect(
-    const CollisionPolygonSphere<4>& q0,
-    const CollisionLineSphere& l1,
+    const CollisionPolygonSphere<CompressedScenePos, 4>& q0,
+    const CollisionLineSphere<CompressedScenePos>& l1,
     IntersectionInfo& intersection_info)
 {
     ScenePos ray_t;
@@ -55,15 +55,15 @@ bool Mlib::intersect(
     if (!l1.ray.casted<ScenePos, ScenePos>().intersects(q0c_polygon, &ray_t, &intersection_info.intersection_point)) {
         return false;
     }
-    intersection_info.normal0 = q0.polygon.plane().normal;
+    intersection_info.normal0 = q0.polygon.plane.normal;
     intersection_info.ray_t = ray_t;
     return true;
 }
 
 // Triangle - line
 bool Mlib::intersect(
-    const CollisionPolygonSphere<3>& t0,
-    const CollisionLineSphere& l1,
+    const CollisionPolygonSphere<CompressedScenePos, 3>& t0,
+    const CollisionLineSphere<CompressedScenePos>& l1,
     IntersectionInfo& intersection_info)
 {
     ScenePos ray_t;
@@ -71,14 +71,14 @@ bool Mlib::intersect(
     if (!l1.ray.casted<ScenePos, ScenePos>().intersects(t0c_polygon, &ray_t, &intersection_info.intersection_point)) {
         return false;
     }
-    intersection_info.normal0 = t0.polygon.plane().normal;
+    intersection_info.normal0 = t0.polygon.plane.normal;
     intersection_info.ray_t = ray_t;
     return true;
 }
 
 // Quad - intersectable
 bool Mlib::intersect(
-    const CollisionPolygonSphere<4>& q0,
+    const CollisionPolygonSphere<CompressedScenePos, 4>& q0,
     const IIntersectable& i1,
     IntersectionInfo& intersection_info)
 {
@@ -88,7 +88,7 @@ bool Mlib::intersect(
     if (!i1.intersects(q0, overlap, intersection_info.intersection_point, normal)) {
         return false;
     }
-    intersection_info.normal0 = q0.polygon.plane().normal;
+    intersection_info.normal0 = q0.polygon.plane.normal;
     intersection_info.ray_t = ray_t;
     intersection_info.no = NormalAndOverlap{ -normal, overlap };
     return true;
@@ -96,7 +96,7 @@ bool Mlib::intersect(
 
 // Triangle - intersectable
 bool Mlib::intersect(
-    const CollisionPolygonSphere<3>& t0,
+    const CollisionPolygonSphere<CompressedScenePos, 3>& t0,
     const IIntersectable& i1,
     IntersectionInfo& intersection_info)
 {
@@ -106,7 +106,7 @@ bool Mlib::intersect(
     if (!i1.intersects(t0, overlap, intersection_info.intersection_point, normal)) {
         return false;
     }
-    intersection_info.normal0 = t0.polygon.plane().normal;
+    intersection_info.normal0 = t0.polygon.plane.normal;
     intersection_info.ray_t = ray_t;
     intersection_info.no = NormalAndOverlap{ -normal, overlap };
     return true;
@@ -115,7 +115,7 @@ bool Mlib::intersect(
 // Intersectable - ridge
 bool Mlib::intersect(
     const IIntersectable& i0,
-    const CollisionRidgeSphere& r1,
+    const CollisionRidgeSphere<CompressedScenePos>& r1,
     IntersectionInfo& intersection_info)
 {
     FixedArray<ScenePos, 3> intersection_point = uninitialized;
@@ -133,7 +133,7 @@ bool Mlib::intersect(
 // Intersectable - line
 bool Mlib::intersect(
     const IIntersectable& i0,
-    const CollisionLineSphere& l1,
+    const CollisionLineSphere<CompressedScenePos>& l1,
     IntersectionInfo& intersection_info)
 {
     FixedArray<ScenePos, 3> intersection_point = uninitialized;

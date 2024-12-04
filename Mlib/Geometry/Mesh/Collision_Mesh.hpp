@@ -25,9 +25,9 @@ public:
         TypedMesh<std::shared_ptr<IIntersectable>> intersectable);
     ~CollisionMesh();
     std::string name;
-    std::vector<CollisionPolygonSphere<4>> quads;
-    std::vector<CollisionPolygonSphere<3>> triangles;
-    std::vector<CollisionLineSphere> lines;
+    std::vector<CollisionPolygonSphere<CompressedScenePos, 4>> quads;
+    std::vector<CollisionPolygonSphere<CompressedScenePos, 3>> triangles;
+    std::vector<CollisionLineSphere<CompressedScenePos>> lines;
     TypedMesh<std::shared_ptr<IIntersectable>> intersectable;
 };
 

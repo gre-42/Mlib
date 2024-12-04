@@ -12,7 +12,7 @@ class OrderableFixedArray;
 enum class PhysicsMaterial: uint32_t;
 
 struct OrderableEdgeSphere {
-    CollisionLineSphere collision_line_sphere;
+    CollisionLineSphere<CompressedScenePos> collision_line_sphere;
     std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>> key() const;
     bool operator < (const OrderableEdgeSphere& other) const;
 };

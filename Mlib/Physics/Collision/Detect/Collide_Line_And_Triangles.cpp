@@ -15,7 +15,7 @@ void Mlib::collide_line_and_triangles(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const IIntersectableMesh& msh1,
-    const CollisionLineSphere& l0,
+    const CollisionLineSphere<CompressedScenePos>& l0,
     const CollisionHistory& history)
 {
     // Mesh-sphere <-> line-sphere intersection
@@ -26,7 +26,7 @@ void Mlib::collide_line_and_triangles(
         if (!t1.bounding_sphere.intersects(l0.bounding_sphere)) {
             continue;
         }
-        if (!l0.bounding_sphere.intersects(t1.polygon.plane())) {
+        if (!l0.bounding_sphere.intersects(t1.polygon.plane)) {
             continue;
         }
         handle_line_triangle_intersection(IntersectionScene{
@@ -34,10 +34,10 @@ void Mlib::collide_line_and_triangles(
             .o1 = o0,
             .mesh0 = nullptr, // msh1.mesh,
             .mesh1 = nullptr, // msh0,
-            .l1 = &l0,
-            .r1 = nullptr,
-            .q0 = nullptr,
-            .t0 = &t1,
+            .l1 = l0,
+            .r1 = std::nullopt,
+            .q0 = std::nullopt,
+            .t0 = t1,
             .tire_id1 = SIZE_MAX,
             .mesh0_material = t1.physics_material,
             .mesh1_material = l0.physics_material,

@@ -11,20 +11,20 @@ template <size_t tnvertices>
 static void compute_relevant_polys(
     const IIntersectableMesh& mesh0,
     const IIntersectableMesh& mesh1,
-    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys0,
-    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys1)
+    std::vector<const CollisionPolygonSphere<CompressedScenePos, tnvertices>*>& relevant_polys0,
+    std::vector<const CollisionPolygonSphere<CompressedScenePos, tnvertices>*>& relevant_polys1)
 {
-    const std::vector<CollisionPolygonSphere<tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
-    const std::vector<CollisionPolygonSphere<tnvertices>>& triangles1 = mesh1.get_polygons_sphere<tnvertices>();
+    const std::vector<CollisionPolygonSphere<CompressedScenePos, tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
+    const std::vector<CollisionPolygonSphere<CompressedScenePos, tnvertices>>& triangles1 = mesh1.get_polygons_sphere<tnvertices>();
     relevant_polys0.reserve(triangles0.size());
     relevant_polys1.reserve(triangles1.size());
     for (const auto& t0 : triangles0) {
-        if (mesh1.intersects(t0.bounding_sphere) && mesh1.intersects(t0.polygon.plane())) {
+        if (mesh1.intersects(t0.bounding_sphere) && mesh1.intersects(t0.polygon.plane)) {
             relevant_polys0.push_back(&t0);
         }
     }
     for (const auto& t1 : triangles1) {
-        if (mesh0.intersects(t1.bounding_sphere) && mesh0.intersects(t1.polygon.plane())) {
+        if (mesh0.intersects(t1.bounding_sphere) && mesh0.intersects(t1.polygon.plane)) {
             relevant_polys1.push_back(&t1);
         }
     }
@@ -32,15 +32,15 @@ static void compute_relevant_polys(
 
 template <size_t tnvertices>
 static void update_sat(
-    const std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys0,
-    const std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys1,
+    const std::vector<const CollisionPolygonSphere<CompressedScenePos, tnvertices>*>& relevant_polys0,
+    const std::vector<const CollisionPolygonSphere<CompressedScenePos, tnvertices>*>& relevant_polys1,
     SatOverlapCombiner& sac)
 {
     for (const auto& t0 : relevant_polys0) {
-        sac.combine_plane(t0->polygon.plane().normal);
+        sac.combine_plane(t0->polygon.plane.normal);
     }
     for (const auto& t1 : relevant_polys1) {
-        sac.combine_plane(-t1->polygon.plane().normal);
+        sac.combine_plane(-t1->polygon.plane.normal);
     }
 }
 
@@ -50,12 +50,12 @@ void Mlib::get_overlap(
     ScenePos& min_overlap,
     FixedArray<SceneDir, 3>& normal)
 {
-    std::vector<const CollisionRidgeSphere*> relevant_edges0;
-    std::vector<const CollisionRidgeSphere*> relevant_edges1;
-    std::vector<const CollisionPolygonSphere<3>*> relevant_triangles0;
-    std::vector<const CollisionPolygonSphere<3>*> relevant_triangles1;
-    std::vector<const CollisionPolygonSphere<4>*> relevant_quads0;
-    std::vector<const CollisionPolygonSphere<4>*> relevant_quads1;
+    std::vector<const CollisionRidgeSphere<CompressedScenePos>*> relevant_edges0;
+    std::vector<const CollisionRidgeSphere<CompressedScenePos>*> relevant_edges1;
+    std::vector<const CollisionPolygonSphere<CompressedScenePos, 3>*> relevant_triangles0;
+    std::vector<const CollisionPolygonSphere<CompressedScenePos, 3>*> relevant_triangles1;
+    std::vector<const CollisionPolygonSphere<CompressedScenePos, 4>*> relevant_quads0;
+    std::vector<const CollisionPolygonSphere<CompressedScenePos, 4>*> relevant_quads1;
     compute_relevant_polys(mesh0, mesh1, relevant_quads0, relevant_quads1);
     compute_relevant_polys(mesh0, mesh1, relevant_triangles0, relevant_triangles1);
     {

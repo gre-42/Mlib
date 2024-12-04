@@ -18,24 +18,46 @@ enum class SingleFaceBehavior {
     UNTOUCHABLE
 };
 
+template <class TPosition>
 struct CollisionRidgeSphere {
-    BoundingSphere<CompressedScenePos, 3> bounding_sphere;
+    BoundingSphere<TPosition, 3> bounding_sphere;
     PhysicsMaterial physics_material;
-    FixedArray<CompressedScenePos, 2, 3> edge;
-    RaySegment3D<SceneDir, CompressedScenePos> ray;
+    FixedArray<TPosition, 2, 3> edge;
+    RaySegment3D<SceneDir, TPosition> ray;
     FixedArray<SceneDir, 3> normal;
     SceneDir min_cos;
     FixedArray<SceneDir, 3> tangent() const;
     bool is_touchable(SingleFaceBehavior behavior) const;
     bool is_oriented() const;
-    void combine(const CollisionRidgeSphere& other, SceneDir max_min_cos_ridge);
+    void combine(const CollisionRidgeSphere<CompressedScenePos>& other, SceneDir max_min_cos_ridge);
     void finalize();
     CollisionRidgeSphere transformed(const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const;
+    template <class TPosition2>
+    inline CollisionRidgeSphere<TPosition2> casted() const {
+        return CollisionRidgeSphere<TPosition2>{
+            .bounding_sphere = bounding_sphere.template casted<TPosition2>(),
+            .physics_material = physics_material,
+            .edge = edge.template casted<TPosition2>(),
+            .ray = ray.template casted<SceneDir, TPosition2>(),
+            .normal = normal,
+            .min_cos = min_cos
+        };
+    }
 };
 
-struct CollisionEdgeAabb {
-    CollisionRidgeSphere base;
-    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb;
-};
+template <class TPosition>
+CollisionRidgeSphere<TPosition> operator + (
+    const CollisionRidgeSphere<TPosition>& crs,
+    const FixedArray<TPosition, 3>& p)
+{
+    return {
+        crs.bounding_sphere + p,
+        crs.physics_material,
+        FixedArray<TPosition, 2, 3>{ crs.edge[0] + p,  crs.edge[1] + p },
+        crs.ray + p,
+        crs.normal,
+        crs.min_cos
+    };
+}
 
 }

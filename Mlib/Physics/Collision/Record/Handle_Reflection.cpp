@@ -248,7 +248,7 @@ void Mlib::handle_reflection(
     const IntersectionInfo& iinfo,
     float surface_stiction_factor)
 {
-    const auto* N0 = (c.t0 != nullptr) ? &c.t0->polygon.plane() : c.q0 != nullptr ? &c.q0->polygon.plane() : nullptr;
+    const auto* N0 = (c.t0.has_value()) ? &c.t0->polygon.plane : c.q0.has_value() ? &c.q0->polygon.plane : nullptr;
 
     // #############
     // # Alignment #
@@ -315,10 +315,10 @@ void Mlib::handle_reflection(
         overlap = iinfo.no->overlap;
         normal = iinfo.no->normal;
     } else if (!c.l1_is_normal) {
-        assert_true(c.r1 != nullptr);
+        assert_true(c.r1.has_value());
         IntersectionScene cf{ c };
-        std::optional<CollisionPolygonSphere<4>> q0f;
-        std::optional<CollisionPolygonSphere<3>> t0f;
+        std::optional<CollisionPolygonSphere<CompressedScenePos, 4>> q0f;
+        std::optional<CollisionPolygonSphere<CompressedScenePos, 3>> t0f;
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
                 THROW_OR_ABORT("Two-sided materials require a convex collision partner (case 0). Consider using collision-normals.");
@@ -329,13 +329,13 @@ void Mlib::handle_reflection(
             auto dist = get_farthest_distances(*c.mesh1, *N0);
             // (dist.min + dist.max) / 2. < 0  =>  dist.min < -dist.max
             if (dist.min < -dist.max) {
-                if (c.q0 != nullptr) {
+                if (c.q0.has_value()) {
                     q0f = -(*c.q0);
-                    cf.q0 = &(*q0f);
+                    cf.q0 = *q0f;
                 }
-                if (c.t0 != nullptr) {
+                if (c.t0.has_value()) {
                     t0f = -(*c.t0);
-                    cf.t0 = &(*t0f);
+                    cf.t0 = *t0f;
                 }
             }
         }
@@ -343,7 +343,7 @@ void Mlib::handle_reflection(
             return;
         }
     } else {
-        if (c.l1 == nullptr) {
+        if (!c.l1.has_value()) {
             THROW_OR_ABORT("handle_reflection: l1 not set");
         }
         if (N0 == nullptr) {
@@ -383,7 +383,7 @@ void Mlib::handle_reflection(
             any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
         {
             FixedArray<SceneDir, 3> round_normal = uninitialized;
-            assert_true(c.r1 != nullptr);
+            assert_true(c.r1.has_value());
             if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) &&
                 any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
             {

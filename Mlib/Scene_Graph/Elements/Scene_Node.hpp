@@ -74,18 +74,18 @@ struct PositionAndYAngleAndBillboardId {
 };
 
 inline PositionAndYAngleAndBillboardId<CompressedScenePos> operator + (
-    const PositionAndYAngleAndBillboardId<UnsignedHalfCompressedScenePos>& a,
+    const PositionAndYAngleAndBillboardId<HalfCompressedScenePos>& a,
     const FixedArray<CompressedScenePos, 3>& reference)
 {
     return { a.position.casted<CompressedScenePos>() + reference, a.yangle, a.billboard_id };
 }
 
-inline PositionAndYAngleAndBillboardId<UnsignedHalfCompressedScenePos> operator - (
+inline PositionAndYAngleAndBillboardId<HalfCompressedScenePos> operator - (
     const PositionAndYAngleAndBillboardId<CompressedScenePos>& a,
     const FixedArray<CompressedScenePos, 3>& reference)
 {
     auto p = a.position - reference;
-    auto cp = p.casted<UnsignedHalfCompressedScenePos>();
+    auto cp = p.casted<HalfCompressedScenePos>();
     if (any(cp.casted<CompressedScenePos>() != p)) {
         THROW_OR_ABORT("PositionAndYAngleAndBillboardId: Could not compress scene position");
     }
@@ -107,21 +107,21 @@ struct PositionAndBillboardId {
         return *this;
     }
 };
-static_assert(sizeof(PositionAndBillboardId<UnsignedHalfCompressedScenePos>) == 8);
+static_assert(sizeof(PositionAndBillboardId<HalfCompressedScenePos>) == 8);
 
 inline PositionAndBillboardId<CompressedScenePos> operator + (
-    const PositionAndBillboardId<UnsignedHalfCompressedScenePos>& a,
+    const PositionAndBillboardId<HalfCompressedScenePos>& a,
     const FixedArray<CompressedScenePos, 3>& reference)
 {
     return { a.position.casted<CompressedScenePos>() + reference, a.billboard_id };
 }
 
-inline PositionAndBillboardId<UnsignedHalfCompressedScenePos> operator - (
+inline PositionAndBillboardId<HalfCompressedScenePos> operator - (
     const PositionAndBillboardId<CompressedScenePos>& a,
     const FixedArray<CompressedScenePos, 3>& reference)
 {
     auto p = a.position - reference;
-    auto cp = p.casted<UnsignedHalfCompressedScenePos>();
+    auto cp = p.casted<HalfCompressedScenePos>();
     if (any(cp.casted<CompressedScenePos>() != p)) {
         THROW_OR_ABORT("PositionAndBillboardId: Could not compress scene position");
     }
@@ -221,12 +221,12 @@ public:
     }
 private:
     FixedArray<CompressedScenePos, 3> reference_point_ = uninitialized;
-    std::vector<PositionAndYAngleAndBillboardId<UnsignedHalfCompressedScenePos>> pybs_;
-    std::vector<PositionAndBillboardId<UnsignedHalfCompressedScenePos>> pbs_;
+    std::vector<PositionAndYAngleAndBillboardId<HalfCompressedScenePos>> pybs_;
+    std::vector<PositionAndBillboardId<HalfCompressedScenePos>> pbs_;
 };
 
 struct SceneNodeInstances {
-    using SmallInstances = GenericBvh<CompressedScenePos, 3, BillboardContainer, AabbExtensionDirection::POSITIVE>;
+    using SmallInstances = GenericBvh<CompressedScenePos, 3, BillboardContainer>;
 
     bool is_registered;
     DanglingUniquePtr<SceneNode> scene_node;

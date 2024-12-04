@@ -6,6 +6,7 @@
 
 namespace Mlib {
 
+template <class TPosition>
 struct CollisionRidgeSphere;
 template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
@@ -15,8 +16,8 @@ public:
     SatOverlapCombiner(
         const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices0,
         const std::set<OrderableFixedArray<CompressedScenePos, 3>>& vertices1);
-    void combine_sticky_ridge(const CollisionRidgeSphere& e1, ScenePos max_keep_normal);
-    void combine_ridges(const CollisionRidgeSphere& e0, const CollisionRidgeSphere& e1);
+    void combine_sticky_ridge(const CollisionRidgeSphere<CompressedScenePos>& e1, ScenePos max_keep_normal);
+    void combine_ridges(const CollisionRidgeSphere<CompressedScenePos>& e0, const CollisionRidgeSphere<CompressedScenePos>& e1);
     void combine_plane(const FixedArray<SceneDir, 3>& normal);
     inline const FixedArray<SceneDir, 3>& best_normal() const {
         return best_normal_;

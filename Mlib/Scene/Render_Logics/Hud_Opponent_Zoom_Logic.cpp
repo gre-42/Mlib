@@ -86,7 +86,7 @@ void HudOpponentZoomLogic::render_without_setup(
         return;
     }
     auto rel_sphere = observed_node->relative_bounding_sphere();
-    if (rel_sphere.radius() == 0.) {
+    if (rel_sphere.radius == 0.) {
         return;
     }
     auto abs_sphere = rel_sphere.transformed(observed_node->absolute_model_matrix());

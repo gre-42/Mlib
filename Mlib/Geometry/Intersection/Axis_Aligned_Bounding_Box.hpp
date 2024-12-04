@@ -273,6 +273,12 @@ public:
             min.template casted<TResultData>(),
             max.template casted<TResultData>());
     }
+    AxisAlignedBoundingBox operator + (const FixedArray<TData, tndim>& p) const {
+        return { min + p, max + p };
+    }
+    AxisAlignedBoundingBox operator - (const FixedArray<TData, tndim>& p) const {
+        return { min - p, max - p };
+    }
     padded_fixed_array_t<TData, tndim> min;
     padded_fixed_array_t<TData, tndim> max;
 private:

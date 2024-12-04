@@ -8,6 +8,7 @@
 #include <list>
 #include <ostream>
 #include <type_traits>
+#include <variant>
 #include <vector>
 
 #ifdef __GNUC__
@@ -35,7 +36,7 @@ enum class BvhDataRadiusType {
 /**
  * Bounding volume hierarchy
  */
-template <class TPosition, size_t tndim, class TData, AabbExtensionDirection extension_direction>
+template <class TPosition, size_t tndim, class TData>
 class GenericBvh {
 public:
     explicit GenericBvh(const FixedArray<TPosition, tndim>& max_size, size_t level)
@@ -43,21 +44,16 @@ public:
         , level_{level}
     {}
 
-    auto* insert(const auto& aabb, const auto& payload) {
+    decltype(auto) insert(const auto& aabb, const auto& payload) {
         return insert(AabbAndPayload{aabb, payload});
     }
 
-    auto* insert(const auto& entry) {
+    decltype(auto) insert(const auto& entry) {
         auto max_size_children = max_size_ * (1 << (level_ - 1));
         if ((level_ == 0) || any(entry.aabb().size() > max_size_children)) {
-            return &data_.add(entry).payload();
+            return data_.add(entry);
         }
         for (auto& c : children_) {
-            if ((extension_direction == AabbExtensionDirection::POSITIVE) &&
-                any(entry.aabb().min < c.first.min))
-            {
-                continue;
-            }
             AxisAlignedBoundingBox<TPosition, tndim> bb = c.first;
             bb.extend(entry.aabb());
             // if (all(bb.size() <= TPosition(level_) * max_size_)) {
@@ -122,7 +118,7 @@ public:
 
     AxisAlignedBoundingBox<TPosition, tndim> aabb() const {
         auto result = AxisAlignedBoundingBox<TPosition, tndim>::empty();
-        data_.visit_all([&](const auto& d){
+        data_.visit_all([&](const auto& d, const auto&... x){
             result.extend(d.aabb());
             return true;
         });
@@ -135,21 +131,22 @@ public:
     void print(std::ostream& ostr, const BvhPrintingOptions& opts, size_t rec = 0) const {
         std::string indent(rec, ' ');
         if (opts.level) {
-            ostr << indent << "level " << level_ << std::endl;
+            ostr << indent << "level " << level_ << '\n';
         }
         if (opts.data) {
-            ostr << indent << "data " << data_.size() << std::endl;
+            ostr << indent << "data " << data_.size() << '\n';
             if (opts.aabb) {
                 data_.print(ostr, rec);
             }
         }
         if (opts.children) {
-            ostr << indent << "children " << children_.size() << std::endl;
-            for (const auto& c : children_) {
+            ostr << indent << "children " << children_.size() << '\n';
+            for (const auto& [aabb, child] : children_) {
                 if (opts.aabb) {
-                    c.first.print(ostr, rec + 1);
+                    aabb.print(ostr, rec + 1);
+                    ostr << '\n';
                 }
-                c.second.print(ostr, opts, rec + 1);
+                child.print(ostr, opts, rec + 1);
             }
         }
     }
@@ -324,7 +321,7 @@ public:
                 std::cout << " Speedup: " <<
                     std::setw(10) <<
                     ((float)sz / repackaged(max_size_ * max_size_fac, level).search_time(data_radius_type) - 1) <<
-                    std::endl;
+                    '\n';
             }
         }
     }
@@ -356,7 +353,7 @@ public:
                 plot_aabb_raw(aabb);
             }
         };
-        data_.visit_all([&](const auto& d){
+        data_.visit_all([&](const auto& d, const auto&... x){
             plot_aabb(d.aabb());
             return true;
         });
@@ -395,8 +392,8 @@ private:
     std::list<std::pair<AxisAlignedBoundingBox<TPosition, tndim>, GenericBvh>> children_;
 };
 
-template <class TPosition, size_t tndim, class TData, AabbExtensionDirection extension_direction>
-std::ostream& operator << (std::ostream& ostr, const GenericBvh<TPosition, tndim, TData, extension_direction>& bvh) {
+template <class TPosition, size_t tndim, class TData>
+std::ostream& operator << (std::ostream& ostr, const GenericBvh<TPosition, tndim, TData>& bvh) {
     bvh.print(ostr, BvhPrintingOptions{});
     return ostr;
 }
@@ -444,8 +441,8 @@ template <class TContainer>
 class PayloadContainer {
 public:
     template <class... TArgs>
-    auto& add(TArgs... args) {
-        return data_.emplace_back(args...);
+    auto& add(TArgs&&... args) {
+        return data_.emplace_back(std::forward<TArgs>(args)...);
     }
     void fill(auto& container) const {
         for (const auto& d : data_) {
@@ -483,6 +480,7 @@ public:
     void print(std::ostream& ostr, size_t rec = 0) const {
         for (const auto& d : data_) {
             d.aabb().print(ostr, rec + 1);
+            ostr << '\n';
         }
     }
     bool empty() const {
@@ -496,6 +494,106 @@ public:
     }
 private:
     TContainer data_;
+};
+
+template <class TPosition, size_t tndim, class TSmallContainer, class TLargeContainer>
+class CompressedPayloadContainer {
+public:
+    void add(const auto& d) {
+        if (empty()) {
+            reference_point_ = d.aabb().min;
+        }
+        auto cd = compress(d, reference_point_);
+        auto ucd = decompress(cd, reference_point_);
+        if (all(ucd.aabb().min == d.aabb().min) &&
+            all(ucd.aabb().max == d.aabb().max))
+        {
+            small_data_.emplace_back(cd);
+        } else {
+            large_data_.emplace_back(d);
+        }
+    }
+    void fill(auto& container) const {
+        for (const auto& d : small_data_) {
+            container.insert(decompress(d, reference_point_));
+        }
+        for (const auto& d : large_data_) {
+            container.insert(d);
+        }
+    }
+    bool visit(const auto& aabb, const auto& visitor) const {
+        for (const auto& d : small_data_) {
+            auto ud = decompress(d, reference_point_);
+            if (aabb.intersects(ud.aabb())) {
+                if (!visitor(ud.payload())) {
+                    return false;
+                }
+            }
+        }
+        for (const auto& d : large_data_) {
+            if (aabb.intersects(d.aabb())) {
+                if (!visitor(d.payload())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    bool visit_all(const auto& visitor) const {
+        for (const auto& d : small_data_) {
+            if (!visitor(decompress(d,  reference_point_))) {
+                return false;
+            }
+        }
+        for (const auto& d : large_data_) {
+            if (!visitor(d)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    bool visit_pairs(const auto& aabb, const auto& visitor) const {
+        for (const auto& d : small_data_) {
+            auto ud = decompress(d, reference_point_);
+            if (aabb.intersects(ud.aabb())) {
+                if (!visitor(ud)) {
+                    return false;
+                }
+            }
+        }
+        for (const auto& d : large_data_) {
+            if (aabb.intersects(d.aabb())) {
+                if (!visitor(d)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    void print(std::ostream& ostr, size_t rec = 0) const {
+        for (const auto& d : small_data_) {
+            decompress(d, reference_point_).aabb().print(ostr, rec + 1);
+            ostr << '\n';
+        }
+        for (const auto& d : large_data_) {
+            d.aabb().print(ostr, rec + 1);
+            ostr << '\n';
+        }
+    }
+    bool empty() const {
+        return small_data_.empty() && large_data_.empty();
+    }
+    size_t size() const {
+        return small_data_.size() + large_data_.size();
+    }
+    void clear() {
+        small_data_.clear();
+        large_data_.clear();
+    }
+private:
+    FixedArray<TPosition, tndim> reference_point_ = uninitialized;
+    TSmallContainer small_data_;
+    TLargeContainer large_data_;
 };
 
 }

@@ -27,19 +27,19 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     if (&c.o0 == &c.o1) {
         THROW_OR_ABORT("Collision of identical objects");
     }
-    if (int(c.q0 != nullptr) + int(c.t0 != nullptr) + int(c.i0 != nullptr) != 1) {
+    if (int(c.q0.has_value()) + int(c.t0.has_value()) + int(c.i0 != nullptr) != 1) {
         THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of q0/t0/i0 are set");
     }
-    if (int(c.l1 != nullptr) + int(c.r1 != nullptr) + int(c.i1 != nullptr) != 1) {
+    if (int(c.l1.has_value()) + int(c.r1.has_value()) + int(c.i1 != nullptr) != 1) {
         THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/r1/i1 are set");
     }
     IntersectionInfo iinfo;
-    if (c.q0 != nullptr) {
-        if (c.l1 != nullptr) {
+    if (c.q0.has_value()) {
+        if (c.l1.has_value()) {
             if (!intersect(*c.q0, *c.l1, iinfo)) {
                 return;
             }
-        } else if (c.r1 != nullptr) {
+        } else if (c.r1.has_value()) {
             if (!intersect(*c.q0, *c.r1, iinfo)) {
                 return;
             }
@@ -50,12 +50,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         } else {
             THROW_OR_ABORT("Unexpected intersection object (0)");
         }
-    } else if (c.t0 != nullptr) {
-        if (c.l1 != nullptr) {
+    } else if (c.t0.has_value()) {
+        if (c.l1.has_value()) {
             if (!intersect(*c.t0, *c.l1, iinfo)) {
                 return;
             }
-        } else if (c.r1 != nullptr) {
+        } else if (c.r1.has_value()) {
             if (!intersect(*c.t0, *c.r1, iinfo)) {
                 return;
             }
@@ -67,11 +67,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             THROW_OR_ABORT("Unexpected intersection object (1)");
         }
     } else if (c.i0 != nullptr) {
-        if (c.l1 != nullptr) {
+        if (c.l1.has_value()) {
             if (!intersect(*c.i0, *c.l1, iinfo)) {
                 return;
             }
-        } else if (c.r1 != nullptr) {
+        } else if (c.r1.has_value()) {
             if (!intersect(*c.i0, *c.r1, iinfo)) {
                 return;
             }
@@ -110,7 +110,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         IntersectionSceneAndContact cc{
             .scene = c,
             .iinfo = std::move(iinfo)};
-        assert_true(c.l1 != nullptr);
+        assert_true(c.l1.has_value());
         auto res = c.history.raycast_intersections.try_emplace(&c.l1->line, std::move(cc));
         if (!res.second) {
             if (!cc.iinfo.ray_t.has_value()) {
@@ -137,8 +137,8 @@ void Mlib::handle_line_triangle_intersection(
     const IntersectionScene& c,
     const IntersectionInfo& iinfo)
 {
-    const auto* N0 = (c.t0 != nullptr) ? &c.t0->polygon.plane() : (c.q0 != nullptr) ? &c.q0->polygon.plane() : nullptr;
-    const auto* X1 = (c.l1 != nullptr) ? &c.l1->ray : (c.r1 != nullptr) ? &c.r1->ray : nullptr;
+    const auto* N0 = (c.t0.has_value()) ? &c.t0->polygon.plane : (c.q0.has_value()) ? &c.q0->polygon.plane : nullptr;
+    const auto* X1 = (c.l1.has_value()) ? &c.l1->ray : (c.r1.has_value()) ? &c.r1->ray : nullptr;
 
     CollisionType collision_type = c.default_collision_type;
     bool abort = false;

@@ -114,7 +114,7 @@ public:
             {
                 continue;
             }
-            auto distance_to_origin2 = sum(squared(triangle_sphere.center()));
+            auto distance_to_origin2 = sum(squared(triangle_sphere.center));
             if constexpr (ttexture_layer_type == TextureLayerType::NONE) {
                 atriangles_.push_back({ c, distance_to_origin2 });
             }

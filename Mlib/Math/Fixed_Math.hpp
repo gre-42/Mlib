@@ -256,12 +256,12 @@ constexpr FixedArray<TData, tsize...> fixed_full(const TData& value) {
 
 template <class TData, size_t... tsize>
 constexpr FixedArray<TData, tsize...> fixed_zeros() {
-    return fixed_full<TData, tsize...>(0);
+    return fixed_full<TData, tsize...>((TData)0.f);
 }
 
 template <class TData, size_t... tsize>
 constexpr FixedArray<TData, tsize...> fixed_ones() {
-    return fixed_full<TData, tsize...>(1);
+    return fixed_full<TData, tsize...>((TData)1.f);
 }
 
 template <class TData, size_t... tsize>
@@ -272,7 +272,7 @@ constexpr FixedArray<TData, tsize...> fixed_nans() {
 template <class TData, size_t ...tshape, typename... TIndices>
 constexpr FixedArray<TData, tshape...> fixed_dirac_array(const TIndices&... indices) {
     FixedArray<TData, tshape...> result = fixed_zeros<TData, tshape...>();
-    result(indices...) = 1;
+    result(indices...) = (TData)1.f;
     return result;
 }
 

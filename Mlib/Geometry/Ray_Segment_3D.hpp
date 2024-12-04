@@ -62,7 +62,7 @@ public:
         TPos* t,
         FixedArray<TPos, 3>* intersection_point) const
     {
-        if (!intersects(polygon.plane(), t, intersection_point)) {
+        if (!intersects(polygon.plane, t, intersection_point)) {
             return false;
         }
         return polygon.contains(*intersection_point);
@@ -123,6 +123,22 @@ public:
     FixedArray<TDir, 3> direction;
     TDir length;
 };
+
+template <class TDir, class TPos>
+RaySegment3D<TDir, TPos> operator + (
+    const RaySegment3D<TDir, TPos>& ray,
+    const FixedArray<TPos, 3>& p)
+{
+    return { ray.start + p, ray.direction, ray.length };
+}
+
+template <class TDir, class TPos>
+RaySegment3D<TDir, TPos> operator - (
+    const RaySegment3D<TDir, TPos>& ray,
+    const FixedArray<TPos, 3>& p)
+{
+    return ray + (-p);
+}
 
 template <class TDir, class TPos>
 class RaySegment3DForAabb: public RaySegment3D<TDir, TPos> {

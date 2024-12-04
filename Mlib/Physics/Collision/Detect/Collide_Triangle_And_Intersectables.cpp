@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Pointer_To_Optional.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -20,8 +21,8 @@ void Mlib::collide_triangle_and_intersectables(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const CollisionPolygonSphere<4>* q0,
-    const CollisionPolygonSphere<3>* t0,
+    const CollisionPolygonSphere<CompressedScenePos, 4>* q0,
+    const CollisionPolygonSphere<CompressedScenePos, 3>* t0,
     const CollisionHistory& history)
 {
     const auto& intersectables1 = msh1.mesh->get_intersectables();
@@ -44,11 +45,11 @@ void Mlib::collide_triangle_and_intersectables(
                     .o1 = o1,
                     .mesh0 = nullptr,
                     .mesh1 = msh1.mesh.get(),
-                    .l1 = nullptr,
-                    .r1 = nullptr,
+                    .l1 = std::nullopt,
+                    .r1 = std::nullopt,
                     .i1 = i1.mesh.get(),
-                    .q0 = q0,
-                    .t0 = t0,
+                    .q0 = pointer_to_optional(q0),
+                    .t0 = pointer_to_optional(t0),
                     .i0 = nullptr,
                     .tire_id1 = SIZE_MAX,
                     .mesh0_material = poly0.physics_material,
@@ -75,14 +76,14 @@ void Mlib::collide_triangle_and_intersectables(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const std::variant<CollisionPolygonSphere<3>, CollisionPolygonSphere<4>>& cps0,
+    const std::variant<CollisionPolygonSphere<CompressedScenePos, 3>, CollisionPolygonSphere<CompressedScenePos, 4>>& cps0,
     const CollisionHistory& history)
 {
     collide_triangle_and_intersectables(
         o0,
         o1,
         msh1,
-        std::get_if<CollisionPolygonSphere<4>>(&cps0),
-        std::get_if<CollisionPolygonSphere<3>>(&cps0),
+        std::get_if<CollisionPolygonSphere<CompressedScenePos, 4>>(&cps0),
+        std::get_if<CollisionPolygonSphere<CompressedScenePos, 3>>(&cps0),
         history);
 }

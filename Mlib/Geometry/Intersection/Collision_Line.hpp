@@ -14,35 +14,58 @@ namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
 
+template <class TPosition>
 struct CollisionLineSphere {
-    BoundingSphere<CompressedScenePos, 3> bounding_sphere;
+    BoundingSphere<TPosition, 3> bounding_sphere;
     PhysicsMaterial physics_material;
-    FixedArray<CompressedScenePos, 2, 3> line;
-    RaySegment3D<SceneDir, CompressedScenePos> ray;
+    FixedArray<TPosition, 2, 3> line;
+    RaySegment3D<SceneDir, TPosition> ray;
     CollisionLineSphere transformed(
         const TransformationMatrix<SceneDir, ScenePos, 3>& transformation_matrix) const
     {
         return {
             bounding_sphere.transformed(transformation_matrix),
             physics_material,
-            transformation_matrix.transform(line.template casted<ScenePos>()).template casted<CompressedScenePos>(),
+            transformation_matrix.transform(line.template casted<ScenePos>()).template casted<TPosition>(),
             ray.transformed(transformation_matrix),
         };
     }
-    // template <class TResult>
-    // CollisionLineSphere<TResult> casted() const {
-    //     return {
-    //         bounding_sphere.template casted<TResult>(),
-    //         physics_material,
-    //         line.template casted<TResult>(),
-    //         ray.template casted<TResult>()
-    //     };
-    // }
+    template <class TPosition2>
+    inline CollisionLineSphere<TPosition2> casted() const {
+        return {
+            bounding_sphere.template casted<TPosition2>(),
+            physics_material,
+            line.template casted<TPosition2>(),
+            ray.template casted<SceneDir, TPosition2>()
+        };
+    }
 };
 
+template <class TPosition>
+CollisionLineSphere<TPosition> operator + (
+    const CollisionLineSphere<TPosition>& clp,
+    const FixedArray<TPosition, 3>& p)
+{
+    return {
+        clp.bounding_sphere + p,
+        clp.physics_material,
+        FixedArray<TPosition, 2, 3>{ clp.line[0] + p, clp.line[1] + p },
+        clp.ray + p
+    };
+}
+
+template <class TPosition>
+CollisionLineSphere<TPosition> operator - (
+    const CollisionLineSphere<TPosition>& clp,
+    const FixedArray<TPosition, 3>& p)
+{
+    return clp + (-p);
+}
+
+template <class TPosition>
 struct CollisionLineAabb {
-    CollisionLineSphere base;
-    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb;
+    CollisionLineSphere<TPosition> base;
+    AxisAlignedBoundingBox<TPosition, 3> aabb;
 };
 
 }

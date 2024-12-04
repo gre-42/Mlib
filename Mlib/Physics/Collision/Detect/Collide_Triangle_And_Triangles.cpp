@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Pointer_To_Optional.hpp>
 
 using namespace Mlib;
 
@@ -18,8 +19,8 @@ void Mlib::collide_triangle_and_triangles(
     RigidBodyVehicle& o1,
     const IIntersectableMesh* msh0,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const CollisionPolygonSphere<4>* q0,
-    const CollisionPolygonSphere<3>* t0,
+    const CollisionPolygonSphere<CompressedScenePos, 4>* q0,
+    const CollisionPolygonSphere<CompressedScenePos, 3>* t0,
     const CollisionHistory& history)
 {
     auto collide = [&](
@@ -44,10 +45,10 @@ void Mlib::collide_triangle_and_triangles(
                 .o1 = o1,
                 .mesh0 = msh0,
                 .mesh1 = msh1.mesh.get(),
-                .l1 = nullptr,
-                .r1 = &r1,
-                .q0 = q0,
-                .t0 = t0,
+                .l1 = std::nullopt,
+                .r1 = r1,
+                .q0 = pointer_to_optional(q0),
+                .t0 = pointer_to_optional(t0),
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = physics_material0,
                 .mesh1_material = msh1.physics_material,
@@ -61,10 +62,10 @@ void Mlib::collide_triangle_and_triangles(
         }
     };
     if (q0 != nullptr) {
-        collide(q0->bounding_sphere, &q0->polygon.plane(), q0->physics_material);
+        collide(q0->bounding_sphere, &q0->polygon.plane, q0->physics_material);
     }
     if (t0 != nullptr) {
-        collide(t0->bounding_sphere, &t0->polygon.plane(), t0->physics_material);
+        collide(t0->bounding_sphere, &t0->polygon.plane, t0->physics_material);
     }
 }
 
@@ -73,7 +74,7 @@ void Mlib::collide_triangle_and_triangles(
     RigidBodyVehicle& o1,
     const IIntersectableMesh* msh0,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const std::variant<CollisionPolygonSphere<3>, CollisionPolygonSphere<4>>& cps0,
+    const std::variant<CollisionPolygonSphere<CompressedScenePos, 3>, CollisionPolygonSphere<CompressedScenePos, 4>>& cps0,
     const CollisionHistory& history)
 {
     collide_triangle_and_triangles(
@@ -81,7 +82,7 @@ void Mlib::collide_triangle_and_triangles(
         o1,
         msh0,
         msh1,
-        std::get_if<CollisionPolygonSphere<4>>(&cps0),
-        std::get_if<CollisionPolygonSphere<3>>(&cps0),
+        std::get_if<CollisionPolygonSphere<CompressedScenePos, 4>>(&cps0),
+        std::get_if<CollisionPolygonSphere<CompressedScenePos, 3>>(&cps0),
         history);
 }

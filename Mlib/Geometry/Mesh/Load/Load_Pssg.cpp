@@ -109,7 +109,7 @@ std::istringstream uncompress_stream(
     std::vector<char> compressed(end - begin);
     istr.read(compressed.data(), compressed.size());
     if (istr.fail()) {
-        THROW_OR_ABORT("Could not compressed data: \"" + filename + '"');
+        THROW_OR_ABORT("Could not read compressed data: \"" + filename + '"');
     }
 
     auto clength = integral_cast<uLongf>(compressed.size());

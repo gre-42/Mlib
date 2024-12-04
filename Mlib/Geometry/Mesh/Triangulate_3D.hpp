@@ -10,7 +10,7 @@ class FixedArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-Array<FixedArray<FixedArray<float, 3>, 3>> triangulate_3d(
+Array<FixedArray<float, 3, 3>> triangulate_3d(
     const Array<TransformationMatrix<float, float, 3>>& points,
     float boundary_radius,
     float z_thickness,

@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Pointer_To_Optional.hpp>
 
 using namespace Mlib;
 
@@ -16,7 +17,7 @@ void Mlib::collide_triangle_and_edges(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const std::variant<CollisionPolygonSphere<3>, CollisionPolygonSphere<4>>& vcps0,
+    const std::variant<CollisionPolygonSphere<CompressedScenePos, 3>, CollisionPolygonSphere<CompressedScenePos, 4>>& vcps0,
     const CollisionHistory& history)
 {
     auto non_tire_line_mask =
@@ -29,7 +30,7 @@ void Mlib::collide_triangle_and_edges(
                 if (!r1.bounding_sphere.intersects(cps0.bounding_sphere)) {
                     continue;
                 }
-                if (!r1.bounding_sphere.intersects(cps0.polygon.plane())) {
+                if (!r1.bounding_sphere.intersects(cps0.polygon.plane)) {
                     continue;
                 }
                 handle_line_triangle_intersection(IntersectionScene{
@@ -37,10 +38,10 @@ void Mlib::collide_triangle_and_edges(
                     .o1 = o1,
                     .mesh0 = nullptr,
                     .mesh1 = msh1.mesh.get(),
-                    .l1 = nullptr,
-                    .r1 = &r1,
-                    .q0 = std::get_if<CollisionPolygonSphere<4>>(&vcps0),
-                    .t0 = std::get_if<CollisionPolygonSphere<3>>(&vcps0),
+                    .l1 = std::nullopt,
+                    .r1 = r1,
+                    .q0 = pointer_to_optional(std::get_if<CollisionPolygonSphere<CompressedScenePos, 4>>(&vcps0)),
+                    .t0 = pointer_to_optional(std::get_if<CollisionPolygonSphere<CompressedScenePos, 3>>(&vcps0)),
                     .tire_id1 = SIZE_MAX,
                     .mesh0_material = cps0.physics_material,
                     .mesh1_material = msh1.physics_material,
