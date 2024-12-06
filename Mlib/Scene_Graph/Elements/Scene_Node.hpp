@@ -95,7 +95,7 @@ inline PositionAndYAngleAndBillboardId<HalfCompressedScenePos> operator - (
 template <class TPosition>
 struct PositionAndBillboardId {
     FixedArray<TPosition, 3> position;
-    uint16_t billboard_id;
+    BillboardId billboard_id;
     inline AxisAlignedBoundingBox<TPosition, 3> aabb() const
     {
         return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
