@@ -8,7 +8,7 @@ namespace Mlib {
 
 template <class TPosition>
 struct CollisionRidgeSphere;
-template <class TData, size_t tshape0, size_t... tshape>
+template <class TData, size_t... tshape>
 class OrderableFixedArray;
 
 class SatOverlapCombiner {

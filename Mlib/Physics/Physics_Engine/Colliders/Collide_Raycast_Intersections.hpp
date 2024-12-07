@@ -6,10 +6,10 @@
 namespace Mlib {
 
 template <typename TData, size_t... tshape>
-class FixedArray;
+class OrderableFixedArray;
 struct IntersectionSceneAndContact;
 
 void collide_raycast_intersections(
-    const std::unordered_map<const FixedArray<CompressedScenePos, 2, 3>*, IntersectionSceneAndContact>& raycast_intersections);
+    const std::unordered_map<OrderableFixedArray<CompressedScenePos, 2, 3>, IntersectionSceneAndContact>& raycast_intersections);
 
 }

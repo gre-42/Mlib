@@ -9,32 +9,24 @@
 
 namespace Mlib {
 
-template <class TData, size_t tshape0, size_t... tshape>
-class OrderableFixedArray: public FixedArray<TData, tshape0, tshape...> {
+template <class TData, size_t... tshape>
+class OrderableFixedArray: public FixedArray<TData, tshape...> {
 public:
-    OrderableFixedArray(Uninitialized)
-        : FixedArray<TData, tshape0, tshape...>(uninitialized)
+    using FixedArray<TData, tshape...>::FixedArray;
+    template<std::convertible_to<TData> Value>
+    OrderableFixedArray(const Value& value)
+        : FixedArray<TData, tshape...>{ value }
     {}
-    explicit OrderableFixedArray(const FixedArray<TData, tshape0, tshape...>& rhs)
-        : FixedArray<TData, tshape0, tshape...>{rhs}
-    {}
-    explicit OrderableFixedArray(const std::vector<TData>& rhs)
-        : FixedArray<TData, tshape0, tshape...>{rhs}
-    {}
-    explicit OrderableFixedArray(const std::array<TData, FixedArray<TData, tshape0, tshape...>::nelements()>& rhs)
-        : FixedArray<TData, tshape0, tshape...>{rhs}
-    {}
-    template<std::convertible_to<FixedArray<TData, tshape...>>... Values>
-    OrderableFixedArray(const Values&... values)
-        : FixedArray<TData, tshape0, tshape...>{values...}
+    explicit OrderableFixedArray(const FixedArray<TData, tshape...>& rhs)
+        : FixedArray<TData, tshape...>{ rhs }
     {}
     OrderableFixedArray& operator = (const TData& rhs) {
-        FixedArray<TData, tshape0, tshape...>& f = *this;
+        FixedArray<TData, tshape...>& f = *this;
         f = rhs;
         return *this;
     }
-    OrderableFixedArray& operator = (const FixedArray<TData, tshape0, tshape...>& rhs) {
-        FixedArray<TData, tshape0, tshape...>& f = *this;
+    OrderableFixedArray& operator = (const FixedArray<TData, tshape...>& rhs) {
+        FixedArray<TData, tshape...>& f = *this;
         f = rhs;
         return *this;
     }
@@ -42,8 +34,8 @@ public:
         return this->less_than(rhs);
     }
     bool operator == (const OrderableFixedArray& rhs) const {
-        const FixedArray<TData, tshape0, tshape...>& lhs = *this;
-        const FixedArray<TData, tshape0, tshape...>& rhs2 = rhs;
+        const FixedArray<TData, tshape...>& lhs = *this;
+        const FixedArray<TData, tshape...>& rhs2 = rhs;
         return all(lhs == rhs2);
     }
     bool operator != (const OrderableFixedArray& rhs) const {
@@ -63,7 +55,7 @@ public:
         return std::strong_ordering::greater;
     }
     bool all_equal(const TData& d) const {
-        const FixedArray<TData, tshape0, tshape...>& a = *this;
+        const FixedArray<TData, tshape...>& a = *this;
         return all(a == d);
     }
 };

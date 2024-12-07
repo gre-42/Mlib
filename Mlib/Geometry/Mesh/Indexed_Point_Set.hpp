@@ -7,7 +7,7 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData, size_t tshape0, size_t... tshape>
+template <class TData, size_t... tshape>
 class OrderableFixedArray;
 
 class IndexedPointSet {

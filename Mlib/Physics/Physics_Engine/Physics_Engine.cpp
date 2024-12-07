@@ -68,7 +68,7 @@ void PhysicsEngine::collide(
     }
     std::list<std::unique_ptr<IContactInfo>> contact_infos;
     permanent_contacts_.extend_contact_infos(cfg_, contact_infos);
-    std::unordered_map<const FixedArray<CompressedScenePos, 2, 3>*, IntersectionSceneAndContact> raycast_intersections;
+    std::unordered_map<OrderableFixedArray<CompressedScenePos, 2, 3>, IntersectionSceneAndContact> raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>> concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
     std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>> ridge_intersection_points;

@@ -14,7 +14,7 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-template <class TData, size_t tshape0, size_t... tshape>
+template <class TData, size_t... tshape>
 class OrderableFixedArray;
 class SceneNodeResources;
 template <class TPos>

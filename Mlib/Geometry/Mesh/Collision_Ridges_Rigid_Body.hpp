@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t tshape0, size_t... tshape>
+template <class TData, size_t... tshape>
 class OrderableFixedArray;
 enum class PhysicsMaterial: uint32_t;
 class RigidBodyVehicle;
