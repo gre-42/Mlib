@@ -107,7 +107,7 @@ const std::vector<CollisionRidgeSphere<CompressedScenePos>>& LazyTransformedMesh
         get_triangles_sphere();
         std::scoped_lock lock{mutex_};
         if (!ridges_calculated_) {
-            CollisionRidges ridges;
+            CollisionRidges<CompressedScenePos> ridges;
             for (const auto& q3 : transformed_quads_) {
                 ridges.insert(q3.corners, q3.polygon.plane.normal, max_min_cos_ridge_, q3.physics_material);
             }

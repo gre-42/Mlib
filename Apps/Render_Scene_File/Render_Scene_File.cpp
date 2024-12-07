@@ -559,8 +559,8 @@ int main(int argc, char** argv) {
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 // BVH
-                .static_radius = safe_stof(args.named_value("--static_radius", "20")) * meters,
-                .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "2")) * meters,
+                .static_radius = (CompressedScenePos)(safe_stof(args.named_value("--static_radius", "20")) * meters),
+                .bvh_max_size = (CompressedScenePos)(safe_stof(args.named_value("--bvh_max_size", "2")) * meters),
                 // Collision/Friction misc.
                 .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),

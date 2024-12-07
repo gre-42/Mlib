@@ -79,7 +79,7 @@ template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
 void from_json(const nlohmann::json& j, ScaledInteger<TInt, numerator, denominator>& v) {
     intermediate_type<TInt> vv;
     from_json(j, vv);
-    v = vv;
+    v = (ScaledInteger<TInt, numerator, denominator>)vv;
 }
 
 template <class TData, class TOperation>

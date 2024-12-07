@@ -26,12 +26,12 @@ struct IntermediateType<int16_t> {
 template <class T>
 using intermediate_type = IntermediateType<T>::type;
 
-static const struct Exclicit {} exclicit;
+static const struct Explicit {} explicit_;
 
 template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
 class ScaledInteger {
 private:
-    ScaledInteger(TInt count, Exclicit)
+    ScaledInteger(TInt count, Explicit)
         : count{ count }
     {}
 public:
@@ -40,9 +40,9 @@ public:
         : count{ other.count }
     {}
     static inline ScaledInteger from_count(TInt count) {
-        return { count, exclicit };
+        return { count, explicit_ };
     }
-    inline ScaledInteger(const std::floating_point auto& value)
+    inline explicit ScaledInteger(const std::floating_point auto& value)
         : count{ static_cast<TInt>(std::round(value * denominator / numerator)) }
     {}
     inline ScaledInteger& operator = (const ScaledInteger& other) {
@@ -130,7 +130,7 @@ inline ScaledInteger<TInt, numerator, denominator> operator * (
     const ScaledInteger<TInt, numerator, denominator>& a,
     F b)
 {
-    return ScaledInteger<TInt, numerator, denominator>::from_count((TInt)(std::round(a.count * b)));
+    return (ScaledInteger<TInt, numerator, denominator>)((F)a * b);
 }
 
 template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>

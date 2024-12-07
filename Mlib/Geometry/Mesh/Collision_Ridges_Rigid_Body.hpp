@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Base.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
 
 namespace Mlib {
@@ -9,7 +10,7 @@ class OrderableFixedArray;
 enum class PhysicsMaterial: uint32_t;
 class RigidBodyVehicle;
 
-struct OrderableRidgeSphereRigidBody: public OrderableRidgeSphereBase {
+struct OrderableRidgeSphereRigidBody: public OrderableRidgeSphereBase<CompressedScenePos> {
     RigidBodyVehicle& rb;
 };
 
@@ -21,7 +22,7 @@ template<>
 struct hash<Mlib::OrderableRidgeSphereRigidBody>
 {
     std::size_t operator()(const Mlib::OrderableRidgeSphereRigidBody& s) const noexcept {
-        return std::hash<Mlib::OrderableRidgeSphereBase>()(s);
+        return std::hash<Mlib::OrderableRidgeSphereBase<Mlib::CompressedScenePos>>()(s);
     }
 };
 

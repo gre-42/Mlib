@@ -80,7 +80,7 @@ void CrossFade::play(
     } else {
         auto &sg = sources_.emplace_back(AudioSourceAndGain{
             .audio_buffer = &audio_buffer,
-            .gain = 0.f,
+            .gain = (Gain)0.f,
             .gain_factor = gain_factor,
             .buffer_frequency = buffer_frequency,
             .source = std::make_unique<AudioSource>(audio_buffer, position_requirement_, alpha)});
@@ -117,19 +117,19 @@ void CrossFade::update_gain_unsafe(float dgain) {
     total_gain_ += dgain1;
     sources_.remove_if([&](AudioSourceAndGain &sg) {
         auto excess_gain = total_gain_ - Gain{ 1.f };
-        if (excess_gain == 0.f) {
+        if (excess_gain == (Gain)0.f) {
             return false;
         }
         auto sg_gain_old = sg.gain;
         sg.gain -= std::min({ sg.gain, dgain1, excess_gain });
         total_gain_ -= sg_gain_old - sg.gain;
-        if (sg.gain == 0.f) {
+        if (sg.gain == (Gain)0.f) {
             return true;
         }
         sg.apply_gain();
         return false;
     });
-    if (total_gain_ > 1.f) {
+    if (total_gain_ > (Gain)1.f) {
         verbose_abort("Cross-fade internal error");
     }
     // static size_t i = 0;

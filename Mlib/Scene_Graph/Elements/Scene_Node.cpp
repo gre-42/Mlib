@@ -529,7 +529,7 @@ void SceneNode::add_instances_child(
         name,
         (child_registration_state == ChildRegistrationState::REGISTERED),
         std::move(node),
-        0.,                                                                                                     // max_center_distance
+        (CompressedScenePos)0.f,                                                                                // max_center_distance
         SceneNodeInstances::SmallInstances(fixed_full<CompressedScenePos, 3>(CompressedScenePos(15.f)), 12),    // small_instances
         std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>>()).second)                               // large_instances 
     {

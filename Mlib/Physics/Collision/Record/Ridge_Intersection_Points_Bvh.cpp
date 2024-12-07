@@ -18,7 +18,7 @@ bool RidgeIntersectionPointsBvh::has_neighbor(const FixedArray<ScenePos, 3>& int
     auto ip = intersection_point.casted<CompressedScenePos>();
     return bvh_.has_neighbor2(
         ip,
-        radius_,
+        (CompressedScenePos)radius_,
         [&ip](const FixedArray<CompressedScenePos, 3>& candidate){
             return sum(squared(ip - candidate));
         });

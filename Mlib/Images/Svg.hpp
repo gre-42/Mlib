@@ -155,9 +155,9 @@ public:
         const TData& y0,
         const TData& x1,
         const TData& y1,
-        const TData& stroke_width = 1.5,
+        const TData& stroke_width = (TData)1.5f,
         const std::string& fill = "black",
-        const TData& fill_opacity = 0.1f)
+        const TData& fill_opacity = (TData)0.1f)
     {
         ostr_ <<
             "  <rect x=\"" << x0 <<

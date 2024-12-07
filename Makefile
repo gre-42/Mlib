@@ -42,6 +42,10 @@ build_tsan:
 	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=T${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
+build_ubsan:
+	CFLAGS=-fsanitize=undefined CXXFLAGS=-fsanitize=undefined LDFLAGS=-fsanitize=undefined BUILD_PREFIX=B${BUILD_PREFIX} \
+                make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+
 build_asan_clang:
 	CC=clang CXX=clang++ \
 	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=LA${BUILD_PREFIX} \

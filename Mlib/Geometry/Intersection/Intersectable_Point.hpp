@@ -31,6 +31,14 @@ private:
 };
 
 template <class TData, size_t tndim>
+inline bool intersects(
+    const IntersectablePoint<TData, tndim>& a,
+    const AxisAlignedBoundingBox<TData, tndim>& b)
+{
+    return a.intersects(b);
+}
+
+template <class TData, size_t tndim>
 std::ostream& operator << (std::ostream& ostr, const IntersectablePoint<TData, tndim>& aabb) {
     aabb.print(ostr);
     return ostr;

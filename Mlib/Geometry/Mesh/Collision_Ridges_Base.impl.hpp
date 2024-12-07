@@ -1,5 +1,6 @@
 #include "Collision_Ridges_Base.hpp"
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
+#include <Mlib/Type_Traits/Remove_Const.hpp>
 
 namespace Mlib {
 
@@ -28,7 +29,7 @@ void CollisionRidgesBase<TOrderableRidgeSphere>::insert(
         }
         return;
     }
-    const_cast<decltype(previous_ridge->collision_ridge_sphere)&>(previous_ridge->collision_ridge_sphere).combine(
+    remove_const(previous_ridge->collision_ridge_sphere).combine(
         ridge.collision_ridge_sphere,
         max_min_cos_ridge);
 }

@@ -102,7 +102,7 @@ void RigidBodies::add_rigid_body(
                             ", concave: " + std::to_string(int(is_concave)));
                     }
                     if (any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX)) {
-                        CollisionRidges collision_ridges;
+                        CollisionRidges<CompressedScenePos> collision_ridges;
                         std::set<OrderableFixedArray<ScenePos, 3>> vertex_set;
                         std::vector<const FixedArray<ScenePos, 3>*> vertex_vector;
                         vertex_vector.reserve(4 * m->quads.size() + 3 * m->triangles.size());
@@ -418,13 +418,13 @@ void RigidBodies::bake_collision_ridges() const
             auto a = OrderableFixedArray{ e.collision_ridge_sphere.edge[0] };
             auto b = OrderableFixedArray{ e.collision_ridge_sphere.edge[1] };
             if (a < b) {
-                if (auto it = ridge_map_.insert({ {a, b}, rcs }); !it.second) {
+                if (auto it = ridge_map_.try_emplace({a, b}, rcs); !it.second) {
                     std::stringstream sstr;
                     sstr << "Could not insert into ridge-map. Edge: " << a << " <-> " << b << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << it.first->second.rb.name() << '"';
                     THROW_OR_ABORT(sstr.str());
                 }
             } else {
-                if (auto it = ridge_map_.insert({ {b, a}, rcs }); !it.second) {
+                if (auto it = ridge_map_.try_emplace({b, a}, rcs); !it.second) {
                     std::stringstream sstr;
                     sstr << "Could not insert into ridge-map. Edge: " << b << " <-> " << a << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << it.first->second.rb.name() << '"';
                     THROW_OR_ABORT(sstr.str());

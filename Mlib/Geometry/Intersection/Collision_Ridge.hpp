@@ -29,7 +29,7 @@ struct CollisionRidgeSphere {
     FixedArray<SceneDir, 3> tangent() const;
     bool is_touchable(SingleFaceBehavior behavior) const;
     bool is_oriented() const;
-    void combine(const CollisionRidgeSphere<CompressedScenePos>& other, SceneDir max_min_cos_ridge);
+    void combine(const CollisionRidgeSphere<TPosition>& other, SceneDir max_min_cos_ridge);
     void finalize();
     CollisionRidgeSphere transformed(const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const;
     template <class TPosition2>

@@ -5,13 +5,16 @@
 
 using namespace Mlib;
 
-CollisionRidges::CollisionRidges() = default;
+template <class TPosition>
+CollisionRidges<TPosition>::CollisionRidges() = default;
 
-CollisionRidges::~CollisionRidges() = default;
+template <class TPosition>
+CollisionRidges<TPosition>::~CollisionRidges() = default;
 
+template <class TPosition>
 template <size_t tnvertices>
-void CollisionRidges::insert(
-    const FixedArray<CompressedScenePos, tnvertices, 3>& tri,
+void CollisionRidges<TPosition>::insert(
+    const FixedArray<TPosition, tnvertices, 3>& tri,
     const FixedArray<SceneDir, 3>& normal,
     float max_min_cos_ridge,
     PhysicsMaterial physics_material)
@@ -32,34 +35,36 @@ void CollisionRidges::insert(
     }
 }
 
-void CollisionRidges::insert(
-    const FixedArray<CompressedScenePos, 3>& a,
-    const FixedArray<CompressedScenePos, 3>& b,
+template <class TPosition>
+void CollisionRidges<TPosition>::insert(
+    const FixedArray<TPosition, 3>& a,
+    const FixedArray<TPosition, 3>& b,
     const FixedArray<SceneDir, 3>& normal,
     float max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
-    OrderableRidgeSphereBase ridge{
-        CollisionRidgeSphere<CompressedScenePos>{
-            .bounding_sphere{BoundingSphere<CompressedScenePos, 3>{FixedArray<CompressedScenePos, 2, 3>{a, b}}},
+    OrderableRidgeSphereBase<TPosition> ridge{
+        CollisionRidgeSphere<TPosition>{
+            .bounding_sphere{BoundingSphere<TPosition, 3>{FixedArray<TPosition, 2, 3>{a, b}}},
             .physics_material = physics_material,
             .edge{a, b},
             .ray{a, b},
             .normal = normal,
             .min_cos = RIDGE_SINGLE_FACE}};
-    CollisionRidgesBase<OrderableRidgeSphereBase>::insert(
+    CollisionRidgesBase<OrderableRidgeSphereBase<TPosition>>::insert(
         ridge,
         max_min_cos_ridge);
 }
 
 namespace Mlib {
-    template class CollisionRidgesBase<OrderableRidgeSphereBase>;
-    template void CollisionRidges::insert<3>(
+    template class CollisionRidgesBase<OrderableRidgeSphereBase<CompressedScenePos>>;
+    template class CollisionRidges<CompressedScenePos>;
+    template void CollisionRidges<CompressedScenePos>::insert<3>(
         const FixedArray<CompressedScenePos, 3, 3>& polygon,
         const FixedArray<SceneDir, 3>& normal,
         float max_min_cos_ridge,
         PhysicsMaterial physics_material);
-    template void CollisionRidges::insert<4>(
+    template void CollisionRidges<CompressedScenePos>::insert<4>(
         const FixedArray<CompressedScenePos, 4, 3>& polygon,
         const FixedArray<SceneDir, 3>& normal,
         float max_min_cos_ridge,

@@ -33,7 +33,7 @@ bool CollisionRidgeSphere<TPosition>::is_oriented() const {
 
 template <class TPosition>
 void CollisionRidgeSphere<TPosition>::combine(
-    const CollisionRidgeSphere<CompressedScenePos>& other,
+    const CollisionRidgeSphere<TPosition>& other,
     SceneDir max_min_cos_ridge)
 {
     if (other.min_cos != RIDGE_SINGLE_FACE) {

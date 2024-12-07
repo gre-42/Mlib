@@ -20,10 +20,10 @@ struct PhysicsEngineConfig {
     bool print_residual_time = false;
 
     // BVH
-    CompressedScenePos static_radius = 20.f * meters;
-    CompressedScenePos bvh_max_size = 2.f * meters;
+    CompressedScenePos static_radius = (CompressedScenePos)(20.f * meters);
+    CompressedScenePos bvh_max_size = (CompressedScenePos)(2.f * meters);
     size_t bvh_levels = 15;
-    CompressedScenePos supply_depot_attraction_radius = 10.0 * meters;
+    CompressedScenePos supply_depot_attraction_radius = (CompressedScenePos)(10.f * meters);
 
     // Collision/Friction misc.
     float max_extra_friction = 0;

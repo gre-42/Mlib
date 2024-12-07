@@ -92,7 +92,7 @@ public:
             return false;
         }
         for (const auto& c : children_) {
-            if (aabb.intersects(c.first)) {
+            if (intersects(aabb, c.first)) {
                 if (!c.second.visit(aabb, visitors...)) {
                     return false;
                 }
@@ -107,7 +107,7 @@ public:
             return false;
         }
         for (const auto& c : children_) {
-            if (aabb.intersects(c.first)) {
+            if (intersects(aabb, c.first)) {
                 if (!c.second.visit_pairs(aabb, visitors...)) {
                     return false;
                 }
@@ -451,7 +451,7 @@ public:
     }
     bool visit(const auto& aabb, const auto& visitor) const {
         for (const auto& d : data_) {
-            if (aabb.intersects(d.aabb())) {
+            if (intersects(aabb, d.aabb())) {
                 if (!visitor(d.payload())) {
                     return false;
                 }
@@ -461,7 +461,7 @@ public:
     }
     bool visit_pairs(const auto& aabb, const auto& visitor) const {
         for (const auto& d : data_) {
-            if (aabb.intersects(d.aabb())) {
+            if (intersects(aabb, d.aabb())) {
                 if (!visitor(d)) {
                     return false;
                 }
@@ -524,14 +524,14 @@ public:
     bool visit(const auto& aabb, const auto& visitor) const {
         for (const auto& d : small_data_) {
             auto ud = decompress(d, reference_point_);
-            if (aabb.intersects(ud.aabb())) {
+            if (intersects(aabb, ud.aabb())) {
                 if (!visitor(ud.payload())) {
                     return false;
                 }
             }
         }
         for (const auto& d : large_data_) {
-            if (aabb.intersects(d.aabb())) {
+            if (intersects(aabb, d.aabb())) {
                 if (!visitor(d.payload())) {
                     return false;
                 }
@@ -555,14 +555,14 @@ public:
     bool visit_pairs(const auto& aabb, const auto& visitor) const {
         for (const auto& d : small_data_) {
             auto ud = decompress(d, reference_point_);
-            if (aabb.intersects(ud.aabb())) {
+            if (intersects(aabb, ud.aabb())) {
                 if (!visitor(ud)) {
                     return false;
                 }
             }
         }
         for (const auto& d : large_data_) {
-            if (aabb.intersects(d.aabb())) {
+            if (intersects(aabb, d.aabb())) {
                 if (!visitor(d)) {
                     return false;
                 }

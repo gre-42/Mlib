@@ -11,13 +11,14 @@ namespace Mlib {
 template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 
+template <class TPosition>
 struct OrderableRidgeSphereBase {
 public:
-    OrderableRidgeSphereBase(const CollisionRidgeSphere<CompressedScenePos>& value)
+    OrderableRidgeSphereBase(const CollisionRidgeSphere<TPosition>& value)
         : collision_ridge_sphere{ value }
         , hash{ key() }
     {}
-    CollisionRidgeSphere<CompressedScenePos> collision_ridge_sphere;
+    CollisionRidgeSphere<TPosition> collision_ridge_sphere;
     size_t hash;
     inline bool operator == (const OrderableRidgeSphereBase& other) const {
         return hash == other.hash;
@@ -62,10 +63,10 @@ private:
 
 namespace std {
 
-template<>
-struct hash<Mlib::OrderableRidgeSphereBase>
+template<class TPosition>
+struct hash<Mlib::OrderableRidgeSphereBase<TPosition>>
 {
-    std::size_t operator()(const Mlib::OrderableRidgeSphereBase& s) const noexcept {
+    std::size_t operator()(const Mlib::OrderableRidgeSphereBase<TPosition>& s) const noexcept {
         return s.hash;
     }
 };

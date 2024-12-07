@@ -80,7 +80,7 @@ public:
     template <class TDir>
     bool intersects(const PlaneNd<TDir, TPos, tndim>& plane) const {
         using fa = funpack_t<TPos>;
-        TPos dist = dot0d(plane.normal.template casted<fa>(), center.template casted<fa>()) + (fa)plane.intercept;
+        auto dist = (TPos)dot0d(plane.normal.template casted<fa>(), center.template casted<fa>()) + plane.intercept;
         return abs(dist) <= radius;
     }
     void extend(const BoundingSphere& other) {

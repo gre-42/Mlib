@@ -152,9 +152,6 @@ public:
         : RaySegment3D<TDir, TPos>{ rs3 }
         , inv_direction{ TDir(1) / rs3.direction }
     {}
-    bool intersects(const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const {
-        return intersects(aabb.casted<TPos>());
-    }
     bool intersects(const AxisAlignedBoundingBox<TPos, 3>& aabb) const {
         if (aabb.contains(start) || aabb.contains(stop())) {
             return true;
@@ -183,5 +180,20 @@ public:
 private:
     FixedArray<TDir, 3> inv_direction;
 };
+
+template <class TDir, class TPos>
+inline bool intersects(
+    const RaySegment3DForAabb<TDir, TPos>& a,
+    const AxisAlignedBoundingBox<TPos, 3>& b)
+{
+    return a.intersects(b);
+}
+
+inline bool intersects(
+    const RaySegment3DForAabb<ScenePos, ScenePos>& a,
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& b)
+{
+    return a.intersects(b.casted<ScenePos>());
+}
 
 }

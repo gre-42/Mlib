@@ -14,6 +14,17 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
+namespace Mlib {
+    
+inline bool intersects(
+    const AxisAlignedBoundingBox<ScenePos, 3>& a,
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& b)
+{
+    return a.intersects(b.casted<ScenePos>());
+}
+
+}
+
 using namespace Mlib;
 
 void Mlib::collide_with_terrain(
@@ -66,26 +77,26 @@ void Mlib::collide_with_terrain(
                                         o1.rigid_body.get(),
                                         nullptr,
                                         msh1,
-                                        t0.ctp,
+                                        ctp,
                                         history);
                                 }
                                 collide_triangle_and_edges(
                                     t0.rb,
                                     o1.rigid_body.get(),
                                     msh1,
-                                    t0.ctp,
+                                    ctp,
                                     history);
                                 collide_triangle_and_lines(
                                     t0.rb,
                                     o1.rigid_body.get(),
                                     msh1,
-                                    t0.ctp,
+                                    ctp,
                                     history);
                                 collide_triangle_and_intersectables(
                                     t0.rb,
                                     o1.rigid_body.get(),
                                     msh1,
-                                    t0.ctp,
+                                    ctp,
                                     history);
                                 return true;
                             },

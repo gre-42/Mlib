@@ -38,8 +38,12 @@ void Mlib::draw_wall_barriers(
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+            auto smid = std::to_string(mid++);
+#pragma GCC diagnostic pop
             const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
-                "wall_barriers_" + std::to_string(mid++),
+                "wall_barriers_" + smid,
                 material,
                 morphology + (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_TWO_SIDED | PhysicsMaterial::ATTR_CONCAVE)));
             auto get_style = [&]() -> const BarrierStyle& {
