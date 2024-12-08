@@ -9,7 +9,7 @@ cmake ^
     %CMAKE_OPTIONS% ^
     -DZLIB_BUILD_EXAMPLES=OFF || exit /b
 cmake ^
-    --build . ^
+    --build %BUILD_DIR% ^
     --config %CMAKE_BUILD_TYPE% ^
     --verbose || exit /b
 copy %BUILD_DIR%\zconf.h zlib\

@@ -12,7 +12,6 @@ cmake ^
     -DRECASTNAVIGATION_EXAMPLES=OFF ^
     -DBUILD_SHARED_LIBS=ON || exit /b
 cmake ^
-    %BUILD_DIR% ^
-    --build . ^
+    --build %BUILD_DIR% ^
     --config %CMAKE_BUILD_TYPE% ^
     --verbose || exit /b

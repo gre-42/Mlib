@@ -9,7 +9,6 @@ cmake ^
     -B %BUILD_DIR% ^
     %CMAKE_OPTIONS% || exit /b
 cmake ^
-    %BUILD_DIR% ^
-    --build . ^
+    --build %BUILD_DIR% ^
     --config %CMAKE_BUILD_TYPE% ^
     --verbose || exit /b
