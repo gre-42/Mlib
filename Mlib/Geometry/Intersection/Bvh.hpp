@@ -56,10 +56,13 @@ public:
     }
 
     decltype(auto) insert(const auto& entry) {
+        if (level_ == 0) {
+            return data_.add(entry);
+        }
         using F = funpack_t<TPosition>;
         auto iscale = (uint32_t)1 << (level_ - 1);
         auto max_size_children = max_size_ * integral_to_float<F>(iscale);
-        if ((level_ == 0) || any(entry.aabb().size() > max_size_children)) {
+        if (any(entry.aabb().size() > max_size_children)) {
             return data_.add(entry);
         }
         for (auto& c : children_) {
