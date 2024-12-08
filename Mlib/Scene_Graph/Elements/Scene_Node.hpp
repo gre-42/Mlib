@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Transformation/Quaternion_Series.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -9,6 +8,7 @@
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Memory/Shared_Ptrs.hpp>
 #include <Mlib/Object.hpp>
+#include <Mlib/Scene_Graph/Elements/Billboard_Container.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
@@ -56,175 +56,6 @@ class LargeInstancesQueue;
 class Blended;
 template <class T>
 struct Bijection;
-
-template <class TPosition>
-struct PositionAndYAngleAndBillboardId {
-    FixedArray<TPosition, 3> position;
-    BillboardId billboard_id;
-    SceneDir yangle;
-    inline AxisAlignedBoundingBox<TPosition, 3> aabb() const {
-        return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
-    }
-    inline PositionAndYAngleAndBillboardId& payload() {
-        return *this;
-    }
-    inline const PositionAndYAngleAndBillboardId& payload() const {
-        return *this;
-    }
-};
-static_assert(sizeof(PositionAndYAngleAndBillboardId<HalfCompressedScenePos>) == 2 * 3 + 2 + 4);
-
-inline PositionAndYAngleAndBillboardId<CompressedScenePos> operator + (
-    const PositionAndYAngleAndBillboardId<HalfCompressedScenePos>& a,
-    const FixedArray<CompressedScenePos, 3>& reference)
-{
-    return { a.position.casted<CompressedScenePos>() + reference, a.billboard_id, a.yangle };
-}
-
-inline PositionAndYAngleAndBillboardId<HalfCompressedScenePos> operator - (
-    const PositionAndYAngleAndBillboardId<CompressedScenePos>& a,
-    const FixedArray<CompressedScenePos, 3>& reference)
-{
-    auto p = a.position - reference;
-    auto cp = p.casted<HalfCompressedScenePos>();
-    if (any(cp.casted<CompressedScenePos>() != p)) {
-        THROW_OR_ABORT("PositionAndYAngleAndBillboardId: Could not compress scene position");
-    }
-    return { cp, a.billboard_id, a.yangle };
-}
-
-template <class TPosition>
-struct PositionAndBillboardId {
-    FixedArray<TPosition, 3> position;
-    BillboardId billboard_id;
-    inline AxisAlignedBoundingBox<TPosition, 3> aabb() const
-    {
-        return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
-    }
-    inline PositionAndBillboardId& payload() {
-        return *this;
-    }
-    inline const PositionAndBillboardId& payload() const {
-        return *this;
-    }
-};
-static_assert(sizeof(PositionAndBillboardId<HalfCompressedScenePos>) == 8);
-
-inline PositionAndBillboardId<CompressedScenePos> operator + (
-    const PositionAndBillboardId<HalfCompressedScenePos>& a,
-    const FixedArray<CompressedScenePos, 3>& reference)
-{
-    return { a.position.casted<CompressedScenePos>() + reference, a.billboard_id };
-}
-
-inline PositionAndBillboardId<HalfCompressedScenePos> operator - (
-    const PositionAndBillboardId<CompressedScenePos>& a,
-    const FixedArray<CompressedScenePos, 3>& reference)
-{
-    auto p = a.position - reference;
-    auto cp = p.casted<HalfCompressedScenePos>();
-    if (any(cp.casted<CompressedScenePos>() != p)) {
-        THROW_OR_ABORT("PositionAndBillboardId: Could not compress scene position");
-    }
-    return { cp, a.billboard_id };
-}
-
-class BillboardContainer {
-public:
-    auto& add(const PositionAndYAngleAndBillboardId<CompressedScenePos>& pyb) {
-        if (empty()) {
-            reference_point_ = pyb.aabb().min;
-        }
-        return pybs_.emplace_back(pyb - reference_point_);
-    }
-    auto& add(const PositionAndBillboardId<CompressedScenePos>& pb) {
-        if (empty()) {
-            reference_point_ = pb.aabb().min;
-        }
-        return pbs_.emplace_back(pb - reference_point_);
-    }
-    void fill(auto& container) const {
-        for (const auto& d : pybs_) {
-            container.insert(d + reference_point_);
-        }
-        for (const auto& d : pbs_) {
-            container.insert(d + reference_point_);
-        }
-    }
-    bool visit(const auto& aabb, const auto& pyb_visitor, const auto& pb_visitor) const {
-        for (const auto& d : pybs_) {
-            auto ud = d + reference_point_;
-            if (aabb.intersects(ud.aabb())) {
-                if (!pyb_visitor(ud.payload())) {
-                    return false;
-                }
-            }
-        }
-        for (const auto& d : pbs_) {
-            auto ud = d + reference_point_;
-            if (aabb.intersects(ud.aabb())) {
-                if (!pb_visitor(ud.payload())) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    bool visit_all(const auto& pyb_visitor, const auto& pb_visitor) const {
-        for (const auto& d : pybs_) {
-            if (!pyb_visitor(d + reference_point_)) {
-                return false;
-            }
-        }
-        for (const auto& d : pbs_) {
-            if (!pb_visitor(d + reference_point_)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    bool visit_pairs(const auto& aabb, const auto& pyb_visitor, const auto& pb_visitor) const {
-        for (const auto& d : pybs_) {
-            auto ud = d + reference_point_;
-            if (aabb.intersects(ud.aabb())) {
-                if (!pyb_visitor(ud)) {
-                    return false;
-                }
-            }
-        }
-        for (const auto& d : pbs_) {
-            auto ud = d + reference_point_;
-            if (aabb.intersects(ud.aabb())) {
-                if (!pb_visitor(ud)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    void print(std::ostream& ostr, size_t rec = 0) const {
-        for (const auto& d : pybs_) {
-            (d + reference_point_).aabb().print(ostr, rec + 1);
-        }
-        for (const auto& d : pbs_) {
-            (d + reference_point_).aabb().print(ostr, rec + 1);
-        }
-    }
-    bool empty() const {
-        return pybs_.empty() && pbs_.empty();
-    }
-    size_t size() const {
-        return pybs_.size() + pbs_.size();
-    }
-    void clear() {
-        pybs_.clear();
-        pbs_.clear();
-    }
-private:
-    FixedArray<CompressedScenePos, 3> reference_point_ = uninitialized;
-    std::vector<PositionAndYAngleAndBillboardId<HalfCompressedScenePos>> pybs_;
-    std::vector<PositionAndBillboardId<HalfCompressedScenePos>> pbs_;
-};
 
 struct SceneNodeInstances {
     using SmallInstances = GenericBvh<CompressedScenePos, 3, BillboardContainer>;
