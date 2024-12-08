@@ -104,6 +104,10 @@ public:
             center.template casted<TResultData>(),
             (TResultData)radius);
     }
+    bool operator == (const BoundingSphere& other) const {
+        return all(center == other.center) &&
+               (radius == other.radius);
+    }
     FixedArray<TPos, tndim> center;
     TPos radius;
 };

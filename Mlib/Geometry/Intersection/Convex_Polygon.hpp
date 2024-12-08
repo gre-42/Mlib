@@ -75,6 +75,10 @@ public:
             plane.template casted<TDir2, TPos2>()
         };
     }
+    bool operator == (const ConvexPolygon3D& other) const {
+        return all(edges == other.edges) &&
+               (plane == other.plane);
+    }
     FixedArray<PlaneNd<TDir, TPos, 3>, tnvertices> edges;
     PlaneNd<TDir, TPos, 3> plane;
 };

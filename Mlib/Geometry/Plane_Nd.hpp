@@ -54,6 +54,10 @@ public:
     PlaneNd<TDir2, TPos2, tndim> casted() const {
         return { normal.template casted<TDir2>(), TPos2(intercept) };
     }
+    bool operator == (const PlaneNd& other) const {
+        return all(normal == other.normal) &&
+               (intercept == other.intercept);
+    }
     FixedArray<TDir, tndim> normal;
     TPos intercept;
 };

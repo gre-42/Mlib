@@ -119,6 +119,11 @@ public:
             (TResultDir)length
         };
     }
+    bool operator == (const RaySegment3D& other) const {
+        return all(start == other.start) &&
+               all(direction == other.direction) &&
+               (length == other.length);
+    }
     FixedArray<TPos, 3> start;
     FixedArray<TDir, 3> direction;
     TDir length;

@@ -279,6 +279,10 @@ public:
     AxisAlignedBoundingBox operator - (const FixedArray<TData, tndim>& p) const {
         return { min - p, max - p };
     }
+    bool operator == (const AxisAlignedBoundingBox& other) const {
+        return all(min == other.min) &&
+               all(max == other.max);
+    }
     padded_fixed_array_t<TData, tndim> min;
     padded_fixed_array_t<TData, tndim> max;
 private:

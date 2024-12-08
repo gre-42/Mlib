@@ -54,6 +54,12 @@ struct CollisionPolygonSphere {
             corners.template casted<TResult>()
         };
     }
+    bool operator == (const CollisionPolygonSphere& other) const {
+        return (bounding_sphere == other.bounding_sphere) &&
+               (polygon == other.polygon) &&
+               (physics_material == other.physics_material) &&
+               all(corners == other.corners);
+    }
 };
 
 template <class TPosition, size_t tnvertices>

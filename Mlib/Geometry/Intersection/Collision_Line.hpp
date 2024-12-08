@@ -39,6 +39,12 @@ struct CollisionLineSphere {
             ray.template casted<SceneDir, TPosition2>()
         };
     }
+    bool operator == (const CollisionLineSphere& other) const {
+        return (bounding_sphere == other.bounding_sphere) &&
+               (physics_material == other.physics_material) &&
+               all(line == other.line) &&
+               (ray == other.ray);
+    }
 };
 
 template <class TPosition>

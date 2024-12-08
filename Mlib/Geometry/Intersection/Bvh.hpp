@@ -416,6 +416,10 @@ public:
     inline auto& payload() {
         return payload_;
     }
+    bool operator == (const AabbAndPayload& other) const {
+        return (aabb_ == other.aabb_) &&
+               (payload_ == other.payload_);
+    }
 private:
     AxisAlignedBoundingBox<TPosition, tndim> aabb_;
     TPayload payload_;
@@ -432,6 +436,9 @@ public:
     }
     inline const auto& payload() const {
         return point_;
+    }
+    bool operator == (const PointWithoutPayload& other) const {
+        return all(point_ == other.point_);
     }
 private:
     FixedArray<TPosition, tndim> point_;
@@ -505,9 +512,7 @@ public:
         }
         auto cd = compress(d, reference_point_);
         auto ucd = decompress(cd, reference_point_);
-        if (all(ucd.aabb().min == d.aabb().min) &&
-            all(ucd.aabb().max == d.aabb().max))
-        {
+        if (ucd == d) {
             small_data_.emplace_back(cd);
         } else {
             large_data_.emplace_back(d);

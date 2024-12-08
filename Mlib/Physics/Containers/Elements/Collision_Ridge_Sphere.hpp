@@ -15,6 +15,10 @@ struct RigidBodyAndCollisionRidgeSphere {
     RigidBodyAndCollisionRidgeSphere<TPosition2> casted() const {
         return { rb, crp.template casted<TPosition2>() };
     }
+    bool operator == (const RigidBodyAndCollisionRidgeSphere& other) const {
+        return (&rb == &other.rb) &&
+               (crp == other.crp);
+    }
 };
 
 inline RigidBodyAndCollisionRidgeSphere<CompressedScenePos>

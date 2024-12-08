@@ -43,6 +43,14 @@ struct CollisionRidgeSphere {
             .min_cos = min_cos
         };
     }
+    bool operator == (const CollisionRidgeSphere& other) const {
+        return (bounding_sphere == other.bounding_sphere) &&
+               (physics_material == other.physics_material) &&
+               all(edge == other.edge) &&
+               (ray == other.ray) &&
+               all(normal == other.normal) &&
+               (min_cos == other.min_cos);
+    }
 };
 
 template <class TPosition>

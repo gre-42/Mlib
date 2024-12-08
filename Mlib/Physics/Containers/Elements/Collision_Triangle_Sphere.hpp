@@ -24,6 +24,10 @@ struct RigidBodyAndCollisionTriangleSphere {
         }, ctp);
         return result;
     }
+    bool operator == (const RigidBodyAndCollisionTriangleSphere& other) const {
+        return (&rb == &other.rb) &&
+               (ctp == other.ctp);
+    }
 };
 
 inline RigidBodyAndCollisionTriangleSphere<CompressedScenePos>
