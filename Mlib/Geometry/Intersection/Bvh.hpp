@@ -501,7 +501,7 @@ class CompressedPayloadContainer {
 public:
     void add(const auto& d) {
         if (empty()) {
-            reference_point_ = d.aabb().min;
+            reference_point_ = d.aabb().center();
         }
         auto cd = compress(d, reference_point_);
         auto ucd = decompress(cd, reference_point_);
