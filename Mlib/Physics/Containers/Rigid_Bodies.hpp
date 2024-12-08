@@ -89,6 +89,7 @@ public:
     void delete_rigid_body(const RigidBodyVehicle& rigid_body);
     void optimize_search_time(std::ostream& ostr) const;
     void print_search_time() const;
+    void print_compression_ratio() const;
     void plot_convex_mesh_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;

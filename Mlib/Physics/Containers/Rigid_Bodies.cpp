@@ -338,10 +338,25 @@ void RigidBodies::optimize_search_time(std::ostream& ostr) const {
 }
 
 void RigidBodies::print_search_time() const {
-    std::cout << "Convex mesh search time: " << convex_mesh_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
-    std::cout << "Triangle search time: " << triangle_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
-    std::cout << "Ridge search time: " << ridge_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
-    std::cout << "Line search time: " << line_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
+    linfo() << "Convex mesh search time: " << convex_mesh_bvh_.search_time(BvhDataRadiusType::NONZERO);
+    linfo() << "Triangle search time: " << triangle_bvh_.search_time(BvhDataRadiusType::NONZERO);
+    linfo() << "Ridge search time: " << ridge_bvh_.search_time(BvhDataRadiusType::NONZERO);
+    linfo() << "Line search time: " << line_bvh_.search_time(BvhDataRadiusType::NONZERO);
+}
+
+void RigidBodies::print_compression_ratio() const {
+    size_t nsmall = 0;
+    size_t nlarge = 0;
+    triangle_bvh_.visit_bvhs([&](const auto& bvh){
+        nsmall += bvh.data().small_size();
+        nlarge += bvh.data().large_size();
+        return true;
+    });
+    linfo() << "nsmall: " << nsmall;
+    linfo() << "nlarge: " << nlarge;
+    if (nsmall + nlarge > 0) {
+        linfo() << "nsmall / ntotal: " << 100 * (nsmall / float(nsmall + nlarge)) << '%';
+    }
 }
 
 void RigidBodies::plot_convex_mesh_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {

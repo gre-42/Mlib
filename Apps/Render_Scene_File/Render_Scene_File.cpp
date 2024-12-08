@@ -135,20 +135,24 @@ void print_debug_info(
     RenderableScenes& renderable_scenes)
 {
     if (args.has_named("--print_search_time") ||
+        args.has_named("--print_compression_ratio") ||
         args.has_named("--optimize_search_time") ||
         args.has_named("--plot_triangle_bvh"))
     {
         for (const auto& [n, r] : renderable_scenes.guarded_iterable()) {
             if (args.has_named("--print_search_time")) {
-                lraw() << n << " search time";
+                linfo() << n << " search time";
+                r.print_physics_engine_search_time();
             }
-            r.print_physics_engine_search_time();
             if (args.has_named("--optimize_search_time")) {
                 r.physics_engine_.rigid_bodies_.optimize_search_time(lraw().ref());
             }
             if (args.has_named("--plot_triangle_bvh")) {
                 r.plot_physics_triangle_bvh_svg(n + "_xz.svg", 0, 2);
                 r.plot_physics_triangle_bvh_svg(n + "_xy.svg", 0, 1);
+            }
+            if (args.has_named("--print_compression_ratio")) {
+                r.physics_engine_.rigid_bodies_.print_compression_ratio();
             }
         }
     }
@@ -343,6 +347,7 @@ int main(int argc, char** argv) {
         "    [--bvh_max_size <r>]\n"
         "    [--static_radius <r>]\n"
         "    [--print_search_time]\n"
+        "    [--print_compression_ratio]\n"
         "    [--num_renderings <n>]\n"
         "    [--audio_gain <f>]\n"
         "    [--show_debug_wheels]\n"
@@ -379,6 +384,7 @@ int main(int argc, char** argv) {
          "--no_slip",
          "--no_avoid_burnout",
          "--print_search_time",
+         "--print_compression_ratio",
          "--no_control_physics_fps",
          "--fxaa",
          "--tty_hider",

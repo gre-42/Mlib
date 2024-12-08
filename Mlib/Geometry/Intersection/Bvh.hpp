@@ -192,17 +192,17 @@ public:
     }
 
     void modify_bottom_up(
-        const auto &node_visitor,
-        const auto &leaf_visitor)
+        const auto& node_visitor,
+        const auto& leaf_visitor)
     {
-        for (auto &[_, c] : children_) {
+        for (auto& [_, c] : children_) {
             c.modify_bottom_up(node_visitor, leaf_visitor);
         }
         node_visitor(children_);
         leaf_visitor(data_);
     }
 
-    bool visit_bvhs(const auto &visitor) const {
+    bool visit_bvhs(const auto& visitor) const {
         if (!visitor(*this)) {
             return false;
         }
@@ -590,6 +590,12 @@ public:
     }
     size_t size() const {
         return small_data_.size() + large_data_.size();
+    }
+    size_t small_size() const {
+        return small_data_.size();
+    }
+    size_t large_size() const {
+        return large_data_.size();
     }
     void clear() {
         small_data_.clear();

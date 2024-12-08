@@ -187,20 +187,24 @@ void print_debug_info(
     RenderableScenes& renderable_scenes)
 {
     if (args.has_named("--print_search_time") ||
+        args.has_named("--print_compression_ratio") ||
         args.has_named("--optimize_search_time") ||
         args.has_named("--plot_triangle_bvh"))
     {
         for (const auto& [n, r] : renderable_scenes.guarded_iterable()) {
             if (args.has_named("--print_search_time")) {
-                lraw() << n << " search time";
+                linfo() << n << " search time";
+                r.print_physics_engine_search_time();
             }
-            r.print_physics_engine_search_time();
             if (args.has_named("--optimize_search_time")) {
                 r.physics_engine_.rigid_bodies_.optimize_search_time(lraw().ref());
             }
             if (args.has_named("--plot_triangle_bvh")) {
                 r.plot_physics_triangle_bvh_svg(n + "_xz.svg", 0, 2);
                 r.plot_physics_triangle_bvh_svg(n + "_xy.svg", 0, 1);
+            }
+            if (args.has_named("--print_compression_ratio")) {
+                r.physics_engine_.rigid_bodies_.print_compression_ratio();
             }
         }
     }
@@ -335,12 +339,12 @@ void android_main(android_app* app) {
         "    [--no_double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
         "    [--no_normalmaps]\n"
-        "    [--no_physics ]\n"
-        "    [--physics_dt <dt> ]\n"
-        "    [--render_dt <dt> ]\n"
-        "    [--render_max_residual_time <dt> ]\n"
+        "    [--no_physics]\n"
+        "    [--physics_dt <dt>]\n"
+        "    [--render_dt <dt>]\n"
+        "    [--render_max_residual_time <dt>]\n"
         "    [--no_control_physics_fps ]\n"
-        "    [--control_render_fps ]\n"
+        "    [--control_render_fps]\n"
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
@@ -373,6 +377,7 @@ void android_main(android_app* app) {
         "    [--bvh_max_size <r>]\n"
         "    [--static_radius <r>]\n"
         "    [--print_search_time]\n"
+        "    [--print_compression_ratio]\n"
         "    [--num_renderings <n>]\n"
         "    [--audio_gain <f>]\n"
         "    [--show_debug_wheels]\n"
@@ -407,6 +412,7 @@ void android_main(android_app* app) {
          "--no_slip",
          "--no_avoid_burnout",
          "--print_search_time",
+         "--print_compression_ratio",
          "--no_control_physics_fps",
          "--control_render_fps",
          "--fxaa",
@@ -561,8 +567,8 @@ void android_main(android_app* app) {
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 // BVH
-                .static_radius = safe_stof(args.named_value("--static_radius", "20")) * meters,
-                .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "2")) * meters,
+                .static_radius = (CompressedScenePos)(safe_stof(args.named_value("--static_radius", "20")) * meters),
+                .bvh_max_size = (CompressedScenePos)(safe_stof(args.named_value("--bvh_max_size", "2")) * meters),
                 // Collision/Friction misc.
                 .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
@@ -575,7 +581,8 @@ void android_main(android_app* app) {
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "4"))};
+                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "4")),
+                .enable_ridge_map = false};
 
             SceneConfig scene_config{
                 .render_config = render_config,
