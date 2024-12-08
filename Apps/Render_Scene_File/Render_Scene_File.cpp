@@ -574,7 +574,7 @@ int main(int argc, char** argv) {
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "4")),
-                .enable_ridge_map = true};
+                .enable_ridge_map = false};
 
             SceneConfig scene_config{
                 .render_config = render_config,
