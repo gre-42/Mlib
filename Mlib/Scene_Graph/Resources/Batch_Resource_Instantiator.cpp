@@ -160,8 +160,9 @@ void BatchResourceInstantiator::instantiate_root_renderables(
         auto world_node = make_unique_scene_node(
             options.absolute_model_matrix.t,
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
-            options.absolute_model_matrix.get_scale(),
+            1.f,
             PoseInterpolationMode::DISABLED);
+        auto scale = options.absolute_model_matrix.get_scale();
 
         for (const auto& [name, ps] : resource_instance_positions_) {
             auto node = make_unique_scene_node(
@@ -182,7 +183,9 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             }
             world_node->add_instances_child(*name, std::move(node));
             for (const auto& r : ps) {
-                world_node->add_instances_position(*name, r.position, r.yangle, r.billboard_id);
+                // For sensible conversion to "CompressedScenePos", the scale is applied to each
+                // instance position and not to the parent node.
+                world_node->add_instances_position(*name, r.position * scale, r.yangle, r.billboard_id);
             }
         }
         options.scene.auto_add_root_node(
