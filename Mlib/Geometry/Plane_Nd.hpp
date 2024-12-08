@@ -41,11 +41,14 @@ public:
         // i1 = -dot0d(n1, trafo(n0 * (-i0))) = -dot0d(n1, -i0 * n1 + t) = i0 - dot0d(n1, t)
         return result;
     }
-    PlaneNd operator + (const FixedArray<TPos, tndim>& offset) {
+    PlaneNd operator + (const FixedArray<TPos, tndim>& offset) const {
         using I = funpack_t<TPos>;
         auto n = normal.template casted<I>();
         auto o = offset.template casted<I>();
         return { normal, intercept - (TPos)dot0d(n, o) };
+    }
+    PlaneNd operator - (const FixedArray<TPos, tndim>& offset) const {
+        return *this + (-offset);
     }
     PlaneNd operator - () const {
         return { -normal, -intercept };

@@ -710,44 +710,69 @@ void test_distance_polygon_aabb() {
     linfo() << cp.closest_point0 << " - " << cp.closest_point1 << " - " << cp.normal << " - " << cp.distance;
 }
 
+void test_plane_shift() {
+    NormalRandomNumberGenerator<SceneDir> drng{ 42 };
+    NormalRandomNumberGenerator<ScenePos> prng{ 43, 0.f, 1'000.f };
+    for (size_t i = 0; i < 1000; ++i) {
+        PlaneNd<SceneDir, CompressedScenePos, 3> plane{
+            FixedArray<SceneDir, 3>{ drng(), drng(), drng() },
+            (CompressedScenePos)prng() };
+        FixedArray<CompressedScenePos, 3> p{
+            (CompressedScenePos)prng(),
+            (CompressedScenePos)prng(),
+            (CompressedScenePos)prng()};
+        auto plane2 = plane + p;
+        auto plane3 = plane2 - p;
+        if (plane3 != plane) {
+            THROW_OR_ABORT("Plane roundtrip error");
+        }
+    }
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
-    test_special_tait_bryan_angles();
-    test_tait_bryan_angles_2_matrix();
-    test_inverse_tait_bryan_angles();
-    test_rodrigues_fixed();
-    test_fixed_tait_bryan_angles_2_matrix();
+    try {
+        test_special_tait_bryan_angles();
+        test_tait_bryan_angles_2_matrix();
+        test_inverse_tait_bryan_angles();
+        test_rodrigues_fixed();
+        test_fixed_tait_bryan_angles_2_matrix();
 
-    test_cross();
-    test_triangle_area();
-    test_quad_area();
-    test_contour();
-    test_contour2();
-    // test_octree();
-    test_invert_scaled_4x4();
-    test_intersect_lines();
-    test_lines_to_rectangles();
-    test_inverse_rodrigues();
-    test_bvh();
-    // test_bvh_performance();
-    test_ray_segment_intersects_aabb();
-    test_roundness_estimator();
-    // test_smoothen_edges();
-    test_distance_point_triangle();
-#ifndef WITHOUT_TRIANGLE
-    test_triangulate_3d_1();
-    test_triangulate_3d_2();
-#endif
-    test_smallest_angle_in_triangle();
-    test_rotate_intrinsic_matrix();
-    // test_subdivide_points_and_adjacency();
-    // test_combine_points_and_adjacency();
-    test_welzl_triangle();
-    test_welzl_tetrahedron();
-    test_shortest_path();
-    test_frustum3();
-    test_ray_sphere_intersection();
-    test_distance_polygon_aabb();
+        test_cross();
+        test_triangle_area();
+        test_quad_area();
+        test_contour();
+        test_contour2();
+        // test_octree();
+        test_invert_scaled_4x4();
+        test_intersect_lines();
+        test_lines_to_rectangles();
+        test_inverse_rodrigues();
+        test_bvh();
+        // test_bvh_performance();
+        test_ray_segment_intersects_aabb();
+        test_roundness_estimator();
+        // test_smoothen_edges();
+        test_distance_point_triangle();
+    #ifndef WITHOUT_TRIANGLE
+        test_triangulate_3d_1();
+        test_triangulate_3d_2();
+    #endif
+        test_smallest_angle_in_triangle();
+        test_rotate_intrinsic_matrix();
+        // test_subdivide_points_and_adjacency();
+        // test_combine_points_and_adjacency();
+        test_welzl_triangle();
+        test_welzl_tetrahedron();
+        test_shortest_path();
+        test_frustum3();
+        test_ray_sphere_intersection();
+        test_distance_polygon_aabb();
+        test_plane_shift();
+    } catch (const std::runtime_error& e) {
+        lerr() << e.what();
+        return 1;
+    }
     return 0;
 }
