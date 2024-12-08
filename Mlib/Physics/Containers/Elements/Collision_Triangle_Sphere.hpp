@@ -13,16 +13,11 @@ struct RigidBodyAndCollisionTriangleSphere {
     std::variant<CollisionPolygonSphere<TPosition, 3>, CollisionPolygonSphere<TPosition, 4>> ctp;
     template <class TResult>
     RigidBodyAndCollisionTriangleSphere<TResult> casted() const {
-        CollisionPolygonSphere<TResult, 3> dflt{
-            .bounding_sphere = uninitialized,
-            .polygon = uninitialized,
-            .corners = uninitialized
-        };
-        RigidBodyAndCollisionTriangleSphere<TResult> result{ rb, dflt };
-        std::visit([&result](auto& ctp){
-            result.ctp = ctp.template casted<TResult>();
+        std::optional<RigidBodyAndCollisionTriangleSphere<TResult>> result;
+        std::visit([&](auto& ctp){
+            result.emplace(rb, ctp.template casted<TResult>());
         }, ctp);
-        return result;
+        return *result;
     }
     bool operator == (const RigidBodyAndCollisionTriangleSphere& other) const {
         return (&rb == &other.rb) &&
@@ -35,11 +30,11 @@ inline RigidBodyAndCollisionTriangleSphere<CompressedScenePos>
         const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& d,
         const FixedArray<CompressedScenePos, 3>& ref)
 {
-    auto result = d;
-    std::visit([&ref](auto& ctp){
-        ctp = ctp + ref;
-    }, result.ctp);
-    return result;
+    std::optional<RigidBodyAndCollisionTriangleSphere<CompressedScenePos>> result;
+    std::visit([&](auto& ctp){
+        result.emplace(d.rb, ctp + ref);
+    }, d.ctp);
+    return *result;
 }
 
 inline RigidBodyAndCollisionTriangleSphere<CompressedScenePos>
