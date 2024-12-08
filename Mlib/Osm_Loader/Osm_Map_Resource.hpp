@@ -52,7 +52,7 @@ public:
         SceneNodeResources& scene_node_resources,
         const std::string& level_filename,
         const std::string& debug_prefix);
-    ~OsmMapResource();
+    virtual ~OsmMapResource() override;
 
     // ISceneNodeResource, Misc
     virtual void preload(const RenderableResourceFilter& filter) const override;

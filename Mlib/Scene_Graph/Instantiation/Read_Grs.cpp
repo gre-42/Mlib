@@ -76,7 +76,7 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
             linfo() << "Size 8: " << size8;
         }
         seek_relative_positive(istr, 12, verbosity);
-        if (cells.size() > 1e6) {
+        if (cells.size() > (size_t)1e6) {
             THROW_OR_ABORT("Too many cells");
         }
         auto& cell = cells.emplace_back(uninitialized);

@@ -194,7 +194,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector(uv1),
         std::vector(cweight),
-        UUVector(alpha));
+        UUVector<FixedArray<float, 3>>(alpha));
 }
 
 template <class TPos>
@@ -241,7 +241,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector(uv1),
         std::vector(cweight),
-        UUVector(alpha));
+        UUVector<FixedArray<float, 3>>(alpha));
 }
 
 template <class TPos>

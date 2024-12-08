@@ -37,7 +37,7 @@ JpkReader::JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity
         if (any(verbosity & IoVerbosity::METADATA)) {
             linfo() << "Entry index: " << i;
         }
-        data->seekg(32 + i * 32);
+        data->seekg(integral_cast<std::streamoff>(32 + i * 32));
         
         auto name_offset = read_binary<uint32_t>(*data, "name offset", verbosity);
         auto data_size = read_binary<uint32_t>(*data, "data size", verbosity);
@@ -59,7 +59,11 @@ JpkReader::JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity
         if (name_length > 1000) {
             THROW_OR_ABORT("Name too long");
         }
-        std::string name = read_string(*data, name_length - integral_cast<std::streamoff>(1), "name", verbosity);
+        std::string name = read_string(
+            *data,
+            integral_cast<size_t>((std::streamoff)name_length - integral_cast<std::streamoff>(1)),
+            "name",
+            verbosity);
         data->seekg(file_offset);
         directory_.add(name, file_offset, data_size);
         if (any(verbosity & IoVerbosity::METADATA)) {

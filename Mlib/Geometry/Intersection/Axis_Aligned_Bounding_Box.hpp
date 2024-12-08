@@ -24,6 +24,8 @@ class AxisAlignedBoundingBox {
     template <class TData2, size_t tndim2>
     friend class AxisAlignedBoundingBox; 
 public:
+    using Bound = padded_fixed_array_t<TData, tndim>;
+
     AxisAlignedBoundingBox(Uninitialized)
         : min{ uninitialized }
         , max{ uninitialized }
@@ -115,12 +117,12 @@ public:
         return clamped(point, min, max);
     }
     void extend(const AxisAlignedBoundingBox& other) {
-        min = minimum(min, other.min);
-        max = maximum(max, other.max);
+        min = (Bound)minimum(min, other.min);
+        max = (Bound)maximum(max, other.max);
     }
     void extend(const FixedArray<TData, tndim>& point) {
-        min = minimum(min, point);
-        max = maximum(max, point);
+        min = (Bound)minimum(min, point);
+        max = (Bound)maximum(max, point);
     }
     template <class TDir, class TPos>
     AxisAlignedBoundingBox<TPos, tndim> transformed(
@@ -138,7 +140,7 @@ public:
         return AxisAlignedBoundingBox(min + translation, max + translation);
     }
     FixedArray<TData, tndim> center() const {
-        return (min + max) / 2;
+        return (min + max) / (uint16_t)2;
     }
     FixedArray<TData, tndim> size() const {
         return max - min;
@@ -283,8 +285,8 @@ public:
         return all(min == other.min) &&
                all(max == other.max);
     }
-    padded_fixed_array_t<TData, tndim> min;
-    padded_fixed_array_t<TData, tndim> max;
+    Bound min;
+    Bound max;
 private:
     AxisAlignedBoundingBox(const FixedArray<TData, tndim>& min, const FixedArray<TData, tndim>& max)
         : min{ min }

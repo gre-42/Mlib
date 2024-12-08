@@ -1505,14 +1505,13 @@ OsmMapResource::OsmMapResource(
     , normalization_matrix_{ uninitialized }
     , terrain_styles_{}
 {
-    auto ifstr_p = create_ifstream(level_filename, std::ios::binary);
-    auto& ifstr = *ifstr_p;
-    if (ifstr.fail()) {
+    auto ifstr = create_ifstream(level_filename, std::ios::binary);
+    if (ifstr->fail()) {
         THROW_OR_ABORT("Could not open input OSM-map binary file \"" + level_filename + '"');
     }
-    cereal::BinaryInputArchive iarchive(ifstr);
+    cereal::BinaryInputArchive iarchive(*ifstr);
     iarchive(*this);
-    if (ifstr.fail()) {
+    if (ifstr->fail()) {
         THROW_OR_ABORT("Could not read from file \"" + level_filename + '"');
     }
     print_waypoints_if_requested(debug_prefix);

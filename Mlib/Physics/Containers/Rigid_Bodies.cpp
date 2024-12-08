@@ -355,7 +355,9 @@ void RigidBodies::print_compression_ratio() const {
     linfo() << "nsmall: " << nsmall;
     linfo() << "nlarge: " << nlarge;
     if (nsmall + nlarge > 0) {
-        linfo() << "nsmall / ntotal: " << 100 * (nsmall / float(nsmall + nlarge)) << '%';
+        linfo() << "nsmall / ntotal: " <<
+            100. * (integral_to_float<double>(nsmall) /
+                    integral_to_float<double>(nsmall + nlarge)) << '%';
     }
 }
 

@@ -1,9 +1,12 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Funpack.hpp>
 #include <Mlib/Math/Pow.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
+#include <cstdint>
 #include <iomanip>
 #include <list>
 #include <ostream>
@@ -42,14 +45,20 @@ public:
     explicit GenericBvh(const FixedArray<TPosition, tndim>& max_size, size_t level)
         : max_size_{max_size}
         , level_{level}
-    {}
+    {
+        if (level > 32) {
+            THROW_OR_ABORT("Too many BVH levels");
+        }
+    }
 
     decltype(auto) insert(const auto& aabb, const auto& payload) {
         return insert(AabbAndPayload{aabb, payload});
     }
 
     decltype(auto) insert(const auto& entry) {
-        auto max_size_children = max_size_ * (1 << (level_ - 1));
+        using F = funpack_t<TPosition>;
+        auto iscale = (uint32_t)1 << (level_ - 1);
+        auto max_size_children = max_size_ * integral_to_float<F>(iscale);
         if ((level_ == 0) || any(entry.aabb().size() > max_size_children)) {
             return data_.add(entry);
         }

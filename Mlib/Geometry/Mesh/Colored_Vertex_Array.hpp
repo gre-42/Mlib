@@ -146,6 +146,7 @@ public:
         archive(discrete_triangle_texture_layers);
         archive(uv1);
         archive(cweight);
+        archive(alpha);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>

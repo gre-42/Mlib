@@ -3,7 +3,10 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Scaled_Integer.hpp>
 #include <concepts>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #include <eve/std.hpp>
+#pragma GCC diagnostic pop
 
 namespace Mlib {
 
@@ -11,7 +14,7 @@ template <std::intmax_t numerator, std::intmax_t denominator>
 class PaddedFixedArray3Int32: public FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3> {
 public:
     using FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3>::FixedArray;
-    PaddedFixedArray3Int32(const FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3>& other)
+    explicit PaddedFixedArray3Int32(const FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3>& other)
         : FixedArray<ScaledInteger<int32_t, numerator, denominator>, 3>{ other }
     {}
     int32_t padding = 0;
@@ -21,7 +24,7 @@ template <std::intmax_t numerator, std::intmax_t denominator>
 class PaddedFixedArray3Int16: public FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3> {
 public:
     using FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3>::FixedArray;
-    PaddedFixedArray3Int16(const FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3>& other)
+    explicit PaddedFixedArray3Int16(const FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3>& other)
         : FixedArray<ScaledInteger<int16_t, numerator, denominator>, 3>{ other }
     {}
     int16_t padding = 0;
@@ -49,7 +52,9 @@ static PaddedFixedArray3Int16<numerator, denominator> get_padded_fixed_array(
 template <class TData, size_t tndim>
 struct padded_fixed_array 
 {
-    static const FixedArray<TData, tndim>& f();
+    static const FixedArray<TData, tndim>& f() {
+        verbose_abort("xx");
+    }
     using type = decltype(get_padded_fixed_array(f()));
 };
 

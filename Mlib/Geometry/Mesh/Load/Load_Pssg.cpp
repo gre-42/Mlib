@@ -106,8 +106,8 @@ std::istringstream uncompress_stream(
     } else {
         end = begin + nbytes;
     }
-    std::vector<char> compressed(end - begin);
-    istr.read(compressed.data(), compressed.size());
+    std::vector<char> compressed(integral_cast<size_t>(end - begin));
+    istr.read(compressed.data(), integral_cast<std::streamoff>(compressed.size()));
     if (istr.fail()) {
         THROW_OR_ABORT("Could not read compressed data: \"" + filename + '"');
     }
@@ -294,7 +294,7 @@ PssgNode load_pssg_node(std::istream& istr, const PssgSchema& schema, IoVerbosit
         if (size > 1'000'000'000) {
             THROW_OR_ABORT("Node size too large (2)");
         }
-        result.data.resize(size);
+        result.data.resize(integral_cast<size_t>(size));
         read_vector(istr, result.data, "node data", verbosity);
         if (any(verbosity & IoVerbosity::METADATA)) {
             if (schema_node.name == "TRANSFORM") {

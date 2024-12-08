@@ -53,6 +53,10 @@ public:
     inline explicit operator TFloat () const {
         return TFloat(count) * numerator / denominator;
     }
+    template <std::integral TInt2>
+    inline explicit operator TInt2 () const {
+        return (TInt2)(intermediate_type<TInt>)(*this);
+    }
     template <class TInt2>
     inline explicit operator ScaledInteger<TInt2, numerator, denominator> () const {
         return ScaledInteger<TInt2, numerator, denominator>::from_count((TInt2)count);
@@ -133,10 +137,10 @@ inline ScaledInteger<TInt, numerator, denominator> operator * (
     return (ScaledInteger<TInt, numerator, denominator>)((F)a * b);
 }
 
-template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator>
+template <std::integral TInt, std::intmax_t numerator, std::intmax_t denominator, std::integral I>
 inline ScaledInteger<TInt, numerator, denominator> operator / (
     const ScaledInteger<TInt, numerator, denominator>& a,
-    TInt b)
+    I b)
 {
     return ScaledInteger<TInt, numerator, denominator>::from_count(a.count / b);
 }

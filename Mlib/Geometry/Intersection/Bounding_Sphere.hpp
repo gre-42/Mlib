@@ -6,6 +6,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Max.hpp>
 #include <Mlib/Math/Sqrt.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Uninitialized.hpp>
@@ -68,7 +69,7 @@ public:
         if (nelements == 0) {
             THROW_OR_ABORT("Bounding sphere received no elements");
         }
-        center /= nelements;
+        center /= integral_to_float<I>(nelements);
         return from_center_and_iterator(center.template casted<TPos>(), iterator_begin, iterator_end);
     }
     bool contains(const FixedArray<TPos, tndim>& other, const TPos& tolerance = TPos(0)) const {
