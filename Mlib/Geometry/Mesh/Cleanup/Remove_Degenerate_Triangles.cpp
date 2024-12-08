@@ -2,13 +2,14 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
-#include <list>
+#include <vector>
 
 using namespace Mlib;
 
 template <class TPos>
 void Mlib::remove_degenerate_triangles(ColoredVertexArray<TPos>& cva) {
-    std::list<FixedArray<ColoredVertex<TPos>, 3>> trimmed;
+    std::vector<FixedArray<ColoredVertex<TPos>, 3>> trimmed;
+    trimmed.reserve(cva.triangles.size());
     for (const auto& tri : cva.triangles) {
         auto tlc = triangle_largest_cosine<TPos, 3>({
             tri(0).position,
