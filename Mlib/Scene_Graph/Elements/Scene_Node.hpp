@@ -60,8 +60,8 @@ struct Bijection;
 template <class TPosition>
 struct PositionAndYAngleAndBillboardId {
     FixedArray<TPosition, 3> position;
-    SceneDir yangle;
     BillboardId billboard_id;
+    SceneDir yangle;
     inline AxisAlignedBoundingBox<TPosition, 3> aabb() const {
         return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
     }
@@ -72,12 +72,13 @@ struct PositionAndYAngleAndBillboardId {
         return *this;
     }
 };
+static_assert(sizeof(PositionAndYAngleAndBillboardId<HalfCompressedScenePos>) == 2 * 3 + 2 + 4);
 
 inline PositionAndYAngleAndBillboardId<CompressedScenePos> operator + (
     const PositionAndYAngleAndBillboardId<HalfCompressedScenePos>& a,
     const FixedArray<CompressedScenePos, 3>& reference)
 {
-    return { a.position.casted<CompressedScenePos>() + reference, a.yangle, a.billboard_id };
+    return { a.position.casted<CompressedScenePos>() + reference, a.billboard_id, a.yangle };
 }
 
 inline PositionAndYAngleAndBillboardId<HalfCompressedScenePos> operator - (
@@ -89,7 +90,7 @@ inline PositionAndYAngleAndBillboardId<HalfCompressedScenePos> operator - (
     if (any(cp.casted<CompressedScenePos>() != p)) {
         THROW_OR_ABORT("PositionAndYAngleAndBillboardId: Could not compress scene position");
     }
-    return { cp, a.yangle, a.billboard_id };
+    return { cp, a.billboard_id, a.yangle };
 }
 
 template <class TPosition>

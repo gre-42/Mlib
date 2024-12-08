@@ -556,8 +556,8 @@ void SceneNode::add_instances_position(
         cit->second.large_instances.push_back(
             PositionAndYAngleAndBillboardId{
                 .position = position.casted<CompressedScenePos>(),
-                .yangle = yangle,
-                .billboard_id = billboard_id}
+                .billboard_id = billboard_id,
+                .yangle = yangle}
         );
     } else {
         if (!std::isfinite(mcd)) {
@@ -573,8 +573,8 @@ void SceneNode::add_instances_position(
             cit->second.small_instances.insert(
                 PositionAndYAngleAndBillboardId{
                     .position = position.casted<CompressedScenePos>(),
-                    .yangle = yangle,
-                    .billboard_id = billboard_id});
+                    .billboard_id = billboard_id,
+                    .yangle = yangle});
         }
     }
 }
@@ -1076,7 +1076,7 @@ void SceneNode::append_small_instances_to_queue(
         (*r)->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngleAndBillboardId{ fixed_zeros<CompressedScenePos, 3>(), 0.f, BILLBOARD_ID_NONE }, instances_queues, scene_graph_config);
+        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngleAndBillboardId{ fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f }, instances_queues, scene_graph_config);
     }
     for (const auto& [_, i] : un_guarded_iterator(instances_children_, lock)) {
         std::shared_lock ilock{ i.mutex };
@@ -1096,7 +1096,7 @@ void SceneNode::append_small_instances_to_queue(
                 },
                 [&, &i = i](const PositionAndBillboardId<CompressedScenePos>& j) {
                     UnlockGuard ulock{ ilock };
-                    i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, {j.position, 0.f, j.billboard_id}, instances_queues, scene_graph_config);
+                    i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, {j.position, j.billboard_id, 0.f}, instances_queues, scene_graph_config);
                     return true;
                 });
         }
@@ -1126,7 +1126,7 @@ void SceneNode::append_large_instances_to_queue(
         (*r)->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), 0.f, BILLBOARD_ID_NONE}, instances_queue, scene_graph_config);
+        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f}, instances_queue, scene_graph_config);
     }
     for (const auto& [_, i] : un_guarded_iterator(instances_children_, lock)) {
         std::shared_lock ilock{ i.mutex };
@@ -1144,7 +1144,7 @@ void SceneNode::append_large_instances_to_queue(
             [&, &i=i](const auto& j){
                 UnlockGuard ulock{ ilock };
                 const auto& J = j.payload();
-                i.scene_node->append_large_instances_to_queue(mvp, m, offset, {J.position, 0.f, J.billboard_id}, instances_queue, scene_graph_config);
+                i.scene_node->append_large_instances_to_queue(mvp, m, offset, {J.position, J.billboard_id, 0.f}, instances_queue, scene_graph_config);
                 return true;
             });
     }
