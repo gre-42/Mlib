@@ -256,7 +256,7 @@ Array<TransformationMatrix<float, float, 3>> DepthMapBundle::points_and_normals(
     float normal_radius,
     float duplicate_distance) const
 {
-    Bvh<float, FixedArray<float, 3>, 3> bvh{ { 0.1f, 0.1f, 0.1f }, 10 };
+    PointWithoutPayloadVectorBvh<float, 3> bvh{ { 0.1f, 0.1f, 0.1f }, 10 };
     Array<FixedArray<float, 3>> points{ ArrayShape{ 0 } };
     Array<FixedArray<float, 3>> normals{ ArrayShape{ 0 } };
     Array<FixedArray<float, 3>> dys{ ArrayShape{ 0 } };
@@ -286,10 +286,10 @@ Array<TransformationMatrix<float, float, 3>> DepthMapBundle::points_and_normals(
                     {
                         continue;
                     }
-                    bvh.insert(pos1, pos1);
+                    bvh.insert(PointWithoutPayload{ pos1 });
                 }
                 points.append(pos1);
-                dys.append(package.second.ke.R()[1]);
+                dys.append(package.second.ke.R[1]);
                 FixedArray<float, 3> dz{ cpos.rotate(pos0) };
                 dzs.append(dz / std::sqrt(sum(squared(dz))));
             }
@@ -298,14 +298,14 @@ Array<TransformationMatrix<float, float, 3>> DepthMapBundle::points_and_normals(
 
     // Compute normals.
     {
-        Bvh<float, FixedArray<float, 3>, 3> bvh{{0.1f, 0.1f, 0.1f}, 10};
+        PointWithoutPayloadVectorBvh<float, 3> bvh{{0.1f, 0.1f, 0.1f}, 10};
         for (auto& p : points.flat_iterable()) {
-            bvh.insert({p}, p);
+            bvh.insert(PointWithoutPayload{ p });
         }
         for (size_t pi = 0; pi < points.length(); ++pi) {
             const auto& p = points(pi);
             const auto& dz = dzs(pi);
-            std::vector<std::pair<float, const FixedArray<float, 3>*>> k_nearest = bvh.min_distances(
+            std::vector<std::pair<float, const FixedArray<float, 3>*>> k_nearest = bvh.min_distances<FixedArray<float, 3>>(
                 k,
                 p,
                 normal_radius,
@@ -348,7 +348,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> DepthMapBundle::mesh(
     float cos_min_angle,
     float largest_cos_in_triangle) const
 {
-    Array<FixedArray<FixedArray<float, 3>, 3>> tri_mesh = triangulate_3d(
+    Array<FixedArray<float, 3, 3>> tri_mesh = triangulate_3d(
         point_cloud,
         boundary_radius,
         z_thickness,
@@ -356,22 +356,22 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> DepthMapBundle::mesh(
         largest_cos_in_triangle);
     std::list<std::shared_ptr<ColoredVertexArray<float>>> result;
     if (tri_mesh.length() != 0) {
-        TriangleList<float> triangle_list{ "Mesh", Material(), PhysicsMaterial::ATTR_VISIBLE };
+        TriangleList<float> triangle_list{ "Mesh", Material(), Morphology{ PhysicsMaterial::ATTR_VISIBLE } };
         for (const auto& t : tri_mesh.flat_iterable()) {
             triangle_list.draw_triangle_wo_normals(
-                t(0),                                 // p00
-                t(1),                                 // p10
-                t(2),                                 // p01
+                t[0],                                 // p00
+                t[1],                                 // p10
+                t[2],                                 // p01
                 FixedArray<float, 3>{1.f, 1.f, 1.f},  // c00
                 FixedArray<float, 3>{1.f, 1.f, 1.f},  // c10
                 FixedArray<float, 3>{1.f, 1.f, 1.f},  // c01
-                {0.f, 0.f},                           // u00
-                {1.f, 0.f},                           // u10
-                {0.f, 1.f},                           // u01
+                FixedArray<float, 2>{0.f, 0.f},       // u00
+                FixedArray<float, 2>{1.f, 0.f},       // u10
+                FixedArray<float, 2>{0.f, 1.f},       // u01
                 {},                                   // b00
                 {},                                   // b10
                 {},                                   // b01
-                TriangleNormalErrorBehavior::WARN,
+                NormalVectorErrorBehavior::WARN,
                 TriangleTangentErrorBehavior::WARN);
         }
         result.push_back(triangle_list.triangle_array());

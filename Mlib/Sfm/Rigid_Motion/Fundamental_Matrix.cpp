@@ -135,6 +135,6 @@ FixedArray<float, 3, 3> Mlib::Sfm::fundamental_from_camera(
     return lstsq_chol(
         intrinsic1.affine().T(),
         dot2d(
-            outer2d(ke.R(), intrinsic0.affine()),
-            cross(dot1d(outer(intrinsic0.affine(), ke.R()), ke.t())))).value();
+            outer2d(ke.R, intrinsic0.affine()),
+            cross(dot1d(outer(intrinsic0.affine(), ke.R), ke.t)))).value();
 }

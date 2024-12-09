@@ -218,10 +218,10 @@ Array<TData> intensity_jacobian_fast(
             FixedArray<TData, 3> r0 = dot1d(R0, b);
             FixedArray<TData, 3> r1 = dot1d(R1, r0);
 
-            FixedArray<TData, 3, 3> da_dtheta_T;
-            da_dtheta_T[0] = dot1d(RR0, b);
-            da_dtheta_T[1] = dot1d(RR1, r0);
-            da_dtheta_T[2] = dot1d(RR2, r1);
+            FixedArray<TData, 3, 3> da_dtheta_T{
+                dot1d(RR0, b),
+                dot1d(RR1, r0),
+                dot1d(RR2, r1) };
 
             FixedArray<TData, 2, 3> J = outer(dy_da, da_dtheta_T);
 

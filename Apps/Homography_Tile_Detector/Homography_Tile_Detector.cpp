@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
             for (size_t r = 0; r < mask.shape(0); ++r) {
                 for (size_t c = 0; c < mask.shape(1); ++c) {
                     FixedArray<float, 2> a{i2a(FixedArray<size_t, 2>{r, c})};
-                    FixedArray<float, 2> b{apply_homography(H, a) TEMPLATEV row_range<0, 2>()};
+                    FixedArray<float, 2> b{apply_homography(H, a).template row_range<0, 2>()};
                     FixedArray<size_t, 2> ia = a2i(a);
                     FixedArray<size_t, 2> ib = a2i(b);
                     if (all(ia < FixedArray<size_t, 2>{mask.shape(0), mask.shape(1)}) &&

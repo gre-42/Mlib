@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Array/Consteval_Workaround.hpp>
 #include <Mlib/Math/Abs.hpp>
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Math/Funpack.hpp>
@@ -548,18 +549,30 @@ void outer2d(
     const BaseDenseArray<TDerivedB, TData>& b,
     BaseDenseArray<TDerivedR, TData>& result)
 {
-    assert(a->ndim() == 2);
-    assert(b->ndim() == 2);
-    assert(a->shape(1) == b->shape(1));
-    assert(all(result->shape() == ArrayShape{ a->shape(0), b->shape(0) }));
-    if (result->template static_shape<0>() > INT_MAX) {
+    assert(CW::ndim(a) == 2);
+    assert(CW::ndim(b) == 2);
+    assert(CW::ndim(result) == 2);
+
+    size_t aR = CW::static_shape<0>(*a);
+    size_t aC = CW::static_shape<1>(*a);
+
+    size_t bR = CW::static_shape<0>(*b);
+    size_t bC = CW::static_shape<1>(*b);
+
+    size_t rR = CW::static_shape<0>(*result);
+    size_t rC = CW::static_shape<1>(*result);
+
+    assert(aC == bC);
+    assert(rR == aR);
+    assert(rC == bR);
+    if (rR > INT_MAX) {
         THROW_OR_ABORT("Too many rows in matrix");
     }
-    #pragma omp parallel for if (result->nelements() > 200 * 200)
-    for (int r = 0; r < (int)result->template static_shape<0>(); ++r) {
-        for (size_t c = 0; c < result->template static_shape<1>(); ++c) {
+    #pragma omp parallel for if (CW::nelements(*result) > 200 * 200)
+    for (int r = 0; r < (int)rR; ++r) {
+        for (size_t c = 0; c < rC; ++c) {
             TData v = 0;
-            for (size_t i = 0; i < a->template static_shape<1>(); ++i) {
+            for (size_t i = 0; i < aC; ++i) {
                 v += (*a)((size_t)r, i) * conju((*b)(c, i));
             }
             (*result)((size_t)r, c) = v;
@@ -576,10 +589,17 @@ Array<TData> outer2d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(a->ndim() == 2);
-    assert(b->ndim() == 2);
-    assert(a->template static_shape<1>() == b->template static_shape<1>());
-    Array<TData> result{ ArrayShape{a->template static_shape<0>(), b->template static_shape<0>()} };
+    assert(CW::ndim(a) == 2);
+    assert(CW::ndim(b) == 2);
+
+    size_t aR = CW::static_shape<0>(*a);
+    size_t aC = CW::static_shape<1>(*a);
+
+    size_t bR = CW::static_shape<0>(*b);
+    size_t bC = CW::static_shape<1>(*b);
+
+    assert(aC == bC);
+    Array<TData> result{ ArrayShape{aR, bR} };
     outer2d(a, b, result);
     return result;
 }
@@ -628,20 +648,30 @@ void dot2d(
     const BaseDenseArray<TDerivedB, TData>& b,
     BaseDenseArray<TDerivedR, TData>& result)
 {
-    assert(a->ndim() == 2);
-    assert(b->ndim() == 2);
-    assert(a->template static_shape<1>() == b->template static_shape<0>());
-    assert(result->ndim() == 2);
-    assert(result->template static_shape<0>() == a->template static_shape<0>());
-    assert(result->template static_shape<1>() == b->template static_shape<1>());
-    if (result->template static_shape<0>() > INT_MAX) {
+    assert(CW::ndim(a) == 2);
+    assert(CW::ndim(b) == 2);
+    assert(CW::ndim(result) == 2);
+
+    size_t aR = CW::static_shape<0>(*a);
+    size_t aC = CW::static_shape<1>(*a);
+
+    size_t bR = CW::static_shape<0>(*b);
+    size_t bC = CW::static_shape<1>(*b);
+
+    size_t rR = CW::static_shape<0>(*result);
+    size_t rC = CW::static_shape<1>(*result);
+
+    assert(aC == bR);
+    assert(rR == aR);
+    assert(rC == bC);
+    if (rR > INT_MAX) {
         THROW_OR_ABORT("Too many rows in matrix");
     }
-    #pragma omp parallel for if (result->nelements() > 200 * 200)
-    for (int r = 0; r < (int)result->template static_shape<0>(); ++r) {
-        for (size_t c = 0; c < result->template static_shape<1>(); ++c) {
+    #pragma omp parallel for if (CW::nelements(*result) > 200 * 200)
+    for (int r = 0; r < (int)rR; ++r) {
+        for (size_t c = 0; c <rC; ++c) {
             TData v = 0;
-            for (size_t i = 0; i < a->template static_shape<1>(); ++i) {
+            for (size_t i = 0; i < aC; ++i) {
                 v += (*a)((size_t)r, i) * (*b)(i, c);
             }
             (*result)((size_t)r, c) = v;
@@ -654,10 +684,18 @@ Array<TData> dot2d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(a->ndim() == 2);
-    assert(b->ndim() == 2);
-    assert(a->template static_shape<1>() == b->template static_shape<0>());
-    Array<TData> result{ArrayShape{a->template static_shape<0>(), b->template static_shape<1>()}};
+    assert(CW::ndim(a) == 2);
+    assert(CW::ndim(b) == 2);
+
+    size_t aR = CW::static_shape<0>(*a);
+    size_t aC = CW::static_shape<1>(*a);
+
+    size_t bR = CW::static_shape<0>(*b);
+    size_t bC = CW::static_shape<1>(*b);
+
+    assert(aC == bR);
+
+    Array<TData> result{ArrayShape{aR, bC}};
     dot2d(a, b, result);
     return result;
 }
@@ -667,11 +705,17 @@ Array<TData> dot1d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(a->ndim() == 2);
-    assert(b->ndim() == 1);
-    assert(a->shape(1) == b->length());
-    Array<TData> result{ArrayShape{a->template static_shape<0>(), 1}};
-    dot2d(a, b->reshaped(ArrayShape{b->length(), 1}), result);
+    assert(CW::ndim(a) == 2);
+    assert(CW::ndim(b) == 1);
+
+    size_t aR = CW::static_shape<0>(*a);
+    size_t aC = CW::static_shape<1>(*a);
+
+    size_t bR = CW::static_shape<0>(*b);
+
+    assert(aC == bR);
+    Array<TData> result{ ArrayShape{ aR, 1 } };
+    dot2d(a, b->reshaped(ArrayShape{ b->length(), 1 }), result);
     return result.flattened();
 }
 
@@ -705,9 +749,13 @@ TData dot0d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(a->ndim() == 1);
-    assert(b->ndim() == 1);
-    assert(a->length() == b->length());
+    assert(CW::ndim(a) == 1);
+    assert(CW::ndim(b) == 1);
+
+    size_t aC = CW::static_shape<0>(*a);
+    size_t bR = CW::static_shape<0>(*b);
+
+    assert(aC == bR);
     return dot(a, b)();
 }
 

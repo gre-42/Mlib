@@ -456,6 +456,28 @@ private:
     FixedArray<TPosition, tndim> point_;
 };
 
+template <class TPosition, size_t tndim, class TPayload>
+class PointAndPayload {
+public:
+    PointAndPayload(
+        const FixedArray<TPosition, tndim>& point,
+        const TPayload& payload)
+        : point_{ point }
+    {}
+    inline auto aabb() const {
+        return AxisAlignedBoundingBox<TPosition, tndim>::from_point(point_);
+    }
+    inline const auto& payload() const {
+        return payload_;
+    }
+    bool operator == (const PointAndPayload& other) const {
+        return all(point_ == other.point_);
+    }
+private:
+    FixedArray<TPosition, tndim> point_;
+    TPayload payload_;
+};
+
 template <class TContainer>
 class PayloadContainer {
 public:

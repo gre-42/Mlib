@@ -29,7 +29,7 @@ public:
         const TerrainStyles& terrain_styles,
         const TerrainTriangles& terrain_triangles,
         const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*>& no_grass,
-        const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* street_bvh,
+        const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* street_bvh,
         ScenePos scale,
         UpAxis up_axis);
     virtual ~RenderableTriangleSampler();
@@ -54,11 +54,11 @@ private:
     const TerrainStyles& terrain_styles_;
     const TerrainTriangles terrain_triangles_;
     const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*> no_grass_;
-    const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* street_bvh_;
+    const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* street_bvh_;
     ScenePos scale_;
     UpAxis up_axis_;
-    mutable std::optional<std::map<const TerrainStyle*, Bvh<ScenePos, TriangleAndSeed, 3>>> grass_bvhs_;
-    mutable std::optional<std::map<const TerrainStyle*, Bvh<ScenePos, TriangleAndSeed, 3>>> no_grass_bvhs_;
+    mutable std::optional<std::map<const TerrainStyle*, Bvh<ScenePos, 3, TriangleAndSeed>>> grass_bvhs_;
+    mutable std::optional<std::map<const TerrainStyle*, Bvh<ScenePos, 3, TriangleAndSeed>>> no_grass_bvhs_;
 };
 
 }

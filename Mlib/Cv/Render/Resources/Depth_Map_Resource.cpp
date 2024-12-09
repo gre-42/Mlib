@@ -21,7 +21,7 @@ DepthMapResource::DepthMapResource(
     float cos_threshold)
 {
     TransformationMatrix<float, float, 2> iim{ inv(intrinsic_matrix.affine()).value() };
-    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
+    UUVector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2 * depth_picture.nelements());
     assert(rgb_picture.ndim() == 3);
     assert(rgb_picture.shape(0) == 3);
@@ -97,19 +97,22 @@ DepthMapResource::DepthMapResource(
         std::make_shared<ColoredVertexArray<float>>(
             "DepthMapResource",
             Material{},
-            PhysicsMaterial::ATTR_VISIBLE,
+            Morphology{ PhysicsMaterial::ATTR_VISIBLE },
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
+            UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles),
-            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-            std::vector<FixedArray<float, 3>>(),
-            std::vector<FixedArray<uint8_t, 3>>()));
+            UUVector<FixedArray<ColoredVertex<float>, 2>>(),
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            UUVector<FixedArray<float, 3>>(),
+            UUVector<FixedArray<uint8_t, 3>>(),
+            std::vector<UUVector<FixedArray<float, 3, 2>>>(),
+            std::vector<UUVector<FixedArray<float, 3>>>(),
+            UUVector<FixedArray<float, 3>>()));
 }
 
-void DepthMapResource::instantiate_renderable(const InstantiationOptions& options) const
+void DepthMapResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
-    rva_->instantiate_renderable(options);
+    rva_->instantiate_child_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> DepthMapResource::get_physics_arrays() const

@@ -5,6 +5,7 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 NormalizedProjection::NormalizedProjection(const Array<FixedArray<float, 2>>& y)
+    : N{ uninitialized }
 {
     NormalizedPointsFixed<float> npo(
         ScaleMode::PRESERVE_ASPECT_RATIO,

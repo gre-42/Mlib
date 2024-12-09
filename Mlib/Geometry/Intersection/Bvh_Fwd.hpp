@@ -12,6 +12,9 @@ class GenericBvh;
 template <class TPosition, size_t tndim, class TPayload>
 class AabbAndPayload;
 
+template <class TPosition, size_t tndim, class TPayload>
+class PointAndPayload;
+
 template <class TPosition, size_t tndim>
 class PointWithoutPayload;
 
@@ -21,14 +24,20 @@ class PayloadContainer;
 template <class TPosition, size_t tndim, class TSmallContainer, class TLargeContainer>
 class CompressedPayloadContainer;
 
-template <class TPosition, class TPayload, size_t tndim>
+template <class TPosition, size_t tndim, class TPayload>
 using Bvh = GenericBvh<
     TPosition,
     tndim,
     PayloadContainer<std::list<AabbAndPayload<TPosition, tndim, TPayload>>>>;
 
+template <class TPosition, size_t tndim, class TPayload>
+using PointAndPayloadVectorBvh = GenericBvh<
+    TPosition,
+    tndim,
+    PayloadContainer<std::vector<PointAndPayload<TPosition, tndim, TPayload>>>>;
+
 template <class TPosition, size_t tndim>
-using PointVectorBvh = GenericBvh<
+using PointWithoutPayloadVectorBvh = GenericBvh<
     TPosition,
     tndim,
     PayloadContainer<std::vector<PointWithoutPayload<TPosition, tndim>>>>;

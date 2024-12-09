@@ -10,9 +10,9 @@ using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
 static TransformationMatrix<float, float, 3> random_ke(unsigned int seed, float multiplier = 1.f) {
-    FixedArray<float, 6> kep;
-    kep TEMPLATEV row_range<0, 3>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed) } - 0.5f) * float(1e-1);
-    kep TEMPLATEV row_range<3, 6>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed + 2348) } - 0.5f) * float(2e-1);
+    FixedArray<float, 6> kep = uninitialized;
+    kep.template row_range<0, 3>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed) } - 0.5f) * float(1e-1);
+    kep.template row_range<3, 6>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed + 2348) } - 0.5f) * float(2e-1);
     return k_external(kep);
 }
 
@@ -52,11 +52,11 @@ FixedArray<float, 3> SyntheticScene::dt2(size_t index0, size_t index1) {
 }
 
 FixedArray<float, 3> SyntheticScene::dt(size_t index0, size_t index1) {
-    return delta_ke(index0, index1).t();
+    return delta_ke(index0, index1).t;
 }
 
 FixedArray<float, 3, 3> SyntheticScene::dR(size_t index0, size_t index1) {
-    return delta_ke(index0, index1).R();
+    return delta_ke(index0, index1).R;
 }
 
 void SyntheticScene::draw_to_bmp(const std::string& filename, size_t index0, size_t index1) {

@@ -383,7 +383,7 @@ IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> RigidBodies::transfo
         const_cast<std::list<RigidBodyAndIntersectableMeshes>&>(transformed_objects_));
 }
 
-const Bvh<CompressedScenePos, RigidBodyAndIntersectableMesh, 3>& RigidBodies::convex_mesh_bvh() const {
+const Bvh<CompressedScenePos, 3, RigidBodyAndIntersectableMesh>& RigidBodies::convex_mesh_bvh() const {
     return convex_mesh_bvh_;
 }
 

@@ -18,7 +18,7 @@ public:
         double& beta,
         const RacingLineSegment** racing_line_segment) const;
 private:
-    Bvh<double, RacingLineSegment, 2> bvh_;
+    Bvh<double, 2, RacingLineSegment> bvh_;
 };
 
 }

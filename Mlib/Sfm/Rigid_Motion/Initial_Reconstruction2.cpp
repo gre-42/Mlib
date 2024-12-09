@@ -175,34 +175,34 @@ Array<float> Mlib::Sfm::initial_reconstruction_x3(
     //x3: the third component of x, a.k.a. z
     Array<float> x3{ ArrayShape{ y0.length(), 2 } };
     if (verbose) {
-        lerr() << "R\n" << tm.R();
-        lerr() << "t " << tm.t();
+        lerr() << "R\n" << tm.R;
+        lerr() << "t " << tm.t;
         lerr() << "y0 " << lstsq_chol_1d(ki.affine(), homogenized_3(y0(0))).value();
         lerr() << "y1 " << lstsq_chol_1d(ki.affine(), homogenized_3(y1(0))).value();
     }
     for (size_t i = 0; i < y0.length(); ++i) {
         const FixedArray<float, 3> yy0 = lstsq_chol_1d(ki.affine(), homogenized_3(y0(i))).value();
         const FixedArray<float, 3> yy1 = lstsq_chol_1d(ki.affine(), homogenized_3(y1(i))).value();
-        FixedArray<float, 3> c0 = tm.R()[0] - yy1(0) * tm.R()[2];
-        FixedArray<float, 3> c1 = tm.R()[1] - yy1(1) * tm.R()[2];
+        FixedArray<float, 3> c0 = tm.R[0] - yy1(0) * tm.R[2];
+        FixedArray<float, 3> c1 = tm.R[1] - yy1(1) * tm.R[2];
         if (verbose) {
             lerr() << "yy0 " << yy0;
             lerr() << "yy1 " << yy1;
             lerr() << "c0 " << c0;
             lerr() << "c1 " << c1;
-            lerr() << "(c0, t) " << dot0d(c0, tm.t());
+            lerr() << "(c0, t) " << dot0d(c0, tm.t);
             lerr() << "(c0, yy0) " << dot0d(c0, yy0);
         }
-        x3(i, 0) = dot0d(c0, tm.t()) / dot0d(c0, yy0);
-        x3(i, 1) = dot0d(c1, tm.t()) / dot0d(c1, yy0);
+        x3(i, 0) = dot0d(c0, tm.t) / dot0d(c0, yy0);
+        x3(i, 1) = dot0d(c1, tm.t) / dot0d(c1, yy0);
     };
     if (verbose) {
         lerr();
         lerr() << "----------------";
         //lerr() << "x3\n" << x3;
         //lerr() << x3.shape();
-        lerr() << "R\n" << tm.R();
-        lerr() << "t " << tm.t();
+        lerr() << "R\n" << tm.R;
+        lerr() << "t " << tm.t;
         lerr() << "ok (>0): " << all(x3 > 0.f);
         //lerr() << "ok: " << min(x3);
         //The check should be about "> 0", but this was not enough.
@@ -390,7 +390,7 @@ void Mlib::Sfm::find_projection_matrices_ransac(
         y.shape(1), // nelems_large
         ro,
         [&](const Array<size_t>& indices) {
-            TransformationMatrix<float, float, 2> ki_out1;
+            TransformationMatrix<float, float, 2> ki_out1 = uninitialized;
             Array<TransformationMatrix<float, float, 3>> ke_out1;
             find_projection_matrices(
                 x[indices],
@@ -522,7 +522,7 @@ FixedArray<float, 2> Mlib::Sfm::find_epipole(
     const TransformationMatrix<float, float, 3>& ke)
 {
     return projected_points_1p_1ke(
-        ke.inverted().t(),
+        ke.inverted().t,
         ki,
         TransformationMatrix<float, float, 3>::identity(),
         PointAtInfinityBehavior::IS_NAN);  // allow_points_at_fininity

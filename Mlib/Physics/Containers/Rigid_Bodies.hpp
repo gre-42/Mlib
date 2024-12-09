@@ -95,7 +95,7 @@ public:
     void plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     IterableWrapper<std::list<RigidBodyAndMeshes>> objects() const;
     IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
-    const Bvh<CompressedScenePos, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
+    const Bvh<CompressedScenePos, 3, RigidBodyAndIntersectableMesh>& convex_mesh_bvh() const;
     const TriangleBvh& triangle_bvh() const;
     const RidgeBvh& ridge_bvh() const;
     RidgeMap& ridge_map();
@@ -111,7 +111,7 @@ private:
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     // BVHs. Do not forget to .clear() the BVHs in the "delete_rigid_body" method.
-    Bvh<CompressedScenePos, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
+    Bvh<CompressedScenePos, 3, RigidBodyAndIntersectableMesh> convex_mesh_bvh_;
     TriangleBvh triangle_bvh_;
     mutable RidgeBvh ridge_bvh_;
     mutable RidgeMap ridge_map_;

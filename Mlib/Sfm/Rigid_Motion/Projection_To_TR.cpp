@@ -41,20 +41,21 @@ ProjectionToTR::ProjectionToTR(
     const Array<FixedArray<float, 2>>& y1,
     const TransformationMatrix<float, float, 2>& intrinsic_matrix,
     const FixedArray<float, 2>& fov_distances)
-: ngood(0),
-  np(Array<FixedArray<float, 2>>{y0, y1}),
-  kin(np.normalized_intrinsic_matrix(intrinsic_matrix)),
-  Fn(find_fundamental_matrix(np.yn[0], np.yn[1])),
-  En(fundamental_to_essential(Fn, kin)),
-  e2tr(En)
+    : ke{ uninitialized }
+    , ngood{ 0 }
+    , np{ Array<FixedArray<float, 2>>{y0, y1} }
+    , kin{ np.normalized_intrinsic_matrix(intrinsic_matrix) }
+    , Fn{ find_fundamental_matrix(np.yn[0], np.yn[1]) }
+    , En{ fundamental_to_essential(Fn, kin) }
+    , e2tr{ En }
 {
     const auto& v = e2tr;
     //lerr() << v.R0;
     //lerr() << v.R1;
-    if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke0.R(), v.ke0.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke0.R(); ke.t() = v.ke0.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke1.R(), v.ke0.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke1.R(); ke.t() = v.ke0.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke0.R(), v.ke1.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke0.R(); ke.t() = v.ke1.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke1.R(), v.ke1.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke1.R(); ke.t() = v.ke1.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke0.R, v.ke0.t}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R = v.ke0.R; ke.t = v.ke0.t; }
+    if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke1.R, v.ke0.t}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R = v.ke1.R; ke.t = v.ke0.t; }
+    if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke0.R, v.ke1.t}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R = v.ke0.R; ke.t = v.ke1.t; }
+    if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke1.R, v.ke1.t}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R = v.ke1.R; ke.t = v.ke1.t; }
 }
 
 bool ProjectionToTR::good() const {

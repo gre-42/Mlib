@@ -46,7 +46,7 @@ public:
         const std::map<std::string, uint32_t>& supplies,
         float cooldown) override;
 private:
-    Bvh<ScenePos, SupplyDepot, 3> bvh_;
+    Bvh<ScenePos, 3, SupplyDepot> bvh_;
     AdvanceTimes& advance_times_;
     Players& players_;
     const PhysicsEngineConfig& cfg_;

@@ -10,7 +10,7 @@ UUVector<OffsetAndQuaternion<float, float>> Bone::rebase_to_initial_absolute_tra
     result.resize(transformations.size());
 #ifndef NDEBUG
     for (OffsetAndQuaternion<float, float>& r : result) {
-        r.offset() = NAN;
+        r.t = NAN;
     }
 #endif
     rebase_to_initial_absolute_transform(
@@ -19,7 +19,7 @@ UUVector<OffsetAndQuaternion<float, float>> Bone::rebase_to_initial_absolute_tra
         result);
 #ifndef NDEBUG
     for (const OffsetAndQuaternion<float, float>& r : result) {
-        if (any(Mlib::isnan(r.offset()))) {
+        if (any(Mlib::isnan(r.t))) {
             THROW_OR_ABORT("Bone transformation contains NAN values");
         }
     }

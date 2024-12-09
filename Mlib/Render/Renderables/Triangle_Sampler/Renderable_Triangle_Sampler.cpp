@@ -28,7 +28,7 @@ RenderableTriangleSampler::RenderableTriangleSampler(
     const TerrainStyles& terrain_styles,
     const TerrainTriangles& terrain_triangles,
     const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*>& no_grass,
-    const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* street_bvh,
+    const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* street_bvh,
     ScenePos scale,
     UpAxis up_axis)
 : scene_node_resources_{scene_node_resources},
@@ -69,9 +69,9 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     unsigned int yield_counter = 0;
     bool orthographic = VisibilityCheck{ mvp }.orthographic();
     auto sample_triangles = [&](
-        const Bvh<ScenePos, TriangleAndSeed, 3>& triangle_bvh,
+        const Bvh<ScenePos, 3, TriangleAndSeed>& triangle_bvh,
         const TerrainStyle& terrain_style,
-        const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* boundary_bvh)
+        const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* boundary_bvh)
     {
         ScenePos max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources_);
 
@@ -137,7 +137,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         }
     };
     auto add_triangles = [this](
-        std::map<const TerrainStyle*, Bvh<ScenePos, TriangleAndSeed, 3>>& bvhs,
+        std::map<const TerrainStyle*, Bvh<ScenePos, 3, TriangleAndSeed>>& bvhs,
         const TerrainStyle& terrain_style,
         const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>& gtl)
     {

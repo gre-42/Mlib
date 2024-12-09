@@ -23,7 +23,7 @@ public:
         const Node& node,
         double scale) const;
 private:
-    Bvh<double, Line2d, 2> bvh_;
+    Bvh<double, 2, Line2d> bvh_;
 };
 
 }

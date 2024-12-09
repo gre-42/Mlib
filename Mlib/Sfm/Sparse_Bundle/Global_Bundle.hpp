@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Array/Sparse_Array.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Feature_Point_Frame.hpp>
 #include <Mlib/Sfm/Marginalization/UUID.hpp>
@@ -95,20 +96,20 @@ public:
     float& Jg_at(const Y& y, const XP& xp);
     float& Jg_at(const Y& y, const XKi& xki);
     float& Jg_at(const Y& y, const XKe& xke);
-    std::map<UUID, size_t> predictor_uuids_;
-    std::map<size_t, FixedArray<UUID, 3>> xp_uuids_;
+    Map<UUID, size_t> predictor_uuids_;
+    Map<size_t, NFixedArray<UUID, 3>> xp_uuids_;
     FixedArray<UUID, 4> xki_uuids_;
-    std::map<std::chrono::milliseconds, FixedArray<UUID, 6>> xke_uuids_;
+    Map<std::chrono::milliseconds, NFixedArray<UUID, 6>> xke_uuids_;
     Array<float> xg;
     Array<float> frozen_xg;
     Array<float> yg;
     SparseArrayCcs<float> Jg;
     Array<float> fg;
 private:
-    std::map<Y, size_t> ys;
-    std::map<XP, size_t> xps;
-    std::map<XKe, size_t> xkes;
-    std::map<XKi, size_t> xkis;
+    Map<Y, size_t> ys;
+    Map<XP, size_t> xps;
+    Map<XKe, size_t> xkes;
+    Map<XKi, size_t> xkis;
     GlobalBundleConfig cfg_;
     std::string cache_dir_;
 };

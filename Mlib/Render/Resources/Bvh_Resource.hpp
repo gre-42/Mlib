@@ -24,7 +24,7 @@ public:
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
 private:
     std::list<std::shared_ptr<ColoredVertexArray<float>>> cvas_;
-    Bvh<float, BvhResourcePayload, 3> bvh_;
+    Bvh<float, 3, BvhResourcePayload> bvh_;
 };
 
 }

@@ -191,8 +191,8 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
                 }
             }
             lerr() << "good";
-            lerr() << "dR\n" << ptr.ptr->ke.inverted().R();
-            lerr() << "dt " << ptr.ptr->ke.inverted().t();
+            lerr() << "dR\n" << ptr.ptr->ke.inverted().R;
+            lerr() << "dt " << ptr.ptr->ke.inverted().t;
             lerr() << "RANSAC selected " <<
                 ptr.best_indices.length() << " of " <<
                 active_sequence_ids.length() << " points";
@@ -383,8 +383,8 @@ void SparseReconstruction::append_with_projection(const std::chrono::millisecond
 
     TransformationMatrix<float, float, 3> kei = ke(0).inverted();
 
-    lerr() << "t " << kei.t();
-    lerr() << "R\n" << kei.R();
+    lerr() << "t " << kei.t;
+    lerr() << "R\n" << kei.R;
     lerr() << "Storing camera at " << time.count() << " ms";
     set_camera_frame(time, CameraFrame{ kei, FixedArray<float, 6>{kep.row_range(0, 6)} });
 }
@@ -432,8 +432,8 @@ void SparseReconstruction::append_with_stereo(const std::chrono::milliseconds& t
 
         if (ptr.ptr != nullptr && ptr.ptr->good()) {
             lerr() << "good";
-            lerr() << "dR\n" << ptr.ptr->ke.inverted().R();
-            lerr() << "dt " << ptr.ptr->ke.inverted().t();
+            lerr() << "dR\n" << ptr.ptr->ke.inverted().R;
+            lerr() << "dt " << ptr.ptr->ke.inverted().t;
             lerr() << "RANSAC selected " <<
                 ptr.best_indices.length() << " of " <<
                 std::min(cf.y0.length(), cf.y1.length()) << " points";
@@ -794,7 +794,7 @@ void SparseReconstruction::insert_missing_cameras_by_interpolation() {
         OffsetAndQuaternion<float, float> rs =
             OffsetAndQuaternion<float, float>{ c0.second.pose.affine() }
             .slerp(OffsetAndQuaternion<float, float>{ c1.second.pose.affine() }, alpha);
-        TransformationMatrix<float, float, 3> pose{ rs.quaternion().to_rotation_matrix(), rs.offset() };
+        TransformationMatrix<float, float, 3> pose{ rs.q.to_rotation_matrix(), rs.t };
         set_camera_frame(p.first, CameraFrame{ pose });
     }
     global_bundle_adjustment(false);
@@ -828,7 +828,7 @@ void SparseReconstruction::reconstruct(bool is_last_frame, bool camera_initializ
             if (!reconstructed_points_.empty()) {
                 global_bundle_adjustment(false);
                 for (const auto& c : camera_frames_) {
-                    lerr() << "Initial bundle adjustment cam position: " << c.second.pose.t();
+                    lerr() << "Initial bundle adjustment cam position: " << c.second.pose.t;
                 }
                 // for (const auto& p : particles_) {
                 //     camera_frame_append(p.first);

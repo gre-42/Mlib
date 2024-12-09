@@ -33,7 +33,7 @@ static void instantiate_bvh(
     const DanglingRef<SceneNode>& scene_node,
     const FixedArray<float, 3>& position_shift,
     const RenderableResourceFilter& renderable_resource_filter,
-    const Bvh<float, BvhResourcePayload, 3>& bvh,
+    const Bvh<float, 3, BvhResourcePayload>& bvh,
     const ChildInstantiationOptions& options)
 {
     if (!bvh.data().empty()) {

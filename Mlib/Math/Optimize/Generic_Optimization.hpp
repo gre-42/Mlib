@@ -23,8 +23,8 @@ TX generic_optimization(
     // f(x0) + J * d = 0
     // -J * d = f(x0)
     // -J^T * J * d = J^T * f(x0)
-    TX x;
-    TX x_best;
+    TX x = uninitialized;
+    TX x_best = uninitialized;
     x = x0;
     x_best = x0;
     TData old_ssq_residual = std::numeric_limits<TData>::infinity();

@@ -17,7 +17,7 @@ FixedArray<TData, 3, 3> rotation_and_translation_to_homography(
     const FixedArray<TData, 3>& n,
     const TData& d)
 {
-    return tm.R() - dot2d(tm.t().as_column_vector(), n.as_row_vector()) / d;
+    return tm.R - dot2d(tm.t.as_column_vector(), n.as_row_vector()) / d;
 }
 
 template <class TData>

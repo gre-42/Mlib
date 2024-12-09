@@ -290,7 +290,7 @@ void test_inverse_rodrigues() {
 
 void test_bvh() {
     using Payload = int;
-    using BVH = Bvh<float, Payload, 3>;
+    using BVH = Bvh<float, 3, Payload>;
     using AABB = AxisAlignedBoundingBox<float, 3>;
     BVH bvh{ {3.f, 4.f, 5.f}, 2 };
     bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 42);
@@ -334,7 +334,7 @@ void test_bvh() {
 void test_bvh_performance() {
     using AABB = AxisAlignedBoundingBox<float, 3>;
     {
-        Bvh<float, int, 3> bvh{{3.f, 4.f, 5.f}, 2};
+        Bvh<float, 3, int> bvh{{3.f, 4.f, 5.f}, 2};
         bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 42);
         bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 43);
         bvh.insert(AABB::from_min_max({1.f, 20.f, 3.f}, {2.f, 23.f, 4.f}), 44);
@@ -350,7 +350,7 @@ void test_bvh_performance() {
     for (size_t o = 0; o < 1 + (size_t)check_linear; ++o) {
         std::mt19937 gen(0); // Standard mersenne_twister_engine
         std::uniform_real_distribution<float> dis(-1, 1);
-        Bvh<float, int, 3> bvh{{0.25f + 10.f * (float)o, 0.2f + 10.f * (float)o, 0.2f + 10.f * (float)o}, 10};
+        Bvh<float, 3, int> bvh{{0.25f + 10.f * (float)o, 0.2f + 10.f * (float)o, 0.2f + 10.f * (float)o}, 10};
         size_t nelems = 10 * 1000;
         bool compute_search_time = true; // is slow
         std::vector<float> nelements;

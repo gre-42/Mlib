@@ -12,7 +12,7 @@ public:
     bool insert(const FixedArray<TData, tndim>& p, size_t& index);
     void optimize_search_time(std::ostream& ostr) const;
 private:
-    Bvh<TData, std::pair<FixedArray<TData, tndim>, size_t>, tndim> bvh_;
+    Bvh<TData, tndim, std::pair<FixedArray<TData, tndim>, size_t>> bvh_;
     size_t bvh_size_;
     TData merge_radius_;
     TData error_radius_;

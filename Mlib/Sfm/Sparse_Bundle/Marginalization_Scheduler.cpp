@@ -214,10 +214,10 @@ std::chrono::milliseconds MarginalizationScheduler::find_time_to_be_marginalized
                 continue;
             }
             if (c1.first != c0.first) {
-                score += 1 / (float{ 1e-6 } + std::sqrt(sum(squared(c0.second.pose.t() - c1.second.pose.t()))));
+                score += 1 / (1e-6f + std::sqrt(sum(squared(c0.second.pose.t - c1.second.pose.t))));
             }
         }
-        score *= std::sqrt(std::sqrt(sum(squared(c0.second.pose.t() - camera_frames_.rbegin()->second.pose.t()))));
+        score *= std::sqrt(std::sqrt(sum(squared(c0.second.pose.t - camera_frames_.rbegin()->second.pose.t))));
         if (score > best_score) {
             best_time = c0.first;
             best_score = score;

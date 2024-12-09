@@ -9,7 +9,8 @@ using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
 CameraFrame::CameraFrame(const TransformationMatrix<float, float, 3>& pose)
-:pose{ pose }
+    : pose{ pose }
+    , kep{ uninitialized }
 {
     calculate_kep();
 }
@@ -17,8 +18,8 @@ CameraFrame::CameraFrame(const TransformationMatrix<float, float, 3>& pose)
 CameraFrame::CameraFrame(
     const TransformationMatrix<float, float, 3>& pose,
     const FixedArray<float, 6>& kep)
-:pose{ pose },
- kep{ kep }
+    : pose{ pose }
+    , kep{ kep }
 {}
 
 TransformationMatrix<float, float, 3> CameraFrame::projection_matrix_3x4() const {
@@ -38,7 +39,7 @@ bool CameraFrame::point_in_fov(
 }
 
 FixedArray<float, 3> CameraFrame::dir(size_t i) const {
-    return pose.R().column(i);
+    return pose.R.column(i);
 }
 
 void CameraFrame::set_from_projection_matrix_3x4(const TransformationMatrix<float, float, 3>& projection)

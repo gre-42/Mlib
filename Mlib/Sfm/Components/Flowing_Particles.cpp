@@ -283,7 +283,7 @@ void FlowingParticles::advance_existing_particles(
         const FeaturePoint& p = *s.second->sequence.rbegin()->second;
         FixedArray<size_t, 2> index{a2i(p.position)};
         if (all(index < shape_)) {
-            FixedArray<float, 2> new_pos;
+            std::optional<FixedArray<float, 2>> new_pos;
             if (false) {
                 if (!flow_mask(index)) {
                     continue;
@@ -311,12 +311,12 @@ void FlowingParticles::advance_existing_particles(
                     cfg_.search_window,
                     cfg_.worst_patch_error);
                 new_pos = FixedArray<float, 2>{ i2a(new_index) };
-                if (any(new_pos > float(1e6))) {
+                if (any(*new_pos > float(1e6))) {
                     // lerr() << "dropping y [" << s.first << "]";
                     continue;
                 }
             }
-            if (try_insert_and_append_feature_point(new_frame, s, new_pos, Array<float>())) {
+            if (try_insert_and_append_feature_point(new_frame, s, new_pos.value(), Array<float>())) {
                 ++nsuccess;
             }
         }

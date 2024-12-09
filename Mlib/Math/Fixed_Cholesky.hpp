@@ -205,8 +205,8 @@ void lstsq_chol_1d(
     const typename TArray::value_type& diag2_min = typename TArray::value_type(0))
 {
     assert(B.ndim() == 1);
-    FixedArray<typename TArray::value_type, r, r> AT_A;
-    FixedArray<typename TArray::value_type, r, 1> AT_B;
+    FixedArray<typename TArray::value_type, r, r> AT_A = uninitialized;
+    FixedArray<typename TArray::value_type, r, 1> AT_B = uninitialized;
     dot2d(A.vH(), A, AT_A);
     dot2d(A.vH(), B.as_column_vector(), AT_B);
     if (dAT_A != nullptr) {

@@ -16,6 +16,7 @@ Array<FixedArray<float, 3, 3>> Mlib::triangulate_3d(
     THROW_OR_ABORT("triangulate_3d: Compiled without Triangle library");
 }
 #else
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
@@ -33,16 +34,24 @@ Array<FixedArray<float, 3, 3>> Mlib::triangulate_3d(
 
 using namespace Mlib;
 
-typedef TransformationMatrix<float, float, 3> Pose;
+struct Pose : public TransformationMatrix<float, float, 3> {
+    const auto aabb() const {
+        return AxisAlignedBoundingBox<float, 3>::from_point(t);
+    }
+    const auto& payload() const {
+        return *this;
+    }
+};
+
 struct TriangleWithNormal {
     FixedArray<float, 3, 3> v;
     FixedArray<float, 3> normal;
 };
-typedef FixedArray<float, 2> Point2;
-typedef FixedArray<float, 2, 2> Edge2;
-typedef Bvh<float, Pose, 3> PoseBvh;
-typedef Bvh<float, TriangleWithNormal, 3> TriangleBvh;
-typedef std::map<OrderableFixedArray<OrderableFixedArray<float, 3>, 3>, TriangleWithNormal*> TrianglePointers;
+using Point2 = FixedArray<float, 2>;
+using Edge2 = FixedArray<float, 2, 2>;
+using PoseBvh = GenericBvh<float, 3, PayloadContainer<std::vector<Pose>>>;
+using TriangleBvh = Bvh<float, 3, TriangleWithNormal>;
+using TrianglePointers = std::map<OrderableFixedArray<OrderableFixedArray<float, 3>, 3>, TriangleWithNormal*>;
 
 class IndexedPointSet3D {
 public:
@@ -133,7 +142,7 @@ bool triangulate_point(
     auto bounding_box = AxisAlignedBoundingBox<float, 3>::from_center_and_radius(central_point.t, boundary_radius);
     auto bounding_box_plus_eps = AxisAlignedBoundingBox<float, 3>::from_center_and_radius(central_point.t, boundary_radius + triangle_search_eps);
     IndexedPointSet3D indexed_points;
-    Bvh<float, Point2, 2> point2_bvh{{0.05f, 0.05f}, 5};
+    PointWithoutPayloadVectorBvh<float, 2> point2_bvh{ {0.05f, 0.05f}, 5 };
     if (!pose_bvh.visit(
         bounding_box,
         [&](const Pose& steiner_point)
@@ -153,7 +162,7 @@ bool triangulate_point(
             if (!indexed_points(pt2, steiner_point.t, point_index)) {
                 return false;
             }
-            point2_bvh.insert(pt2, pt2);
+            point2_bvh.insert(PointWithoutPayload{ pt2 });
             return true;
         }
     ))
@@ -166,7 +175,7 @@ bool triangulate_point(
     // Add existing triangles.
     Array<int> segment_list{ ArrayShape{ 0 }};
     {
-        Bvh<float, Edge2, 2> segment_bvh{{0.05f, 0.05f}, 5};
+        Bvh<float, 2, Edge2> segment_bvh{{0.05f, 0.05f}, 5};
         if (!triangle_bvh.visit(
             bounding_box_plus_eps,
             [&](const TriangleWithNormal& triangle)
@@ -175,27 +184,27 @@ bool triangulate_point(
                     projection.transform(triangle.v[0]),
                     projection.transform(triangle.v[1]),
                     projection.transform(triangle.v[2])};
-                FixedArray<Point2, 3> pr_tri2{
+                FixedArray<float, 3, 2> pr_tri2{
                     Point2{ pr_tri3(0, 0), pr_tri3(0, 1) },
                     Point2{ pr_tri3(1, 0), pr_tri3(1, 1) },
                     Point2{ pr_tri3(2, 0), pr_tri3(2, 1) }};
                 if (dot0d(triangle.normal, projection.R[2]) <= cos_min_angle) {
                     for (size_t i = 0; i < 3; ++i) {
-                        if (indexed_points.exists(pr_tri2(i))) {
+                        if (indexed_points.exists(pr_tri2[i])) {
                             return false;
                         }
                     }
                     return true;
                 }
-                if (!point2_bvh.visit(pr_tri2, [&pr_tri2](const Point2& p2)
+                if (!point2_bvh.visit(AxisAlignedBoundingBox<float, 2>::from_points(pr_tri2), [&pr_tri2](const Point2& p2)
                     {
-                        if (all(p2 == pr_tri2(0)) ||
-                            all(p2 == pr_tri2(1)) ||
-                            all(p2 == pr_tri2(2)))
+                        if (all(p2 == pr_tri2[0]) ||
+                            all(p2 == pr_tri2[1]) ||
+                            all(p2 == pr_tri2[2]))
                         {
                             return true;
                         }
-                        if (point_is_in_triangle(p2, pr_tri2(0), pr_tri2(1), pr_tri2(2))) {
+                        if (point_is_in_triangle(p2, pr_tri2[0], pr_tri2[1], pr_tri2[2])) {
                             lerr() << "Detected point inside existing triangle";
                             return false;
                         }
@@ -206,8 +215,8 @@ bool triangulate_point(
                 }
                 for (size_t i = 0; i < 3; ++i) {
                     Edge2 edge2{
-                        pr_tri2(i),
-                        pr_tri2((i + 1) % 3)};
+                        pr_tri2[i],
+                        pr_tri2[(i + 1) % 3]};
                     auto aabb = AxisAlignedBoundingBox<float, 2>::from_points(edge2);
                     if (!segment_bvh.visit(aabb, [&edge2](const Edge2& other)
                         {
@@ -404,12 +413,12 @@ bool triangulate_point(
             indexed_points.p3(i(0)),
             indexed_points.p3(i(1)),
             indexed_points.p3(i(2))};
-        const TriangleWithNormal& ttri3 = triangle_bvh.insert(
-            tri3,
+        const Mlib::AabbAndPayload<float, 3, TriangleWithNormal>& ttri3 = triangle_bvh.insert(
+            AxisAlignedBoundingBox<float, 3>::from_points(tri3),
             TriangleWithNormal{
                 .v = tri3,
                 .normal = triangle_normal(tri3)});
-        if (!triangle_ptrs.insert({ otri3, const_cast<TriangleWithNormal*>(&ttri3) }).second) {
+        if (!triangle_ptrs.insert({ otri3, const_cast<TriangleWithNormal*>(&ttri3.payload()) }).second) {
             THROW_OR_ABORT("Triangulate internal error");
         }
     }
@@ -431,7 +440,7 @@ Array<FixedArray<float, 3, 3>> Mlib::triangulate_3d(
         TrianglePointers triangle_ptrs;
         std::set<OrderableFixedArray<float, 3>> triangulated_points;
         for (const auto& p : points.flat_iterable()) {
-            pose_bvh.insert(p.t, p);
+            pose_bvh.insert(Pose{ p });
         }
         // Two passes, because in pass 2 the "triangulated_points" set is full.
         for (size_t i = 0; i < 2; ++i) {
@@ -455,10 +464,9 @@ Array<FixedArray<float, 3, 3>> Mlib::triangulate_3d(
     }
     Array<FixedArray<float, 3, 3>> result{ ArrayShape{ 0 } };
     triangle_bvh.visit_all([&result](
-        const AxisAlignedBoundingBox<float, 3>&,
-        const TriangleWithNormal& tri3)
+        const AabbAndPayload<float, 3, TriangleWithNormal>& tri3)
     {
-        result.append(tri3.v);
+        result.append(tri3.payload().v);
         return true;
     });
     return result;

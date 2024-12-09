@@ -15,7 +15,9 @@ public:
         const FixedArray<float, 3, 3>& F,
         bool l1_normalization = true,
         float good_threshold = 1e-5)
-    : center0(i2a(ArrayShape{r, c}))
+        : center0{ i2a(ArrayShape{r, c}) }
+        , center1{ uninitialized}
+        , v1{ uninitialized }
     {
         find_epiline(F, center0, center1, v1);
         good = sum(squared(v1 / F(2, 2))) >= good_threshold;

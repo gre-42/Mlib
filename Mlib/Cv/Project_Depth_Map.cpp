@@ -2,7 +2,9 @@
 #include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Geometry/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
+#include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -17,8 +19,9 @@
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
@@ -41,12 +44,14 @@ void Mlib::Cv::project_depth_map(
 {
     std::atomic_size_t num_renderings = 1;
     RenderConfig render_config{ .windowed_width = width, .windowed_height = height };
+    InputConfig input_config;
     RenderResults render_results;
     RenderedSceneDescriptor rsd;
     render_results.outputs[rsd] = { .depth_kind = FrameBufferChannelKind::TEXTURE };
     SetFps set_fps{ nullptr };
     Render render{
         render_config,
+        input_config,
         num_renderings,
         set_fps,
         [](){ return std::chrono::steady_clock::now(); },
@@ -69,20 +74,20 @@ void Mlib::Cv::project_depth_map(
     const auto r = std::make_shared<DepthMapResource>(rgb_picture0, depth_picture0, intrinsic_matrix0);
     scene_node_resources.add_resource("DepthMapResource", r);
     auto on = make_dunique<SceneNode>();
-    scene_node_resources.instantiate_renderable(
+    scene_node_resources.instantiate_child_renderable(
         "DepthMapResource",
-        InstantiationOptions{
-            .instance_name = "DepthMapResource",
+        ChildInstantiationOptions{
+            .instance_name = VariableAndHash<std::string>{ "DepthMapResource" },
             .scene_node = on.ref(CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = RenderableResourceFilter{}});
 
     DeleteNodeMutex delete_node_mutex;
-    Scene scene{ delete_node_mutex };
-    scene.add_root_node("obj", std::move(on));
-    scene.add_root_node("camera", make_dunique<SceneNode>());
+    Scene scene{ "DepthMapScene", delete_node_mutex };
+    scene.add_root_node("obj", std::move(on), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node("camera", make_dunique<SceneNode>(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     TransformationMatrix<float, float, 3> cpose = cv_to_opengl_extrinsic_matrix(ke_1_0).inverted();
     float cscale = cpose.get_scale();
-    scene.get_node("camera", DP_LOC)->set_absolute_pose(cpose.t().casted<double>(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale, std::chrono::steady_clock::now());
+    scene.get_node("camera", DP_LOC)->set_absolute_pose(cpose.t.casted<double>(), matrix_2_tait_bryan_angles(cpose.R / cscale), cscale, std::chrono::steady_clock::now());
     scene.get_node("camera", DP_LOC)->set_camera(std::make_unique<ProjectionMatrixCamera>(
         cv_to_opengl_hz_intrinsic_matrix(
             intrinsic_matrix1,
@@ -93,8 +98,8 @@ void Mlib::Cv::project_depth_map(
 
     SelectedCameras selected_cameras{ scene };
     selected_cameras.set_camera_node_name("camera");
-    StandardCameraLogic camera_logic{ scene, selected_cameras, delete_node_mutex };
-    StandardRenderLogic render_logic{ rendering_resources, scene, camera_logic, {1.f, 0.f, 1.f}, ClearMode::COLOR_AND_DEPTH };
+    StandardCameraLogic camera_logic{ scene, selected_cameras };
+    StandardRenderLogic render_logic{ scene, camera_logic, {1.f, 0.f, 1.f}, ClearMode::COLOR_AND_DEPTH };
     ReadPixelsLogic read_pixels_logic{ render_logic };
     render.render(read_pixels_logic, []() {});
     

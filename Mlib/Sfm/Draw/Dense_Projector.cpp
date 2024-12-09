@@ -115,7 +115,7 @@ DenseProjector& DenseProjector::normalize(float scale) {
         npo.add_point(project(x_(xi)));
     }, noop);
     for (const auto& c : camera_frames_) {
-        npo.add_point(project(c.second.pose.t()));
+        npo.add_point(project(c.second.pose.t));
     }
     scale_matrix_ = npo.normalization_matrix() * scale;
     return *this;

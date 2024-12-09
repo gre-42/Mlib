@@ -10,7 +10,7 @@ using namespace Mlib;
 template <class TPos>
 void Mlib::merge_neighboring_points(
     ColoredVertexArray<TPos>& cva,
-    PointVectorBvh<TPos, 3>& bvh,
+    PointWithoutPayloadVectorBvh<TPos, 3>& bvh,
     const TPos& max_distance)
 {
     // linfo() << "Merging: " << cva.name;
@@ -41,6 +41,6 @@ void Mlib::merge_neighboring_points(
 }
 
 namespace Mlib {
-    template void merge_neighboring_points<float>(ColoredVertexArray<float>& cva, PointVectorBvh<float, 3>& bvh, const float& min_distance);
-    template void merge_neighboring_points<double>(ColoredVertexArray<double>& cva, PointVectorBvh<double, 3>& bvh, const double& min_distance);
+    template void merge_neighboring_points<float>(ColoredVertexArray<float>& cva, PointWithoutPayloadVectorBvh<float, 3>& bvh, const float& min_distance);
+    template void merge_neighboring_points<double>(ColoredVertexArray<double>& cva, PointWithoutPayloadVectorBvh<double, 3>& bvh, const double& min_distance);
 }

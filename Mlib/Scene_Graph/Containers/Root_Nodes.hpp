@@ -19,7 +19,7 @@ enum class SceneNodeState;
 
 class RootNodes {
     using DefaultNodesMap = std::map<std::string, DanglingRef<SceneNode>>;
-    using SmallStaticNodesBvh = Bvh<ScenePos, DanglingRef<SceneNode>, 3>;
+    using SmallStaticNodesBvh = Bvh<ScenePos, 3, DanglingRef<SceneNode>>;
     using NodeContainer = std::map<std::string, RootNodeInfo>;
     using TrashCan = std::list<RootNodeInfo>;
     RootNodes(const RootNodes&) = delete;

@@ -2,10 +2,12 @@
 #include <Mlib/Array/Base_Dense_Fixed_Array.hpp>
 #include <Mlib/Array/Consteval_Workaround.hpp>
 #include <Mlib/Array/Fixed_Array_Shape.hpp>
+#include <Mlib/Default_Nan.hpp>
 #include <Mlib/Default_Uninitialized.hpp>
 #include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Iterator/Pointer_Iterable.hpp>
 #include <Mlib/Math/Conju.hpp>
+#include <Mlib/Nan_Initialized.hpp>
 #include <Mlib/Uninitialized.hpp>
 #include <array>
 #include <cassert>
@@ -44,6 +46,9 @@ public:
         return shape().ndim();
     }
 
+    FixedArray(NanInitialized) {
+        *this = TData(nan_initialized);
+    }
     FixedArray(Uninitialized) {}
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
@@ -466,6 +471,9 @@ template <typename TData, size_t tshape0, size_t... tshape>
 ArrayShape FixedArray<TData, tshape0, tshape...>::array_shape() const {
     return ArrayShape{ tshape0, tshape... };
 }
+
+template <typename TData, size_t... tshape>
+using NFixedArray = DefaultNan<FixedArray<TData, tshape...>>;
 
 template <typename TData, size_t... tshape>
 using UFixedArray = DefaultUnitialized<FixedArray<TData, tshape...>>;

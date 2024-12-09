@@ -6,7 +6,8 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 DownSampler::DownSampler(const TransformationMatrix<float, float, 2>& intrinsic_matrix, size_t n)
-: n_(n)
+    : n_{ n }
+    , ds_intrinsic_matrix_{ uninitialized }
 {
     ds_intrinsic_matrix_ = intrinsic_matrix;
     ds_intrinsic_matrix_.pre_scale(1.f / (float)std::pow(2, n));

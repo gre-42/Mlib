@@ -16,10 +16,12 @@ using namespace Mlib::Sfm;
 ChessboardCalibrationPipeline::ChessboardCalibrationPipeline(
     const std::string& cache_dir,
     const ArrayShape& chessboard_shape)
-    :chessboard_shape_{ chessboard_shape },
-     cache_dir_{ (fs::path{ cache_dir } / "Calibration").string() },
-     camera_intrinsics_filename_{ (fs::path{cache_dir_} / "camera_intrinsic.m").string() },
-     camera_sensor_size_filename_{ (fs::path{cache_dir_} / "camera_sensor_size.m").string() }
+    : intrinsic_matrix_{ uninitialized }
+    , sensor_size_{ uninitialized }
+    , chessboard_shape_{ chessboard_shape }
+    , cache_dir_{ (fs::path{ cache_dir } / "Calibration").string() }
+    , camera_intrinsics_filename_{ (fs::path{cache_dir_} / "camera_intrinsic.m").string() }
+    , camera_sensor_size_filename_{ (fs::path{cache_dir_} / "camera_sensor_size.m").string() }
 {
     if (fs::exists(camera_intrinsics_filename_) &&
         fs::exists(camera_sensor_size_filename_))
@@ -97,7 +99,7 @@ void ChessboardCalibrationPipeline::process_image_frame(
 void ChessboardCalibrationPipeline::print_statistics(std::ostream& ostream) {
     Array<FixedArray<float, 2>> y{ p_y_ };
     NormalizedProjection np{ y };
-    TransformationMatrix<float, float, 2> ki_out;
+    TransformationMatrix<float, float, 2> ki_out = uninitialized;
     Array<FixedArray<float, 3>> p_x_lifted_ = p_x_.applied< FixedArray<float, 3>>([](const auto& p) {return homogenized_3(p); });
     find_projection_matrices(
         p_x_lifted_,    // x

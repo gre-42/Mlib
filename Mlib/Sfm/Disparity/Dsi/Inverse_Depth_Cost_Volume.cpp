@@ -54,7 +54,7 @@ void InverseDepthCostVolumeAccumulator::increment(
     nchannel_increments_ += im0_rgb.shape(0);
 
     TransformationMatrix<float, float, 3> ke = projection_in_reference(ke0, ke1);
-    FixedArray<float, 2> e;
+    FixedArray<float, 2> e{ NAN };
     if (epipole_radius != 0) {
         if (max(abs(ke.affine() - fixed_identity_array<float, 4>())) > 1e-3) {
             FixedArray<float, 2> e2 = find_epipole(intrinsic_matrix, ke);

@@ -305,7 +305,7 @@ void DrawStreets::calculate_neighbors() {
 }
 
 void DrawStreets::draw_streets() {
-    Bvh<double, bool, 2> street_light_bvh{{0.1, 0.1}, 10};
+    Bvh<double, 2, bool> street_light_bvh{{0.1, 0.1}, 10};
 
     // Compute rectangles and holes for each pair of connected nodes.
     // The "neighbor_is_second" field is used to avoid duplicates.

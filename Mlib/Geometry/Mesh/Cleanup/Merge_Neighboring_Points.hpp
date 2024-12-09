@@ -12,7 +12,7 @@ class ColoredVertexArray;
 template <class TPos>
 void merge_neighboring_points(
     ColoredVertexArray<TPos>& cva,
-    PointVectorBvh<TPos, 3>& bvh,
+    PointWithoutPayloadVectorBvh<TPos, 3>& bvh,
     const TPos& max_distance);
 
 }

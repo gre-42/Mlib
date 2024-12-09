@@ -32,7 +32,7 @@ SparseProjector& SparseProjector::normalize(float scale, float quantile)
         npo.add_points_quantile(Array<FixedArray<float, 2>>{ points }, quantile);
     }
     for (const auto& c : camera_frames_) {
-        npo.add_point(project(c.second.pose.t()));
+        npo.add_point(project(c.second.pose.t));
     }
     scale_matrix_ = npo.normalization_matrix() * scale;
     return *this;

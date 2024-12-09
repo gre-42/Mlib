@@ -5,6 +5,7 @@
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rotation_From_Images.hpp>
 #include <Mlib/Stats/Mean.hpp>
+#include <optional>
 
 namespace Mlib::Sfm::Rmfi {
 
@@ -50,7 +51,7 @@ TransformationMatrix<float, float, 3> rigid_motion_from_images_robust(
         }
     }
     FixedArray<TData, 6> x0_l_r1 = fixed_zeros<TData, 6>();
-    x0_l_r1 TEMPLATEV row_range<0, 3>() = x0_rot_l_r1;
+    x0_l_r1.template row_range<0, 3>() = x0_rot_l_r1;
 
     //Array<TData> x0_l_r0 = x0_r1_r0.copy();
     //x0_l_r0.row_range(0, 3) = x0_rot_l_r1;
@@ -60,14 +61,13 @@ TransformationMatrix<float, float, 3> rigid_motion_from_images_robust(
 
     assert(thresholds.length() == sigmas.length() - 1);
     auto threshold_it = thresholds.flat_begin();
-    bool ke_initialized = false;
-    TransformationMatrix<TData, TData, 3> ke;
+    std::optional<TransformationMatrix<TData, TData, 3>> ke;
     for (const TData& sigma : sigmas.flat_iterable()) {
         Array<TData> masked_im_r_depth_s = gaussian_filter_NWE(im_r0_depth, sigma, NAN);
-        if (ke_initialized) {
+        if (ke.has_value()) {
             // Assign NANs to pixels with errors above a given threshold.
             Array<float> err = mean(
-                abs(d_pr_bilinear(im_r0, im_l, im_r0_depth, intrinsic_matrix_r0, intrinsic_matrix_l, ke)),
+                abs(d_pr_bilinear(im_r0, im_l, im_r0_depth, intrinsic_matrix_r0, intrinsic_matrix_l, *ke)),
                 0);
             for (size_t r = 0; r < im_r0.shape(1); ++r) {
                 for (size_t c = 0; c < im_r0.shape(2); ++c) {
@@ -89,7 +89,6 @@ TransformationMatrix<float, float, 3> rigid_motion_from_images_robust(
             &x0_l_r0,          // x0
             &x0_l_r0,          // xe
             print_residual);   // print_residual
-        ke_initialized = true;
     }
     return TransformationMatrix<float, float, 3>{ Cv::k_external(x0_l_r0) };
 }

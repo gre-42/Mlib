@@ -16,16 +16,20 @@ using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
 Y::Y(const std::chrono::milliseconds time, size_t index, size_t dimension)
-  : time(time), index(index), dimension(dimension) {}
+    : time(time)
+    , index(index)
+    , dimension(dimension) {}
 
 XP::XP(size_t index, size_t dimension)
-: index(index), dimension(dimension) {}
+    : index(index)
+    , dimension(dimension) {}
 
 XKi::XKi(size_t dimension)
-: dimension(dimension) {}
+    : dimension(dimension) {}
 
 XKe::XKe(const std::chrono::milliseconds time, size_t dimension)
-: time(time), dimension(dimension) {}
+    : time(time)
+    , dimension(dimension) {}
 
 GlobalBundle::GlobalBundle(
     const std::string& cache_dir,
@@ -39,8 +43,9 @@ GlobalBundle::GlobalBundle(
     bool skip_missing_cameras,
     UUIDGen<XKi, XKe, XP>& uuid_gen,
     const std::set<PointObservation>& dropped_observations)
-:cfg_{cfg},
- cache_dir_{cache_dir}
+    : xki_uuids_{ uninitialized}
+    , cfg_{ cfg }
+    , cache_dir_{ cache_dir }
 {
     std::unordered_map<size_t, size_t> nobjservations;
     for (const auto& p : particles) {
@@ -62,7 +67,7 @@ GlobalBundle::GlobalBundle(
                     if (r->state_ != MmState::MARGINALIZED) {
                         point_found = true;
                         for (size_t d = 0; d < 2; ++d) {
-                            ys.insert(std::make_pair(Y{p.first, y.first, d}, ys.size()));
+                            ys.add(Y{p.first, y.first, d}, ys.size());
                             ++nobjservations[y.first];
                         }
                     }
@@ -76,7 +81,7 @@ GlobalBundle::GlobalBundle(
     for (const auto& x : reconstructed_points) {
         if (x.state_ != MmState::MARGINALIZED) {
             for (size_t d = 0; d < 3; ++d) {
-                xps.insert(std::make_pair(XP(x.first, d), xps.size()));
+                xps.add(XP(x.first, d), xps.size());
             }
             auto it = nobjservations.find(x.first);
             if (it == nobjservations.end()) {
@@ -88,17 +93,17 @@ GlobalBundle::GlobalBundle(
         }
     }
     for (size_t i = 0; i < packed_intrinsic_coefficients.length(); ++i) {
-        xkis.insert({XKi{i}, xkis.size()});
+        xkis.add(XKi{i}, xkis.size());
     }
     for (const auto& c : camera_frames) {
         if (c.state_ != MmState::MARGINALIZED) {
             for (size_t d = 0; d < 6; ++d) {
-                xkes.insert(std::make_pair(XKe(c.first, d), xkes.size()));
+                xkes.add(XKe(c.first, d), xkes.size());
             }
         }
     }
 
-    xg.resize(ArrayShape{xps.size() + packed_intrinsic_coefficients.length() + xkes.size()});
+    xg.resize(ArrayShape{ xps.size() + packed_intrinsic_coefficients.length() + xkes.size() });
     frozen_xg.resize(xg.shape());
 
     for (const auto& xxp : xps) {
@@ -110,9 +115,9 @@ GlobalBundle::GlobalBundle(
         } else {
             frozen_xg(column_id(xpi)) = xg(column_id(xpi));
         }
-        assert(r->state_ != MmState::MARGINALIZED);
+        assert_true(r->state_ != MmState::MARGINALIZED);
         uuid_gen.generate(xpi);
-        predictor_uuids_.insert(std::make_pair(uuid_gen.get(xpi), column_id(xpi)));
+        predictor_uuids_.add(uuid_gen.get(xpi), column_id(xpi));
         xp_uuids_[xpi.index](xpi.dimension) = uuid_gen.get(xpi);
     }
     for (const auto& xkki : xkis) {
@@ -120,7 +125,7 @@ GlobalBundle::GlobalBundle(
         xg(column_id(xkii)) = packed_intrinsic_coefficients(xkii.dimension);
         frozen_xg(column_id(xkii)) = xg(column_id(xkii));
         uuid_gen.generate(xkii);
-        predictor_uuids_.insert(std::make_pair(uuid_gen.get(xkii), column_id(xkii)));
+        predictor_uuids_.add(uuid_gen.get(xkii), column_id(xkii));
         xki_uuids_(xkii.dimension) = uuid_gen.get(xkii);
     }
     for (const auto& xkke : xkes) {
@@ -132,9 +137,9 @@ GlobalBundle::GlobalBundle(
         } else {
             frozen_xg(column_id(xkei)) = xg(column_id(xkei));
         }
-        assert(c->state_ != MmState::MARGINALIZED);
+        assert_true(c->state_ != MmState::MARGINALIZED);
         uuid_gen.generate(xkei);
-        predictor_uuids_.insert(std::make_pair(uuid_gen.get(xkei), column_id(xkei)));
+        predictor_uuids_.add(uuid_gen.get(xkei), column_id(xkei));
         xke_uuids_[xkei.time](xkei.dimension) = uuid_gen.get(xkei);
     }
 
@@ -214,13 +219,13 @@ void GlobalBundle::copy_in(
                 }
                 const ReconstructedPoint& rf = (r_raw->state_ == MmState::ACTIVE) ? *r_raw->second : *frozen_reconstructed_points.at(r_raw->first);
                 // Abandoned already checked above.
-                assert(c_raw->state_ != MmState::MARGINALIZED);
+                assert_true(c_raw->state_ != MmState::MARGINALIZED);
                 fg.row_range(
                     row_id(Y{p.first, y.first, 0}),
                     row_id(Y{p.first, y.first, 0}) + 2) = projected_points_1p_1ke(
                         r_raw->second->position,
                         intrinsic_matrix,
-                        c_raw->second.projection_matrix_3x4()) TEMPLATEV row_range<0, 2>();
+                        c_raw->second.projection_matrix_3x4()).template row_range<0, 2>();
 
                 {
                     // lerr() << "Computing JP";

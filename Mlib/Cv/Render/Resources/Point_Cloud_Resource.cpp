@@ -16,46 +16,48 @@ PointCloudResource::PointCloudResource(
     const Array<TransformationMatrix<float, float, 3>>& points,
     float point_radius)
 {
-    TriangleList<float> tris{ "Point cloud", Material(), PhysicsMaterial::ATTR_VISIBLE };
+    TriangleList<float> tris{ "Point cloud", Material(), Morphology{ PhysicsMaterial::ATTR_VISIBLE } };
     FixedArray<float, 3> d0{point_radius, 0.f, 0.f};
     FixedArray<float, 3> d1{0.f, point_radius, 0.f};
     for (const TransformationMatrix<float, float, 3>& t : points.flat_iterable()) {
-        if (all(t.R() == 0.f)) {
+        if (all(t.R == 0.f)) {
             tris.draw_rectangle_wo_normals(
-                cv_to_opengl_coordinates(t.t() - d0 - d1),
-                cv_to_opengl_coordinates(t.t() + d0 - d1),
-                cv_to_opengl_coordinates(t.t() + d0 + d1),
-                cv_to_opengl_coordinates(t.t() - d0 + d1));
+                cv_to_opengl_coordinates(t.t - d0 - d1),
+                cv_to_opengl_coordinates(t.t + d0 - d1),
+                cv_to_opengl_coordinates(t.t + d0 + d1),
+                cv_to_opengl_coordinates(t.t - d0 + d1));
         } else {
             tris.draw_rectangle_with_normals(
                 cv_to_opengl_coordinates(t.transform(- d0 - d1)),
                 cv_to_opengl_coordinates(t.transform(+ d0 - d1)),
                 cv_to_opengl_coordinates(t.transform(+ d0 + d1)),
                 cv_to_opengl_coordinates(t.transform(- d0 + d1)),
-                cv_to_opengl_coordinates(t.inverted().R()[2]),
-                cv_to_opengl_coordinates(t.inverted().R()[2]),
-                cv_to_opengl_coordinates(t.inverted().R()[2]),
-                cv_to_opengl_coordinates(t.inverted().R()[2]));
+                cv_to_opengl_coordinates(t.inverted().R[2]),
+                cv_to_opengl_coordinates(t.inverted().R[2]),
+                cv_to_opengl_coordinates(t.inverted().R[2]),
+                cv_to_opengl_coordinates(t.inverted().R[2]));
         }
     }
     rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray<float>>(
             "DepthMapResource",
             Material{ .cull_faces = false },
-            PhysicsMaterial::ATTR_VISIBLE,
+            Morphology{ PhysicsMaterial::ATTR_VISIBLE },
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
-            std::vector(tris.triangles.begin(), tris.triangles.end()),
-            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-            std::vector<FixedArray<float, 3>>(),
-            std::vector<FixedArray<uint8_t, 3>>()));
-
+            UUVector<FixedArray<ColoredVertex<float>, 4>>(),
+            UUVector<FixedArray<ColoredVertex<float>, 3>>(tris.triangles.begin(), tris.triangles.end()),
+            UUVector<FixedArray<ColoredVertex<float>, 2>>(),
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            UUVector<FixedArray<float, 3>>(),
+            UUVector<FixedArray<uint8_t, 3>>(),
+            std::vector<UUVector<FixedArray<float, 3, 2>>>(),
+            std::vector<UUVector<FixedArray<float, 3>>>(),
+            UUVector<FixedArray<float, 3>>()));
 }
 
-void PointCloudResource::instantiate_renderable(const InstantiationOptions& options) const
+void PointCloudResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
-    rva_->instantiate_renderable(options);
+    rva_->instantiate_child_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> PointCloudResource::get_physics_arrays() const

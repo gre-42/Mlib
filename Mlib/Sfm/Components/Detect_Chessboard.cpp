@@ -132,7 +132,7 @@ void Mlib::Sfm::detect_chessboard(
     const float ys = std::min(image.shape(0), image.shape(1)) / 128.f;
 
     unsigned int best_good = 0;
-    FixedArray<float, 3, 3> best_homography;
+    FixedArray<float, 3, 3> best_homography = uninitialized;
     for (float w = 3 * ws; w < 15 * ws; w += 0.5f * ws) {
 
         float maxX = image.shape(id1) - w * (shape(id1) - 1);

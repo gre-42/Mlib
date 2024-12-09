@@ -1,11 +1,11 @@
 #pragma once
-#include "Array_Forward.hpp"
-#include "Array_Shape.hpp"
-#include "Array_Resizer.hpp"
-#include "Base_Dense_Array.hpp"
-#include "Conjugate_Transpose_Array.hpp"
-#include "Range.hpp"
-#include "Vector.hpp"
+#include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Array/Array_Shape.hpp>
+#include <Mlib/Array/Array_Resizer.hpp>
+#include <Mlib/Array/Base_Dense_Array.hpp>
+#include <Mlib/Array/Conjugate_Transpose_Array.hpp>
+#include <Mlib/Array/Range.hpp>
+#include <Mlib/Array/Vector.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
@@ -15,6 +15,7 @@
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Io/Read_Number.hpp>
 #include <Mlib/Io/Write_Number.hpp>
+#include <Mlib/Uninitialized.hpp>
 #include <Mlib/Iterator/Sized_Iterable.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -204,31 +205,33 @@ public:
     typedef TData value_type;
     ArrayResizer resize;
     ArrayResizer reshape;
-    Array():
-        offset_{0},
-        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }} {}
-    Array(const Array& rhs):
-        data_{rhs.data_},
-        shape_{rhs.shape_},
-        offset_{rhs.offset_},
-        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
+    Array() : Array{ uninitialized } {}
+    Array(Uninitialized)
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
+    {}
+    Array(const Array& rhs)
+        : data_{ rhs.data_ }
+        , shape_{ rhs.shape_ }
+        , offset_{ rhs.offset_ }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {}
     Array(Array&& rhs) noexcept
-       :data_{std::move(rhs.data_)},
-        shape_{std::move(rhs.shape_)},
-        offset_{rhs.offset_},
-        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
+        : data_{ std::move(rhs.data_) }
+        , shape_{ std::move(rhs.shape_) }
+        , offset_{ rhs.offset_ }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {}
     template <ArraySizedIterable<TData> TArrayContainer>
     explicit Array(
         const TArrayContainer& rhs,
         const ArrayShape& empty_shape=ArrayShape())
-        :offset_{0},
-         resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-         reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
         // Input is a list => empty_shape must be at least 1D
         if ((rhs.size() == 0) && (empty_shape.ndim() == 0)) {
@@ -249,10 +252,10 @@ public:
             }
         }
     }
-    explicit Array(const TData* begin, const TData* end):
-        offset_{0},
-        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
+    explicit Array(const TData* begin, const TData* end)
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
         size_t count = size_t(end - begin);
         do_resize(ArrayShape{count});
@@ -261,10 +264,10 @@ public:
         }
     }
     template <DataSizedIterable<TData> TDataContainer>
-    explicit Array(const TDataContainer& lst):
-        offset_{0},
-        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
+    explicit Array(const TDataContainer& lst)
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
         do_resize(ArrayShape{ lst.size() });
         size_t i = 0;
@@ -274,10 +277,10 @@ public:
         }
     }
     template <size_t ...tsize, FixedArraySizedSizedIterable<TData, tsize...> TDataContainer>
-    explicit Array(const TDataContainer& lst) :
-        offset_{ 0 },
-        resize{ [this](const ArrayShape& shape) { do_resize(shape); } },
-        reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
+    explicit Array(const TDataContainer& lst)
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
         constexpr size_t nelements = FixedArray<TData, tsize...>::nelements();
         do_resize(ArrayShape{ lst.size(), nelements });
@@ -292,10 +295,10 @@ public:
         do_reshape(ArrayShape{ lst.size(), tsize... });
     }
     template <size_t ...tsize>
-    explicit Array(const Array<FixedArray<TData, tsize...>>& rhs) :
-        offset_{ 0 },
-        resize{ [this](const ArrayShape& shape) { do_resize(shape); } },
-        reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
+    explicit Array(const Array<FixedArray<TData, tsize...>>& rhs)
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
         do_resize(ArrayShape{ rhs.nelements(), FixedArray<TData, tsize...>::nelements() });
         auto rhs_flat = rhs.flattened();
@@ -327,10 +330,10 @@ public:
         result.reshape(result_shape);
         return result;
     }
-    explicit Array(std::initializer_list<TData> d):
-        offset_{0},
-        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
+    explicit Array(std::initializer_list<TData> d)
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
         do_resize(ArrayShape{ d.size() });
         size_t i = 0;
@@ -339,10 +342,10 @@ public:
             ++i;
         }
     }
-    explicit Array(std::initializer_list<std::initializer_list<TData>> d):
-        offset_{0},
-        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
+    explicit Array(std::initializer_list<std::initializer_list<TData>> d)
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
         assert(d.size() > 0);
         size_t ncols = d.begin()->size();
@@ -358,17 +361,17 @@ public:
             ++r;
         }
     }
-    explicit Array(std::initializer_list<Array<TData>> d):
-        Array(InitializerListAsSizedIterable(d))
+    explicit Array(std::initializer_list<Array<TData>> d)
+        : Array(InitializerListAsSizedIterable(d))
     {
         if (d.size() == 1) {
             THROW_OR_ABORT("Do not use single initializer for arrays");
         }
     }
-    explicit Array(const ArrayShape& shape):
-        offset_{0},
-        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
-        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
+    explicit Array(const ArrayShape& shape)
+        : offset_{ 0 }
+        , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
+        , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
         do_resize(shape);
     }

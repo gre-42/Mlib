@@ -21,7 +21,7 @@ TransformationMatrix<float, float, 3> Mlib::Cv::k_external(const FixedArray<floa
 }
 
 FixedArray<float, 6> Mlib::Cv::k_external_inverse(const TransformationMatrix<float, float, 3>& ke) {
-    FixedArray<float, 3> angles = matrix_2_tait_bryan_angles(ke.R());
+    FixedArray<float, 3> angles = matrix_2_tait_bryan_angles(ke.R);
     return FixedArray<float, 6>{
         angles(0), angles(1), angles(2),
         ke.t(0), ke.t(1), ke.t(2)};
@@ -149,8 +149,8 @@ FixedArray<float, 2, 6> Mlib::Cv::projected_points_jacobian_dke_1p_1ke(
     //     kep.row_range(0, 3),
     //     float(1e-3));
     FixedArray<float, 3, 3> da_dkep = tait_bryan_angles_dtheta(
-        kep TEMPLATEV row_range<0, 3>(),
-        x TEMPLATEV row_range<0, 3>());
+        kep.template row_range<0, 3>(),
+        x.template row_range<0, 3>());
 
     auto da_dk = FixedArray<float, 3, 6>::init(
         da_dkep(0, 0), da_dkep(0, 1), da_dkep(0, 2), 1.f, 0.f, 0.f,
@@ -212,13 +212,13 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
     }
     Array<float> B(ArrayShape{y_tracked.length() * 3});
     for (size_t r = 0; r < y_tracked.length(); ++r) {
-        FixedArray<float, 3> v;
+        FixedArray<float, 3> v = uninitialized;
         FixedArray<double, 3> yl2 = homogenized_3(y_tracked(r)).casted<double>();
         if (points_are_normalized) {
-            FixedArray<float, 3, 3> K3x3 = TransformationMatrix<float, float, 3>{ ki.project(ke(r).semi_affine()) }.R();
+            FixedArray<float, 3, 3> K3x3 = TransformationMatrix<float, float, 3>{ ki.project(ke(r).semi_affine()) }.R;
             v = lstsq_chol_1d(K3x3.casted<double>(), yl2).value().casted<float>(); //lstsq_chol_1d(K, y_tracked[r], float(1e-6));
         } else {
-            FixedArray<float, 3, 3> K3x3 = ke(r).R();
+            FixedArray<float, 3, 3> K3x3 = ke(r).R;
             // Multiplying by "ki" first to scale the results into world-coordinates.
             v = lstsq_chol_1d(K3x3.casted<double>(), lstsq_chol_1d(ki.casted<double, double>().affine(), yl2).value()).value().casted<float>();
         }
@@ -228,7 +228,7 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
         //lerr() << "Kv " << (K3x3, v);
 
         //proj * f = [0; 0; 0; 1] => f = proj \ [0; 0; 0; 1]
-        FixedArray<float, 3> f = ke(r).inverted().t();
+        FixedArray<float, 3> f = ke(r).inverted().t;
         //lerr() << "hke\n" << homogenized_4x4(ke[r]);
         //lerr() << "Ki " << Ki;
         //lerr() << "K " << K;
@@ -260,7 +260,7 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
     if (condition_number != nullptr) {
         *condition_number = (float)cond4_x(M.casted<double>());
     }
-    FixedArray<float, 3> x;
+    FixedArray<float, 3> x = uninitialized;
     if (method2) {
         if (squared_distances != nullptr) {
             throw std::runtime_error("Squared distances not supported for method2");
@@ -294,7 +294,7 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_reweighted(
     for (size_t i = 0; i < 1; ++i) {
         Array<float> weights{ArrayShape{y_tracked.length()}};
         for (size_t r = 0; r < weights.length(); ++r) {
-            weights(r) =  1 / std::sqrt(sum(squared(x - ke(r).inverted().t())));
+            weights(r) =  1 / std::sqrt(sum(squared(x - ke(r).inverted().t)));
         }
         x = reconstructed_point_(y_tracked, ki, ke, &weights, false);
     }

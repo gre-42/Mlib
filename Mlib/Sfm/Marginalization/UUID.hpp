@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Nan_Initialized.hpp>
 #include <iostream>
 #include <map>
 
@@ -7,7 +8,9 @@ namespace Mlib {
 class UUID {
 public:
     friend std::ostream& operator << (std::ostream& ostr, const UUID& uuid);
-    UUID() {};
+    UUID(NanInitialized)
+        : uuid_{ SIZE_MAX } {}
+    UUID(Uninitialized) {}
     inline explicit UUID(size_t uuid)
     : uuid_(uuid)
     {}

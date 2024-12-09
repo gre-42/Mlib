@@ -139,7 +139,7 @@ void DtamKeyframe::append_camera_frame() {
         // l * ke = r
         // l = r * inv(ke)
         TransformationMatrix<float, float, 3> gike = reconstruction_times_inverse(camera_r0.reconstruction_matrix_3x4(), ke);
-        lerr() << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t();
+        lerr() << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R << "\nt\n" << gike.t;
         camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
 
         {
@@ -235,7 +235,7 @@ void DtamKeyframe::append_camera_frame() {
             cfg_.print_residual_);                                           // print_residual
         
         TransformationMatrix<float, float, 3> gike = reconstruction_times_inverse(camera_frames_.rbegin()->second.reconstruction_matrix_3x4(), ke_lv);
-        lerr() << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t();
+        lerr() << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R << "\nt\n" << gike.t;
         camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
 
         {

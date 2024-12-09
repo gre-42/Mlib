@@ -22,7 +22,7 @@ void Mlib::import_bone_weights(
         THROW_OR_ABORT("import_bone_weights not implemented for double precision");
     }
     source.check_consistency();
-    Bvh<float, VertexAndWeights, 3> bvh{{max_distance / 10, max_distance / 10, max_distance / 10}, 10};
+    Bvh<float, 3, VertexAndWeights> bvh{{max_distance / 10, max_distance / 10, max_distance / 10}, 10};
     for (const std::shared_ptr<ColoredVertexArray<float>>& other : source.scvas) {
         auto wo_it = other->triangle_bone_weights.begin();
         for (const auto& t : other->triangles) {

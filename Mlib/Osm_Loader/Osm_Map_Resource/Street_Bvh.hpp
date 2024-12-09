@@ -14,7 +14,7 @@ public:
     double min_dist(const FixedArray<double, 2>& pt, double max_dist) const;
     bool has_neighbor(const FixedArray<double, 2>& pt, double max_dist) const;
 private:
-    Bvh<double, Triangle2d, 2> bvh_;
+    Bvh<double, 2, Triangle2d> bvh_;
 };
 
 }

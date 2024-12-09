@@ -241,7 +241,7 @@ template <class TData, size_t d>
 FixedArray<TData, d - 1, d> homogeneous_jacobian_dx(const TransformationMatrix<TData, TData, d>& M, const FixedArray<TData, d>& x) {
     static_assert(d > 0);
     const auto Mx = M.transform(x);
-    return homogeneous_jacobian_dx_(M.R(), Mx);
+    return homogeneous_jacobian_dx_(M.R, Mx);
 }
 
 template <class TData, size_t n>

@@ -31,7 +31,7 @@ private:
     Player& player_;
     const PhysicsEngineConfig& cfg_;
     std::unique_ptr<PointsAndAdjacencyResource> waypoints_;
-    std::unique_ptr<Bvh<ScenePos, size_t, 3>> waypoints_bvh_;
+    std::unique_ptr<Bvh<ScenePos, 3, size_t>> waypoints_bvh_;
 };
 
 }

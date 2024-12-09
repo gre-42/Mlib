@@ -25,7 +25,7 @@ private:
     void maybe_add_triangle(const FixedArray<ColoredVertex<double>, 3>& t);
 
     GroundBvh();
-    Bvh<double, Triangle3d, 2> bvh_;
+    Bvh<double, 2, Triangle3d> bvh_;
 };
 
 }

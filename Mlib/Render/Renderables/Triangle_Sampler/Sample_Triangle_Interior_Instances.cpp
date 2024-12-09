@@ -15,7 +15,7 @@ TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
     const TerrainStyle& terrain_style,
     ScenePos scale,
     UpAxis up_axis,
-    const Bvh<ScenePos, FixedArray<ScenePos, 3, 3>, 3>* boundary_bvh,
+    const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* boundary_bvh,
     const Array<float>& dirtmap,
     float dirtmap_scale,
     const Array<float>& mudmap)

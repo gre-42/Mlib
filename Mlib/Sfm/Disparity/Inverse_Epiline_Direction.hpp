@@ -13,7 +13,8 @@ public:
         size_t c,
         const FixedArray<float, 3, 3>& F,
         float good_threshold = 1e-5)
-    : center0{i2a(ArrayShape{r, c})}
+        : center0{ i2a(ArrayShape{r, c}) }
+        , v0{ uninitialized }
     {
         // y'^T F y = 0
         // y'^T (F y) = 0

@@ -18,7 +18,7 @@ void test_homogeneous_jacobian() {
     FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
     assert_allclose(
         numerical_differentiation<2>([&](
-            const FixedArray<float, 3>& xx) { return M.transform(xx) TEMPLATEV row_range<0, 2>() / M.transform(xx)(2); },
+            const FixedArray<float, 3>& xx) { return M.transform(xx).template row_range<0, 2>() / M.transform(xx)(2); },
             x,
             float(1e-3)).to_array(),
         homogeneous_jacobian_dx(M, x).to_array(),
@@ -34,7 +34,7 @@ void test_projection_jacobian_dx() {
     auto mm = TransformationMatrix<float, float, 3>{ ki.project(ke.semi_affine()) };
     assert_allclose(
         numerical_differentiation<2>([&](
-            const FixedArray<float, 3>& xx) { return mm.transform(xx) TEMPLATEV row_range<0, 2>() / mm.transform(xx)(2); },
+            const FixedArray<float, 3>& xx) { return mm.transform(xx).template row_range<0, 2>() / mm.transform(xx)(2); },
             x,
             float(1e-3)).to_array(),
         projected_points_jacobian_dx_1p_1ke(x, ki, ke).to_array(),
@@ -83,7 +83,7 @@ void test_projection_jacobian_ke() {
             return projected_points_1p_1ke(
                 x,
                 TransformationMatrix<float, float, 2>{ ki },
-                k_external(kkep)) TEMPLATEV row_range<0, 2>();
+                k_external(kkep)).template row_range<0, 2>();
         },
         kep,
         float(1e-3)).to_array(),
@@ -108,7 +108,7 @@ void test_projection_jacobian_ki() {
             return projected_points_1p_1ke(
                 x,
                 k_internal(kkip),
-                ke) TEMPLATEV row_range<0, 2>();
+                ke).template row_range<0, 2>();
         },
         kip,
         float(1e-2)).to_array(),
