@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Array/Consteval_Workaround.hpp>
+#include <Mlib/Assert.hpp>
 #include <Mlib/Math/Abs.hpp>
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Math/Funpack.hpp>
