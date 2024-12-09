@@ -65,8 +65,8 @@ int main(int argc, char **argv) {
         Array<float> dc = reconstruction_in_reference(c0.affine().to_array(), c1.affine().to_array());
         TransformationMatrix<float, float, 3> ke{ FixedArray<float, 4, 4>{dc} };
         if (synthetic) {
-            ke.t() = FixedArray<float, 3>{1.f, 0.f, 0.f};
-            ke.R() = fixed_identity_array<float, 3>();
+            ke.t = FixedArray<float, 3>{1.f, 0.f, 0.f};
+            ke.R = fixed_identity_array<float, 3>();
         }
         FixedArray<float, 3, 3> F = fundamental_from_camera(intrinsic_matrix, intrinsic_matrix, ke);
 

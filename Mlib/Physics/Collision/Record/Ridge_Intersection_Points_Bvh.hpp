@@ -12,7 +12,7 @@ public:
     void insert(const FixedArray<ScenePos, 3>& intersection_point);
     bool has_neighbor(const FixedArray<ScenePos, 3>& intersection_point);
 private:
-    Bvh<CompressedScenePos, FixedArray<CompressedScenePos, 3>, 3> bvh_;
+    Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3>> bvh_;
     ScenePos radius_;
 };
 

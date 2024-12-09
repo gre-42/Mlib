@@ -110,7 +110,7 @@ private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;
     void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
     void save_bad_triangles_to_obj_file_if_requested(const std::string& debug_prefix) const;
-    const Bvh<double, FixedArray<double, 3, 3>, 3>& street_bvh() const;
+    const Bvh<double, 3, FixedArray<double, 3, 3>>& street_bvh() const;
 
     void handle_point_exception3(const PointException<double, 3>& e, const std::string& message) const;
     void handle_point_exception2(const PointException<double, 2>& e, const std::string& message) const;
@@ -133,7 +133,7 @@ private:
     std::shared_ptr<TriangleList<double>> tl_mud_street_visuals_;
     std::shared_ptr<TriangleList<double>> tl_mud_path_visuals_;
 
-    mutable std::unique_ptr<Bvh<double, FixedArray<double, 3, 3>, 3>> street_bvh_;
+    mutable std::unique_ptr<Bvh<double, 3, FixedArray<double, 3, 3>>> street_bvh_;
     mutable SafeAtomicRecursiveSharedMutex street_bvh_mutex_;
 
     TerrainStyles terrain_styles_;

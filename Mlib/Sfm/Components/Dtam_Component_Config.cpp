@@ -11,7 +11,7 @@ static bool interactive = false;
 
 static Dg::DenseGeometryParameters dgp_320{
     .theta_0__ = 0.1f * 0.2f,
-    .theta_end__ = float{ 0.1 * 1e-4 },
+    .theta_end__ = 0.1f * 1e-4f,
     .beta = 0.0001f,
     .lambda__ = 200.f * F_320,
     .tau = 1 / 8.f,
@@ -61,8 +61,8 @@ DtamComponentConfig::DtamComponentConfig(
                 .beta = 2.f,
                 .remove_edge_blobs = false},
             0.005f * 0.2f,          // theta_0 (0.2)
-            float{ 0.005 * 1e-4 },  // theta_end (1e-4)
-            float{ 4.02438e-05 },   // beta (0.0001 - 0.001)
+            0.005f * 1e-4f,  // theta_end (1e-4)
+            4.02438e-05f,   // beta (0.0001 - 0.001)
             regularization_lambda,  // lambda (1 for the first keyframe)
             0.0504097f,             // epsilon (1e-4)
             500),                   // nsteps
@@ -70,8 +70,8 @@ DtamComponentConfig::DtamComponentConfig(
         {dgp_320, dgp_320},
         Df::DenseFilteringParameters{
             .nsteps = 400,
-            .theta_0__ = 0.2,
-            .theta_end__ = float{ 1e-4 },
+            .theta_0__ = 0.2f,
+            .theta_end__ = 1e-4f,
             .beta = 0.0001f,
             .lambda = 1.f},
         regularization,

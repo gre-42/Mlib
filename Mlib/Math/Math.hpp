@@ -727,9 +727,9 @@ Array<TData> dot(
     // a.shape = (a_l0, a_l1, n)
     // b.shape = (n, b_l0, b_l1)
     // r.shape = (a_l0, a_l1, b_r0, b_r1)
-    if ((a->ndim() != 2) || (b->ndim() != 2)) {
-        auto a2 = a->rows_as_1D();
-        auto b2 = b->columns_as_1D();
+    if ((CW::ndim(*a) != 2) || (CW::ndim(*b) != 2)) {
+        decltype(auto) a2 = a->rows_as_1D();
+        decltype(auto) b2 = b->columns_as_1D();
         Array<TData> r = dot2d(a2, b2);
         ArrayShape r_shape =
             a->array_shape()

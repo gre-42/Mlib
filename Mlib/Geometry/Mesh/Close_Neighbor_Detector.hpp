@@ -23,7 +23,7 @@ public:
         return res;
     }
 private:
-    Bvh<TData, FixedArray<TData, tndim>, tndim> bvh_;
+    Bvh<TData, tndim, FixedArray<TData, tndim>> bvh_;
 };
 
 }

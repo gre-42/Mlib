@@ -97,17 +97,17 @@ void test_reconstruction() {
     // lerr() << recon.camera_frames().rbegin()->second.rotation;
     // lerr() << recon.camera_frames().rbegin()->second.position;
     assert_allclose(
-        camera_frames.begin()->second.pose.R().to_array(),
+        camera_frames.begin()->second.pose.R.to_array(),
         identity_array<float>(3));
     assert_allclose(
-        camera_frames.begin()->second.pose.t().to_array(),
+        camera_frames.begin()->second.pose.t.to_array(),
         zeros<float>(ArrayShape{3}));
     assert_allclose(
-        camera_frames.rbegin()->second.pose.R().to_array(),
+        camera_frames.rbegin()->second.pose.R.to_array(),
         sc.dR(0, 1).to_array(),
         calculate_camera ? float{ 1e-4 } : float{ 1e-6 });
     assert_allclose(
-        camera_frames.rbegin()->second.pose.t().to_array(),
+        camera_frames.rbegin()->second.pose.t.to_array(),
         calculate_camera ? sc.dt2(0, 1).to_array() : sc.dt(0, 1).to_array(),
         calculate_camera ? float{ 1e-4 } : float { 1e-6 });
     {
@@ -125,11 +125,11 @@ void test_reconstruction() {
     recon.reconstruct();
     assert_isequal(camera_frames.size(), (size_t)3);
     assert_allclose(
-        camera_frames.rbegin()->second.pose.R().to_array(),
+        camera_frames.rbegin()->second.pose.R.to_array(),
         sc.dR(0, 2).to_array(),
         calculate_camera ? float{ 1e-3 } : float{ 1e-6 });
     assert_allclose(
-        normalized_l2(camera_frames.rbegin()->second.pose.t().to_array()),
+        normalized_l2(camera_frames.rbegin()->second.pose.t.to_array()),
         sc.dt2(0, 2).to_array(),
         calculate_camera ? float{ 1e-2 } : float{ 1e-6 });
     {
@@ -146,11 +146,11 @@ void test_reconstruction() {
     recon.reconstruct();
     assert_isequal(camera_frames.size(), (size_t)4);
     assert_allclose(
-        camera_frames.rbegin()->second.pose.R().to_array(),
+        camera_frames.rbegin()->second.pose.R.to_array(),
         sc.dR(0, 3).to_array(),
         calculate_camera ? float{ 1e-1 } : float{ 1e-6 });
     assert_allclose(
-        normalized_l2(camera_frames.rbegin()->second.pose.t().to_array()),
+        normalized_l2(camera_frames.rbegin()->second.pose.t.to_array()),
         sc.dt2(0, 3).to_array(),
         calculate_camera ? float{ 1e-3 } : float{ 1e-6 });
     {
@@ -170,11 +170,11 @@ void test_reconstruction() {
     recon.reconstruct();
     assert_isequal(camera_frames.size(), (size_t)5);
     assert_allclose(
-        camera_frames.rbegin()->second.pose.R().to_array(),
+        camera_frames.rbegin()->second.pose.R.to_array(),
         sc.dR(0, 4).to_array(),
         calculate_camera ? float{ 3e-3 } : float{ 1e-6 });
     assert_allclose(
-        normalized_l2(camera_frames.rbegin()->second.pose.t().to_array()),
+        normalized_l2(camera_frames.rbegin()->second.pose.t.to_array()),
         sc.dt2(0, 4).to_array(),
         calculate_camera ? float{ 5e-2 } : float{ 1e-6 });
     {

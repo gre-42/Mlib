@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -37,12 +38,13 @@ void test_render() {
     }
     {
         RenderConfig render_config;
+        InputConfig input_config;
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
         std::atomic_size_t num_renderings = SIZE_MAX;
         SetFps set_fps{ nullptr };
-        Render render{ render_config, num_renderings, set_fps, [](){ return std::chrono::steady_clock::now(); }, &render_results };
+        Render render{ render_config, input_config, num_renderings, set_fps, [](){ return std::chrono::steady_clock::now(); }, &render_results };
         render_depth_map(
             render,
             img.to_float_rgb(),
@@ -58,12 +60,13 @@ void test_render() {
     }
     {
         RenderConfig render_config;
+        InputConfig input_config;
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
         std::atomic_size_t num_renderings = SIZE_MAX;
         SetFps set_fps{ nullptr };
-        Render render{ render_config, num_renderings, set_fps, [](){ return std::chrono::steady_clock::now(); }, &render_results};
+        Render render{ render_config, input_config, num_renderings, set_fps, [](){ return std::chrono::steady_clock::now(); }, &render_results};
         render_depth_map(
             render,
             img.to_float_rgb(),

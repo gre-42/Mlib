@@ -67,6 +67,6 @@ using CachingAabbBvh =
 				AabbAndPayload<TPosition, tndim, TPayload>
 			>
 		>,
-		Bvh<TPosition, TPayload, tndim>>;
+		Bvh<TPosition, tndim, TPayload>>;
 
 }

@@ -51,7 +51,7 @@ void test_project_points() {
     // lerr() << p;
     // lerr() << p.shape();
     // lerr() << find_projection_matrices(P, p, true);
-    TransformationMatrix<float, float, 2> ki_out;
+    TransformationMatrix<float, float, 2> ki_out = uninitialized;
     find_projection_matrices(
         sc.x,     // x
         np.yn,    // y
@@ -76,7 +76,7 @@ void test_unproject_point() {
         y_tracked(f) = np.yn(f, index);
         ys_tracked(f) = sc.y(f, index);
     }
-    TransformationMatrix<float, float, 2> kin;
+    TransformationMatrix<float, float, 2> kin = uninitialized;
     find_projection_matrices(
         sc.x,    // x
         np.yn,   // y
@@ -122,7 +122,7 @@ void test_initial_reconstruction() {
 void test_known_ki_alignment() {
     SyntheticScene sc;
     NormalizedProjection np(sc.y);
-    TransformationMatrix<float, float, 2> kin;
+    TransformationMatrix<float, float, 2> kin = uninitialized;
     find_projection_matrices(
         sc.x,     // x
         np.yn,    // y
@@ -168,7 +168,7 @@ void test_known_ki_alignment() {
     assert_allclose(
         dot(ke2(1).affine(), a).to_array(),
         sc.ke(1).affine().to_array(),
-        float{ 1e-4 });
+        1e-4f);
 }
 
 struct HomographyData {
@@ -252,7 +252,7 @@ void test_find_essential_matrix() {
     // lerr() << F;
     // "denormalized_intrinsic_matrix" is not used,
     // both E and y are normalized.
-    TransformationMatrix<float, float, 2> kin;
+    TransformationMatrix<float, float, 2> kin = uninitialized;
     find_projection_matrices(
         sc.x,      // x
         np.yn,     // y
@@ -271,8 +271,8 @@ void test_find_essential_matrix() {
     //lerr() << "dke\n" << sc.delta_ke(i0, i1);
     //lerr() << "t " << sc.t(i0, i1);
     //lerr() << "R\n" << sc.R(i0, i1);
-    assert_allclose(ptr.ke.inverted().t().to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-4 });
-    assert_allclose(ptr.ke.inverted().R().to_array(), sc.dR(i0, i1).to_array(), float{ 1e-4 });
+    assert_allclose(ptr.ke.inverted().t.to_array(), sc.dt2(i0, i1).to_array(), 1e-4f);
+    assert_allclose(ptr.ke.inverted().R.to_array(), sc.dR(i0, i1).to_array(), 1e-4f);
 }
 
 void test_projection_to_TR() {
@@ -284,8 +284,8 @@ void test_projection_to_TR() {
     //lerr() << "t " << ptr.t;
     //lerr() << "R0\n" << sc.R(i0, i1);
     //lerr() << "t0 " << sc.t2(i0, i1);
-    assert_allclose(ptr.ke.inverted().t().to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-3 });
-    assert_allclose(ptr.ke.inverted().R().to_array(), sc.dR(i0, i1).to_array(), float{ 1e-4 });
+    assert_allclose(ptr.ke.inverted().t.to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-3 });
+    assert_allclose(ptr.ke.inverted().R.to_array(), sc.dR(i0, i1).to_array(), 1e-4f);
     Array<float> u{ ptr.initial_reconstruction().reconstructed() };
     Array<float> x{ sc.x };
     assert_allclose(u / mean(abs(u)), x / mean(abs(x)), float{ 2e-1 });
@@ -305,7 +305,7 @@ void test_fundamental_from_TR() {
 void test_find_homography() {
     HomographyData hd;
     FixedArray<float, 3, 3> h = homography_from_points(hd.y0, hd.y1);
-    assert_allclose(h.to_array(), hd.homography.to_array(), float{ 1e-4 });
+    assert_allclose(h.to_array(), hd.homography.to_array(), 1e-4f);
 }
 
 void test_svd_easy_matrix() {
@@ -359,9 +359,9 @@ void test_svd_essential_matrix2() {
     // lerr() << "s " << s;
     // lerr() << "v\n" << vT.T();
 
-    assert_allclose(abs(u), abs(u_ref), float{ 1e-4 });
-    assert_allclose(s, s_ref, float{ 1e-4 });
-    assert_allclose(abs(vT), abs(vT_ref), float{ 1e-4 });
+    assert_allclose(abs(u), abs(u_ref), 1e-4f);
+    assert_allclose(s, s_ref, 1e-4f);
+    assert_allclose(abs(vT), abs(vT_ref), 1e-4f);
     assert_allclose(reconstruct_svd(u, s, vT), E);
 }
 
@@ -432,8 +432,8 @@ void test_find_epiline() {
     StbImage3 bmp{ArrayShape{200, 200}, Rgb24::white()};
     highlight_features(Array<float>::from_dynamic<2>(y0 * 180.f), bmp, 2, Rgb24::red());
     highlight_features(Array<float>::from_dynamic<2>(y1 * 180.f), bmp, 2, Rgb24::blue());
-    FixedArray<float, 2> p;
-    FixedArray<float, 2> v;
+    FixedArray<float, 2> p = uninitialized;
+    FixedArray<float, 2> v = uninitialized;
     find_epiline(F, FixedArray<float, 2>{ y0[1] }, p, v);
     assert_allclose(p.to_array(), Array<float>{0.784089f, 0.788539f});
     assert_allclose(v.to_array(), Array<float>{0.703581f, 0.070358f});

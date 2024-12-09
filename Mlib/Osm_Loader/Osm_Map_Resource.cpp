@@ -1519,7 +1519,7 @@ OsmMapResource::OsmMapResource(
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
 }
 
-const Bvh<double, FixedArray<double, 3, 3>, 3>& OsmMapResource::street_bvh() const {
+const Bvh<double, 3, FixedArray<double, 3, 3>>& OsmMapResource::street_bvh() const {
     {
         std::shared_lock lock{street_bvh_mutex_};
         if (street_bvh_ != nullptr) {
@@ -1528,7 +1528,7 @@ const Bvh<double, FixedArray<double, 3, 3>, 3>& OsmMapResource::street_bvh() con
     }
     if (street_bvh_ == nullptr) {
         std::scoped_lock lock{street_bvh_mutex_};
-        street_bvh_.reset(new Bvh<double, FixedArray<double, 3, 3>, 3>{{0.1, 0.1, 0.1}, 10});
+        street_bvh_.reset(new Bvh<double, 3, FixedArray<double, 3, 3>>{{0.1, 0.1, 0.1}, 10});
         for (const auto& lst : tls_no_grass_) {
             for (const auto& t : lst->triangles) {
                 FixedArray<double, 3, 3> tri{

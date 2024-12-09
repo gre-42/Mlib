@@ -6,6 +6,7 @@
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -89,6 +90,7 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .windowed_width = (int)depth.shape(1),
             .windowed_height = (int)depth.shape(0)};
+        InputConfig input_config;
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
         TrailResources trail_resources;
@@ -102,7 +104,7 @@ int main(int argc, char** argv) {
             rendering_resources };
         RenderingContextGuard rrg{ rendering_context };
         SetFps set_fps{ nullptr };
-        Render render{ render_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); } };
+        Render render{ render_config, input_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); } };
         render_depth_map(
             render,
             img.to_float_rgb(),

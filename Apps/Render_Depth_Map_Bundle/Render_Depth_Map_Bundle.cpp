@@ -8,6 +8,7 @@
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Results.hpp>
@@ -149,10 +150,10 @@ int main(int argc, char** argv) {
                 point_transformations.append(dense_point_transformations);
             }
             if (args.has_named("--show_beacon")) {
-                beacon_locations.resize(dense_point_transformations.length());
+                beacon_locations.reserve(dense_point_transformations.length());
                 for (size_t i = 0; i < dense_point_transformations.length(); ++i) {
-                    beacon_locations[i] = dense_point_transformations(i);
-                    beacon_locations[i].R() *= safe_stof(args.named_value("--beacon_scale", "0.1"));
+                    auto& bl = beacon_locations.emplace_back(dense_point_transformations(i));
+                    bl.R *= safe_stof(args.named_value("--beacon_scale", "0.1"));
                 }
             }
         } else {
@@ -166,7 +167,7 @@ int main(int argc, char** argv) {
             auto m = cv_to_opengl_matrix();
             for (const auto& lst : mesh) {
                 for (const auto& t : lst->triangles) {
-                    triangles.push_back(t.applied([&m](const ColoredVertex<float>& t){return t.transformed(m, m.R());}));
+                    triangles.push_back(t.applied([&m](const ColoredVertex<float>& t){return t.transformed(m, m.R);}));
                 }
             }
             save_obj(
@@ -189,6 +190,7 @@ int main(int argc, char** argv) {
             .windowed_width = (int)ref->second.depth.shape(1),
             .windowed_height = (int)ref->second.depth.shape(0),
             .double_buffer = true};
+        InputConfig input_config;
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
         TrailResources trail_resources;
@@ -208,7 +210,7 @@ int main(int argc, char** argv) {
             render_results.outputs[rsd] = {};
         }
         SetFps set_fps{ nullptr };
-        Render render{ render_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); }, &render_results };
+        Render render{ render_config, input_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); }, &render_results };
         render_depth_maps(
             render,
             packages,

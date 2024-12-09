@@ -49,9 +49,9 @@ void Spawn::set_spawn_points(
     size_t nsubs = cfg_.spawn_points_nsubdivisions;
     spawn_points_bvh_split_.resize(nsubs);
     for (size_t i = 0; i < nsubs; ++i) {
-        spawn_points_bvh_split_[i].reset(new Bvh<ScenePos, const SpawnPoint*, 3>(fixed_full<ScenePos, 3>(10.f), 10));
+        spawn_points_bvh_split_[i].reset(new Bvh<ScenePos, 3, const SpawnPoint*>(fixed_full<ScenePos, 3>(10.f), 10));
     }
-    spawn_points_bvh_singular_.reset(new Bvh<ScenePos, const SpawnPoint*, 3>(fixed_full<ScenePos, 3>(10.f), 10));
+    spawn_points_bvh_singular_.reset(new Bvh<ScenePos, 3, const SpawnPoint*>(fixed_full<ScenePos, 3>(10.f), 10));
     {
         size_t i = 0;
         for (const auto& sp : spawn_points) {

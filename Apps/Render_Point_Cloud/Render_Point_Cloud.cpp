@@ -6,6 +6,7 @@
 #include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -46,11 +47,12 @@ int main(int argc, char** argv) {
         RenderingContextGuard rrg{ rendering_context };
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
+        InputConfig input_config;
         std::unique_ptr<Camera> camera(new PerspectiveCamera(
             PerspectiveCameraConfig(),
             PerspectiveCamera::Postprocessing::ENABLED));
         SetFps set_fps{ nullptr };
-        Render render{ render_config, num_renderings, set_fps, []() {return std::chrono::steady_clock::now(); } };
+        Render render{ render_config, input_config, num_renderings, set_fps, []() {return std::chrono::steady_clock::now(); } };
         render_point_cloud(
             render,
             points.applied<TransformationMatrix<float, float, 3>>([](const auto& p){return TransformationMatrix<float, float, 3>{fixed_zeros<float, 3, 3>(), p};}),
