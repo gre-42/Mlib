@@ -205,11 +205,13 @@ public:
     typedef TData value_type;
     ArrayResizer resize;
     ArrayResizer reshape;
-    Array() : Array{ uninitialized } {}
     Array(Uninitialized)
         : offset_{ 0 }
         , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }
         , reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
+    {}
+    Array()
+        : Array(uninitialized)
     {}
     Array(const Array& rhs)
         : data_{ rhs.data_ }
