@@ -651,7 +651,7 @@ void dot2d(
 {
     assert_true(CW::ndim(*a) == 2);
     assert_true(CW::ndim(*b) == 2);
-    assert_true(CW::ndim(result) == 2);
+    assert_true(CW::ndim(*result) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
