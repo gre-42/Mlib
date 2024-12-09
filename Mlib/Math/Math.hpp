@@ -549,9 +549,9 @@ void outer2d(
     const BaseDenseArray<TDerivedB, TData>& b,
     BaseDenseArray<TDerivedR, TData>& result)
 {
-    assert(CW::ndim(a) == 2);
-    assert(CW::ndim(b) == 2);
-    assert(CW::ndim(result) == 2);
+    assert_true(CW::ndim(a) == 2);
+    assert_true(CW::ndim(b) == 2);
+    assert_true(CW::ndim(result) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
@@ -562,9 +562,9 @@ void outer2d(
     size_t rR = CW::static_shape<0>(*result);
     size_t rC = CW::static_shape<1>(*result);
 
-    assert(aC == bC);
-    assert(rR == aR);
-    assert(rC == bR);
+    assert_true(aC == bC);
+    assert_true(rR == aR);
+    assert_true(rC == bR);
     if (rR > INT_MAX) {
         THROW_OR_ABORT("Too many rows in matrix");
     }
@@ -589,8 +589,8 @@ Array<TData> outer2d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(CW::ndim(a) == 2);
-    assert(CW::ndim(b) == 2);
+    assert_true(CW::ndim(a) == 2);
+    assert_true(CW::ndim(b) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
@@ -598,7 +598,7 @@ Array<TData> outer2d(
     size_t bR = CW::static_shape<0>(*b);
     size_t bC = CW::static_shape<1>(*b);
 
-    assert(aC == bC);
+    assert_true(aC == bC);
     Array<TData> result{ ArrayShape{aR, bR} };
     outer2d(a, b, result);
     return result;
@@ -648,9 +648,9 @@ void dot2d(
     const BaseDenseArray<TDerivedB, TData>& b,
     BaseDenseArray<TDerivedR, TData>& result)
 {
-    assert(CW::ndim(a) == 2);
-    assert(CW::ndim(b) == 2);
-    assert(CW::ndim(result) == 2);
+    assert_true(CW::ndim(a) == 2);
+    assert_true(CW::ndim(b) == 2);
+    assert_true(CW::ndim(result) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
@@ -661,9 +661,9 @@ void dot2d(
     size_t rR = CW::static_shape<0>(*result);
     size_t rC = CW::static_shape<1>(*result);
 
-    assert(aC == bR);
-    assert(rR == aR);
-    assert(rC == bC);
+    assert_true(aC == bR);
+    assert_true(rR == aR);
+    assert_true(rC == bC);
     if (rR > INT_MAX) {
         THROW_OR_ABORT("Too many rows in matrix");
     }
@@ -684,8 +684,8 @@ Array<TData> dot2d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(CW::ndim(a) == 2);
-    assert(CW::ndim(b) == 2);
+    assert_true(CW::ndim(a) == 2);
+    assert_true(CW::ndim(b) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
@@ -693,7 +693,7 @@ Array<TData> dot2d(
     size_t bR = CW::static_shape<0>(*b);
     size_t bC = CW::static_shape<1>(*b);
 
-    assert(aC == bR);
+    assert_true(aC == bR);
 
     Array<TData> result{ArrayShape{aR, bC}};
     dot2d(a, b, result);
@@ -705,15 +705,15 @@ Array<TData> dot1d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(CW::ndim(a) == 2);
-    assert(CW::ndim(b) == 1);
+    assert_true(CW::ndim(a) == 2);
+    assert_true(CW::ndim(b) == 1);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
 
     size_t bR = CW::static_shape<0>(*b);
 
-    assert(aC == bR);
+    assert_true(aC == bR);
     Array<TData> result{ ArrayShape{ aR, 1 } };
     dot2d(a, b->reshaped(ArrayShape{ b->length(), 1 }), result);
     return result.flattened();
