@@ -550,9 +550,9 @@ void outer2d(
     const BaseDenseArray<TDerivedB, TData>& b,
     BaseDenseArray<TDerivedR, TData>& result)
 {
-    assert_true(CW::ndim(a) == 2);
-    assert_true(CW::ndim(b) == 2);
-    assert_true(CW::ndim(result) == 2);
+    assert_true(CW::ndim(*a) == 2);
+    assert_true(CW::ndim(*b) == 2);
+    assert_true(CW::ndim(*result) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
@@ -590,8 +590,8 @@ Array<TData> outer2d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert_true(CW::ndim(a) == 2);
-    assert_true(CW::ndim(b) == 2);
+    assert_true(CW::ndim(*a) == 2);
+    assert_true(CW::ndim(*b) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
@@ -649,8 +649,8 @@ void dot2d(
     const BaseDenseArray<TDerivedB, TData>& b,
     BaseDenseArray<TDerivedR, TData>& result)
 {
-    assert_true(CW::ndim(a) == 2);
-    assert_true(CW::ndim(b) == 2);
+    assert_true(CW::ndim(*a) == 2);
+    assert_true(CW::ndim(*b) == 2);
     assert_true(CW::ndim(result) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
@@ -685,8 +685,8 @@ Array<TData> dot2d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert_true(CW::ndim(a) == 2);
-    assert_true(CW::ndim(b) == 2);
+    assert_true(CW::ndim(*a) == 2);
+    assert_true(CW::ndim(*b) == 2);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
@@ -706,8 +706,8 @@ Array<TData> dot1d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert_true(CW::ndim(a) == 2);
-    assert_true(CW::ndim(b) == 1);
+    assert_true(CW::ndim(*a) == 2);
+    assert_true(CW::ndim(*b) == 1);
 
     size_t aR = CW::static_shape<0>(*a);
     size_t aC = CW::static_shape<1>(*a);
