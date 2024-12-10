@@ -21,6 +21,7 @@
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/Trim.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <concepts>
 #include <filesystem>
 
 static uint32_t CACHE_FILE_VERSION = 59;
@@ -305,9 +306,9 @@ DECLARE_ARGUMENT(resource_names);
 
 const std::string LoadOsmResource::key = "osm_resource";
 
-static double from_meters(double v) {
+static auto from_meters = [](std::floating_point auto v) {
     return v * meters;
-}
+};
 
 LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
@@ -738,16 +739,16 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.default_terrain_type = terrain_type_from_string(args.arguments.at<std::string>(KnownArgs::default_terrain_type));
         }
         if (args.arguments.contains(KnownArgs::default_street_width)) {
-            config.default_street_width = args.arguments.at<float>(KnownArgs::default_street_width);
+            config.default_street_width = args.arguments.at<float>(KnownArgs::default_street_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_lane_width)) {
-            config.default_lane_width = args.arguments.at<float>(KnownArgs::default_lane_width);
+            config.default_lane_width = args.arguments.at<float>(KnownArgs::default_lane_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_tunnel_pipe_width)) {
-            config.default_tunnel_pipe_width = args.arguments.at<float>(KnownArgs::default_tunnel_pipe_width);
+            config.default_tunnel_pipe_width = args.arguments.at<float>(KnownArgs::default_tunnel_pipe_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_tunnel_pipe_height)) {
-            config.default_tunnel_pipe_height = args.arguments.at<float>(KnownArgs::default_tunnel_pipe_height);
+            config.default_tunnel_pipe_height = args.arguments.at<float>(KnownArgs::default_tunnel_pipe_height) * meters;
         }
         if (args.arguments.contains(KnownArgs::scale)) {
             config.scale = args.arguments.at<float>(KnownArgs::scale);
@@ -798,10 +799,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.zonemap = args.arguments.path(KnownArgs::zonemap);
         }
         if (args.arguments.contains(KnownArgs::zonemap_width)) {
-            config.zonemap_width = args.arguments.at<double>(KnownArgs::zonemap_width);
+            config.zonemap_width = args.arguments.at<double>(KnownArgs::zonemap_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::zonemap_height)) {
-            config.zonemap_height = args.arguments.at<double>(KnownArgs::zonemap_height);
+            config.zonemap_height = args.arguments.at<double>(KnownArgs::zonemap_height) * meters;
         }
         if (args.arguments.contains(KnownArgs::zonemap_multiplier)) {
             config.zonemap_multiplier = args.arguments.at<double>(KnownArgs::zonemap_multiplier);
@@ -810,13 +811,13 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.zonemap_jitter = args.arguments.at<float>(KnownArgs::zonemap_jitter);
         }
         if (args.arguments.contains(KnownArgs::zonemap_step_size)) {
-            config.zonemap_step_size = args.arguments.at<double>(KnownArgs::zonemap_step_size);
+            config.zonemap_step_size = args.arguments.at<double>(KnownArgs::zonemap_step_size) * meters;
         }
         if (args.arguments.contains_non_null(KnownArgs::zone_resource_names)) {
             config.zone_resource_names = args.arguments.at_vector<std::string>(KnownArgs::zone_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains(KnownArgs::boundary_barrier_height)) {
-            config.boundary_barrier_height = args.arguments.at<float>(KnownArgs::boundary_barrier_height);
+            config.boundary_barrier_height = args.arguments.at<float>(KnownArgs::boundary_barrier_height) * meters;
         }
         if (args.arguments.contains(KnownArgs::boundary_barrier_style)) {
             config.boundary_barrier_style = args.arguments.at<std::string>(KnownArgs::boundary_barrier_style);
@@ -828,19 +829,19 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.with_ceilings = args.arguments.at<bool>(KnownArgs::with_ceilings);
         }
         if (args.arguments.contains(KnownArgs::building_bottom)) {
-            config.building_bottom = args.arguments.at<float>(KnownArgs::building_bottom);
+            config.building_bottom = args.arguments.at<float>(KnownArgs::building_bottom) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_building_top)) {
-            config.default_building_top = args.arguments.at<float>(KnownArgs::default_building_top);
+            config.default_building_top = args.arguments.at<float>(KnownArgs::default_building_top) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_barrier_top)) {
-            config.default_barrier_top = args.arguments.at<float>(KnownArgs::default_barrier_top);
+            config.default_barrier_top = args.arguments.at<float>(KnownArgs::default_barrier_top) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_snap_building_height)) {
-            config.default_snap_building_height = args.arguments.at<bool>(KnownArgs::default_snap_building_height);
+            config.default_snap_building_height = args.arguments.at<bool>(KnownArgs::default_snap_building_height) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_snap_barrier_height)) {
-            config.default_snap_barrier_height = args.arguments.at<bool>(KnownArgs::default_snap_barrier_height);
+            config.default_snap_barrier_height = args.arguments.at<bool>(KnownArgs::default_snap_barrier_height) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_building_vertical_subdivision)) {
             config.default_building_vertical_subdivision = vertical_subdivision_from_string(args.arguments.at<std::string>(KnownArgs::default_building_vertical_subdivision));
@@ -852,46 +853,46 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.with_tree_nodes = args.arguments.at<bool>(KnownArgs::with_tree_nodes);
         }
         if (args.arguments.contains(KnownArgs::forest_outline_tree_distance)) {
-            config.forest_outline_tree_distance = args.arguments.at<float>(KnownArgs::forest_outline_tree_distance);
+            config.forest_outline_tree_distance = args.arguments.at<float>(KnownArgs::forest_outline_tree_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::forest_outline_tree_inwards_distance)) {
-            config.forest_outline_tree_inwards_distance = args.arguments.at<float>(KnownArgs::forest_outline_tree_inwards_distance);
+            config.forest_outline_tree_inwards_distance = args.arguments.at<float>(KnownArgs::forest_outline_tree_inwards_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_grass_distance)) {
-            config.much_grass_distance = args.arguments.at<float>(KnownArgs::much_grass_distance);
+            config.much_grass_distance = args.arguments.at<float>(KnownArgs::much_grass_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::street_mud_grass_distance)) {
-            tconfig.street_mud_config.much_near_distance = args.arguments.at<float>(KnownArgs::street_mud_grass_distance);
+            tconfig.street_mud_config.much_near_distance = args.arguments.at<float>(KnownArgs::street_mud_grass_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::path_mud_grass_distance)) {
-            tconfig.path_mud_config.much_near_distance = args.arguments.at<float>(KnownArgs::path_mud_grass_distance);
+            tconfig.path_mud_config.much_near_distance = args.arguments.at<float>(KnownArgs::path_mud_grass_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_near_grass_distance)) {
-            tconfig.near_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_grass_distance);
+            tconfig.near_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_grass_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_far_grass_distance)) {
-            tconfig.far_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_grass_distance);
+            tconfig.far_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_grass_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_near_wayside1_grass_distance)) {
-            tconfig.near_wayside1_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside1_grass_distance);
+            tconfig.near_wayside1_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside1_grass_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_near_wayside2_grass_distance)) {
-            tconfig.near_wayside2_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside2_grass_distance);
+            tconfig.near_wayside2_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside2_grass_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_near_flowers_distance)) {
-            tconfig.near_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_flowers_distance);
+            tconfig.near_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_flowers_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_far_flowers_distance)) {
-            tconfig.far_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_flowers_distance);
+            tconfig.far_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_flowers_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_near_trees_distance)) {
-            tconfig.near_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_trees_distance);
+            tconfig.near_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_trees_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_far_trees_distance)) {
-            tconfig.far_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_trees_distance);
+            tconfig.far_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_trees_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::dirt_decals_distance)) {
-            tconfig.no_grass_decals_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::dirt_decals_distance);
+            tconfig.no_grass_decals_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::dirt_decals_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::raceway_beacon_distance)) {
             config.raceway_beacon_distance = args.arguments.at<float>(KnownArgs::raceway_beacon_distance);
@@ -966,25 +967,25 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.racing_line_scale_y = args.arguments.at<float>(KnownArgs::racing_line_scale_y);
         }
         if (args.arguments.contains(KnownArgs::raise_streets_amount)) {
-            config.raise_streets_amount = args.arguments.at<float>(KnownArgs::raise_streets_amount);
+            config.raise_streets_amount = args.arguments.at<float>(KnownArgs::raise_streets_amount) * meters;
         }
         if (args.arguments.contains(KnownArgs::extrude_curb_amount)) {
-            config.extrude_curb_amount = args.arguments.at<float>(KnownArgs::extrude_curb_amount);
+            config.extrude_curb_amount = args.arguments.at<float>(KnownArgs::extrude_curb_amount) * meters;
         }
         if (args.arguments.contains(KnownArgs::extrude_street_amount)) {
-            config.extrude_street_amount = args.arguments.at<float>(KnownArgs::extrude_street_amount);
+            config.extrude_street_amount = args.arguments.at<float>(KnownArgs::extrude_street_amount) * meters;
         }
         if (args.arguments.contains(KnownArgs::extrude_air_curb_amount)) {
-            config.extrude_air_curb_amount = args.arguments.at<float>(KnownArgs::extrude_air_curb_amount);
+            config.extrude_air_curb_amount = args.arguments.at<float>(KnownArgs::extrude_air_curb_amount) * meters;
         }
         if (args.arguments.contains(KnownArgs::extrude_air_support_amount)) {
-            config.extrude_air_support_amount = args.arguments.at<float>(KnownArgs::extrude_air_support_amount);
+            config.extrude_air_support_amount = args.arguments.at<float>(KnownArgs::extrude_air_support_amount) * meters;
         }
         if (args.arguments.contains(KnownArgs::extrude_wall_amount)) {
-            config.extrude_wall_amount = args.arguments.at<float>(KnownArgs::extrude_wall_amount);
+            config.extrude_wall_amount = args.arguments.at<float>(KnownArgs::extrude_wall_amount) * meters;
         }
         if (args.arguments.contains(KnownArgs::extrude_grass_amount)) {
-            config.extrude_grass_amount = args.arguments.at<float>(KnownArgs::extrude_grass_amount);
+            config.extrude_grass_amount = args.arguments.at<float>(KnownArgs::extrude_grass_amount) * meters;
         }
         if (args.arguments.contains(KnownArgs::extrude_elevated_grass_amount)) {
             config.extrude_elevated_grass_amount = args.arguments.at<float>(KnownArgs::extrude_elevated_grass_amount);
@@ -996,7 +997,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.street_light_resource_names = args.arguments.at_vector<std::string>(KnownArgs::street_light_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains(KnownArgs::max_wall_width)) {
-            config.max_wall_width = args.arguments.at<float>(KnownArgs::max_wall_width);
+            config.max_wall_width = args.arguments.at<float>(KnownArgs::max_wall_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::with_height_bindings)) {
             config.with_height_bindings = args.arguments.at<bool>(KnownArgs::with_height_bindings);
@@ -1054,7 +1055,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.displacementmap = args.arguments.path(KnownArgs::displacementmap);
         }
         if (args.arguments.contains(KnownArgs::displacementmap_min)) {
-            config.displacementmap_min = args.arguments.at<double>(KnownArgs::displacementmap_min);
+            config.displacementmap_min = args.arguments.at<double>(KnownArgs::displacementmap_min) * meters;
         }
         if (args.arguments.contains(KnownArgs::displacementmap_uv_scale)) {
             config.displacementmap_uv_scale = args.arguments.at<double>(KnownArgs::displacementmap_uv_scale);
@@ -1063,15 +1064,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             args.arguments.contains(KnownArgs::displacementmap_heights))
         {
             config.displacementmap_distance_2_z_scale = Interp<float>{
-                args.arguments.at<std::vector<float>>(KnownArgs::displacementmap_distances),
-                args.arguments.at<std::vector<float>>(KnownArgs::displacementmap_heights),
+                args.arguments.at_vector<float>(KnownArgs::displacementmap_distances, from_meters),
+                args.arguments.at_vector<float>(KnownArgs::displacementmap_heights, from_meters),
                 OutOfRangeBehavior::CLAMP};
         }
         if (args.arguments.contains(KnownArgs::layer_heights_layer)) {
             layer_heights_layer = args.arguments.at<std::vector<double>>(KnownArgs::layer_heights_layer);
         }
         if (args.arguments.contains(KnownArgs::layer_heights_height)) {
-            layer_heights_height = args.arguments.at<std::vector<double>>(KnownArgs::layer_heights_height);
+            layer_heights_height = args.arguments.at_vector<double>(KnownArgs::layer_heights_height, from_meters);
         }
         if (args.arguments.contains(KnownArgs::game_level)) {
             config.game_level = args.arguments.at<std::string>(KnownArgs::game_level);
@@ -1083,16 +1084,16 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.navmesh_resource = args.arguments.at<std::string>(KnownArgs::navmesh_resource);
         }
         if (args.arguments.contains(KnownArgs::agent_radius)) {
-            config.agent_radius = args.arguments.at<float>(KnownArgs::agent_radius);
+            config.agent_radius = args.arguments.at<float>(KnownArgs::agent_radius) * meters;
         }
         if (args.arguments.contains(KnownArgs::refine_explicit_waypoints)) {
             config.refine_explicit_waypoints = args.arguments.at<bool>(KnownArgs::refine_explicit_waypoints);
         }
         if (args.arguments.contains(KnownArgs::fog_distances)) {
-            config.fog_distances = args.arguments.at<UFixedArray<float, 2>>(KnownArgs::fog_distances);
+            config.fog_distances = args.arguments.at<UFixedArray<float, 2>>(KnownArgs::fog_distances) * meters;
         }
         if (args.arguments.contains(KnownArgs::fog_ambient)) {
-            config.fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient);
+            config.fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
         }
     };
     if (resource_name.empty()) {
