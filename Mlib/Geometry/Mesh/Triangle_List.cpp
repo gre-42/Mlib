@@ -576,21 +576,20 @@ void TriangleList<TPos>::smoothen_edges(
                     Edge3 esj{ OrderableFixedArray{*ei}, OrderableFixedArray{*ej} };
                     auto it = adjacent_triangles.find(esj);
                     if (it == adjacent_triangles.end()) {
-                        const auto at = adjacent_triangles.try_emplace(esi, AdjacentTriangles<TPos>{});
+                        const auto at = adjacent_triangles.try_emplace(esi, AdjacentTriangles<TPos>{
+                            .ei = &ei,
+                            .ej = &ej,
+                            .n0 = &nn,
+                            .n1 = nullptr,
+                            .movement_i = excluded_vertices.contains(ei2)
+                                ? nullptr
+                                : &vertex_movement[ei2].amount,
+                            .movement_j = nullptr
+                        });
                         if (!at.second) {
                             lwarn() << "More than 2 triangles share the same edge (0)";
                             return;
                         }
-                        at.first->second.ei = &ei;
-                        at.first->second.ej = &ej;
-                        at.first->second.n0 = &nn;
-                        at.first->second.n1 = nullptr;
-                        if (!excluded_vertices.contains(ei2)) {
-                            at.first->second.movement_i = &vertex_movement[ei2].amount;
-                        } else {
-                            at.first->second.movement_i = nullptr;
-                        }
-                        at.first->second.movement_j = nullptr;
                     } else {
                         if (it->second.n1 != nullptr) {
                             lwarn() << "More than 2 triangles share the same edge (1)";
