@@ -158,6 +158,7 @@ public:
         float strength);
     static void smoothen_edges(
         std::unordered_map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
+        const std::unordered_map<OrderableFixedArray<TPos, 3>, FixedArray<TPos, 3>>& bias,
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
         const std::list<FixedArray<TPos, 3>*>& smoothed_vertices,

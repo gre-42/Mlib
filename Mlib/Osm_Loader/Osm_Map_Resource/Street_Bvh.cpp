@@ -19,16 +19,30 @@ StreetBvh::StreetBvh(const std::list<FixedArray<ColoredVertex<double>, 3>>& tria
     }
 }
 
-double StreetBvh::min_dist(const FixedArray<double, 2>& pt, double max_dist) const
+double StreetBvh::min_dist(
+    const FixedArray<double, 2>& pt,
+    double max_dist,
+    FixedArray<double, 2>* closest_pt) const
 {
-    return bvh_.min_distance(pt, max_dist, [&pt](const Triangle2d& tri) {
-        return distance_point_to_triangle(pt, tri[0], tri[1], tri[2]);
-    });
+    const Triangle2d* nearest_payload;
+    auto dist = bvh_.min_distance(
+        pt,
+        max_dist,
+        [&pt](const Triangle2d& tri) {
+            return distance_point_to_triangle(pt, tri);
+        },
+        (closest_pt == nullptr)
+            ? nullptr
+            : &nearest_payload);
+    if (closest_pt != nullptr) {
+        distance_point_to_triangle<double>(pt, *nearest_payload, closest_pt);
+    }
+    return dist;
 }
 
 bool StreetBvh::has_neighbor(const FixedArray<double, 2>& pt, double max_dist) const
 {
     return bvh_.has_neighbor(pt, max_dist, [&pt](const Triangle2d& tri) {
-        return distance_point_to_triangle(pt, tri[0], tri[1], tri[2]);
+        return distance_point_to_triangle(pt, tri);
     });
 }

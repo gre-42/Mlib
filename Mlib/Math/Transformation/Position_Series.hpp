@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Math/Mix.hpp>
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Positive_Modulo.hpp>
 #include <Mlib/Math/Time_Point_Series.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -38,7 +38,7 @@ public:
     }
 
     FixedArray<TPos, tndim> get(const Interpolator& interp) const {
-        return mix(data_(interp.i0), data_(interp.i1), (TPos)interp.alpha);
+        return lerp(data_(interp.i0), data_(interp.i1), (TPos)interp.alpha);
     }
 
 private:

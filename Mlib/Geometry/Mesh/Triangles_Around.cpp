@@ -12,10 +12,11 @@ std::list<const FixedArray<ColoredVertex<double>, 3>*> Mlib::get_triangles_aroun
 {
     std::list<const FixedArray<ColoredVertex<double>, 3>*> tf;
     for (const auto& t : triangles) {
-        FixedArray<double, 2> a{ (*t)(0).position(0), (*t)(0).position(1) };
-        FixedArray<double, 2> b{ (*t)(1).position(0), (*t)(1).position(1) };
-        FixedArray<double, 2> c{ (*t)(2).position(0), (*t)(2).position(1) };
-        if (distance_point_to_triangle(pt, a, b, c) < radius) {
+        FixedArray<double, 3, 2> tri{
+            FixedArray<double, 2>{ (*t)(0).position(0), (*t)(0).position(1) },
+            FixedArray<double, 2>{ (*t)(1).position(0), (*t)(1).position(1) },
+            FixedArray<double, 2>{ (*t)(2).position(0), (*t)(2).position(1) } };
+        if (distance_point_to_triangle(pt, tri) < radius) {
             tf.push_back(t);
         }
     }

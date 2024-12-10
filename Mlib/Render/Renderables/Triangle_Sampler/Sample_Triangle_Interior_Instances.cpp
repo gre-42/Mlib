@@ -121,11 +121,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
                     max_dboundary_,
                     [&p](auto& tt)
                     {
-                        return sum(squared(distance_point_to_triangle_3d(
-                            p,
-                            tt[0],
-                            tt[1],
-                            tt[2])));
+                        return sum(squared(distance_point_to_triangle_3d(p, tt)));
                     });
                 if (min_dist2 < min_dboundary2_) {
                     return;

@@ -7,6 +7,7 @@
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Height_Sampler.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -103,12 +104,24 @@ void Mlib::smoothen_and_apply_heightmap(
             }
         }
     };
+    std::optional<HeightSampler> height_sampler;
     if (!config.heightmap.empty()) {
         Array<double> heightmap = config.height_scale * load_heightmap_from_file<double>(config.heightmap);
         Array<bool> heightmap_mask;
         if (!config.heightmap_mask.empty()) {
             heightmap_mask = PgmImage::load_from_file(config.heightmap_mask).casted<bool>();
         }
+        size_t ext = std::max({ heightmap.shape(0), heightmap.shape(1), config.heightmap_extension });
+        ExtendedImage extended_heightmap{
+            heightmap,
+            heightmap_mask,
+            config.heightmap_extension,
+            50,
+            1 + ext / 50 };
+        height_sampler.emplace(
+            std::move(extended_heightmap),
+            normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix());
+
         LOG_INFO("apply_heightmap");
         std::list<std::shared_ptr<TriangleList<double>>> tls_smoothed;
         std::list<FixedArray<double, 3>*> smoothed_vertices;
@@ -121,10 +134,7 @@ void Mlib::smoothen_and_apply_heightmap(
             config.extrude_air_support_amount,
             smoothed_vertices,
             vertices_to_delete,
-            heightmap,
-            heightmap_mask,
-            config.heightmap_extension,
-            normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
+            *height_sampler,
             config.scale,
             nodes,
             ways,
@@ -172,7 +182,7 @@ void Mlib::smoothen_and_apply_heightmap(
             std::list<std::shared_ptr<TriangleList<double>>> tls_air_street = air_triangle_lists.tls_street();
             tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
             LOG_INFO("smoothen_edges (street)");
-            TriangleList<double>::smoothen_edges(vertex_height_bindings, tls_street, {}, smoothed_vertices, config.street_edge_smoothness * config.scale, 100, true);
+            TriangleList<double>::smoothen_edges(vertex_height_bindings, {}, tls_street, {}, smoothed_vertices, config.street_edge_smoothness* config.scale, 100, true);
         }
         if (config.terrain_edge_smoothness > 0) {
             LOG_INFO("smoothen_edges (ground)");
@@ -185,7 +195,18 @@ void Mlib::smoothen_and_apply_heightmap(
             std::list<std::shared_ptr<TriangleList<double>>> tls_air_terrain_nosmooth = air_triangle_lists.tls_terrain_nosmooth();
             tls_terrain_nosmooth.insert(tls_terrain_nosmooth.end(), tls_air_terrain_nosmooth.begin(), tls_air_terrain_nosmooth.end());
 
-            TriangleList<double>::smoothen_edges(vertex_height_bindings, tls_smooth, tls_terrain_nosmooth, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 100, false);
+            std::unordered_map<OrderableFixedArray<double, 3>, FixedArray<double, 3>> bias;
+            if (height_sampler.has_value() && (config.terrain_edge_bias != 0.)) {
+                for (const auto* s : smoothed_vertices) {
+                    double z;
+                    if ((*height_sampler)({ (*s)(0), (*s)(1) }, z)) {
+                        bias.try_emplace(
+                            OrderableFixedArray{ *s },
+                            FixedArray<double, 3>{ 0., 0., config.terrain_edge_bias * ((*s)(2) - z * config.scale) });
+                    }
+                }
+            }
+            TriangleList<double>::smoothen_edges(vertex_height_bindings, bias, tls_smooth, tls_terrain_nosmooth, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 100, false);
             // {
             //     std::list<FixedArray<ColoredVertex, 3>> tcp;
             //     for (const auto& l : tls_smooth) {

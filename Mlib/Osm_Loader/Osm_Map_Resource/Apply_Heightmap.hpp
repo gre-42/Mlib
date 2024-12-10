@@ -15,10 +15,6 @@ template <class TData, size_t... tshape>
 class OrderableFixedArray;
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TDir, class TPos, size_t n>
-class TransformationMatrix;
-template <class TData>
-class Array;
 struct Node;
 struct Way;
 enum class EntranceType;
@@ -28,7 +24,8 @@ class VertexHeightBinding;
 enum class TerrainType;
 template <class EntityType>
 class EntityTypeTriangleList;
-typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
+using TerrainTypeTriangleList = EntityTypeTriangleList<TerrainType>;
+class HeightSampler;
 
 void apply_heightmap(
     const TerrainTypeTriangleList& tl_terrain,
@@ -37,10 +34,7 @@ void apply_heightmap(
     float extrude_air_support_amount,
     std::list<FixedArray<double, 3>*>& in_vertices,
     std::set<const FixedArray<double, 3>*>& vertices_to_delete,
-    const Array<double>& heightmap,
-    const Array<bool>& heightmap_mask,
-    size_t heightmap_extension,
-    const TransformationMatrix<double, double, 2>& normalization_matrix,
+    const HeightSampler& height_sampler,
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,

@@ -510,6 +510,7 @@ void TriangleList<TPos>::ambient_occlusion_by_curvature(
 template <class TPos>
 struct VertexMovement {
     FixedArray<TPos, 3> amount = uninitialized;
+    FixedArray<TPos, 3> bias = uninitialized;
     std::list<FixedArray<TPos, 3>*> vertices;
 };
 
@@ -526,6 +527,7 @@ struct AdjacentTriangles {
 template <class TPos>
 void TriangleList<TPos>::smoothen_edges(
     std::unordered_map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
+    const std::unordered_map<OrderableFixedArray<TPos, 3>, FixedArray<TPos, 3>>& bias,
     const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
     const std::list<FixedArray<TPos, 3>*>& smoothed_vertices,
@@ -558,6 +560,10 @@ void TriangleList<TPos>::smoothen_edges(
         auto& m = vertex_movement[vc];
         if (m.vertices.empty()) {
             m.amount = 0;
+            auto bit = bias.find(OrderableFixedArray{ *s });
+            m.bias = (bit != bias.end())
+                ? bit->second
+                : fixed_zeros<TPos, 3>();
         }
         m.vertices.push_back(s);
     }
@@ -627,16 +633,16 @@ void TriangleList<TPos>::smoothen_edges(
             if (n0n1 >=0 && n0n1 < 1) {
                 TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
                 if (t.movement_i != nullptr) {
-                    *t.movement_i += TPos(smoothness) * n01 * shift;
+                    *t.movement_i += n01 * shift;
                 }
                 if (t.movement_j != nullptr) {
-                    *t.movement_j += TPos(smoothness) * n01 * shift;
+                    *t.movement_j += n01 * shift;
                 }
             }
         }
         for (auto& [_, m] : vertex_movement) {
             for (auto& n : m.vertices) {
-                *n += m.amount;
+                *n += TPos(smoothness) * (m.amount + m.bias);
             }
             m.amount = 0;
         }

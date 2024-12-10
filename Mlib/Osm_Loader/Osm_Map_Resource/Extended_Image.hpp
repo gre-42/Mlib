@@ -13,6 +13,9 @@ public:
         size_t niterations,
         bool preserve_original = true);
     bool operator () (double r, double c, double& value) const;
+    inline size_t original_shape(size_t i) const {
+        return extended_image_.shape(i);
+    }
 private:
     Array<double> extended_image_;
     size_t extension_;

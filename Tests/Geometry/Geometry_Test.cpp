@@ -443,11 +443,12 @@ void test_roundness_estimator() {
 // }
 
 void test_distance_point_triangle() {
-    assert_isclose(distance_point_to_triangle<float>({0.f, 0.f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}), 0.f);
-    assert_isclose(distance_point_to_triangle<float>({0.f, -2.f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}), 2.f);
-    assert_isclose(distance_point_to_triangle<float>({3.1f, 0.f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}), 2.1f);
+    using V = FixedArray<float, 2>;
+    assert_isclose(distance_point_to_triangle<float>({ 0.f, 0.f }, { V{0.f, 0.f}, V{1.f, 0.f}, V{1.f, 1.f} }), 0.f);
+    assert_isclose(distance_point_to_triangle<float>({ 0.f, -2.f }, { V{0.f, 0.f}, V{1.f, 0.f}, V{1.f, 1.f} }), 2.f);
+    assert_isclose(distance_point_to_triangle<float>({ 3.1f, 0.f }, { V{0.f, 0.f}, V{1.f, 0.f}, V{1.f, 1.f} }), 2.1f);
 
-    assert_isclose(distance_point_to_triangle<float>({0.5f, 0.2f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}), 0.f);
+    assert_isclose(distance_point_to_triangle<float>({ 0.5f, 0.2f }, { V{0.f, 0.f}, V{1.f, 0.f}, V{1.f, 1.f} }), 0.f);
 }
 
 void test_triangulate_3d_1() {
