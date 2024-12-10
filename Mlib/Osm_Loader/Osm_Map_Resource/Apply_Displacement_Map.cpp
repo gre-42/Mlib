@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 void Mlib::apply_displacement_map(
-    const StreetBvh& ground_bvh,
+    const StreetBvh& ground_street_bvh,
     const StreetBvh& air_bvh,
     const std::list<std::shared_ptr<TriangleList<double>>>& triangles,
     const Array<double>& displacementmap,
@@ -30,7 +30,7 @@ void Mlib::apply_displacement_map(
                 auto pt = FixedArray<double, 2>{v.position(0), v.position(1)};
                 auto max_dist = scale * distance_2_z_scale.xmax();
                 auto dist = std::min(
-                    ground_bvh.min_dist(pt, max_dist),
+                    ground_street_bvh.min_dist(pt, max_dist),
                     air_bvh.min_dist(pt, max_dist));
                 v.position += scale * (min_displacement + displacement) * (v.normal * distance_2_z_scale(float(dist / scale))).casted<double>();
             }

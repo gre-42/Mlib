@@ -245,6 +245,7 @@ DECLARE_ARGUMENT(street_node_smoothing_iterations);
 DECLARE_ARGUMENT(street_edge_smoothness);
 DECLARE_ARGUMENT(terrain_edge_smoothness);
 DECLARE_ARGUMENT(terrain_edge_bias);
+DECLARE_ARGUMENT(terrain_edge_bias_street_distances);
 DECLARE_ARGUMENT(bump_height);
 DECLARE_ARGUMENT(driving_direction);
 DECLARE_ARGUMENT(blend_street);
@@ -1016,8 +1017,13 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::terrain_edge_smoothness)) {
             config.terrain_edge_smoothness = args.arguments.at<float>(KnownArgs::terrain_edge_smoothness);
         }
-        if (args.arguments.contains(KnownArgs::terrain_edge_bias)) {
-            config.terrain_edge_bias = args.arguments.at<float>(KnownArgs::terrain_edge_bias);
+        if (args.arguments.contains(KnownArgs::terrain_edge_bias) ||
+            args.arguments.contains(KnownArgs::terrain_edge_bias_street_distances))
+        {
+            config.terrain_edge_bias = Interp<float>{
+                args.arguments.at<std::vector<float>>(KnownArgs::terrain_edge_bias_street_distances),
+                args.arguments.at<std::vector<float>>(KnownArgs::terrain_edge_bias),
+                OutOfRangeBehavior::CLAMP};
         }
         if (args.arguments.contains(KnownArgs::bump_height)) {
             config.bump_height = args.arguments.at<float>(KnownArgs::bump_height);

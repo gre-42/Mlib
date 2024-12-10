@@ -611,6 +611,8 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("smoothen and apply heightmap");
         smoothen_and_apply_heightmap(
             config,
+            ground_street_bvh,
+            air_bvh,
             node_height_bindings,
             vertex_height_bindings,
             nodes,

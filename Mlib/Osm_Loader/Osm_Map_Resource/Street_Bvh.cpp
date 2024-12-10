@@ -34,7 +34,7 @@ double StreetBvh::min_dist(
         (closest_pt == nullptr)
             ? nullptr
             : &nearest_payload);
-    if (closest_pt != nullptr) {
+    if ((closest_pt != nullptr) && (dist != INFINITY)) {
         distance_point_to_triangle<double>(pt, *nearest_payload, closest_pt);
     }
     return dist;

@@ -13,6 +13,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
@@ -30,6 +31,8 @@ enum class SmoothingClass {
 
 void Mlib::smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
+    const StreetBvh& ground_street_bvh,
+    const StreetBvh& air_bvh,
     const std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
     std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     const std::map<std::string, Node>& nodes,
@@ -196,13 +199,24 @@ void Mlib::smoothen_and_apply_heightmap(
             tls_terrain_nosmooth.insert(tls_terrain_nosmooth.end(), tls_air_terrain_nosmooth.begin(), tls_air_terrain_nosmooth.end());
 
             std::unordered_map<OrderableFixedArray<double, 3>, FixedArray<double, 3>> bias;
-            if (height_sampler.has_value() && (config.terrain_edge_bias != 0.)) {
+            if (height_sampler.has_value() && !config.terrain_edge_bias.empty()) {
                 for (const auto* s : smoothed_vertices) {
-                    double z;
-                    if ((*height_sampler)({ (*s)(0), (*s)(1) }, z)) {
-                        bias.try_emplace(
-                            OrderableFixedArray{ *s },
-                            FixedArray<double, 3>{ 0., 0., config.terrain_edge_bias * ((*s)(2) - z * config.scale) });
+                    FixedArray<double, 2> pt{ (*s)(0), (*s)(1) };
+                    FixedArray<double, 2> closest_ground = uninitialized;
+                    FixedArray<double, 2> closest_air = uninitialized;
+                    auto ground_dist = ground_street_bvh.min_dist(pt, config.terrain_edge_bias.xmax() * config.scale, &closest_ground);
+                    auto air_dist = air_bvh.min_dist(pt, config.terrain_edge_bias.xmax() * config.scale, &closest_air);
+                    if ((ground_dist != INFINITY) || (air_dist != INFINITY)) {
+                        auto closest_dist = std::min(ground_dist, air_dist);
+                        auto closest_pt = (ground_dist < air_dist)
+                            ? closest_ground
+                            : closest_air;
+                        double street_z;
+                        if ((*height_sampler)(closest_pt, street_z)) {
+                            bias.try_emplace(
+                                OrderableFixedArray{ *s },
+                                FixedArray<double, 3>{ 0., 0., config.terrain_edge_bias(closest_dist) * sign((*s)(2) / config.scale - street_z) });
+                        }
                     }
                 }
             }

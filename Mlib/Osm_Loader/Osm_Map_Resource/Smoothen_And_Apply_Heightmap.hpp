@@ -30,6 +30,7 @@ template <class TPos>
 class VertexHeightBinding;
 struct StreetWayPoint;
 class BatchResourceInstantiator;
+class StreetBvh;
 
 enum class VertexOutOfHeightMapBehavior {
     THROW,
@@ -38,6 +39,8 @@ enum class VertexOutOfHeightMapBehavior {
 
 void smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
+    const StreetBvh& ground_street_bvh,
+    const StreetBvh& air_bvh,
     const std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
     std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     const std::map<std::string, Node>& nodes,

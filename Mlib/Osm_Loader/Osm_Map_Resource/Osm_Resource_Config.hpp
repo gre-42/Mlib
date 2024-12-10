@@ -196,7 +196,7 @@ struct OsmResourceConfig {
     size_t street_node_smoothing_iterations = 50;
     float street_edge_smoothness = 0;
     float terrain_edge_smoothness = 0;
-    float terrain_edge_bias = 0;
+    Interp<float> terrain_edge_bias{ std::vector<float>{}, std::vector<float>{} };
     float bump_height = 1.f * meters;
     FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
