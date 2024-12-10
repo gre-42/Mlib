@@ -750,8 +750,8 @@ TData dot0d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert_true(CW::ndim(a) == 1);
-    assert_true(CW::ndim(b) == 1);
+    assert_true(CW::ndim(*a) == 1);
+    assert_true(CW::ndim(*b) == 1);
 
     size_t aC = CW::static_shape<0>(*a);
     size_t bR = CW::static_shape<0>(*b);
