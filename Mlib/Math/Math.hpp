@@ -750,13 +750,13 @@ TData dot0d(
     const BaseDenseArray<TDerivedA, TData>& a,
     const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(CW::ndim(a) == 1);
-    assert(CW::ndim(b) == 1);
+    assert_true(CW::ndim(a) == 1);
+    assert_true(CW::ndim(b) == 1);
 
     size_t aC = CW::static_shape<0>(*a);
     size_t bR = CW::static_shape<0>(*b);
 
-    assert(aC == bR);
+    assert_true(aC == bR);
     return dot(a, b)();
 }
 
@@ -765,12 +765,13 @@ TData dot0d(
  */
 template <class TData>
 Array<TData> batch_dot(const Array<TData>& a, const Array<TData>& b) {
-    assert(a.ndim() == 2);
-    assert(b.ndim() >= 1);
-    assert(a.shape(1) == b.shape(0));
-    Array<TData> result{ArrayShape{a.shape(0)}.concatenated(b.shape().erased_first())};
+    assert_true(a.ndim() == 2);
+    assert_true(b.ndim() >= 1);
+    assert_true(a.shape(1) == b.shape(0));
+    auto b_shape_tail = b.shape().erased_first();
+    Array<TData> result{ ArrayShape{a.shape(0)}.concatenated(b_shape_tail) };
     for (size_t r = 0; r < a.shape(0); ++r) {
-        Array<TData> v = zeros<TData>(b.shape().erased_first());
+        Array<TData> v = zeros<TData>(b_shape_tail);
         for (size_t i = 0; i < a.shape(1); ++i) {
             v += a(r, i) * b[i];
         }

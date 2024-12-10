@@ -44,7 +44,10 @@ const ColorStyle* RenderableWithStyle::style(
             return &*style_;
         }
         style_.reset();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         style_.emplace();
+#pragma GCC diagnostic pop
         for (const auto& style : color_styles) {
             if (style->matches(name)) {
                 style_->insert(*style);
