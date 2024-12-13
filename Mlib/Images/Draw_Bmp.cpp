@@ -31,7 +31,10 @@ StbImage3 Mlib::draw_quantiled_grayscale(const Array<float>& image, float low_qu
 {
     Array<float> qu = nanquantiles(image, Array<float>{low_quantile, high_quantile});
     if (qu(0) == qu(1)) {
-        StbImage3 ppm(image.shape());
+        if (image.ndim() != 2) {
+            THROW_OR_ABORT("Image does not have 2 dimensions");
+        }
+        StbImage3 ppm(FixedArray<size_t, 2>{ image.shape(0), image.shape(1) });
         for (size_t r = 0; r < image.shape(0); ++r) {
             for (size_t c = 0; c < image.shape(1); ++c) {
                 ppm(r, c) = std::isnan(image(r, c)) ? Rgb24::nan() : Rgb24::green();

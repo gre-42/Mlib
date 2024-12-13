@@ -26,4 +26,9 @@ TData triangle_area(
     return det2x2(m) / 2;
 }
 
+template <class TData, size_t tndim>
+TData triangle_area(const FixedArray<TData, 3, tndim>& triangle) {
+    return triangle_area(triangle[0], triangle[1], triangle[2]);
+}
+
 }

@@ -17,7 +17,7 @@ struct PhysicsEngineConfig;
 
 class PathfindingWaypoints {
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>;
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>;
 
     explicit PathfindingWaypoints(
         Player& player,
@@ -31,7 +31,7 @@ private:
     Player& player_;
     const PhysicsEngineConfig& cfg_;
     std::unique_ptr<PointsAndAdjacencyResource> waypoints_;
-    std::unique_ptr<Bvh<ScenePos, 3, size_t>> waypoints_bvh_;
+    std::unique_ptr<Bvh<CompressedScenePos, 3, size_t>> waypoints_bvh_;
 };
 
 }

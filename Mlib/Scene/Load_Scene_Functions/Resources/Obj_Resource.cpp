@@ -42,7 +42,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (!args.arguments.at<bool>(KnownArgs::double_precision, false)) {
         execute<float>(args);
     } else {
-        execute<double>(args);
+        execute<CompressedScenePos>(args);
     }
 }
 

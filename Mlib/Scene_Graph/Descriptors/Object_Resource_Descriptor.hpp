@@ -12,7 +12,7 @@ namespace Mlib {
 enum class AggregateMode;
 
 struct ObjectResourceDescriptor {
-    FixedArray<ScenePos, 3> position = uninitialized;
+    FixedArray<CompressedScenePos, 3> position = uninitialized;
     float yangle;
     VariableAndHash<std::string> name;
     float scale;

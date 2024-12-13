@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 using namespace Mlib;
 
@@ -106,9 +107,9 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
     decomposition.reserve(2 * cva.triangles.size() + 2 * contour_edges.size());
     for (const auto& tri : cva.triangles) {
         auto hitbox = barrier_triangle_hitbox(
-            tri(0).position,
-            tri(1).position,
-            tri(2).position,
+            funpack(tri(0).position),
+            funpack(tri(1).position),
+            funpack(tri(2).position),
             vertex_normals.get_normal(tri(0).position) * (-half_width),
             vertex_normals.get_normal(tri(1).position) * (-half_width),
             vertex_normals.get_normal(tri(2).position) * (-half_width),
@@ -116,16 +117,15 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             contour_edges.contains({OrderableFixedArray{tri(1).position}, OrderableFixedArray{tri(2).position}}),
             contour_edges.contains({OrderableFixedArray{tri(2).position}, OrderableFixedArray{tri(0).position}}));
         for (const auto& s : hitbox) {
-            const auto purple = FixedArray<float, 3>{1.f, 0.f, 1.f};
             const auto zeros2 = fixed_zeros<float, 2>();
             if (decomposition.capacity() == decomposition.size()) {
                 THROW_OR_ABORT("create_barrier_triangle_hitboxes internal error (0)");
             }
             auto n = triangle_normal(s).template casted<float>();
             decomposition.push_back({
-                ColoredVertex<TPos>{s[0], purple, zeros2, n},
-                ColoredVertex<TPos>{s[1], purple, zeros2, n},
-                ColoredVertex<TPos>{s[2], purple, zeros2, n}});
+                ColoredVertex<TPos>{s[0].template casted<TPos>(), Colors::PURPLE, zeros2, n},
+                ColoredVertex<TPos>{s[1].template casted<TPos>(), Colors::PURPLE, zeros2, n},
+                ColoredVertex<TPos>{s[2].template casted<TPos>(), Colors::PURPLE, zeros2, n}});
         }
     }
     if (decomposition.capacity() != decomposition.size()) {
@@ -158,7 +158,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
 }
 
 template
-std::vector<std::shared_ptr<ColoredVertexArray<double>>> Mlib::create_barrier_triangle_hitboxes(
-    const ColoredVertexArray<double>& cva,
+std::vector<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> Mlib::create_barrier_triangle_hitboxes(
+    const ColoredVertexArray<CompressedScenePos>& cva,
     float width,
     PhysicsMaterial destination_physics_material);

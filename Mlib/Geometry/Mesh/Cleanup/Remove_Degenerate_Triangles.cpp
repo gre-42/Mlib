@@ -11,11 +11,12 @@ void Mlib::remove_degenerate_triangles(ColoredVertexArray<TPos>& cva) {
     std::vector<FixedArray<ColoredVertex<TPos>, 3>> trimmed;
     trimmed.reserve(cva.triangles.size());
     for (const auto& tri : cva.triangles) {
-        auto tlc = triangle_largest_cosine<TPos, 3>({
+        using Triangle = FixedArray<TPos, 3, 3>;
+        auto tlc = triangle_largest_cosine(funpack(Triangle{
             tri(0).position,
             tri(1).position,
-            tri(2).position});
-        if (std::isnan(tlc) || (tlc > (TPos)(1 - 1e-7))) {
+            tri(2).position}));
+        if (std::isnan(tlc) || (tlc > (1 - 1e-7f))) {
             continue;
         }
         trimmed.push_back(tri);
@@ -23,7 +24,5 @@ void Mlib::remove_degenerate_triangles(ColoredVertexArray<TPos>& cva) {
     cva.triangles = uuvector(trimmed.begin(), trimmed.end());
 }
 
-namespace Mlib {
-    template void remove_degenerate_triangles<float>(ColoredVertexArray<float>& cva);
-    template void remove_degenerate_triangles<double>(ColoredVertexArray<double>& cva);
-}
+template void Mlib::remove_degenerate_triangles<float>(ColoredVertexArray<float>& cva);
+template void Mlib::remove_degenerate_triangles<CompressedScenePos>(ColoredVertexArray<CompressedScenePos>& cva);

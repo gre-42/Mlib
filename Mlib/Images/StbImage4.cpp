@@ -54,8 +54,8 @@ void StbImage4::draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size
 }
 
 void StbImage4::draw_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgba32& color,
     const Rgba32* short_line_color)
@@ -64,8 +64,8 @@ void StbImage4::draw_line(
 }
 
 void StbImage4::draw_infinite_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgba32& color,
     const Rgba32* short_line_color)
@@ -74,8 +74,8 @@ void StbImage4::draw_infinite_line(
 }
 
 void StbImage4::draw_line_ext(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgba32& color,
     bool infinite,
@@ -169,7 +169,13 @@ Array<float> StbImage4::to_float_rgba() const {
 }
 
 StbImage3 StbImage4::to_rgb() const {
-    StbImage3 result(shape());
+    if (!initialized()) {
+        THROW_OR_ABORT("RGBA image not initialized");
+    }
+    if (ndim() != 2) {
+        THROW_OR_ABORT("RGBA image does not have 2 dimensions");
+    }
+    StbImage3 result(FixedArray<size_t, 2>{ shape(0), shape(1) });
     Array<Rgba32> t = flattened();
     Array<Rgb24> r = result.flattened();
     for (size_t i = 0; i < t.length(); i++) {

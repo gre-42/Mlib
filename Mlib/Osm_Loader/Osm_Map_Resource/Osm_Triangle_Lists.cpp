@@ -79,7 +79,7 @@ const std::list<StyledRoadEntry>& RoadPropertiesTriangleList::list() const {
 }
 
 template <class EntityType>
-void EntityTypeTriangleList<EntityType>::insert(EntityType road_type, const std::shared_ptr<TriangleList<double>>& lst) {
+void EntityTypeTriangleList<EntityType>::insert(EntityType road_type, const std::shared_ptr<TriangleList<CompressedScenePos>>& lst) {
     if (!lst_.insert({road_type, lst}).second) {
         THROW_OR_ABORT("Could not insert triangle list");
     }
@@ -91,7 +91,7 @@ bool EntityTypeTriangleList<EntityType>::contains(EntityType road_type) const {
 }
 
 template <class EntityType>
-const std::shared_ptr<TriangleList<double>>& EntityTypeTriangleList<EntityType>::operator [] (EntityType road_type) const {
+const std::shared_ptr<TriangleList<CompressedScenePos>>& EntityTypeTriangleList<EntityType>::operator [] (EntityType road_type) const {
     auto it = lst_.find(road_type);
     if (it == lst_.end()) {
         THROW_OR_ABORT("Could not find list with type " + to_string(road_type));
@@ -100,7 +100,7 @@ const std::shared_ptr<TriangleList<double>>& EntityTypeTriangleList<EntityType>:
 }
 
 template <class EntityType>
-const std::map<EntityType, std::shared_ptr<TriangleList<double>>>& EntityTypeTriangleList<EntityType>::map() const {
+const std::map<EntityType, std::shared_ptr<TriangleList<CompressedScenePos>>>& EntityTypeTriangleList<EntityType>::map() const {
     return lst_;
 }
 
@@ -116,19 +116,19 @@ OsmTriangleLists::OsmTriangleLists(
     // excluded from the results.
     tl_terrain->insert(
         TerrainType::STREET_HOLE,
-        std::make_shared<TriangleList<double>>(
+        std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(TerrainType::STREET_HOLE) + name_suffix,
             Material{},
             Morphology{ .physics_material = PhysicsMaterial::NONE }));
     tl_terrain->insert(
         TerrainType::BUILDING_HOLE,
-        std::make_shared<TriangleList<double>>(
+        std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(TerrainType::BUILDING_HOLE) + name_suffix,
             Material{},
             Morphology{ .physics_material = PhysicsMaterial::NONE }));
     tl_terrain->insert(
         TerrainType::OCEAN_GROUND,
-        std::make_shared<TriangleList<double>>(
+        std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(TerrainType::OCEAN_GROUND) + name_suffix,
             Material{},
             Morphology{ .physics_material = PhysicsMaterial::NONE }));
@@ -136,7 +136,7 @@ OsmTriangleLists::OsmTriangleLists(
         auto dt = config.terrain_dirt_textures.find(tt);
         auto dirt_texture = (dt == config.terrain_dirt_textures.end()) ? VariableAndHash<std::string>{} : dt->second;
         auto rit = config.terrain_reflection_map.find(tt);
-        tl_terrain->insert(tt, std::make_shared<TriangleList<double>>(
+        tl_terrain->insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
@@ -151,7 +151,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material(config.terrain_materials, tt) }));
-        tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<double>>(
+        tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + "_visuals" + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
@@ -166,7 +166,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
-        tl_terrain_extrusion.insert(tt, std::make_shared<TriangleList<double>>(
+        tl_terrain_extrusion.insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + "_street_extrusion" + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
@@ -203,7 +203,7 @@ OsmTriangleLists::OsmTriangleLists(
         for (const VariableAndHash<std::string>& texture : textures) {
             blend_textures.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
-        tl_street_crossing.insert(tpe, std::make_shared<TriangleList<double>>(
+        tl_street_crossing.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
             "crossing_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 .textures_color = blend_textures,
@@ -244,7 +244,7 @@ OsmTriangleLists::OsmTriangleLists(
             tl_street.append(StyledRoadEntry{
                 .road_properties = road_properties,
                 .styled_road = StyledRoad{
-                    .triangle_list = std::make_shared<TriangleList<double>>(
+                    .triangle_list = std::make_shared<TriangleList<CompressedScenePos>>(
                         (std::string)road_properties + name_suffix,
                         Material{
                             .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
@@ -289,7 +289,7 @@ OsmTriangleLists::OsmTriangleLists(
             for (const VariableAndHash<std::string>& texture : alpha_texture_names) {
                 textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
-            tl_street_mud_visuals.insert(road_properties.type, std::make_shared<TriangleList<double>>(
+            tl_street_mud_visuals.insert(road_properties.type, std::make_shared<TriangleList<CompressedScenePos>>(
                 "street_mud_visual_" + road_type_to_string(road_properties.type) + name_suffix,
                 Material{
                     .blend_mode = BlendMode::CONTINUOUS,
@@ -318,7 +318,7 @@ OsmTriangleLists::OsmTriangleLists(
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
-        tl_street_curb.insert(tpe, std::make_shared<TriangleList<double>>(
+        tl_street_curb.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
             "curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
@@ -329,7 +329,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = material_specularity((config.extrude_curb_amount == 0 && tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),
+                .shading = material_specularity((config.extrude_curb_amount == (CompressedScenePos)0. && tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second })); // mixed_texture: terrain_texture
     }
@@ -339,7 +339,7 @@ OsmTriangleLists::OsmTriangleLists(
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
-        tl_street_curb2.insert(tpe, std::make_shared<TriangleList<double>>(
+        tl_street_curb2.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
             "curb2_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
@@ -359,7 +359,7 @@ OsmTriangleLists::OsmTriangleLists(
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
-        tl_air_street_curb.insert(tpe, std::make_shared<TriangleList<double>>(
+        tl_air_street_curb.insert(tpe, std::make_shared<TriangleList<CompressedScenePos>>(
             "air_curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
@@ -374,7 +374,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second }));
     }
-    tl_racing_line = std::make_shared<TriangleList<double>>(
+    tl_racing_line = std::make_shared<TriangleList<CompressedScenePos>>(
         "racing_line" + name_suffix,
         Material{
             .blend_mode = BlendMode::CONTINUOUS,
@@ -388,11 +388,11 @@ OsmTriangleLists::OsmTriangleLists(
             .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE });
-    tl_ditch = std::make_shared<TriangleList<double>>(
+    tl_ditch = std::make_shared<TriangleList<CompressedScenePos>>(
         "ditch" + name_suffix,
         Material{},
         Morphology{ .physics_material = BASE_INVISIBLE_TERRAIN_MATERIAL | PhysicsMaterial::SURFACE_BASE_TARMAC });
-    tl_air_support = std::make_shared<TriangleList<double>>(
+    tl_air_support = std::make_shared<TriangleList<CompressedScenePos>>(
         "air_support" + name_suffix,
         Material{
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.air_support_texture)},
@@ -402,7 +402,7 @@ OsmTriangleLists::OsmTriangleLists(
             .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
-    tl_tunnel_crossing = std::make_shared<TriangleList<double>>(
+    tl_tunnel_crossing = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_crossing" + name_suffix,
         Material{
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
@@ -412,7 +412,7 @@ OsmTriangleLists::OsmTriangleLists(
             .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
-    tl_tunnel_pipe = std::make_shared<TriangleList<double>>(
+    tl_tunnel_pipe = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_pipe" + name_suffix,
         Material{
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
@@ -422,24 +422,24 @@ OsmTriangleLists::OsmTriangleLists(
             .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
-    tl_tunnel_bdry = std::make_shared<TriangleList<double>>(
+    tl_tunnel_bdry = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_bdry" + name_suffix,
         Material{
             .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
-    tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList<double>>(
+    tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_entrance" + name_suffix,
         Material{
             .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
-    tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList<double>>(
+    tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList<CompressedScenePos>>(
         "bridge_entrance" + name_suffix,
         Material{
             .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
-    tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList<double>>(
+    tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList<CompressedScenePos>>(
         "water" + name_suffix,
         Material{
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.water_texture)},
@@ -475,28 +475,28 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
 #undef INSERT2p
 #undef INSERT3
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_street_wo_curb() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_street_wo_curb() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{};
     for (const auto& [tpe, e] : tl_street_crossing.map()) {if (tpe != RoadType::WALL) res.push_back(e);}
     for (const auto& e : tl_street.list()) {if (e.road_properties.type != RoadType::WALL) res.push_back(e.styled_road.triangle_list);}
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_street_wo_curb_follower() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_street_wo_curb_follower() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_racing_line};
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wall_wo_curb() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_wall_wo_curb() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{};
     for (const auto& [tpe, e] : tl_street_crossing.map()) {if (tpe == RoadType::WALL) res.push_back(e);}
     for (const auto& e : tl_street.list()) {if (e.road_properties.type == RoadType::WALL) res.push_back(e.styled_road.triangle_list);}
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_street() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_street() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_air_support};
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
@@ -506,8 +506,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_street() 
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_terrain_nosmooth() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_terrain_nosmooth() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_air_support,
         tl_ditch};
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
@@ -518,8 +518,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_terrain_n
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_smooth() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_smooth() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{};
     for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     // for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
@@ -532,8 +532,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_smooth() 
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_no_backfaces() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_no_backfaces() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_air_support,
         tl_tunnel_crossing,
         tl_racing_line};
@@ -549,8 +549,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_no_backfa
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtraction_and_water() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_wo_subtraction_and_water() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_air_support,
         tl_tunnel_crossing,
         tl_tunnel_pipe,
@@ -567,8 +567,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtra
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtraction_w_water() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_wo_subtraction_w_water() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_air_support,
         tl_tunnel_crossing,
         tl_tunnel_pipe,
@@ -586,8 +586,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtra
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_raised() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_raised() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_air_support,
         tl_tunnel_crossing,
         tl_tunnel_pipe,
@@ -605,8 +605,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_raised() 
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_smoothed() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_smoothed() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_air_support,
         tl_racing_line};
     for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
@@ -621,8 +621,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_smoothed(
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_with_vertex_normals() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_with_vertex_normals() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_tunnel_crossing};
     for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
@@ -632,8 +632,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_with_vert
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_no_grass() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_no_grass() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{
         tl_air_support,
         tl_tunnel_crossing,
         tl_tunnel_bdry};
@@ -647,8 +647,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_no_grass(
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_curb_and_curb2() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_curb_and_curb2() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{};
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
     return res;
@@ -660,8 +660,8 @@ bool OsmTriangleLists::has_curb_or_curb2() const {
     return false;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_only() const {
-    auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_crossing_only() const {
+    auto res = std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>{};
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     return res;
 }
@@ -686,8 +686,8 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_
         e->triangles.end()); \
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::all_hole_triangles() const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::all_hole_triangles() const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result;
     INSERT2(tl_street_crossing)
     INSERT3(tl_street)
     INSERT2(tl_street_curb)
@@ -699,15 +699,15 @@ std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::all_hole_trian
     return result;
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::entrance_triangles() const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::entrance_triangles() const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result;
     INSERT(tl_entrance.at(EntranceType::TUNNEL))
     INSERT(tl_entrance.at(EntranceType::BRIDGE))
     return result;
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_hole_triangles() const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::street_hole_triangles() const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result;
     INSERT2(tl_street_crossing)
     INSERT3(tl_street)
     INSERT2(tl_street_curb)
@@ -718,33 +718,33 @@ std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_hole_tr
     return result;
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::no_trees_triangles() const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result = street_hole_triangles();
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::no_trees_triangles() const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result = street_hole_triangles();
     if (tl_terrain->contains(TerrainType::FLOWERS)) INSERT((*tl_terrain)[TerrainType::FLOWERS])
     if (tl_terrain->contains(TerrainType::TREES)) INSERT((*tl_terrain)[TerrainType::TREES])
     return result;
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::building_hole_triangles() const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::building_hole_triangles() const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result;
     INSERT4(tls_buildings_ground)
     return result;
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::ocean_ground_triangles() const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::ocean_ground_triangles() const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result;
     INSERT4(tls_ocean_ground)
     return result;
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_triangles() const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::street_triangles() const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result;
     INSERT3(tl_street)
     return result;
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_triangles(RoadType road_type) const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::street_triangles(RoadType road_type) const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result;
     for (const auto& [p, l] : tl_street.list()) {
         if (p.type == road_type) {
             INSERT(l.triangle_list);
@@ -753,8 +753,8 @@ std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_triangl
     return result;
 }
 
-std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::ditch_triangles() const {
-    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> OsmTriangleLists::ditch_triangles() const {
+    std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> result;
     INSERT(tl_ditch)
     return result;
 }

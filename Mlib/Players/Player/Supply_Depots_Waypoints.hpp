@@ -18,7 +18,7 @@ enum class WayPointLocation;
 
 class SupplyDepotsWaypoints {
 public:
-    using WaypointAndFlags = PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>;
+    using WaypointAndFlags = PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>;
     using PointsAndAdjacencyResource = PointsAndAdjacency<WaypointAndFlags>;
 
     SupplyDepotsWaypoints(
@@ -33,7 +33,7 @@ private:
     SupplyDepots& supply_depots_;
     UUVector<WaypointAndFlags> waypoint_positions_;
     std::vector<size_t> predecessors_;
-    std::vector<ScenePos> total_distances_;
+    std::vector<CompressedScenePos> total_distances_;
 };
 
 }

@@ -600,7 +600,7 @@ int main(int argc, char** argv) {
                     } else {
                         scene_node_resources.add_resource(name, load_renderable_obj(
                             filename,
-                            cfg<ScenePos>(args, light_configuration),
+                            cfg<CompressedScenePos>(args, light_configuration),
                             scene_node_resources));
                     }
                 } else if (filename.ends_with(".kn5") || filename.ends_with(".ini")) {
@@ -614,7 +614,7 @@ int main(int argc, char** argv) {
                     } else {
                         scene_node_resources.add_resource(name, load_renderable_kn5(
                             filename,
-                            cfg<ScenePos>(args, light_configuration),
+                            cfg<CompressedScenePos>(args, light_configuration),
                             scene_node_resources,
                             &RenderingContextStack::primary_rendering_resources(),
                             nullptr)); // race_logic
@@ -745,16 +745,17 @@ int main(int argc, char** argv) {
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     auto apply_color_gradient = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
                     {
-                        Interp<TPos> interp{
-                            {safe_sto<TPos>(args.named_value("--color_gradient_min_x")),
-                            safe_sto<TPos>(args.named_value("--color_gradient_max_x"))},
-                            {safe_sto<float>(args.named_value("--color_gradient_min_c")),
-                            safe_sto<float>(args.named_value("--color_gradient_max_c"))},
+                        using I = funpack_t<TPos>;
+                        Interp<I> interp{
+                            {safe_stox<I>(args.named_value("--color_gradient_min_x")),
+                            safe_stox<I>(args.named_value("--color_gradient_max_x"))},
+                            {safe_stox<float>(args.named_value("--color_gradient_min_c")),
+                            safe_stox<float>(args.named_value("--color_gradient_max_c"))},
                             OutOfRangeBehavior::CLAMP};
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
-                                    v.color = (float)interp(v.position(0));
+                                    v.color = Colors::from_float((float)interp(funpack(v.position(0))));
                                 }
                             }
                         }
@@ -767,20 +768,21 @@ int main(int argc, char** argv) {
                 if (args.has_named_value("--color_radial_min_r") || args.has_named_value("--color_radial_max_r")) {
                     auto apply_radial_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
                     {
-                        Interp<TPos> interp{
-                            {safe_sto<TPos>(args.named_value("--color_radial_min_r")),
-                            safe_sto<TPos>(args.named_value("--color_radial_max_r"))},
-                            {safe_sto<float>(args.named_value("--color_radial_min_c")),
-                            safe_sto<float>(args.named_value("--color_radial_max_c"))},
+                        using I = funpack_t<TPos>;
+                        Interp<I> interp{
+                            {safe_stox<I>(args.named_value("--color_radial_min_r")),
+                            safe_stox<I>(args.named_value("--color_radial_max_r"))},
+                            {safe_stox<float>(args.named_value("--color_radial_min_c")),
+                            safe_stox<float>(args.named_value("--color_radial_max_c"))},
                             OutOfRangeBehavior::CLAMP};
                         FixedArray<TPos, 3> center{
-                            safe_sto<TPos>(args.named_value("--color_radial_center_x", "0")),
-                            safe_sto<TPos>(args.named_value("--color_radial_center_y", "0")),
-                            safe_sto<TPos>(args.named_value("--color_radial_center_z", "0"))};
+                            safe_stox<TPos>(args.named_value("--color_radial_center_x", "0")),
+                            safe_stox<TPos>(args.named_value("--color_radial_center_y", "0")),
+                            safe_stox<TPos>(args.named_value("--color_radial_center_z", "0"))};
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
-                                    v.color = (float)interp(std::sqrt(sum(squared(v.position - center))));
+                                    v.color = Colors::from_float((float)interp(std::sqrt(sum(squared(v.position - center)))));
                                 }
                             }
                         }
@@ -792,22 +794,24 @@ int main(int argc, char** argv) {
                 }
                 if (args.has_named_value("--color_cone_min_r") || args.has_named_value("--color_cone_max_r")) {
                     auto apply_cone_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
-                        Interp<TPos> interp{
-                            {safe_sto<TPos>(args.named_value("--color_cone_min_r")),
-                            safe_sto<TPos>(args.named_value("--color_cone_max_r"))},
-                            {safe_sto<float>(args.named_value("--color_cone_min_c")),
-                            safe_sto<float>(args.named_value("--color_cone_max_c"))},
+                        using I = funpack_t<TPos>;
+                        Interp<I> interp{
+                            {safe_stox<I>(args.named_value("--color_cone_min_r")),
+                            safe_stox<I>(args.named_value("--color_cone_max_r"))},
+                            {safe_stox<float>(args.named_value("--color_cone_min_c")),
+                            safe_stox<float>(args.named_value("--color_cone_max_c"))},
                             OutOfRangeBehavior::CLAMP};
-                        TPos bottom = safe_sto<float>(args.named_value("--color_cone_bottom", "0"));
-                        TPos top = safe_sto<float>(args.named_value("--color_cone_top"));
-                        TPos cx = safe_sto<float>(args.named_value("--color_cone_x", "0"));
-                        TPos cz = safe_sto<float>(args.named_value("--color_cone_z", "0"));
+                        I bottom = safe_stox<I>(args.named_value("--color_cone_bottom", "0"));
+                        I top = safe_stox<I>(args.named_value("--color_cone_top"));
+                        I cx = safe_stox<I>(args.named_value("--color_cone_x", "0"));
+                        I cz = safe_stox<I>(args.named_value("--color_cone_z", "0"));
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
-                                    TPos r = std::sqrt(squared(v.position(0) - cx) + squared(v.position(2) - cz));
-                                    TPos h = (top - v.position(1)) / (top - bottom);
-                                    v.color = (float)interp(r / h);
+                                    auto p = funpack(v.position);
+                                    I r = std::sqrt(squared(p(0) - cx) + squared(p(2) - cz));
+                                    I h = (top - p(1)) / (top - bottom);
+                                    v.color = Colors::from_float((float)interp(r / h));
                                 }
                             }
                         }
@@ -818,15 +822,15 @@ int main(int argc, char** argv) {
                     }
                 }
                 auto apply_constant_color = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
-                    FixedArray<TPos, 3> color{
-                        safe_sto<TPos>(args.named_value("--color_r", "-1")),
-                        safe_sto<TPos>(args.named_value("--color_g", "-1")),
-                        safe_sto<TPos>(args.named_value("--color_b", "-1"))};
-                    if (any(color != TPos(-1))) {
+                    FixedArray<float, 3> color{
+                        safe_stox<float>(args.named_value("--color_r", "-1")),
+                        safe_stox<float>(args.named_value("--color_g", "-1")),
+                        safe_stox<float>(args.named_value("--color_b", "-1"))};
+                    if (any(color != -1.f)) {
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
-                                    v.color = maximum(color.template casted<float>(), 0.f);
+                                    v.color = Colors::from_rgb(maximum(color.template casted<float>(), 0.f));
                                 }
                             }
                         }

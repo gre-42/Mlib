@@ -49,18 +49,18 @@ void Spawn::set_spawn_points(
     size_t nsubs = cfg_.spawn_points_nsubdivisions;
     spawn_points_bvh_split_.resize(nsubs);
     for (size_t i = 0; i < nsubs; ++i) {
-        spawn_points_bvh_split_[i].reset(new Bvh<ScenePos, 3, const SpawnPoint*>(fixed_full<ScenePos, 3>(10.f), 10));
+        spawn_points_bvh_split_[i].reset(new Bvh<CompressedScenePos, 3, const SpawnPoint*>(fixed_full<CompressedScenePos, 3>((CompressedScenePos)10.f), 10));
     }
-    spawn_points_bvh_singular_.reset(new Bvh<ScenePos, 3, const SpawnPoint*>(fixed_full<ScenePos, 3>(10.f), 10));
+    spawn_points_bvh_singular_.reset(new Bvh<CompressedScenePos, 3, const SpawnPoint*>(fixed_full<CompressedScenePos, 3>((CompressedScenePos)10.f), 10));
     {
         size_t i = 0;
         for (const auto& sp : spawn_points) {
             SpawnPoint sp2 = sp;
-            sp2.position = absolute_model_matrix.transform(sp.position);
+            sp2.position = absolute_model_matrix.transform(funpack(sp.position)).casted<CompressedScenePos>();
             sp2.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(sp.rotation)), R.T()));
             const auto* spb = &spawn_points_.emplace_back(sp2);
-            spawn_points_bvh_split_[i]->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(sp2.position), spb);
-            spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(sp2.position), spb);
+            spawn_points_bvh_split_[i]->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.position), spb);
+            spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.position), spb);
             i = (i + 1) % nsubs;
         }
     }
@@ -74,7 +74,7 @@ void Spawn::spawn_at_spawn_point(
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
-    spawner.spawn(sp, cfg_.spawn_y_offset);
+    spawner.spawn(sp, funpack(cfg_.spawn_y_offset));
     // lerr() << "Spawn time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<ScenePos>(std::chrono::steady_clock::now() - start)).count();
     ++nspawns_;
     // while (true) {
@@ -141,9 +141,11 @@ void Spawn::spawn_player_during_match(VehicleSpawner& spawner) {
             for (const auto& v : p->get_scene_vehicles()) {
                 auto pos = v->rb().rbp_.abs_position();
                 spawn_points_bvh_singular_->visit(
-                    AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(pos, cfg_.r_occupied_spawn_point),
+                    AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
+                        pos.casted<CompressedScenePos>(),
+                        cfg_.r_occupied_spawn_point),
                     [&](const SpawnPoint* sp) {
-                        if (sum(squared(pos - sp->position)) < squared(cfg_.r_occupied_spawn_point)) {
+                        if (sum(squared(pos - funpack(sp->position))) < squared(cfg_.r_occupied_spawn_point)) {
                             occupied_spawn_points.insert(sp);
                         }
                         return true;

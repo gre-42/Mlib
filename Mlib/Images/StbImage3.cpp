@@ -12,8 +12,8 @@ StbImage3::StbImage3() = default;
 
 StbImage3::~StbImage3() = default;
 
-StbImage3::StbImage3(const ArrayShape& shape, const Rgb24& color)
-    : Array<Rgb24>(shape)
+StbImage3::StbImage3(const FixedArray<size_t, 2>& shape, const Rgb24& color)
+    : Array<Rgb24>(ArrayShape{ shape(0), shape(1) })
 {
     Array<Rgb24>& t = *this;
     t = color;
@@ -23,8 +23,8 @@ StbImage3::StbImage3(const Array<Rgb24>& other)
     : Array<Rgb24>(other)
 {}
 
-StbImage3::StbImage3(const ArrayShape& shape)
-    : Array<Rgb24>(shape) {}
+StbImage3::StbImage3(const FixedArray<size_t, 2>& shape)
+    : Array<Rgb24>(ArrayShape{ shape(0), shape(1) }) {}
 
 StbImage3::StbImage3(const StbInfo<uint8_t>& stb_info) {
     if (stb_info.nrChannels != 3) {
@@ -53,8 +53,8 @@ void StbImage3::draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size
 }
 
 void StbImage3::draw_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgb24& color,
     const Rgb24* short_line_color)
@@ -63,8 +63,8 @@ void StbImage3::draw_line(
 }
 
 void StbImage3::draw_infinite_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgb24& color,
     const Rgb24* short_line_color)
@@ -73,8 +73,8 @@ void StbImage3::draw_infinite_line(
 }
 
 void StbImage3::draw_line_ext(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgb24& color,
     bool infinite,
@@ -142,7 +142,7 @@ StbImage3 StbImage3::from_rgb(const Array<uint8_t>& rgb) {
     if (rgb.shape(0) != 3) {
         THROW_OR_ABORT("from_rgb: rgb image does not have shape(0)=3, but " + rgb.shape().str());
     }
-    StbImage3 result(rgb.shape().erased_first());
+    StbImage3 result(FixedArray<size_t, 2>{ rgb.shape(1), rgb.shape(2) });
     Array<Rgb24> f = result.flattened();
     Array<uint8_t> r = rgb[0].flattened();
     Array<uint8_t> g = rgb[1].flattened();
@@ -160,7 +160,7 @@ StbImage3 StbImage3::from_float_rgb(const Array<float>& rgb) {
     if (rgb.shape(0) != 3) {
         THROW_OR_ABORT("from_float: rgb image does not have shape(0)=3, but " + rgb.shape().str());
     }
-    StbImage3 result(rgb.shape().erased_first());
+    StbImage3 result(FixedArray<size_t, 2>{ rgb.shape(1), rgb.shape(2) });
     Array<Rgb24> f = result.flattened();
     Array<float> r = rgb[0].flattened();
     Array<float> g = rgb[1].flattened();
@@ -175,7 +175,7 @@ StbImage3 StbImage3::from_float_grayscale(const Array<float>& grayscale) {
     if (grayscale.ndim() != 2) {
         THROW_OR_ABORT("from_float_grayscale: grayscale image does not have ndim=2, but " + grayscale.shape().str());
     }
-    StbImage3 result(grayscale.shape());
+    StbImage3 result(FixedArray<size_t, 2>{ grayscale.shape(0), grayscale.shape(1) });
     Array<Rgb24> f = result.flattened();
     Array<float> g = grayscale.flattened();
     for (size_t i = 0; i < g.length(); i++) {

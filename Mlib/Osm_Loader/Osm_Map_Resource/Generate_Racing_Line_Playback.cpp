@@ -30,12 +30,12 @@ void Mlib::generate_racing_line_playback(
     }
     *ofstr << std::setprecision(18) << std::scientific;
     for (const auto& row : mat) {
-        auto pos = normalization_matrix.transform(FixedArray<double, 2>{ row(LAT), row(LON) });
-        double height;
+        auto pos = normalization_matrix.transform(FixedArray<double, 2>{ row(LAT), row(LON) }).casted<CompressedScenePos>();
+        CompressedScenePos height;
         if (!ground_bvh.height(height, pos)) {
             THROW_OR_ABORT("Could not find height for point on racing line");
         }
-        auto xpos = geographic_mapping.transform(FixedArray<double, 3>{pos(0), pos(1), height});
+        auto xpos = geographic_mapping.transform(FixedArray<CompressedScenePos, 3>{pos(0), pos(1), height}.casted<ScenePos>());
         // *ofstr << xpos << ' ' << row(YANGLE) << ' ' << row(TIME) << ' ' << row(ACCEL) << ' ' << row(BRAKE) << '\n';
         *ofstr << row(TIME) << ' ' << xpos << " 0 " << row(YANGLE) << " 0\n";
     }

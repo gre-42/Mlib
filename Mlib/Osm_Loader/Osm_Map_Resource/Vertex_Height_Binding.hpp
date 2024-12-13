@@ -13,15 +13,16 @@ class FixedArray;
 
 template <class TPos>
 class VertexHeightBinding {
+    static constexpr const TPos UNDEFINED = std::numeric_limits<TPos>::max();
 public:
     VertexHeightBinding()
-    : value_{ NAN, NAN }
+    : value_{ UNDEFINED, UNDEFINED }
     {}
     VertexHeightBinding& operator = (const FixedArray<TPos, 2>& v) {
         if (!is_undefined()) {
             THROW_OR_ABORT("Height binding already set");
         }
-        if (any(Mlib::isnan(v))) {
+        if (any(v == UNDEFINED)) {
             THROW_OR_ABORT("Height binding value forbidden");
         }
         value_ = v;
@@ -41,7 +42,7 @@ public:
     }
 private:
     bool is_undefined() const {
-        return all(Mlib::isnan(value_));
+        return all(value_ == UNDEFINED);
     }
     FixedArray<TPos, 2> value_;
 };

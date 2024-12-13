@@ -8,8 +8,8 @@ namespace Mlib {
 using SceneDir = float;
 using ScenePos = double;
 
-using CompressedScenePos = ScaledInteger<int32_t, 1, (1 << 11)>;
-using HalfCompressedScenePos = ScaledInteger<int16_t, 1, (1 << 11)>;
+using CompressedScenePos = ScaledInteger<int32_t, (1 << 11)>;
+using HalfCompressedScenePos = ScaledInteger<int16_t, (1 << 11)>;
 
 }
 

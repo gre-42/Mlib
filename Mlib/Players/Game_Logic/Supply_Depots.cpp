@@ -20,9 +20,9 @@ SupplyDepots::SupplyDepots(
     AdvanceTimes& advance_times,
     Players& players,
     const PhysicsEngineConfig& cfg)
-    : bvh_{{funpack(cfg.bvh_max_size),
-            funpack(cfg.bvh_max_size),
-            funpack(cfg.bvh_max_size)},
+    : bvh_{{cfg.bvh_max_size,
+            cfg.bvh_max_size,
+            cfg.bvh_max_size},
         cfg.bvh_levels }
     , advance_times_{ advance_times }
     , players_{ players }
@@ -42,12 +42,12 @@ void SupplyDepots::reset_cooldown() {
 }
 
 bool SupplyDepots::visit_supply_depots(
-    const FixedArray<ScenePos, 3> position,
+    const FixedArray<CompressedScenePos, 3> position,
     const std::function<bool(const SupplyDepot&)>& visitor) const
 {
-    BoundingSphere<ScenePos, 3> bs(position, funpack(cfg_.supply_depot_attraction_radius));
+    BoundingSphere<CompressedScenePos, 3> bs(position, cfg_.supply_depot_attraction_radius);
     return bvh_.visit(
-        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(bs.center, bs.radius),
+        AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(bs.center, bs.radius),
         [&](const SupplyDepot& supply_depot)
         {
             if (supply_depot.is_cooling_down()) {
@@ -61,7 +61,7 @@ bool SupplyDepots::visit_supply_depots(
 }
 
 bool SupplyDepots::visit_supply_depots(
-    const FixedArray<ScenePos, 3> position,
+    const FixedArray<CompressedScenePos, 3> position,
     const std::function<bool(SupplyDepot&)>& visitor)
 {
     const SupplyDepots& sd = *this;
@@ -86,7 +86,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
         }
         auto& rb = player->rigid_body();
         visit_supply_depots(
-            rb.rbp_.abs_position(),
+            rb.rbp_.abs_position().casted<CompressedScenePos>(),
             [&rb](SupplyDepot& supply_depot)
             {
                 for (const auto& [item_type, navail] : supply_depot.supplies) {
@@ -110,9 +110,9 @@ void SupplyDepots::add_supply_depot(
     const std::map<std::string, uint32_t>& supplies,
     float cooldown)
 {
-    auto center = scene_node->absolute_model_matrix().t;
+    auto center = scene_node->absolute_model_matrix().t.casted<CompressedScenePos>();
     auto& element = bvh_.insert(
-        AxisAlignedBoundingBox<ScenePos, 3>::from_point(center),
+        AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(center),
         SupplyDepot{
             .node = scene_node,
             .center = center,

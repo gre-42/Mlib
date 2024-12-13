@@ -15,7 +15,7 @@ enum class WayPointLocation;
 
 class AiWaypoint {
 public:
-    using WayPoint = PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>;
+    using WayPoint = PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>;
 
     AiWaypoint(
         const std::optional<WayPoint>& position_of_destination,
@@ -23,17 +23,17 @@ public:
         const std::optional<FixedArray<float, 3>>& velocity_at_destination,
         const std::list<WayPoint>* waypoint_history);
     bool has_position_of_destination() const;
-    FixedArray<ScenePos, 3> position_of_destination(float dy) const;
+    FixedArray<CompressedScenePos, 3> position_of_destination(CompressedScenePos dy) const;
     WayPointLocation flags() const;
     WayPointLocation latest_history_flags() const;
     bool has_velocity_at_destination() const;
     FixedArray<float, 3> velocity_at_destination() const;
     FixedArray<float, 3> velocity_of_destination(const FixedArray<float, 3>& deflt) const;
     FixedArray<float, 3> velocity_at_destination(const FixedArray<float, 3>& deflt) const;
-    FixedArray<ScenePos, 3> interpolated_position(
-        const FixedArray<ScenePos, 3>& vehicle_position,
+    FixedArray<CompressedScenePos, 3> interpolated_position(
+        const FixedArray<CompressedScenePos, 3>& vehicle_position,
         ScenePos radius_squared,
-        float dy) const;
+        CompressedScenePos dy) const;
 
 private:
     const std::optional<WayPoint>& position_of_destination_;

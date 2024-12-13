@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Math/Funpack.hpp>
 
 namespace Mlib {
 
@@ -9,21 +10,21 @@ public:
     CloseNeighborDetector(
         const FixedArray<TData, tndim>& max_size,
         size_t level)
-    : bvh_{max_size, level}
+        : bvh_{ max_size, level }
     {}
     bool contains_neighbor(const FixedArray<TData, tndim>& p, const TData& distance) {
-        bool res = bvh_.has_neighbor(p, distance, [p](const auto& n){
-            TData dist2 = sum(squared(p - n));
+        bool res = bvh_.has_neighbor2(p, distance, [p](const auto& n) -> funpack_t<TData> {
+            auto dist2 = sum(squared(p - n));
             if (dist2 == 0.) {
-                return (TData)INFINITY;
+                return INFINITY;
             }
-            return std::sqrt(dist2);
+            return dist2;
         });
-        bvh_.insert(AxisAlignedBoundingBox<TData, tndim>::from_point(p), p);
+        bvh_.insert(PointWithoutPayload{ p });
         return res;
     }
 private:
-    Bvh<TData, tndim, FixedArray<TData, tndim>> bvh_;
+    PointWithoutPayloadVectorBvh<TData, tndim> bvh_;
 };
 
 }

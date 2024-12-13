@@ -128,7 +128,7 @@ class Player final:
     Player(const Player&) = delete;
     Player& operator = (const Player&) = delete;
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>;
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>;
 
     Player(
         Scene& scene,
@@ -178,22 +178,22 @@ public:
     bool can_see(
         const RigidBodyVehicle& rbi,
         bool only_terrain = false,
-        float height_offset = 0,
+        ScenePos height_offset = 0,
         float time_offset = 0) const;
     bool can_see(
         const FixedArray<ScenePos, 3>& pos,
         bool only_terrain = false,
-        float height_offset = 0,
+        ScenePos height_offset = 0,
         float time_offset = 0) const;
     bool can_see(
         const SceneVehicle& scene_vehicle,
         bool only_terrain = false,
-        float height_offset = 0,
+        ScenePos height_offset = 0,
         float time_offset = 0) const;
     bool can_see(
         const Player& player,
         bool only_terrain = false,
-        float height_offset = 0,
+        ScenePos height_offset = 0,
         float time_offset = 0) const;
     bool is_pedestrian() const;
     bool has_scene_vehicle() const;
@@ -312,7 +312,7 @@ private:
     const Focuses& focuses_;
     ScenePos select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
-    std::map<JoinedWayPointSandbox, PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>> way_points_;
+    std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Funpack.hpp>
 #include <Mlib/Uninitialized.hpp>
 #include <concepts>
 #include <ostream>
@@ -60,11 +61,11 @@ auto operator * (
     const PointAndFlags<TPosition, TFlags>& lhs,
     const TRhs& f)
 {
-    using V = typename TPosition::value_type;
-    using TResultV = decltype(V() * TRhs());
-    using TResult = decltype(gen_obj<TPosition>().template casted<TResultV>());
-    return PointAndFlags<TResult, TFlags>{
-        lhs.position.template casted<TResultV>() * (TResultV)f,
+    using V0 = typename TPosition::value_type;
+    using V1 = funpack_t<V0>;
+    using TResultV1 = decltype(V1() * TRhs());
+    return PointAndFlags<TPosition, TFlags>{
+        (lhs.position.template casted<TResultV1>() * (TResultV1)f).template casted<V0>(),
         lhs.flags
     };
 }

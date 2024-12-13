@@ -71,8 +71,8 @@ void SyntheticScene::draw_to_bmp(const std::string& filename, size_t index0, siz
         bmp.draw_fill_rect(index1, 3, Bgr565::blue());
 
         bmp.draw_infinite_line(
-            Array<float>{y0r(id1), y0r(id0)},
-            Array<float>{y1r(id1), y1r(id0)},
+            FixedArray<float, 2>{y0r(id1), y0r(id0)},
+            FixedArray<float, 2>{y1r(id1), y1r(id0)},
             0,
             Bgr565::green());
     }

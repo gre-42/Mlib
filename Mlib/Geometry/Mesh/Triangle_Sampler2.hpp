@@ -7,37 +7,36 @@
 
 namespace Mlib {
 
-template <class TData>
+template <class TPosition>
 class TriangleSampler2 {
 public:
+    using I = funpack_t<TPosition>;
     explicit TriangleSampler2(unsigned int seed)
         : rng_{ seed }
     {}
     template <size_t tsize>
     void sample_triangle_interior(
-        const FixedArray<TData, tsize>& t0,
-        const FixedArray<TData, tsize>& t1,
-        const FixedArray<TData, tsize>& t2,
-        const TData& distance,
-        const std::function<void(const TData& a, const TData& b, const TData& c)>& func)
+        const FixedArray<TPosition, 3, tsize>& t,
+        const TPosition& distance,
+        const std::function<void(const FixedArray<I, 3>& c)>& func)
     {
-        TData area = triangle_area(t0, t1, t2);
-        TData n = area / (squared(distance / 2) * TData(M_PI));
+        I area = triangle_area(funpack(t));
+        auto n = (I)area / (squared(distance / 2) * I(M_PI));
         n_random_numbers(n, rng_, [&func, this](){
             // https://chrischoy.github.io/research/barycentric-coordinate-for-mesh-sampling/
-            TData r1q = std::sqrt(rng_());
-            TData r2 = rng_();
-            TData a = (1 - r1q);
-            TData b = r1q * (1 - r2);
-            TData c = r1q * r2;
-            func(a, b, c);
+            I r1q = std::sqrt(rng_());
+            I r2 = rng_();
+            func(FixedArray<I, 3>{
+                (1 - r1q),
+                r1q * (1 - r2),
+                r1q * r2});
         });
     }
     void seed(unsigned int seed) {
         rng_.seed(seed);
     }
 private:
-    HybridHaltonSequence<TData> rng_;
+    HybridHaltonSequence<I> rng_;
 };
 
 }

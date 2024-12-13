@@ -17,7 +17,7 @@ static const double dx = 0.01;
 void Mlib::draw_waysides(
     BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
-    const std::list<FixedArray<ColoredVertex<double>, 3>>& inner_triangles,
+    const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& inner_triangles,
     const GroundBvh& ground_bvh,
     const StreetBvh& entrance_bvh,
     double scale,
@@ -29,11 +29,11 @@ void Mlib::draw_waysides(
     for (const auto& contour_coarse : contours) {
         auto interp = interpolated_contour(contour_coarse);
         for (auto t = 2 * scale * dx; t <= interp.xmax() - 2 * scale * dx; t += scale * distances.tangential_distance) {
-            auto d3 = interp(t + scale * dx) - interp(t - scale * dx);
-            auto p3 = interp(t);
+            auto d3 = funpack(interp(t + scale * dx) - interp(t - scale * dx));
+            auto p3 = funpack(interp(t));
 
             FixedArray<double, 2> p2{ p3(0), p3(1) };
-            if (entrance_bvh.has_neighbor(p2, 1e-12)) {
+            if (entrance_bvh.has_neighbor(p2.casted<CompressedScenePos>(), (CompressedScenePos)1e-3)) {
                 continue;
             }
             FixedArray<double, 2> n2{ d3(1), -d3(0) };
@@ -42,10 +42,10 @@ void Mlib::draw_waysides(
                 THROW_OR_ABORT("draw_road_bollards: normal too short");
             }
             n2 /= n2_len;
-            auto p2_shifted = p2 + distances.normal_distance * n2 * scale;
+            auto p2_shifted = (p2 + distances.normal_distance * n2 * scale).casted<CompressedScenePos>();
             auto yangle = (float)std::atan2(d3(1), d3(0));
 
-            double height;
+            CompressedScenePos height;
             if (ground_bvh.height(height, p2_shifted)) {
                 auto add_prn = [&](){
                     if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
@@ -56,7 +56,7 @@ void Mlib::draw_waysides(
                     add_prn();
                 } else {
                     FixedArray<double, 2> grad = uninitialized;
-                    if (ground_bvh.gradient(grad, p2_shifted, distances.gradient_dx * scale)) {
+                    if (ground_bvh.gradient(grad, p2_shifted, (CompressedScenePos)(distances.gradient_dx * scale))) {
                         if (dot0d(grad, n2) <= distances.max_gradient) {
                             add_prn();
                         }

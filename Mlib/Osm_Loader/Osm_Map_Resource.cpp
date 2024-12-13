@@ -105,6 +105,7 @@
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Strings/String_To_Scene_Pos.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <cereal/access.hpp>
 #include <cereal/archives/binary.hpp>
@@ -135,11 +136,12 @@ OsmMapResource::OsmMapResource(
     , scene_node_resources_{ scene_node_resources }
     , scale_{ config.scale }
     , normalization_matrix_{ uninitialized }
+    , triangulation_normalization_matrix_{ uninitialized }
     , terrain_styles_{ config.triangle_sampler_resource_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     NodesAndWays naws_or;
-    NormalizedPointsFixed<double> normalized_points{ScaleMode::NONE, OffsetMode::CENTERED};
+    NormalizedPointsFixed<double> normalized_points{ ScaleMode::NONE, OffsetMode::CENTERED };
 
     parse_osm_xml(
         config.filename,
@@ -148,6 +150,7 @@ OsmMapResource::OsmMapResource(
         normalization_matrix_,
         naws_or.nodes,
         naws_or.ways);
+    triangulation_normalization_matrix_ = normalization_matrix_.pre_scaled(config.triangulation_scale);
     
     NodesAndWays naws_smooth = smoothen_ways(
         naws_or,
@@ -164,10 +167,10 @@ OsmMapResource::OsmMapResource(
     OsmTriangleLists osm_triangle_lists{config, ""};
     OsmTriangleLists air_triangle_lists{config, "_air"};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
-    std::list<std::shared_ptr<TriangleList<double>>> tls_buildings;
-    std::list<std::shared_ptr<TriangleList<double>>> tls_wall_barriers;
-    std::map<OrderableFixedArray<double, 2>, NodeHeightBinding> node_height_bindings;
-    std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>> vertex_height_bindings;
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_buildings;
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_wall_barriers;
+    std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding> node_height_bindings;
+    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
@@ -185,7 +188,7 @@ OsmMapResource::OsmMapResource(
         };
         auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
         auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
-        std::list<FixedArray<double, 2, 2>> way_segments;
+        std::list<FixedArray<CompressedScenePos, 2, 2>> way_segments;
         ResourceNameCycle street_lights{ config.street_light_resource_names };
         RacingLineBvh racing_line_bvh;
         if (!config.racing_line_track.empty()) {
@@ -240,14 +243,14 @@ OsmMapResource::OsmMapResource(
                 config.driving_direction,
                 config.layer_heights
             }};
-        } catch (const PointException<double, 3>& e) {
+        } catch (const PointException<CompressedScenePos, 3>& e) {
             handle_point_exception3(e, "Could not draw streets");
-        } catch (const TriangleException<double>& e) {
+        } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not draw streets");
         }
         try {
             project_nodes_onto_ways(mnodes, way_segments, config.scale);
-        } catch (const PointException<double, 2>& e) {
+        } catch (const PointException<CompressedScenePos, 2>& e) {
             handle_point_exception2(e, "Could not project nodes onto way");
         }
     }
@@ -290,7 +293,7 @@ OsmMapResource::OsmMapResource(
             VerticalSubdivision::NO);
     }
 
-    std::list<std::pair<TerrainType, std::list<FixedArray<double, 2>>>> terrain_region_contours =
+    std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> terrain_region_contours =
         get_terrain_region_contours(nodes, ways);
     WayBvh terrain_region_contours_bvh;
     for (const auto& [_, contour] : terrain_region_contours) {
@@ -331,6 +334,7 @@ OsmMapResource::OsmMapResource(
             buildings,
             nodes,
             config.scale,
+            config.triangulation_scale,
             config.uv_scale_ceiling,
             1.f,                     // uv_period
             config.max_wall_width,
@@ -405,19 +409,19 @@ OsmMapResource::OsmMapResource(
                 config.uv_scale_barrier_wall,
                 config.boundary_barrier_height,
                 config.barrier_styles.get(config.boundary_barrier_style));
-        } catch (const EdgeException<double>& e) {
+        } catch (const EdgeException<CompressedScenePos>& e) {
             handle_edge_exception(e, "Could not draw boundary barriers");
         }
     }
 
-    UUVector<FixedArray<double, 2>> map_outer_contour = get_map_outer_contour(
+    UUVector<FixedArray<CompressedScenePos, 2>> map_outer_contour = get_map_outer_contour(
         nodes,
         ways);
-    BoundingInfo bounding_info{ map_outer_contour, nodes, 0.1f };
+    BoundingInfo bounding_info{ map_outer_contour, nodes, (CompressedScenePos)100.f };
 
-    auto draw_terrain_triangles = [&config](TriangleList<double>& dest, const std::list<FixedArray<ColoredVertex<double>, 3>>& source){
+    auto draw_terrain_triangles = [&config](TriangleList<CompressedScenePos>& dest, const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& source){
         for (const auto& t : source) {
-            auto uv = terrain_uv<double>(
+            auto uv = terrain_uv<CompressedScenePos, double>(
                 t(0).position,
                 t(1).position,
                 t(2).position,
@@ -429,12 +433,12 @@ OsmMapResource::OsmMapResource(
                 t(0).position,
                 t(1).position,
                 t(2).position,
-                terrain_color,
-                terrain_color,
-                terrain_color,
-                uv(0),
-                uv(1),
-                uv(2));
+                Colors::from_rgb(terrain_color),
+                Colors::from_rgb(terrain_color),
+                Colors::from_rgb(terrain_color),
+                uv[0],
+                uv[1],
+                uv[2]);
         }
     };
     if (config.with_terrain) {
@@ -462,27 +466,27 @@ OsmMapResource::OsmMapResource(
         // }
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
         if (auto prefix = try_getenv("MESH_AROUND_PREFIX"); prefix.has_value()) {
-            std::vector<float> coords = string_to_vector(str_getenv("MESH_AROUND_POS"), safe_stof);
+            std::vector<CompressedScenePos> coords = string_to_vector(str_getenv("MESH_AROUND_POS"), safe_stocs);
             if (coords.size() != 2) {
                 THROW_OR_ABORT("MESH_AROUND_POS does not have length 2");
             }
             {
-                FixedArray<double, 3> pos{coords[0], coords[1], 0.f};
+                FixedArray<CompressedScenePos, 3> pos{ coords[0], coords[1], (CompressedScenePos)0.f };
                 auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-                lerr() << std::setprecision(15) << "Saving mesh around " << pos << " | " << m.transform(pos);
+                lerr() << std::setprecision(15) << "Saving mesh around " << pos << " | " << m.transform(funpack(pos));
             }
-            for (float r : string_to_vector(str_getenv("MESH_AROUND_RADIUSES"), safe_stof)) {
+            for (CompressedScenePos r : string_to_vector(str_getenv("MESH_AROUND_RADIUSES"), safe_stocs)) {
                 plot_mesh(                         
-                    ArrayShape{2000, 2000},         // image_size
-                    1,                              // line_thickness
-                    4,                              // point_size
-                    get_triangles_around(           // triangles
+                    FixedArray<size_t, 2>{2000u, 2000u},    // image_size
+                    1,                                      // line_thickness
+                    4,                                      // point_size
+                    get_triangles_around(                   // triangles
                         all_hole_triangles,
                         {coords[0], coords[1]},
                         r),
-                    {},                             // contour
-                    {{coords[0], coords[1], 0.f}},  // highlighted_nodes
-                    {}                              // crossed_nodes
+                    {},                                     // contour
+                    {{coords[0], coords[1], (CompressedScenePos)0.f}},  // highlighted_nodes
+                    {}                                      // crossed_nodes
                     ).T().reversed(0).save_to_file(*prefix + "_r_" + std::to_string(r) + ".png");
             }
         }
@@ -527,9 +531,10 @@ OsmMapResource::OsmMapResource(
                  {TerrainType::OCEAN_GROUND, ocean_ground_triangles}},
                 terrain_region_contours,
                 config.scale,
+                config.triangulation_scale,
                 config.uv_scale_terrain,
                 config.uv_period_terrain,
-                0,
+                (CompressedScenePos)0.f,
                 terrain_color,
                 getenv_default("TERRAIN_CONTOUR_TRIANGLES_FILENAME", ""),
                 getenv_default("TERRAIN_CONTOUR_FILENAME", ""),
@@ -541,9 +546,9 @@ OsmMapResource::OsmMapResource(
                 {TerrainType::STREET_HOLE});
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const EdgeException<double>& e) {
+        } catch (const EdgeException<CompressedScenePos>& e) {
             handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const TriangleException<double>& e) {
+        } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         for (const WaysideResourceNames& ws : config.waysides) {
@@ -602,9 +607,9 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    std::list<FixedArray<double, 3>> map_outer_contour3;
+    std::list<FixedArray<CompressedScenePos, 3>> map_outer_contour3;
     for (const auto& p : map_outer_contour) {
-        map_outer_contour3.push_back(FixedArray<double, 3>{ p(0), p(1), 0.f });
+        map_outer_contour3.emplace_back(p(0), p(1), (CompressedScenePos)0.f);
     }
 
     try {
@@ -628,9 +633,9 @@ OsmMapResource::OsmMapResource(
             map_outer_contour3,
             street_rectangles,
             way_point_edge_descriptors);
-    } catch (const PointException<double, 2>& e) {
+    } catch (const PointException<CompressedScenePos, 2>& e) {
         handle_point_exception2(e, "Could not smoothen and apply heighmap. Forgot to set map outer contour?");
-    } catch (const TriangleException<double>& e) {
+    } catch (const TriangleException<CompressedScenePos>& e) {
         handle_triangle_exception(e, "Could not smoothen and apply heighmap.");
     }
 
@@ -665,17 +670,17 @@ OsmMapResource::OsmMapResource(
         // save_obj("/tmp/terrain.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
         // save_obj("/tmp/tunnels.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
     }
-    // If extrude_air_curb_amount is not NAN,
+    // If extrude_air_curb_amount is not zero,
     // boundaries have to be calculated at the ends of
     // air and ground street.
     try {
         LOG_INFO("extrude curbs, walls, grass, water");
-        if (std::isnan(config.extrude_air_curb_amount)) {
+        if (config.extrude_air_curb_amount == (CompressedScenePos)0.) {
             // If "extrude_air_curb_amount" IS NAN,
             // insert the air triangle lists here.
             osm_triangle_lists.insert(air_triangle_lists);
-        } else if (config.extrude_air_curb_amount != 0) {
-            TriangleList<double>::extrude(
+        } else if (config.extrude_air_curb_amount != (CompressedScenePos)0.) {
+            TriangleList<CompressedScenePos>::extrude(
                 *air_triangle_lists.tl_street_curb[RoadType::STREET],
                 {
                     config.curb_alpha != config.curb2_alpha
@@ -693,7 +698,7 @@ OsmMapResource::OsmMapResource(
                 false,  // uvs_equal_lengths
                 0.f);   // ambient_occlusion
             if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
-                TriangleList<double>::extrude(
+                TriangleList<CompressedScenePos>::extrude(
                     *air_triangle_lists.tl_street_curb[RoadType::PATH],
                     {
                         config.curb_alpha != config.curb2_alpha
@@ -712,8 +717,8 @@ OsmMapResource::OsmMapResource(
                     0.f);   // ambient_occlusion
             }
         }
-        if (config.extrude_curb_amount != 0) {
-            TriangleList<double>::extrude(
+        if (config.extrude_curb_amount != (CompressedScenePos)0.) {
+            TriangleList<CompressedScenePos>::extrude(
                 *osm_triangle_lists.tl_street_curb[RoadType::STREET],
                 {
                     config.curb_alpha != config.curb2_alpha
@@ -731,7 +736,7 @@ OsmMapResource::OsmMapResource(
                 false,  // uvs_equal_lengths
                 0.f);   // ambient_occlusion
             if (osm_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
-                TriangleList<double>::extrude(
+                TriangleList<CompressedScenePos>::extrude(
                     *osm_triangle_lists.tl_street_curb[RoadType::PATH],
                     {
                         config.curb_alpha != config.curb2_alpha
@@ -750,8 +755,8 @@ OsmMapResource::OsmMapResource(
                     0.f);   // ambient_occlusion
             }
         }
-        if (config.extrude_wall_amount != 0) {
-            TriangleList<double>::extrude(
+        if (config.extrude_wall_amount != (CompressedScenePos)0.) {
+            TriangleList<CompressedScenePos>::extrude(
                 *osm_triangle_lists.tl_street[RoadProperties{.type = RoadType::WALL, .nlanes = 1}].triangle_list,
                 {osm_triangle_lists.tls_wall_wo_curb()},
                 nullptr,
@@ -765,7 +770,7 @@ OsmMapResource::OsmMapResource(
                 false,  // uvs_equal_lengths
                 0.f);   // ambient_occlusion
         }
-        if (std::isnan(config.extrude_air_curb_amount)) {
+        if (config.extrude_air_curb_amount == (CompressedScenePos)0.) {
             raise_streets(
                 osm_triangle_lists.tls_street_wo_curb(),
                 osm_triangle_lists.tls_wo_subtraction_and_water(),
@@ -773,17 +778,17 @@ OsmMapResource::OsmMapResource(
                 config.raise_streets_amount);
         } else {
             raise_streets(
-                TriangleList<double>::concatenated(
+                TriangleList<CompressedScenePos>::concatenated(
                     osm_triangle_lists.tls_street_wo_curb(),
                     air_triangle_lists.tls_street_wo_curb()),
-                TriangleList<double>::concatenated(
+                TriangleList<CompressedScenePos>::concatenated(
                     osm_triangle_lists.tls_wo_subtraction_and_water(),
                     air_triangle_lists.tls_wo_subtraction_and_water()),
                 config.scale,
                 config.raise_streets_amount);
         }
-        if (config.extrude_grass_amount != 0) {
-            TriangleList<double>::extrude(
+        if (config.extrude_grass_amount != (CompressedScenePos)0.) {
+            TriangleList<CompressedScenePos>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::GRASS],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::GRASS]},
                 nullptr,
@@ -797,10 +802,10 @@ OsmMapResource::OsmMapResource(
                 true,   // uvs_equal_lengths
                 0.f);   // ambient_occlusion
         }
-        if ((config.extrude_elevated_grass_amount != 0) &&
+        if ((config.extrude_elevated_grass_amount != (CompressedScenePos)0.) &&
             osm_triangle_lists.tl_terrain->contains(TerrainType::ELEVATED_GRASS))
         {
-            TriangleList<double>::extrude(
+            TriangleList<CompressedScenePos>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::ELEVATED_GRASS_BASE],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::ELEVATED_GRASS]},
                 nullptr,
@@ -814,14 +819,14 @@ OsmMapResource::OsmMapResource(
                 true,                                   // uvs_equal_lengths
                 config.extrusion_ambient_occlusion);    // ambient_occlusion
         }
-        if ((config.extrude_water_floor_amout != 0) &&
+        if ((config.extrude_water_floor_amout != (CompressedScenePos)0.) &&
             osm_triangle_lists.tl_terrain->contains(TerrainType::WATER_FLOOR))
         {
-            std::set<OrderableFixedArray<double, 3>> vertices_not_to_connect;
+            std::set<OrderableFixedArray<CompressedScenePos, 3>> vertices_not_to_connect;
             for (const auto& p : map_outer_contour3) {
-                vertices_not_to_connect.insert(OrderableFixedArray<double, 3>{ p });
+                vertices_not_to_connect.insert(OrderableFixedArray<CompressedScenePos, 3>{ p });
             }
-            TriangleList<double>::extrude(
+            TriangleList<CompressedScenePos>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::WATER_FLOOR_BASE],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::WATER_FLOOR]},
                 nullptr,
@@ -835,17 +840,18 @@ OsmMapResource::OsmMapResource(
                 true,   // uvs_equal_lengths
                 0.);    // ambient_occlusion
         }
-    } catch (const EdgeException<double>& e) {
+    } catch (const EdgeException<CompressedScenePos>& e) {
         handle_edge_exception(e, "Extrusion failed");
-    } catch (const TriangleException<double>& e) {
+    } catch (const TriangleException<CompressedScenePos>& e) {
         handle_triangle_exception(e, "Extrusion failed");
     }
-    std::set<OrderableFixedArray<double, 3>> boundary_vertices;
+    std::set<OrderableFixedArray<CompressedScenePos, 3>> boundary_vertices;
     // Compute boundary vertices.
-    if ((config.extrude_street_amount != 0) || (config.extrude_air_support_amount != 0))
+    if ((config.extrude_street_amount != (CompressedScenePos)0.) ||
+        (config.extrude_air_support_amount != (CompressedScenePos)0.))
     {
         LOG_INFO("compute vertices for street and air support extrusion");
-        std::set<OrderableFixedArray<double, 3>> terrain_vertices;
+        std::set<OrderableFixedArray<CompressedScenePos, 3>> terrain_vertices;
         for (const auto& l : osm_triangle_lists.tl_terrain->map()) {
             for (const auto& t : l.second->triangles) {
                 for (const auto& v : t.flat_iterable()) {
@@ -863,11 +869,11 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
-    if (config.extrude_street_amount != 0) {
+    if (config.extrude_street_amount != (CompressedScenePos)0.) {
         LOG_INFO("extrude streets");
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (!osm_triangle_lists.has_curb_or_curb2()) {  // "if (config.curb_alpha == 1)" not working for curbs from obj-models
-            TriangleList<double>::extrude(
+            TriangleList<CompressedScenePos>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[config.default_terrain_type],
                 osm_triangle_lists.tls_street_wo_curb(),
                 rvalue_address(osm_triangle_lists.tls_street_wo_curb_follower()),
@@ -901,8 +907,8 @@ OsmMapResource::OsmMapResource(
             auto do_extrude = [&config, &boundary_vertices]
                 (OsmTriangleLists& triangle_lists)
             {
-                std::list<std::shared_ptr<TriangleList<double>>> source_triangles{triangle_lists.tls_curb_and_curb2()};
-                TriangleList<double>::extrude(
+                std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> source_triangles{triangle_lists.tls_curb_and_curb2()};
+                TriangleList<CompressedScenePos>::extrude(
                     *triangle_lists.tl_street_curb[RoadType::STREET],              // dest
                     triangle_lists.tls_street_wo_curb(),                           // triangle_lists
                     rvalue_address(triangle_lists.tls_street_wo_curb_follower()),  // follower_triangles
@@ -916,7 +922,7 @@ OsmMapResource::OsmMapResource(
                     false,                                                         // uvs_equal_lengths
                     0.f);                                                          // ambient_occlusion
             };
-            if (std::isnan(config.extrude_air_curb_amount)) {
+            if (config.extrude_air_curb_amount == (CompressedScenePos)0.) {
                 do_extrude(osm_triangle_lists);
             } else {
                 do_extrude(osm_triangle_lists);
@@ -957,30 +963,30 @@ OsmMapResource::OsmMapResource(
                 nodes,
                 ways,
                 config.game_level);
-        } catch (const TriangleException<double>& e) {
+        } catch (const TriangleException<CompressedScenePos>& e) {
             if (auto prefix = try_getenv("EXCEPT_MESH_AROUND_PREFIX"); prefix.has_value()) {
-                auto coords = (e.a + e.b + e.c) / 3.;
+                auto coords = (e.a + e.b + e.c) / 3;
                 {
-                    FixedArray<double, 3> pos{ coords(0), coords(1), 0.f };
+                    FixedArray<CompressedScenePos, 3> pos{ coords(0), coords(1), (CompressedScenePos)0.f };
                     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-                    lerr() << std::setprecision(15) << "Saving mesh around " << pos << " | " << m.transform(pos);
+                    lerr() << std::setprecision(15) << "Saving mesh around " << pos << " | " << m.transform(funpack(pos));
                 }
-                for (float r : string_to_vector(getenv_default("EXCEPT_MESH_AROUND_RADIUSES", "0.05 0.2 0.5"), safe_stof)) {
+                for (CompressedScenePos r : string_to_vector(getenv_default("EXCEPT_MESH_AROUND_RADIUSES", "0.05 0.2 0.5"), safe_stocs)) {
                     plot_mesh(
-                        ArrayShape{ 2000, 2000 },         // image_size
-                        1,                                // line_thickness
-                        4,                                // point_size
-                        get_triangles_around(             // triangles
+                        FixedArray<size_t, 2>{ 2000u, 2000u },  // image_size
+                        1,                                      // line_thickness
+                        4,                                      // point_size
+                        get_triangles_around(                   // triangles
                             ground_bvh_triangles,
                             { coords(0), coords(1) },
                             r),
-                        {},                               // contour
-                        {                                 // highlighted_nodes
-                            {e.a(0), e.a(1), 0.f},
-                            {e.b(0), e.b(1), 0.f},
-                            {e.c(0), e.c(1), 0.f}
+                        {},                                     // contour
+                        {                                       // highlighted_nodes
+                            {e.a(0), e.a(1), (CompressedScenePos)0.f},
+                            {e.b(0), e.b(1), (CompressedScenePos)0.f},
+                            {e.c(0), e.c(1), (CompressedScenePos)0.f}
                         },
-                        {}                                // crossed_nodes
+                        {}                                      // crossed_nodes
                     ).T().reversed(0).save_to_file(*prefix + "_r_" + std::to_string(r) + ".png");
                 }
                 handle_triangle_exception(e, "add models failed, debug image saved");
@@ -1081,7 +1087,7 @@ OsmMapResource::OsmMapResource(
 
     {
         // Extrude air support and raise tunnel crossings.
-        const auto& air_or_osm = std::isnan(config.extrude_air_curb_amount)
+        const auto& air_or_osm = (config.extrude_air_curb_amount == (CompressedScenePos)0.)
             ? osm_triangle_lists
             : air_triangle_lists;
 
@@ -1092,12 +1098,12 @@ OsmMapResource::OsmMapResource(
         // Raise tunnel crossings.
         for (auto& t : air_or_osm.tl_tunnel_crossing->triangles) {
             for (auto& v : t.flat_iterable()) {
-                v.position(2) += config.default_tunnel_pipe_height * config.scale;
+                v.position(2) += (CompressedScenePos)(config.default_tunnel_pipe_height * config.scale);
             }
         }
 
         // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
-        std::set<const FixedArray<ColoredVertex<double>, 3>*> triangles_to_delete;
+        std::set<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*> triangles_to_delete;
         for (const auto& t : air_or_osm.tl_air_support->triangles) {
             if (boundary_vertices.contains(OrderableFixedArray{t(0).position}) ||
                 boundary_vertices.contains(OrderableFixedArray{t(1).position}) ||
@@ -1106,21 +1112,21 @@ OsmMapResource::OsmMapResource(
                 triangles_to_delete.insert(&t);
             }
         }
-        if (config.extrude_air_support_amount != 0) {
-            TriangleList<double>::extrude(
-                *air_or_osm.tl_air_support,                         // dest
-                {air_or_osm.tl_air_support},                        // triangle_lists
-                nullptr,                                            // follower_triangles
-                nullptr,                                            // source_triangles
-                &boundary_vertices,                                 // clamped_vertices
-                nullptr,                                            // vertices_not_to_connect
-                config.extrude_air_support_amount * config.scale,   // height
-                config.scale,                                       // scale
-                1,                                                  // uv_scale_x
-                config.uv_scale_terrain,                            // uv_scale_y
-                false,                                              // uvs_equal_lengths
-                0.f);                                               // ambient_occlusion
-            air_or_osm.tl_air_support->triangles.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex<double>, 3>& t){
+        if (config.extrude_air_support_amount != (CompressedScenePos)0.) {
+            TriangleList<CompressedScenePos>::extrude(
+                *air_or_osm.tl_air_support,                                 // dest
+                {air_or_osm.tl_air_support},                                // triangle_lists
+                nullptr,                                                    // follower_triangles
+                nullptr,                                                    // source_triangles
+                &boundary_vertices,                                         // clamped_vertices
+                nullptr,                                                    // vertices_not_to_connect
+                config.extrude_air_support_amount * config.scale,           // height
+                config.scale,                                               // scale
+                1,                                                          // uv_scale_x
+                config.uv_scale_terrain,                                    // uv_scale_y
+                false,                                                      // uvs_equal_lengths
+                0.f);                                                       // ambient_occlusion
+            air_or_osm.tl_air_support->triangles.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex<CompressedScenePos>, 3>& t){
                 return triangles_to_delete.contains(&t);
             });
         }
@@ -1212,7 +1218,7 @@ OsmMapResource::OsmMapResource(
         tl_mud_path_visuals_ = osm_triangle_lists.tl_street_mud_visuals[RoadType::PATH];
     }
 
-    if (!std::isnan(config.extrude_air_curb_amount)) {
+    if (config.extrude_air_curb_amount != (CompressedScenePos)0.) {
         LOG_INFO("inser air triangles lists");
         // If "extrude_air_curb_amount" is NOT NAN,
         // insert the air triangle lists here.
@@ -1222,13 +1228,13 @@ OsmMapResource::OsmMapResource(
         osm_triangle_lists.insert(air_triangle_lists);
     }
 
-    TriangleList<double>::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
-    TriangleList<double>::ambient_occlusion_by_curvature(osm_triangle_lists.tls_with_vertex_normals(), config.laplace_ambient_occlusion);
-    TriangleList<double>::convert_triangle_to_vertex_normals(tls_wall_barriers);
+    TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
+    TriangleList<CompressedScenePos>::ambient_occlusion_by_curvature(osm_triangle_lists.tls_with_vertex_normals(), config.laplace_ambient_occlusion);
+    TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
-    std::list<std::shared_ptr<TriangleList<double>>> tls_all;
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_all;
     if (!config.water_texture->empty()) {
-        std::list<std::pair<WaterType, std::list<FixedArray<double, 2>>>> water_contours =
+        std::list<std::pair<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
             get_water_region_contours(nodes, ways);
         LOG_INFO("triangulate_water");
         try {
@@ -1240,6 +1246,7 @@ OsmMapResource::OsmMapResource(
                 {},                     // hole_triangles
                 water_contours,
                 config.scale,
+                config.triangulation_scale,
                 1 / 100.f,              // uv_scale
                 1.f,                    // uv_period
                 config.water_height,
@@ -1251,19 +1258,19 @@ OsmMapResource::OsmMapResource(
                 WaterType::UNDEFINED);
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const EdgeException<double>& e) {
+        } catch (const EdgeException<CompressedScenePos>& e) {
             handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const TriangleException<double>& e) {
+        } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         tls_all = osm_triangle_lists.tls_wo_subtraction_w_water();
     } else {
         tls_all = osm_triangle_lists.tls_wo_subtraction_and_water();
     }
-    for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList<double>>>*>{
+    for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>*>{
             &tls_all,
             &tls_buildings,
-            &tls_wall_barriers})
+            &tls_wall_barriers })
     {
         for (auto& l2 : *l) {
             if (!l2->triangles.empty()) {
@@ -1294,14 +1301,14 @@ OsmMapResource::OsmMapResource(
                     auto next = it;
                     ++next;
                     if (next != bu.way.nd.end()) {
-                        FixedArray<double, 2> p = (nodes.at(*it).position + nodes.at(*next).position) / 2.;
-                        FixedArray<double, 2> dir = nodes.at(*it).position - nodes.at(*next).position;
+                        FixedArray<CompressedScenePos, 2> p = (nodes.at(*it).position + nodes.at(*next).position) / 2;
+                        FixedArray<double, 2> dir = funpack(nodes.at(*it).position - nodes.at(*next).position);
                         double len2 = sum(squared(dir));
                         if (len2 < 1e-12) {
                             throw PointException{ p, "Spawn direction too small" };
                         }
                         dir /= std::sqrt(len2);
-                        double height;
+                        CompressedScenePos height;
                         if (!ground_bvh->height(height, p)) {
                             throw PointException{ p, "Spawn line out of bounds" };
                         }
@@ -1314,7 +1321,7 @@ OsmMapResource::OsmMapResource(
                     }
                 }
             }
-        } catch (const PointException<double, 2>& p) {
+        } catch (const PointException<CompressedScenePos, 2>& p) {
             handle_point_exception2(p, "Bould not apply height map to spawn lines");
         }
     }
@@ -1329,16 +1336,16 @@ OsmMapResource::OsmMapResource(
                 LOG_INFO(
                     "extract " + terrain_type_to_string(target_terrain_type) +
                     " from " + terrain_type_to_string(source_terrain_type));
-                double max_dist = target_terrain_distances_to_bdry.max_distance_to_bdry * scale_;
-                tl_terrain_->insert(target_terrain_type, std::make_shared<TriangleList<double>>(
+                CompressedScenePos max_dist = (CompressedScenePos)(target_terrain_distances_to_bdry.max_distance_to_bdry * scale_);
+                tl_terrain_->insert(target_terrain_type, std::make_shared<TriangleList<CompressedScenePos>>(
                     terrain_type_to_string(target_terrain_type) + "_autogen",
                     tit->second->material,
                     tit->second->morphology));
                 auto& wayside_grass = *(*tl_terrain_)[target_terrain_type];
-                tit->second->triangles.remove_if([&ground_street_bvh, &max_dist, &wayside_grass](const FixedArray<ColoredVertex<double>, 3>& tri){
+                tit->second->triangles.remove_if([&ground_street_bvh, &max_dist, &wayside_grass](const FixedArray<ColoredVertex<CompressedScenePos>, 3>& tri){
                     for (const auto& v : tri.flat_iterable()) {
                         if (ground_street_bvh.has_neighbor(
-                            FixedArray<double, 2>{
+                            FixedArray<CompressedScenePos, 2>{
                                 v.position(0),
                                 v.position(1)},
                             max_dist))
@@ -1484,13 +1491,13 @@ OsmMapResource::OsmMapResource(
                         config.waypoint_distance);
                 }
             }
-        } catch (const PointException<double, 2>& e) {
+        } catch (const PointException<CompressedScenePos, 2>& e) {
             handle_point_exception2(e, "Could not calculate waypoint adjacency");
-        } catch (const PointException<double, 3>& e) {
+        } catch (const PointException<CompressedScenePos, 3>& e) {
             handle_point_exception3(e, "Could not calculate waypoint adjacency");
-        } catch (const TriangleException<double>& e) {
+        } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not calculate waypoint adjacency");
-        } catch (const EdgeException<double>& e) {
+        } catch (const EdgeException<CompressedScenePos>& e) {
             handle_edge_exception(e, "Could not calculate waypoint adjacency");
         }
     }
@@ -1505,6 +1512,7 @@ OsmMapResource::OsmMapResource(
     : hri_{ scene_node_resources, { NAN, NAN, NAN }, NAN }
     , scene_node_resources_{ scene_node_resources }
     , normalization_matrix_{ uninitialized }
+    , triangulation_normalization_matrix_{ uninitialized }
     , terrain_styles_{}
 {
     auto ifstr = create_ifstream(level_filename, std::ios::binary);
@@ -1521,7 +1529,7 @@ OsmMapResource::OsmMapResource(
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
 }
 
-const Bvh<double, 3, FixedArray<double, 3, 3>>& OsmMapResource::street_bvh() const {
+const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>& OsmMapResource::street_bvh() const {
     {
         std::shared_lock lock{street_bvh_mutex_};
         if (street_bvh_ != nullptr) {
@@ -1530,14 +1538,15 @@ const Bvh<double, 3, FixedArray<double, 3, 3>>& OsmMapResource::street_bvh() con
     }
     if (street_bvh_ == nullptr) {
         std::scoped_lock lock{street_bvh_mutex_};
-        street_bvh_.reset(new Bvh<double, 3, FixedArray<double, 3, 3>>{{0.1, 0.1, 0.1}, 10});
+        street_bvh_.reset(new Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>{
+            {(CompressedScenePos)0.1, (CompressedScenePos)0.1, (CompressedScenePos)0.1}, 10 });
         for (const auto& lst : tls_no_grass_) {
             for (const auto& t : lst->triangles) {
-                FixedArray<double, 3, 3> tri{
+                FixedArray<CompressedScenePos, 3, 3> tri{
                     t(0).position,
                     t(1).position,
                     t(2).position};
-                street_bvh_->insert(AxisAlignedBoundingBox<double, 3>::from_points(tri), tri);
+                street_bvh_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(tri), tri);
             }
         }
     }
@@ -1583,12 +1592,12 @@ void OsmMapResource::save_to_obj_file(
             return it->second;
         }
     };
-    std::list<std::shared_ptr<ColoredVertexArray<double>>> mdcvas;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> mdcvas;
     if (tm == nullptr) {
         mdcvas = hri_.acvas->dcvas;
     } else {
         for (const auto& l : hri_.acvas->dcvas) {
-            mdcvas.push_back(l->transformed<double>(*tm, ""));
+            mdcvas.push_back(l->transformed<CompressedScenePos>(*tm, ""));
         }
     }
     save_obj(
@@ -1611,7 +1620,7 @@ void OsmMapResource::save_to_obj_file(
 }
 
 void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename) const {
-    TriangleList<double> bad_triangles{
+    TriangleList<CompressedScenePos> bad_triangles{
         "bad_trinalges",
         Material{
             .shading{
@@ -1621,17 +1630,17 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
         Morphology{ .physics_material = PhysicsMaterial::NONE } };
     for (const auto& l : hri_.acvas->dcvas) {
         for (const auto& t : l->triangles) {
-            auto tlc = triangle_largest_cosine<double, 3>({
-                t(0).position,
-                t(1).position,
-                t(2).position});
+            auto tlc = triangle_largest_cosine<ScenePos, 3>({
+                funpack(t(0).position),
+                funpack(t(1).position),
+                funpack(t(2).position) });
             if (std::isnan(tlc) || (tlc > 0.999))
             {
                 bad_triangles.triangles.push_back(t);
             }
         }
     }
-    save_obj<double>(filename, { bad_triangles.triangle_array() });
+    save_obj<CompressedScenePos>(filename, { bad_triangles.triangle_array() });
 }
 
 OsmMapResource::~OsmMapResource()
@@ -1654,8 +1663,8 @@ TerrainTriangles OsmMapResource::terrain_triangles() const {
     };
 }
 
-std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> OsmMapResource::no_grass() const {
-    std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> result;
+std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> OsmMapResource::no_grass() const {
+    std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> result;
     for (const auto& lst : tls_no_grass_) {
         result.push_back(&lst->triangles);
     }
@@ -1720,7 +1729,7 @@ void OsmMapResource::create_barrier_triangle_hitboxes(
 {
     try {
         hri_.create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
-    } catch (const TriangleException<double>& e) {
+    } catch (const TriangleException<CompressedScenePos>& e) {
         handle_triangle_exception(e, "Could not decompose terrain into convex regions");
     }
 }
@@ -1761,28 +1770,28 @@ void OsmMapResource::print(std::ostream& ostr) const {
 static void plot_way_points_and_obstacles(
     const std::string& filename,
     const ISceneNodeResource::PointsAndAdjacencyResource& pa,
-    const std::list<FixedArray<double, 2>>& bounding_contour,
-    const std::list<FixedArray<double, 3>>& hitbox_positions)
+    const std::list<FixedArray<CompressedScenePos, 2>>& bounding_contour,
+    const std::list<FixedArray<CompressedScenePos, 3>>& hitbox_positions)
 {
-    std::list<FixedArray<FixedArray<double, 2>, 3>> triangles;
-    std::list<FixedArray<FixedArray<double, 2>, 2>> edges;
-    std::list<std::list<FixedArray<double, 2>>> contours;
-    std::list<FixedArray<double, 2>> highlighted_nodes;
+    std::list<FixedArray<CompressedScenePos, 3, 2>> triangles;
+    std::list<FixedArray<CompressedScenePos, 2, 2>> edges;
+    std::list<std::list<FixedArray<CompressedScenePos, 2>>> contours;
+    std::list<FixedArray<CompressedScenePos, 2>> highlighted_nodes;
     for (size_t c = 0; c < pa.adjacency.shape(1); ++c) {
         for (const auto& [r, _] : pa.adjacency.column(c)) {
             if (r != c) {
-                edges.push_back(FixedArray<FixedArray<double, 2>, 2>{
-                    FixedArray<double, 2>{pa.points.at(c).position(0), pa.points.at(c).position(1)},
-                    FixedArray<double, 2>{pa.points.at(r).position(0), pa.points.at(r).position(1)}});
+                edges.push_back(FixedArray<CompressedScenePos, 2, 2>{
+                    FixedArray<CompressedScenePos, 2>{pa.points.at(c).position(0), pa.points.at(c).position(1)},
+                    FixedArray<CompressedScenePos, 2>{pa.points.at(r).position(0), pa.points.at(r).position(1)}});
             }
         }
     }
     contours.push_back(bounding_contour);
     for (const auto& p : hitbox_positions) {
-        highlighted_nodes.push_back(FixedArray<double, 2>{p(0), p(1)});
+        highlighted_nodes.push_back(FixedArray<CompressedScenePos, 2>{p(0), p(1)});
     }
     if (!edges.empty() || !highlighted_nodes.empty()) {
-        plot_mesh_svg(filename, 600.f, 600.f, triangles, edges, contours, highlighted_nodes);
+        plot_mesh_svg(filename, 600., 600., triangles, edges, contours, highlighted_nodes);
     }
 }
 
@@ -1792,17 +1801,17 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
         if (!rs.has_value()) {
             THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable (should be in the range 1 - 2)");
         }
-        double r = safe_stod(*rs);
+        CompressedScenePos r = safe_stocs(*rs);
         // way_points_.at(WayPointLocation::STREET).plot(wf + debug_prefix + "street.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::SIDEWALK).plot(wf + debug_prefix + "sidewalk.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::EXPLICIT).plot(wf + debug_prefix + "explicit.svg", 600, 600, 0.1f);
 
-        std::list<FixedArray<double, 2>> bounding_contour{
-            FixedArray<double, 2>{-r, -r},
-            FixedArray<double, 2>{+r, -r},
-            FixedArray<double, 2>{+r, +r},
-            FixedArray<double, 2>{-r, +r},
-            FixedArray<double, 2>{-r, -r}};
+        std::list<FixedArray<CompressedScenePos, 2>> bounding_contour{
+            FixedArray<CompressedScenePos, 2>{-r, -r},
+            FixedArray<CompressedScenePos, 2>{+r, -r},
+            FixedArray<CompressedScenePos, 2>{+r, +r},
+            FixedArray<CompressedScenePos, 2>{-r, +r},
+            FixedArray<CompressedScenePos, 2>{-r, -r}};
         auto hitbox_positions = hri_.bri->hitbox_positions();
         if (auto it = way_points_.find(JoinedWayPointSandbox::STREET); it != way_points_.end()) {
             plot_way_points_and_obstacles(*wf + debug_prefix + "street.svg", it->second, bounding_contour, hitbox_positions);
@@ -1833,7 +1842,7 @@ void OsmMapResource::save_bad_triangles_to_obj_file_if_requested(const std::stri
 }
 
 void OsmMapResource::handle_point_exception3(
-    const PointException<double, 3>& e,
+    const PointException<CompressedScenePos, 3>& e,
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
@@ -1841,10 +1850,11 @@ void OsmMapResource::handle_point_exception3(
 }
 
 void OsmMapResource::handle_point_exception2(
-    const PointException<double, 2>& e,
+    const PointException<CompressedScenePos, 2>& e,
     const std::string& message) const
 {
-    handle_point_exception3(PointException<double, 3>{FixedArray<double, 3>{ e.point(0), e.point(1), 0. }, e.what()}, message);
+    using C = CompressedScenePos;
+    handle_point_exception3(PointException<C, 3>{FixedArray<C, 3>{ e.point(0), e.point(1), (C)0. }, e.what()}, message);
 }
 
 void OsmMapResource::handle_point_exception(
@@ -1860,7 +1870,7 @@ void OsmMapResource::handle_point_exception(
 }
 
 void OsmMapResource::handle_edge_exception(
-    const EdgeException<double>& e,
+    const EdgeException<CompressedScenePos>& e,
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
@@ -1868,7 +1878,7 @@ void OsmMapResource::handle_edge_exception(
 }
 
 void OsmMapResource::handle_triangle_exception(
-    const TriangleException<double>& e,
+    const TriangleException<CompressedScenePos>& e,
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());

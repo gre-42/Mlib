@@ -83,7 +83,7 @@ public:
     void add_rigid_body(
         RigidBodyVehicle& rigid_body,
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
-        const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
+        const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& d_hitboxes,
         const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables,
         CollidableMode collidable_mode);
     void delete_rigid_body(const RigidBodyVehicle& rigid_body);

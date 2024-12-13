@@ -42,7 +42,7 @@ public:
         const ColorStyle* color_style) const override;
     virtual void append_filtered_to_queue(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>& double_queue,
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue,
         const ColoredVertexArrayFilter& filter) const override;
     virtual void append_sorted_aggregates_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
@@ -74,9 +74,9 @@ public:
     virtual void extend_aabb(
         const TransformationMatrix<float, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
-        AxisAlignedBoundingBox<ScenePos, 3>& aabb) const override;
-    virtual AxisAlignedBoundingBox<ScenePos, 3> aabb() const override;
-    virtual BoundingSphere<ScenePos, 3> bounding_sphere() const override;
+        AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const override;
+    virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
+    virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
     virtual ScenePos max_center_distance(BillboardId billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
 private:
@@ -98,16 +98,16 @@ private:
 
     std::shared_ptr<const ColoredVertexArrayResource> rcva_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_off_;
-    std::list<std::shared_ptr<ColoredVertexArray<ScenePos>>> aggregate_once_;
-    std::list<std::shared_ptr<ColoredVertexArray<ScenePos>>> aggregate_sorted_continuously_;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> aggregate_once_;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> aggregate_sorted_continuously_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> instances_once_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> instances_sorted_continuously_;
     std::unordered_set<ExternalRenderPassType> required_occluder_passes_;
     bool requires_blending_pass_;
     int continuous_blending_z_order_;
     RenderingResources& secondary_rendering_resources_;
-    AxisAlignedBoundingBox<ScenePos, 3> aabb_;
-    BoundingSphere<ScenePos, 3> bounding_sphere_;
+    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb_;
+    BoundingSphere<CompressedScenePos, 3> bounding_sphere_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi);

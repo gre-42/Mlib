@@ -107,7 +107,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     auto pod = ai_waypoint.position_of_destination(player_rb.waypoint_ofs_);
     VehicleAiMoveToStatus result = VehicleAiMoveToStatus::NONE;
     FixedArray<ScenePos, 3> pos3 = player_rb.rbp_.abs_position();
-    ScenePos distance_to_waypoint2 = sum(squared(pos3 - pod));
+    ScenePos distance_to_waypoint2 = sum(squared(pos3 - funpack(pod)));
     float lookahead_fac2 = std::max(
         1.f,
         sum(squared(player_rb.rbp_.v_)) /
@@ -256,7 +256,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     float zl2 = sum(squared(z));
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
-        auto wpt = FixedArray<ScenePos, 2>{ pod(0), pod(2) } - FixedArray<ScenePos, 2>{ p3(0), p3(2) };
+        auto wpt = funpack(FixedArray<CompressedScenePos, 2>{ pod(0), pod(2) }) - FixedArray<ScenePos, 2>{ p3(0), p3(2) };
         auto m = FixedArray<ScenePos, 2, 2>::init(
             z(1), -z(0),
             z(0), z(1));

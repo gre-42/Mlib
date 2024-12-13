@@ -186,7 +186,7 @@ public:
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_position(
         const std::string& name,
-        const FixedArray<ScenePos, 3>& position,
+        const FixedArray<CompressedScenePos, 3>& position,
         float yangle,
         BillboardId billboard_id);
     void optimize_instances_search_time(std::ostream& ostr) const;
@@ -260,7 +260,7 @@ public:
     void append_static_filtered_to_queue(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue,
         const ColoredVertexArrayFilter& filter) const;
     const FixedArray<ScenePos, 3>& position() const;
     FixedArray<float, 3> rotation() const;

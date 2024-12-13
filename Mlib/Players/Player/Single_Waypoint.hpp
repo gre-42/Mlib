@@ -19,7 +19,7 @@ class SingleWaypoint {
     SingleWaypoint(const SingleWaypoint&) = delete;
     SingleWaypoint& operator = (const SingleWaypoint&) = delete;
 public:
-    using WayPoint = PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>;
+    using WayPoint = PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>;
 
     explicit SingleWaypoint(const DanglingBaseClassRef<Player>& player);
     ~SingleWaypoint();

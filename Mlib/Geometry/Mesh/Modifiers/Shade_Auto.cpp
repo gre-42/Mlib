@@ -11,10 +11,11 @@ void Mlib::shade_auto(ColoredVertexArray<TPos>& cva, float seam_angle)
 {
     if (seam_angle == 0.f) {
         for (auto& t : cva.triangles) {
-            auto normal = triangle_normal<TPos>({
+            using Triangle = FixedArray<TPos, 3, 3>;
+            auto normal = triangle_normal(funpack(Triangle{
                 t(0).position,
                 t(1).position,
-                t(2).position}).template casted<float>();
+                t(2).position})).template casted<float>();
             t(0).normal = normal;
             t(1).normal = normal;
             t(2).normal = normal;
@@ -29,11 +30,9 @@ void Mlib::shade_auto(ColoredVertexArray<TPos>& cva, float seam_angle)
     }
 }
 
-namespace Mlib {
-    template void shade_auto<float>(
-        ColoredVertexArray<float>& cvas,
-        float seam_angle);
-    template void shade_auto<double>(
-        ColoredVertexArray<double>& cvas,
-        float seam_angle);
-}
+template void Mlib::shade_auto<float>(
+    ColoredVertexArray<float>& cvas,
+    float seam_angle);
+template void Mlib::shade_auto<CompressedScenePos>(
+    ColoredVertexArray<CompressedScenePos>& cvas,
+    float seam_angle);

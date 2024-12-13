@@ -9,7 +9,7 @@ using namespace Mlib;
 
 template <class TPos>
 CleanupMesh<TPos>::CleanupMesh()
-    : bvh_{ FixedArray<TPos, 3>{0.1f, 0.1f, 0.1f}, 17 }
+    : bvh_{ FixedArray<TPos, 3>{(TPos)0.1f, (TPos)0.1f, (TPos)0.1f}, 17 }
 {}
 
 template <class TPos>
@@ -22,7 +22,7 @@ void CleanupMesh<TPos>::operator () (
     const TPos& min_vertex_distance,
     bool modulo_uv)
 {
-    if ((min_vertex_distance != 0) &&
+    if ((min_vertex_distance != (TPos)0.f) &&
         ((cva.morphology.physics_material & min_distance_material_filter) == min_distance_material_filter))
     {
         merge_neighboring_points<TPos>(cva, bvh_, min_vertex_distance);
@@ -37,7 +37,7 @@ void CleanupMesh<TPos>::operator () (
 
 namespace Mlib {
 
-template class CleanupMesh<double>;
 template class CleanupMesh<float>;
+template class CleanupMesh<CompressedScenePos>;
 
 }

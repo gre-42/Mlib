@@ -72,7 +72,7 @@ public:
         center /= integral_to_float<I>(nelements);
         return from_center_and_iterator(center.template casted<TPos>(), iterator_begin, iterator_end);
     }
-    bool contains(const FixedArray<TPos, tndim>& other, const TPos& tolerance = TPos(0)) const {
+    bool contains(const FixedArray<TPos, tndim>& other, const TPos& tolerance = TPos(0.f)) const {
         return sum(squared(other - center)) <= squared(radius + tolerance);
     }
     bool intersects(const BoundingSphere& other) const {
@@ -85,7 +85,7 @@ public:
         return abs(dist) <= radius;
     }
     void extend(const BoundingSphere& other) {
-        radius = std::max(radius, std::sqrt(sum(squared(other.center - center))) + other.radius);
+        radius = std::max(radius, (TPos)std::sqrt(sum(squared(other.center - center))) + other.radius);
     }
     template <class TTDir, class TTPos>
     BoundingSphere<TPos, tndim> transformed(const TransformationMatrix<TTDir, TTPos, tndim>& transformation_matrix) const {

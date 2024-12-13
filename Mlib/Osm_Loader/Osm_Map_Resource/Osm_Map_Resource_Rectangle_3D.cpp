@@ -10,7 +10,7 @@
 using namespace Mlib;
 
 void OsmRectangle3D::draw(
-    TriangleList<double>& tl,
+    TriangleList<CompressedScenePos>& tl,
     const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
     float scale,
     float width,
@@ -46,9 +46,9 @@ void OsmRectangle3D::draw(
                 }
             }
             tl.draw_triangle_wo_normals(
-                p(0),
-                p(1),
-                p(2),
+                p(0).casted<CompressedScenePos>(),
+                p(1).casted<CompressedScenePos>(),
+                p(2).casted<CompressedScenePos>(),
                 t(0).color,
                 t(1).color,
                 t(2).color,

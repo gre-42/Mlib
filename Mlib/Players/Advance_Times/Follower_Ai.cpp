@@ -33,7 +33,7 @@ void FollowerAi::advance_time(float dt, const StaticWorld& world) {
         follower_->move_to(
             AiWaypoint{
                 AiWaypoint::WayPoint{            // position_of_destination
-                    followed_->abs_com(),
+                    followed_->abs_com().casted<CompressedScenePos>(),
                     WayPointLocation::UNKNOWN
                 },
                 followed_->rbp_.v_,                // velocity_of_destination

@@ -25,28 +25,29 @@ void ambient_occlusion_by_curvature(
         return;
     }
     using PV = std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<float, 3>>;
+    using I = funpack_t<TPos>;
     std::map<PV, std::pair<size_t, float>> curvatures;
     for (const FixedArray<ColoredVertex<TPos>, 3>* tp : cvl) {
         const FixedArray<ColoredVertex<TPos>, 3>& t = *tp;
         for (size_t i = 0; i < 3; ++i) {
-            PlaneNd<TPos, TPos, 3> plane{t(i).normal.template casted<TPos>(), t(i).position};
+            PlaneNd<float, TPos, 3> plane{t(i).normal, t(i).position};
             std::pair<size_t, float>& curvature = curvatures[PV{OrderableFixedArray{t(i).position}, OrderableFixedArray{t(i).normal}}];
             for (size_t j = 1; j < 3; ++j) {
-                auto n = dot0d(t((i + j) % 3).position, plane.normal) + plane.intercept;
+                auto n = (TPos)dot0d(funpack(t((i + j) % 3).position), plane.normal.casted<I>()) + plane.intercept;
                 auto ta = std::sqrt(sum(squared(t((i + j) % 3).position - t(i).position)) - squared(n));
                 ++curvature.first;
-                curvature.second += float(n / ta);
+                curvature.second += float((I)n / (I)ta);
             }
         }
     }
     for (FixedArray<ColoredVertex<TPos>, 3>* tp : cvl) {
         for (ColoredVertex<TPos>& v : tp->flat_iterable()) {
             const auto& c = curvatures.at(PV{OrderableFixedArray{v.position}, OrderableFixedArray{v.normal}});
-            v.color *= minimum(
+            v.color.row_range<0, 3>() = round(v.color.row_range<0, 3>().casted<float>() * minimum(
                 fixed_ones<float, 3>(),
                 maximum(
                     fixed_zeros<float, 3>(),
-                    1.f - strength * c.second / float(c.first)));
+                    1.f - strength * c.second / float(c.first)))).casted<uint8_t>();
         }
     }
 }

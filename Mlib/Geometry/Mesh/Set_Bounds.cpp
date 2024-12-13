@@ -6,8 +6,8 @@ using namespace Mlib;
 
 void Mlib::set_bounds(
     AnimatedColoredVertexArrays& dest,
-    const AxisAlignedBoundingBox<double, 3>& aabb,
-    const BoundingSphere<double, 3>& bounding_sphere)
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb,
+    const BoundingSphere<CompressedScenePos, 3>& bounding_sphere)
 {
     for (auto& cva : dest.scvas) {
         cva->set_bounds(aabb.casted<float>(), bounding_sphere.casted<float>());

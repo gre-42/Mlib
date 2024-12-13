@@ -32,7 +32,7 @@ BatchResourceInstantiator::~BatchResourceInstantiator()
 {}
 
 void BatchResourceInstantiator::add_parsed_resource_name(
-    const FixedArray<ScenePos, 3>& p,
+    const FixedArray<CompressedScenePos, 3>& p,
     const ParsedResourceName& prn,
     float dyangle,
     float scale)
@@ -63,14 +63,14 @@ void BatchResourceInstantiator::add_parsed_resource_name(
 }
 
 void BatchResourceInstantiator::add_parsed_resource_name(
-    const FixedArray<ScenePos, 2>& p,
-    ScenePos height,
+    const FixedArray<CompressedScenePos, 2>& p,
+    CompressedScenePos height,
     const ParsedResourceName& prn,
     float yangle,
     float scale)
 {
     add_parsed_resource_name(
-        FixedArray<ScenePos, 3>{p(0), p(1), height},
+        FixedArray<CompressedScenePos, 3>{p(0), p(1), height},
         prn,
         yangle,
         scale);
@@ -109,7 +109,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 options.absolute_model_matrix *
                 TransformationMatrix<float, ScenePos, 3>{
                     dot2d(lr, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, p.yangle)),
-                    p.position};
+                    p.position.casted<ScenePos>()};
             auto node = make_unique_scene_node(
                 cm.t,
                 matrix_2_tait_bryan_angles(cm.R),
@@ -168,7 +168,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             auto node = make_unique_scene_node(
                 fixed_zeros<ScenePos, 3>(),
                 rotation_,
-                1.f,
+                scale,
                 PoseInterpolationMode::DISABLED);
             scene_node_resources.instantiate_child_renderable(
                 *name,
@@ -183,9 +183,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             }
             world_node->add_instances_child(*name, std::move(node));
             for (const auto& r : ps) {
-                // For sensible conversion to "CompressedScenePos", the scale is applied to each
-                // instance position and not to the parent node.
-                world_node->add_instances_position(*name, r.position * scale, r.yangle, r.billboard_id);
+                world_node->add_instances_position(*name, r.position, r.yangle, r.billboard_id);
             }
         }
         options.scene.auto_add_root_node(
@@ -199,24 +197,24 @@ void BatchResourceInstantiator::instantiate_root_renderables(
 }
 
 void BatchResourceInstantiator::instantiate_hitboxes(
-    std::list<std::shared_ptr<ColoredVertexArray<ScenePos>>>& cvas,
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
     const SceneNodeResources& scene_node_resources) const
 {
     auto rx = tait_bryan_angles_2_matrix(rotation_);
     size_t i = 0;
     for (auto& [name, ps] : hitboxes_)
     {
-        auto add_hitbox = [&, &naame=name, &ps=ps]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
+        auto add_hitbox = [&, &name=name, &ps=ps]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
             for (auto& x : local_cvas) {
                 for (auto& y : ps) {
                     cvas.push_back(
-                        x->template transformed<ScenePos>(
+                        x->template transformed<CompressedScenePos>(
                             TransformationMatrix{
                                 scale_ * dot2d(
                                     rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
                                     rx),
-                                y.position},
-                        '_' + naame + "_transformed_tm_" + std::to_string(i++)));
+                                funpack(y.position)},
+                        '_' + name + "_transformed_tm_" + std::to_string(i++)));
                 }
             }
         };
@@ -232,7 +230,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
     }
 }
 
-void BatchResourceInstantiator::insert_into(std::list<FixedArray<ScenePos, 3>*>& positions) {
+void BatchResourceInstantiator::insert_into(std::list<FixedArray<CompressedScenePos, 3>*>& positions) {
     for (auto& d : object_resource_descriptors_) {
         positions.push_back(&d.position);
     }
@@ -249,7 +247,7 @@ void BatchResourceInstantiator::insert_into(std::list<FixedArray<ScenePos, 3>*>&
 }
 
 void BatchResourceInstantiator::remove(
-    std::set<const FixedArray<ScenePos, 3>*> vertices_to_delete)
+    std::set<const FixedArray<CompressedScenePos, 3>*> vertices_to_delete)
 {
     object_resource_descriptors_.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
         return vertices_to_delete.contains(&d.position);
@@ -266,8 +264,8 @@ void BatchResourceInstantiator::remove(
     }
 }
 
-std::list<FixedArray<ScenePos, 3>> BatchResourceInstantiator::hitbox_positions() const {
-    std::list<FixedArray<ScenePos, 3>> result;
+std::list<FixedArray<CompressedScenePos, 3>> BatchResourceInstantiator::hitbox_positions() const {
+    std::list<FixedArray<CompressedScenePos, 3>> result;
     for (const auto& [_, hs] : hitboxes_) {
         for (const auto& h : hs) {
             result.push_back(h.position);

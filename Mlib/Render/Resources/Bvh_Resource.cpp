@@ -78,7 +78,7 @@ static void instantiate_bvh(
         }
         std::make_shared<ColoredVertexArrayResource>(
                 lcvas,
-                std::list<std::shared_ptr<ColoredVertexArray<double>>>{})->
+                std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{})->
             instantiate_child_renderable(ChildInstantiationOptions{
                 .instance_name = VariableAndHash<std::string>{ "renderable_bvh" },
                 .scene_node = node.ref(DP_LOC),

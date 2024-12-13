@@ -83,17 +83,17 @@ HeightMapResource::HeightMapResource(
                 triangles.push_back(FixedArray<ColoredVertex<float>, 3>{
                     ColoredVertex<float>{
                         p0,
-                        c0,
+                        Colors::from_rgb(c0),
                         fixed_zeros<float, 2>(),
                         normal},
                     ColoredVertex<float>{
                         p1,
-                        c1,
+                        Colors::from_rgb(c1),
                         fixed_zeros<float, 2>(),
                         normal},
                     ColoredVertex<float>{
                         p2,
-                        c2,
+                        Colors::from_rgb(c2),
                         fixed_zeros<float, 2>(),
                         normal}});
             };

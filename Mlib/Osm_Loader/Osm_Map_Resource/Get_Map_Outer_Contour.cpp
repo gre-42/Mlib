@@ -4,11 +4,11 @@
 
 using namespace Mlib;
 
-UUVector<FixedArray<double, 2>> Mlib::get_map_outer_contour(
+UUVector<FixedArray<CompressedScenePos, 2>> Mlib::get_map_outer_contour(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways)
 {
-    UUVector<FixedArray<double, 2>> contour;
+    UUVector<FixedArray<CompressedScenePos, 2>> contour;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.contains("name", "map-outer-contour")) {

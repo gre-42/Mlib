@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -11,7 +12,7 @@ class BoundingSphere;
 
 void set_bounds(
     AnimatedColoredVertexArrays& dest,
-    const AxisAlignedBoundingBox<double, 3>& aabb,
-    const BoundingSphere<double, 3>& bounding_sphere);
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb,
+    const BoundingSphere<CompressedScenePos, 3>& bounding_sphere);
 
 }

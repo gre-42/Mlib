@@ -8,7 +8,7 @@
 
 using namespace Mlib;
 
-std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
+std::list<FixedArray<CompressedScenePos, 2, 2>> Mlib::smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
     double max_length,
@@ -22,7 +22,7 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
     if (bu.way.nd.front() != bu.way.nd.back()) {
         THROW_OR_ABORT("Cannot compute smooth level of building " + bu.id + ": outline not closed");
     }
-    std::list<FixedArray<FixedArray<double, 2>, 2>> result;
+    std::list<FixedArray<CompressedScenePos, 2, 2>> result;
     auto sw = subdivided_way(
         nodes,
         bu.way.nd,
@@ -58,19 +58,19 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
                 *c,
                 *d,
                 *d,
-                scale * width0,
-                scale * width1,
-                scale * width0,
-                scale * width1,
-                scale * width0,
-                scale * width1))
+                (CompressedScenePos)(scale * width0),
+                (CompressedScenePos)(scale * width1),
+                (CompressedScenePos)(scale * width0),
+                (CompressedScenePos)(scale * width1),
+                (CompressedScenePos)(scale * width0),
+                (CompressedScenePos)(scale * width1)))
         {
             THROW_OR_ABORT("Error triangulating level of building " + bu.id);
         } else {
             result.push_back(
-                FixedArray<FixedArray<double, 2>, 2>{
-                    rect.p01_,
-                    rect.p11_});
+                FixedArray<CompressedScenePos, 2, 2>{
+                    rect.p01_.casted<CompressedScenePos>(),
+                    rect.p11_.casted<CompressedScenePos>()});
         }
         // draw_node(triangles, nodes.at(*a));
         ++a;
@@ -92,7 +92,7 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
         ? bu.levels.back()
         : bu.levels.front();
     BuildingLevelOutline result;
-    std::list<FixedArray<FixedArray<double, 2>, 2>> segments;
+    std::list<FixedArray<CompressedScenePos, 2, 2>> segments;
     if ((tpe == DrawBuildingPartType::CEILING) && bu.roof_9_2.has_value()) {
         segments = smooth_building_level(
             bu,
@@ -101,7 +101,7 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
             bu.roof_9_2.value().width,
             bu.roof_9_2.value().width,
             scale);
-        result.z = bl.top + bu.roof_9_2.value().height;
+        result.z = (CompressedScenePos)(bl.top + bu.roof_9_2.value().height);
     } else {
         segments = smooth_building_level(
             bu,
@@ -111,11 +111,11 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
             bl.extra_width,
             scale);
         result.z = (tpe == DrawBuildingPartType::CEILING)
-            ? bl.top
-            : 0.;
+            ? (CompressedScenePos)bl.top
+            : (CompressedScenePos)0.;
     }
     for (const auto& w : segments) {
-        result.outline.push_back(w(0));
+        result.outline.push_back(w[0]);
     }
     return result;
 }

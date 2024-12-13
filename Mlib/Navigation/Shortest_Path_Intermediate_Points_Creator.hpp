@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <DetourNavMesh.h>
 #include <cstddef>
 #include <map>
@@ -26,10 +27,10 @@ public:
         const FixedArray<float, 3>& p1,
         const float& distance) const;
     
-    UUVector<FixedArray<double, 3>> operator () (
-        const FixedArray<double, 3>& p0,
-        const FixedArray<double, 3>& p1,
-        const double& distance) const;
+    UUVector<FixedArray<CompressedScenePos, 3>> operator () (
+        const FixedArray<CompressedScenePos, 3>& p0,
+        const FixedArray<CompressedScenePos, 3>& p1,
+        const CompressedScenePos& distance) const;
 private:
     const Sample_SoloMesh& ssm_;
     const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs_;

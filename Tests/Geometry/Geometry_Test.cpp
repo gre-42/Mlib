@@ -150,48 +150,52 @@ void test_quad_area() {
 }
 
 void test_contour() {
-    OrderableFixedArray<double, 2> v00{FixedArray<double, 2>{0.f, 0.f}};
-    OrderableFixedArray<double, 2> v10{FixedArray<double, 2>{1.f, 0.f}};
-    OrderableFixedArray<double, 2> v11{FixedArray<double, 2>{1.f, 1.f}};
-    OrderableFixedArray<double, 2> v01{FixedArray<double, 2>{0.f, 1.f}};
-    OrderableFixedArray<double, 2> v02{FixedArray<double, 2>{0.f, 2.f}};
-    std::vector<OrderableFixedArray<double, 2>> contour{
+    using P = CompressedScenePos;
+    using V2 = FixedArray<P, 2>;
+    FixedArray<P, 2> v00{V2{(P)0.f, (P)0.f}};
+    FixedArray<P, 2> v10{V2{(P)1.f, (P)0.f}};
+    FixedArray<P, 2> v11{V2{(P)1.f, (P)1.f}};
+    FixedArray<P, 2> v01{V2{(P)0.f, (P)1.f}};
+    FixedArray<P, 2> v02{V2{(P)0.f, (P)2.f}};
+    std::vector<FixedArray<P, 2>> contour{
         v00,
         v10,
         v11,
         v01};
-    std::list<FixedArray<OrderableFixedArray<double, 2>, 3>> triangles{
+    std::list<FixedArray<P, 3, 2>> triangles{
         {v00, v10, v01},
         {v00, v11, v01},
         {v01, v11, v02}};
-    std::vector<std::list<FixedArray<OrderableFixedArray<double, 2>, 3>>> inner_triangles;
+    std::vector<std::list<FixedArray<P, 3, 2>>> inner_triangles;
     extract_triangles_inside_contours(
-        std::vector<std::vector<OrderableFixedArray<double, 2>>>{contour},
+        std::vector<std::vector<FixedArray<P, 2>>>{contour},
         triangles,
-        inner_triangles);
+        inner_triangles,
+        make_orderable_array);
     assert_true(triangles.size() == 1);
 }
 
 void test_contour2() {
-    OrderableFixedArray<double, 2> v00{FixedArray<double, 2>{0.f, 0.f}};
-    OrderableFixedArray<double, 2> v10{FixedArray<double, 2>{1.f, 0.f}};
-    OrderableFixedArray<double, 2> v11{FixedArray<double, 2>{1.f, 1.f}};
-    OrderableFixedArray<double, 2> v01{FixedArray<double, 2>{0.f, 1.f}};
-    std::list<FixedArray<OrderableFixedArray<double, 2>, 3>> triangles{
+    using P = CompressedScenePos;
+    FixedArray<P, 2> v00{FixedArray<P, 2>{(P)0.f, (P)0.f}};
+    FixedArray<P, 2> v10{FixedArray<P, 2>{(P)1.f, (P)0.f}};
+    FixedArray<P, 2> v11{FixedArray<P, 2>{(P)1.f, (P)1.f}};
+    FixedArray<P, 2> v01{FixedArray<P, 2>{(P)0.f, (P)1.f}};
+    std::list<FixedArray<FixedArray<P, 2>, 3>> triangles{
         {v00, v01, v11},
         {v00, v11, v10}};
-    std::vector<FixedArray<ColoredVertex<double>, 3>> otriangles;
+    std::vector<FixedArray<ColoredVertex<P>, 3>> otriangles;
     for (const auto& t : triangles) {
-        otriangles.push_back(FixedArray<ColoredVertex<double>, 3>{
-            ColoredVertex<double>{{t(0)(0), t(0)(1), 0.f}},
-            ColoredVertex<double>{{t(1)(0), t(1)(1), 0.f}},
-            ColoredVertex<double>{{t(2)(0), t(2)(1), 0.f}}});
+        otriangles.push_back(FixedArray<ColoredVertex<P>, 3>{
+            ColoredVertex<P>{{t(0)(0), t(0)(1), (P)0.f}},
+            ColoredVertex<P>{{t(1)(0), t(1)(1), (P)0.f}},
+            ColoredVertex<P>{{t(2)(0), t(2)(1), (P)0.f}}});
     }
     for (const auto& t : triangles) {
-        otriangles.push_back(FixedArray<ColoredVertex<double>, 3>{
-            ColoredVertex<double>{{t(0)(0) + 1.f, t(0)(1), 0.f}},
-            ColoredVertex<double>{{t(1)(0) + 1.f, t(1)(1), 0.f}},
-            ColoredVertex<double>{{t(2)(0) + 1.f, t(2)(1), 0.f}}});
+        otriangles.push_back(FixedArray<ColoredVertex<P>, 3>{
+            ColoredVertex<P>{{t(0)(0) + (P)1.f, t(0)(1), (P)0.f}},
+            ColoredVertex<P>{{t(1)(0) + (P)1.f, t(1)(1), (P)0.f}},
+            ColoredVertex<P>{{t(2)(0) + (P)1.f, t(2)(1), (P)0.f}}});
     }
     std::swap(otriangles[1], otriangles[2]);
     find_contours(std::list(otriangles.begin(), otriangles.end()), ContourDetectionStrategy::EDGE_NEIGHBOR);
@@ -220,22 +224,23 @@ void test_intersect_lines() {
 }
 
 void test_lines_to_rectangles() {
-    FixedArray<double, 2> p00 = uninitialized;
-    FixedArray<double, 2> p01 = uninitialized;
-    FixedArray<double, 2> p10 = uninitialized;
-    FixedArray<double, 2> p11 = uninitialized;
-    FixedArray<double, 2> aL{-1., 1.};
-    FixedArray<double, 2> aR{-2., -2.};
-    FixedArray<double, 2> b{0., 0.};
-    FixedArray<double, 2> c{1., 0.};
-    FixedArray<double, 2> dL{2., 1.};
-    FixedArray<double, 2> dR{2., -1.};
-    float width_aLb = 0.2f;
-    float width_aRb = 0.2f;
-    float width_bcL = 0.2f;
-    float width_bcR = 0.2f;
-    float width_cdL = 0.2f;
-    float width_cdR = 0.2f;
+    using P = CompressedScenePos;
+    FixedArray<CompressedScenePos, 2> p00 = uninitialized;
+    FixedArray<CompressedScenePos, 2> p01 = uninitialized;
+    FixedArray<CompressedScenePos, 2> p10 = uninitialized;
+    FixedArray<CompressedScenePos, 2> p11 = uninitialized;
+    FixedArray<CompressedScenePos, 2> aL{(P)-1., (P)1.};
+    FixedArray<CompressedScenePos, 2> aR{(P)-2., (P)-2.};
+    FixedArray<CompressedScenePos, 2> b{(P)0., (P)0.};
+    FixedArray<CompressedScenePos, 2> c{(P)1., (P)0.};
+    FixedArray<CompressedScenePos, 2> dL{(P)2., (P)1.};
+    FixedArray<CompressedScenePos, 2> dR{(P)2., (P)-1.};
+    CompressedScenePos width_aLb{ 0.2f };
+    CompressedScenePos width_aRb{ 0.2f };
+    CompressedScenePos width_bcL{ 0.2f };
+    CompressedScenePos width_bcR{ 0.2f };
+    CompressedScenePos width_cdL{ 0.2f };
+    CompressedScenePos width_cdR{ 0.2f };
     lines_to_rectangles(
         p00,
         p01,
@@ -253,10 +258,10 @@ void test_lines_to_rectangles() {
         width_bcR,
         width_cdL,
         width_cdR);
-    assert_allclose(p00, FixedArray<double, 2>{0.0414214f, 0.1f});
-    assert_allclose(p01, FixedArray<double, 2>{0.0414214f, -0.1f});
-    assert_allclose(p10, FixedArray<double, 2>{0.958579f, 0.1f});
-    assert_allclose(p11, FixedArray<double, 2>{0.958579f, -0.1f});
+    assert_allclose(p00.casted<double>(), FixedArray<double, 2>{0.0414214f, 0.1f});
+    assert_allclose(p01.casted<double>(), FixedArray<double, 2>{0.0414214f, -0.1f});
+    assert_allclose(p10.casted<double>(), FixedArray<double, 2>{0.958579f, 0.1f});
+    assert_allclose(p11.casted<double>(), FixedArray<double, 2>{0.958579f, -0.1f});
 }
 
 FixedArray<float, 3> a2k(const FixedArray<float, 3>& angles) {
@@ -514,7 +519,7 @@ void test_triangulate_3d_2() {
 
 void test_smallest_angle_in_triangle() {
     assert_isclose(
-        triangle_largest_cosine(FixedArray<FixedArray<float, 2>, 3>{
+        triangle_largest_cosine(FixedArray<float, 3, 2>{
             FixedArray<float, 2>{-1.f, -1.f},
             FixedArray<float, 2>{1.f, -1.f},
             FixedArray<float, 2>{0.f, 2.f}}),
@@ -694,18 +699,21 @@ void test_ray_sphere_intersection() {
 }
 
 void test_distance_polygon_aabb() {
-    auto aabb = AxisAlignedBoundingBox<double, 3>::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f});
-    FixedArray<double, 3> a{1., 2., 10.};
-    FixedArray<double, 3> b{2., 2., 10.};
-    FixedArray<double, 3> c{2., 3., 10.};
-    FixedArray<double, 3> d{1., 3., 10.};
-    Polygon3D<double, 4> poly{{a, b, c, d}};
+    using P = CompressedScenePos;
+    auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::from_min_max(
+        {1.f, 2.f, 3.f},
+        {2.f, 3.f, 4.f});
+    FixedArray<P, 3> a{(P)1., (P)2., (P)10.};
+    FixedArray<P, 3> b{(P)2., (P)2., (P)10.};
+    FixedArray<P, 3> c{(P)2., (P)3., (P)10.};
+    FixedArray<P, 3> d{(P)1., (P)3., (P)10.};
+    Polygon3D<P, 4> poly{{a, b, c, d}};
     auto rng = welzl_rng();
-    CollisionPolygonSphere<CompressedScenePos, 4> cps{
-        .bounding_sphere = poly.bounding_sphere(rng).casted<CompressedScenePos>(),
-        .polygon = poly.polygon().casted<SceneDir, CompressedScenePos>(),
+    CollisionPolygonSphere<P, 4> cps{
+        .bounding_sphere = poly.bounding_sphere(rng).casted<P>(),
+        .polygon = poly.polygon().casted<SceneDir, P>(),
         .physics_material = PhysicsMaterial::NONE,
-        .corners = poly.vertices().casted<CompressedScenePos>()};
+        .corners = poly.vertices().casted<P>()};
     ClosestPoint<SceneDir, ScenePos> cp;
     distance_polygon_aabb<4>(cps, aabb, cp);
     linfo() << cp.closest_point0 << " - " << cp.closest_point1 << " - " << cp.normal << " - " << cp.distance;

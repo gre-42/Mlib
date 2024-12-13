@@ -5,10 +5,58 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Stats/Clamped.hpp>
+#include <cstdint>
 #include <iosfwd>
 #include <vector>
 
 namespace Mlib {
+
+namespace Colors {
+
+static const FixedArray<uint8_t, 4> BLACK{ (uint8_t)0, (uint8_t)0, (uint8_t)0, (uint8_t)255 };
+static const FixedArray<uint8_t, 4> WHITE{ (uint8_t)255, (uint8_t)255, (uint8_t)255, (uint8_t)255 };
+
+static const FixedArray<uint8_t, 4> RED{ (uint8_t)255, (uint8_t)0, (uint8_t)0, (uint8_t)255 };
+static const FixedArray<uint8_t, 4> GREEN{ (uint8_t)0, (uint8_t)255, (uint8_t)0, (uint8_t)255 };
+static const FixedArray<uint8_t, 4> BLUE{ (uint8_t)0, (uint8_t)0, (uint8_t)255, (uint8_t)255 };
+
+static const FixedArray<uint8_t, 4> PURPLE{ (uint8_t)255, (uint8_t)0, (uint8_t)255, (uint8_t)255 };
+static const FixedArray<uint8_t, 4> CYAN{ (uint8_t)0, (uint8_t)255, (uint8_t)255, (uint8_t)255 };
+static const FixedArray<uint8_t, 4> YELLOW{ (uint8_t)255, (uint8_t)255, (uint8_t)0, (uint8_t)255 };
+
+inline uint8_t from_float(float f) {
+    return (uint8_t)std::clamp(std::round(f * 255.f), 0.f, 255.f);
+}
+
+inline float to_float(uint8_t c) {
+    return c / 255.f;
+}
+
+inline FixedArray<uint8_t, 4> from_rgb(const FixedArray<float, 3>& rgb) {
+    return {
+        from_float(rgb(0)),
+        from_float(rgb(1)),
+        from_float(rgb(2)),
+        (uint8_t)255 };
+}
+
+inline FixedArray<float, 3> to_rgb(const FixedArray<uint8_t, 4>& rgba) {
+    return {
+        to_float(rgba(0)),
+        to_float(rgba(1)),
+        to_float(rgba(2)) };
+}
+
+inline FixedArray<uint8_t, 4> from_rgba(const FixedArray<float, 4>& rgba) {
+    return clamped(round(rgba * 255.f), 0.f, 255.f).casted<uint8_t>();
+}
+
+inline FixedArray<uint8_t, 4> multiply(const FixedArray<uint8_t, 4>& a, const FixedArray<uint8_t, 4>& b) {
+    return clamped(round(a.casted<float>() / 255.f * b.casted<float>()), 0.f, 255.f).casted<uint8_t>();
+}
+
+}
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -39,7 +87,7 @@ inline ColoredVertexFeatures& operator |= (ColoredVertexFeatures& a, ColoredVert
 template <class TPos>
 struct ColoredVertex {
     FixedArray<TPos, 3> position;
-    FixedArray<float, 3> color;
+    FixedArray<uint8_t, 4> color;
     FixedArray<float, 2> uv;
     FixedArray<float, 3> normal;
     FixedArray<float, 3> tangent;
@@ -53,7 +101,7 @@ struct ColoredVertex {
     {}
     ColoredVertex(
         const FixedArray<TPos, 3>& position,
-        const FixedArray<float, 3>& color = fixed_ones<float, 3>(),
+        const FixedArray<uint8_t, 4>& color = fixed_full<uint8_t, 4>(255),
         const FixedArray<float, 2>& uv = fixed_zeros<float, 2>(),
         const FixedArray<float, 3>& normal = fixed_zeros<float, 3>(),
         const FixedArray<float, 3>& tangent = fixed_zeros<float, 3>())
@@ -153,7 +201,7 @@ struct ColoredVertex {
 
 template <class TPos>
 inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex<TPos>& v) {
-    ostr << "p " << v.position << " n " << v.normal << " c " << v.color << " t " << v.uv;
+    ostr << "p " << v.position << " n " << v.normal << " c " << v.color.casted<uint16_t>() << " t " << v.uv;
     return ostr;
 }
 

@@ -17,7 +17,7 @@ double Mlib::compute_area_clockwise(
         if (s != nd.end()) {
             const auto& a = nodes.at(*it).position;
             const auto& b = nodes.at(*s).position;
-            area2 += (b(0) - a(0)) * (b(1) + a(1));
+            area2 += funpack(b(0) - a(0)) * funpack(b(1) + a(1));
         }
     }
     return area2 / 2. / squared(scale);

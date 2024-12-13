@@ -90,13 +90,13 @@ void Mlib::add_models_to_model_nodes(
                 if (np == prev_neighbor.end() && nn == next_neighbor.end()) {
                     yangle = 0.f;
                 } else if (np != prev_neighbor.end() && nn != next_neighbor.end()) {
-                    FixedArray<double, 2> dir = nodes.at(nn->second).position - nodes.at(np->second).position;
+                    FixedArray<double, 2> dir = funpack(nodes.at(nn->second).position - nodes.at(np->second).position);
                     yangle = (float)std::atan2(-dir(1), -dir(0));
                 } else if (np != prev_neighbor.end()) {
-                    FixedArray<double, 2> dir = nodes.at(node_id).position - nodes.at(np->second).position;
+                    FixedArray<double, 2> dir = funpack(nodes.at(node_id).position - nodes.at(np->second).position);
                     yangle = (float)std::atan2(-dir(1), -dir(0));
                 } else {
-                    FixedArray<double, 2> dir = nodes.at(nn->second).position - nodes.at(node_id).position;
+                    FixedArray<double, 2> dir = funpack(nodes.at(nn->second).position - nodes.at(node_id).position);
                     yangle = (float)std::atan2(-dir(1), -dir(0));
                 }
             } else {
@@ -109,7 +109,7 @@ void Mlib::add_models_to_model_nodes(
                     yangle = safe_stof(yit->second) * degrees;
                 }
             }
-            double height;
+            CompressedScenePos height;
             if (ground_bvh.height(height, node.position)) {
                 bri.add_parsed_resource_name(
                     node.position,

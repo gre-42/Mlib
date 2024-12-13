@@ -9,13 +9,14 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Static_Face_Lighting.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
+#include <Mlib/Geometry/Vertex_Transformation.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
-#include <Mlib/Strings/String_View_To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Scene_Pos.hpp>
 #include <filesystem>
 #include <vector>
 
@@ -42,6 +43,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     const std::string& filename,
     const LoadMeshConfig<TPos>& cfg)
 {
+    using I = funpack_t<TPos>;
+    using Triangle = FixedArray<TPos, 3, 3>;
+    using Quad = FixedArray<TPos, 4, 3>;
+
     std::map<std::string, ObjMaterial> mtllib;
     std::vector<ColoredVertexX<TPos>> obj_vertices;
     UUVector<FixedArray<float, 2>> obj_uvs;
@@ -214,10 +219,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 FixedArray<float, 3> n1 = uninitialized;
                 FixedArray<float, 3> n2 = uninitialized;
                 if (match[3].str().empty() && match[6].str().empty() && match[9].str().empty()) {
-                    auto n = triangle_normal<TPos>({
+                    auto n = triangle_normal(funpack(Triangle{
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
-                        obj_vertices.at(vertex_ids(2) - 1).position},
+                        obj_vertices.at(vertex_ids(2) - 1).position}),
                         NormalVectorErrorBehavior::WARN).template casted<float>();
                     n0 = n;
                     n1 = n;
@@ -242,9 +247,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     n0,
                     n1,
                     n2,
-                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffuse, n0),
-                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffuse, n1),
-                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffuse, n2),
+                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffuse, n0)),
+                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffuse, n1)),
+                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffuse, n2)),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0.f, 0.f},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1.f, 0.f},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{0.f, 1.f},
@@ -270,10 +275,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 FixedArray<float, 3> n2 = uninitialized;
                 FixedArray<float, 3> n3 = uninitialized;
                 if (match[3].str().empty() && match[6].str().empty() && match[9].str().empty()) {
-                    auto n = triangle_normal<TPos>({
+                    auto n = triangle_normal(funpack(Triangle{
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
-                        obj_vertices.at(vertex_ids(2) - 1).position},
+                        obj_vertices.at(vertex_ids(2) - 1).position}),
                         NormalVectorErrorBehavior::WARN).template casted<float>();
                     n0 = n;
                     n1 = n;
@@ -304,10 +309,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     n1,
                     n2,
                     n3,
-                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffuse, n0),
-                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffuse, n1),
-                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffuse, n2),
-                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v3.color : sfl.get_color(current_mtl.diffuse, n3),
+                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffuse, n0)),
+                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffuse, n1)),
+                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffuse, n2)),
+                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v3.color : sfl.get_color(current_mtl.diffuse, n3)),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0.f, 0.f},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1.f, 0.f},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{1.f, 1.f},
@@ -409,24 +414,19 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
         THROW_OR_ABORT("Error reading from file " + filename);
     }
     result.push_back(tl.triangle_array());
-    FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
-    auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
+    VertexTransformation<TPos> vtrafo{
+        cfg.position,
+        cfg.rotation,
+        cfg.scale };
     for (auto& l : result) {
-        auto transform_vertex = [&](ColoredVertex<TPos>& v){
-            v.position *= cfg.scale.template casted<TPos>();
-            v.position = dot1d(rotation_matrix_p.template casted<TPos>(), v.position);
-            v.position += cfg.position;
-            v.normal = dot1d(rotation_matrix_n, v.normal);
-            v.tangent = dot1d(rotation_matrix_p, v.tangent);
-            };
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
-                transform_vertex(v);
+                vtrafo.transform_inplace(v);
             }
         }
         for (auto& t : l->quads) {
             for (auto& v : t.flat_iterable()) {
-                transform_vertex(v);
+                vtrafo.transform_inplace(v);
             }
         }
     }
@@ -434,7 +434,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     return result;
 }
 
-namespace Mlib {
-template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_obj<float>(const std::string& filename, const LoadMeshConfig<float>& cfg);
-template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_obj<double>(const std::string& filename, const LoadMeshConfig<double>& cfg);
-}
+template std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj<float>(
+    const std::string& filename, const LoadMeshConfig<float>& cfg);
+template std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> Mlib::load_obj<CompressedScenePos>(
+    const std::string& filename, const LoadMeshConfig<CompressedScenePos>& cfg);

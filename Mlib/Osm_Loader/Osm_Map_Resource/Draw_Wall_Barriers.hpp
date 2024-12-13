@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -16,7 +17,7 @@ class TriangleList;
 struct BarrierStyle;
 
 void draw_wall_barriers(
-    std::list<std::shared_ptr<TriangleList<double>>>& tls,
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
     const Material& material,
     const Morphology& morphology,

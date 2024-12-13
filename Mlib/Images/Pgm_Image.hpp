@@ -32,8 +32,8 @@ public:
     explicit PgmImage(const ArrayShape& shape);
 
     void draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, uint16_t color);
-    void draw_line(const Array<float>& from, const Array<float>& to, size_t thickness, uint16_t color);
-    void draw_infinite_line(const Array<float>& from, const Array<float>& to, size_t thickness, uint16_t color);
+    void draw_line(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, uint16_t color);
+    void draw_infinite_line(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, uint16_t color);
     void draw_mask(const Array<bool>& mask, uint16_t color);
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, uint16_t color);
 
@@ -58,7 +58,7 @@ public:
         return grayscale;
     }
 private:
-    void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, uint16_t color, bool infinite);
+    void draw_line_ext(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, uint16_t color, bool infinite);
 };
 
 }

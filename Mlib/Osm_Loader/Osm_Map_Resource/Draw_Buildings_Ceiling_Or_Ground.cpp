@@ -19,12 +19,13 @@
 using namespace Mlib;
 
 void Mlib::draw_buildings_ceiling_or_ground(
-    std::list<std::shared_ptr<TriangleList<double>>>& tls,
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     const Material& material,
     const Morphology& morphology,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
+    float triangulation_scale,
     float uv_scale,
     float uv_period,
     float max_width,
@@ -49,15 +50,15 @@ void Mlib::draw_buildings_ceiling_or_ground(
         if (sw.outline.empty()) {
             THROW_OR_ABORT("Smoothed outline is empty");
         }
-        UUVector<FixedArray<double, 2>> outline(sw.outline.begin(), sw.outline.end());
+        UUVector<FixedArray<CompressedScenePos, 2>> outline(sw.outline.begin(), sw.outline.end());
         outline = removed_duplicates(outline);
-        tls.push_back(std::make_shared<TriangleList<double>>(
+        tls.push_back(std::make_shared<TriangleList<CompressedScenePos>>(
             "ceilings_" + std::to_string(mid++),
             material,
             morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
-        BoundingInfo bounding_info{outline, {}, 0.1f};
+        BoundingInfo bounding_info{ outline, {}, (CompressedScenePos)100.f };
         try {
             triangulate_terrain_or_ceilings(
                 tl_terrain,                                                      // tl_terrain
@@ -67,6 +68,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 {},                                                              // hole_triangles
                 {},                                                              // region_contours
                 scale,                                                           // scale
+                triangulation_scale,                                             // triangulation_scale
                 uv_scale,                                                        // uv_scale
                 uv_period,                                                       // uv_period
                 sw.z,                                                            // z

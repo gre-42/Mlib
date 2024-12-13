@@ -17,7 +17,7 @@ SupplyDepotsWaypoints::SupplyDepotsWaypoints(
 {}
 
 struct WaypointAndTTotalDistance {
-    ScenePos ttotal_distance;
+    CompressedScenePos ttotal_distance;
     size_t waypoint_id;
 };
 
@@ -57,7 +57,7 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
         player_.single_waypoint().set_waypoint(waypoint_positions_.at(predecessor_id), predecessor_id);
         return true;
     } else {
-        auto p = player_.rigid_body().rbp_.abs_position();
+        auto p = player_.rigid_body().rbp_.abs_position().casted<CompressedScenePos>();
         auto compute_ttotal_distance = [this, &p](size_t waypoint_id) {
             // g_beacons.push_back(
             //     Beacon{
@@ -68,7 +68,7 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
             //         .resource_name = "flag"
             //     });
             return WaypointAndTTotalDistance{
-                .ttotal_distance = std::sqrt(sum(squared(p - waypoint_positions_.at(waypoint_id).position))) + total_distances_.at(waypoint_id),
+                .ttotal_distance = (CompressedScenePos)std::sqrt(sum(squared(p - waypoint_positions_.at(waypoint_id).position))) + total_distances_.at(waypoint_id),
                 .waypoint_id = waypoint_id};
         };
         auto ctarget = compute_ttotal_distance(single_waypoint_.target_waypoint_id());

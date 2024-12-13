@@ -32,13 +32,13 @@ void Mlib::add_cleanup_mesh_modifier(
                     ccleanup(
                         *cva,
                         min_distance_material_filter,
-                        min_vertex_distance,
+                        (TPos)min_vertex_distance,
                         modulo_uv);
                     return cva->empty();
                     });
             };
             CleanupMesh<float> scleanup;
-            CleanupMesh<double> dcleanup;
+            CleanupMesh<CompressedScenePos> dcleanup;
             for (const auto& acva : resource.get_rendering_arrays()) {
                 cleanup(scleanup, acva->scvas);
                 cleanup(dcleanup, acva->dcvas);

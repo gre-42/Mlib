@@ -36,41 +36,41 @@ using namespace Mlib;
 // }
 
 void Mlib::draw_node(
-    UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
-    const FixedArray<double, 2>& pos2d,
-    float size)
+    UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles,
+    const FixedArray<CompressedScenePos, 2>& pos2d,
+    CompressedScenePos size)
 {
-    ColoredVertex<double> v00{
-        FixedArray<double, 3>{pos2d(0) - size, pos2d(1) - size, 0.f},
-        FixedArray<float, 3>{1.f, 1.f, 0.f},
+    ColoredVertex<CompressedScenePos> v00{
+        FixedArray<CompressedScenePos, 3>{pos2d(0) - size, pos2d(1) - size, (CompressedScenePos)0.f},
+        Colors::YELLOW,
         fixed_zeros<float, 2>(),
         fixed_zeros<float, 3>(),
         fixed_zeros<float, 3>()};
-    ColoredVertex<double> v01{
-        FixedArray<double, 3>{pos2d(0) - size, pos2d(1) + size, 0.f},
-        FixedArray<float, 3>{1.f, 0.f, 1.f},
+    ColoredVertex<CompressedScenePos> v01{
+        FixedArray<CompressedScenePos, 3>{pos2d(0) - size, pos2d(1) + size, (CompressedScenePos)0.f},
+        Colors::PURPLE,
         fixed_zeros<float, 2>(),
         fixed_zeros<float, 3>(),
         fixed_zeros<float, 3>()};
-    ColoredVertex<double> v10{
-        FixedArray<double, 3>{pos2d(0) + size, pos2d(1) - size, 0.f},
-        FixedArray<float, 3>{0.f, 1.f, 1.f},
+    ColoredVertex<CompressedScenePos> v10{
+        FixedArray<CompressedScenePos, 3>{pos2d(0) + size, pos2d(1) - size, (CompressedScenePos)0.f},
+        Colors::CYAN,
         fixed_zeros<float, 2>(),
         fixed_zeros<float, 3>(),
         fixed_zeros<float, 3>()};
-    ColoredVertex<double> v11{
-        FixedArray<double, 3>{pos2d(0) + size, pos2d(1) + size, 0.f},
-        FixedArray<float, 3>{1.f, 1.f, 1.f},
+    ColoredVertex<CompressedScenePos> v11{
+        FixedArray<CompressedScenePos, 3>{pos2d(0) + size, pos2d(1) + size, (CompressedScenePos)0.f},
+        Colors::WHITE,
         fixed_zeros<float, 2>(),
         fixed_zeros<float, 3>(),
         fixed_zeros<float, 3>()};
 
-    triangles.push_back(FixedArray<ColoredVertex<double>, 3>{v00, v11, v01});
-    triangles.push_back(FixedArray<ColoredVertex<double>, 3>{v11, v00, v10});
+    triangles.push_back(FixedArray<ColoredVertex<CompressedScenePos>, 3>{v00, v11, v01});
+    triangles.push_back(FixedArray<ColoredVertex<CompressedScenePos>, 3>{v11, v00, v10});
 }
 
 void Mlib::draw_nodes(
-    UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, std::list<std::string>>& ways)
 {
@@ -79,7 +79,7 @@ void Mlib::draw_nodes(
             if (nodes.find(nd) == nodes.end()) {
                 THROW_OR_ABORT("Way " + way.first + " could not find node with ID " + nd);
             }
-            FixedArray<double, 2> pos2d = nodes.at(nd).position;
+            FixedArray<CompressedScenePos, 2> pos2d = nodes.at(nd).position;
             draw_node(triangles, pos2d);
         }
     }
@@ -138,10 +138,10 @@ std::string Mlib::parse_string(
     return *value;
 }
 
-float Mlib::parse_meters(
+double Mlib::parse_meters(
     const std::map<std::string, std::string>& tags,
     const std::string& key,
-    float default_value)
+    double default_value)
 {
     auto* value = try_find(tags, key);
     if (value == nullptr) {
@@ -152,11 +152,11 @@ float Mlib::parse_meters(
     if (!Mlib::re::regex_match(*value, match, re)) {
         THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + *value + '"');
     }
-    float res = safe_stof(match[1].str());
+    double res = safe_stod(match[1].str());
     if ((match[2].str() == "'") ||
         (match[2].str() == "ft"))
     {
-        res *= 0.3048f;
+        res *= 0.3048;
     }
     return res;
 }
@@ -233,12 +233,12 @@ bool Mlib::parse_bool(
 //};
 
 void Mlib::raise_streets(
-    const std::list<std::shared_ptr<TriangleList<double>>>& tls_street_wo_curb,
-    const std::list<std::shared_ptr<TriangleList<double>>>& tls_ground,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_street_wo_curb,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_ground,
     float scale,
     float amount)
 {
-    std::set<OrderableFixedArray<double, 3>> raised_nodes;
+    std::set<OrderableFixedArray<CompressedScenePos, 3>> raised_nodes;
     for (auto& l : tls_street_wo_curb) {
         for (const auto& n : l->triangles) {
             raised_nodes.insert(OrderableFixedArray{n(0).position});
@@ -250,7 +250,7 @@ void Mlib::raise_streets(
         for (auto& n : l->triangles) {
             for (auto& v : n.flat_iterable()) {
                 if (raised_nodes.find(OrderableFixedArray{v.position}) != raised_nodes.end()) {
-                    v.position(2) += scale * amount;
+                    v.position(2) += (CompressedScenePos)(scale * amount);
                 }
             }
         }
@@ -282,7 +282,7 @@ void Mlib::add_beacons_to_raceways(
         {
             auto sw = subdivided_way(nodes, w.second.nd, scale, raceway_beacon_distance);
             for (const auto p : sw) {
-                bri.add_parsed_resource_name(p, 0.f, prn, 0.f, 1.f);
+                bri.add_parsed_resource_name(p, (CompressedScenePos)0.f, prn, 0.f, 1.f);
             }
         }
     }
@@ -418,13 +418,13 @@ private:
     std::map<OrderableFixedArray<OrderableFixedArray<float, 3>, 3>, TriangleMaterial> tags_;
 };*/
 
-void Mlib::colorize_height_map(std::list<FixedArray<ColoredVertex<double>, 3>>& triangles)
+void Mlib::colorize_height_map(std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles)
 {
-    StaticFaceLighting sfl{true}; // true == swap_yz
+    StaticFaceLighting sfl{ true }; // true == swap_yz
     for (auto& t : triangles) {
-        t(0).color = sfl.get_color(t(0).color, t(0).normal);
-        t(1).color = sfl.get_color(t(1).color, t(1).normal);
-        t(2).color = sfl.get_color(t(2).color, t(2).normal);
+        t(0).color = Colors::from_rgb(sfl.get_color(Colors::to_rgb(t(0).color), t(0).normal));
+        t(1).color = Colors::from_rgb(sfl.get_color(Colors::to_rgb(t(1).color), t(1).normal));
+        t(2).color = Colors::from_rgb(sfl.get_color(Colors::to_rgb(t(2).color), t(2).normal));
     }
 }
 
@@ -450,30 +450,30 @@ void to_orderable_fixed_array(
     }
 }
 
-UUVector<FixedArray<double, 2>> Mlib::removed_duplicates(
-    const UUVector<FixedArray<double, 2>>& nodes,
+UUVector<FixedArray<CompressedScenePos, 2>> Mlib::removed_duplicates(
+    const UUVector<FixedArray<CompressedScenePos, 2>>& nodes,
     bool verbose)
 {
-    UUVector<FixedArray<double, 2>> result;
+    UUVector<FixedArray<CompressedScenePos, 2>> result;
     result.reserve(nodes.size());
     to_orderable_fixed_array(
         result,
         nodes,
         verbose,
-        [](const FixedArray<double, 2>& p){return OrderableFixedArray<double, 2>{p};});
+        [](const FixedArray<CompressedScenePos, 2>& p){return OrderableFixedArray<CompressedScenePos, 2>{p};});
     return result;
 }
 
-std::list<FixedArray<double, 2>> Mlib::removed_duplicates(
-    const std::list<FixedArray<double, 2>>& nodes,
+std::list<FixedArray<CompressedScenePos, 2>> Mlib::removed_duplicates(
+    const std::list<FixedArray<CompressedScenePos, 2>>& nodes,
     bool verbose)
 {
-    std::list<FixedArray<double, 2>> result;
+    std::list<FixedArray<CompressedScenePos, 2>> result;
     to_orderable_fixed_array(
         result,
         nodes,
         verbose,
-        [](const FixedArray<double, 2>& p){return OrderableFixedArray<double, 2>{p};});
+        [](const FixedArray<CompressedScenePos, 2>& p){return OrderableFixedArray<CompressedScenePos, 2>{p};});
     return result;
 }
 
@@ -486,7 +486,7 @@ std::list<SteinerPointInfo> Mlib::removed_duplicates(
         result,
         nodes,
         verbose,
-        [](const SteinerPointInfo& p){return OrderableFixedArray<double, 3>{p.position};});
+        [](const SteinerPointInfo& p){return OrderableFixedArray<CompressedScenePos, 3>{p.position};});
     return result;
 }
 

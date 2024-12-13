@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp_Fwd.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
@@ -50,7 +51,7 @@ static const std::set<std::string> included_barriers = {"wall", "guard_rail", "f
 static const std::set<std::string> excluded_buildings = {"roof"};
 
 struct Node {
-    FixedArray<double, 2> position;
+    FixedArray<CompressedScenePos, 2> position;
     Map<std::string, std::string> tags;
 };
 
@@ -60,12 +61,12 @@ struct Way {
 };
 
 void draw_node(
-    UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
-    const FixedArray<double, 2>& pos2d,
-    float size = 0.01f);
+    UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles,
+    const FixedArray<CompressedScenePos, 2>& pos2d,
+    CompressedScenePos size = (CompressedScenePos)0.01f);
 
 void draw_nodes(
-    UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, std::list<std::string>>& ways);
 
@@ -78,10 +79,10 @@ std::string parse_string(
     const std::string& key,
     const std::string& default_value);
 
-float parse_meters(
+double parse_meters(
     const std::map<std::string, std::string>& tags,
     const std::string& key,
-    float default_value);
+    double default_value);
 
 float parse_radians(
     const std::map<std::string, std::string>& tags,
@@ -118,8 +119,8 @@ bool parse_bool(
 //};
 
 void raise_streets(
-    const std::list<std::shared_ptr<TriangleList<double>>>& tls_street_wo_curb,
-    const std::list<std::shared_ptr<TriangleList<double>>>& tls_ground,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_street_wo_curb,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_ground,
     float scale,
     float amount);
 
@@ -181,10 +182,10 @@ private:
     std::map<OrderableFixedArray<OrderableFixedArray<float, 3>, 3>, TriangleMaterial> tags_;
 };*/
 
-void colorize_height_map(std::list<FixedArray<ColoredVertex<double>, 3>>& triangles);
+void colorize_height_map(std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles);
 
-UUVector<FixedArray<double, 2>> removed_duplicates(const UUVector<FixedArray<double, 2>>& nodes, bool verbose = true);
-std::list<FixedArray<double, 2>> removed_duplicates(const std::list<FixedArray<double, 2>>& nodes, bool verbose = true);
+UUVector<FixedArray<CompressedScenePos, 2>> removed_duplicates(const UUVector<FixedArray<CompressedScenePos, 2>>& nodes, bool verbose = true);
+std::list<FixedArray<CompressedScenePos, 2>> removed_duplicates(const std::list<FixedArray<CompressedScenePos, 2>>& nodes, bool verbose = true);
 std::list<SteinerPointInfo> removed_duplicates(const std::list<SteinerPointInfo>& nodes, bool verbose = true);
 
 void check_curb_validity(float curb_alpha, float curb2_alpha);

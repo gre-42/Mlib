@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <map>
 #include <set>
 
@@ -25,7 +26,7 @@ enum class RectangleOrientation {
 struct OsmRectangle3D {
     
     void draw(
-        TriangleList<double>& tl,
+        TriangleList<CompressedScenePos>& tl,
         const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
         float scale,
         float width,

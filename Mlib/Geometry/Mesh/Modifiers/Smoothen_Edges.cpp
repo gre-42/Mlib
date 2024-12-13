@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <map>
 
 using namespace Mlib;
@@ -18,7 +19,7 @@ void Mlib::smoothen_edges(
         typedef OrderableFixedArray<TPos, 3> Vertex3;
         typedef OrderableFixedArray<Vertex3, 2> Edge3;
         std::map<Edge3, Vertex3> edge_neighbors;
-        std::map<Vertex3, FixedArray<TPos, 3>> vertex_movement;
+        std::map<Vertex3, FixedArray<float, 3>> vertex_movement;
         for (const auto& l : cvas) {
             for (const auto& t : l->triangles) {
                 auto insert_edge = [&](size_t i, size_t j, size_t n){
@@ -29,23 +30,24 @@ void Mlib::smoothen_edges(
                     if (it == edge_neighbors.end()) {
                         edge_neighbors.insert({Edge3{ei, ej}, nn});
                     } else {
-                        FixedArray<TPos, 3> n0 = triangle_normal<TPos>({ej, ei, it->second});
-                        FixedArray<TPos, 3> n1 = triangle_normal<TPos>({ei, ej, nn});
-                        FixedArray<TPos, 3> cn = (it->second + nn) / TPos(2);
-                        FixedArray<TPos, 3> ce = (ei + ej) / TPos(2);
-                        FixedArray<TPos, 3> v = cn - ce;
-                        FixedArray<TPos, 3> n01 = (n0 + n1) / TPos(2);
+                        using Triangle = FixedArray<TPos, 3, 3>;
+                        FixedArray<float, 3> n0 = triangle_normal(funpack(Triangle{ej, ei, it->second})).template casted<float>();
+                        FixedArray<float, 3> n1 = triangle_normal(funpack(Triangle{ei, ej, nn})).template casted<float>();
+                        FixedArray<TPos, 3> cn = (it->second + nn) / 2;
+                        FixedArray<TPos, 3> ce = (ei + ej) / 2;
+                        FixedArray<float, 3> v = (cn - ce).template casted<float>();
+                        FixedArray<float, 3> n01 = (n0 + n1) / 2;
                         n01 /= std::sqrt(sum(squared(n01)));
-                        TPos n0n1 = dot0d(n0, n1);
-                        if (n0n1 >=0 && n0n1 < 1) {
-                            TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
+                        float n0n1 = dot0d(n0, n1);
+                        if (n0n1 >= 0 && n0n1 < 1) {
+                            float shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
                             if (auto e = ei; !excluded_vertices.contains(e)) {
                                 auto it = vertex_movement.try_emplace(e, fixed_zeros<TPos, 3>()).first;
-                                it->second += TPos(smoothness) * n01 * shift;
+                                it->second += smoothness * n01 * shift;
                             }
                             if (auto e = ej; !excluded_vertices.contains(e)) {
                                 auto it = vertex_movement.try_emplace(e, fixed_zeros<TPos, 3>()).first;
-                                it->second += TPos(smoothness) * n01 * shift;
+                                it->second += smoothness * n01 * shift;
                             }
                         }
                     }
@@ -60,7 +62,7 @@ void Mlib::smoothen_edges(
                 for (auto& v : t.flat_iterable()) {
                     auto mit = vertex_movement.find(Vertex3(v.position));
                     if (mit != vertex_movement.end()) {
-                        v.position += mit->second;
+                        v.position += mit->second.template casted<TPos>();
                     }
                 }
             }
@@ -76,9 +78,9 @@ namespace Mlib {
         float smoothness,
         size_t niterations,
         float decay);
-    template void smoothen_edges<double>(
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
-        const std::set<OrderableFixedArray<double, 3>>& excluded_vertices,
+    template void smoothen_edges<CompressedScenePos>(
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
+        const std::set<OrderableFixedArray<CompressedScenePos, 3>>& excluded_vertices,
         float smoothness,
         size_t niterations,
         float decay);

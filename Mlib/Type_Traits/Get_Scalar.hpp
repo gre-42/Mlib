@@ -15,8 +15,8 @@ struct IsNotScalarHelper {
 template <class T>
 IsNotScalarHelper is_scalar_helper(const T&);
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-IsScalarHelper is_scalar_helper(const ScaledInteger<TInt, numerator, denominator>&);
+template <class TInt, std::intmax_t denominator>
+IsScalarHelper is_scalar_helper(const ScaledInteger<TInt, denominator>&);
 
 template <class T>
 IsScalarHelper is_scalar_helper(const T&) requires std::is_scalar_v<T>;

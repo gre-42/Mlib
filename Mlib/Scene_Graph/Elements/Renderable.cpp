@@ -41,7 +41,7 @@ void Renderable::append_large_aggregates_to_queue(
 
 void Renderable::append_filtered_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
-    std::list<std::shared_ptr<ColoredVertexArray<double>>>& double_queue,
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue,
     const ColoredVertexArrayFilter& filter) const
 {}
 
@@ -67,16 +67,16 @@ void Renderable::append_large_instances_to_queue(
 void Renderable::extend_aabb(
     const TransformationMatrix<float, ScenePos, 3>& mv,
     ExternalRenderPassType render_pass,
-    AxisAlignedBoundingBox<ScenePos, 3>& aabb) const
+    AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const
 {
     THROW_OR_ABORT("Renderable::extend_aabb not implemented");
 }
 
-AxisAlignedBoundingBox<ScenePos, 3> Renderable::aabb() const {
+AxisAlignedBoundingBox<CompressedScenePos, 3> Renderable::aabb() const {
     THROW_OR_ABORT("Renderable::aabb not implemented");
 }
 
-BoundingSphere<ScenePos, 3> Renderable::bounding_sphere() const {
+BoundingSphere<CompressedScenePos, 3> Renderable::bounding_sphere() const {
     THROW_OR_ABORT("Renderable::bounding_sphere not implemented");
 }
 

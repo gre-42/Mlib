@@ -47,37 +47,37 @@ DepthMapResource::DepthMapResource(
                         pos0(0) * Z(r, c),
                         pos0(1) * Z(r, c),
                         Z(r, c)}),
-                    FixedArray<float, 3>{
+                    Colors::from_rgb({
                         R(r, c),
                         G(r, c),
-                        B(r, c)}};
+                        B(r, c)})};
             ColoredVertex<float> v01{
                     cv_to_opengl_coordinates({
                         pos1(0) * Z(r, c + 1),
                         pos0(1) * Z(r, c + 1),
                         Z(r, c + 1)}),
-                    FixedArray<float, 3> {
+                    Colors::from_rgb({
                         R(r, c + 1),
                         G(r, c + 1),
-                        B(r, c + 1)}};
+                        B(r, c + 1)})};
             ColoredVertex<float> v10{
                     cv_to_opengl_coordinates({
                         pos0(0) * Z(r + 1, c),
                         pos1(1) * Z(r + 1, c),
                         Z(r + 1, c)}),
-                     FixedArray<float, 3> {
+                    Colors::from_rgb({
                         R(r + 1, c),
                         G(r + 1, c),
-                        B(r + 1, c)}};
+                        B(r + 1, c)})};
             ColoredVertex<float> v11{
                     cv_to_opengl_coordinates({
                         pos1(0) * Z(r + 1, c + 1),
                         pos1(1) * Z(r + 1, c + 1),
                         Z(r + 1, c + 1)}),
-                    FixedArray<float, 3> {
+                    Colors::from_rgb({
                         R(r + 1, c + 1),
                         G(r + 1, c + 1),
-                        B(r + 1, c + 1)}};
+                        B(r + 1, c + 1)})};
 
             auto add_triangle = [&triangles, &cos_threshold](const ColoredVertex<float>& a, const ColoredVertex<float>& b, const ColoredVertex<float>& c) {
                 FixedArray<float, 3> normal = triangle_normal<float>({a.position, b.position, c.position});

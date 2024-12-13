@@ -35,8 +35,8 @@ template void load_renderable_pssg<float>(
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables);
 
-template void load_renderable_pssg<double>(
-    const PssgArrays<double, ScenePos>& arrays,
+template void load_renderable_pssg<CompressedScenePos>(
+    const PssgArrays<CompressedScenePos, ScenePos>& arrays,
     SceneNodeResources& scene_node_resources,
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables);

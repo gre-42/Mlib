@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <cstddef>
 #include <vector>
@@ -9,8 +10,8 @@ template <class TPoint>
 TPoint interpolate_default(
     const TPoint& p0,
     const TPoint& p1,
-    typename TPoint::value_type a0,
-    typename TPoint::value_type a1)
+    typename funpack_t<typename TPoint::value_type> a0,
+    typename funpack_t<typename TPoint::value_type> a1)
 {
     return p0 * a0 + p1 * a1;
 }
@@ -29,12 +30,13 @@ public:
         const TPoint& p1,
         const TData& distance) const
     {
-        size_t npoints = 1 + (size_t)(distance / max_length_);
+        size_t npoints = float_to_integral<size_t>(std::floor(1 + funpack(distance) / funpack(max_length_)));
         if (npoints > 2) {
             std::vector<TPoint> result;
             result.reserve(npoints - 2);
             for (size_t i = 1; i < npoints - 1; ++i) {
-                std::pair<TData, TData> lm = linspace_multipliers<TData>(i, npoints);
+                using I = funpack_t<TData>;
+                std::pair<I, I> lm = linspace_multipliers<I>(i, npoints);
                 TPoint pn = interpolate_(p0, p1, lm.first, lm.second);
                 result.push_back(pn);
             }

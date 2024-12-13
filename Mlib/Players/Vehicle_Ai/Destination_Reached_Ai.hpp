@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 
@@ -14,7 +15,7 @@ public:
     explicit DestinationReachedAi(
         RigidBodyVehicle& rigid_body,
         ControlSource control_source,
-        float destination_reached_radius);
+        ScenePos destination_reached_radius);
     virtual ~DestinationReachedAi() override;
     virtual VehicleAiMoveToStatus move_to(
         const AiWaypoint& ai_waypoint,
@@ -25,7 +26,7 @@ private:
     DestructionFunctionsRemovalTokens on_destroy_rigid_body_;
     RigidBodyVehicle& rigid_body_;
     ControlSource control_source_;
-    float destination_reached_radius_squared_;
+    ScenePos destination_reached_radius_squared_;
 };
 
 }

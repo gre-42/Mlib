@@ -176,7 +176,7 @@ void ResourceLocations::execute(const LoadSceneJsonUserFunctionArgs& args)
         dddb->add_ide(f.path);
     }
     if (args.arguments.at<bool>(KnownArgs::double_precision)) {
-        exec<double>(args, dddb);
+        exec<CompressedScenePos>(args, dddb);
     } else {
         exec<float>(args, dddb);
     }

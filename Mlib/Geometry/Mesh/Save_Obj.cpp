@@ -53,18 +53,14 @@ void Mlib::save_obj(
     save_obj(filename, IndexedFaceSet<float, TPos, size_t>{ ipolys }, &obj_materials);
 }
 
-namespace Mlib {
-
-template void save_obj<float>(
+template void Mlib::save_obj<float>(
     const std::string& filename,
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas,
     const std::function<std::string(const ColoredVertexArray<float>&)>& material_name,
     const std::function<ObjMaterial(const Material&)>& convert_material);
 
-template void save_obj<double>(
+template void Mlib::save_obj<CompressedScenePos>(
     const std::string& filename,
-    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
-    const std::function<std::string(const ColoredVertexArray<double>&)>& material_name,
+    const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
+    const std::function<std::string(const ColoredVertexArray<CompressedScenePos>&)>& material_name,
     const std::function<ObjMaterial(const Material&)>& convert_material);
-
-}

@@ -16,8 +16,9 @@ void Mlib::calculate_spawn_points(
     DrivingDirection driving_direction)
 {
     for (const auto& r : street_rectangles) {
-        FixedArray<double, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
-        FixedArray<double, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
+        auto rectangle = funpack(r.rectangle);
+        FixedArray<ScenePos, 3> x = rectangle[0][0] - rectangle[0][1];
+        FixedArray<ScenePos, 3> y = rectangle[0][0] - rectangle[1][0];
         double ly;
         {
             double lx2 = sum(squared(x));
@@ -41,7 +42,7 @@ void Mlib::calculate_spawn_points(
             x(2), y(2), z(2));
         auto r0 = matrix_2_tait_bryan_angles(R0).casted<float>();
         auto r1 = matrix_2_tait_bryan_angles(dot2d(rodrigues2(z, M_PI), R0)).casted<float>();
-        auto create_spawn_point = [&spawn_points, &r, &ly, &scale](
+        auto create_spawn_point = [&](
             SpawnPointType spawn_point_type,
             double alpha,
             const FixedArray<float, 3>& rotation)
@@ -51,8 +52,8 @@ void Mlib::calculate_spawn_points(
                     .type = spawn_point_type,
                     .location = r.location,
                     .position =
-                        alpha * (beta * r.rectangle(0, 0) + (1. - beta) * r.rectangle(1, 0)) +
-                        (1. - alpha) * (beta * r.rectangle(0, 1) + (1. - beta) * r.rectangle(1, 1)),
+                        (alpha * (beta * rectangle[0][0] + (1. - beta) * rectangle[1][0]) +
+                        (1. - alpha) * (beta * rectangle[0][1] + (1. - beta) * rectangle[1][1])).casted<CompressedScenePos>(),
                     .rotation = rotation});
             }
         };

@@ -125,7 +125,7 @@ public:
         const TransformationMatrix<float, TPosTransform, 3>& tm) const;
     std::vector<CollisionLineSphere<CompressedScenePos>> lines_sphere() const;
     void downsample_triangles(size_t n);
-    std::shared_ptr<ColoredVertexArray> generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
+    std::shared_ptr<ColoredVertexArray> generate_grind_lines(float edge_angle, float averaged_normal_angle) const;
     std::shared_ptr<ColoredVertexArray> generate_contour_edges() const;
     std::vector<std::shared_ptr<ColoredVertexArray>> split(
         float depth,

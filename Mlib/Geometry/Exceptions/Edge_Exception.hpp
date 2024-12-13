@@ -22,8 +22,8 @@ public:
     {}
     EdgeException(const FixedArray<TPos, 2>& a, const FixedArray<TPos, 2>& b, const std::string& what)
         : std::runtime_error{ what }
-        , a{ a(0), a(1), (TPos)0 }
-        , b{ b(0), b(1), (TPos)0 }
+        , a{ a(0), a(1), (TPos)0.f }
+        , b{ b(0), b(1), (TPos)0.f }
     {}
     EdgeException(const p2t::Point* a, const p2t::Point* b, const std::string& what)
         : std::runtime_error{ what }

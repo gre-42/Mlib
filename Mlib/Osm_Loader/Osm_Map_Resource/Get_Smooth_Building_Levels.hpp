@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <map>
 #include <string>
@@ -13,11 +14,11 @@ class FixedArray;
 enum class DrawBuildingPartType;
 
 struct BuildingLevelOutline {
-    std::list<FixedArray<double, 2>> outline;
-    double z;
+    std::list<FixedArray<CompressedScenePos, 2>> outline;
+    CompressedScenePos z;
 };
 
-std::list<FixedArray<FixedArray<double, 2>, 2>> smooth_building_level(
+std::list<FixedArray<CompressedScenePos, 2, 2>> smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
     double max_length,

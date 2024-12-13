@@ -4,6 +4,7 @@
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -52,11 +53,11 @@ struct DrawStreetsInput {
     OsmTriangleLists& air_triangles;
     BatchResourceInstantiator& bri;
     std::list<StreetRectangle>& street_rectangles;
-    std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings;
+    std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding>& node_height_bindings;
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
     UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_pipe_triangles;
     UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_bdry_triangles;
-    std::list<FixedArray<double, 2, 2>>& way_segments;
+    std::list<FixedArray<CompressedScenePos, 2, 2>>& way_segments;
     const RacingLineBvh& racing_line_bvh;
     const Map<RoadType, std::string>& street_surface_central_resource_names;
     const Map<RoadType, std::string>& street_surface_endpoint0_resource_names;
@@ -72,7 +73,7 @@ struct DrawStreetsInput {
     float default_street_width;
     float default_lane_width;
     float default_tunnel_pipe_width;
-    float default_tunnel_pipe_height;
+    CompressedScenePos default_tunnel_pipe_height;
     bool only_raceways_and_walls;
     const std::string& name_pattern;
     const std::set<std::string>& excluded_highways;

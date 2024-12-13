@@ -21,10 +21,10 @@ bool FuzzySetOfPoints<TData, tndim>::insert(const FixedArray<TData, tndim>& p, s
         merge_radius_,
         [&p](const auto& a){return sum(squared(a.first - p));},
         &neighbor);
-    if (min_dist2 < merge_radius_) {
+    if (min_dist2.has_value() && (*min_dist2 < squared(merge_radius_))) {
         index = neighbor->second;
         return false;
-    } else if (min_dist2 < error_radius_) {
+    } else if (min_dist2.has_value() && (*min_dist2 < squared(error_radius_))) {
         THROW_OR_ABORT2((PointException{ p, "Detected problematic fuzzy point distance" }));
     } else {
         index = bvh_size_++;

@@ -15,4 +15,4 @@ bool PhysicsResourceFilter::matches(const ColoredVertexArray<TPos>& cva) const {
 }
 
 template bool PhysicsResourceFilter::matches(const ColoredVertexArray<float>& cva) const;
-template bool PhysicsResourceFilter::matches(const ColoredVertexArray<double>& cva) const;
+template bool PhysicsResourceFilter::matches(const ColoredVertexArray<CompressedScenePos>& cva) const;

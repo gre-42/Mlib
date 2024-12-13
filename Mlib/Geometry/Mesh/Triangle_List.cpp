@@ -12,6 +12,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -41,9 +42,9 @@ void TriangleList<TPos>::draw_triangle_with_normals(
     const FixedArray<float, 3>& n00,
     const FixedArray<float, 3>& n10,
     const FixedArray<float, 3>& n01,
-    const FixedArray<float, 3>& c00,
-    const FixedArray<float, 3>& c10,
-    const FixedArray<float, 3>& c01,
+    const FixedArray<uint8_t, 4>& c00,
+    const FixedArray<uint8_t, 4>& c10,
+    const FixedArray<uint8_t, 4>& c01,
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u01,
@@ -55,17 +56,18 @@ void TriangleList<TPos>::draw_triangle_with_normals(
     ColoredVertex<TPos>** pp10,
     ColoredVertex<TPos>** pp01)
 {
+    using I = funpack_t<TPos>;
     ColoredVertex<TPos> v00{ p00, c00, u00, n00 };
     ColoredVertex<TPos> v10{ p10, c10, u10, n10 };
     ColoredVertex<TPos> v01{ p01, c01, u01, n01 };
 
-    FixedArray<TPos, 3> tangent = triangle_tangent(
-        v00.position,
-        v10.position,
-        v01.position,
-        v00.uv.template casted<TPos>(),
-        v10.uv.template casted<TPos>(),
-        v01.uv.template casted<TPos>(),
+    FixedArray<I, 3> tangent = triangle_tangent(
+        funpack(v00.position),
+        funpack(v10.position),
+        funpack(v01.position),
+        v00.uv.template casted<I>(),
+        v10.uv.template casted<I>(),
+        v01.uv.template casted<I>(),
         tangent_error_behavior);
     v00.tangent = tangent.template casted<float>();
     v10.tangent = tangent.template casted<float>();
@@ -94,9 +96,9 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     const FixedArray<TPos, 3>& p00,
     const FixedArray<TPos, 3>& p10,
     const FixedArray<TPos, 3>& p01,
-    const FixedArray<float, 3>& c00,
-    const FixedArray<float, 3>& c10,
-    const FixedArray<float, 3>& c01,
+    const FixedArray<uint8_t, 4>& c00,
+    const FixedArray<uint8_t, 4>& c10,
+    const FixedArray<uint8_t, 4>& c01,
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u01,
@@ -109,8 +111,9 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     ColoredVertex<TPos>** pp10,
     ColoredVertex<TPos>** pp01)
 {
-    auto t = FixedArray<TPos, 3, 3>{ p00, p10, p01 };
-    auto n_o = try_triangle_normal<TPos>(t);
+    using I = funpack_t<TPos>;
+    auto t = FixedArray<TPos, 3, 3>{ p00, p10, p01 }.casted<I>();
+    auto n_o = try_triangle_normal<I>(t);
     if (!n_o.has_value()) {
         if (normal_error_behavior == NormalVectorErrorBehavior::SKIP) {
             if (pp00 != nullptr) {
@@ -140,10 +143,10 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
     const FixedArray<float, 3>& n10,
     const FixedArray<float, 3>& n11,
     const FixedArray<float, 3>& n01,
-    const FixedArray<float, 3>& c00,
-    const FixedArray<float, 3>& c10,
-    const FixedArray<float, 3>& c11,
-    const FixedArray<float, 3>& c01,
+    const FixedArray<uint8_t, 4>& c00,
+    const FixedArray<uint8_t, 4>& c10,
+    const FixedArray<uint8_t, 4>& c11,
+    const FixedArray<uint8_t, 4>& c01,
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u11,
@@ -164,10 +167,10 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
     if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
         ((rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) &&
             is_delaunay(
-                FixedArray<TPos, 2>{p00(0), p00(1)},
-                FixedArray<TPos, 2>{p10(0), p10(1)},
-                FixedArray<TPos, 2>{p11(0), p11(1)},
-                FixedArray<TPos, 2>{p01(0), p01(1)})))
+                funpack(FixedArray<TPos, 2>{p00(0), p00(1)}),
+                funpack(FixedArray<TPos, 2>{p10(0), p10(1)}),
+                funpack(FixedArray<TPos, 2>{p11(0), p11(1)}),
+                funpack(FixedArray<TPos, 2>{p01(0), p01(1)}))))
     {
         draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
         draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
@@ -214,10 +217,10 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     const FixedArray<TPos, 3>& p10,
     const FixedArray<TPos, 3>& p11,
     const FixedArray<TPos, 3>& p01,
-    const FixedArray<float, 3>& c00,
-    const FixedArray<float, 3>& c10,
-    const FixedArray<float, 3>& c11,
-    const FixedArray<float, 3>& c01,
+    const FixedArray<uint8_t, 4>& c00,
+    const FixedArray<uint8_t, 4>& c10,
+    const FixedArray<uint8_t, 4>& c11,
+    const FixedArray<uint8_t, 4>& c01,
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u11,
@@ -239,10 +242,10 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
         ((rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) &&
             is_delaunay(
-                FixedArray<TPos, 2>{p00(0), p00(1)},
-                FixedArray<TPos, 2>{p10(0), p10(1)},
-                FixedArray<TPos, 2>{p11(0), p11(1)},
-                FixedArray<TPos, 2>{p01(0), p01(1)})))
+                funpack(FixedArray<TPos, 2>{p00(0), p00(1)}),
+                funpack(FixedArray<TPos, 2>{p10(0), p10(1)}),
+                funpack(FixedArray<TPos, 2>{p11(0), p11(1)}),
+                funpack(FixedArray<TPos, 2>{p01(0), p01(1)}))))
     {
         draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
         draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
@@ -265,17 +268,17 @@ void TriangleList<TPos>::extrude(
     const std::list<std::shared_ptr<TriangleList>>* source_triangles,
     const std::set<OrderableFixedArray<TPos, 3>>* clamped_vertices,
     const std::set<OrderableFixedArray<TPos, 3>>* vertices_not_to_connect,
-    float height,
+    TPos height,
     float scale,
     float uv_scale_x,
     float uv_scale_y,
     bool uvs_equal_lengths,
     float ambient_occlusion)
 {
-    float old_ambient_occlusion = (height > 0)
+    float old_ambient_occlusion = (height > (TPos)0.)
         ? ambient_occlusion
         : 0.f;
-    float new_ambient_occlusion = (height < 0)
+    float new_ambient_occlusion = (height < (TPos)0.)
         ? ambient_occlusion
         : 0.f;
     using O = OrderableFixedArray<TPos, 3>;
@@ -336,7 +339,8 @@ void TriangleList<TPos>::extrude(
                 va = &t_old(a);
                 vb = &t_old(b);
             }
-            auto duv = FixedArray<float, 2>{0.f, height / scale * uv_scale_y};
+            float duv1 = (float)(funpack(height) / scale * uv_scale_y);
+            auto duv = FixedArray<float, 2>{ 0.f, duv1 };
             if (va->uv(0) == vb->uv(0)) {
                 std::swap(duv(0), duv(1));
             }
@@ -377,8 +381,8 @@ void TriangleList<TPos>::extrude(
                     va->color * (1.f - new_ambient_occlusion),
                     uvs_equal_lengths ? FixedArray<float, 2>{0.f, 0.f} : va->uv,
                     uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, 0.f} : vb->uv,
-                    uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, height / scale * uv_scale_y} : vb->uv + duv,
-                    uvs_equal_lengths ? FixedArray<float, 2>{0.f, height / scale * uv_scale_y} : va->uv + duv);
+                    uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, duv1} : vb->uv + duv,
+                    uvs_equal_lengths ? FixedArray<float, 2>{0.f, duv1} : va->uv + duv);
             }
         };
         for (size_t i = 0; i < 3; ++i) {
@@ -402,7 +406,7 @@ void TriangleList<TPos>::extrude(
             for (auto& t : lst->triangles) {
                 for (auto& v : t.flat_iterable()) {
                     if (moved_vertices.contains(O{v.position})) {
-                        v.position(2) += height;
+                        v.position(2) += (TPos)height;
                     }
                 }
             }
@@ -424,12 +428,13 @@ template <class TPos>
 void TriangleList<TPos>::delete_backfacing_triangles(
     std::list<FixedArray<ColoredVertex<TPos>, 3>>* deleted_triangles)
 {
+    using I = funpack_t<TPos>;
     triangles.remove_if([deleted_triangles](const FixedArray<ColoredVertex<TPos>, 3>& t) -> bool{
-        bool erase = dot0d(scaled_triangle_normal<TPos>({
-                t(0).position,
-                t(1).position,
-                t(2).position}),
-            FixedArray<TPos, 3>{TPos(0), TPos(0), TPos(1)}) <= 0;
+        bool erase = dot0d(scaled_triangle_normal<I>({
+                funpack(t(0).position),
+                funpack(t(1).position),
+                funpack(t(2).position)}),
+            FixedArray<I, 3>{I(0), I(0), I(1)}) <= 0;
         if (erase) {
             if (deleted_triangles != nullptr) {
                 deleted_triangles->push_back(t);
@@ -446,7 +451,8 @@ void TriangleList<TPos>::delete_backfacing_triangles(
 template <class TPos>
 void TriangleList<TPos>::calculate_triangle_normals(NormalVectorErrorBehavior error_behavior) {
     for (auto& t : triangles) {
-        auto n = triangle_normal<TPos>({t(0).position, t(1).position, t(2).position}, error_behavior);
+        using Triangle = FixedArray<TPos, 3, 3>;
+        auto n = triangle_normal(funpack(Triangle{t(0).position, t(1).position, t(2).position}), error_behavior);
         t(0).normal = n.template casted<float>();
         t(1).normal = n.template casted<float>();
         t(2).normal = n.template casted<float>();
@@ -509,8 +515,8 @@ void TriangleList<TPos>::ambient_occlusion_by_curvature(
 
 template <class TPos>
 struct VertexMovement {
-    FixedArray<TPos, 3> amount = uninitialized;
-    FixedArray<TPos, 3> bias = uninitialized;
+    FixedArray<float, 3> amount = uninitialized;
+    FixedArray<float, 3> bias = uninitialized;
     std::list<FixedArray<TPos, 3>*> vertices;
 };
 
@@ -520,14 +526,14 @@ struct AdjacentTriangles {
     const FixedArray<TPos, 3>* ej;
     const FixedArray<TPos, 3>* n0;
     const FixedArray<TPos, 3>* n1;
-    FixedArray<TPos, 3>* movement_i;
-    FixedArray<TPos, 3>* movement_j;
+    FixedArray<float, 3>* movement_i;
+    FixedArray<float, 3>* movement_j;
 };
 
 template <class TPos>
 void TriangleList<TPos>::smoothen_edges(
     std::unordered_map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
-    const std::unordered_map<OrderableFixedArray<TPos, 3>, FixedArray<TPos, 3>>& bias,
+    const std::unordered_map<OrderableFixedArray<TPos, 3>, FixedArray<float, 3>>& bias,
     const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
     const std::list<FixedArray<TPos, 3>*>& smoothed_vertices,
@@ -559,11 +565,11 @@ void TriangleList<TPos>::smoothen_edges(
         }
         auto& m = vertex_movement[vc];
         if (m.vertices.empty()) {
-            m.amount = 0;
+            m.amount = 0.f;
             auto bit = bias.find(OrderableFixedArray{ *s });
             m.bias = (bit != bias.end())
                 ? bit->second
-                : fixed_zeros<TPos, 3>();
+                : fixed_zeros<float, 3>();
         }
         m.vertices.push_back(s);
     }
@@ -616,22 +622,24 @@ void TriangleList<TPos>::smoothen_edges(
     std::erase_if(adjacent_triangles, [](const auto& it) {
         return (it.second.n1 == nullptr) || ((it.second.movement_i == nullptr) && (it.second.movement_j == nullptr));
         });
+    using I = funpack_t<TPos>;
     for (size_t i = 0; i < niterations; ++i) {
         for (auto& [_, t] : adjacent_triangles) {
+            using Triangle = FixedArray<TPos, 3, 3>;
             const Vertex3& ei = *t.ej;
             const Vertex3& ej = *t.ei;
             const Vertex3& nx = *t.n0;
             const Vertex3& nn = *t.n1;
-            FixedArray<TPos, 3> n0 = triangle_normal<TPos>({ej, ei, nx});
-            FixedArray<TPos, 3> n1 = triangle_normal<TPos>({ei, ej, nn});
-            FixedArray<TPos, 3> cn = (nx + nn) / TPos(2);
-            FixedArray<TPos, 3> ce = (ei + ej) / TPos(2);
-            FixedArray<TPos, 3> v = cn - ce;
-            FixedArray<TPos, 3> n01 = (n0 + n1) / TPos(2);
+            FixedArray<float, 3> n0 = triangle_normal<I>(funpack(Triangle{ej, ei, nx})).template casted<float>();
+            FixedArray<float, 3> n1 = triangle_normal<I>(funpack(Triangle{ei, ej, nn})).template casted<float>();
+            FixedArray<TPos, 3> cn = (nx + nn) / 2;
+            FixedArray<TPos, 3> ce = (ei + ej) / 2;
+            FixedArray<float, 3> v = (cn - ce).template casted<float>();
+            FixedArray<float, 3> n01 = (n0 + n1) / 2;
             n01 /= std::sqrt(sum(squared(n01)));
-            TPos n0n1 = dot0d(n0, n1);
+            float n0n1 = dot0d(n0, n1);
             if (n0n1 >=0 && n0n1 < 1) {
-                TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
+                float shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
                 if (t.movement_i != nullptr) {
                     *t.movement_i += n01 * shift;
                 }
@@ -642,7 +650,7 @@ void TriangleList<TPos>::smoothen_edges(
         }
         for (auto& [_, m] : vertex_movement) {
             for (auto& n : m.vertices) {
-                *n += TPos(smoothness) * (m.amount + m.bias);
+                *n += (smoothness * (m.amount + m.bias)).casted<TPos>();
             }
             m.amount = 0;
         }
@@ -671,6 +679,6 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
 namespace Mlib {
 
 template class TriangleList<float>;
-template class TriangleList<double>;
+template class TriangleList<CompressedScenePos>;
 
 }

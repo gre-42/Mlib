@@ -225,7 +225,7 @@ public:
         const SkillMap* skills,
         const StaticWorld& world);
     void set_actor_task(ActorTask actor_task);
-    void set_waypoint_ofs(float dy);
+    void set_waypoint_ofs(CompressedScenePos dy);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
@@ -314,7 +314,7 @@ public:
     VehicleDomain current_vehicle_domain_;
     VehicleDomain next_vehicle_domain_;
     ActorTask actor_task_;
-    float waypoint_ofs_;
+    CompressedScenePos waypoint_ofs_;
     ObjectPool& object_pool_;
     std::unique_ptr<ISurfaceNormal> surface_normal_;
     std::unique_ptr<ICollisionNormalModifier> collision_normal_modifier_;

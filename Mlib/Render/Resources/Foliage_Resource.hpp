@@ -20,7 +20,7 @@ class FoliageResource: public ISceneNodeResource {
 public:
     FoliageResource(
         SceneNodeResources& scene_node_resources,
-        const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>& grass_triangles,
+        const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& grass_triangles,
         const std::vector<ParsedResourceName>& near_grass_resources,
         const std::vector<ParsedResourceName>& dirty_near_grass_resources,
         ScenePos near_grass_distance,
@@ -59,7 +59,7 @@ public:
 
 private:
     SceneNodeResources& scene_node_resources_;
-    UUList<FixedArray<ColoredVertex<ScenePos>, 3>> grass_triangles_;
+    UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>> grass_triangles_;
     TerrainStyles terrain_styles_;
     float scale_;
     UpAxis up_axis_;

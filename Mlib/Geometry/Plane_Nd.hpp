@@ -21,13 +21,13 @@ public:
         , intercept{ intercept }
     {}
     PlaneNd(const FixedArray<TDir, tndim>& normal, const FixedArray<TPos, tndim>& point_on_plane)
-        : PlaneNd{ normal, -dot0d(normal.template casted<TPos>(), point_on_plane) }
+        : PlaneNd{ normal, -(TPos)dot0d(funpack(normal.template casted<TPos>()), funpack(point_on_plane)) }
     {}
     explicit PlaneNd(const FixedArray<TPos, 2, 2>& line, bool compute_center = false)
-        : PlaneNd{ line_normal(line), compute_center ? mean<0>(line) : line[0] }
+        : PlaneNd{ line_normal(funpack(line)).template casted<TDir>(), compute_center ? mean<0>(line) : line[0] }
     {}
     explicit PlaneNd(const FixedArray<TPos, 3, 3>& triangle, bool compute_center = false)
-        : PlaneNd{ triangle_normal(triangle).template casted<TDir>(), compute_center ? mean<0>(triangle) : triangle[0] }
+        : PlaneNd{ triangle_normal(funpack(triangle)).template casted<TDir>(), compute_center ? mean<0>(triangle) : triangle[0] }
     {}
     template <class TTPos>
     PlaneNd transformed(const TransformationMatrix<TDir, TTPos, tndim>& transformation_matrix) const {

@@ -509,13 +509,19 @@ void test_fixed_sum() {
 }
 
 void test_simd() {
-    using S = ScaledInteger<int32_t, 1, 5>;
+    using S = ScaledInteger<int32_t, 5>;
     using V = padded_fixed_array_t<S, 3>;
     V a{ (S)1.f, (S)2.f, (S)3.f };
     V b{ (S)10.f, (S)20.f, (S)30.f };
     linfo() << (int)all_le(a, b);
     linfo() << (int)all_ge(a, b);
     linfo() << std::numeric_limits<S>::lowest();
+}
+
+void test_fixed_point() {
+    double v = 1.234;
+    auto fixed = ScaledInteger<int32_t, (1 << 11)>::from_float_safe(v);
+    linfo() << fixed;
 }
 
 int main(int argc, const char** argv) {
@@ -560,6 +566,7 @@ int main(int argc, const char** argv) {
         test_quaternion_series();
         test_fixed_sum();
         test_simd();
+        test_fixed_point();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;

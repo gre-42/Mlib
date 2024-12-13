@@ -362,9 +362,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> DepthMapBundle::mesh(
                 t[0],                                 // p00
                 t[1],                                 // p10
                 t[2],                                 // p01
-                FixedArray<float, 3>{1.f, 1.f, 1.f},  // c00
-                FixedArray<float, 3>{1.f, 1.f, 1.f},  // c10
-                FixedArray<float, 3>{1.f, 1.f, 1.f},  // c01
+                Colors::WHITE,                        // c00
+                Colors::WHITE,                        // c10
+                Colors::WHITE,                        // c01
                 FixedArray<float, 2>{0.f, 0.f},       // u00
                 FixedArray<float, 2>{1.f, 0.f},       // u10
                 FixedArray<float, 2>{0.f, 1.f},       // u01

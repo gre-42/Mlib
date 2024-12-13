@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <utility>
 
 namespace Mlib {
@@ -8,10 +9,13 @@ enum class WayPointLocation;
 
 struct StreetWayPoint {
     std::pair<double, double> alpha;
-    std::pair<FixedArray<double, 3>, FixedArray<double, 3>> edge;
+    std::pair<FixedArray<CompressedScenePos, 3>, FixedArray<CompressedScenePos, 3>> edge;
     WayPointLocation location;
-    FixedArray<double, 3> position() const {
-        return alpha.first * edge.first + alpha.second * edge.second;
+    FixedArray<CompressedScenePos, 3> position() const {
+        return (
+            alpha.first * edge.first.casted<ScenePos>() +
+            alpha.second * edge.second.casted<ScenePos>())
+            .casted<CompressedScenePos>();
     }
 };
 

@@ -41,6 +41,7 @@ class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 class GroundBvh;
 class ColoredVertexArrayResource;
+enum class JoinedWayPointSandbox;
 
 class OsmMapResource: public ISceneNodeResource {
 public:
@@ -110,16 +111,16 @@ private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;
     void save_to_obj_file_if_requested(const std::string& debug_prefix) const;
     void save_bad_triangles_to_obj_file_if_requested(const std::string& debug_prefix) const;
-    const Bvh<double, 3, FixedArray<double, 3, 3>>& street_bvh() const;
+    const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>& street_bvh() const;
 
-    void handle_point_exception3(const PointException<double, 3>& e, const std::string& message) const;
-    void handle_point_exception2(const PointException<double, 2>& e, const std::string& message) const;
+    void handle_point_exception3(const PointException<CompressedScenePos, 3>& e, const std::string& message) const;
+    void handle_point_exception2(const PointException<CompressedScenePos, 2>& e, const std::string& message) const;
     void handle_point_exception(const p2t::PointException& e, const std::string& message) const;
-    void handle_edge_exception(const EdgeException<double>& e, const std::string& message) const;
-    void handle_triangle_exception(const TriangleException<double>& e, const std::string& message) const;
+    void handle_edge_exception(const EdgeException<CompressedScenePos>& e, const std::string& message) const;
+    void handle_triangle_exception(const TriangleException<CompressedScenePos>& e, const std::string& message) const;
 
     TerrainTriangles terrain_triangles() const;
-    std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> no_grass() const;
+    std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> no_grass() const;
 
     HeterogeneousResource hri_;
     SceneNodeResources& scene_node_resources_;
@@ -127,13 +128,14 @@ private:
     std::list<SpawnPoint> spawn_points_;
     std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points_;
     TransformationMatrix<double, double, 2> normalization_matrix_;
+    TransformationMatrix<double, double, 2> triangulation_normalization_matrix_;
 
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain_;
-    std::list<std::shared_ptr<TriangleList<double>>> tls_no_grass_;
-    std::shared_ptr<TriangleList<double>> tl_mud_street_visuals_;
-    std::shared_ptr<TriangleList<double>> tl_mud_path_visuals_;
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_no_grass_;
+    std::shared_ptr<TriangleList<CompressedScenePos>> tl_mud_street_visuals_;
+    std::shared_ptr<TriangleList<CompressedScenePos>> tl_mud_path_visuals_;
 
-    mutable std::unique_ptr<Bvh<double, 3, FixedArray<double, 3, 3>>> street_bvh_;
+    mutable std::unique_ptr<Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>> street_bvh_;
     mutable SafeAtomicRecursiveSharedMutex street_bvh_mutex_;
 
     TerrainStyles terrain_styles_;

@@ -18,7 +18,7 @@ void ProjectorWithCameras::plot_camera_lines(StbImage3& png) {
         FixedArray<float, 2> t = x2fi(c.second.pose.t);
         FixedArray<float, 2> tz = x2fi(c.second.pose.t + scale_matrix_(0, 0) * 0.5f * c.second.dir(2));
         if (sum(squared(tz - t)) > 1e-6) {
-            png.draw_line(t.to_array(), tz.to_array(), 0, Rgb24::black());
+            png.draw_line(t, tz, 0, Rgb24::black());
         }
     }
 }

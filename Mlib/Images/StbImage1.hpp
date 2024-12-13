@@ -37,8 +37,8 @@ public:
 
     void draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, uint8_t color);
     void draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size, uint8_t color);
-    void draw_line(const Array<float>& from, const Array<float>& to, size_t thickness, uint8_t color, const uint8_t* short_line_color = nullptr);
-    void draw_infinite_line(const Array<float>& from, const Array<float>& to, size_t thickness, uint8_t color, const uint8_t* short_line_color = nullptr);
+    void draw_line(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, uint8_t color, const uint8_t* short_line_color = nullptr);
+    void draw_infinite_line(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, uint8_t color, const uint8_t* short_line_color = nullptr);
     void draw_mask(const Array<bool>& mask, uint8_t color);
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, uint8_t color);
 
@@ -50,7 +50,7 @@ public:
 
     Array<float> to_float_grayscale() const;
 private:
-    void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, uint8_t color, bool infinite, const uint8_t* short_line_color = nullptr);
+    void draw_line_ext(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, uint8_t color, bool infinite, const uint8_t* short_line_color = nullptr);
 };
 
 }

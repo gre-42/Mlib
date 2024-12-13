@@ -1,10 +1,11 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 
 struct RacingLineSegment {
-    typedef FixedArray<double, 2, 2> Line2d;
+    typedef FixedArray<CompressedScenePos, 2, 2> Line2d;
     Line2d racing_line_segment;
     FixedArray<float, 3> color;
 };
@@ -18,7 +19,7 @@ public:
         double& beta,
         const RacingLineSegment** racing_line_segment) const;
 private:
-    Bvh<double, 2, RacingLineSegment> bvh_;
+    Bvh<CompressedScenePos, 2, RacingLineSegment> bvh_;
 };
 
 }

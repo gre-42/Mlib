@@ -53,8 +53,8 @@ void StbImage1::draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size
 }
 
 void StbImage1::draw_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     uint8_t color,
     const uint8_t* short_line_color)
@@ -63,8 +63,8 @@ void StbImage1::draw_line(
 }
 
 void StbImage1::draw_infinite_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     uint8_t color,
     const uint8_t* short_line_color)
@@ -73,8 +73,8 @@ void StbImage1::draw_infinite_line(
 }
 
 void StbImage1::draw_line_ext(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     uint8_t color,
     bool infinite,

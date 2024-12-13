@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <map>
 #include <string>
@@ -11,7 +12,7 @@ struct Node;
 
 void project_nodes_onto_ways(
     std::map<std::string, Node>& nodes,
-    const std::list<FixedArray<double, 2, 2>>& way_segments,
+    const std::list<FixedArray<CompressedScenePos, 2, 2>>& way_segments,
     double scale);
 
 }

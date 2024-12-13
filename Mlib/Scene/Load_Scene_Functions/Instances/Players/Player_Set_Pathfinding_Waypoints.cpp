@@ -31,7 +31,7 @@ PlayerSetPathfindingWaypoints::PlayerSetPathfindingWaypoints(RenderableScene& re
 
 void PlayerSetPathfindingWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto absolute_model_matrix = transformation_matrix_from_json<float, ScenePos, 3>(
+    auto absolute_model_matrix = transformation_matrix_from_json<float, CompressedScenePos, 3>(
         args.arguments.at(KnownArgs::transformation));
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto way_points = scene_node_resources.way_points(

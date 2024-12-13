@@ -11,8 +11,17 @@ bool triangle_is_right_handed(
 {
     FixedArray<TData, 2> e0 = b - a;
     FixedArray<TData, 2> e1 = c - b;
-    FixedArray<TData, 2> n0{e0(1), -e0(0)};
+    FixedArray<TData, 2> n0{ e0(1), -e0(0) };
     return dot0d(n0, e1) < 0;
+}
+
+template <class TData>
+bool triangle_is_right_handed(const FixedArray<TData, 3, 2>& triangle)
+{
+    return triangle_is_right_handed(
+        triangle[0],
+        triangle[1],
+        triangle[2]);
 }
 
 }

@@ -13,7 +13,7 @@
 using namespace Mlib;
 
 void Mlib::draw_roofs(
-    std::list<std::shared_ptr<TriangleList<double>>>& tls,
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     const Material& material,
     const Morphology& morphology,
     const FixedArray<float, 3>& color,
@@ -34,7 +34,7 @@ void Mlib::draw_roofs(
         if (bu.way.nd.front() != bu.way.nd.back()) {
             THROW_OR_ABORT("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
-        tls.push_back(std::make_shared<TriangleList<double>>(
+        auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
             "roof_" + std::to_string(number),
             material,
             morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
@@ -76,12 +76,12 @@ void Mlib::draw_roofs(
                     *c,
                     *d,
                     *d,
-                    scale * width,
-                    scale * width,
-                    scale * width,
-                    scale * width,
-                    scale * width,
-                    scale * width))
+                    (CompressedScenePos)(scale * width),
+                    (CompressedScenePos)(scale * width),
+                    (CompressedScenePos)(scale * width),
+                    (CompressedScenePos)(scale * width),
+                    (CompressedScenePos)(scale * width),
+                    (CompressedScenePos)(scale * width)))
             {
                 lerr() << "Error triangulating roof " + bu.id;
             } else {
@@ -95,9 +95,9 @@ void Mlib::draw_roofs(
                 float uheight = bu.roof_9_2.value().height;
                 float uwidth = std::sqrt(squared(width) + squared(uheight));
                 rect.draw_z(
-                    *tls.back(),
-                    zz0 * scale,
-                    zz1 * scale,
+                    *tl,
+                    (CompressedScenePos)(zz0 * scale),
+                    (CompressedScenePos)(zz1 * scale),
                     color,
                     color,
                     color,

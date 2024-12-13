@@ -40,16 +40,18 @@ void Mlib::add_trees_to_forest_outlines(
                 if (s == w.second.nd.end()) {
                     continue;
                 }
-                FixedArray<double, 2> p0 = nodes.at(*it).position;
-                FixedArray<double, 2> p1 = nodes.at(*s).position;
+                FixedArray<double, 2> p0 = funpack(nodes.at(*it).position);
+                FixedArray<double, 2> p1 = funpack(nodes.at(*s).position);
                 double len = std::sqrt(sum(squared(p0 - p1)));
-                FixedArray<double, 2> normal{p0(1) - p1(1), p1(0) - p0(0)};
+                FixedArray<double, 2> normal{ p0(1) - p1(1), p1(0) - p0(0) };
                 normal /= len;
                 n_random_numbers(len / (tree_distance * scale), na_rng, [&](){
                     double aa = na_rng();
-                    FixedArray<double, 2> p = (aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * normal * sign(area);
-                    if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(p, min_dist_to_road * scale)) {
-                        double height;
+                    FixedArray<CompressedScenePos, 2> p =
+                        ((aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * normal * sign(area))
+                        .casted<CompressedScenePos>();
+                    if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(p, (CompressedScenePos)(min_dist_to_road * scale))) {
+                        CompressedScenePos height;
                         if (ground_bvh.height(height, p)) {
                             if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
                                 bri.add_parsed_resource_name(p, height, *prn, 0.f, scale_rng());

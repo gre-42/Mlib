@@ -174,8 +174,8 @@ void Mlib::highlight_feature_correspondences(
     assert(feature_points0.length() == feature_points1.length());
     for (size_t i = 0; i < feature_points0.length(); ++i) {
         bitmap.draw_line(
-            a2fi(feature_points0(i)).to_array(),
-            a2fi(feature_points1(i)).to_array(),
+            a2fi(feature_points0(i)),
+            a2fi(feature_points1(i)),
             thickness,
             color,
             short_line_color);

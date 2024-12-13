@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -9,7 +10,7 @@ template <class TPos>
 class TriangleList;
 
 struct StyledRoad {
-    std::shared_ptr<TriangleList<double>> triangle_list;
+    std::shared_ptr<TriangleList<CompressedScenePos>> triangle_list;
     float uvx;
     std::partial_ordering operator <=> (const StyledRoad&) const = default;
 };

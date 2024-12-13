@@ -15,7 +15,7 @@ TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
     const TerrainStyle& terrain_style,
     ScenePos scale,
     UpAxis up_axis,
-    const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* boundary_bvh,
+    const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>* boundary_bvh,
     const Array<float>& dirtmap,
     float dirtmap_scale,
     const Array<float>& mudmap)
@@ -43,10 +43,10 @@ TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
 }
 
 void TriangleInteriorInstancesSampler::sample_triangle(
-    const FixedArray<ColoredVertex<ScenePos>, 3>& t,
+    const FixedArray<ColoredVertex<CompressedScenePos>, 3>& t,
     unsigned int seed,
     const std::function<void(
-        const FixedArray<ScenePos, 3>& p,
+        const FixedArray<CompressedScenePos, 3>& p,
         const ParsedResourceName& prn)>& f)
 {
     ts_.seed(392743 + seed);
@@ -54,12 +54,22 @@ void TriangleInteriorInstancesSampler::sample_triangle(
     rnc_mountain_regular_.seed(283940 + seed);
     rnc_valley_dirt_.seed(76218 + seed);
     rnc_mountain_dirt_.seed(3846 + seed);
-    ts_.sample_triangle_interior(
+    auto triangle = funpack(FixedArray<CompressedScenePos, 3, 3>{
         t(0).position,
         t(1).position,
-        t(2).position,
+        t(2).position});
+    auto uvs = FixedArray<float, 3, 2>{
+        t(0).uv,
+        t(1).uv,
+        t(2).uv};
+    auto normals = FixedArray<float, 3, 3>{
+        t(0).normal,
+        t(1).normal,
+        t(2).normal};
+    ts_.sample_triangle_interior(
+        triangle,
         tsc_.much_near_distance * scale_,
-        [&](const ScenePos& a, const ScenePos& b, const ScenePos& c)
+        [&](const FixedArray<ScenePos, 3>& bc)
         {
             if (mudmap_.initialized()) {
                 if ((mudmap_.shape(0) == 0) ||
@@ -67,7 +77,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
                 {
                     THROW_OR_ABORT("Mudmap dimension is zero");
                 }
-                FixedArray<float, 2> uv = t(0).uv * float(a) + t(1).uv * float(b) + t(2).uv * float(c);
+                FixedArray<float, 2> uv = dot(bc.casted<float>(), uvs);
                 uv(0) -= std::floor(uv(0));
                 uv(1) -= std::floor(uv(1));
                 uv(1) = 1 - uv(1);
@@ -79,7 +89,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
                     return;
                 }
             }
-            FixedArray<float, 3> n = t(0).normal * float(a) + t(1).normal * float(b) + t(2).normal * float(c);
+            FixedArray<float, 3> n = dot(bc.casted<float>(), normals);
             bool is_in_valley = (squared(n((size_t)up_axis_)) > squared(0.85) * sum(squared(n)));
             bool is_regular;
             if (dirtmap_.initialized()) {
@@ -88,7 +98,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
                 {
                     THROW_OR_ABORT("Dirtmap dimension is zero");
                 }
-                FixedArray<float, 2> uv = t(0).uv * float(a) + t(1).uv * float(b) + t(2).uv * float(c);
+                FixedArray<float, 2> uv = dot(bc.casted<float>(), uvs);
                 uv *= dirtmap_scale_;
                 uv(0) -= std::floor(uv(0));
                 uv(1) -= std::floor(uv(1));
@@ -113,16 +123,20 @@ void TriangleInteriorInstancesSampler::sample_triangle(
             if (!is_in_valley && !is_regular && tsc_.near_resource_names_mountain_dirt.empty()) {
                 return;
             }
-            FixedArray<ScenePos, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
+            FixedArray<ScenePos, 3> up = dot(bc, triangle);
+            FixedArray<CompressedScenePos, 3> p = up.casted<CompressedScenePos>();
             float min_dist2;
             if (distances_to_bdry_.is_active && (boundary_bvh_ != nullptr)) {
-                min_dist2 = (float)boundary_bvh_->min_distance(
+                auto md2 = boundary_bvh_->min_distance<FixedArray<CompressedScenePos, 3, 3>>(
                     p,
                     max_dboundary_,
-                    [&p](auto& tt)
+                    [&up](auto& tt)
                     {
-                        return sum(squared(distance_point_to_triangle_3d(p, tt)));
+                        return sum(squared(distance_point_to_triangle_3d(up, tt.casted<ScenePos>())));
                     });
+                min_dist2 = md2.has_value()
+                    ? (float)(*md2)
+                    : INFINITY;
                 if (min_dist2 < min_dboundary2_) {
                     return;
                 }

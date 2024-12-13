@@ -17,4 +17,4 @@ bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<TPos
 }
 
 template bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<float>& cva) const;
-template bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<double>& cva) const;
+template bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<CompressedScenePos>& cva) const;

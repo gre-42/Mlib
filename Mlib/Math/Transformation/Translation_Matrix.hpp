@@ -7,7 +7,7 @@ template <class T, size_t n>
 class TranslationMatrix {
 public:
     explicit TranslationMatrix(const FixedArray<T, n>& t)
-    : t(t)
+        : t(t)
     {}
     FixedArray<T, n> t;
 };

@@ -60,8 +60,8 @@ void Bgr565Bitmap::draw_empty_rect(const FixedArray<size_t, 2>& center, size_t s
 }
 
 void Bgr565Bitmap::draw_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Bgr565& color)
 {
@@ -69,8 +69,8 @@ void Bgr565Bitmap::draw_line(
 }
 
 void Bgr565Bitmap::draw_infinite_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Bgr565& color)
 {
@@ -78,8 +78,8 @@ void Bgr565Bitmap::draw_infinite_line(
 }
 
 void Bgr565Bitmap::draw_line_ext(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Bgr565& color,
     bool infinite)

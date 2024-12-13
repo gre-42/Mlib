@@ -55,7 +55,7 @@ public:
     SceneNodeResources();
     ~SceneNodeResources();
 
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>;
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>;
 
     // Preload
     void write_loaded_resources(const std::string& filename) const;

@@ -1106,7 +1106,7 @@ void RigidBodyVehicle::set_actor_task(ActorTask actor_task) {
     actor_task_ = actor_task;
 }
 
-void RigidBodyVehicle::set_waypoint_ofs(float dy) {
+void RigidBodyVehicle::set_waypoint_ofs(CompressedScenePos dy) {
     waypoint_ofs_ = dy;
 }
 

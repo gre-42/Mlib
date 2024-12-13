@@ -9,7 +9,7 @@ using namespace Mlib;
 void Mlib::apply_displacement_map(
     const StreetBvh& ground_street_bvh,
     const StreetBvh& air_bvh,
-    const std::list<std::shared_ptr<TriangleList<double>>>& triangles,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& triangles,
     const Array<double>& displacementmap,
     double min_displacement,
     double uv_scale,
@@ -19,7 +19,7 @@ void Mlib::apply_displacement_map(
     for (auto& lst : triangles) {
         for (auto& tri : lst->triangles) {
             for (auto& v : tri.flat_iterable()) {
-                auto uv = FixedArray<double, 2>{ v.position(0), v.position(1) };
+                auto uv = FixedArray<CompressedScenePos, 2>{ v.position(0), v.position(1) }.casted<double>();
                 uv *= uv_scale / scale;
                 uv(0) -= std::floor(uv(0));
                 uv(1) -= std::floor(uv(1));
@@ -27,12 +27,14 @@ void Mlib::apply_displacement_map(
                 if (!bilinear_grayscale_interpolation(uv(1) * double(displacementmap.shape(0) - 1), uv(0) * double(displacementmap.shape(1) - 1), displacementmap, displacement)) {
                     THROW_OR_ABORT("Unexpected bilinear interpolation failure");
                 }
-                auto pt = FixedArray<double, 2>{v.position(0), v.position(1)};
-                auto max_dist = scale * distance_2_z_scale.xmax();
-                auto dist = std::min(
-                    ground_street_bvh.min_dist(pt, max_dist),
-                    air_bvh.min_dist(pt, max_dist));
-                v.position += scale * (min_displacement + displacement) * (v.normal * distance_2_z_scale(float(dist / scale))).casted<double>();
+                auto pt = FixedArray<CompressedScenePos, 2>{ v.position(0), v.position(1) };
+                auto max_dist = (CompressedScenePos)(scale * distance_2_z_scale.xmax());
+                auto dist = (float)std::min(
+                    ground_street_bvh.min_dist(pt, max_dist).value_or(max_dist),
+                    air_bvh.min_dist(pt, max_dist).value_or(max_dist));
+                v.position +=
+                    (scale * (min_displacement + displacement) * (v.normal * distance_2_z_scale(float(dist / scale))).casted<double>())
+                    .casted<CompressedScenePos>();
             }
         }
     }

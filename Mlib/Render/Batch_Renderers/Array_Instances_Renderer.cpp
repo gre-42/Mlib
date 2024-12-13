@@ -62,7 +62,7 @@ void ArrayInstancesRenderer::update_instances(
         std::scoped_lock lock_guard{ mutex_ };
         rcva = std::make_shared<ColoredVertexArrayResource>(
             mat_vectors,
-            std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
+            std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{},
             ColoredVertexArrayResource::Vertices{},
             std::move(cva_instances),
             rcva_);

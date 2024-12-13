@@ -122,7 +122,7 @@ DenseProjector& DenseProjector::normalize(float scale) {
 }
 
 void DenseProjector::draw(const std::string& filename) {
-    StbImage3 ppm(ArrayShape{256, 256}, Rgb24::white());
+    StbImage3 ppm(FixedArray<size_t, 2>{256u, 256u}, Rgb24::white());
     Array<float> depth = float(INFINITY) * ones<float>(ppm.shape());
     // float min_z = INFINITY;
     // float max_z = -INFINITY;

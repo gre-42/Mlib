@@ -71,7 +71,5 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
     }
 }
 
-namespace Mlib {
-    template void modulo_uv<float>(ColoredVertexArray<float>& cva);
-    template void modulo_uv<double>(ColoredVertexArray<double>& cva);
-}
+template void Mlib::modulo_uv<float>(ColoredVertexArray<float>& cva);
+template void Mlib::modulo_uv<CompressedScenePos>(ColoredVertexArray<CompressedScenePos>& cva);

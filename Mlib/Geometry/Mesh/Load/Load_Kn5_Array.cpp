@@ -8,12 +8,10 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Vertex_Transformation.hpp>
 #include <Mlib/Images/Flip_Mode.hpp>
 #include <Mlib/Io/Ini_Parser.hpp>
 #include <Mlib/Json/Json_View.hpp>
-#include <Mlib/Math/Fixed_Cholesky.hpp>
-#include <Mlib/Math/Fixed_Determinant.hpp>
-#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -690,9 +688,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     node.normal(tri(0)),
                     node.normal(tri(1)),
                     node.normal(tri(2)),
-                    {1.f, 1.f, 1.f},                            // c00
-                    {1.f, 1.f, 1.f},                            // c10
-                    {1.f, 1.f, 1.f},                            // c01
+                    Colors::WHITE,                              // c00
+                    Colors::WHITE,                              // c10
+                    Colors::WHITE,                              // c01
                     node.uv(tri(0)),
                     node.uv(tri(1)),
                     node.uv(tri(2)),
@@ -830,16 +828,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     // if (race_logic != nullptr) {
     //     race_logic->set_circularity(raceway_is_circular);
     // }
-    FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
-    auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
+    auto trafo = VertexTransformation<TPos>{
+        cfg.position,
+        cfg.rotation,
+        cfg.scale };
     for (auto& l : result) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
-                v.position *= cfg.scale.template casted<TPos>();
-                v.position = dot1d(rotation_matrix_p.template casted<TPos>(), v.position);
-                v.position += cfg.position;
-                v.normal = dot1d(rotation_matrix_n, v.normal);
-                v.tangent = dot1d(rotation_matrix_p, v.tangent);
+                trafo.transform_inplace(v);
             }
         }
     }
@@ -847,15 +843,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     return result;
 }
 
-namespace Mlib {
-template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_kn5_array<float>(
+template std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_kn5_array<float>(
     const std::string& file_or_directory,
     const LoadMeshConfig<float>&,
     IDdsResources*,
     IRaceLogic*);
-template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_kn5_array<double>(
+template std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> Mlib::load_kn5_array<CompressedScenePos>(
     const std::string& file_or_directory,
-    const LoadMeshConfig<ScenePos>&,
+    const LoadMeshConfig<CompressedScenePos>&,
     IDdsResources*,
     IRaceLogic*);
-}

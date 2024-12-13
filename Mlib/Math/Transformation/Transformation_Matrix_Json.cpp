@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 using namespace Mlib;
 
@@ -23,7 +24,8 @@ TransformationMatrix<TDir, TPos, n> Mlib::transformation_matrix_from_json(const 
     if constexpr (n == 3) {
         auto R = tait_bryan_angles_2_matrix(jv.at<UFixedArray<TDir, 3>>(KnownArgs::rotation) * (TDir)degrees);
         auto scale = jv.at<TDir>(KnownArgs::scale);
-        auto position = jv.at<UFixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters;
+        using I = funpack_t<TPos>;
+        auto position = (jv.at<UFixedArray<I, 3>>(KnownArgs::position) * (I)meters).template casted<TPos>();
         return { R * scale, position };
     } else {
         static_assert(n == 3, "Unsupported matrix dimension");
@@ -33,5 +35,6 @@ TransformationMatrix<TDir, TPos, n> Mlib::transformation_matrix_from_json(const 
 namespace Mlib {
 
 template TransformationMatrix<float, double, 3> Mlib::transformation_matrix_from_json(const nlohmann::json& j);
+template TransformationMatrix<float, CompressedScenePos, 3> Mlib::transformation_matrix_from_json(const nlohmann::json& j);
 
 }

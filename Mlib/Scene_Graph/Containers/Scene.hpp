@@ -131,7 +131,7 @@ public:
     void move(float dt, std::chrono::steady_clock::time_point time);
     void append_static_filtered_to_queue(
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue,
         const ColoredVertexArrayFilter& filter) const;
     size_t get_uuid();
     std::string get_temporary_instance_suffix();

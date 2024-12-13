@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <list>
 #include <map>
@@ -21,7 +22,7 @@ class Sample_SoloMesh;
 enum class WayPointsClass;
 
 void calculate_waypoint_adjacency(
-    PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>& way_points,
+    PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>& way_points,
     const std::list<TerrainWayPoints>& raw_terrain_way_point_lines,
     WayPointsClass terrain_way_point_filter,
     const std::list<std::pair<StreetWayPoint, StreetWayPoint>>& street_way_point_edge_descriptors,
@@ -32,6 +33,6 @@ void calculate_waypoint_adjacency(
     double scale,
     double merge_radius,
     double error_radius,
-    double waypoint_distance);
+    CompressedScenePos waypoint_distance);
 
 }

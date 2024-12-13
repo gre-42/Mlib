@@ -126,17 +126,25 @@ std::optional<BoundingSphere<TData, tndim>> circumscribed_sphere(
         THROW_OR_ABORT("Too many points to compute trivial circumscribed sphere");
     }
     if (R.size() == 1) {
-        return BoundingSphere<TData, tndim>(*R[0], (TData)0);
+        return BoundingSphere<TData, tndim>(*R[0], (TData)0.f);
     }
     if (R.size() == 2) {
         return BoundingSphere<TData, tndim>(FixedArray<TData, 2, tndim>{*R[0], *R[1]});
     }
     if (R.size() == 3) {
-        return circumscribed_sphere(FixedArray<TData, 3, tndim>{*R[0], *R[1], *R[2]}, rng);
+        auto res = circumscribed_sphere(funpack(FixedArray<TData, 3, tndim>{*R[0], *R[1], *R[2]}), rng);
+        if (res.has_value()) {
+            return res->casted<TData>();
+        }
+        return std::nullopt;
     }
     if constexpr (tndim == 3) {
         if (R.size() == 4) {
-            return circumscribed_sphere(FixedArray<TData, 4, 3>{*R[0], *R[1], *R[2], *R[3]}, rng);
+            auto res = circumscribed_sphere(funpack(FixedArray<TData, 4, 3>{*R[0], *R[1], *R[2], *R[3]}), rng);
+            if (res.has_value()) {
+                return res->casted<TData>();
+            }
+            return std::nullopt;
         }
     }
     THROW_OR_ABORT("Cannot compute trivial bounding sphere for the specified dimension and number of points");

@@ -41,8 +41,8 @@ void PpmImage::draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, 
 }
 
 void PpmImage::draw_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgb24& color,
     const Rgb24* short_line_color)
@@ -51,8 +51,8 @@ void PpmImage::draw_line(
 }
 
 void PpmImage::draw_infinite_line(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgb24& color,
     const Rgb24* short_line_color)
@@ -61,8 +61,8 @@ void PpmImage::draw_infinite_line(
 }
 
 void PpmImage::draw_line_ext(
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const Rgb24& color,
     bool infinite,

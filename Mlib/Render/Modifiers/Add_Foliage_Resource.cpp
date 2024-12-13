@@ -22,7 +22,7 @@ void Mlib::add_foliage_resource(
     float scale,
     UpAxis up_axis)
 {
-    UUList<FixedArray<ColoredVertex<ScenePos>, 3>> grass_triangles;
+    UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>> grass_triangles;
     auto meshes = scene_node_resources.get_rendering_arrays(mesh_resource_name);
     for (const auto& mesh : meshes) {
         for (const auto& cva : mesh->dcvas) {

@@ -16,7 +16,7 @@
 using namespace Mlib;
 
 void Mlib::draw_wall_barriers(
-    std::list<std::shared_ptr<TriangleList<double>>>& tls,
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
     const Material& material,
     const Morphology& morphology,
@@ -42,7 +42,7 @@ void Mlib::draw_wall_barriers(
 #pragma GCC diagnostic ignored "-Warray-bounds"
             auto smid = std::to_string(mid++);
 #pragma GCC diagnostic pop
-            const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
+            const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                 "wall_barriers_" + smid,
                 material,
                 morphology + (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_TWO_SIDED | PhysicsMaterial::ATTR_CONCAVE)));
@@ -79,20 +79,20 @@ void Mlib::draw_wall_barriers(
                     float height = (bl.top - bl.bottom) * scale;
                     if (steiner_points != nullptr) {
                         steiner_points->push_back({
-                            .position = {p0(0), p0(1), 0.f},
+                            .position = {p0(0), p0(1), (CompressedScenePos)0.f},
                             .type = SteinerPointType::WALL});
                     }
                     FixedArray<float, 2> uv = 1.f / scale * uv_scale * bs.uv;
                     // some buildings are clock-wise, others counter-clock-wise
                     tl->draw_rectangle_wo_normals(
-                        {p1(0), p1(1), bl.bottom * scale},
-                        {p0(0), p0(1), bl.bottom * scale},
-                        {p0(0), p0(1), bl.top * scale},
-                        {p1(0), p1(1), bl.top * scale},
-                        color,
-                        color,
-                        color,
-                        color,
+                        {p1(0), p1(1), (CompressedScenePos)(bl.bottom * scale)},
+                        {p0(0), p0(1), (CompressedScenePos)(bl.bottom * scale)},
+                        {p0(0), p0(1), (CompressedScenePos)(bl.top * scale)},
+                        {p1(0), p1(1), (CompressedScenePos)(bl.top * scale)},
+                        Colors::from_rgb(color),
+                        Colors::from_rgb(color),
+                        Colors::from_rgb(color),
+                        Colors::from_rgb(color),
                         FixedArray<float, 2>{length_mod1, 0.f} * uv,
                         FixedArray<float, 2>{length_mod1 + width, 0.f} * uv,
                         FixedArray<float, 2>{length_mod1 + width, height} * uv,

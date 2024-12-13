@@ -17,19 +17,19 @@ namespace KnownAabbArgs {
     DECLARE_ARGUMENT(max);
 }
 
-struct LoadableAabb3f : public AxisAlignedBoundingBox<double, 3> {
+struct LoadableAabb3f : public AxisAlignedBoundingBox<CompressedScenePos, 3> {
     LoadableAabb3f() : AxisAlignedBoundingBox{ uninitialized } {}
-    LoadableAabb3f& operator = (const AxisAlignedBoundingBox<double, 3>& other) {
-        AxisAlignedBoundingBox<double, 3>& base = *this;
+    LoadableAabb3f& operator = (const AxisAlignedBoundingBox<CompressedScenePos, 3>& other) {
+        AxisAlignedBoundingBox<CompressedScenePos, 3>& base = *this;
         base = other;
         return *this;
     }
 };
 
-struct LoadableBoundingSphere3f : public BoundingSphere<double, 3> {
-    LoadableBoundingSphere3f() : BoundingSphere<double, 3>{ uninitialized } {}
-    LoadableBoundingSphere3f& operator = (const BoundingSphere<double, 3>& other) {
-        BoundingSphere<double, 3>& base = *this;
+struct LoadableBoundingSphere3f : public BoundingSphere<CompressedScenePos, 3> {
+    LoadableBoundingSphere3f() : BoundingSphere<CompressedScenePos, 3>{ uninitialized } {}
+    LoadableBoundingSphere3f& operator = (const BoundingSphere<CompressedScenePos, 3>& other) {
+        BoundingSphere<CompressedScenePos, 3>& base = *this;
         base = other;
         return *this;
     }
@@ -38,9 +38,9 @@ struct LoadableBoundingSphere3f : public BoundingSphere<double, 3> {
 static void from_json(const nlohmann::json& j, LoadableAabb3f& aabb) {
     JsonView jv{ j };
     jv.validate(KnownAabbArgs::options);
-    aabb = AxisAlignedBoundingBox<double, 3>::from_min_max(
-        jv.at<UFixedArray<double, 3>>(KnownAabbArgs::min),
-        jv.at<UFixedArray<double, 3>>(KnownAabbArgs::max));
+    aabb = AxisAlignedBoundingBox<CompressedScenePos, 3>::from_min_max(
+        jv.at<UFixedArray<CompressedScenePos, 3>>(KnownAabbArgs::min),
+        jv.at<UFixedArray<CompressedScenePos, 3>>(KnownAabbArgs::max));
 }
 
 namespace KnownSphereArgs {
@@ -52,9 +52,9 @@ namespace KnownSphereArgs {
 static void from_json(const nlohmann::json& j, LoadableBoundingSphere3f& sphere) {
     JsonView jv{ j };
     jv.validate(KnownSphereArgs::options);
-    sphere = BoundingSphere<double, 3>{
-        jv.at<UFixedArray<double, 3>>(KnownSphereArgs::center),
-        jv.at<double>(KnownSphereArgs::radius) };
+    sphere = BoundingSphere<CompressedScenePos, 3>{
+        jv.at<UFixedArray<CompressedScenePos, 3>>(KnownSphereArgs::center),
+        jv.at<CompressedScenePos>(KnownSphereArgs::radius) };
 }
 
 namespace KnownArgs {

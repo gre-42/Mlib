@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp_Fwd.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -22,9 +23,9 @@ class TriangleList;
 struct BarrierStyle;
 
 void draw_building_walls(
-    std::list<std::shared_ptr<TriangleList<double>>>& tls,
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
-    std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
+    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const Material& material,
     const Morphology& morphology,
     const std::list<Building>& buildings,

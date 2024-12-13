@@ -1,16 +1,17 @@
 #include "Subdivided_Way.hpp"
+#include <Mlib/Math/Blend.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 
 using namespace Mlib;
 
-std::list<FixedArray<double, 2>> Mlib::subdivided_way(
+std::list<FixedArray<CompressedScenePos, 2>> Mlib::subdivided_way(
     const std::map<std::string, Node>& nodes,
     const std::list<std::string>& nd,
     double scale,
     double max_length)
 {
-    std::list<FixedArray<double, 2>> result;
+    std::list<FixedArray<CompressedScenePos, 2>> result;
     for (auto it = nd.begin(); it != nd.end(); ++it) {
         auto s = it;
         ++s;
@@ -23,7 +24,7 @@ std::list<FixedArray<double, 2>> Mlib::subdivided_way(
                 auto b = a;
                 ++b;
                 if (b != refined.end() || &*s == &nd.back()) {
-                    auto pp0 = a->first * p0 + a->second * p1;
+                    auto pp0 = blend(p0, p1, a->first, a->second);
                     result.push_back(pp0);
                 }
             }

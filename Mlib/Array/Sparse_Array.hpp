@@ -265,25 +265,25 @@ std::ostream& operator << (std::ostream& ostr, const SparseArrayCcs<TData>& ar) 
     return ostr;
 }
 
-template <class TData>
-SparseArrayCcs<TData>& operator *= (SparseArrayCcs<TData>& a, const TData& b) {
+template <class TData, class TOther>
+SparseArrayCcs<TData>& operator *= (SparseArrayCcs<TData>& a, const TOther& b) {
     a.apply_to_defined([&b](TData& x){ x *= b; });
     return a;
 }
 
-template <class TData>
-SparseArrayCcs<TData>& operator /= (SparseArrayCcs<TData>& a, const TData& b) {
+template <class TData, class TOther>
+SparseArrayCcs<TData>& operator /= (SparseArrayCcs<TData>& a, const TOther& b) {
     a.apply_to_defined([&b](TData& x){ x /= b; });
     return a;
 }
 
-template <class TData>
-SparseArrayCcs<TData> operator * (const SparseArrayCcs<TData>& a, const TData& b) {
+template <class TData, class TOther>
+SparseArrayCcs<TData> operator * (const SparseArrayCcs<TData>& a, const TOther& b) {
     return a.applied_to_defined([&b](const TData& x){ return x * b; });
 }
 
-template <class TData>
-SparseArrayCcs<TData> operator / (const SparseArrayCcs<TData>& a, const TData& b) {
+template <class TData, class TOther>
+SparseArrayCcs<TData> operator / (const SparseArrayCcs<TData>& a, const TOther& b) {
     return a.applied_to_defined([&b](const TData& x){ return x / b; });
 }
 

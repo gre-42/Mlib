@@ -6,7 +6,7 @@ namespace Mlib {
 
 class PTri {
 public:
-    inline p2t::Point* operator () (size_t i) const {
+    inline p2t::Point* operator [] (size_t i) const {
         return v->GetPoint((int)i);
     }
 private:

@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Quad_3D.hpp>
 #include <Mlib/Geometry/Triangle_3D.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <mutex>
@@ -286,12 +287,12 @@ void ColoredVertexArray<TPos>::polygon_sphere(
     }
     auto rng = welzl_rng();
     for (const auto& q : prims) {
-        Polygon3D<TPos, tnvertices> poly{ q };
+        Polygon3D<CompressedScenePos, tnvertices> poly{ q };
         collision_polygons.push_back(CollisionPolygonSphere<CompressedScenePos, tnvertices>{
-            .bounding_sphere = poly.bounding_sphere(rng).template casted<CompressedScenePos>(),
+            .bounding_sphere = poly.bounding_sphere(rng),
             .polygon = poly.polygon().template casted<SceneDir, CompressedScenePos>(),
             .physics_material = morphology.physics_material,
-            .corners = poly.vertices().template casted<CompressedScenePos>()
+            .corners = poly.vertices()
         });
     }
     VertexNormals<TPos, float> vertex_normals;
@@ -315,15 +316,15 @@ std::vector<CollisionPolygonAabb<CompressedScenePos, tnvertices>> ColoredVertexA
     res.reserve(prims.size());
     auto rng = welzl_rng();
     for (const auto& q : prims) {
-        Polygon3D<ScenePos, tnvertices> poly{ q, tm };
+        Polygon3D<CompressedScenePos, tnvertices> poly{ q, tm };
         res.push_back(CollisionPolygonAabb<CompressedScenePos, tnvertices>{
             .base = CollisionPolygonSphere<CompressedScenePos, tnvertices>{
-                .bounding_sphere = poly.bounding_sphere(rng).template casted<CompressedScenePos>(),
+                .bounding_sphere = poly.bounding_sphere(rng),
                 .polygon = poly.polygon().template casted<SceneDir, CompressedScenePos>(),
                 .physics_material = morphology.physics_material,
-                .corners = poly.vertices().template casted<CompressedScenePos>()
+                .corners = poly.vertices()
             },
-            .aabb = poly.aabb().template casted<CompressedScenePos>()});
+            .aabb = poly.aabb()});
     }
     VertexNormals<ScenePos, float> vertex_normals;
     for (const auto& poly : res) {
@@ -401,15 +402,17 @@ void ColoredVertexArray<TPos>::downsample_triangles(size_t n) {
 }
 
 template <class TPos>
-std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const {
-    TPos cos_edge_angle = std::cos(edge_angle);
-    TPos cos_averaged_normal_angle = std::cos(averaged_normal_angle);
+std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_grind_lines(float edge_angle, float averaged_normal_angle) const {
+    float cos_edge_angle = std::cos(edge_angle);
+    float cos_averaged_normal_angle = std::cos(averaged_normal_angle);
     UUVector<FixedArray<ColoredVertex<TPos>, 2>> grind_lines;
     grind_lines.reserve(3 * triangles.size());
     using O = OrderableFixedArray<TPos, 3>;
-    std::map<std::pair<O, O>, FixedArray<TPos, 3>> edge_normals;
+    using Triangle = FixedArray<TPos, 3, 3>;
+    using I = funpack_t<TPos>;
+    std::map<std::pair<O, O>, FixedArray<I, 3>> edge_normals;
     for (const auto& t : triangles) {
-        auto n = triangle_normal<TPos>({ t(0).position, t(1).position, t(2).position });
+        auto n = triangle_normal(funpack(Triangle{ t(0).position, t(1).position, t(2).position }));
         for (size_t i = 0; i < CW::length(t); ++i) {
             std::pair<O, O> edge0{ t(i).position, t((i + 1) % CW::length(t)).position };
             auto it = edge_normals.find(edge0);
@@ -418,7 +421,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_gri
                     continue;
                 }
                 auto m = n + it->second;
-                TPos l2 = sum(squared(m));
+                auto l2 = sum(squared(m));
                 if (l2 < 1e-12) {
                     continue;
                 }
@@ -519,11 +522,10 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
     for (const auto& tri : triangles) {
         UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangle_as_list;
     
-        const auto purple = FixedArray<float, 3>{1.f, 0.f, 1.f};
         triangle_as_list.push_back({
-            ColoredVertex<TPos>{tri(0).position, purple},
-            ColoredVertex<TPos>{tri(1).position, purple},
-            ColoredVertex<TPos>{tri(2).position, purple}});
+            ColoredVertex<TPos>{tri(0).position, Colors::PURPLE},
+            ColoredVertex<TPos>{tri(1).position, Colors::PURPLE},
+            ColoredVertex<TPos>{tri(2).position, Colors::PURPLE}});
         auto removed_attributes =
             PhysicsMaterial::ATTR_VISIBLE |
             PhysicsMaterial::ATTR_COLLIDE |
@@ -640,33 +642,33 @@ ScenePos ColoredVertexArray<TPos>::max_center_distance(BillboardId billboard_id)
 #endif
 
 template class Mlib::ColoredVertexArray<float>;
-template class Mlib::ColoredVertexArray<double>;
+template class Mlib::ColoredVertexArray<CompressedScenePos>;
 
-template std::shared_ptr<ColoredVertexArray<double>> ColoredVertexArray<double>::transformed(
-    const TransformationMatrix<float, double, 3>& tm,
+template std::shared_ptr<ColoredVertexArray<CompressedScenePos>> ColoredVertexArray<CompressedScenePos>::transformed(
+    const TransformationMatrix<float, ScenePos, 3>& tm,
     const std::string& suffix) const;
-template std::shared_ptr<ColoredVertexArray<double>> ColoredVertexArray<float>::transformed(
-    const TransformationMatrix<float, double, 3>& tm,
+template std::shared_ptr<ColoredVertexArray<CompressedScenePos>> ColoredVertexArray<float>::transformed(
+    const TransformationMatrix<float, ScenePos, 3>& tm,
     const std::string& suffix) const;
 template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::transformed(
     const TransformationMatrix<float, float, 3>& tm,
     const std::string& suffix) const;
-template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<double>::transformed(
-    const TransformationMatrix<float, double, 3>& tm,
+template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<CompressedScenePos>::transformed(
+    const TransformationMatrix<float, ScenePos, 3>& tm,
     const std::string& suffix) const;
 template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::transformed(
     const UUVector<OffsetAndQuaternion<float, float>>& qs,
     const std::string& suffix) const;
 
-template std::vector<CollisionPolygonAabb<CompressedScenePos, 4>> ColoredVertexArray<double>::transformed_quads_bbox(
-    const TransformationMatrix<float, double, 3>& tm) const;
-template std::vector<CollisionPolygonAabb<CompressedScenePos, 3>> ColoredVertexArray<double>::transformed_triangles_bbox(
-    const TransformationMatrix<float, double, 3>& tm) const;
-template std::vector<CollisionLineAabb<CompressedScenePos>> ColoredVertexArray<double>::transformed_lines_bbox(
-    const TransformationMatrix<float, double, 3>& tm) const;
+template std::vector<CollisionPolygonAabb<CompressedScenePos, 4>> ColoredVertexArray<CompressedScenePos>::transformed_quads_bbox(
+    const TransformationMatrix<float, ScenePos, 3>& tm) const;
+template std::vector<CollisionPolygonAabb<CompressedScenePos, 3>> ColoredVertexArray<CompressedScenePos>::transformed_triangles_bbox(
+    const TransformationMatrix<float, ScenePos, 3>& tm) const;
+template std::vector<CollisionLineAabb<CompressedScenePos>> ColoredVertexArray<CompressedScenePos>::transformed_lines_bbox(
+    const TransformationMatrix<float, ScenePos, 3>& tm) const;
 template std::vector<CollisionPolygonAabb<CompressedScenePos, 4>> ColoredVertexArray<float>::transformed_quads_bbox(
-    const TransformationMatrix<float, double, 3>& tm) const;
+    const TransformationMatrix<float, ScenePos, 3>& tm) const;
 template std::vector<CollisionPolygonAabb<CompressedScenePos, 3>> ColoredVertexArray<float>::transformed_triangles_bbox(
-    const TransformationMatrix<float, double, 3>& tm) const;
+    const TransformationMatrix<float, ScenePos, 3>& tm) const;
 template std::vector<CollisionLineAabb<CompressedScenePos>> ColoredVertexArray<float>::transformed_lines_bbox(
-    const TransformationMatrix<float, double, 3>& tm) const;
+    const TransformationMatrix<float, ScenePos, 3>& tm) const;

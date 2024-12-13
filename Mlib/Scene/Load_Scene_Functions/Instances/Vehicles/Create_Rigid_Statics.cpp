@@ -70,7 +70,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         rb->flags_ = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags));
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
-    std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> d_hitboxes;
     if (args.arguments.contains_non_null(KnownArgs::hitboxes)) {
         PhysicsResourceFilter filter{
             .cva_filter = {

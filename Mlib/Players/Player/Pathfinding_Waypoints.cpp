@@ -33,15 +33,15 @@ void PathfindingWaypoints::set_waypoint(size_t waypoint_id) {
 
 void PathfindingWaypoints::set_waypoints(const PointsAndAdjacencyResource& waypoints)
 {
-    waypoints_bvh_ = std::make_unique<Bvh<ScenePos, 3, size_t>>(
-        FixedArray<ScenePos, 3>{
-            funpack(cfg_.bvh_max_size),
-            funpack(cfg_.bvh_max_size),
-            funpack(cfg_.bvh_max_size)},
+    waypoints_bvh_ = std::make_unique<Bvh<CompressedScenePos, 3, size_t>>(
+        FixedArray<CompressedScenePos, 3>{
+            cfg_.bvh_max_size,
+            cfg_.bvh_max_size,
+            cfg_.bvh_max_size},
         cfg_.bvh_levels);
     waypoints_ = std::make_unique<PointsAndAdjacencyResource>(waypoints);
     for (const auto& [i, p] : enumerate(waypoints.points)) {
-        waypoints_bvh_->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(p.position), i);
+        waypoints_bvh_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(p.position), i);
     }
     // waypoints_bvh_->optimize_search_time(std::cout);
     player_.single_waypoint_.notify_set_waypoints(waypoints_->points.size());
@@ -60,12 +60,12 @@ void PathfindingWaypoints::select_next_waypoint() {
         if (waypoints_->points.size() > 30'000) {
             lwarn() << "Refusing to add beacons, number of points is " << waypoints_->points.size() << " > 30,000";
         } else {
-            auto pp = player_.rigid_body().rbp_.abs_position();
+            auto pp = player_.rigid_body().rbp_.abs_position().casted<CompressedScenePos>();
             for (const auto& p : waypoints_->points) {
                 if (sum(squared(p.position - pp)) > squared(200 * meters)) {
                     continue;
                 }
-                add_beacon(Beacon::create(p, "beacon"));
+                add_beacon(Beacon::create(funpack(p.position), "beacon"));
             }
         }
     }
@@ -81,11 +81,13 @@ void PathfindingWaypoints::select_next_waypoint() {
         size_t closest_id = SIZE_MAX;
         ScenePos closest_distance2 = INFINITY;
         waypoints_bvh_->visit(
-            AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(pos3, max_distance),
+            AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
+                pos3.casted<CompressedScenePos>(),
+                (CompressedScenePos)max_distance),
             [&](size_t i)
         {
             const auto& rs = waypoints_->points.at(i).position;
-            auto diff = rs - pos3;
+            auto diff = funpack(rs) - pos3;
             auto dist2 = sum(squared(diff));
             if ((dist2 < 1e-6) ||
                 (dot0d(diff / std::sqrt(dist2), z3.casted<ScenePos>()) < -std::cos(45. * degrees)))
@@ -110,7 +112,7 @@ void PathfindingWaypoints::select_next_waypoint() {
             ScenePos best_distance = NAN;
             for (const auto& [r, _] : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
                 auto candidate_time = player_.single_waypoint_.last_visited(r);
-                auto candidate_distance = dot0d(waypoints_->points.at(r).position - pos3, z3.casted<ScenePos>());
+                auto candidate_distance = dot0d(funpack(waypoints_->points.at(r).position) - pos3, z3.casted<ScenePos>());
                 auto r_is_better = [&]() {
                     if (best_id == SIZE_MAX) {
                         return true;

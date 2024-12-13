@@ -58,9 +58,10 @@ using namespace Mlib;
 template <class TPos>
 LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& j)
 {
+    using I = funpack_t<TPos>;
     j.validate(KnownArgs::options);
     return LoadMeshConfig<TPos>{
-        .position = j.at<UFixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters,
+        .position = (j.at<UFixedArray<I, 3>>(KnownArgs::position) * (I)meters).template casted<TPos>(),
         .rotation = j.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         .scale = j.at<UFixedArray<float, 3>>(KnownArgs::scale),
         .center_distances = OrderableFixedArray<float, 2>{
@@ -113,6 +114,6 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
 namespace Mlib {
 
 template LoadMeshConfig<float> Mlib::load_mesh_config_from_json<float>(const JsonMacroArguments& j);
-template LoadMeshConfig<double> Mlib::load_mesh_config_from_json<double>(const JsonMacroArguments& j);
+template LoadMeshConfig<CompressedScenePos> Mlib::load_mesh_config_from_json<CompressedScenePos>(const JsonMacroArguments& j);
 
 }

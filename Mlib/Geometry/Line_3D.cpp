@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Geometry/Ray_Segment_3D.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 using namespace Mlib;
 
@@ -52,22 +53,22 @@ AxisAlignedBoundingBox<TPos, 3> Line3D<TPos>::aabb() const {
 namespace Mlib {
 
 template class Line3D<float>;
-template class Line3D<double>;
+template class Line3D<ScenePos>;
 
 template Line3D<float>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
-template Line3D<double>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
-template Line3D<double>::Line3D(const FixedArray<ColoredVertex<double>, 2>& vertices);
+template Line3D<ScenePos>::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices);
+template Line3D<ScenePos>::Line3D(const FixedArray<ColoredVertex<CompressedScenePos>, 2>& vertices);
 
-template Line3D<double>::Line3D(
+template Line3D<ScenePos>::Line3D(
     const FixedArray<ColoredVertex<float>, 2>& vertices,
-    const TransformationMatrix<float, double, 3>& transformation);
-template Line3D<double>::Line3D(
-    const FixedArray<ColoredVertex<double>, 2>& vertices,
-    const TransformationMatrix<float, double, 3>& transformation);
+    const TransformationMatrix<float, ScenePos, 3>& transformation);
+template Line3D<ScenePos>::Line3D(
+    const FixedArray<ColoredVertex<CompressedScenePos>, 2>& vertices,
+    const TransformationMatrix<float, ScenePos, 3>& transformation);
 template Line3D<float>::Line3D(
     const FixedArray<ColoredVertex<float>, 2>& vertices,
     const TransformationMatrix<float, float, 3>& transformation);
 
-template RaySegment3D<float, double> Line3D<double>::ray() const;
+template RaySegment3D<float, ScenePos> Line3D<ScenePos>::ray() const;
 
 }

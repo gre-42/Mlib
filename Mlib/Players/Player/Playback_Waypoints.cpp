@@ -44,7 +44,9 @@ void PlaybackWaypoints::select_next_waypoint() {
             player_.single_waypoint().set_target_velocity(speedup_ * ds / dt);
         }
     }
-    player_.single_waypoint().set_waypoint({ current_track_element_->transformation().position(), WayPointLocation::UNKNOWN });
+    player_.single_waypoint().set_waypoint({
+        current_track_element_->transformation().position().casted<CompressedScenePos>(),
+        WayPointLocation::UNKNOWN });
 }
 
 void PlaybackWaypoints::set_waypoints(

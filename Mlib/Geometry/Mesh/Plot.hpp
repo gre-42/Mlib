@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <list>
 #include <string>
@@ -14,8 +15,6 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class TData, size_t... tshape>
-class OrderableFixedArray;
 template <class TPos>
 struct ColoredVertex;
 class PgmImage;
@@ -23,21 +22,20 @@ template <class TSize>
 class Svg;
 class PTri;
 class StbImage3;
-class ArrayShape;
 
 template <class TPos>
 StbImage3 plot_mesh(
-    const ArrayShape& image_size,
+    const FixedArray<size_t, 2>& image_size,
     size_t line_thickness,
     size_t point_size,
-    const std::list<FixedArray<FixedArray<TPos, 2>, 3>>& triangles,
+    const std::list<FixedArray<TPos, 3, 2>>& triangles,
     const std::list<std::list<FixedArray<TPos, 2>>>& contours,
     const std::list<FixedArray<TPos, 2>>& highlighted_nodes,
     const std::list<FixedArray<TPos, 2>>& crossed_nodes);
 
 template <class TPos>
 StbImage3 plot_mesh(
-    const ArrayShape& image_size,
+    const FixedArray<size_t, 2>& image_size,
     size_t line_thickness,
     size_t point_size,
     const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles,
@@ -47,16 +45,16 @@ StbImage3 plot_mesh(
 
 template <class TPos>
 StbImage3 plot_mesh(
-    const ArrayShape& image_size,
+    const FixedArray<size_t, 2>& image_size,
     size_t line_thickness,
     size_t point_size,
-    const std::list<FixedArray<OrderableFixedArray<TPos, 2>, 3>>& triangles,
-    const std::list<std::vector<OrderableFixedArray<TPos, 2>>>& contours,
-    const std::list<OrderableFixedArray<TPos, 2>>& highlighted_nodes,
-    const std::list<OrderableFixedArray<TPos, 2>>& crossed_nodes);
+    const std::list<FixedArray<TPos, 3, 2>>& triangles,
+    const std::list<std::vector<FixedArray<TPos, 2>>>& contours,
+    const std::list<FixedArray<TPos, 2>>& highlighted_nodes,
+    const std::list<FixedArray<TPos, 2>>& crossed_nodes);
 
 StbImage3 plot_mesh(
-    const ArrayShape& image_size,
+    const FixedArray<size_t, 2>& image_size,
     size_t line_thickness,
     size_t point_size,
     const std::list<PTri>& triangles,
@@ -66,16 +64,16 @@ StbImage3 plot_mesh(
 
 template <class TPos>
 void plot_mesh(
-    Svg<TPos>& svg,
-    const std::list<FixedArray<FixedArray<TPos, 2>, 3>>& triangles,
-    const std::list<FixedArray<FixedArray<TPos, 2>, 2>>& edges,
+    Svg<double>& svg,
+    const std::list<FixedArray<TPos, 3, 2>>& triangles,
+    const std::list<FixedArray<TPos, 2, 2>>& edges,
     const std::list<std::list<FixedArray<TPos, 2>>>& contours,
     const std::list<FixedArray<TPos, 2>>& highlighted_nodes,
     TPos line_width = 0.05f);
 
 template <class TPos>
 void plot_mesh(
-    Svg<TPos>& svg,
+    Svg<double>& svg,
     const std::list<const FixedArray<ColoredVertex<TPos>, 3>*>& triangles,
     const std::list<std::list<FixedArray<TPos, 3>>>& contours,
     const std::list<FixedArray<TPos, 3>>& highlighted_nodes,
@@ -85,29 +83,29 @@ void plot_mesh_svg(
     const std::string& filename,
     double width,
     double height,
-    const std::list<const FixedArray<ColoredVertex<double>, 3>*>& triangles,
-    const std::list<std::list<FixedArray<double, 3>>>& contours,
-    const std::list<FixedArray<double, 3>>& highlighted_nodes,
-    double line_width = 0.05f);
+    const std::list<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*>& triangles,
+    const std::list<std::list<FixedArray<CompressedScenePos, 3>>>& contours,
+    const std::list<FixedArray<CompressedScenePos, 3>>& highlighted_nodes,
+    CompressedScenePos line_width = (CompressedScenePos)0.5f);
 
 void plot_mesh_svg(
     const std::string& filename,
     double width,
     double height,
-    const std::list<FixedArray<FixedArray<double, 2>, 3>>& triangles,
-    const std::list<FixedArray<FixedArray<double, 2>, 2>>& edges,
-    const std::list<std::list<FixedArray<double, 2>>>& contours,
-    const std::list<FixedArray<double, 2>>& highlighted_nodes,
-    double line_width = 0.05f);
+    const std::list<FixedArray<CompressedScenePos, 3, 2>>& triangles,
+    const std::list<FixedArray<CompressedScenePos, 2, 2>>& edges,
+    const std::list<std::list<FixedArray<CompressedScenePos, 2>>>& contours,
+    const std::list<FixedArray<CompressedScenePos, 2>>& highlighted_nodes,
+    CompressedScenePos line_width = (CompressedScenePos)0.5f);
 
 void plot_mesh_svg(
     const std::string& filename,
     double width,
     double height,
-    const std::list<FixedArray<OrderableFixedArray<double, 2>, 3>>& triangles,
-    const std::list<std::vector<OrderableFixedArray<double, 2>>>& contours,
-    const std::list<OrderableFixedArray<double, 2>>& highlighted_nodes,
-    double line_width = 0.05f);
+    const std::list<FixedArray<CompressedScenePos, 3, 2>>& triangles,
+    const std::list<std::vector<FixedArray<CompressedScenePos, 2>>>& contours,
+    const std::list<FixedArray<CompressedScenePos, 2>>& highlighted_nodes,
+    CompressedScenePos line_width = (CompressedScenePos)0.5f);
 
 void plot_mesh_svg(
     const std::string& filename,

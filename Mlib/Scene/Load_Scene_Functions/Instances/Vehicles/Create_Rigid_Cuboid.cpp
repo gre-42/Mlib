@@ -70,10 +70,10 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
         rb->flags_ = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags));
     }
     if (args.arguments.contains(KnownArgs::waypoint_dy)) {
-        rb->set_waypoint_ofs(args.arguments.at<float>(KnownArgs::waypoint_dy) * meters);
+        rb->set_waypoint_ofs(CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::waypoint_dy) * meters));
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
-    std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> d_hitboxes;
     std::list<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables;
     if (auto hbs = args.arguments.try_at_non_null(KnownArgs::hitboxes); hbs.has_value()) {
         {

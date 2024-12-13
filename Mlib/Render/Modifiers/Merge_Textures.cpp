@@ -36,7 +36,7 @@ void Mlib::merge_textures(
          mesh_resource_name,
          merged_materials_config]
         (ISceneNodeResource& scene_node_resource){
-            UnorderedMap<ColormapWithModifiers, std::list<ColoredVertexArray<double>*>> merged_filenames;
+            UnorderedMap<ColormapWithModifiers, std::list<ColoredVertexArray<CompressedScenePos>*>> merged_filenames;
             auto meshes = scene_node_resource.get_rendering_arrays();
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
@@ -103,7 +103,7 @@ void Mlib::merge_textures(
                 merged_materials_config.mip_level_count);
             // rendering_resources.save_to_file("/tmp/atlas.png", TextureDescriptor{.color = merged_texture_name, .color_mode = ColorMode::RGBA});
             
-            std::list<FixedArray<ColoredVertex<double>, 3>> merged_triangles;
+            std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> merged_triangles;
             std::list<FixedArray<uint8_t, 3>> merged_discrete_triangle_texture_layers;
             for (const auto& [colormap, cvas] : merged_filenames) {
                 const auto& tile = uv_tiles.at(colormap.filename);
@@ -115,7 +115,7 @@ void Mlib::merge_textures(
                                 assert_true(all(v.uv >= UV_ATLAS_MIN));
                                 assert_true(all(v.uv <= UV_ATLAS_MAX));
                                 v.uv = tile.position + v.uv * tile.size;
-                                v.color = cva->material.shading.ambient + cva->material.shading.diffuse;
+                                v.color = Colors::from_rgb(cva->material.shading.ambient + cva->material.shading.diffuse);
                             }
                         }
                         {
@@ -134,7 +134,7 @@ void Mlib::merge_textures(
             scene_node_resources.add_resource(
                 merged_materials_config.resource_name,
                 std::make_shared<ColoredVertexArrayResource>(
-                    std::make_shared<ColoredVertexArray<double>>(
+                    std::make_shared<ColoredVertexArray<CompressedScenePos>>(
                     merged_materials_config.array_name,
                     Material{
                         .blend_mode = merged_materials_config.blend_mode,
@@ -155,9 +155,9 @@ void Mlib::merge_textures(
                         .max_triangle_distance = merged_materials_config.max_triangle_distance,
                     },
                     ModifierBacklog{},
-                    UUVector<FixedArray<ColoredVertex<double>, 4>>{},
-                    UUVector<FixedArray<ColoredVertex<double>, 3>>(merged_triangles.begin(), merged_triangles.end()),
-                    UUVector<FixedArray<ColoredVertex<double>, 2>>{},
+                    UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 4>>{},
+                    UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 3>>(merged_triangles.begin(), merged_triangles.end()),
+                    UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 2>>{},
                     UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
                     UUVector<FixedArray<float, 3>>{},
                     UUVector<FixedArray<uint8_t, 3>>(merged_discrete_triangle_texture_layers.begin(), merged_discrete_triangle_texture_layers.end()),

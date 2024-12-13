@@ -14,7 +14,7 @@ void Mlib::fit_canvas_to_renderables(
     OrthoCamera& camera,
     ExternalRenderPassType render_pass)
 {
-    auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::empty();
+    auto aabb = AxisAlignedBoundingBox<CompressedScenePos, 3>::empty();
     scene.visit_all([&](
         const TransformationMatrix<float, ScenePos, 3>& m,
         const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)

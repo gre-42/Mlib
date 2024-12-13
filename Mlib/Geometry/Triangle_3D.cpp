@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 using namespace Mlib;
 
@@ -14,11 +15,12 @@ Triangle3D<TPos>::Triangle3D(const FixedArray<TPos, 3, 3>& vertices)
 {}
 
 template <class TPos>
-Triangle3D<TPos>::Triangle3D(const FixedArray<ColoredVertex<TPos>, 3>& vertices)
+template <class TPos2>
+Triangle3D<TPos>::Triangle3D(const FixedArray<ColoredVertex<TPos2>, 3>& vertices)
     : vertices_{
-        vertices(0).position,
-        vertices(1).position,
-        vertices(2).position}
+        vertices(0).position.template casted<TPos>(),
+        vertices(1).position.template casted<TPos>(),
+        vertices(2).position.template casted<TPos>()}
 {}
 
 template <class TPos>
@@ -27,9 +29,9 @@ Triangle3D<TPos>::Triangle3D(
     const FixedArray<ColoredVertex<TPos2>, 3>& vertices,
     const TransformationMatrix<float, TPosTransform, 3>& transformation)
     : vertices_{
-        transformation.transform(vertices(0).position.template casted<TPosTransform>()),
-        transformation.transform(vertices(1).position.template casted<TPosTransform>()),
-        transformation.transform(vertices(2).position.template casted<TPosTransform>())}
+        transformation.transform(vertices(0).position.template casted<TPosTransform>()).template casted<TPos>(),
+        transformation.transform(vertices(1).position.template casted<TPosTransform>()).template casted<TPos>(),
+        transformation.transform(vertices(2).position.template casted<TPosTransform>()).template casted<TPos>()}
 {}
 
 template <class TPos>
@@ -38,13 +40,13 @@ const FixedArray<TPos, 3, 3>& Triangle3D<TPos>::vertices() const {
 }
 
 template <class TPos>
-ConvexPolygon3D<TPos, TPos, 3> Triangle3D<TPos>::polygon() const {
+ConvexPolygon3D<typename Triangle3D<TPos>::I, TPos, 3> Triangle3D<TPos>::polygon() const {
     return { vertices_ };
 }
 
 template <class TPos>
 BoundingSphere<TPos, 3> Triangle3D<TPos>::bounding_sphere(std::minstd_rand& rng) const {
-    return welzl_from_fixed(vertices_, rng);
+    return welzl_from_fixed(funpack(vertices_), rng).template casted<TPos>();
 }
 
 template <class TPos>
@@ -55,14 +57,18 @@ AxisAlignedBoundingBox<TPos, 3> Triangle3D<TPos>::aabb() const {
 namespace Mlib {
 
 template class Triangle3D<float>;
-template class Triangle3D<double>;
+template class Triangle3D<CompressedScenePos>;
 
-template Triangle3D<double>::Triangle3D(
+template Triangle3D<CompressedScenePos>::Triangle3D(
+    const FixedArray<ColoredVertex<float>, 3>& vertices);
+template Triangle3D<CompressedScenePos>::Triangle3D(
+    const FixedArray<ColoredVertex<CompressedScenePos>, 3>& vertices);
+template Triangle3D<CompressedScenePos>::Triangle3D(
     const FixedArray<ColoredVertex<float>, 3>& vertices,
-    const TransformationMatrix<float, double, 3>& transformation);
-template Triangle3D<double>::Triangle3D(
-    const FixedArray<ColoredVertex<double>, 3>& vertices,
-    const TransformationMatrix<float, double, 3>& transformation);
+    const TransformationMatrix<float, ScenePos, 3>& transformation);
+template Triangle3D<CompressedScenePos>::Triangle3D(
+    const FixedArray<ColoredVertex<CompressedScenePos>, 3>& vertices,
+    const TransformationMatrix<float, ScenePos, 3>& transformation);
 template Triangle3D<float>::Triangle3D(
     const FixedArray<ColoredVertex<float>, 3>& vertices,
     const TransformationMatrix<float, float, 3>& transformation);

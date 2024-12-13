@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <list>
+#include <optional>
 #include <ostream>
 #include <type_traits>
 #include <variant>
@@ -226,26 +227,28 @@ public:
         return true;
     }
 
-    template <class TPayload = void>
-    TPosition min_distance(
+    template <class TPayload>
+    auto min_distance(
         const FixedArray<TPosition, tndim>& p,
         const TPosition& max_distance,
         const auto& compute_distance,
         const TPayload** nearest_payload = nullptr) const
     {
-        TPosition min_distance = INFINITY;
+        using TDistance = decltype(compute_distance(*(TPayload*)nullptr));
+
+        std::optional<TDistance> min_distance;
         visit(AxisAlignedBoundingBox<TPosition, tndim>::from_center_and_radius(p, max_distance),
-            [&min_distance, &compute_distance, nearest_payload](const auto& payload)
-        {
-            TPosition dist = compute_distance(payload);
-            if (dist < min_distance) {
-                min_distance = dist;
-                if (nearest_payload != nullptr) {
-                    *nearest_payload = &payload;
+            [&min_distance, &compute_distance, nearest_payload](const TPayload& payload)
+            {
+                TDistance dist = compute_distance(payload);
+                if (!min_distance.has_value() || (dist < *min_distance)) {
+                    min_distance = dist;
+                    if (nearest_payload != nullptr) {
+                        *nearest_payload = &payload;
+                    }
                 }
-            }
-            return true;
-        });
+                return true;
+            });
         return min_distance;
     }
 
@@ -256,8 +259,9 @@ public:
         const TPosition& max_distance,
         const auto& compute_distance) const
     {
+        auto large = std::numeric_limits<TPosition>::max();
         std::vector<std::pair<TPosition, const TPayload*>> result(k);
-        std::fill(result.begin(), result.end(), std::make_pair(INFINITY, nullptr));
+        std::fill(result.begin(), result.end(), std::make_pair(large, nullptr));
         auto predicate = [](const auto& a, const auto& b){return a.first < b.first;};
         visit(AxisAlignedBoundingBox<TPosition, tndim>::from_center_and_radius(p, max_distance),
             [&result, &compute_distance, &predicate](const TPayload& payload)
@@ -276,7 +280,7 @@ public:
             }
             return true;
         });
-        auto last = std::lower_bound(result.begin(), result.end(), std::make_pair(INFINITY, nullptr), predicate);
+        auto last = std::lower_bound(result.begin(), result.end(), std::make_pair(large, nullptr), predicate);
         result.resize(size_t(last - result.begin()));
         return result;
     }

@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
         Array<float> height = load_heightmap_from_file<float>(args.named_value("--height"));
         Array<float> color = args.has_named_value("--rgb")
             ? StbImage3::load_from_file(args.named_value("--rgb")).to_float_rgb()
-            : StbImage3{ height.shape(), Rgb24::white() }.to_float_rgb();
+            : StbImage3{ height.fixed_shape<2>(), Rgb24::white() }.to_float_rgb();
         if (!all(height.shape() == color.shape().erased_first())) {
             throw std::runtime_error("Depth and image shape differ");
         }

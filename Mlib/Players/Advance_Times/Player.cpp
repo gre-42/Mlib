@@ -300,7 +300,7 @@ GameMode Player::game_mode() const {
 bool Player::can_see(
     const RigidBodyVehicle& rb,
     bool only_terrain,
-    float height_offset,
+    ScenePos height_offset,
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
@@ -319,7 +319,7 @@ bool Player::can_see(
 bool Player::can_see(
     const FixedArray<ScenePos, 3>& pos,
     bool only_terrain,
-    float height_offset,
+    ScenePos height_offset,
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
@@ -338,7 +338,7 @@ bool Player::can_see(
 bool Player::can_see(
     const SceneVehicle& scene_vehicle,
     bool only_terrain,
-    float height_offset,
+    ScenePos height_offset,
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
@@ -357,7 +357,7 @@ bool Player::can_see(
 bool Player::can_see(
     const Player& player,
     bool only_terrain,
-    float height_offset,
+    ScenePos height_offset,
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
@@ -457,7 +457,7 @@ void Player::increment_external_forces(
     } else if ((unstuck_mode_ == UnstuckMode::OFF) || !(unstucking = unstuck())) {
         if (ramming()) {
             auto tpos = target_rb_->abs_target();
-            single_waypoint_.set_waypoint({ tpos, WayPointLocation::UNKNOWN });
+            single_waypoint_.set_waypoint({ tpos.casted<CompressedScenePos>(), WayPointLocation::UNKNOWN });
         } else {
             if (!supply_depots_waypoints_.select_next_waypoint()) {
                 pathfinding_waypoints_.select_next_waypoint();

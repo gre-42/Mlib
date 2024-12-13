@@ -25,7 +25,7 @@ void Mlib::draw_into_street_rectangles(
         result.append(StyledRoadEntry{
             .road_properties = tl.road_properties,
             .styled_road = StyledRoad{
-                .triangle_list = std::make_shared<TriangleList<double>>(
+                .triangle_list = std::make_shared<TriangleList<CompressedScenePos>>(
                     tl.styled_road.triangle_list->name,
                     tl.styled_road.triangle_list->material,
                     tl.styled_road.triangle_list->morphology),
@@ -37,10 +37,10 @@ void Mlib::draw_into_street_rectangles(
         }
         auto& tl_str = result[r.road_properties];
         OsmRectangle3D rect{
-            .p00_ = r.rectangle(0, 0),
-            .p01_ = r.rectangle(0, 1),
-            .p10_ = r.rectangle(1, 0),
-            .p11_ = r.rectangle(1, 1)};
+            .p00_ = funpack(r.rectangle[0][0]),
+            .p01_ = funpack(r.rectangle[0][1]),
+            .p10_ = funpack(r.rectangle[1][0]),
+            .p11_ = funpack(r.rectangle[1][1])};
         const auto& cvas = scene_node_resources.get_physics_arrays(r.bumps_model)->scvas;
         for (const auto& cva : cvas) {
             if (cva->name != "street") {

@@ -17,10 +17,11 @@ public:
         }
     }
     void add_triangle(const FixedArray<ColoredVertex<TPos>, 3>& triangle) {
-        auto normal = triangle_normal<TPos>({
+        using Triangle = FixedArray<TPos, 3, 3>;
+        auto normal = triangle_normal(funpack(Triangle{
             triangle(0).position,
             triangle(1).position,
-            triangle(2).position }).template casted<TNormal>();
+            triangle(2).position })).template casted<TNormal>();
         for (auto& v : triangle.flat_iterable()) {
             add_vertex_face_normal(v.position, normal);
         }
@@ -52,10 +53,11 @@ public:
         const FixedArray<ColoredVertex<TPos>, 3>& t,
         const TNormal& seam_threshold)
     {
-        auto normal = triangle_normal<TPos>({
+        using Triangle = FixedArray<TPos, 3, 3>;
+        auto normal = triangle_normal(funpack(Triangle{
             t(0).position,
             t(1).position,
-            t(2).position }).template casted<TNormal>();
+            t(2).position })).template casted<TNormal>();
         auto tri = t;
         for (size_t i = 0; i < 3; ++i) {
             tri(i).normal = get_normal(tri(i).position, normal, seam_threshold);

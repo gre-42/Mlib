@@ -17,7 +17,7 @@ class SceneNodeResources;
 enum class UpAxis;
 
 struct TriangleAndSeed {
-    const FixedArray<ColoredVertex<ScenePos>, 3>& triangle;
+    const FixedArray<ColoredVertex<CompressedScenePos>, 3>& triangle;
     unsigned int seed;
 };
 
@@ -28,8 +28,8 @@ public:
         const SceneNodeResources& scene_node_resources,
         const TerrainStyles& terrain_styles,
         const TerrainTriangles& terrain_triangles,
-        const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*>& no_grass,
-        const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* street_bvh,
+        const std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*>& no_grass,
+        const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>* street_bvh,
         ScenePos scale,
         UpAxis up_axis);
     virtual ~RenderableTriangleSampler();
@@ -47,18 +47,18 @@ public:
     virtual void extend_aabb(
         const TransformationMatrix<float, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
-        AxisAlignedBoundingBox<ScenePos, 3>& aabb) const override;
+        AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const override;
     virtual ScenePos max_center_distance(BillboardId billboard_id) const override;
 private:
     const SceneNodeResources& scene_node_resources_;
     const TerrainStyles& terrain_styles_;
     const TerrainTriangles terrain_triangles_;
-    const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*> no_grass_;
-    const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* street_bvh_;
+    const std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> no_grass_;
+    const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>* street_bvh_;
     ScenePos scale_;
     UpAxis up_axis_;
-    mutable std::optional<std::map<const TerrainStyle*, Bvh<ScenePos, 3, TriangleAndSeed>>> grass_bvhs_;
-    mutable std::optional<std::map<const TerrainStyle*, Bvh<ScenePos, 3, TriangleAndSeed>>> no_grass_bvhs_;
+    mutable std::optional<std::map<const TerrainStyle*, Bvh<CompressedScenePos, 3, TriangleAndSeed>>> grass_bvhs_;
+    mutable std::optional<std::map<const TerrainStyle*, Bvh<CompressedScenePos, 3, TriangleAndSeed>>> no_grass_bvhs_;
 };
 
 }

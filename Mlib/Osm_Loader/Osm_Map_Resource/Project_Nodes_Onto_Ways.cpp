@@ -6,7 +6,7 @@ using namespace Mlib;
 
 void Mlib::project_nodes_onto_ways(
     std::map<std::string, Node>& nodes,
-    const std::list<FixedArray<double, 2, 2>>& way_segments,
+    const std::list<FixedArray<CompressedScenePos, 2, 2>>& way_segments,
     double scale)
 {
     WayBvh way_bvh{ way_segments };

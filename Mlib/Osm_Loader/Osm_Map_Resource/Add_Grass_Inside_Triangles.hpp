@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 
@@ -10,8 +11,8 @@ class TriangleList;
 void add_grass_inside_triangles(
     BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
-    const TriangleList<double>& triangles,
+    const TriangleList<CompressedScenePos>& triangles,
     float scale,
-    float distance);
+    CompressedScenePos distance);
 
 }

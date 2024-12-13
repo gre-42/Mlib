@@ -21,12 +21,12 @@ void Mlib::add_grass_on_steiner_points(
     FastNormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
     for (const auto& p : steiner_points) {
         if (p.type == SteinerPointType::STREET_NEIGHBOR) {
-            FixedArray<double, 2> pt{ p.position(0), p.position(1) };
-            double distance_to_road = ground_bvh.min_dist(pt, dmax * scale);
-            double distance_to_air_road = air_bvh.min_dist(pt, dmin * scale);
-            if ((distance_to_road > dmin * scale) &&
-                (distance_to_road < dmax * scale) &&
-                (distance_to_air_road > dmin * scale))
+            FixedArray<CompressedScenePos, 2> pt{ p.position(0), p.position(1) };
+            auto distance_to_road = ground_bvh.min_dist(pt, (CompressedScenePos)(dmax * scale)).value_or(std::numeric_limits<CompressedScenePos>::max());
+            auto distance_to_air_road = air_bvh.min_dist(pt, (CompressedScenePos)(dmin * scale)).value_or(std::numeric_limits<CompressedScenePos>::max());
+            if ((distance_to_road > (CompressedScenePos)(dmin * scale)) &&
+                (distance_to_road < (CompressedScenePos)(dmax * scale)) &&
+                (distance_to_air_road > (CompressedScenePos)(dmin * scale)))
             {
                 const ParsedResourceName* prn = rnc.try_once();
                 if (prn != nullptr) {

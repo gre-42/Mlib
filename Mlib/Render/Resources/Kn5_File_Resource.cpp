@@ -33,7 +33,7 @@ template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
     IRaceLogic*);
 template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
     const std::string& file_or_directory,
-    const LoadMeshConfig<double>&,
+    const LoadMeshConfig<CompressedScenePos>&,
     const SceneNodeResources&,
     IDdsResources*,
     IRaceLogic*);

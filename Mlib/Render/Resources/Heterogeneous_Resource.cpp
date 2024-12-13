@@ -187,7 +187,7 @@ void HeterogeneousResource::generate_instances() {
             }
             const auto& tri = *cva->triangles.begin();
             bri->add_parsed_resource_name(
-                tri(0).position.casted<ScenePos>(),
+                tri(0).position.casted<CompressedScenePos>(),
                 ParsedResourceName{
                     .name = VariableAndHash{ match[1].str() },
                     .billboard_id = match[2].matched ? safe_stox<BillboardId>(match[2].str()) : BILLBOARD_ID_NONE,

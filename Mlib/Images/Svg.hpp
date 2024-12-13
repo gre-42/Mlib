@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Funpack.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
@@ -189,10 +190,10 @@ public:
     }
 
     template <class TData>
-    void plot(
+    void plot_multiple(
         const std::vector<std::vector<TData>>& x,
         const std::vector<std::vector<TData>>& y,
-        const TData& stroke_width = 1.5,
+        const funpack_t<TData>& stroke_width = 1.5,
         const std::vector<std::string>& colors = {"#000", "#FF5733"},
         size_t down_sampling = 1)
     {
@@ -259,9 +260,10 @@ public:
     void plot(
         const std::vector<TData>& x,
         const std::vector<TData>& y,
-        const TData& stroke_width = 1.5,
+        const funpack_t<TData>& stroke_width = 1.5f,
         size_t down_sampling = 1)
     {
+        using I = funpack_t<TData>;
         if (x.size() != y.size()) {
             THROW_OR_ABORT("Size mismatch in plot");
         }
@@ -270,25 +272,25 @@ public:
         }
         const auto xm = std::minmax_element(x.begin(), x.end());
         const auto ym = std::minmax_element(y.begin(), y.end());
-        const auto xpos = [&](const TData& x) {
-            return ((x - *xm.first) * width_) / (*xm.second - *xm.first);
+        const auto xpos = [&](const I& x) {
+            return ((x - funpack(*xm.first)) * width_) / (funpack(*xm.second - *xm.first));
         };
-        const auto ypos = [&](const TData& y) {
-            return height_ - ((y - *ym.first) * height_) / (*ym.second - *ym.first);
+        const auto ypos = [&](const I& y) {
+            return height_ - ((y - funpack(*ym.first)) * height_) / funpack(*ym.second - *ym.first);
         };
         // for (size_t i = down_sampling; i < x.size(); i += down_sampling) {
         //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
         //}
-        PathDrawer pd{ostr_, stroke_width};
+        PathDrawer pd{ ostr_, stroke_width };
         for (size_t i = 0; i < x.size(); i += down_sampling) {
-            pd.draw_point(xpos(x[i]), ypos(y[i]));
+            pd.draw_point(xpos(funpack(x[i])), ypos(funpack(y[i])));
         }
         pd.finish();
-        for (const TData& xx : Linspace{ *xm.first, *xm.second, 5 }) {
-            draw_text<TData>(xpos(xx), height_, std::to_string(xx));
+        for (const I& xx : Linspace{ funpack(*xm.first), funpack(*xm.second), 5 }) {
+            draw_text<I>(xpos(xx), height_, std::to_string(xx));
         }
-        for (const TData& yy : Linspace{ *ym.first, *ym.second, 5 }) {
-            draw_text<TData>(0, ypos(yy), std::to_string(yy));
+        for (const I& yy : Linspace{ funpack(*ym.first), funpack(*ym.second), 5 }) {
+            draw_text<I>(0, ypos(yy), std::to_string(yy));
         }
     }
 
@@ -296,7 +298,7 @@ public:
     void plot(
         const std::list<TData>& x,
         const std::list<TData>& y,
-        const TData& stroke_width = 1.5,
+        const funpack_t<TData>& stroke_width = 1.5,
         size_t down_sampling = 1)
     {
         plot(std::vector(x.begin(), x.end()), std::vector(y.begin(), y.end()), stroke_width, down_sampling);

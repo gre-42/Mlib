@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 UUInterp<double, FixedArray<double, 3>> Mlib::interpolated_contour(
-    const std::list<FixedArray<double, 3>>& contour)
+    const std::list<FixedArray<CompressedScenePos, 3>>& contour)
 {
     if (contour.empty()) {
         return UUInterp<double, FixedArray<double, 3>>({}, {});
@@ -18,27 +18,27 @@ UUInterp<double, FixedArray<double, 3>> Mlib::interpolated_contour(
 
     UUVector<FixedArray<double, 3>> positions;
     positions.reserve(contour.size());
-    positions.push_back(contour.front());
+    positions.push_back(funpack(contour.front()));
     {
         for (const auto& current_position : Iterable{ ++contour.begin(), contour.end() }) {
             distance_to_origin.push_back(
                 distance_to_origin.back() +
-                std::sqrt(sum(squared(current_position - positions.back()))));
-            positions.push_back(current_position);
+                std::sqrt(sum(squared(funpack(current_position) - positions.back()))));
+            positions.push_back(funpack(current_position));
         }
     }
     return Interp<double, DefaultUnitialized<FixedArray<double, 3>>>{ distance_to_origin, positions };
 }
 
-std::list<FixedArray<double, 3>> Mlib::subdivided_contour(
-    const std::list<FixedArray<double, 3>>& contour,
+std::list<FixedArray<CompressedScenePos, 3>> Mlib::subdivided_contour(
+    const std::list<FixedArray<CompressedScenePos, 3>>& contour,
     double scale,
-    double distance)
+    CompressedScenePos distance)
 {
-    std::list<FixedArray<double, 3>> result;
+    std::list<FixedArray<CompressedScenePos, 3>> result;
     auto interp = interpolated_contour(contour);
-    for (auto dist = 0.; dist <= interp.xmax(); dist += distance * scale) {
-        result.push_back(interp(dist));
+    for (auto dist = 0.; dist <= interp.xmax(); dist += funpack(distance) * scale) {
+        result.push_back(interp(dist).casted<CompressedScenePos>());
     }
     return result;
 }

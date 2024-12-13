@@ -34,5 +34,5 @@ void SetWaypointOfs::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
-    rb.set_waypoint_ofs(args.arguments.at<float>(KnownArgs::dy) * meters);
+    rb.set_waypoint_ofs(CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::dy) * meters));
 }

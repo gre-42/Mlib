@@ -35,17 +35,17 @@ using namespace Mlib;
 
 void Mlib::apply_heightmap(
     const TerrainTypeTriangleList& tl_terrain,
-    const std::map<EntranceType, std::set<OrderableFixedArray<double, 2>>>& entrances,
-    float tunnel_height,
-    float extrude_air_support_amount,
-    std::list<FixedArray<double, 3>*>& in_vertices,
-    std::set<const FixedArray<double, 3>*>& vertices_to_delete,
+    const std::map<EntranceType, std::set<OrderableFixedArray<CompressedScenePos, 2>>>& entrances,
+    CompressedScenePos tunnel_height,
+    CompressedScenePos extrude_air_support_amount,
+    std::list<FixedArray<CompressedScenePos, 3>*>& in_vertices,
+    std::set<const FixedArray<CompressedScenePos, 3>*>& vertices_to_delete,
     const HeightSampler& height_sampler,
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    const std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
-    const std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
+    const std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding>& node_height_bindings,
+    const std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     float street_node_smoothness,
     size_t street_node_smoothing_iterations,
     const Interp<double>& layer_heights)
@@ -72,9 +72,9 @@ void Mlib::apply_heightmap(
                 if (s != w.second.nd.end()) {
                     double bridge_height_ref = bridge_height;
                     if (ref_is_ground) {
-                        double z;
-                        if (height_sampler((nodes.at(*it).position + nodes.at(*s).position) / 2., z)) {
-                            bridge_height_ref += z;
+                        CompressedScenePos z;
+                        if (height_sampler((nodes.at(*it).position + nodes.at(*s).position) / 2, z)) {
+                            bridge_height_ref += (double)z;
                         } else {
                             lerr() << "Bridge with ref=ground is not inside heightmap. Way ID: " << w.first;
                         }
@@ -115,11 +115,11 @@ void Mlib::apply_heightmap(
                 if (layer == 0) {
                     // If the ways to all neighbors are on the ground (or they cancel out to 0),
                     // pick the height of the heightmap exactly on the node.
-                    double z;
+                    CompressedScenePos z;
                     if (height_sampler(nodes.at(n.first).position, z)) {
                         node_height[n.first] = {
-                            .height = z,
-                            .smooth_height = z};
+                            .height = (double)z,
+                            .smooth_height = (double)z};
                     }
                 } else {
                     // If some ways are not on the ground, and the heights don't cancel out to 0,
@@ -160,11 +160,11 @@ void Mlib::apply_heightmap(
             }
         }
     }
-    std::map<EntranceType, std::set<const FixedArray<double, 3>*>> terrain_entrance_vertices;
+    std::map<EntranceType, std::set<const FixedArray<CompressedScenePos, 3>*>> terrain_entrance_vertices;
     for (const auto& [_, tt] : tl_terrain.map()) {
         for (const auto& t : tt->triangles) {
             for (const auto& v : t.flat_iterable()) {
-                OrderableFixedArray<double, 2> vc{v.position(0), v.position(1)};
+                OrderableFixedArray<CompressedScenePos, 2> vc{v.position(0), v.position(1)};
                 for (const auto& e : entrances) {
                     if (e.second.contains(vc)) {
                         terrain_entrance_vertices[e.first].insert(&v.position);
@@ -174,12 +174,12 @@ void Mlib::apply_heightmap(
         }
     }
     if (auto filename = getenv("TUNNEL_ENTRANCES_OBJ"); filename != nullptr) {
-        std::list<FixedArray<ColoredVertex<double>, 3>> tcp;
+        std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>> tcp;
         for (const auto& [_, tt] : tl_terrain.map()) {
             for (const auto& t : tt->triangles) {
                 bool found = false;
                 for (const auto& v : t.flat_iterable()) {
-                    OrderableFixedArray<double, 2> vc{v.position(0), v.position(1)};
+                    OrderableFixedArray<CompressedScenePos, 2> vc{v.position(0), v.position(1)};
                     if (entrances.at(EntranceType::TUNNEL).contains(vc)) {
                         found = true;
                     }
@@ -191,34 +191,34 @@ void Mlib::apply_heightmap(
         }
         save_obj(
             filename,
-            IndexedFaceSet<float, double, size_t>{ tcp },
+            IndexedFaceSet<float, CompressedScenePos, size_t>{ tcp },
             nullptr);  // material
     }
     // Transfer smoothening of street nodes to the triangles they produced.
     // The mapping node -> triangle vertices is stored in the "node_height_bindings" mapping.
     // Note that the 2D coordinates of OSM nodes are garantueed to be unique to exactly one height.
     // Also, duplicate nodes were already removed while parsing the OSM XML-file.
-    std::map<OrderableFixedArray<double, 2>, std::list<FixedArray<double, 3>*>> vertex_instances_map;
-    for (FixedArray<double, 3>* iv : in_vertices) {
-        OrderableFixedArray<double, 2> vc = uninitialized;
+    std::map<OrderableFixedArray<CompressedScenePos, 2>, std::list<FixedArray<CompressedScenePos, 3>*>> vertex_instances_map;
+    for (FixedArray<CompressedScenePos, 3>* iv : in_vertices) {
+        OrderableFixedArray<CompressedScenePos, 2> vc = uninitialized;
         auto hit = vertex_height_bindings.find(iv);
         if (hit != vertex_height_bindings.end()) {
             vc = hit->second.value();
         } else {
-            vc = OrderableFixedArray<double, 2>{ (*iv)(0), (*iv)(1) };
+            vc = OrderableFixedArray<CompressedScenePos, 2>{ (*iv)(0), (*iv)(1) };
         }
         vertex_instances_map[vc].push_back(iv);
     }
     for (auto& position : vertex_instances_map) {
-        FixedArray<double, 2> vc = uninitialized;
+        FixedArray<CompressedScenePos, 2> vc = uninitialized;
         // Try to apply height bindings.
-        auto it = node_height_bindings.find(OrderableFixedArray<double, 2>{position.first(0), position.first(1)});
+        auto it = node_height_bindings.find(OrderableFixedArray<CompressedScenePos, 2>{position.first(0), position.first(1)});
         if (it != node_height_bindings.end()) {
             // Note that node_height is empty if street_node_smoothness == 0,
             // so this test will then always return false.
             if (auto hit = node_height.find(it->second.str()); hit != node_height.end()) {
                 for (auto& pc : position.second) {
-                    (*pc)(2) += hit->second.smooth_height * scale;
+                    (*pc)(2) += (CompressedScenePos)(hit->second.smooth_height * scale);
                     // Both the tunnel and the street vertices are part of the in_vertices.
                     // The terrain vertices lying on the tunnel vertices are therefore
                     // first moving down with the tunnel vertices in the line above,
@@ -237,7 +237,7 @@ void Mlib::apply_heightmap(
             vc = {position.first(0), position.first(1)};
         }
         // If no height binding could be applied, use the raw heightmap value.
-        double z;
+        CompressedScenePos z;
         if (!height_sampler(vc, z)) {
             // lerr() << "Height out of bounds.";
             for (auto& pc : position.second) {

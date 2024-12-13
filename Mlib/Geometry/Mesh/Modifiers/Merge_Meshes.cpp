@@ -39,15 +39,13 @@ void Mlib::merge_meshes(
     cvas = std::move(result);
 }
 
-namespace Mlib {
-    template void merge_meshes<float>(
-        std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas,
-        const std::string& name,
-        const Material& material,
-        const Morphology& morphology);
-    template void merge_meshes<double>(
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
-        const std::string& name,
-        const Material& material,
-        const Morphology& morphology);
-}
+template void Mlib::merge_meshes<float>(
+    std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas,
+    const std::string& name,
+    const Material& material,
+    const Morphology& morphology);
+template void Mlib::merge_meshes<CompressedScenePos>(
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
+    const std::string& name,
+    const Material& material,
+    const Morphology& morphology);

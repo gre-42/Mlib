@@ -81,11 +81,11 @@ private:
     IndexedPointSet indexed_points_;
 };
 
-void plot(Svg<float>& svg, const triangle::triangulateio& io) {
+void plot(Svg<double>& svg, const triangle::triangulateio& io) {
     if ((io.numberoftriangles == 0) && (io.numberofsegments == 0)) {
         return;
     }
-    std::list<FixedArray<Point2, 3>> triangles;
+    std::list<FixedArray<float, 3, 2>> triangles;
     for (int* i = io.trianglelist; i < io.trianglelist + 3 * io.numberoftriangles; i += 3) {
         triangles.push_back({
             Point2{(float)io.pointlist[2 * i[0]], (float)io.pointlist[2 * i[0] + 1]},
@@ -107,9 +107,9 @@ void plot(Svg<float>& svg, const triangle::triangulateio& io) {
         1.f);
 }
 
-void plot(const triangle::triangulateio& io, const std::string& filename, float width, float height) {
+void plot(const triangle::triangulateio& io, const std::string& filename, double width, double height) {
     std::ofstream ofstr{filename};
-    Svg<float> svg{ofstr, width, height};
+    Svg<double> svg{ ofstr, width, height };
     if (ofstr.fail()) {
         THROW_OR_ABORT("Could not open triangulation plot file \"" + filename + '"');
     }
@@ -380,7 +380,7 @@ bool triangulate_point(
         if (any(i >= steiner_point_index_end)) {
             continue;
         }
-        FixedArray<Point2, 3> tri2{
+        FixedArray<float, 3, 2> tri2{
             Point2{ (float)out.pointlist[2 * i(0)], (float)out.pointlist[2 * i(0) + 1] },
             Point2{ (float)out.pointlist[2 * i(1)], (float)out.pointlist[2 * i(1) + 1] },
             Point2{ (float)out.pointlist[2 * i(2)], (float)out.pointlist[2 * i(2) + 1] }};

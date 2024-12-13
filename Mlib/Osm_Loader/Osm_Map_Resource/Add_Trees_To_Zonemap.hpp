@@ -1,3 +1,5 @@
+#pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <map>
 #include <string>
 
@@ -25,6 +27,6 @@ void add_trees_to_zonemap(
     float jitter,
     double step_size,
     double position_scale,
-    double min_height);
+    CompressedScenePos min_height);
 
 }

@@ -10,34 +10,49 @@ static double half_angle_cos(double cos) {
     return std::sqrt((1 + cos) / 2);
 }
 
+static FixedArray<CompressedScenePos, 2> intersect_street_lines(
+    const FixedArray<CompressedScenePos, 2, 2>& l0,
+    const FixedArray<CompressedScenePos, 2, 2>& l1,
+    const CompressedScenePos& width0,
+    const CompressedScenePos& width1)
+{
+    return intersect_lines(
+        funpack(l0),
+        funpack(l1),
+        funpack(width0),
+        funpack(width1),
+        true // compute_center
+    ).casted<CompressedScenePos>();
+}
+
 /**
  * Create rectangle for line segment (b .. c), with given widths,
  * contained in crossings [aL; ...; aR] >-- (b -- c) --< [dL; ...; dR].
  */
 bool Mlib::lines_to_rectangles(
-    FixedArray<double, 2>& p00,
-    FixedArray<double, 2>& p01,
-    FixedArray<double, 2>& p10,
-    FixedArray<double, 2>& p11,
-    const FixedArray<double, 2>& aL,
-    const FixedArray<double, 2>& aR,
-    const FixedArray<double, 2>& b,
-    const FixedArray<double, 2>& c,
-    const FixedArray<double, 2>& dL,
-    const FixedArray<double, 2>& dR,
-    double width_aLb,
-    double width_aRb,
-    double width_bcL,
-    double width_bcR,
-    double width_cdL,
-    double width_cdR)
+    FixedArray<CompressedScenePos, 2>& p00,
+    FixedArray<CompressedScenePos, 2>& p01,
+    FixedArray<CompressedScenePos, 2>& p10,
+    FixedArray<CompressedScenePos, 2>& p11,
+    const FixedArray<CompressedScenePos, 2>& aL,
+    const FixedArray<CompressedScenePos, 2>& aR,
+    const FixedArray<CompressedScenePos, 2>& b,
+    const FixedArray<CompressedScenePos, 2>& c,
+    const FixedArray<CompressedScenePos, 2>& dL,
+    const FixedArray<CompressedScenePos, 2>& dR,
+    CompressedScenePos width_aLb,
+    CompressedScenePos width_aRb,
+    CompressedScenePos width_bcL,
+    CompressedScenePos width_bcR,
+    CompressedScenePos width_cdL,
+    CompressedScenePos width_cdR)
 {
     // Calculate normals.
-    FixedArray<double, 2> n_aLb = FixedArray<double, 2>{b(1) - aL(1), aL(0) - b(0)};
-    FixedArray<double, 2> n_aRb = FixedArray<double, 2>{b(1) - aR(1), aR(0) - b(0)};
-    FixedArray<double, 2> n_bc = FixedArray<double, 2>{c(1) - b(1), b(0) - c(0)};
-    FixedArray<double, 2> n_cdL = FixedArray<double, 2>{dL(1) - c(1), c(0) - dL(0)};
-    FixedArray<double, 2> n_cdR = FixedArray<double, 2>{dR(1) - c(1), c(0) - dR(0)};
+    FixedArray<double, 2> n_aLb = FixedArray<CompressedScenePos, 2>{b(1) - aL(1), aL(0) - b(0)}.casted<double>();
+    FixedArray<double, 2> n_aRb = FixedArray<CompressedScenePos, 2>{b(1) - aR(1), aR(0) - b(0)}.casted<double>();
+    FixedArray<double, 2> n_bc = FixedArray<CompressedScenePos, 2>{c(1) - b(1), b(0) - c(0)}.casted<double>();
+    FixedArray<double, 2> n_cdL = FixedArray<CompressedScenePos, 2>{dL(1) - c(1), c(0) - dL(0)}.casted<double>();
+    FixedArray<double, 2> n_cdR = FixedArray<CompressedScenePos, 2>{dR(1) - c(1), c(0) - dR(0)}.casted<double>();
 
     // Handle special case of line endings (a or d do not exist).
     if (all(n_aLb == -n_bc)) n_aLb = n_bc;
@@ -66,24 +81,24 @@ bool Mlib::lines_to_rectangles(
     // n_cL *= (width_cdL + width_bcL) / 2 / sum(squared(n_cL));
     // n_cR *= (width_cdR + width_bcR) / 2 / sum(squared(n_cR));
 
-    n_bL *= (width_aLb + width_bcL) / 2 / std::sqrt(sum(squared(n_bL))) / half_angle_cos(std::abs(dot0d(n_aLb, n_bc)));
-    n_bR *= (width_aRb + width_bcR) / 2 / std::sqrt(sum(squared(n_bR))) / half_angle_cos(std::abs(dot0d(n_aRb, n_bc)));
-    n_cL *= (width_cdL + width_bcL) / 2 / std::sqrt(sum(squared(n_cL))) / half_angle_cos(std::abs(dot0d(n_cdL, n_bc)));
-    n_cR *= (width_cdR + width_bcR) / 2 / std::sqrt(sum(squared(n_cR))) / half_angle_cos(std::abs(dot0d(n_cdR, n_bc)));
+    n_bL *= funpack(width_aLb + width_bcL) / 2 / std::sqrt(sum(squared(n_bL))) / half_angle_cos(std::abs(dot0d(n_aLb, n_bc)));
+    n_bR *= funpack(width_aRb + width_bcR) / 2 / std::sqrt(sum(squared(n_bR))) / half_angle_cos(std::abs(dot0d(n_aRb, n_bc)));
+    n_cL *= funpack(width_cdL + width_bcL) / 2 / std::sqrt(sum(squared(n_cL))) / half_angle_cos(std::abs(dot0d(n_cdL, n_bc)));
+    n_cR *= funpack(width_cdR + width_bcR) / 2 / std::sqrt(sum(squared(n_cR))) / half_angle_cos(std::abs(dot0d(n_cdR, n_bc)));
 
-    if ((sum(squared(n_bL)) > 3 * width_bcL) ||
-        (sum(squared(n_bR)) > 3 * width_bcR) ||
-        (sum(squared(n_cL)) > 3 * width_bcL) ||
-        (sum(squared(n_cR)) > 3 * width_bcR))
+    if ((sum(squared(n_bL)) > 9 * squared(width_bcL)) ||
+        (sum(squared(n_bR)) > 9 * squared(width_bcR)) ||
+        (sum(squared(n_cL)) > 9 * squared(width_bcL)) ||
+        (sum(squared(n_cR)) > 9 * squared(width_bcR)))
     {
         return false;
     }
 
     // Set rectangle points.
-    p00 = b - n_bL / 2.;
-    p01 = b + n_bR / 2.;
-    p10 = c - n_cL / 2.;
-    p11 = c + n_cR / 2.;
+    p00 = b - (n_bL / 2.).casted<CompressedScenePos>();
+    p01 = b + (n_bR / 2.).casted<CompressedScenePos>();
+    p10 = c - (n_cL / 2.).casted<CompressedScenePos>();
+    p11 = c + (n_cR / 2.).casted<CompressedScenePos>();
 
     // return true;
 
@@ -94,25 +109,26 @@ bool Mlib::lines_to_rectangles(
     // lerr() << c;
     // lerr() << dL;
     // lerr() << dR;
-    if (width_aLb == 0 && width_bcL == 0) {
+    auto ZERO = (CompressedScenePos)0.f;
+    if (width_aLb == ZERO && width_bcL == ZERO) {
         p00 = b;
     } else if (std::abs(dot0d(n_aLb, n_bc)) < std::cos(M_PI / 8)) {
-        p00 = intersect_lines({aL, b}, {b, c}, width_aLb, width_bcL, true);  // true = compute_center
+        p00 = intersect_street_lines({aL, b}, {b, c}, width_aLb, width_bcL);
     }
-    if (width_aRb == 0 && width_bcR == 0) {
+    if (width_aRb == ZERO && width_bcR == ZERO) {
         p01 = b;
     } else if (std::abs(dot0d(n_aRb, n_bc)) < std::cos(M_PI / 8)) {
-        p01 = intersect_lines({aR, b}, {b, c}, -width_aRb, -width_bcR, true);  // true = compute_center
+        p01 = intersect_street_lines({aR, b}, {b, c}, -width_aRb, -width_bcR);
     }
-    if (width_bcL == 0 && width_cdL == 0) {
+    if (width_bcL == ZERO && width_cdL == ZERO) {
         p10 = c;
     } else if (std::abs(dot0d(n_cdL, n_bc)) < std::cos(M_PI / 8)) {
-        p10 = intersect_lines({b, c}, {c, dL}, width_bcL, width_cdL, true);  // true = compute_center
+        p10 = intersect_street_lines({b, c}, {c, dL}, width_bcL, width_cdL);
     }
-    if (width_bcR == 0 && width_cdR == 0) {
+    if (width_bcR == ZERO && width_cdR == ZERO) {
         p11 = c;
     } else if (std::abs(dot0d(n_cdR, n_bc)) < std::cos(M_PI / 8)) {
-        p11 = intersect_lines({b, c}, {c, dR}, -width_bcR, -width_cdR, true);  // true = compute_center
+        p11 = intersect_street_lines({b, c}, {c, dR}, -width_bcR, -width_cdR);
     }
 
     return true;

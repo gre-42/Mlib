@@ -429,7 +429,7 @@ void test_find_epiline() {
     const FixedArray<float, 3, 3> F = find_fundamental_matrix(Array<float>::from_dynamic<2>(y0), Array<float>::from_dynamic<2>(y1));
     //lerr() << fundamental_error(F, y0, y1);
     //lerr() << F;
-    StbImage3 bmp{ArrayShape{200, 200}, Rgb24::white()};
+    StbImage3 bmp{FixedArray<size_t, 2>{200u, 200u}, Rgb24::white()};
     highlight_features(Array<float>::from_dynamic<2>(y0 * 180.f), bmp, 2, Rgb24::red());
     highlight_features(Array<float>::from_dynamic<2>(y1 * 180.f), bmp, 2, Rgb24::blue());
     FixedArray<float, 2> p = uninitialized;
@@ -444,8 +444,8 @@ void test_find_epiline() {
     draw_epilines_from_F(F, bmp, Rgb24::green());
     draw_inverse_epilines_from_F(F, bmp, Rgb24::blue(), 72);
     bmp.draw_infinite_line(
-        a2fi(p * 180.f).to_array(),
-        a2fi((p + v) * 180.f).to_array(),
+        a2fi(p * 180.f),
+        a2fi((p + v) * 180.f),
         0,
         Rgb24::black());
     bmp.save_to_file("TestOut/epiline.png");

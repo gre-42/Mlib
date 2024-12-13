@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 namespace Mlib {
 
@@ -11,7 +12,7 @@ enum class SteinerPointType {
 };
 
 struct SteinerPointInfo {
-    FixedArray<double, 3> position;
+    FixedArray<CompressedScenePos, 3> position;
     SteinerPointType type;
 };
 

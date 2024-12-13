@@ -25,8 +25,8 @@ public:
 
     void draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, const Rgba32& color);
     void draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size, const Rgba32& color);
-    void draw_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgba32& color, const Rgba32* short_line_color = nullptr);
-    void draw_infinite_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgba32& color, const Rgba32* short_line_color = nullptr);
+    void draw_line(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, const Rgba32& color, const Rgba32* short_line_color = nullptr);
+    void draw_infinite_line(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, const Rgba32& color, const Rgba32* short_line_color = nullptr);
     void draw_mask(const Array<bool>& mask, const Rgba32& color);
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, const Rgba32& color);
 
@@ -40,7 +40,7 @@ public:
 
     StbImage3 to_rgb() const;
 private:
-    void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgba32& color, bool infinite, const Rgba32* short_line_color = nullptr);
+    void draw_line_ext(const FixedArray<float, 2>& from, const FixedArray<float, 2>& to, size_t thickness, const Rgba32& color, bool infinite, const Rgba32* short_line_color = nullptr);
 };
 
 }

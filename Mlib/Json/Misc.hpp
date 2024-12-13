@@ -75,11 +75,11 @@ void from_json(const nlohmann::json& j, VariableAndHash<TData>& v) {
     v = json_get<TData>(j);
 }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-void from_json(const nlohmann::json& j, ScaledInteger<TInt, numerator, denominator>& v) {
-    intermediate_type<TInt> vv;
+template <class TInt, std::intmax_t denominator>
+void from_json(const nlohmann::json& j, ScaledInteger<TInt, denominator>& v) {
+    intermediate_float<TInt> vv;
     from_json(j, vv);
-    v = (ScaledInteger<TInt, numerator, denominator>)vv;
+    v = (ScaledInteger<TInt, denominator>)vv;
 }
 
 template <class TData, class TOperation>

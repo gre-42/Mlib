@@ -34,21 +34,21 @@ using namespace Mlib;
 
 namespace Mlib {
 
-static std::pair<FixedArray<double, 3>, FixedArray<double, 3>> o23(const std::pair<FixedArray<double, 2>, FixedArray<double, 2>>& edge) {
-    return std::pair<FixedArray<double, 3>, FixedArray<double, 3>>{
-        { edge.first(0), edge.first(1), 0. },
-        { edge.second(0), edge.second(1), 0. } };
+static std::pair<FixedArray<CompressedScenePos, 3>, FixedArray<CompressedScenePos, 3>> o23(const std::pair<FixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 2>>& edge) {
+    return std::pair<FixedArray<CompressedScenePos, 3>, FixedArray<CompressedScenePos, 3>>{
+        { edge.first(0), edge.first(1), (CompressedScenePos)0. },
+        { edge.second(0), edge.second(1), (CompressedScenePos)0. } };
 }
 
-static std::pair<FixedArray<double, 3>, FixedArray<double, 3>> o23(const FixedArray<double, 2>& a, const FixedArray<double, 2>& b) {
-    return std::pair<FixedArray<double, 3>, FixedArray<double, 3>>{
-        { a(0), a(1), 0. },
-        { b(0), b(1), 0. } };
+static std::pair<FixedArray<CompressedScenePos, 3>, FixedArray<CompressedScenePos, 3>> o23(const FixedArray<CompressedScenePos, 2>& a, const FixedArray<CompressedScenePos, 2>& b) {
+    return std::pair<FixedArray<CompressedScenePos, 3>, FixedArray<CompressedScenePos, 3>>{
+        { a(0), a(1), (CompressedScenePos)0. },
+        { b(0), b(1), (CompressedScenePos)0. } };
 }
 
 struct AngleWay {
     std::string neighbor_id;
-    float width;
+    CompressedScenePos width;
     unsigned int nlanes;
     RoadType road_type;
     int layer;
@@ -58,7 +58,7 @@ struct AngleWay {
 
 struct NeighborWay {
     float angle;
-    float width;
+    CompressedScenePos width;
 };
 
 struct NodeWayInfo {
@@ -76,7 +76,7 @@ struct AngleCurb {
 struct NodeHoleWaypoint {
     std::string node;
     std::pair<float, float> alpha;
-    std::pair<FixedArray<double, 2>, FixedArray<double, 2>> edge;
+    std::pair<FixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 2>> edge;
     WayPointLocation location;
 };
 
@@ -89,13 +89,13 @@ struct WayInfo {
     float curb_alpha;
     float curb2_alpha;
     FixedArray<bool, 3> roads_delete;
-    FixedArray<FixedArray<bool, 3>, 2> roads_delete_side;
-    FixedArray<FixedArray<float, 3>, 3> colors;
+    FixedArray<bool, 2, 3> roads_delete_side;
+    FixedArray<float, 3, 3> colors;
     std::string model;
 };
 
 struct NodeHoleVertex {
-    FixedArray<double, 2> position;
+    FixedArray<CompressedScenePos, 2> position;
     std::string way_id;
 };
 
@@ -188,15 +188,15 @@ void DrawStreets::calculate_neighbors() {
             if (tags.contains("area", "yes")) {
                 continue;
             }
-            float width = scale * get_way_width(tags, default_street_width, default_lane_width);
+            auto width = (CompressedScenePos)(scale * get_way_width(tags, default_street_width, default_lane_width));
             unsigned int nlanes;
             if (tags.find("lanes") != tags.end()) {
                 nlanes = safe_stou(tags.at("lanes"));
             } else {
                 float car_width = 3;
-                if (width < 2 * car_width * scale) {
+                if (width < (CompressedScenePos)(2 * car_width * scale)) {
                     nlanes = 1;
-                } else if (width < 4 * car_width * scale) {
+                } else if (width < (CompressedScenePos)(4 * car_width * scale)) {
                     nlanes = 2;
                 } else {
                     nlanes = 4;
@@ -259,7 +259,7 @@ void DrawStreets::calculate_neighbors() {
                     if (nodes.find(*s) == nodes.end()) {
                         THROW_OR_ABORT("Way " + way_id + ": Could not find node with ID " + *s);
                     }
-                    FixedArray<double, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
+                    FixedArray<double, 2> dir = (nodes.at(*it).position - nodes.at(*s).position).casted<double>();
                     float angle0 = (float)std::atan2(dir(1), dir(0));
                     float angle1 = (float)std::atan2(-dir(1), -dir(0));
                     node_angles.at(*it).insert({angle0, AngleWay{*s, width, nlanes, road_type, layer, way_id, true}});
@@ -305,7 +305,7 @@ void DrawStreets::calculate_neighbors() {
 }
 
 void DrawStreets::draw_streets() {
-    Bvh<double, 2, bool> street_light_bvh{{0.1, 0.1}, 10};
+    Bvh<CompressedScenePos, 2, bool> street_light_bvh{{(CompressedScenePos)100.f, (CompressedScenePos)100.f}, 10};
 
     // Compute rectangles and holes for each pair of connected nodes.
     // The "neighbor_is_second" field is used to avoid duplicates.
@@ -388,15 +388,15 @@ void DrawStreets::draw_streets() {
                     }
                 }
                 if ((angle_way.road_type != RoadType::WALL) && (!street_lights.empty())) {
-                    double radius = 10 * scale;
-                    auto add_distant_point = [&](const FixedArray<double, 2>& p) {
+                    CompressedScenePos radius = (CompressedScenePos)(10 * scale);
+                    auto add_distant_point = [&](const FixedArray<CompressedScenePos, 2>& p) {
                         bool p_found = !street_light_bvh.visit(
-                            AxisAlignedBoundingBox<double, 2>::from_center_and_radius(p, radius),
+                            AxisAlignedBoundingBox<CompressedScenePos, 2>::from_center_and_radius(p, radius),
                             [](bool){return false;});
                         if (!p_found) {
                             if (auto prn = street_lights.try_multiple_times(10); prn != nullptr) {
-                                street_light_bvh.insert(AxisAlignedBoundingBox<double, 2>::from_point(p), true);
-                                bri.add_parsed_resource_name(p, 0.f, *prn, 0.f, 1.f);
+                                street_light_bvh.insert(AxisAlignedBoundingBox<CompressedScenePos, 2>::from_point(p), true);
+                                bri.add_parsed_resource_name(p, (CompressedScenePos)0.f, *prn, 0.f, 1.f);
                             }
                         }
                     };
@@ -453,25 +453,28 @@ void DrawStreets::draw_holes() {
                 // do nothing
             } else if (nh.second.size() == 3) {
                 hole_triangles->draw_triangle_wo_normals(
-                    FixedArray<double, 3>{hv(0).position(0), hv(0).position(1), 0.},
-                    FixedArray<double, 3>{hv(1).position(0), hv(1).position(1), 0.},
-                    FixedArray<double, 3>{hv(2).position(0), hv(2).position(1), 0.},
-                    way_infos.at(hv(0).way_id).colors(0),
-                    way_infos.at(hv(1).way_id).colors(0),
-                    way_infos.at(hv(2).way_id).colors(0));
+                    FixedArray<CompressedScenePos, 3>{hv(0).position(0), hv(0).position(1), (CompressedScenePos)0.},
+                    FixedArray<CompressedScenePos, 3>{hv(1).position(0), hv(1).position(1), (CompressedScenePos)0.},
+                    FixedArray<CompressedScenePos, 3>{hv(2).position(0), hv(2).position(1), (CompressedScenePos)0.},
+                    Colors::from_rgb(way_infos.at(hv(0).way_id).colors[0]),
+                    Colors::from_rgb(way_infos.at(hv(1).way_id).colors[0]),
+                    Colors::from_rgb(way_infos.at(hv(2).way_id).colors[0]));
             } else if (nh.second.size() > 3) {
                 // Draw center fan
-                FixedArray<double, 2> center = mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return v.position;}));
-                FixedArray<float, 3> center_color = mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors(0);}));
+                FixedArray<CompressedScenePos, 2> center =
+                    mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return funpack(v.position);}))
+                    .template casted<CompressedScenePos>();
+                FixedArray<float, 3> center_color =
+                    mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors[0];}));
                 for (size_t i = 0; i < hv.length(); ++i) {
                     size_t j = (i + 1) % hv.length();
                     hole_triangles->draw_triangle_wo_normals(
-                        FixedArray<double, 3>{hv(i).position(0), hv(i).position(1), 0.f},
-                        FixedArray<double, 3>{hv(j).position(0), hv(j).position(1), 0.f},
-                        FixedArray<double, 3>{center(0), center(1), 0.f},
-                        way_infos.at(hv(i).way_id).colors(0),
-                        way_infos.at(hv(j).way_id).colors(0),
-                        center_color);
+                        FixedArray<CompressedScenePos, 3>{hv(i).position(0), hv(i).position(1), (CompressedScenePos)0.f},
+                        FixedArray<CompressedScenePos, 3>{hv(j).position(0), hv(j).position(1), (CompressedScenePos)0.f},
+                        FixedArray<CompressedScenePos, 3>{center(0), center(1), (CompressedScenePos)0.f},
+                        Colors::from_rgb(way_infos.at(hv(i).way_id).colors[0]),
+                        Colors::from_rgb(way_infos.at(hv(j).way_id).colors[0]),
+                        Colors::from_rgb(center_color));
                 }
             } else {
                 THROW_OR_ABORT("Unexpected air hole size");
@@ -542,26 +545,26 @@ void DrawStreets::draw_holes() {
         // A single triangle does not work with curbs when an angle is ~90°
         if ((nh.size() == 3) && (curb_alpha_ == 1)) {
             crossings.draw_triangle_wo_normals(
-                FixedArray<double, 3>{hv(0).position(0), hv(0).position(1), 0.f},
-                FixedArray<double, 3>{hv(1).position(0), hv(1).position(1), 0.f},
-                FixedArray<double, 3>{hv(2).position(0), hv(2).position(1), 0.f},
-                way_infos.at(hv(0).way_id).colors(0),
-                way_infos.at(hv(1).way_id).colors(0),
-                way_infos.at(hv(2).way_id).colors(0));
+                FixedArray<CompressedScenePos, 3>{hv(0).position(0), hv(0).position(1), (CompressedScenePos)0.f},
+                FixedArray<CompressedScenePos, 3>{hv(1).position(0), hv(1).position(1), (CompressedScenePos)0.f},
+                FixedArray<CompressedScenePos, 3>{hv(2).position(0), hv(2).position(1), (CompressedScenePos)0.f},
+                Colors::from_rgb(way_infos.at(hv(0).way_id).colors[0]),
+                Colors::from_rgb(way_infos.at(hv(1).way_id).colors[0]),
+                Colors::from_rgb(way_infos.at(hv(2).way_id).colors[0]));
         } else if (nh.size() >= 3) {
             // Draw center fan
             {
-                FixedArray<double, 2> center = mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return v.position;}));
-                FixedArray<float, 3> center_color = mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors(0);}));
+                FixedArray<CompressedScenePos, 2> center = mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return funpack(v.position);})).casted<CompressedScenePos>();
+                FixedArray<float, 3> center_color = mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors[0];}));
                 for (size_t i = 0; i < hv.length(); ++i) {
                     size_t j = (i + 1) % hv.length();
                     crossings.draw_triangle_wo_normals(
-                        FixedArray<double, 3>{hv(i).position(0), hv(i).position(1), 0.},
-                        FixedArray<double, 3>{hv(j).position(0), hv(j).position(1), 0.},
-                        FixedArray<double, 3>{center(0), center(1), 0.f},
-                        way_infos.at(hv(i).way_id).colors(0),
-                        way_infos.at(hv(j).way_id).colors(0),
-                        center_color);
+                        FixedArray<CompressedScenePos, 3>{hv(i).position(0), hv(i).position(1), (CompressedScenePos)0.},
+                        FixedArray<CompressedScenePos, 3>{hv(j).position(0), hv(j).position(1), (CompressedScenePos)0.},
+                        FixedArray<CompressedScenePos, 3>{center(0), center(1), (CompressedScenePos)0.f},
+                        Colors::from_rgb(way_infos.at(hv(i).way_id).colors[0]),
+                        Colors::from_rgb(way_infos.at(hv(j).way_id).colors[0]),
+                        Colors::from_rgb(center_color));
                 }
                 if (with_height_bindings && !nodes.at(nid).tags.contains("bind_height", "no")) {
                     node_height_bindings[OrderableFixedArray{ center }] = nid;
@@ -579,7 +582,7 @@ void DrawStreets::draw_holes() {
                 }
                 for (size_t i = 0; i < angles.size(); ++i) {
                     size_t j = (i + 1) % angles.size();
-                    auto draw_rect = [&](TriangleList<double>& tl, int curb0, int curb1, int curb2, int curb3, const FixedArray<float, 2>& uv, size_t road_id) {
+                    auto draw_rect = [&](TriangleList<CompressedScenePos>& tl, int curb0, int curb1, int curb2, int curb3, const FixedArray<float, 2>& uv, size_t road_id) {
                         const auto& p00 = nh.at(AngleCurb{angles[i], curb0});
                         const auto& p10 = nh.at(AngleCurb{angles[i], curb1});
                         const auto& p11 = nh.at(AngleCurb{angles[j], curb2});
@@ -597,20 +600,20 @@ void DrawStreets::draw_holes() {
                         float f = uv(0);
                         float g = uv(1) * len / scale * uv_scale;
                         tl.draw_rectangle_wo_normals(
-                            FixedArray<double, 3>{p00.position(0), p00.position(1), 0.f},
-                            FixedArray<double, 3>{p10.position(0), p10.position(1), 0.f},
-                            FixedArray<double, 3>{p11.position(0), p11.position(1), 0.f},
-                            FixedArray<double, 3>{p01.position(0), p01.position(1), 0.f},
-                            way_infos.at(p00.way_id).colors(road_id),
-                            way_infos.at(p10.way_id).colors(road_id),
-                            way_infos.at(p11.way_id).colors(road_id),
-                            way_infos.at(p01.way_id).colors(road_id),
+                            FixedArray<CompressedScenePos, 3>{p00.position(0), p00.position(1), (CompressedScenePos)0.f},
+                            FixedArray<CompressedScenePos, 3>{p10.position(0), p10.position(1), (CompressedScenePos)0.f},
+                            FixedArray<CompressedScenePos, 3>{p11.position(0), p11.position(1), (CompressedScenePos)0.f},
+                            FixedArray<CompressedScenePos, 3>{p01.position(0), p01.position(1), (CompressedScenePos)0.f},
+                            Colors::from_rgb(way_infos.at(p00.way_id).colors[road_id]),
+                            Colors::from_rgb(way_infos.at(p10.way_id).colors[road_id]),
+                            Colors::from_rgb(way_infos.at(p11.way_id).colors[road_id]),
+                            Colors::from_rgb(way_infos.at(p01.way_id).colors[road_id]),
                             FixedArray<float, 2>{0.f, 0.f},
                             FixedArray<float, 2>{f  , 0.f},
                             FixedArray<float, 2>{f  , g  },
                             FixedArray<float, 2>{0.f, g  });
                     };
-                    auto draw_triangle = [&](TriangleList<double>& tl, int curb0, int curb1, int curb2, const FixedArray<float, 2>& uv, size_t road_id) {
+                    auto draw_triangle = [&](TriangleList<CompressedScenePos>& tl, int curb0, int curb1, int curb2, const FixedArray<float, 2>& uv, size_t road_id) {
                         const auto& p00 = nh.at(AngleCurb{angles[i], curb0});
                         const auto& p10 = nh.at(AngleCurb{angles[i], curb1});
                         const auto& p01 = nh.at(AngleCurb{angles[j], curb2});
@@ -625,12 +628,12 @@ void DrawStreets::draw_holes() {
                         float g = uv(1) * len / scale * uv_scale;
                         float h = g / 2;
                         tl.draw_triangle_wo_normals(
-                            FixedArray<double, 3>{p00.position(0), p00.position(1), 0.},
-                            FixedArray<double, 3>{p10.position(0), p10.position(1), 0.},
-                            FixedArray<double, 3>{p01.position(0), p01.position(1), 0.},
-                            way_infos.at(p00.way_id).colors(road_id),
-                            way_infos.at(p10.way_id).colors(road_id),
-                            way_infos.at(p01.way_id).colors(road_id),
+                            FixedArray<CompressedScenePos, 3>{p00.position(0), p00.position(1), (CompressedScenePos)0.},
+                            FixedArray<CompressedScenePos, 3>{p10.position(0), p10.position(1), (CompressedScenePos)0.},
+                            FixedArray<CompressedScenePos, 3>{p01.position(0), p01.position(1), (CompressedScenePos)0.},
+                            Colors::from_rgb(way_infos.at(p00.way_id).colors[road_id]),
+                            Colors::from_rgb(way_infos.at(p10.way_id).colors[road_id]),
+                            Colors::from_rgb(way_infos.at(p01.way_id).colors[road_id]),
                             FixedArray<float, 2>{0.f, 0.f},
                             FixedArray<float, 2>{f  , h  },
                             FixedArray<float, 2>{0.f, g  });
@@ -651,7 +654,7 @@ void DrawStreets::draw_holes() {
         }
     }
 
-    for (std::list<std::shared_ptr<TriangleList<double>>>& l : std::vector<std::list<std::shared_ptr<TriangleList<double>>>>{
+    for (std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& l : std::vector<std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>>{
         ground_triangles.tls_crossing_only(),
         air_triangles.tls_crossing_only()})
     {
@@ -660,9 +663,9 @@ void DrawStreets::draw_holes() {
                 // t(0).color = way_color;
                 // t(1).color = way_color;
                 // t(2).color = way_color;
-                t(0).uv = {float(t(0).position(0) / scale * uv_scale_crossings), float(t(0).position(1) / scale * uv_scale_crossings)};
-                t(1).uv = {float(t(1).position(0) / scale * uv_scale_crossings), float(t(1).position(1) / scale * uv_scale_crossings)};
-                t(2).uv = {float(t(2).position(0) / scale * uv_scale_crossings), float(t(2).position(1) / scale * uv_scale_crossings)};
+                t(0).uv = {float(t(0).position(0)) / scale * uv_scale_crossings, float(t(0).position(1)) / scale * uv_scale_crossings};
+                t(1).uv = {float(t(1).position(0)) / scale * uv_scale_crossings, float(t(1).position(1)) / scale * uv_scale_crossings};
+                t(2).uv = {float(t(2).position(0)) / scale * uv_scale_crossings, float(t(2).position(1)) / scale * uv_scale_crossings};
             }
         }
     }
@@ -710,8 +713,8 @@ void DrawStreets::draw_streets_add_waypoints(
         }
         CurbedStreet c5{ rect, -curb_alpha, curb_alpha };
         way_point_edge_descriptors[way_sandbox].push_back({
-            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s(0, 0), c5.s(0, 1))}, .location = way_loc},
-            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s(1, 0), c5.s(1, 1))}, .location = way_loc}});
+            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s[0][0], c5.s[0][1])}, .location = way_loc},
+            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s[1][0], c5.s[1][1])}, .location = way_loc}});
     } else {
         auto add = [this, &rect, &angle_way](
             float start,
@@ -738,11 +741,11 @@ void DrawStreets::draw_streets_add_waypoints(
                     THROW_OR_ABORT("Unknown driving direction");
                 }
                 way_point_edge_descriptors[sandbox].push_back({
-                    StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c1.s(i0, 0), c1.s(i0, 1))}, .location = location},
-                    StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c1.s(i1, 0), c1.s(i1, 1))}, .location = location} });
+                    StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c1.s[i0][0], c1.s[i0][1])}, .location = location},
+                    StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c1.s[i1][0], c1.s[i1][1])}, .location = location} });
                 way_point_edge_descriptors[sandbox].push_back({
-                    StreetWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c1.s(i1, 0), c1.s(i1, 1))}, .location = location},
-                    StreetWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c1.s(i0, 0), c1.s(i0, 1))}, .location = location} });
+                    StreetWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c1.s[i1][0], c1.s[i1][1])}, .location = location},
+                    StreetWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c1.s[i0][0], c1.s[i0][1])}, .location = location} });
             }
             street_rectangles.push_back(StreetRectangle{
                 .location = location,
@@ -751,13 +754,13 @@ void DrawStreets::draw_streets_add_waypoints(
                     .nlanes = nlanes
                 },
                 .bumps_model = bumps_model,
-                .rectangle = FixedArray<FixedArray<double, 3>, 2, 2>{
-                    FixedArray<FixedArray<double, 3>, 2>{
-                        FixedArray<double, 3>{c1.s(0, 0)(0), c1.s(0, 0)(1), 0.f},
-                        FixedArray<double, 3>{c1.s(0, 1)(0), c1.s(0, 1)(1), 0.f}},
-                    FixedArray<FixedArray<double, 3>, 2>{
-                        FixedArray<double, 3>{c1.s(1, 0)(0), c1.s(1, 0)(1), 0.f},
-                        FixedArray<double, 3>{c1.s(1, 1)(0), c1.s(1, 1)(1), 0.f}}}});
+                .rectangle = FixedArray<CompressedScenePos, 2, 2, 3>{
+                    FixedArray<CompressedScenePos, 2, 3>{
+                        FixedArray<CompressedScenePos, 3>{c1.s(0, 0, 0), c1.s(0, 0, 1), (CompressedScenePos)0.f},
+                        FixedArray<CompressedScenePos, 3>{c1.s(0, 1, 0), c1.s(0, 1, 1), (CompressedScenePos)0.f}},
+                    FixedArray<CompressedScenePos, 2, 3>{
+                        FixedArray<CompressedScenePos, 3>{c1.s(1, 0, 0), c1.s(1, 0, 1), (CompressedScenePos)0.f},
+                        FixedArray<CompressedScenePos, 3>{c1.s(1, 1, 0), c1.s(1, 1, 1), (CompressedScenePos)0.f}}}});
         };
         std::string bumps_model = auto_model_name(
             node_id,
@@ -1013,15 +1016,15 @@ void DrawStreets::draw_streets_draw_ways(
     float racing_line_segment_scale_x1;
     {
         CurbedStreet c{rect, -wi.curb_alpha, wi.curb_alpha};
-        racing_line_bvh.intersecting_way_beta({ c.s(0, 0), c.s(0, 1) }, racing_line_beta0, &racing_line_segment0);
-        racing_line_bvh.intersecting_way_beta({ c.s(1, 0), c.s(1, 1) }, racing_line_beta1, &racing_line_segment1);
-        racing_line_segment_scale_x0 = (float)std::sqrt(sum(squared(c.s(0, 0) - c.s(0, 1)))) / scale / racing_line_width_x / 2.f;
-        racing_line_segment_scale_x1 = (float)std::sqrt(sum(squared(c.s(1, 0) - c.s(1, 1)))) / scale / racing_line_width_x / 2.f;
+        racing_line_bvh.intersecting_way_beta({ c.s[0][0], c.s[0][1] }, racing_line_beta0, &racing_line_segment0);
+        racing_line_bvh.intersecting_way_beta({ c.s[1][0], c.s[1][1] }, racing_line_beta1, &racing_line_segment1);
+        racing_line_segment_scale_x0 = (float)std::sqrt(sum(squared(c.s[0][0] - c.s[0][1]))) / scale / racing_line_width_x / 2.f;
+        racing_line_segment_scale_x1 = (float)std::sqrt(sum(squared(c.s[1][0] - c.s[1][1]))) / scale / racing_line_width_x / 2.f;
     }
     if (!std::isnan(racing_line_beta0) && !std::isnan(racing_line_beta1)) {
-        auto v0 = racing_line_segment0->racing_line_segment[1] - racing_line_segment0->racing_line_segment[0];
-        auto v1 = racing_line_segment1->racing_line_segment[1] - racing_line_segment1->racing_line_segment[0];
-        auto vs = node1.position - node0.position;
+        auto v0 = funpack(racing_line_segment0->racing_line_segment[1] - racing_line_segment0->racing_line_segment[0]);
+        auto v1 = funpack(racing_line_segment1->racing_line_segment[1] - racing_line_segment1->racing_line_segment[0]);
+        auto vs = funpack(node1.position - node0.position);
         if ((dot0d(v0, vs) > 0) && (dot0d(v1, vs) > 0)) {
             flip_racing_line = false;
         } else if ((dot0d(v0, vs) < 0) && (dot0d(v1, vs) < 0)) {
@@ -1059,7 +1062,7 @@ void DrawStreets::draw_streets_draw_ways(
         const std::string& model_name)
     {
         for (const auto& cva : cvas) {
-            TriangleList<double>* destination_triangles;
+            TriangleList<CompressedScenePos>* destination_triangles;
             float uv_sx;
             float uv_sy;
             if (cva->name == "street") {
@@ -1101,7 +1104,7 @@ void DrawStreets::draw_streets_draw_ways(
                     cva->triangles,
                     scale,
                     wi.curb_alpha,
-                    1.f,
+                    (CompressedScenePos)42.3f,
                     uv_sx,
                     (float)(uv_sy * uv_scale * uv_len0 - uv_len_central),
                     (float)(uv_sy * uv_scale * uv_len1 - uv_len_central));
@@ -1132,8 +1135,8 @@ void DrawStreets::draw_streets_draw_ways(
             ground_triangles.entrances,
             node_id,
             angle_way.neighbor_id,
-            wi.colors(0),
-            wi.colors(0),
+            wi.colors[0],
+            wi.colors[0],
             0,
             street_lst.uvx,
             (float)(uv_scale * uv_len0 - uv_len_central),
@@ -1183,8 +1186,8 @@ void DrawStreets::draw_streets_draw_ways(
             ground_triangles.entrances,
             node_id,
             angle_way.neighbor_id,
-            wi.colors(0),
-            wi.colors(0),
+            wi.colors[0],
+            wi.colors[0],
             0,
             1,
             (float)(uv_scale * uv_len0 - uv_len_central),
@@ -1224,7 +1227,7 @@ void DrawStreets::draw_streets_draw_ways(
         draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
     }
     if ((wi.curb_alpha != wi.curb2_alpha) && !wi.roads_delete(1)) {
-        if (!wi.roads_delete_side(angle_way.neighbor_is_second)(1)) {
+        if (!wi.roads_delete_side(angle_way.neighbor_is_second, 1)) {
             double uv_len_central = std::round(curb_uv(1) * uv_scale * (uv_len0 + uv_len1) / 2.);
             rect.draw_z0(
                 *tlists.tl_street_curb[angle_way.road_type],
@@ -1243,8 +1246,8 @@ void DrawStreets::draw_streets_draw_ways(
                 ground_triangles.entrances,
                 node_id,
                 angle_way.neighbor_id,
-                wi.colors(1),
-                wi.colors(1),
+                wi.colors[1],
+                wi.colors[1],
                 0,
                 curb_uv(0),
                 (float)(curb_uv(1) * uv_scale * uv_len0 - uv_len_central),
@@ -1258,7 +1261,7 @@ void DrawStreets::draw_streets_draw_ways(
                 c_entrance_type,
                 angle_way.road_type);
         }
-        if (!wi.roads_delete_side(!angle_way.neighbor_is_second)(1)) {
+        if (!wi.roads_delete_side(!angle_way.neighbor_is_second, 1)) {
             double uv_len_central = std::round(curb_uv(1) * uv_scale * (uv_len0 + uv_len1) / 2.);
             rect.draw_z0(
                 *tlists.tl_street_curb[angle_way.road_type],
@@ -1277,8 +1280,8 @@ void DrawStreets::draw_streets_draw_ways(
                 ground_triangles.entrances,
                 node_id,
                 angle_way.neighbor_id,
-                wi.colors(1),
-                wi.colors(1),
+                wi.colors[1],
+                wi.colors[1],
                 0,
                 curb_uv(0),
                 (float)(curb_uv(1) * uv_scale * uv_len0 - uv_len_central),
@@ -1294,7 +1297,7 @@ void DrawStreets::draw_streets_draw_ways(
         }
     }
     if ((wi.curb2_alpha != 1) && !wi.roads_delete(2)) {
-        if (!wi.roads_delete_side(angle_way.neighbor_is_second)(2)) {
+        if (!wi.roads_delete_side(angle_way.neighbor_is_second, 2)) {
             double uv_len_central = std::round(curb2_uv(1) * uv_scale * (uv_len0 + uv_len1) / 2.);
             rect.draw_z0(
                 *tlists.tl_street_curb2[angle_way.road_type],
@@ -1313,8 +1316,8 @@ void DrawStreets::draw_streets_draw_ways(
                 ground_triangles.entrances,
                 node_id,
                 angle_way.neighbor_id,
-                wi.colors(2),
-                wi.colors(2),
+                wi.colors[2],
+                wi.colors[2],
                 0,
                 curb2_uv(0),
                 (float)(curb2_uv(1) * uv_scale * uv_len0 - uv_len_central),
@@ -1328,7 +1331,7 @@ void DrawStreets::draw_streets_draw_ways(
                 c_entrance_type,
                 angle_way.road_type);
         }
-        if (!wi.roads_delete_side(!angle_way.neighbor_is_second)(2)) {
+        if (!wi.roads_delete_side(!angle_way.neighbor_is_second, 2)) {
             double uv_len_central = std::round(curb2_uv(1) * (uv_len0 + uv_len1) / 2.);
             rect.draw_z0(
                 *tlists.tl_street_curb2[angle_way.road_type],
@@ -1347,8 +1350,8 @@ void DrawStreets::draw_streets_draw_ways(
                 ground_triangles.entrances,
                 node_id,
                 angle_way.neighbor_id,
-                wi.colors(2),
-                wi.colors(2),
+                wi.colors[2],
+                wi.colors[2],
                 0,
                 curb2_uv(0),
                 (float)(curb2_uv(1) * uv_scale * uv_len0 - uv_len_central),
@@ -1379,7 +1382,7 @@ void DrawStreets::draw_streets_find_hole_contours(
     if (na.size() >= 3) {
         {
             CurbedStreet c0{rect, -wi.curb_alpha, wi.curb_alpha};
-            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, NodeHoleVertex{c0.s(0, 0), angle_way.way_id}));
+            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, NodeHoleVertex{c0.s[0][0], angle_way.way_id}));
         }
         if (angle_way.layer != 0) {
             air_hole_list.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, NodeHoleVertex{rect.p00_, angle_way.way_id}));
@@ -1387,14 +1390,14 @@ void DrawStreets::draw_streets_find_hole_contours(
         if (wi.curb_alpha != wi.curb2_alpha) {
             CurbedStreet cN{rect, -wi.curb2_alpha, -wi.curb_alpha};
             CurbedStreet cP{rect, wi.curb_alpha, wi.curb2_alpha};
-            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = +1}, NodeHoleVertex{cN.s(0, 0), angle_way.way_id}));
-            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = -1}, NodeHoleVertex{cP.s(0, 0), angle_way.way_id}));
+            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = +1}, NodeHoleVertex{cN.s[0][0], angle_way.way_id}));
+            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = -1}, NodeHoleVertex{cP.s[0][0], angle_way.way_id}));
         }
         if (wi.curb2_alpha != 1) {
             CurbedStreet cN{rect, -1, -wi.curb2_alpha};
             CurbedStreet cP{rect, wi.curb2_alpha, 1};
-            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = +2}, NodeHoleVertex{cN.s(0, 0), angle_way.way_id}));
-            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = -2}, NodeHoleVertex{cP.s(0, 0), angle_way.way_id}));
+            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = +2}, NodeHoleVertex{cN.s[0][0], angle_way.way_id}));
+            node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = -2}, NodeHoleVertex{cP.s[0][0], angle_way.way_id}));
         }
     }
     const std::map<std::string, NeighborWay>& nn = node_neighbors.at(angle_way.neighbor_id);
@@ -1402,7 +1405,7 @@ void DrawStreets::draw_streets_find_hole_contours(
         {
             CurbedStreet c0{rect, -wi.curb_alpha, wi.curb_alpha};
             // Left and right are swapped for the neighbor, so we use p11_ instead of p10_.
-            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, NodeHoleVertex{c0.s(1, 1), angle_way.way_id}));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, NodeHoleVertex{c0.s[1][1], angle_way.way_id}));
         }
         if (angle_way.layer != 0) {
             air_hole_list.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, NodeHoleVertex{rect.p11_, angle_way.way_id}));
@@ -1410,14 +1413,14 @@ void DrawStreets::draw_streets_find_hole_contours(
         if (wi.curb_alpha != wi.curb2_alpha) {
             CurbedStreet cN{rect, -wi.curb2_alpha, -wi.curb_alpha};
             CurbedStreet cP{rect, wi.curb_alpha, wi.curb2_alpha};
-            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -1}, NodeHoleVertex{cN.s(1, 1), angle_way.way_id}));
-            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = +1}, NodeHoleVertex{cP.s(1, 1), angle_way.way_id}));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -1}, NodeHoleVertex{cN.s[1][1], angle_way.way_id}));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = +1}, NodeHoleVertex{cP.s[1][1], angle_way.way_id}));
         }
         if (wi.curb2_alpha != 1) {
             CurbedStreet cN{rect, -1, -wi.curb2_alpha};
             CurbedStreet cP{rect, wi.curb2_alpha, 1};
-            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -2}, NodeHoleVertex{cN.s(1, 1), angle_way.way_id}));
-            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = +2}, NodeHoleVertex{cP.s(1, 1), angle_way.way_id}));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -2}, NodeHoleVertex{cN.s[1][1], angle_way.way_id}));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = +2}, NodeHoleVertex{cP.s[1][1], angle_way.way_id}));
         }
     }
 }
@@ -1446,16 +1449,16 @@ void DrawStreets::draw_streets_find_hole_waypoints(
         if (is_centered) {
             CurbedStreet c5{ rect, -curb_alpha, curb_alpha };
             if (angle_way.neighbor_is_second) {
-                node_hole_waypoints.at(street_waypoint_sandbox).at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.5f, 0.5f}, .edge{c5.s(0, 0), c5.s(0, 1)}});
+                node_hole_waypoints.at(street_waypoint_sandbox).at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.5f, 0.5f}, .edge{c5.s[0][0], c5.s[0][1]}});
             } else {
-                node_hole_waypoints.at(street_waypoint_sandbox).at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.5f, 0.5f}, .edge{c5.s(0, 0), c5.s(0, 1)}});
+                node_hole_waypoints.at(street_waypoint_sandbox).at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.5f, 0.5f}, .edge{c5.s[0][0], c5.s[0][1]}});
             }
         }
         if (driving_direction == DrivingDirection::LEFT) {
             auto add = [&rect, &node_id, &angle_way](float start, float stop, float shift, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
                 CurbedStreet c5{ rect, start, stop };
-                node_hole_waypoints.at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s(0, 0), c5.s(0, 1)}});
-                node_hole_waypoints.at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s(0, 0), c5.s(0, 1)}});
+                node_hole_waypoints.at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s[0][0], c5.s[0][1]}});
+                node_hole_waypoints.at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s[0][0], c5.s[0][1]}});
                 };
             if (!is_centered) {
                 add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.at(WayPointSandbox::STREET));
@@ -1467,8 +1470,8 @@ void DrawStreets::draw_streets_find_hole_waypoints(
         } else if (driving_direction == DrivingDirection::RIGHT) {
             auto add = [&rect, &node_id, &angle_way](float start, float stop, float shift, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
                 CurbedStreet c5{rect, start, stop};
-                node_hole_waypoints.at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s(0, 0), c5.s(0, 1)}});
-                node_hole_waypoints.at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s(0, 0), c5.s(0, 1)}});
+                node_hole_waypoints.at(node_id).in.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s[0][0], c5.s[0][1]}});
+                node_hole_waypoints.at(node_id).out.push_back(NodeHoleWaypoint{.node=angle_way.neighbor_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s[0][0], c5.s[0][1]}});
             };
             add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.at(WayPointSandbox::STREET));
             if (curb2_alpha != 1) {
@@ -1484,16 +1487,16 @@ void DrawStreets::draw_streets_find_hole_waypoints(
         if (is_centered) {
             CurbedStreet c5{ rect, -curb_alpha, curb_alpha };
             if (!angle_way.neighbor_is_second) {
-                node_hole_waypoints.at(street_waypoint_sandbox).at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.5f, 0.5f}, .edge{c5.s(1, 0), c5.s(1, 1)}});
+                node_hole_waypoints.at(street_waypoint_sandbox).at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.5f, 0.5f}, .edge{c5.s[1][0], c5.s[1][1]}});
             } else {
-                node_hole_waypoints.at(street_waypoint_sandbox).at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.5f, 0.5f}, .edge{c5.s(1, 0), c5.s(1, 1)}});
+                node_hole_waypoints.at(street_waypoint_sandbox).at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.5f, 0.5f}, .edge{c5.s[1][0], c5.s[1][1]}});
             }
         }
         if (driving_direction == DrivingDirection::LEFT) {
             auto add = [&rect, &angle_way, &node_id](float start, float stop, float shift, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
                 CurbedStreet c5{rect, start, stop};
-                node_hole_waypoints.at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s(1, 0), c5.s(1, 1)}});
-                node_hole_waypoints.at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s(1, 0), c5.s(1, 1)}});
+                node_hole_waypoints.at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s[1][0], c5.s[1][1]}});
+                node_hole_waypoints.at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s[1][0], c5.s[1][1]}});
             };
             if (!is_centered) {
                 add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.at(WayPointSandbox::STREET));
@@ -1505,8 +1508,8 @@ void DrawStreets::draw_streets_find_hole_waypoints(
         } else if (driving_direction == DrivingDirection::RIGHT) {
             auto add = [&rect, &angle_way, &node_id](float start, float stop, float shift, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
                 CurbedStreet c5{rect, start, stop};
-                node_hole_waypoints.at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s(1, 0), c5.s(1, 1)}});
-                node_hole_waypoints.at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s(1, 0), c5.s(1, 1)}});
+                node_hole_waypoints.at(angle_way.neighbor_id).in.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.25f + shift, 0.75f - shift}, .edge{c5.s[1][0], c5.s[1][1]}});
+                node_hole_waypoints.at(angle_way.neighbor_id).out.push_back(NodeHoleWaypoint{.node=node_id, .alpha{0.75f - shift, 0.25f + shift}, .edge{c5.s[1][0], c5.s[1][1]}});
             };
             add(-curb_alpha, curb_alpha, lane_shift, node_hole_waypoints.at(WayPointSandbox::STREET));
             if (curb2_alpha != 1) {

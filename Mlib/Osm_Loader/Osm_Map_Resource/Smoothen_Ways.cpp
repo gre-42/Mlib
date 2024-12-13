@@ -10,9 +10,9 @@
 
 using namespace Mlib;
 
-FixedArray<double, 2> smooth_intermediate_node(
-    const FixedArray<double, 2>& p0,
-    const FixedArray<double, 2>& p1,
+static FixedArray<CompressedScenePos, 2> smooth_intermediate_node(
+    const FixedArray<CompressedScenePos, 2>& p0,
+    const FixedArray<CompressedScenePos, 2>& p1,
     const FixedArray<double, 2>& n0,
     const FixedArray<double, 2>& n1,
     double d,
@@ -20,8 +20,8 @@ FixedArray<double, 2> smooth_intermediate_node(
 {
     double t1 = sigmoid(t);
 
-    return ((p0 + n0 * d * t) * (1 - t1) +
-            (p1 - n1 * d * (1 - t)) * t1);
+    return ((funpack(p0) + n0 * d * t) * (1 - t1) +
+            (funpack(p1) - n1 * d * (1 - t)) * t1).casted<CompressedScenePos>();
 }
 
 class IncludeWay {
@@ -172,7 +172,7 @@ NodesAndWays Mlib::smoothen_ways(
             if (!models_and_widths_identical(*i0) || !models_and_widths_identical(*i1)) {
                 continue;
             }
-            auto n_line = nd1.position - nd0.position;
+            auto n_line = funpack(nd1.position - nd0.position);
             double line_len = std::sqrt(sum(squared(n_line)));
             n_line /= line_len;
             FixedArray<double, 2> n0 = uninitialized;
@@ -181,7 +181,7 @@ NodesAndWays Mlib::smoothen_ways(
             } else {
                 auto nrs = neighbors0;
                 nrs.erase(*i1);
-                auto n0_1 = nd0.position - naws.nodes.at(*nrs.begin()).position;
+                auto n0_1 = funpack(nd0.position - naws.nodes.at(*nrs.begin()).position);
                 n0_1 /= std::sqrt(sum(squared(n0_1)));
                 n0 = n_line + n0_1;
                 n0 /= std::sqrt(sum(squared(n0)));
@@ -192,7 +192,7 @@ NodesAndWays Mlib::smoothen_ways(
             } else {
                 auto nrs = neighbors1;
                 nrs.erase(*i0);
-                auto n1_0 = naws.nodes.at(*nrs.begin()).position - nd1.position;
+                auto n1_0 = funpack(naws.nodes.at(*nrs.begin()).position - nd1.position);
                 n1_0 /= std::sqrt(sum(squared(n1_0)));
                 n1 = n_line + n1_0;
                 n1 /= std::sqrt(sum(squared(n1)));

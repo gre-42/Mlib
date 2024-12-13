@@ -15,7 +15,7 @@ void shortest_path_multiple_targets(
     predecessors = std::vector<size_t>(points_and_adjacency.points.size(), SIZE_MAX);
     total_distances = std::vector<TData>(points_and_adjacency.points.size(), std::numeric_limits<TData>::max());
     for (size_t i : targets) {
-        total_distances[i] = 0;
+        total_distances[i] = (TData)0.f;
     }
     std::vector<size_t> active_nodes = targets;
     auto cmp = [&total_distances](size_t a, size_t b){return total_distances[a] < total_distances[b];};

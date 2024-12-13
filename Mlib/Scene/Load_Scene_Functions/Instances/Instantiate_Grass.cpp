@@ -64,7 +64,7 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
                     {
                         continue;
                     }
-                    bri.add_parsed_resource_name(intersection_point, *prn, 0.f, 1.f);
+                    bri.add_parsed_resource_name(intersection_point.casted<CompressedScenePos>(), *prn, 0.f, 1.f);
                 }
             }
             for (const auto& p8 : cell.coords8) {
@@ -74,7 +74,7 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
                         cell.aabb.min.casted<double>() +
                         cell.aabb.size().casted<double>() *
                         p8.p.casted<double>() / double{ UINT8_MAX };
-                    bri.add_parsed_resource_name(p, *prn, 0.f, 1.f);
+                    bri.add_parsed_resource_name(p.casted<CompressedScenePos>(), *prn, 0.f, 1.f);
                 }
             }
         }

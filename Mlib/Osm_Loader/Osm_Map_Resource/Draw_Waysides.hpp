@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <memory>
 #include <string>
@@ -18,7 +19,7 @@ struct WaysideDistances;
 void draw_waysides(
     BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
-    const std::list<FixedArray<ColoredVertex<double>, 3>>& inner_triangles,
+    const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& inner_triangles,
     const GroundBvh& ground_bvh,
     const StreetBvh& entrance_bvh,
     double scale,

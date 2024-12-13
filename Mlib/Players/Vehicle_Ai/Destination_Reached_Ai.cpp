@@ -15,7 +15,7 @@ using namespace Mlib;
 DestinationReachedAi::DestinationReachedAi(
     RigidBodyVehicle& rigid_body,
     ControlSource control_source,
-    float destination_reached_radius)
+    ScenePos destination_reached_radius)
     : on_destroy_rigid_body_{ rigid_body.on_destroy, CURRENT_SOURCE_LOCATION }
     , rigid_body_{ rigid_body }
     , control_source_{ control_source }
@@ -41,7 +41,7 @@ VehicleAiMoveToStatus DestinationReachedAi::move_to(
     }
     auto pod = ai_waypoint.position_of_destination(rigid_body_.waypoint_ofs_);
 
-    auto distance2 = sum(squared(pod - rigid_body_.rbp_.abs_position()));
+    auto distance2 = sum(squared(funpack(pod) - rigid_body_.rbp_.abs_position()));
 
     if (distance2 < destination_reached_radius_squared_) {
         return VehicleAiMoveToStatus::WAYPOINT_REACHED;

@@ -11,13 +11,13 @@ void Mlib::save_triangle_to_obj(
     DefaultUnitialized<FixedArray<ColoredVertex<double>, 3>> ctri{
         ColoredVertex<double>{
             highlighted_triangle[0],
-            {1.f, 0.f, 0.f}},
+            Colors::RED},
         ColoredVertex<double>{
             highlighted_triangle[1],
-            {0.f, 1.f, 0.f}},
+            Colors::GREEN},
         ColoredVertex<double>{
             highlighted_triangle[2],
-            {0.f, 0.f, 1.f}}
+            Colors::BLUE}
     };
     save_obj(filename, IndexedFaceSet<float, double, size_t>{ std::vector{ ctri } }, nullptr);
 }
@@ -29,16 +29,16 @@ void Mlib::save_quad_to_obj(
     DefaultUnitialized<FixedArray<ColoredVertex<double>, 4>> cquad{
         ColoredVertex<double>{
             highlighted_quad[0],
-            {1.f, 0.f, 0.f}},
+            Colors::RED},
         ColoredVertex<double>{
             highlighted_quad[1],
-            {0.f, 1.f, 0.f}},
+            Colors::GREEN},
         ColoredVertex<double>{
             highlighted_quad[2],
-            {0.f, 0.f, 1.f}},
+            Colors::BLUE},
         ColoredVertex<double>{
             highlighted_quad[3],
-            {1.f, 0.f, 1.f}}
+            Colors::PURPLE}
     };
     save_obj(filename, IndexedFaceSet<float, double, size_t>{ {}, std::vector{ cquad } }, nullptr);
 }

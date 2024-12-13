@@ -8,13 +8,13 @@ class FixedArray;
 
 template <class TData, size_t tndim>
 TData triangle_largest_cosine(
-    const FixedArray<FixedArray<TData, tndim>, 3>& tri,
+    const FixedArray<TData, 3, tndim>& tri,
     const TData& threshold_0d = (TData)1e-12)
 {
     TData lengths[]{
-        sum(squared(tri(1) - tri(2))),
-        sum(squared(tri(2) - tri(0))),
-        sum(squared(tri(0) - tri(1)))};
+        sum(squared(tri[1] - tri[2])),
+        sum(squared(tri[2] - tri[0])),
+        sum(squared(tri[0] - tri[1]))};
     size_t i_best = 0;
     for (size_t i = 1; i < 3; ++i) {
         if (lengths[i] < lengths[i_best]) {
@@ -30,8 +30,8 @@ TData triangle_largest_cosine(
     }
     // Check if the triangle is a 1D line
     return dot0d(
-        tri(i_p) - tri(i_best),
-        tri(i_n) - tri(i_best)) / std::sqrt(denom2);
+        tri[i_p] - tri[i_best],
+        tri[i_n] - tri[i_best]) / std::sqrt(denom2);
 }
 
 }

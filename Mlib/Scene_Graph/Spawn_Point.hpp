@@ -15,7 +15,7 @@ enum class SpawnPointType {
 struct SpawnPoint {
     SpawnPointType type;
     WayPointLocation location;
-    FixedArray<ScenePos, 3> position = uninitialized;
+    FixedArray<CompressedScenePos, 3> position = uninitialized;
     FixedArray<float, 3> rotation = uninitialized;
     std::string team;
     template <class Archive>

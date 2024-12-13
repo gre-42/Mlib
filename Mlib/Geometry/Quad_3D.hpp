@@ -18,14 +18,16 @@ struct ColoredVertex;
 template <class TPos>
 class Quad3D {
 public:
+    using I = funpack_t<TPos>;
     explicit Quad3D(const FixedArray<TPos, 4, 3>& vertices);
-    explicit Quad3D(const FixedArray<ColoredVertex<TPos>, 4>& vertices);
+    template <class TPos2>
+    explicit Quad3D(const FixedArray<ColoredVertex<TPos2>, 4>& vertices);
     template <class TPos2, class TPosTransform>
     Quad3D(
         const FixedArray<ColoredVertex<TPos2>, 4>& vertices,
         const TransformationMatrix<float, TPosTransform, 3>& transformation);
     const FixedArray<TPos, 4, 3>& vertices() const;
-    ConvexPolygon3D<TPos, TPos, 4> polygon() const;
+    ConvexPolygon3D<I, TPos, 4> polygon() const;
     BoundingSphere<TPos, 3> bounding_sphere(std::minstd_rand& rng) const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
 private:

@@ -33,19 +33,19 @@ void Mlib::smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
     const StreetBvh& ground_street_bvh,
     const StreetBvh& air_bvh,
-    const std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
-    std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
+    const std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding>& node_height_bindings,
+    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    const NormalizedPointsFixed<double>& normalized_points,
-    const std::list<std::shared_ptr<TriangleList<double>>>& tls_buildings,
-    const std::list<std::shared_ptr<TriangleList<double>>>& tls_wall_barriers,
+    const NormalizedPointsFixed<ScenePos>& normalized_points,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_buildings,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_wall_barriers,
     const OsmTriangleLists& osm_triangle_lists,
     const OsmTriangleLists& air_triangle_lists,
     VertexOutOfHeightMapBehavior vertex_out_of_height_map_behavior,
     BatchResourceInstantiator& bri,
     std::list<SteinerPointInfo>& steiner_points,
-    std::list<FixedArray<double, 3>>& map_outer_contour3,
+    std::list<FixedArray<CompressedScenePos, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors)
 {
@@ -55,8 +55,8 @@ void Mlib::smoothen_and_apply_heightmap(
     }
 
     auto get_smoothed_vertices = [&](
-        std::list<std::shared_ptr<TriangleList<double>>>& tls_smoothed,
-        std::list<FixedArray<double, 3>*>& smoothed_vertices,
+        std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_smoothed,
+        std::list<FixedArray<CompressedScenePos, 3>*>& smoothed_vertices,
         SmoothingClass sc)
     {
         auto tls_ground_smoothed =
@@ -88,8 +88,10 @@ void Mlib::smoothen_and_apply_heightmap(
             smoothed_vertices.push_back(&p);
         }
         for (auto& r : street_rectangles) {
-            for (auto& p : r.rectangle.flat_iterable()) {
-                smoothed_vertices.push_back(&p);
+            for (auto& p0 : r.rectangle.row_iterable()) {
+                for (auto& p : p0.row_iterable()) {
+                    smoothed_vertices.push_back(&p);
+                }
             }
         }
         for (auto& [_, w] : way_point_edge_descriptors) {
@@ -101,7 +103,7 @@ void Mlib::smoothen_and_apply_heightmap(
             }
         }
         {
-            std::set<FixedArray<double, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
+            std::set<FixedArray<CompressedScenePos, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
             if (svs.size() != smoothed_vertices.size()) {
                 THROW_OR_ABORT("Found duplicate smoothed vertices");
             }
@@ -126,10 +128,10 @@ void Mlib::smoothen_and_apply_heightmap(
             normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix());
 
         LOG_INFO("apply_heightmap");
-        std::list<std::shared_ptr<TriangleList<double>>> tls_smoothed;
-        std::list<FixedArray<double, 3>*> smoothed_vertices;
+        std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_smoothed;
+        std::list<FixedArray<CompressedScenePos, 3>*> smoothed_vertices;
         get_smoothed_vertices(tls_smoothed, smoothed_vertices, SmoothingClass::RAISED);
-        std::set<const FixedArray<double, 3>*> vertices_to_delete;
+        std::set<const FixedArray<CompressedScenePos, 3>*> vertices_to_delete;
         apply_heightmap(
             *osm_triangle_lists.tl_terrain,
             osm_triangle_lists.entrances,
@@ -148,12 +150,12 @@ void Mlib::smoothen_and_apply_heightmap(
             config.layer_heights);
         if (!vertices_to_delete.empty()) {
             if (vertex_out_of_height_map_behavior == VertexOutOfHeightMapBehavior::THROW) {
-                const FixedArray<double, 3>& v0 = **vertices_to_delete.begin();
+                const FixedArray<CompressedScenePos, 3>& v0 = **vertices_to_delete.begin();
                 lerr() << v0;
-                throw PointException<double, 2>(FixedArray<double, 2>{ v0(0), v0(1) }, "One or more vertices out of heightmap range");
+                throw PointException<CompressedScenePos, 2>(FixedArray<CompressedScenePos, 2>{ v0(0), v0(1) }, "One or more vertices out of heightmap range");
             } else if (vertex_out_of_height_map_behavior == VertexOutOfHeightMapBehavior::DELETE) {
                 for (auto& l : tls_smoothed) {
-                    l->triangles.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex<double>, 3>& v){
+                    l->triangles.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex<CompressedScenePos>, 3>& v){
                         bool del =
                             vertices_to_delete.contains(&v(0).position) ||
                             vertices_to_delete.contains(&v(1).position) ||
@@ -173,19 +175,19 @@ void Mlib::smoothen_and_apply_heightmap(
         bri.remove(vertices_to_delete);
         steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
             return vertices_to_delete.contains(&p.position);});
-        smoothed_vertices.remove_if([&vertices_to_delete](const FixedArray<double, 3>* p){
+        smoothed_vertices.remove_if([&vertices_to_delete](const FixedArray<CompressedScenePos, 3>* p){
             return vertices_to_delete.contains(p);});
     }
     if (config.street_edge_smoothness > 0 || config.terrain_edge_smoothness > 0) {
-        std::list<std::shared_ptr<TriangleList<double>>> tls_smoothed;
-        std::list<FixedArray<double, 3>*> smoothed_vertices;
+        std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_smoothed;
+        std::list<FixedArray<CompressedScenePos, 3>*> smoothed_vertices;
         get_smoothed_vertices(tls_smoothed, smoothed_vertices, SmoothingClass::SMOOTHED);
         if (config.street_edge_smoothness > 0) {
-            std::list<std::shared_ptr<TriangleList<double>>> tls_street = osm_triangle_lists.tls_street();
-            std::list<std::shared_ptr<TriangleList<double>>> tls_air_street = air_triangle_lists.tls_street();
+            std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_street = osm_triangle_lists.tls_street();
+            std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_air_street = air_triangle_lists.tls_street();
             tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
             LOG_INFO("smoothen_edges (street)");
-            TriangleList<double>::smoothen_edges(vertex_height_bindings, {}, tls_street, {}, smoothed_vertices, config.street_edge_smoothness* config.scale, 100, true);
+            TriangleList<CompressedScenePos>::smoothen_edges(vertex_height_bindings, {}, tls_street, {}, smoothed_vertices, config.street_edge_smoothness* config.scale, 100, true);
         }
         if (config.terrain_edge_smoothness > 0) {
             LOG_INFO("smoothen_edges (ground)");
@@ -194,33 +196,38 @@ void Mlib::smoothen_and_apply_heightmap(
             auto air_tls_smooth = air_triangle_lists.tls_smooth();
             tls_smooth.insert(tls_smooth.end(), air_tls_smooth.begin(), air_tls_smooth.end());
 
-            std::list<std::shared_ptr<TriangleList<double>>> tls_terrain_nosmooth = osm_triangle_lists.tls_terrain_nosmooth();
-            std::list<std::shared_ptr<TriangleList<double>>> tls_air_terrain_nosmooth = air_triangle_lists.tls_terrain_nosmooth();
+            std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_terrain_nosmooth = osm_triangle_lists.tls_terrain_nosmooth();
+            std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_air_terrain_nosmooth = air_triangle_lists.tls_terrain_nosmooth();
             tls_terrain_nosmooth.insert(tls_terrain_nosmooth.end(), tls_air_terrain_nosmooth.begin(), tls_air_terrain_nosmooth.end());
 
-            std::unordered_map<OrderableFixedArray<double, 3>, FixedArray<double, 3>> bias;
+            std::unordered_map<OrderableFixedArray<CompressedScenePos, 3>, FixedArray<float, 3>> bias;
             if (height_sampler.has_value() && !config.terrain_edge_bias.empty()) {
                 for (const auto* s : smoothed_vertices) {
-                    FixedArray<double, 2> pt{ (*s)(0), (*s)(1) };
-                    FixedArray<double, 2> closest_ground = uninitialized;
-                    FixedArray<double, 2> closest_air = uninitialized;
-                    auto ground_dist = ground_street_bvh.min_dist(pt, config.terrain_edge_bias.xmax() * config.scale, &closest_ground);
-                    auto air_dist = air_bvh.min_dist(pt, config.terrain_edge_bias.xmax() * config.scale, &closest_air);
-                    if ((ground_dist != INFINITY) || (air_dist != INFINITY)) {
+                    FixedArray<CompressedScenePos, 2> pt{ (*s)(0), (*s)(1) };
+                    FixedArray<CompressedScenePos, 2> closest_ground = uninitialized;
+                    FixedArray<CompressedScenePos, 2> closest_air = uninitialized;
+                    auto teb = (CompressedScenePos)(config.terrain_edge_bias.xmax() * config.scale);
+                    auto ground_dist = ground_street_bvh.min_dist(pt, teb, &closest_ground).value_or(teb);
+                    auto air_dist = air_bvh.min_dist(pt, teb, &closest_air).value_or(teb);
+                    if ((ground_dist < teb) || (air_dist < teb)) {
                         auto closest_dist = std::min(ground_dist, air_dist);
                         auto closest_pt = (ground_dist < air_dist)
                             ? closest_ground
                             : closest_air;
-                        double street_z;
+                        CompressedScenePos street_z;
                         if ((*height_sampler)(closest_pt, street_z)) {
                             bias.try_emplace(
                                 OrderableFixedArray{ *s },
-                                FixedArray<double, 3>{ 0., 0., config.terrain_edge_bias(closest_dist) * sign((*s)(2) / config.scale - street_z) });
+                                FixedArray<CompressedScenePos, 3>{
+                                    (CompressedScenePos)0.,
+                                    (CompressedScenePos)0.,
+                                    (CompressedScenePos)config.terrain_edge_bias(
+                                        (float)(closest_dist * sign(funpack((*s)(2)) / config.scale - funpack(street_z)))) });
                         }
                     }
                 }
             }
-            TriangleList<double>::smoothen_edges(vertex_height_bindings, bias, tls_smooth, tls_terrain_nosmooth, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 100, false);
+            TriangleList<CompressedScenePos>::smoothen_edges(vertex_height_bindings, bias, tls_smooth, tls_terrain_nosmooth, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 100, false);
             // {
             //     std::list<FixedArray<ColoredVertex, 3>> tcp;
             //     for (const auto& l : tls_smooth) {

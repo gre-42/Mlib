@@ -39,7 +39,7 @@ SparseProjector& SparseProjector::normalize(float scale, float quantile)
 }
 
 void SparseProjector::draw(const std::string& filename) {
-    StbImage3 ppm{ArrayShape{256, 256}, Rgb24::white()};
+    StbImage3 ppm{FixedArray<size_t, 2>{256u, 256u}, Rgb24::white()};
     plot_unit_square(ppm);
     plot_camera_lines(ppm);
     for (const auto& x : reconstructed_points_) {

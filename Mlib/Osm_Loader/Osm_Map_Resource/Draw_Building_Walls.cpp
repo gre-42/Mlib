@@ -14,9 +14,9 @@
 using namespace Mlib;
 
 void Mlib::draw_building_walls(
-    std::list<std::shared_ptr<TriangleList<double>>>& tls,
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
-    std::unordered_map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
+    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const Material& material,
     const Morphology& morphology,
     const std::list<Building>& buildings,
@@ -30,9 +30,9 @@ void Mlib::draw_building_walls(
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     size_t mid = 0;
     for (const auto& bu : buildings) {
-        std::list<FixedArray<FixedArray<double, 2>, 2>> swG;
+        std::list<FixedArray<CompressedScenePos, 2, 2>> swG;
         for (const auto& bl : bu.levels) {
-            const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
+            const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
                 morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
@@ -54,31 +54,31 @@ void Mlib::draw_building_walls(
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
             auto swGit = swG.begin();
             for (const auto& we : sw) {
-                const auto& p0 = we(0);
-                const auto& p1 = we(1);
+                const auto& p0 = we[0];
+                const auto& p1 = we[1];
                 float width = (float)std::sqrt(sum(squared(p0 - p1)));
                 float height = (bl.top - bl.bottom) * scale;
                 if ((steiner_points != nullptr) && (&bl == &*bu.levels.begin())) {
                     steiner_points->push_back({
-                        .position = {p0(0), p0(1), 0.f},
+                        .position = {p0(0), p0(1), (CompressedScenePos)0.f},
                         .type = SteinerPointType::WALL});
                 }
-                ColoredVertex<double>* pp00a;
-                ColoredVertex<double>* pp11a;
-                ColoredVertex<double>* pp01a;
-                ColoredVertex<double>* pp00b;
-                ColoredVertex<double>* pp10b;
-                ColoredVertex<double>* pp11b;
+                ColoredVertex<CompressedScenePos>* pp00a;
+                ColoredVertex<CompressedScenePos>* pp11a;
+                ColoredVertex<CompressedScenePos>* pp01a;
+                ColoredVertex<CompressedScenePos>* pp00b;
+                ColoredVertex<CompressedScenePos>* pp10b;
+                ColoredVertex<CompressedScenePos>* pp11b;
                 // some buildings are clock-wise, others counter-clock-wise
                 tl->draw_rectangle_wo_normals(
-                    {p1(0), p1(1), bl.bottom * scale}, // p00
-                    {p0(0), p0(1), bl.bottom * scale}, // p10
-                    {p0(0), p0(1), bl.top * scale},    // p11
-                    {p1(0), p1(1), bl.top * scale},    // p01
-                    color * (1.f - bottom_ambient_occlusion) * bottom_height_color,
-                    color * (1.f - bottom_ambient_occlusion) * bottom_height_color,
-                    color * top_height_color,
-                    color * top_height_color,
+                    {p1(0), p1(1), (CompressedScenePos)(bl.bottom * scale)}, // p00
+                    {p0(0), p0(1), (CompressedScenePos)(bl.bottom * scale)}, // p10
+                    {p0(0), p0(1), (CompressedScenePos)(bl.top * scale)},    // p11
+                    {p1(0), p1(1), (CompressedScenePos)(bl.top * scale)},    // p01
+                    Colors::from_rgb(color * (1.f - bottom_ambient_occlusion) * bottom_height_color),
+                    Colors::from_rgb(color * (1.f - bottom_ambient_occlusion) * bottom_height_color),
+                    Colors::from_rgb(color * top_height_color),
+                    Colors::from_rgb(color * top_height_color),
                     {0.f, 0.f},
                     {width / scale * uv_scale, 0.f},
                     {width / scale * uv_scale, height / scale * uv_scale},
@@ -98,14 +98,14 @@ void Mlib::draw_building_walls(
                     &pp11b);
                 if (&bl != &*bu.levels.begin()) {
                     if (bl.extra_width != 0.f) {
-                        const auto& pG0 = (*swGit)(0);
-                        const auto& pG1 = (*swGit)(1);
-                        vertex_height_bindings[&pp00a->position] = FixedArray<double, 2>{ pG1(0), pG1(1) };
-                        vertex_height_bindings[&pp00b->position] = FixedArray<double, 2>{ pG1(0), pG1(1) };
-                        vertex_height_bindings[&pp10b->position] = FixedArray<double, 2>{ pG0(0), pG0(1) };
-                        vertex_height_bindings[&pp11b->position] = FixedArray<double, 2>{ pG0(0), pG0(1) };
-                        vertex_height_bindings[&pp11a->position] = FixedArray<double, 2>{ pG0(0), pG0(1) };
-                        vertex_height_bindings[&pp01a->position] = FixedArray<double, 2>{ pG1(0), pG1(1) };
+                        const auto& pG0 = (*swGit)[0];
+                        const auto& pG1 = (*swGit)[1];
+                        vertex_height_bindings[&pp00a->position] = FixedArray<CompressedScenePos, 2>{ pG1(0), pG1(1) };
+                        vertex_height_bindings[&pp00b->position] = FixedArray<CompressedScenePos, 2>{ pG1(0), pG1(1) };
+                        vertex_height_bindings[&pp10b->position] = FixedArray<CompressedScenePos, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp11b->position] = FixedArray<CompressedScenePos, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp11a->position] = FixedArray<CompressedScenePos, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp01a->position] = FixedArray<CompressedScenePos, 2>{ pG1(0), pG1(1) };
                     }
                     ++swGit;
                 }

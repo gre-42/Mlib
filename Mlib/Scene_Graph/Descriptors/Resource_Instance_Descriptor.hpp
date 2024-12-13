@@ -8,7 +8,7 @@
 namespace Mlib {
 
 struct ResourceInstanceDescriptor {
-    FixedArray<ScenePos, 3> position = uninitialized;
+    FixedArray<CompressedScenePos, 3> position = uninitialized;
     float yangle = 0.f;
     float scale = 1.f;  // Currently not used.
                         // Scaling can be done (per billboard_id) using

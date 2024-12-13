@@ -52,7 +52,7 @@ void Mlib::parse_osm_xml(
     bool normalization_matrix_defined = false;
     std::string current_way = "<none>";
     std::string current_node = "<none>";
-    std::map<OrderableFixedArray<double, 2>, std::string> ordered_node_positions;
+    std::map<OrderableFixedArray<CompressedScenePos, 2>, std::string> ordered_node_positions;
 
     std::string line;
     while(std::getline(ifs, line)) {
@@ -109,8 +109,8 @@ void Mlib::parse_osm_xml(
                 current_node_position = FixedArray<double, 2>{
                     safe_stod(lat),
                     safe_stod(lon)};
-                auto pos = normalization_matrix.transform(current_node_position);
-                auto opos = OrderableFixedArray<double, 2>{ pos };
+                auto pos = normalization_matrix.transform(current_node_position).casted<CompressedScenePos>();
+                auto opos = OrderableFixedArray<CompressedScenePos, 2>{ pos };
                 auto it = ordered_node_positions.find(opos);
                 if (it != ordered_node_positions.end()) {
                     lwarn() << "Detected duplicate points: " + current_node + ", " + it->second;

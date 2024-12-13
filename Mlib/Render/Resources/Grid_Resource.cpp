@@ -20,7 +20,7 @@ GridResource::GridResource(
 {
     auto trafo = transformation;
     trafo.t *= scale;
-    TriangleList<double> triangles{
+    TriangleList<CompressedScenePos> triangles{
         "grid",
         material,
         morphology + (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE) };
@@ -33,18 +33,18 @@ GridResource::GridResource(
             auto p01 = scale * tile_length * FixedArray<double, 2>{(double)r, (double)c + 1};
             auto uv = terrain_uv(p00, p10, p11, p01, scale, uv_scale, period);
             triangles.draw_rectangle_wo_normals(
-                trafo.transform(FixedArray<double, 3>{p00(0), p00(1), 0.}),
-                trafo.transform(FixedArray<double, 3>{p10(0), p10(1), 0.}),
-                trafo.transform(FixedArray<double, 3>{p11(0), p11(1), 0.}),
-                trafo.transform(FixedArray<double, 3>{p01(0), p01(1), 0.}),
-                fixed_ones<float, 3>(),
-                fixed_ones<float, 3>(),
-                fixed_ones<float, 3>(),
-                fixed_ones<float, 3>(),
-                uv(0),
-                uv(1),
-                uv(2),
-                uv(3));
+                trafo.transform(FixedArray<double, 3>{p00(0), p00(1), 0.}).casted<CompressedScenePos>(),
+                trafo.transform(FixedArray<double, 3>{p10(0), p10(1), 0.}).casted<CompressedScenePos>(),
+                trafo.transform(FixedArray<double, 3>{p11(0), p11(1), 0.}).casted<CompressedScenePos>(),
+                trafo.transform(FixedArray<double, 3>{p01(0), p01(1), 0.}).casted<CompressedScenePos>(),
+                Colors::WHITE,
+                Colors::WHITE,
+                Colors::WHITE,
+                Colors::WHITE,
+                uv[0],
+                uv[1],
+                uv[2],
+                uv[3]);
         }
     }
 

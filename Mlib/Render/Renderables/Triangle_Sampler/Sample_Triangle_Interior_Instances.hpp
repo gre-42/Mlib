@@ -30,15 +30,15 @@ public:
         const TerrainStyle& terrain_style,
         ScenePos scale,
         UpAxis up_axis,
-        const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* boundary_bvh,
+        const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>* boundary_bvh,
         const Array<float>& dirtmap,
         float dirtmap_scale,
         const Array<float>& mudmap);
     void sample_triangle(
-        const FixedArray<ColoredVertex<ScenePos>, 3>& t,
+        const FixedArray<ColoredVertex<CompressedScenePos>, 3>& t,
         unsigned int seed,
         const std::function<void(
-            const FixedArray<ScenePos, 3>& p,
+            const FixedArray<CompressedScenePos, 3>& p,
             const ParsedResourceName& prn)>& f);
 private:
     const TerrainStyleConfig& tsc_;
@@ -47,12 +47,12 @@ private:
     ResourceNameCycle rnc_mountain_regular_;
     ResourceNameCycle rnc_valley_dirt_;
     ResourceNameCycle rnc_mountain_dirt_;
-    ScenePos max_dboundary_;
+    CompressedScenePos max_dboundary_;
     ScenePos min_dboundary2_;
     TriangleSampler2<ScenePos> ts_;
     ScenePos scale_;
     UpAxis up_axis_;
-    const Bvh<ScenePos, 3, FixedArray<ScenePos, 3, 3>>* boundary_bvh_;
+    const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>* boundary_bvh_;
     const Array<float>& dirtmap_;
     float dirtmap_scale_;
     const Array<float>& mudmap_;

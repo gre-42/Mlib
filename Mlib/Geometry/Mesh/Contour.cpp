@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 #define C_DEBUG(a)
 
@@ -23,7 +24,7 @@ std::unordered_set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<T
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, {}, {edge.first, edge.second});
                 auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                 if (debug_filename.has_value()) {
-                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {edge.first, edge.second}).T().reversed(0).save_to_file(*debug_filename);
+                    plot_mesh(FixedArray<size_t, 2>{8000u, 8000u}, 1, 4, triangles, {}, {}, { edge.first, edge.second }).T().reversed(0).save_to_file(*debug_filename);
                     throw EdgeException(edge.first, edge.second, "Detected duplicate edge, debug image saved");
                 } else {
                     throw EdgeException(edge.first, edge.second, "Detected duplicate edge, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
@@ -76,7 +77,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                     if (!neighbors.insert(v).second) {
                         auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                         if (debug_filename.has_value()) {
-                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {v.first, v.second}).T().reversed(0).save_to_file(*debug_filename);
+                            plot_mesh(FixedArray<size_t, 2>{8000u, 8000u}, 1, 4, triangles, {}, {}, {v.first, v.second}).T().reversed(0).save_to_file(*debug_filename);
                             throw EdgeException(v.first, v.second, "Contour neighbor already set, debug image saved");
                         } else {
                             throw EdgeException(v.first, v.second, "Contour neighbor already set, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
@@ -332,7 +333,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
             } catch (const std::runtime_error& e) {
                 auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                 if (debug_filename.has_value()) {
-                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {(*t)(0).position, (*t)(1).position, (*t)(2).position}).T().reversed(0).save_to_file(*debug_filename);
+                    plot_mesh(FixedArray<size_t, 2>{8000u, 8000u}, 1, 4, triangles, {}, {}, {(*t)(0).position, (*t)(1).position, (*t)(2).position}).T().reversed(0).save_to_file(*debug_filename);
                     THROW_OR_ABORT(std::string(e.what()) + ", debug image saved");
                 } else {
                     THROW_OR_ABORT(std::string(e.what()) + ", consider setting the CONTOUR_DEBUG_FILENAME environment variable");
@@ -401,19 +402,23 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
     ContourDetectionStrategy strategy);
 
 template
-std::unordered_set<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>>
-    Mlib::find_contour_edges(const std::list<const FixedArray<ColoredVertex<double>, 3>*>& triangles);
+std::unordered_set<std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>>
+    Mlib::find_contour_edges(const std::list<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*>& triangles);
 
 template
-std::unordered_set<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>>
-    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex<double>, 3>*>& triangles);
+std::unordered_set<std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>>
+    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>*>& triangles);
 
 template
-std::list<std::list<FixedArray<double, 3>>> Mlib::find_contours(
-    const std::list<const FixedArray<ColoredVertex<double>, 3>*>& triangles,
+std::list<std::list<FixedArray<CompressedScenePos, 3>>> Mlib::find_contours(
+    const std::list<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*>& triangles,
     ContourDetectionStrategy strategy);
 
 template
-std::list<std::list<FixedArray<double, 3>>> Mlib::find_contours(
-    const std::list<FixedArray<ColoredVertex<double>, 3>>& triangles,
+std::list<std::list<FixedArray<CompressedScenePos, 3>>> Mlib::find_contours(
+    const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles,
     ContourDetectionStrategy strategy);
+
+template
+std::unordered_set<std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>>
+    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>*>& triangles);

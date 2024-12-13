@@ -539,7 +539,7 @@ void SceneNode::add_instances_child(
 
 void SceneNode::add_instances_position(
     const std::string& name,
-    const FixedArray<ScenePos, 3>& position,
+    const FixedArray<CompressedScenePos, 3>& position,
     float yangle,
     BillboardId billboard_id)
 {
@@ -555,7 +555,7 @@ void SceneNode::add_instances_position(
     if (mcd == INFINITY) {
         cit->second.large_instances.push_back(
             PositionAndYAngleAndBillboardId{
-                .position = position.casted<CompressedScenePos>(),
+                .position = position,
                 .billboard_id = billboard_id,
                 .yangle = yangle}
         );
@@ -567,12 +567,12 @@ void SceneNode::add_instances_position(
         if (yangle == 0.f) {
             cit->second.small_instances.insert(
                 PositionAndBillboardId{
-                    .position = position.casted<CompressedScenePos>(),
+                    .position = position,
                     .billboard_id = billboard_id});
         } else {
             cit->second.small_instances.insert(
                 PositionAndYAngleAndBillboardId{
-                    .position = position.casted<CompressedScenePos>(),
+                    .position = position,
                     .billboard_id = billboard_id,
                     .yangle = yangle});
         }
@@ -1153,7 +1153,7 @@ void SceneNode::append_large_instances_to_queue(
 void SceneNode::append_static_filtered_to_queue(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue,
     const ColoredVertexArrayFilter& filter) const
 {
     TransformationMatrix<float, ScenePos, 3> m = parent_m * relative_model_matrix();
@@ -1163,7 +1163,7 @@ void SceneNode::append_static_filtered_to_queue(
     }
     for (const auto& [_, r] : un_guarded_iterator(renderables_, lock)) {
         std::list<std::shared_ptr<ColoredVertexArray<float>>> float_q;
-        std::list<std::shared_ptr<ColoredVertexArray<double>>> double_q;
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> double_q;
         (*r)->append_filtered_to_queue(float_q, double_q, filter);
         for (const auto& cva : float_q) {
             float_queue.emplace_back(m, cva);
@@ -1437,7 +1437,7 @@ std::optional<AxisAlignedBoundingBox<ScenePos, 3>> SceneNode::relative_aabb() co
         result = AxisAlignedBoundingBox<ScenePos, 3>::empty();
     }
     for (const auto& [_, r] : renderables_) {
-        result.value().extend((*r)->aabb());
+        result.value().extend((*r)->aabb().casted<ScenePos>());
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_aabb();
@@ -1457,7 +1457,7 @@ BoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
     std::shared_lock lock{ mutex_ };
     BoundingSphere<ScenePos, 3> result(fixed_zeros<ScenePos, 3>(), 0.);
     for (const auto& [_, r] : renderables_) {
-        result.extend((*r)->bounding_sphere());
+        result.extend((*r)->bounding_sphere().casted<ScenePos>());
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_bounding_sphere();

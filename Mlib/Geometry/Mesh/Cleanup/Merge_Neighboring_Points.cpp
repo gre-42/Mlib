@@ -23,7 +23,7 @@ void Mlib::merge_neighboring_points(
                 max_distance,
                 [&v](const auto& a){return sum(squared(a - v.position));},
                 &neighbor);
-            if (min_dist2 <= squared(max_distance))
+            if (min_dist2.has_value() && (min_dist2 <= squared(max_distance)))
             {
                 if (any(v.position != *neighbor)) {
                     if (!warning_printed) {
@@ -40,7 +40,5 @@ void Mlib::merge_neighboring_points(
     // linfo() << "Merging done: " << cva.name;
 }
 
-namespace Mlib {
-    template void merge_neighboring_points<float>(ColoredVertexArray<float>& cva, PointWithoutPayloadVectorBvh<float, 3>& bvh, const float& min_distance);
-    template void merge_neighboring_points<double>(ColoredVertexArray<double>& cva, PointWithoutPayloadVectorBvh<double, 3>& bvh, const double& min_distance);
-}
+template void Mlib::merge_neighboring_points<float>(ColoredVertexArray<float>& cva, PointWithoutPayloadVectorBvh<float, 3>& bvh, const float& min_distance);
+template void Mlib::merge_neighboring_points<CompressedScenePos>(ColoredVertexArray<CompressedScenePos>& cva, PointWithoutPayloadVectorBvh<CompressedScenePos, 3>& bvh, const CompressedScenePos& min_distance);

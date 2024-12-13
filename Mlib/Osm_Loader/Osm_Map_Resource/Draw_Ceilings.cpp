@@ -13,7 +13,7 @@
 using namespace Mlib;
 
 void Mlib::draw_ceilings(
-    std::list<std::shared_ptr<TriangleList<double>>>& tls_buildings,
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_buildings,
     const OsmResourceConfig& config,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes)
@@ -31,6 +31,7 @@ void Mlib::draw_ceilings(
         buildings,
         nodes,
         config.scale,
+        config.triangulation_scale,
         config.uv_scale_ceiling,
         1.f,                        // uv_period
         config.max_wall_width,

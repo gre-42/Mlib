@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <map>
 #include <string>
 
@@ -10,7 +11,7 @@ class FixedArray;
 struct Node;
 struct Way;
 
-UUVector<FixedArray<double, 2>> get_map_outer_contour(
+UUVector<FixedArray<CompressedScenePos, 2>> get_map_outer_contour(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways);
 

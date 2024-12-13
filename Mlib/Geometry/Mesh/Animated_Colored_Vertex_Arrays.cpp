@@ -74,7 +74,7 @@ void AnimatedColoredVertexArrays::create_barrier_triangle_hitboxes(
             THROW_OR_ABORT("Single-precision array matches terrain convex decomposition filter");
         }
     }
-    std::list<std::shared_ptr<ColoredVertexArray<double>>> new_dvcas;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> new_dvcas;
     for (const auto& cva : dcvas) {
         if (filter.matches(*cva)) {
             for (const auto& cva : Mlib::create_barrier_triangle_hitboxes(
@@ -98,19 +98,19 @@ void AnimatedColoredVertexArrays::smoothen_edges(
     float decay)
 {
     if (target == SmoothnessTarget::PHYSICS) {
-        std::list<std::shared_ptr<ColoredVertexArray<double>>> new_dvcas;
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> new_dvcas;
         for (const auto& l : dcvas) {
             if (!any(l->morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
                 continue;
             }
-            new_dvcas.emplace_back(std::make_shared<ColoredVertexArray<double>>(
+            new_dvcas.emplace_back(std::make_shared<ColoredVertexArray<CompressedScenePos>>(
                 l->name + "_smooth",
                 l->material,
                 l->morphology - PhysicsMaterial::ATTR_VISIBLE,
                 l->modifier_backlog,
-                UUVector<FixedArray<ColoredVertex<double>, 4>>{},
-                UUVector<FixedArray<ColoredVertex<double>, 3>>{l->triangles},
-                UUVector<FixedArray<ColoredVertex<double>, 2>>{},
+                UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 4>>{},
+                UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 3>>{l->triangles},
+                UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 2>>{},
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
                 UUVector<FixedArray<float, 3>>{},
                 UUVector<FixedArray<uint8_t, 3>>{},
@@ -150,7 +150,7 @@ template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& AnimatedColoredVertexArrays::cvas() {
     if constexpr (std::is_same_v<TPos, float>) {
         return scvas;
-    } else if constexpr (std::is_same_v<TPos, double>) {
+    } else if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
         return dcvas;
     } else {
         THROW_OR_ABORT("Unknown mesh precision");
@@ -168,4 +168,4 @@ void AnimatedColoredVertexArrays::print(std::ostream& ostr) const {
 }
 
 template std::list<std::shared_ptr<ColoredVertexArray<float>>>& AnimatedColoredVertexArrays::cvas();
-template std::list<std::shared_ptr<ColoredVertexArray<double>>>& AnimatedColoredVertexArrays::cvas();
+template std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& AnimatedColoredVertexArrays::cvas();

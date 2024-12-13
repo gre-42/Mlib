@@ -145,7 +145,7 @@ void VehicleSpawner::spawn(const SpawnPoint& spawn_point, ScenePos spawn_y_offse
         THROW_OR_ABORT("Scene vehicles already set before spawning");
     }
     SpawnPoint sp2 = spawn_point;
-    sp2.position(1) += spawn_y_offset;
+    sp2.position(1) += (CompressedScenePos)spawn_y_offset;
     spawn_vehicle_(sp2);
     if (scene_vehicles_.empty()) {
         THROW_OR_ABORT("Scene vehicles not set after spawning");

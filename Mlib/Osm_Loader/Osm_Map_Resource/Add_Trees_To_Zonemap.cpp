@@ -26,20 +26,20 @@ void Mlib::add_trees_to_zonemap(
     float jitter,
     double step_size,
     double position_scale,
-    double min_height)
+    CompressedScenePos min_height)
 {
     FastUniformRandomNumberGenerator<double> prob_rng{ 0 };
     FastNormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
     FastNormalRandomNumberGenerator<float> jitter_rng{ 0, 0.f, jitter };
-    for (double x = bounding_info.boundary_min(0); x < bounding_info.boundary_max(0); x += step_size * position_scale) {
-        for (double y = bounding_info.boundary_min(1); y < bounding_info.boundary_max(1); y += step_size * position_scale) {
-            FixedArray<double, 2> pos{
-                x + position_scale * (double)jitter_rng(),
-                y + position_scale * (double)jitter_rng() };
+    for (CompressedScenePos x = bounding_info.boundary_min(0); x < bounding_info.boundary_max(0); x += (CompressedScenePos)(step_size * position_scale)) {
+        for (CompressedScenePos y = bounding_info.boundary_min(1); y < bounding_info.boundary_max(1); y += (CompressedScenePos)(step_size * position_scale)) {
+            FixedArray<CompressedScenePos, 2> pos{
+                x + (CompressedScenePos)(position_scale * (double)jitter_rng()),
+                y + (CompressedScenePos)(position_scale * (double)jitter_rng()) };
             FixedArray<double, 2> size{
                 tree_density_width * position_scale,
                 tree_density_height * position_scale};
-            FixedArray<double, 2> uv = pos / size;
+            FixedArray<double, 2> uv = funpack(pos) / size;
             uv(0) -= std::floor(uv(0));
             uv(1) -= std::floor(uv(1));
             double prob;
@@ -54,8 +54,8 @@ void Mlib::add_trees_to_zonemap(
             if (prob_rng() > prob * tree_density_multiplier) {
                 continue;
             }
-            if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(pos, min_dist_to_road * position_scale)) {
-                double height;
+            if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(pos, (CompressedScenePos)(min_dist_to_road * position_scale))) {
+                CompressedScenePos height;
                 if (ground_bvh.height(height, pos) && (height > min_height * position_scale)) {
                     if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
                         bri.add_parsed_resource_name(pos, height, *prn, 0.f, scale_rng());

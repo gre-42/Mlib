@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff_Array.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
+#include <Mlib/Scene_Precision.hpp>
 
 using namespace Mlib;
 
@@ -17,7 +18,7 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_dff(
     auto trafo = FrameTransformation::ZERO_POSITION | FrameTransformation::IDENTITY_ROTATION;
     if constexpr (std::is_same_v<TPos, float>) {
         hr->acvas->scvas = load_dff(istr, name, cfg, dddb, trafo).renderables;
-    } else if constexpr (std::is_same_v<TPos, double>) {
+    } else if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
         hr->acvas->dcvas = load_dff(istr, name, cfg, dddb, trafo).renderables;
     } else {
         THROW_OR_ABORT("Unknown mesh precision");
@@ -36,7 +37,7 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_dff(
     auto trafo = FrameTransformation::ZERO_POSITION | FrameTransformation::IDENTITY_ROTATION;
     if constexpr (std::is_same_v<TPos, float>) {
         hr->acvas->scvas = load_dff(filename, cfg, dddb, trafo).renderables;
-    } else if constexpr (std::is_same_v<TPos, double>) {
+    } else if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
         hr->acvas->dcvas = load_dff(filename, cfg, dddb, trafo).renderables;
     } else {
         THROW_OR_ABORT("Unknown mesh precision");
@@ -53,10 +54,10 @@ template std::shared_ptr<ISceneNodeResource> load_renderable_dff<float>(
     const SceneNodeResources& scene_node_resources,
     const DrawDistanceDb& dddb);
 
-template std::shared_ptr<ISceneNodeResource> load_renderable_dff<double>(
+template std::shared_ptr<ISceneNodeResource> load_renderable_dff<CompressedScenePos>(
     std::istream& istr,
     const std::string& name,
-    const LoadMeshConfig<double>& cfg,
+    const LoadMeshConfig<CompressedScenePos>& cfg,
     const SceneNodeResources& scene_node_resources,
     const DrawDistanceDb& dddb);
 
@@ -66,9 +67,9 @@ template std::shared_ptr<ISceneNodeResource> load_renderable_dff<float>(
     const SceneNodeResources& scene_node_resources,
     const DrawDistanceDb& dddb);
 
-template std::shared_ptr<ISceneNodeResource> load_renderable_dff<double>(
+template std::shared_ptr<ISceneNodeResource> load_renderable_dff<CompressedScenePos>(
     const std::string& filename,
-    const LoadMeshConfig<double>& cfg,
+    const LoadMeshConfig<CompressedScenePos>& cfg,
     const SceneNodeResources& scene_node_resources,
     const DrawDistanceDb& dddb);
 

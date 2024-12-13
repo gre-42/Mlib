@@ -43,17 +43,18 @@ void Mlib::replace_terrain_material(
                     }
                     cva->material.blend_mode = BlendMode::OFF;
                     for (auto& t : cva->triangles) {
+                        using I = funpack_t<T>;
                         auto uv = terrain_uv(
                             t(0).position,
                             t(1).position,
                             t(2).position,
-                            (T)scale,
-                            (T)uv_scale,
-                            (T)uv_period,
+                            (I)scale,
+                            (I)uv_scale,
+                            (I)uv_period,
                             up_axis);
-                        t(0).uv = uv(0);
-                        t(1).uv = uv(1);
-                        t(2).uv = uv(2);
+                        t(0).uv = uv[0];
+                        t(1).uv = uv[1];
+                        t(2).uv = uv[2];
                     }
                 }
             };

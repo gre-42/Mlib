@@ -18,7 +18,7 @@ class DestructionFunctionsRemovalTokens;
 
 struct SupplyDepot {
     DanglingRef<SceneNode> node;
-    FixedArray<ScenePos, 3> center;
+    FixedArray<CompressedScenePos, 3> center;
     std::map<std::string, uint32_t> supplies;
     float cooldown;
     float time_since_last_visit;
@@ -36,17 +36,17 @@ public:
     void reset_cooldown();
     void handle_supply_depots(float dt);
     bool visit_supply_depots(
-        const FixedArray<ScenePos, 3> position,
+        const FixedArray<CompressedScenePos, 3> position,
         const std::function<bool(const SupplyDepot&)>& visitor) const;
     bool visit_supply_depots(
-        const FixedArray<ScenePos, 3> position,
+        const FixedArray<CompressedScenePos, 3> position,
         const std::function<bool(SupplyDepot&)>& visitor);
     virtual void add_supply_depot(
         DanglingRef<SceneNode> scene_node,
         const std::map<std::string, uint32_t>& supplies,
         float cooldown) override;
 private:
-    Bvh<ScenePos, 3, SupplyDepot> bvh_;
+    Bvh<CompressedScenePos, 3, SupplyDepot> bvh_;
     AdvanceTimes& advance_times_;
     Players& players_;
     const PhysicsEngineConfig& cfg_;

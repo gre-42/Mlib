@@ -19,8 +19,8 @@ void Mlib::Sfm::draw_epilines_from_epipole(
         for (size_t c = 0; c < bmp.shape(1); c+=20) {
             // Array<float> n = (F, i2a(ArrayShape{r, c}));
             bmp.draw_infinite_line(
-                Array<float>{r + 0.5f, c + 0.5f},
-                Array<float>{epipole(id1), epipole(id0)},
+                FixedArray<float, 2>{r + 0.5f, c + 0.5f},
+                FixedArray<float, 2>{epipole(id1), epipole(id0)},
                 0,
                 color);
         }
@@ -41,8 +41,8 @@ void Mlib::Sfm::draw_epilines_from_F(
             }
             for (float s = -1; s <= 1; s += 2) {
                 bmp.draw_infinite_line(
-                    a2fi(ed.center1).to_array(),
-                    a2fi(ed.center1 + s * ed.v1).to_array(),
+                    a2fi(ed.center1),
+                    a2fi(ed.center1 + s * ed.v1),
                     0,
                     color);
                 // bmp.draw_fill_rect(
@@ -68,8 +68,8 @@ void Mlib::Sfm::draw_inverse_epilines_from_F(
             }
             for (float s = -1; s <= 1; s += 2) {
                 bmp.draw_infinite_line(
-                    a2fi(ied.center0).to_array(),
-                    a2fi(ied.center0 + s * ied.v0).to_array(),
+                    a2fi(ied.center0),
+                    a2fi(ied.center0 + s * ied.v0),
                     0,
                     color);
             }

@@ -1505,7 +1505,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
-    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles,
+    const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& dtriangles,
     Vertices&& vertices,
     std::unique_ptr<Instances>&& instances,
     std::weak_ptr<ColoredVertexArrayResource> vertex_data)
@@ -1529,18 +1529,18 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     std::weak_ptr<ColoredVertexArrayResource> vertex_data)
     : ColoredVertexArrayResource(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>{striangles},
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{},
         std::move(vertices),
         std::move(instances),
         std::move(vertex_data))
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
-    const std::shared_ptr<ColoredVertexArray<double>>& dtriangles,
+    const std::shared_ptr<ColoredVertexArray<CompressedScenePos>>& dtriangles,
     std::unique_ptr<Instances>&& instances)
     : ColoredVertexArrayResource(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>{},
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>{dtriangles},
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{dtriangles},
         Vertices{},
         std::move(instances),
         std::weak_ptr<ColoredVertexArrayResource>())
@@ -1582,17 +1582,17 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<Ani
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles)
-    : ColoredVertexArrayResource{ striangles, std::list<std::shared_ptr<ColoredVertexArray<double>>>{} }
+    : ColoredVertexArrayResource{ striangles, std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{} }
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
-    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles)
+    const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& dtriangles)
     : ColoredVertexArrayResource{ std::list<std::shared_ptr<ColoredVertexArray<float>>>{}, dtriangles }
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
-    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles)
+    const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& dtriangles)
     : ColoredVertexArrayResource(
         striangles,
         dtriangles,
@@ -1605,14 +1605,14 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<float>>& striangles)
     : ColoredVertexArrayResource(
         { striangles },
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{},
         Vertices{},
         nullptr,
         std::weak_ptr<ColoredVertexArrayResource>())
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
-    const std::shared_ptr<ColoredVertexArray<double>>& dtriangles)
+    const std::shared_ptr<ColoredVertexArray<CompressedScenePos>>& dtriangles)
     : ColoredVertexArrayResource(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>{},
         { dtriangles },
@@ -1696,13 +1696,13 @@ void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const Fi
             for (const auto& l : r) {
                 t->lines.push_back({
                     ColoredVertex<TPos>{
-                        l(0),
-                        {1.f, 1.f, 1.f},
+                        l[0],
+                        Colors::WHITE,
                         {0.f, 0.f}
                     },
                     ColoredVertex<TPos>{
-                        l(1),
-                        {1.f, 1.f, 1.f},
+                        l[1],
+                        Colors::WHITE,
                         {0.f, 1.f}
                     }
                 });
@@ -1725,14 +1725,14 @@ void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, 
         cvas.front()->lines.push_back({
             ColoredVertex<TPos>{
                 from,
-                {1.f, 1.f, 1.f},
+                Colors::WHITE,
                 {0.f, 0.f},
                 fixed_zeros<float, 3>(),
                 fixed_zeros<float, 3>(),
             },
             ColoredVertex<TPos>{
                 to,
-                {1.f, 1.f, 1.f},
+                Colors::WHITE,
                 {0.f, 1.f},
                 fixed_zeros<float, 3>(),
                 fixed_zeros<float, 3>(),
@@ -1758,7 +1758,7 @@ std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_grind_l
 
 std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_contour_edges() const {
     std::list<std::shared_ptr<ColoredVertexArray<float>>> dest_scvas;
-    std::list<std::shared_ptr<ColoredVertexArray<double>>> dest_dcvas;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dest_dcvas;
     for (auto& t : triangles_res_->scvas) {
         dest_scvas.push_back(
             t->generate_contour_edges());
@@ -2266,7 +2266,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
     CHK(glEnableVertexAttribArray(attr_ids.idx_position));
     CHK(glVertexAttribPointer(attr_ids.idx_position, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->position));
     CHK(glEnableVertexAttribArray(attr_ids.idx_color));
-    CHK(glVertexAttribPointer(attr_ids.idx_color, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->color));
+    CHK(glVertexAttribPointer(attr_ids.idx_color, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ColoredVertex<float>), &cv->color));
     CHK(glEnableVertexAttribArray(attr_ids.idx_uv_0));
     CHK(glVertexAttribPointer(attr_ids.idx_uv_0, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.

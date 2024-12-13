@@ -22,7 +22,7 @@ void Mlib::load_racing_line_bvh(
     const TransformationMatrix<double, double, 2>& normalization_matrix,
     RacingLineBvh& racing_line_bvh)
 {
-    auto mat = Array<double>::load_txt_2d(filename, ArrayShape{0, 6});
+    auto mat = Array<double>::load_txt_2d(filename, ArrayShape{ 0, 6 });
     if (mat.shape(1) != 6) {
         THROW_OR_ABORT("File \"" + filename + "\" does not have 6 columns");
     }
@@ -37,9 +37,10 @@ void Mlib::load_racing_line_bvh(
         float c_idle = std::max(0.f, 1.f - c_drive - c_break);
         racing_line_bvh.insert(
             RacingLineSegment{
-                .racing_line_segment = FixedArray<double, 2, 2>{
-                    normalization_matrix.transform(FixedArray<double, 2>{ mat(r - 1, LAT), mat(r - 1, LON) }),
-                    normalization_matrix.transform(FixedArray<double, 2>{ mat(r, LAT), mat(r, LON) })},
+                .racing_line_segment = FixedArray<ScenePos, 2, 2>{
+                    normalization_matrix.transform(FixedArray<ScenePos, 2>{ mat(r - 1, LAT), mat(r - 1, LON) }),
+                    normalization_matrix.transform(FixedArray<ScenePos, 2>{ mat(r, LAT), mat(r, LON) })}
+                    .casted<CompressedScenePos>(),
                 .color = FixedArray<float, 3>{c_break, c_idle, c_drive}});
     }
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <memory>
 #include <string>
@@ -16,8 +17,8 @@ template <class TPos>
 class TriangleList;
 
 void draw_boundary_barriers(
-    std::list<std::shared_ptr<TriangleList<double>>>& tls,
-    const std::list<FixedArray<ColoredVertex<double>, 3>>& inner_triangles,
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
+    const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& inner_triangles,
     const Material& material,
     const Morphology& morphology,
     float scale,

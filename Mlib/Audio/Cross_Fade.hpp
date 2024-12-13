@@ -15,7 +15,7 @@ class AudioBuffer;
 template <class TPosition>
 struct AudioSourceState;
 
-using Gain = ScaledInteger<int32_t, 1, (1 << 13)>;
+using Gain = ScaledInteger<int32_t, (1 << 13)>;
 
 struct AudioSourceAndGain {
     const AudioBuffer* audio_buffer;

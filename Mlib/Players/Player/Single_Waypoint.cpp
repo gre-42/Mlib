@@ -35,7 +35,7 @@ void SingleWaypoint::set_target_velocity(float v) {
 void SingleWaypoint::set_waypoint_internal(const std::optional<WayPoint>& waypoint, size_t waypoint_id) {
     previous_waypoint_id_ = waypoint_id_;
     if (!waypoint.has_value()) {
-        waypoint_ = { { 4.f, 2.f, 42.f }, WayPointLocation::NONE };
+        waypoint_ = { { (CompressedScenePos)4.f, (CompressedScenePos)2.f, (CompressedScenePos)42.f }, WayPointLocation::NONE };
     }
     waypoint_ = waypoint;
     waypoint_id_ = waypoint_id;
@@ -68,10 +68,10 @@ void SingleWaypoint::move_to_waypoint(
 {
     if (getenv_default_bool("DRAW_WAYPOINT_HISTORY", false)) {
         if (waypoint_.has_value()) {
-            add_beacon(Beacon::create(waypoint_->position, "beacon"));
+            add_beacon(Beacon::create(funpack(waypoint_->position), "beacon"));
         }
         for (const auto& w : waypoint_history_) {
-            add_beacon(Beacon::create(w.position, "beacon"));
+            add_beacon(Beacon::create(funpack(w.position), "beacon"));
         }
     }
     player_->delete_node_mutex_.assert_this_thread_is_deleter_thread();
@@ -120,9 +120,9 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     if (ofstr.fail()) {
         THROW_OR_ABORT("Could not open \"" + filename + "\" for write");
     }
-    Svg<ScenePos> svg{ofstr, 600, 600};
-    std::vector<ScenePos> x;
-    std::vector<ScenePos> y;
+    Svg<ScenePos> svg{ ofstr, 600, 600 };
+    std::vector<CompressedScenePos> x;
+    std::vector<CompressedScenePos> y;
     x.resize(waypoint_history_.size());
     y.resize(waypoint_history_.size());
     size_t i = 0;

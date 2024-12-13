@@ -68,7 +68,7 @@ public:
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const;
     virtual void append_filtered_to_queue(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>& double_queue,
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue,
         const ColoredVertexArrayFilter& filter) const;
     virtual void append_sorted_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
@@ -88,14 +88,14 @@ public:
     virtual void extend_aabb(
         const TransformationMatrix<float, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
-        AxisAlignedBoundingBox<ScenePos, 3>& aabb) const;
-    virtual AxisAlignedBoundingBox<ScenePos, 3> aabb() const;
-    virtual BoundingSphere<ScenePos, 3> bounding_sphere() const;
+        AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const;
+    virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const;
+    virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const;
     template <class TBoundingPrimitive>
     TBoundingPrimitive bounding_primitive() const {
-        if constexpr (std::is_same_v<TBoundingPrimitive, AxisAlignedBoundingBox<ScenePos, 3>>) {
+        if constexpr (std::is_same_v<TBoundingPrimitive, AxisAlignedBoundingBox<CompressedScenePos, 3>>) {
             return aabb();
-        } else if constexpr (std::is_same_v<TBoundingPrimitive, BoundingSphere<ScenePos, 3>>) {
+        } else if constexpr (std::is_same_v<TBoundingPrimitive, BoundingSphere<CompressedScenePos, 3>>) {
             return bounding_sphere();
         } else {
             static_assert(sizeof(TBoundingPrimitive) == 0, "Unknown bounding primitive");

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <map>
 #include <set>
 
@@ -30,22 +31,22 @@ struct OsmRectangle2D {
      */
     static bool from_line(
         OsmRectangle2D& rect,
-        const FixedArray<double, 2>& aL,
-        const FixedArray<double, 2>& aR,
-        const FixedArray<double, 2>& b,
-        const FixedArray<double, 2>& c,
-        const FixedArray<double, 2>& dL,
-        const FixedArray<double, 2>& dR,
-        double width_aLb,
-        double width_aRb,
-        double width_bcL,
-        double width_bcR,
-        double width_cdL,
-        double width_cdR);
+        const FixedArray<CompressedScenePos, 2>& aL,
+        const FixedArray<CompressedScenePos, 2>& aR,
+        const FixedArray<CompressedScenePos, 2>& b,
+        const FixedArray<CompressedScenePos, 2>& c,
+        const FixedArray<CompressedScenePos, 2>& dL,
+        const FixedArray<CompressedScenePos, 2>& dR,
+        CompressedScenePos width_aLb,
+        CompressedScenePos width_aRb,
+        CompressedScenePos width_bcL,
+        CompressedScenePos width_bcR,
+        CompressedScenePos width_cdL,
+        CompressedScenePos width_cdR);
 
     void draw_z0(
-        TriangleList<double>& tl_road,
-        TriangleList<double>* tl_racing_line,
+        TriangleList<CompressedScenePos>& tl_road,
+        TriangleList<CompressedScenePos>* tl_racing_line,
         float uv0_sx,
         float uv1_sx,
         float uv0_dx,
@@ -55,9 +56,9 @@ struct OsmRectangle2D {
         bool flip_racing_line,
         const FixedArray<float, 3>& racing_line_color0,
         const FixedArray<float, 3>& racing_line_color1,
-        TriangleList<double>* tl_entrance,
-        std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
-        std::map<EntranceType, std::set<OrderableFixedArray<double, 2>>>& entrances,
+        TriangleList<CompressedScenePos>* tl_entrance,
+        std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding>& node_height_bindings,
+        std::map<EntranceType, std::set<OrderableFixedArray<CompressedScenePos, 2>>>& entrances,
         const std::string& b,
         const std::string& c,
         const FixedArray<float, 3>& color0,
@@ -76,8 +77,8 @@ struct OsmRectangle2D {
         RoadType road_type) const;
 
     void draw(
-        TriangleList<double>& tl,
-        TriangleList<double>* tl_racing_line,
+        TriangleList<CompressedScenePos>& tl,
+        TriangleList<CompressedScenePos>* tl_racing_line,
         float racing_line_uv0_sx,
         float racing_line_uv1_sx,
         float racing_line_uv0_dx,
@@ -87,21 +88,21 @@ struct OsmRectangle2D {
         bool flip_racing_line,
         const FixedArray<float, 3>& racing_line_color0,
         const FixedArray<float, 3>& racing_line_color1,
-        std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
+        std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding>& node_height_bindings,
         const std::string& b,
         const std::string& c,
         const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
         float scale,
         float width,
-        float height,
+        CompressedScenePos height,
         float uv_sx,
         float uv0_y,
         float uv1_y) const;
     
     void draw_z(
-        TriangleList<double>& tl,
-        double z0,
-        double z1,
+        TriangleList<CompressedScenePos>& tl,
+        CompressedScenePos z0,
+        CompressedScenePos z1,
         const FixedArray<float, 3>& c00 = {1.f, 0.f, 0.f},
         const FixedArray<float, 3>& c10 = {0.f, 1.f, 0.f},
         const FixedArray<float, 3>& c11 = {0.f, 0.f, 1.f},
@@ -111,26 +112,26 @@ struct OsmRectangle2D {
         const FixedArray<float, 2>& u11 = {1.f, 1.f},
         const FixedArray<float, 2>& u01 = {0.f, 1.f});
 
-    FixedArray<double, 2> p00_;
-    FixedArray<double, 2> p01_;
-    FixedArray<double, 2> p10_;
-    FixedArray<double, 2> p11_;
+    FixedArray<CompressedScenePos, 2> p00_;
+    FixedArray<CompressedScenePos, 2> p01_;
+    FixedArray<CompressedScenePos, 2> p10_;
+    FixedArray<CompressedScenePos, 2> p11_;
 };
 
 class WarpedSegment2D {
 public:
     explicit WarpedSegment2D(const OsmRectangle2D& r);
-    FixedArray<double, 2> warp_0(double x) const;
-    FixedArray<double, 2> warp_1(double x) const;
-    FixedArray<double, 3> warp_0(const FixedArray<double, 3>& p, double scale, double width, double height) const;
-    FixedArray<double, 3> warp_1(const FixedArray<double, 3>& p, double scale, double width, double height) const;
+    FixedArray<CompressedScenePos, 2> warp_0(double x) const;
+    FixedArray<CompressedScenePos, 2> warp_1(double x) const;
+    FixedArray<CompressedScenePos, 3> warp_0(const FixedArray<double, 3>& p, double scale, double width, CompressedScenePos height) const;
+    FixedArray<CompressedScenePos, 3> warp_1(const FixedArray<double, 3>& p, double scale, double width, CompressedScenePos height) const;
 private:
     const OsmRectangle2D& r_;
 };
 
 struct CurbedStreet {
-    explicit CurbedStreet(const OsmRectangle2D& r, double start, double stop);
-    FixedArray<FixedArray<double, 2>, 2, 2> s;
+    explicit CurbedStreet(const OsmRectangle2D& r, ScenePos start, ScenePos stop);
+    FixedArray<CompressedScenePos, 2, 2, 2> s;
 };
 
 }

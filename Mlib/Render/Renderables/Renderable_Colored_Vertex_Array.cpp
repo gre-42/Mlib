@@ -105,8 +105,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     : rcva_{ rcva }
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
     , secondary_rendering_resources_{ rendering_resources }
-    , aabb_{ AxisAlignedBoundingBox<ScenePos, 3>::empty() }
-    , bounding_sphere_(fixed_zeros<ScenePos, 3>(), 0.f)
+    , aabb_{ AxisAlignedBoundingBox<CompressedScenePos, 3>::empty() }
+    , bounding_sphere_(fixed_zeros<CompressedScenePos, 3>(), (CompressedScenePos)0.f)
 {
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
@@ -126,13 +126,13 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                         THROW_OR_ABORT("Instances and aggregate=off require single precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::ONCE) {
-                    if constexpr (std::is_same_v<TPos, ScenePos>) {
+                    if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
                         aggregate_once_.push_back(t);
                     } else {
                         THROW_OR_ABORT("Aggregate=once requires double precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
-                    if constexpr (std::is_same_v<TPos, ScenePos>) {
+                    if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
                         aggregate_sorted_continuously_.push_back(t);
                     } else {
                         THROW_OR_ABORT("Aggregate=sorted_continuously requires double precision (material: " + t->material.identifier() + ')');
@@ -176,8 +176,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     add_cvas(rcva->triangles_res_->dcvas);
 
     for (auto& cva : aggregate_off_) {
-        aabb_.extend(cva->aabb().casted<ScenePos>());
-        bounding_sphere_.extend(cva->bounding_sphere().casted<ScenePos>());
+        aabb_.extend(cva->aabb().casted<CompressedScenePos>());
+        bounding_sphere_.extend(cva->bounding_sphere().casted<CompressedScenePos>());
     }
     for (auto& cva : aggregate_once_) {
         aabb_.extend(cva->aabb());
@@ -1266,7 +1266,7 @@ int RenderableColoredVertexArray::continuous_blending_z_order() const {
 
 void RenderableColoredVertexArray::append_filtered_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
-    std::list<std::shared_ptr<ColoredVertexArray<double>>>& double_queue,
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue,
     const ColoredVertexArrayFilter& filter) const
 {
     for (const auto& e : aggregate_off_) {
@@ -1355,7 +1355,7 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
 void RenderableColoredVertexArray::extend_aabb(
     const TransformationMatrix<float, ScenePos, 3>& mv,
     ExternalRenderPassType render_pass,
-    AxisAlignedBoundingBox<ScenePos, 3>& aabb) const
+    AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const
 {
     auto extend = [&](auto& cvas){
         for (const auto& cva : cvas) {
@@ -1364,7 +1364,9 @@ void RenderableColoredVertexArray::extend_aabb(
             }
             for (const auto& t : cva->triangles) {
                 for (const auto& v : t.flat_iterable()) {
-                    aabb.extend(mv.transform(v.position.template casted<ScenePos>()));
+                    aabb.extend(
+                        mv.transform(v.position.template casted<ScenePos>())
+                        .casted<CompressedScenePos>());
                 }
             }
         }
@@ -1376,11 +1378,11 @@ void RenderableColoredVertexArray::extend_aabb(
     extend(instances_sorted_continuously_);
 }
 
-AxisAlignedBoundingBox<ScenePos, 3> RenderableColoredVertexArray::aabb() const {
+AxisAlignedBoundingBox<CompressedScenePos, 3> RenderableColoredVertexArray::aabb() const {
     return aabb_;
 }
 
-BoundingSphere<ScenePos, 3> RenderableColoredVertexArray::bounding_sphere() const {
+BoundingSphere<CompressedScenePos, 3> RenderableColoredVertexArray::bounding_sphere() const {
     return bounding_sphere_;
 }
 

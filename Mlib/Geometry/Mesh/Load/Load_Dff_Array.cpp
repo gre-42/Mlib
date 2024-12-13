@@ -45,6 +45,7 @@ DffArrays<TPosition> Mlib::load_dff(
     const DrawDistanceDb& dddb,
     FrameTransformation frame_transformation)
 {
+    using I = funpack_t<TPosition>;
     DffArrays<TPosition> result;
     auto clump = Mlib::Dff::read_dff(istr, IoVerbosity::SILENT);
     for (const auto& a : clump.atomics) {
@@ -54,17 +55,17 @@ DffArrays<TPosition> Mlib::load_dff(
         if (a.geometry->morph_targets.empty()) {
             THROW_OR_ABORT("Morph targets empty");
         }
-        auto trafo = a.frame->matrix.casted<float, TPosition>();
+        auto trafo = a.frame->matrix.casted<float, I>();
         for (uint32_t p = a.frame->parent; p != UINT32_MAX;) {
             if (p >= clump.frames.size()) {
                 THROW_OR_ABORT("Parent frame index out of bounds");
             }
             const auto& parent = clump.frames[p];
-            trafo = parent.matrix.casted<float, TPosition>() * trafo;
+            trafo = parent.matrix.casted<float, I>() * trafo;
             p = parent.parent;
         }
         if (any(frame_transformation & FrameTransformation::ZERO_POSITION)) {
-            trafo.t = 0.f;
+            trafo.t = (I)0.f;
         }
         if (any(frame_transformation & FrameTransformation::IDENTITY_ROTATION)) {
             trafo.R = fixed_identity_array<float, 3>();
@@ -149,15 +150,15 @@ DffArrays<TPosition> Mlib::load_dff(
             if ((uvs != nullptr) && any(v.v >= integral_cast<uint16_t>(uvs->size()))) {
                 THROW_OR_ABORT("Vertex ID too large");
             }
-            auto material_color = materials[v.matId].color.row_range<0, 3>().casted<float>() / 255.f;
+            auto material_color = materials[v.matId].color;
             if (normals.empty()) {
                 tls[v.matId].draw_triangle_wo_normals(
                     vertices[v.v(0)].template casted<TPosition>(),
                     vertices[v.v(1)].template casted<TPosition>(),
                     vertices[v.v(2)].template casted<TPosition>(),
-                    colors.empty() ? material_color : material_color * (colors[v.v(0)].template row_range<0, 3>().template casted<float>() / 255.f),
-                    colors.empty() ? material_color : material_color * (colors[v.v(1)].template row_range<0, 3>().template casted<float>() / 255.f),
-                    colors.empty() ? material_color : material_color * (colors[v.v(2)].template row_range<0, 3>().template casted<float>() / 255.f),
+                    colors.empty() ? material_color : Colors::multiply(material_color, colors[v.v(0)]),
+                    colors.empty() ? material_color : Colors::multiply(material_color, colors[v.v(1)]),
+                    colors.empty() ? material_color : Colors::multiply(material_color, colors[v.v(2)]),
                     (uvs == nullptr) ? fixed_zeros<float, 2>() : nan_to_num((*uvs)[v.v(0)].base(), 0.f),
                     (uvs == nullptr) ? fixed_zeros<float, 2>() : nan_to_num((*uvs)[v.v(1)].base(), 0.f),
                     (uvs == nullptr) ? fixed_zeros<float, 2>() : nan_to_num((*uvs)[v.v(2)].base(), 0.f),
@@ -174,9 +175,9 @@ DffArrays<TPosition> Mlib::load_dff(
                     normals[v.v(0)],
                     normals[v.v(1)],
                     normals[v.v(2)],
-                    colors.empty() ? material_color : material_color * (colors[v.v(0)].template row_range<0, 3>().template casted<float>() / 255.f),
-                    colors.empty() ? material_color : material_color * (colors[v.v(1)].template row_range<0, 3>().template casted<float>() / 255.f),
-                    colors.empty() ? material_color : material_color * (colors[v.v(2)].template row_range<0, 3>().template casted<float>() / 255.f),
+                    colors.empty() ? material_color : Colors::multiply(material_color, colors[v.v(0)]),
+                    colors.empty() ? material_color : Colors::multiply(material_color, colors[v.v(1)]),
+                    colors.empty() ? material_color : Colors::multiply(material_color, colors[v.v(2)]),
                     (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(0)].base(),
                     (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(1)].base(),
                     (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(2)].base(),
@@ -207,9 +208,9 @@ template DffArrays<float> load_dff<float>(
     const DrawDistanceDb& dddb,
     FrameTransformation frame_transformation);
 
-template DffArrays<double> load_dff<double>(
+template DffArrays<CompressedScenePos> load_dff<CompressedScenePos>(
     const std::string& filename,
-    const LoadMeshConfig<double>& cfg,
+    const LoadMeshConfig<CompressedScenePos>& cfg,
     const DrawDistanceDb& dddb,
     FrameTransformation frame_transformation);
 

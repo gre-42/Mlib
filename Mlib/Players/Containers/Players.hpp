@@ -35,7 +35,7 @@ class Players {
     Players(const Players&) = delete;
     Players& operator = (const Players&) = delete;
 public:
-    using WaypointAndFlags = PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>;
+    using WaypointAndFlags = PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>;
 
     explicit Players(
         size_t max_tracks,

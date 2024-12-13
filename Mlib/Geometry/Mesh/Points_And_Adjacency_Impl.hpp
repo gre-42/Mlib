@@ -20,7 +20,7 @@ template <class TPoint>
 void PointsAndAdjacency<TPoint>::update_adjacency() {
     for (auto&& [c, col] : enumerate(adjacency.columns())) {
         for (auto& [r, value] : col) {
-            value = std::sqrt(sum(squared(points.at(c) - points.at(r))));
+            value = (TData)std::sqrt(sum(squared(points.at(c) - points.at(r))));
         }
     }
 }
@@ -28,17 +28,17 @@ void PointsAndAdjacency<TPoint>::update_adjacency() {
 template <class TPoint>
 void PointsAndAdjacency<TPoint>::update_adjacency_diagonal() {
     for (auto&& [c, col] : enumerate(adjacency.columns())) {
-        col[c] = 0;
+        col[c] = (TData)0.f;
     }
 }
 
 template <class TPoint>
 void PointsAndAdjacency<TPoint>::transform(const TransformationMatrix<float, TData, tlength>& m) {
-    adjacency *= (TData)m.get_scale();
+    adjacency *= m.get_scale();
     for (auto& p : points) {
-        using PP = FixedArray<typename TPoint::value_type, TPoint::length()>;
+        using PP = FixedArray<TData, TPoint::length()>;
         PP& pp = p;
-        pp = m.transform(pp);
+        pp = m.transform(funpack(pp)).casted<TData>();
     }
 }
 
@@ -75,14 +75,14 @@ void PointsAndAdjacency<TPoint>::subdivide(
                             : std::tuple<size_t, size_t, size_t>{c, r, intermediate_points.size() - i - 1};
                         auto it = new_point_ids.insert({key, points.size() + new_points.size()});
                         size_t new_id = it.first->second;
-                        assert_true(new_columns[old_id].insert({new_id, std::sqrt(sum(squared(pn - old_point)))}).second);
+                        assert_true(new_columns[old_id].insert({new_id, (TData)std::sqrt(sum(squared(pn - old_point)))}).second);
                         if (it.second) {
                             new_points.push_back(pn);
                         }
                         old_id = new_id;
                         old_point = pn;
                     }
-                    assert_true(new_columns[old_id].insert({r, std::sqrt(sum(squared(points.at(r) - old_point)))}).second);
+                    assert_true(new_columns[old_id].insert({r, (TData)std::sqrt(sum(squared(points.at(r) - old_point)))}).second);
                 } else {
                     ++row;
                 }

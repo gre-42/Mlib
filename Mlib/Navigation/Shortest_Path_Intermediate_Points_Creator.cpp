@@ -52,22 +52,22 @@ UUVector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operator (
     }
 }
 
-UUVector<FixedArray<double, 3>> ShortestPathIntermediatePointsCreator::operator () (
-    const FixedArray<double, 3>& p0,
-    const FixedArray<double, 3>& p1,
-    const double& distance) const
+UUVector<FixedArray<CompressedScenePos, 3>> ShortestPathIntermediatePointsCreator::operator () (
+    const FixedArray<CompressedScenePos, 3>& p0,
+    const FixedArray<CompressedScenePos, 3>& p1,
+    const CompressedScenePos& distance) const
 {
     try {
         auto sresult = (*this)(p0.casted<float>(), p1.casted<float>(), (float)distance);
-        UUVector<FixedArray<double, 3>> result;
+        UUVector<FixedArray<CompressedScenePos, 3>> result;
         result.reserve(sresult.size());
         for (const auto& v : sresult) {
-            result.push_back(v.casted<double>());
+            result.push_back(v.casted<CompressedScenePos>());
         }
         return result;
     } catch (const EdgeException<float>& e) {
-        THROW_OR_ABORT2((EdgeException<double>{e.a.casted<double>(), e.b.casted<double>(), e.what()}));
+        THROW_OR_ABORT2((EdgeException<CompressedScenePos>{e.a.casted<CompressedScenePos>(), e.b.casted<CompressedScenePos>(), e.what()}));
     } catch (const PointException<float, 3>& e) {
-        THROW_OR_ABORT2((PointException<double, 3>{e.point.casted<double>(), e.what()}));
+        THROW_OR_ABORT2((PointException<CompressedScenePos, 3>{e.point.casted<CompressedScenePos>(), e.what()}));
     }
 }

@@ -134,7 +134,7 @@ void add_instantiables(
                     case ColorSemantic::UNUSED:
                         for (auto& t : resource.triangles) {
                             for (auto& v : t.flat_iterable()) {
-                                v.color = 1.f;
+                                v.color = 255;
                             }
                         }
                         resource.alpha.clear();
@@ -188,11 +188,11 @@ struct DataBlocks {
             vertices.resize(
                 element_count,
                 ColoredVertex<TPos>(
-                    fixed_nans<TPos, 3>(),          // position
-                    fixed_ones<float, 3>(),         // color
-                    fixed_zeros<float, 2>(),        // uv
-                    fixed_zeros<float, 3>(),        // normal
-                    fixed_zeros<float, 3>()));      // tangent
+                    fixed_full<TPos, 3>((TPos)-42.43),  // position
+                    fixed_full<uint8_t, 4>(255),        // color
+                    fixed_zeros<float, 2>(),            // uv
+                    fixed_zeros<float, 3>(),            // normal
+                    fixed_zeros<float, 3>()));          // tangent
         } else if (vertices.size() != element_count) {
             THROW_OR_ABORT("Element count mismatch");
         }
@@ -436,6 +436,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     const std::string& resource_prefix,
     IoVerbosity verbosity)
 {
+    using I = funpack_t<TResourcePos>;
+
     PssgArrays<TResourcePos, TInstancePos> result;
     UnorderedMap<std::string, ShaderGroup> shader_groups;
     model.root.for_each_node([&](const PssgNode& node){
@@ -988,12 +990,12 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 auto te = TriangleTangentErrorBehavior::WARN;
                 for (auto& t : cva.triangles) {
                     auto ta = triangle_tangent(
-                        t(0).position,
-                        t(1).position,
-                        t(2).position,
-                        t(0).uv.template casted<TResourcePos>(),
-                        t(1).uv.template casted<TResourcePos>(),
-                        t(2).uv.template casted<TResourcePos>(),
+                        funpack(t(0).position),
+                        funpack(t(1).position),
+                        funpack(t(2).position),
+                        t(0).uv.template casted<I>(),
+                        t(1).uv.template casted<I>(),
+                        t(2).uv.template casted<I>(),
                         te).template casted<float>();
                     for (auto& v : t.flat_iterable()) {
                         v.tangent = ta;
@@ -1063,34 +1065,30 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     return result;
 }
 
-namespace Mlib {
-
-template PssgArrays<float, float> load_pssg_arrays<float, float>(
+template PssgArrays<float, float> Mlib::load_pssg_arrays<float, float>(
     const PssgModel& model,
     const LoadMeshConfig<float>& cfg,
     IDdsResources* dds_resources,
     const std::string& resource_prefix,
     IoVerbosity verbosity);
 
-template PssgArrays<float, double> load_pssg_arrays<float, double>(
+template PssgArrays<float, double> Mlib::load_pssg_arrays<float, double>(
     const PssgModel& model,
     const LoadMeshConfig<float>& cfg,
     IDdsResources* dds_resources,
     const std::string& resource_prefix,
     IoVerbosity verbosity);
 
-template PssgArrays<double, float> load_pssg_arrays<double, float>(
+template PssgArrays<CompressedScenePos, float> Mlib::load_pssg_arrays<CompressedScenePos, float>(
     const PssgModel& model,
-    const LoadMeshConfig<double>& cfg,
+    const LoadMeshConfig<CompressedScenePos>& cfg,
     IDdsResources* dds_resources,
     const std::string& resource_prefix,
     IoVerbosity verbosity);
 
-template PssgArrays<double, double> load_pssg_arrays<double, double>(
+template PssgArrays<CompressedScenePos, double> Mlib::load_pssg_arrays<CompressedScenePos, double>(
     const PssgModel& model,
-    const LoadMeshConfig<double>& cfg,
+    const LoadMeshConfig<CompressedScenePos>& cfg,
     IDdsResources* dds_resources,
     const std::string& resource_prefix,
     IoVerbosity verbosity);
-
-}

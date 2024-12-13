@@ -30,14 +30,14 @@ public:
     ~BatchResourceInstantiator();
 
     void add_parsed_resource_name(
-        const FixedArray<ScenePos, 3>& p,
+        const FixedArray<CompressedScenePos, 3>& p,
         const ParsedResourceName& prn,
         float dyangle,
         float scale);
 
     void add_parsed_resource_name(
-        const FixedArray<ScenePos, 2>& p,
-        ScenePos height,
+        const FixedArray<CompressedScenePos, 2>& p,
+        CompressedScenePos height,
         const ParsedResourceName& prn,
         float dyangle,
         float scale);
@@ -55,13 +55,13 @@ public:
         const RootInstantiationOptions& options) const;
     
     void instantiate_hitboxes(
-        std::list<std::shared_ptr<ColoredVertexArray<ScenePos>>>& cvas,
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
         const SceneNodeResources& scene_node_resources) const;
         
-    void insert_into(std::list<FixedArray<ScenePos, 3>*>& positions);
-    void remove(std::set<const FixedArray<ScenePos, 3>*> vertices_to_delete);
+    void insert_into(std::list<FixedArray<CompressedScenePos, 3>*>& positions);
+    void remove(std::set<const FixedArray<CompressedScenePos, 3>*> vertices_to_delete);
 
-    std::list<FixedArray<ScenePos, 3>> hitbox_positions() const;
+    std::list<FixedArray<CompressedScenePos, 3>> hitbox_positions() const;
 
     template <class Archive>
     void serialize(Archive& archive) {

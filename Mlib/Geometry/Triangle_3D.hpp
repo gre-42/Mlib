@@ -18,14 +18,16 @@ struct ColoredVertex;
 template <class TPos>
 class Triangle3D {
 public:
+    using I = funpack_t<TPos>;
     explicit Triangle3D(const FixedArray<TPos, 3, 3>& vertices);
-    explicit Triangle3D(const FixedArray<ColoredVertex<TPos>, 3>& vertices);
+    template <class TPos2>
+    explicit Triangle3D(const FixedArray<ColoredVertex<TPos2>, 3>& vertices);
     template <class TPos2, class TPosTransform>
     Triangle3D(
         const FixedArray<ColoredVertex<TPos2>, 3>& vertices,
         const TransformationMatrix<float, TPosTransform, 3>& transformation);
     const FixedArray<TPos, 3, 3>& vertices() const;
-    ConvexPolygon3D<TPos, TPos, 3> polygon() const;
+    ConvexPolygon3D<I, TPos, 3> polygon() const;
     BoundingSphere<TPos, 3> bounding_sphere(std::minstd_rand& rng) const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
 private:

@@ -123,8 +123,8 @@ void draw_empty_rect(
 template<class TColor>
 void draw_line_ext(
     Array<TColor>& image,
-    const Array<float>& from,
-    const Array<float>& to,
+    const FixedArray<float, 2>& from,
+    const FixedArray<float, 2>& to,
     size_t thickness,
     const TColor& color,
     bool infinite,
@@ -132,15 +132,15 @@ void draw_line_ext(
 {
     assert(all(from.shape() == ArrayShape{2}));
     assert(all(to.shape() == ArrayShape{2}));
-    auto draw_point = [&image, &thickness](const Array<float>& p, const TColor& color){
-        FixedArray<size_t, 2> index{fi2i(p(0)), fi2i(p(1))};
+    auto draw_point = [&image, &thickness](const FixedArray<float, 2>& p, const TColor& color){
+        FixedArray<size_t, 2> index{ fi2i(p(0)), fi2i(p(1)) };
         if (any(index >= FixedArray<size_t, 2>{ image.shape(0), image.shape(1) })) {
             return false;
         }
         draw_fill_rect(image, index, thickness, color);
         return true;
     };
-    Array<float> v = to - from;
+    FixedArray<float, 2> v = to - from;
     float len = max(abs(v));
     if (std::abs(len) < 1e-12) {
         if (short_line_color == nullptr) {
@@ -150,8 +150,7 @@ void draw_line_ext(
         return;
     }
     v /= len;
-    Array<float> p;
-    p = from;
+    FixedArray<float, 2> p = from;
     for (size_t i = 0; infinite || i < (size_t)len; ++i) {
         if (!draw_point(p, color)) {
             break;

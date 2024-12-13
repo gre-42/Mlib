@@ -31,22 +31,22 @@ BinaryXResource::BinaryXResource(
 
     ColoredVertex<float> v00{ // min(x), min(y)
         {square(0, 0), square(0, 1), 0.f},
-        fixed_ones<float, 3>(),
+        Colors::WHITE,
         {0.f, 0.f},
         {0.f, 0.f, 1.f}};
     ColoredVertex<float> v01{ // min(x), max(y)
         {square(0, 0), square(1, 1), 0.f},
-        fixed_ones<float, 3>(),
+        Colors::WHITE,
         {0.f, 1.f},
         {0.f, 0.f, 1.f}};
     ColoredVertex<float> v10{ // max(x), min(y)
         {square(1, 0), square(0, 1), 0.f},
-        fixed_ones<float, 3>(),
+        Colors::WHITE,
         {1.f, 0.f},
         {0.f, 0.f, 1.f}};
     ColoredVertex<float> v11{ // max(x), max(y)
         {square(1, 0), square(1, 1), 0.f},
-        fixed_ones<float, 3>(),
+        Colors::WHITE,
         {1.f, 1.f},
         {0.f, 0.f, 1.f}};
 

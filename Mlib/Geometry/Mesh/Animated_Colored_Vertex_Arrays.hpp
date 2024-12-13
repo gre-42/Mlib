@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
@@ -27,7 +28,7 @@ struct AnimatedColoredVertexArrays {
     std::shared_ptr<Bone> skeleton;
     std::map<std::string, size_t> bone_indices;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
-    std::list<std::shared_ptr<ColoredVertexArray<double>>> dcvas;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas;
     template <class TPos>
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas();
     UUVector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(

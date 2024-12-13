@@ -18,27 +18,27 @@ AiWaypoint::AiWaypoint(
     , waypoint_history_{ waypoint_history }
 {}
 
-FixedArray<ScenePos, 3> AiWaypoint::interpolated_position(
-    const FixedArray<ScenePos, 3>& vehicle_position,
+FixedArray<CompressedScenePos, 3> AiWaypoint::interpolated_position(
+    const FixedArray<CompressedScenePos, 3>& vehicle_position,
     ScenePos radius_squared,
-    float dy) const
+    CompressedScenePos dy) const
 {
     if (!position_of_destination_.has_value()) {
         THROW_OR_ABORT("Position of desination is undefined");
     }
     auto& pod = position_of_destination_->position;
-    FixedArray<ScenePos, 3> dy3{ 0.f, dy, 0.f };
+    FixedArray<CompressedScenePos, 3> dy3{ (CompressedScenePos)0.f, dy, (CompressedScenePos)0.f };
     if ((waypoint_history_ == nullptr) ||
         waypoint_history_->empty())
     {
         return pod + dy3;
     }
-    RaySegment3D<ScenePos, ScenePos> rs(waypoint_history_->rbegin()->position, pod);
+    RaySegment3D<ScenePos, CompressedScenePos> rs(waypoint_history_->rbegin()->position, pod);
     ScenePos lambda;
     if (!ray_intersects_sphere(
-        rs.start,
-        rs.direction,
-        vehicle_position,
+        funpack(rs.start),
+        funpack(rs.direction),
+        funpack(vehicle_position),
         radius_squared,
         &lambda,
         (ScenePos*)nullptr))
@@ -46,7 +46,7 @@ FixedArray<ScenePos, 3> AiWaypoint::interpolated_position(
         return pod + dy3;
     } else {
         if ((lambda >= 0) && (lambda < rs.length)) {
-            return rs.start + rs.direction * lambda + dy3;
+            return rs.start + (rs.direction * lambda).casted<CompressedScenePos>() + dy3;
         } else {
             return pod + dy3;
         }
@@ -58,7 +58,7 @@ bool AiWaypoint::has_position_of_destination() const {
     return position_of_destination_.has_value();
 }
 
-FixedArray<ScenePos, 3> AiWaypoint::position_of_destination(float dy) const {
+FixedArray<CompressedScenePos, 3> AiWaypoint::position_of_destination(CompressedScenePos dy) const {
     if (!position_of_destination_.has_value()) {
         THROW_OR_ABORT("Position of desintation not defined");
     }

@@ -44,7 +44,7 @@ public:
         std::weak_ptr<ColoredVertexArrayResource> vertex_data);
     ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
-        const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles,
+        const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& dtriangles,
         Vertices&& vertices,
         std::unique_ptr<Instances>&& instances,
         std::weak_ptr<ColoredVertexArrayResource> vertex_data);
@@ -54,7 +54,7 @@ public:
         std::unique_ptr<Instances>&& instances,
         std::weak_ptr<ColoredVertexArrayResource> vertex_data);
     ColoredVertexArrayResource(
-        const std::shared_ptr<ColoredVertexArray<double>>& dtriangles,
+        const std::shared_ptr<ColoredVertexArray<CompressedScenePos>>& dtriangles,
         std::unique_ptr<Instances>&& instances);
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<float>>& striangles,
@@ -67,14 +67,14 @@ public:
     ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles);
     ColoredVertexArrayResource(
-        const std::list<std::shared_ptr<ColoredVertexArray<double>>>& striangles);
+        const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& striangles);
     ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
-        const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles);
+        const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& dtriangles);
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<float>>& striangles);
     ColoredVertexArrayResource(
-        const std::shared_ptr<ColoredVertexArray<double>>& striangles);
+        const std::shared_ptr<ColoredVertexArray<CompressedScenePos>>& striangles);
 
     ~ColoredVertexArrayResource();
 

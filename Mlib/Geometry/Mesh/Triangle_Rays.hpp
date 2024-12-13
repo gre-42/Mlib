@@ -9,18 +9,18 @@ template <class TPos>
 struct ColoredVertex;
 
 template <class TPos>
-UUVector<FixedArray<FixedArray<TPos, 3>, 2>> generate_triangle_face_rays(
+UUVector<FixedArray<TPos, 2, 3>> generate_triangle_face_rays(
     const UUVector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     size_t npoints,
     const FixedArray<TPos, 3>& lengths);
 
 template <class TPos>
-UUVector<FixedArray<FixedArray<TPos, 3>, 2>> generate_triangle_vertex_rays(
+UUVector<FixedArray<TPos, 2, 3>> generate_triangle_vertex_rays(
     const UUVector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     const FixedArray<TPos, 3>& lengths);
 
 template <class TPos>
-UUVector<FixedArray<FixedArray<TPos, 3>, 2>> generate_triangle_rays(
+UUVector<FixedArray<TPos, 2, 3>> generate_triangle_rays(
     const UUVector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     size_t npoints_face,
     const FixedArray<TPos, 3>& lengths);

@@ -41,7 +41,7 @@ enum class SmoothnessTarget;
 
 class ISceneNodeResource {
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>;
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>;
 
     ISceneNodeResource();
     virtual ~ISceneNodeResource();

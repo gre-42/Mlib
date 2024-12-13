@@ -24,45 +24,48 @@ void Mlib::add_street_steiner_points(
     if (steiner_point_distances_road.empty()) {
         return;
     }
-    Interp<double> interp{steiner_point_distances_road, steiner_point_distances_steiner, OutOfRangeBehavior::CLAMP};
+    Interp<double> interp{ steiner_point_distances_road, steiner_point_distances_steiner, OutOfRangeBehavior::CLAMP };
     // lerr() << "search_time " << bvh.search_time();
-    double dist0 = (*std::min_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale;
-    double dist1 = 0;
+    CompressedScenePos dist0 = (CompressedScenePos)((*std::min_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale);
+    CompressedScenePos dist1 = (CompressedScenePos)0.f;
     for (double v : steiner_point_distances_steiner) {
         if (v != INFINITY) {
-            dist1 = std::max(dist1, v * scale);
+            dist1 = std::max(dist1, (CompressedScenePos)(v * scale));
         }
     }
     size_t ix = 0;
-    FastNormalRandomNumberGenerator<double> rng2{0, 0.f, 1.2f};
-    for (double x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
+    FastNormalRandomNumberGenerator<double> rng2{ 0, 0.f, 1.2f };
+    for (CompressedScenePos x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
         size_t iy = 0;
-        for (double y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
-            FixedArray<double, 2> pt{x + rng2() * scale, y + rng2() * scale};
+        for (CompressedScenePos y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
+            FixedArray<CompressedScenePos, 2> pt{
+                x + (CompressedScenePos)(rng2() * scale),
+                y + (CompressedScenePos)(rng2() * scale) };
             // Check terrain region BVH
             {
-                double min_distance_allowed = min_dist_to_terrain_region * scale;
+                CompressedScenePos min_distance_allowed = (CompressedScenePos)(min_dist_to_terrain_region * scale);
                 FixedArray<double, 2> dir = uninitialized;
-                double min_distance;
-                terrain_region_contours_bvh.nearest_way(pt, min_distance_allowed, dir, min_distance);
-                if (min_distance < min_distance_allowed) {
+                CompressedScenePos min_distance;
+                if (terrain_region_contours_bvh.nearest_way(pt, min_distance_allowed, dir, min_distance) &&
+                    (min_distance < min_distance_allowed))
+                {
                     continue;
-                } 
+                }
             }
             // Check street BVH
-            double min_distance = ground_street_bvh.min_dist(pt, dist1);
-            if (min_distance <= 0) {
+            CompressedScenePos min_distance = ground_street_bvh.min_dist(pt, dist1).value_or(std::numeric_limits<CompressedScenePos>::max());
+            if ((min_distance <= (CompressedScenePos)0.f) ||
+                (min_distance == std::numeric_limits<CompressedScenePos>::max()))
+            {
                 continue;
             }
-            double dist = interp(min_distance / scale);
-            if (dist != INFINITY) {
-                size_t refinement = std::max<size_t>(1, (size_t)((dist * scale) / dist0));
-                bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
-                if (is_included) {
-                    steiner_points.push_back(SteinerPointInfo{
-                        .position = {pt(0), pt(1), 0.f},
-                        .type = SteinerPointType::STREET_NEIGHBOR});
-                }
+            double dist = interp(funpack(min_distance) / scale);
+            size_t refinement = std::max<size_t>(1, (size_t)((dist * scale) / funpack(dist0)));
+            bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
+            if (is_included) {
+                steiner_points.push_back(SteinerPointInfo{
+                    .position = {pt(0), pt(1), (CompressedScenePos)0.f},
+                    .type = SteinerPointType::STREET_NEIGHBOR });
             }
             ++iy;
         }

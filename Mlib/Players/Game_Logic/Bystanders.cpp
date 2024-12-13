@@ -51,7 +51,9 @@ bool Bystanders::spawn_for_vip(
     }
     bool success = false;
     spawn_.spawn_points_bvh_split_.at(current_bvh_)->visit(
-        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(vip_pos, cfg_.r_spawn_far),
+        AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
+            vip_pos.casted<CompressedScenePos>(),
+            cfg_.r_spawn_far),
         [&](const SpawnPoint* sp)
     {
         if ((sp->type == SpawnPointType::PARKING) == (spawner.has_player() && spawner.get_player()->has_way_points())) {
@@ -60,13 +62,13 @@ bool Bystanders::spawn_for_vip(
         if ((sp->location == WayPointLocation::SIDEWALK) != (spawner.has_player() && spawner.get_player()->is_pedestrian())) {
             return true;
         }
-        ScenePos dist2 = sum(squared(sp->position - vip_pos));
+        ScenePos dist2 = sum(squared(funpack(sp->position) - vip_pos));
         // Abort if too far away.
         if (dist2 > squared(cfg_.r_spawn_far)) {
             return true;
         }
         // Abort if behind car.
-        if (dot0d(sp->position - vip_pos, vip_z.casted<ScenePos>()) > 0) {
+        if (dot0d(funpack(sp->position) - vip_pos, vip_z.casted<ScenePos>()) > 0) {
             return true;
         }
         // Abort if another car is nearby.
@@ -74,7 +76,7 @@ bool Bystanders::spawn_for_vip(
             bool exists = false;
             for (const auto& [_, player2] : players_.players()) {
                 if (player2->has_scene_vehicle()) {
-                    if (sum(squared(sp->position - player2->scene_node()->position())) < squared(cfg_.r_neighbors)) {
+                    if (sum(squared(funpack(sp->position) - player2->scene_node()->position())) < squared(cfg_.r_neighbors)) {
                         exists = true;
                         break;
                     }
@@ -85,9 +87,9 @@ bool Bystanders::spawn_for_vip(
             }
         }
         bool spotted = vip_->can_see(
-            sp->position,
+            funpack(sp->position),
             cfg_.only_terrain,
-            cfg_.can_see_y_offset);
+            funpack(cfg_.can_see_y_offset));
         if (dist2 < squared(cfg_.r_spawn_near)) {
             // The spawn point is near the VIP.
 
@@ -97,9 +99,9 @@ bool Bystanders::spawn_for_vip(
             }
             // Abort if not visible after x seconds.
             if (!vip_->can_see(
-                sp->position,
+                funpack(sp->position),
                 cfg_.only_terrain,
-                cfg_.can_see_y_offset,
+                funpack(cfg_.can_see_y_offset),
                 cfg_.visible_after_spawn_time))
             {
                 return true;
@@ -147,7 +149,7 @@ bool Bystanders::delete_for_vip(
             if (!vip_->can_see(
                 *vehicle,
                 cfg_.only_terrain,
-                cfg_.can_see_y_offset))
+                funpack(cfg_.can_see_y_offset)))
             {
                 ++ndelete_votes;
                 continue;
@@ -159,7 +161,7 @@ bool Bystanders::delete_for_vip(
             if (!vip_->can_see(
                 *vehicle,
                 cfg_.only_terrain,
-                cfg_.can_see_y_offset))
+                funpack(cfg_.can_see_y_offset)))
             {
                 ++ndelete_votes;
                 continue;

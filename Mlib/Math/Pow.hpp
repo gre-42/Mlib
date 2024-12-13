@@ -10,12 +10,12 @@ auto pow(const TScalarA& a, const TScalarB& b) {
     return std::pow(a, b);
 }
 
-template <class TInt, std::intmax_t numerator, std::intmax_t denominator>
-ScaledInteger<TInt, numerator, denominator> pow(
-    const ScaledInteger<TInt, numerator, denominator>& a,
-    const ScaledInteger<TInt, numerator, denominator>& b)
+template <class TInt, std::intmax_t denominator>
+ScaledInteger<TInt, denominator> pow(
+    const ScaledInteger<TInt, denominator>& a,
+    const ScaledInteger<TInt, denominator>& b)
 {
-    using I = intermediate_type<TInt>;
+    using I = intermediate_float<TInt>;
     return std::pow((I)a, (I)b);
 }
 
