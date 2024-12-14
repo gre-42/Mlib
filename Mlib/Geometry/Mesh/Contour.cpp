@@ -418,7 +418,3 @@ template
 std::list<std::list<FixedArray<CompressedScenePos, 3>>> Mlib::find_contours(
     const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles,
     ContourDetectionStrategy strategy);
-
-template
-std::unordered_set<std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>>
-    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>*>& triangles);
