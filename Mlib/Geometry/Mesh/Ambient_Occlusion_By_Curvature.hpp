@@ -33,7 +33,7 @@ void ambient_occlusion_by_curvature(
             PlaneNd<float, TPos, 3> plane{t(i).normal, t(i).position};
             std::pair<size_t, float>& curvature = curvatures[PV{OrderableFixedArray{t(i).position}, OrderableFixedArray{t(i).normal}}];
             for (size_t j = 1; j < 3; ++j) {
-                auto n = (TPos)dot0d(funpack(t((i + j) % 3).position), plane.normal.casted<I>()) + plane.intercept;
+                auto n = (TPos)dot0d(funpack(t((i + j) % 3).position), plane.normal.template casted<I>()) + plane.intercept;
                 auto ta = std::sqrt(sum(squared(t((i + j) % 3).position - t(i).position)) - squared(n));
                 ++curvature.first;
                 curvature.second += float((I)n / (I)ta);
@@ -43,11 +43,11 @@ void ambient_occlusion_by_curvature(
     for (FixedArray<ColoredVertex<TPos>, 3>* tp : cvl) {
         for (ColoredVertex<TPos>& v : tp->flat_iterable()) {
             const auto& c = curvatures.at(PV{OrderableFixedArray{v.position}, OrderableFixedArray{v.normal}});
-            v.color.row_range<0, 3>() = round(v.color.row_range<0, 3>().casted<float>() * minimum(
+            v.color.row_range<0, 3>() = round(v.color.row_range<0, 3>().template casted<float>() * minimum(
                 fixed_ones<float, 3>(),
                 maximum(
                     fixed_zeros<float, 3>(),
-                    1.f - strength * c.second / float(c.first)))).casted<uint8_t>();
+                    1.f - strength * c.second / float(c.first)))).template casted<uint8_t>();
         }
     }
 }
