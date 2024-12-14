@@ -54,9 +54,7 @@ void Mlib::add_street_steiner_points(
             }
             // Check street BVH
             CompressedScenePos min_distance = ground_street_bvh.min_dist(pt, dist1).value_or(std::numeric_limits<CompressedScenePos>::max());
-            if ((min_distance <= (CompressedScenePos)0.f) ||
-                (min_distance == std::numeric_limits<CompressedScenePos>::max()))
-            {
+            if (min_distance <= (CompressedScenePos)0.f) {
                 continue;
             }
             double dist = interp(funpack(min_distance) / scale);
