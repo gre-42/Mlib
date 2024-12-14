@@ -134,7 +134,7 @@ std::optional<BoundingSphere<TData, tndim>> circumscribed_sphere(
     if (R.size() == 3) {
         auto res = circumscribed_sphere(funpack(FixedArray<TData, 3, tndim>{*R[0], *R[1], *R[2]}), rng);
         if (res.has_value()) {
-            return res->casted<TData>();
+            return res->template casted<TData>();
         }
         return std::nullopt;
     }
@@ -142,7 +142,7 @@ std::optional<BoundingSphere<TData, tndim>> circumscribed_sphere(
         if (R.size() == 4) {
             auto res = circumscribed_sphere(funpack(FixedArray<TData, 4, 3>{*R[0], *R[1], *R[2], *R[3]}), rng);
             if (res.has_value()) {
-                return res->casted<TData>();
+                return res->template casted<TData>();
             }
             return std::nullopt;
         }
