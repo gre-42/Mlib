@@ -54,11 +54,6 @@ ExtendedImage::ExtendedImage(
     }
 }
 
-bool ExtendedImage::operator () (CompressedScenePos r, CompressedScenePos c, CompressedScenePos& value) const {
-    double dvalue;
-    bool res = bilinear_grayscale_interpolation((double)r + (double)extension_, (double)c + (double)extension_, extended_image_, dvalue);
-    if (res) {
-        value = (CompressedScenePos)dvalue;
-    }
-    return res;
+bool ExtendedImage::operator () (double r, double c, double& value) const {
+    return bilinear_grayscale_interpolation(r + extension_, c + extension_, extended_image_, value);
 }
