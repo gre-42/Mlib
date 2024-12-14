@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 #include <Mlib/Geometry/Mesh/Obj_Material.hpp>
 #include <Mlib/Geometry/Mesh/Save_Mtllib.hpp>
+#include <Mlib/Math/Funpack.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
@@ -27,9 +28,9 @@ void save_obj(
         THROW_OR_ABORT("OBJ filename does not have \".obj\" extension: " + filename);
     }
     std::ofstream ostr{ filename };
-    if constexpr (std::is_same_v<TPos, double>) {
+    if constexpr (std::is_same_v<funpack_t<TPos>, double>) {
         ostr.precision(15);
-    } else if constexpr (std::is_same_v<TPos, float>) {
+    } else if constexpr (std::is_same_v<funpack_t<TPos>, float>) {
         ostr.precision(7);
     } else {
         THROW_OR_ABORT("Unsupported floating point type");

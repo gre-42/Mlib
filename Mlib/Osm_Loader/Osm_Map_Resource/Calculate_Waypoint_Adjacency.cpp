@@ -177,7 +177,7 @@ void Mlib::calculate_waypoint_adjacency(
         waypoint_distance,
         idef };
     if (ssm != nullptr) {
-        std::map<OrderableFixedArray<float, 3>, dtPolyRef> poly_refs;
+        std::map<OrderableFixedArray<CompressedScenePos, 3>, dtPolyRef> poly_refs;
         for (auto&& [i, p] : enumerate(way_points.points)) {
             auto pm = dot1d(*to_meters, funpack(p.position));
             if (!grounded_way_points.contains(i)) {
@@ -188,18 +188,17 @@ void Mlib::calculate_waypoint_adjacency(
             if (!lp.has_value()) {
                 throw PointException<CompressedScenePos, 3>{ p.position, "Could not find closest point on navmesh" };
             }
-            if (!poly_refs.insert({ OrderableFixedArray{lp.value().position}, lp.value().polyRef }).second) {
+            if (!poly_refs.insert({ OrderableFixedArray{lp->position.casted<CompressedScenePos>()}, lp->polyRef }).second) {
                 // throw PointException<double, 3>{ p, "Found duplicate waypoint" };
                 lwarn() << "Found duplicate waypoint after projection onto navmesh";
             }
-            p.position = lp.value().position.casted<CompressedScenePos>();
+            p.position = lp->position.casted<CompressedScenePos>();
         }
         way_points.update_adjacency();
-        auto oitm = inv(*to_meters);
-        if (!oitm.has_value()) {
+        auto itm = inv(*to_meters);
+        if (!itm.has_value()) {
             THROW_OR_ABORT("Could not compute inverse to_meters mapping");
         }
-        const auto& itm = oitm.value();
         ShortestPathIntermediatePointsCreator spipc{ *ssm, poly_refs, (float)waypoint_distance };
         try {
             way_points.subdivide(
@@ -211,7 +210,7 @@ void Mlib::calculate_waypoint_adjacency(
                     {
                         return default_iipc(pR, pC, distance);
                     } else {
-                        auto positions = spipc(pR.position, pC.position, distance);
+                        auto positions = spipc(pR.position, pC.position);
                         std::vector<WayPoint> res;
                         res.reserve(positions.size());
                         for (const auto& p : positions) {
@@ -222,12 +221,12 @@ void Mlib::calculate_waypoint_adjacency(
                 },
                 SubdivisionType::ASYMMETRIC);
         } catch (const EdgeException<double>& e) {
-            throw EdgeException<double>{dot1d(itm, e.a), dot1d(itm, e.b), e.what()};
+            throw EdgeException<double>{dot1d(*itm, e.a), dot1d(*itm, e.b), e.what()};
         } catch (const PointException<double, 3>& e) {
-            throw PointException<double, 3>{dot1d(itm, e.point), e.what()};
+            throw PointException<double, 3>{dot1d(*itm, e.point), e.what()};
         }
         for (auto& p : way_points.points) {
-            p.position = dot1d(itm, funpack(p.position)).casted<CompressedScenePos>();
+            p.position = dot1d(*itm, funpack(p.position)).casted<CompressedScenePos>();
             if (!any(p.flags & WayPointLocation::AIRWAY)) {
                 if (!ground_bvh.height3d(p.position(2), p.position)) {
                     throw PointException<CompressedScenePos, 3>{ p.position, "Could not determine height of shortest-path waypoint" };

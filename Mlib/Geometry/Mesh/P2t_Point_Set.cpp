@@ -14,7 +14,7 @@ P2tPointSet::P2tPointSet(
         // Ignore result
         auto it = steiner_pts_.try_emplace(
             OrderableFixedArray<CompressedScenePos, 2>{p},
-            gen_point(p(0), p(1)));
+            gen_point(p));
         if (it.second) {
             coords_.add(it.first->second.get(), p);
         }
@@ -25,14 +25,19 @@ P2tPointSet::~P2tPointSet()
 {}
 
 std::unique_ptr<p2t::Point> P2tPointSet::gen_point(
-    CompressedScenePos x,
-    CompressedScenePos y) const
+    const FixedArray<CompressedScenePos, 2>& c) const
 {
-    return std::make_unique<p2t::Point>(funpack(x) * scale_, funpack(y) * scale_);
+    auto sc = funpack(c) * scale_;
+    auto res = std::make_unique<p2t::Point>(sc(0), sc(1));
+    auto rc = compute_coords(res.get());
+    if (any(rc != c)) {
+        THROW_OR_ABORT((std::stringstream() << "Cannot map point: " << c << " != " << rc).str());
+    }
+    return res;
 }
 
-p2t::Point* P2tPointSet::operator () (CompressedScenePos x, CompressedScenePos y) {
-    auto p = OrderableFixedArray<CompressedScenePos, 2>{ x, y };
+p2t::Point* P2tPointSet::operator () (const FixedArray<CompressedScenePos, 2>& c) {
+    auto p = OrderableFixedArray{ c };
     if (auto it = pts_.find(p); it != pts_.end()) {
         return it->second.get();
     }
@@ -42,10 +47,10 @@ p2t::Point* P2tPointSet::operator () (CompressedScenePos x, CompressedScenePos y
         steiner_pts_.erase(it);
         return pt;
     }
-    auto pt = gen_point(x, y);
+    auto pt = gen_point(c);
     p2t::Point* ppt = pt.get();
     pts_.add(p, std::move(pt));
-    coords_.add(ppt, x, y);
+    coords_.add(ppt, c);
     return ppt;
 }
 
@@ -58,6 +63,10 @@ std::vector<p2t::Point*> P2tPointSet::remaining_steiner_points() const {
     return result;
 }
 
-const FixedArray<CompressedScenePos, 2>& P2tPointSet::coords(const p2t::Point* p) const {
-    return coords_.get(p);
+FixedArray<CompressedScenePos, 2> P2tPointSet::compute_coords(const p2t::Point* p) const {
+    return { (CompressedScenePos)(p->x / scale_), (CompressedScenePos)(p->y / scale_) };
+}
+
+const FixedArray<CompressedScenePos, 2>* P2tPointSet::try_get_coords(const p2t::Point* p) const {
+    return coords_.try_get(p);
 }

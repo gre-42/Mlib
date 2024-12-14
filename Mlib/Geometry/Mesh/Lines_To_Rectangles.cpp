@@ -86,10 +86,10 @@ bool Mlib::lines_to_rectangles(
     n_cL *= funpack(width_cdL + width_bcL) / 2 / std::sqrt(sum(squared(n_cL))) / half_angle_cos(std::abs(dot0d(n_cdL, n_bc)));
     n_cR *= funpack(width_cdR + width_bcR) / 2 / std::sqrt(sum(squared(n_cR))) / half_angle_cos(std::abs(dot0d(n_cdR, n_bc)));
 
-    if ((sum(squared(n_bL)) > 9 * squared(width_bcL)) ||
-        (sum(squared(n_bR)) > 9 * squared(width_bcR)) ||
-        (sum(squared(n_cL)) > 9 * squared(width_bcL)) ||
-        (sum(squared(n_cR)) > 9 * squared(width_bcR)))
+    if ((sum(squared(n_bL)) > squared(20 * funpack(width_bcL))) ||
+        (sum(squared(n_bR)) > squared(20 * funpack(width_bcR))) ||
+        (sum(squared(n_cL)) > squared(20 * funpack(width_bcL))) ||
+        (sum(squared(n_cR)) > squared(20 * funpack(width_bcR))))
     {
         return false;
     }

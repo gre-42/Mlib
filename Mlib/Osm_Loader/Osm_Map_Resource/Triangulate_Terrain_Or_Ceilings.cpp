@@ -3,13 +3,14 @@
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
-#include <Mlib/Geometry/Mesh/Close_Neighbor_Detector.hpp>
+#include <Mlib/Geometry/Mesh/Cleanup/Close_Neighbor_Detector.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 #include <Mlib/Geometry/Mesh/P2t_Point_Set.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -210,14 +211,14 @@ void triangulate_entity_list(
     std::vector<p2t::Point*> final_bounding_contour;
     if (bounding_contour.empty()) {
         final_bounding_contour = {
-            points(bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width),
-            points(bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width),
-            points(bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width),
-            points(bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width) };
+            points({bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width}),
+            points({bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width}),
+            points({bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width}),
+            points({bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width}) };
     } else {
         final_bounding_contour.reserve(bounding_contour.size());
         for (const auto& p : bounding_contour) {
-            final_bounding_contour.push_back(points(p(0), p(1)));
+            final_bounding_contour.push_back(points(p));
         }
     }
     std::reverse(final_bounding_contour.begin(), final_bounding_contour.end());
@@ -232,8 +233,9 @@ void triangulate_entity_list(
 
     size_t ncontours = region_contours.size();
     std::map<EntityType, std::list<std::list<FixedArray<CompressedScenePos, 2>>>> hole_contours;
-    CloseNeighborDetector<CompressedScenePos, 2> close_neighbor_detector{{(CompressedScenePos)0.1, (CompressedScenePos)0.1}, 10};
+    CloseNeighborDetector<CompressedScenePos, 2> close_neighbor_detector{{(CompressedScenePos)10., (CompressedScenePos)10.}, 10};
     for (const auto& [e, t] : hole_triangles) {
+        // save_obj("/tmp/" + to_string(e) + ".obj", IndexedFaceSet<float, CompressedScenePos, size_t>{t}, nullptr);
         for (const auto& tt : t) {
             for (const auto& v : tt.flat_iterable()) {
                 if (close_neighbor_detector.contains_neighbor(
@@ -249,6 +251,19 @@ void triangulate_entity_list(
                     auto exception = PointException<CompressedScenePos, 2>{
                         {v.position(0), v.position(1)},
                         "Detected near-duplicate point"};
+                    THROW_OR_ABORT2(exception);
+                }
+            }
+            {
+                using Triangle = FixedArray<CompressedScenePos, 3, 3>;
+                auto tlc = triangle_largest_cosine(funpack(Triangle{
+                    tt(0).position,
+                    tt(1).position,
+                    tt(2).position}));
+                if (std::isnan(tlc) || (tlc > (1 - 1e-7f))) {
+                    auto exception = TriangleException<CompressedScenePos>{
+                        tt(0).position, tt(1).position, tt(2).position,
+                        "Detected bad triangle"};
                     THROW_OR_ABORT2(exception);
                 }
             }
@@ -283,7 +298,7 @@ void triangulate_entity_list(
         cnt.reserve(contour.size());
         // size_t i = 0;
         for (const auto& p : contour) {
-            cnt.push_back(points(p(0), p(1)));
+            cnt.push_back(points(p));
             // draw_node(triangles, p.casted<float>(), 0.1 * float(i++) / c.size());
         }
         check_contour(cnt);
@@ -347,20 +362,27 @@ void triangulate_entity_list(
     }
     auto draw_tris = [&](auto& tl, const auto& tris){
         for (const auto& t : tris) {
-            const auto& c0 = points.coords(t->GetPoint(0));
-            const auto& c1 = points.coords(t->GetPoint(1));
-            const auto& c2 = points.coords(t->GetPoint(2));
+            const auto* c0 = points.try_get_coords(t->GetPoint(0));
+            const auto* c1 = points.try_get_coords(t->GetPoint(1));
+            const auto* c2 = points.try_get_coords(t->GetPoint(2));
+            if ((c0 == nullptr) ||
+                (c1 == nullptr) ||
+                (c2 == nullptr))
+            {
+                lwarn() << "Received unknown point";
+                continue;
+            }
             auto uv = terrain_uv<CompressedScenePos, double>(
-                c0,
-                c1,
-                c2,
+                *c0,
+                *c1,
+                *c2,
                 scale,
                 uv_scale,
                 uv_period);
             tl->draw_triangle_wo_normals(
-                {c0(0), c0(1), z},
-                {c1(0), c1(1), z},
-                {c2(0), c2(1), z},
+                {(*c0)(0), (*c0)(1), z},
+                {(*c1)(0), (*c1)(1), z},
+                {(*c2)(0), (*c2)(1), z},
                 Colors::from_rgb(color),
                 Colors::from_rgb(color),
                 Colors::from_rgb(color),
