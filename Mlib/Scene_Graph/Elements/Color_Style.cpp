@@ -34,8 +34,14 @@ bool ColorStyle::matches(const VariableAndHash<std::string>& name) const {
     return matches_.get(name);
 }
 
+size_t ColorStyle::get_hash() const {
+    std::scoped_lock lock{ hash_mutex_ };
+    return hash_.get();
+}
+
 void ColorStyle::update_hash() {
-    hash.reset();
+    std::scoped_lock lock{ hash_mutex_ };
+    hash_.reset();
     compute_hash();
 }
 
@@ -54,6 +60,6 @@ ColorStyle& ColorStyle::compute_hash() {
     for (const auto& [k, v] : reflection_maps) {
         hasher.combine(k, v);
     }
-    hash = hasher;
+    hash_ = hasher;
     return *this;
 }

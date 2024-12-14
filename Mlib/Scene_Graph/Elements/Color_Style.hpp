@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Map/Threadsafe_Default_Map.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <optional>
 #include <unordered_map>
@@ -28,7 +29,9 @@ struct ColorStyle {
     };
     std::unordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>> reflection_maps;
     float reflection_strength = 1.f;
-    CachedHash hash;
+    CachedHash hash_;
+    mutable AtomicMutex hash_mutex_;
+    size_t get_hash() const;
     void insert(const ColorStyle& other);
     bool matches(const VariableAndHash<std::string>& name) const;
     void update_hash();
