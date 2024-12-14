@@ -844,10 +844,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.default_barrier_top = args.arguments.at<float>(KnownArgs::default_barrier_top) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_snap_building_height)) {
-            config.default_snap_building_height = args.arguments.at<bool>(KnownArgs::default_snap_building_height) * meters;
+            config.default_snap_building_height = args.arguments.at<bool>(KnownArgs::default_snap_building_height);
         }
         if (args.arguments.contains(KnownArgs::default_snap_barrier_height)) {
-            config.default_snap_barrier_height = args.arguments.at<bool>(KnownArgs::default_snap_barrier_height) * meters;
+            config.default_snap_barrier_height = args.arguments.at<bool>(KnownArgs::default_snap_barrier_height);
         }
         if (args.arguments.contains(KnownArgs::default_building_vertical_subdivision)) {
             config.default_building_vertical_subdivision = vertical_subdivision_from_string(args.arguments.at<std::string>(KnownArgs::default_building_vertical_subdivision));
