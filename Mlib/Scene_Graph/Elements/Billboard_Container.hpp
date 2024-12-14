@@ -137,7 +137,7 @@ public:
     bool visit_pairs(const auto& aabb, const auto& pyb_visitor, const auto& pb_visitor) const {
         for (const auto& d : pybs_) {
             auto ud = d + reference_point_;
-            if (aabb.intersects(ud.aabb())) {
+            if (intersects(aabb, ud.primitive())) {
                 if (!pyb_visitor(ud)) {
                     return false;
                 }
@@ -145,7 +145,7 @@ public:
         }
         for (const auto& d : pbs_) {
             auto ud = d + reference_point_;
-            if (aabb.intersects(ud.aabb())) {
+            if (intersects(aabb, ud.primitive())) {
                 if (!pb_visitor(ud)) {
                     return false;
                 }
