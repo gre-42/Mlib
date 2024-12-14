@@ -321,6 +321,56 @@ inline bool intersects(const AxisAlignedBoundingBox<TData, tndim>& a, const Axis
 }
 
 template <class TData, size_t tndim>
+inline bool intersects(const AxisAlignedBoundingBox<TData, tndim>& a, const FixedArray<TData, tndim>& b) {
+    return a.contains(b);
+}
+
+template <class TData, size_t tndim>
+inline auto aabb(const FixedArray<TData, tndim>& p)
+{
+    return AxisAlignedBoundingBox<TData, tndim>::from_point(p);
+}
+
+template <class TPosition, size_t tndim>
+inline const auto& aabb(const AxisAlignedBoundingBox<TPosition, tndim>& a)
+{
+    return a;
+}
+
+template <class TData, size_t tndim>
+inline auto diagonal_vector(const FixedArray<TData, tndim>& p)
+{
+    return fixed_zeros<TData, tndim>();
+}
+
+template <class TPosition, size_t tndim>
+inline auto diagonal_vector(const AxisAlignedBoundingBox<TPosition, tndim>& a)
+{
+    return a.size();
+}
+
+template <class TData, size_t tndim>
+FixedArray<TData, tndim> center(const FixedArray<TData, tndim>& p) {
+    return p;
+}
+
+template <class TPosition, size_t tndim>
+FixedArray<TPosition, tndim> center(const AxisAlignedBoundingBox<TPosition, tndim>& aabb) {
+    return aabb.center();
+}
+
+template <class TData, size_t tndim>
+void print(const FixedArray<TData, tndim>& p, std::ostream& ostr, size_t rec = 0) {
+    std::string indent(rec, ' ');
+    ostr << indent << p;
+}
+
+template <class TPosition, size_t tndim>
+void print(const AxisAlignedBoundingBox<TPosition, tndim>& aabb, std::ostream& ostr, size_t rec = 0) {
+    aabb.print(ostr, rec);
+}
+
+template <class TData, size_t tndim>
 std::ostream& operator << (std::ostream& ostr, const AxisAlignedBoundingBox<TData, tndim>& aabb) {
     aabb.print(ostr);
     return ostr;

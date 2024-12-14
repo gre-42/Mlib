@@ -35,8 +35,8 @@ Array<FixedArray<float, 3, 3>> Mlib::triangulate_3d(
 using namespace Mlib;
 
 struct Pose : public TransformationMatrix<float, float, 3> {
-    const auto aabb() const {
-        return AxisAlignedBoundingBox<float, 3>::from_point(t);
+    const auto& primitive() const {
+        return t;
     }
     const auto& payload() const {
         return *this;

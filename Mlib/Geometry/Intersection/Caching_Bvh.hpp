@@ -45,7 +45,7 @@ public:
 				return e;
 			});
 		for (const auto* d : el.data) {
-			if (small_aabb.intersects(d->aabb())) {
+			if (intersects(small_aabb, d->primitive())) {
 				if (!visitor(d->payload())) {
 					return false;
 				}

@@ -63,19 +63,19 @@ public:
         using F = funpack_t<TPosition>;
         auto iscale = (uint32_t)1 << (level_ - 1);
         auto max_size_children = max_size_ * integral_to_float<F>(iscale);
-        if (any(entry.aabb().size() > max_size_children)) {
+        if (any(diagonal_vector(entry.primitive()) > max_size_children)) {
             return data_.add(entry);
         }
         for (auto& c : children_) {
             AxisAlignedBoundingBox<TPosition, tndim> bb = c.first;
-            bb.extend(entry.aabb());
+            bb.extend(entry.primitive());
             // if (all(bb.size() <= TPosition(level_) * max_size_)) {
             if (all(bb.size() <= max_size_children)) {
                 c.first = bb;
                 return c.second.insert(entry);
             }
         }
-        return children_.emplace_back(entry.aabb(), GenericBvh{max_size_, level_ - 1}).second.insert(entry);
+        return children_.emplace_back(Mlib::aabb(entry.primitive()), GenericBvh{max_size_, level_ - 1}).second.insert(entry);
     }
 
     void clear() {
@@ -132,7 +132,7 @@ public:
     AxisAlignedBoundingBox<TPosition, tndim> aabb() const {
         auto result = AxisAlignedBoundingBox<TPosition, tndim>::empty();
         data_.visit_all([&](const auto& d, const auto&... x){
-            result.extend(d.aabb());
+            result.extend(d.primitive());
             return true;
         });
         for (const auto& c : children_) {
@@ -370,7 +370,7 @@ public:
             }
         };
         data_.visit_all([&](const auto& d, const auto&... x){
-            plot_aabb(d.aabb());
+            plot_aabb(Mlib::aabb(d.primitive()));
             return true;
         });
         for (const auto& child : children_) {
@@ -423,7 +423,7 @@ public:
         : aabb_{ aabb }
         , payload_{ payload }
     {}
-    inline const auto& aabb() const {
+    inline const auto& primitive() const {
         return aabb_;
     }
     inline const auto& payload() const {
@@ -447,8 +447,8 @@ public:
     PointWithoutPayload(const FixedArray<TPosition, tndim>& point)
         : point_{ point }
     {}
-    inline auto aabb() const {
-        return AxisAlignedBoundingBox<TPosition, tndim>::from_point(point_);
+    inline auto primitive() const {
+        return point_;
     }
     inline const auto& payload() const {
         return point_;
@@ -468,8 +468,8 @@ public:
         const TPayload& payload)
         : point_{ point }
     {}
-    inline auto aabb() const {
-        return AxisAlignedBoundingBox<TPosition, tndim>::from_point(point_);
+    inline const auto& primitive() const {
+        return point_;
     }
     inline const auto& payload() const {
         return payload_;
@@ -496,7 +496,7 @@ public:
     }
     bool visit(const auto& aabb, const auto& visitor) const {
         for (const auto& d : data_) {
-            if (intersects(aabb, d.aabb())) {
+            if (intersects(aabb, d.primitive())) {
                 if (!visitor(d.payload())) {
                     return false;
                 }
@@ -506,7 +506,7 @@ public:
     }
     bool visit_pairs(const auto& aabb, const auto& visitor) const {
         for (const auto& d : data_) {
-            if (intersects(aabb, d.aabb())) {
+            if (intersects(aabb, d.primitive())) {
                 if (!visitor(d)) {
                     return false;
                 }
@@ -524,7 +524,7 @@ public:
     }
     void print(std::ostream& ostr, size_t rec = 0) const {
         for (const auto& d : data_) {
-            d.aabb().print(ostr, rec + 1);
+            Mlib::print(d.primitive(), ostr, rec + 1);
             ostr << '\n';
         }
     }
@@ -546,7 +546,7 @@ class CompressedPayloadContainer {
 public:
     void add(const auto& d) {
         if (empty()) {
-            reference_point_ = d.aabb().center();
+            reference_point_ = center(d.primitive());
         }
         auto cd = compress(d, reference_point_);
         auto ucd = decompress(cd, reference_point_);
@@ -567,14 +567,14 @@ public:
     bool visit(const auto& aabb, const auto& visitor) const {
         for (const auto& d : small_data_) {
             auto ud = decompress(d, reference_point_);
-            if (intersects(aabb, ud.aabb())) {
+            if (intersects(aabb, ud.primitive())) {
                 if (!visitor(ud.payload())) {
                     return false;
                 }
             }
         }
         for (const auto& d : large_data_) {
-            if (intersects(aabb, d.aabb())) {
+            if (intersects(aabb, d.primitive())) {
                 if (!visitor(d.payload())) {
                     return false;
                 }
@@ -598,14 +598,14 @@ public:
     bool visit_pairs(const auto& aabb, const auto& visitor) const {
         for (const auto& d : small_data_) {
             auto ud = decompress(d, reference_point_);
-            if (intersects(aabb, ud.aabb())) {
+            if (intersects(aabb, ud.primitive())) {
                 if (!visitor(ud)) {
                     return false;
                 }
             }
         }
         for (const auto& d : large_data_) {
-            if (intersects(aabb, d.aabb())) {
+            if (intersects(aabb, d.primitive())) {
                 if (!visitor(d)) {
                     return false;
                 }

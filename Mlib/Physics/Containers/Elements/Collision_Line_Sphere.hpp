@@ -42,7 +42,7 @@ inline AabbAndPayload<HalfCompressedScenePos, 3, RigidBodyAndCollisionLineSphere
         const AabbAndPayload<CompressedScenePos, 3, RigidBodyAndCollisionLineSphere<CompressedScenePos>>& a,
         const FixedArray<CompressedScenePos, 3>& d)
 {
-    return { (a.aabb() - d).casted<HalfCompressedScenePos>(), (a.payload() - d).casted<HalfCompressedScenePos>() };
+    return { (a.primitive() - d).casted<HalfCompressedScenePos>(), (a.payload() - d).casted<HalfCompressedScenePos>() };
 }
 
 inline AabbAndPayload<CompressedScenePos, 3, RigidBodyAndCollisionLineSphere<CompressedScenePos>>
@@ -51,7 +51,7 @@ inline AabbAndPayload<CompressedScenePos, 3, RigidBodyAndCollisionLineSphere<Com
         const FixedArray<CompressedScenePos, 3>& d)
 {
     return {
-        a.aabb().casted<CompressedScenePos>() + d,
+        a.primitive().casted<CompressedScenePos>() + d,
         a.payload().casted<CompressedScenePos>() + d};
 }
 

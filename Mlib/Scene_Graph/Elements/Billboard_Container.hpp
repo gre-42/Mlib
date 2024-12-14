@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <vector>
@@ -12,8 +13,8 @@ struct PositionAndYAngleAndBillboardId {
     FixedArray<TPosition, 3> position;
     BillboardId billboard_id;
     SceneDir yangle;
-    inline AxisAlignedBoundingBox<TPosition, 3> aabb() const {
-        return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
+    inline const auto& primitive() const {
+        return position;
     }
     inline PositionAndYAngleAndBillboardId& payload() {
         return *this;
@@ -47,9 +48,9 @@ template <class TPosition>
 struct PositionAndBillboardId {
     FixedArray<TPosition, 3> position;
     BillboardId billboard_id;
-    inline AxisAlignedBoundingBox<TPosition, 3> aabb() const
+    inline const auto& primitive() const
     {
-        return AxisAlignedBoundingBox<TPosition, 3>::from_point(position);
+        return position;
     }
     inline PositionAndBillboardId& payload() {
         return *this;
@@ -83,13 +84,13 @@ class BillboardContainer {
 public:
     auto& add(const PositionAndYAngleAndBillboardId<CompressedScenePos>& pyb) {
         if (empty()) {
-            reference_point_ = pyb.aabb().center();
+            reference_point_ = Mlib::center(pyb.primitive());
         }
         return pybs_.emplace_back(pyb - reference_point_);
     }
     auto& add(const PositionAndBillboardId<CompressedScenePos>& pb) {
         if (empty()) {
-            reference_point_ = pb.aabb().center();
+            reference_point_ = Mlib::center(pb.primitive());
         }
         return pbs_.emplace_back(pb - reference_point_);
     }
@@ -104,7 +105,7 @@ public:
     bool visit(const auto& aabb, const auto& pyb_visitor, const auto& pb_visitor) const {
         for (const auto& d : pybs_) {
             auto ud = d + reference_point_;
-            if (aabb.intersects(ud.aabb())) {
+            if (intersects(aabb, ud.primitive())) {
                 if (!pyb_visitor(ud.payload())) {
                     return false;
                 }
@@ -112,7 +113,7 @@ public:
         }
         for (const auto& d : pbs_) {
             auto ud = d + reference_point_;
-            if (aabb.intersects(ud.aabb())) {
+            if (intersects(aabb, ud.primitive())) {
                 if (!pb_visitor(ud.payload())) {
                     return false;
                 }
@@ -154,10 +155,10 @@ public:
     }
     void print(std::ostream& ostr, size_t rec = 0) const {
         for (const auto& d : pybs_) {
-            (d + reference_point_).aabb().print(ostr, rec + 1);
+            Mlib::print((d + reference_point_).primitive(), ostr, rec + 1);
         }
         for (const auto& d : pbs_) {
-            (d + reference_point_).aabb().print(ostr, rec + 1);
+            Mlib::print((d + reference_point_).primitive(), ostr, rec + 1);
         }
     }
     bool empty() const {

@@ -41,7 +41,7 @@ static void instantiate_bvh(
         std::map<std::shared_ptr<ColoredVertexArray<float>>, std::list<const FixedArray<ColoredVertex<float>, 3>*>> cvas;
         bvh.data().visit_all([&](const auto& d){
             cvas[d.payload().cva].push_back(&d.payload().triangle);
-            aabb.extend(d.aabb());
+            aabb.extend(d.primitive());
             return true;
         });
         auto center = aabb.center();
