@@ -201,7 +201,7 @@ struct ColoredVertex {
 
 template <class TPos>
 inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex<TPos>& v) {
-    ostr << "p " << v.position << " n " << v.normal << " c " << v.color.casted<uint16_t>() << " t " << v.uv;
+    ostr << "p " << v.position << " n " << v.normal << " c " << v.color.template casted<uint16_t>() << " t " << v.uv;
     return ostr;
 }
 
