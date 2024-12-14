@@ -52,25 +52,25 @@ public:
 
 template <class TData, size_t tndim>
     requires (!requires_simd_optimization<TData, tndim>())
-static FixedArray<TData, tndim> get_padded_fixed_array(const FixedArray<TData, tndim>&) {
+inline FixedArray<TData, tndim> get_padded_fixed_array(const FixedArray<TData, tndim>&) {
     verbose_abort("xx");
 }
 
 template <std::intmax_t denominator>
-static PaddedFixedArray3Int32<denominator> get_padded_fixed_array(
+inline PaddedFixedArray3Int32<denominator> get_padded_fixed_array(
     const FixedArray<ScaledInteger<int32_t, denominator>, 3>&)
 {
     verbose_abort("xx");
 }
 
 template <std::intmax_t denominator>
-static PaddedFixedArray3Int16<denominator> get_padded_fixed_array(
+inline PaddedFixedArray3Int16<denominator> get_padded_fixed_array(
     const FixedArray<ScaledInteger<int16_t, denominator>, 3>&)
 {
     verbose_abort("xx");
 }
 
-static PaddedFixedArray3Float get_padded_fixed_array(
+inline PaddedFixedArray3Float get_padded_fixed_array(
     const FixedArray<float, 3>&)
 {
     verbose_abort("xx");
