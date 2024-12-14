@@ -21,7 +21,7 @@ public:
         , intercept{ intercept }
     {}
     PlaneNd(const FixedArray<TDir, tndim>& normal, const FixedArray<TPos, tndim>& point_on_plane)
-        : PlaneNd{ normal, -(TPos)dot0d(funpack(normal.template casted<TPos>()), funpack(point_on_plane)) }
+        : PlaneNd{ normal, -(TPos)dot0d(normal.template casted<funpack_t<TPos>>(), funpack(point_on_plane)) }
     {}
     explicit PlaneNd(const FixedArray<TPos, 2, 2>& line, bool compute_center = false)
         : PlaneNd{ line_normal(funpack(line)).template casted<TDir>(), compute_center ? mean<0>(line) : line[0] }
@@ -37,7 +37,7 @@ public:
         auto& n1 = result.normal;
         auto& i1 = result.intercept;
         n1 = transformation_matrix.rotate(n0);
-        i1 = (TPos)(i0 - dot0d(n1.template casted<TTPos>(), transformation_matrix.t));
+        i1 = i0 - (TPos)dot0d(n1.template casted<funpack_t<TTPos>>(), funpack(transformation_matrix.t));
         // i1 = -dot0d(n1, trafo(n0 * (-i0))) = -dot0d(n1, -i0 * n1 + t) = i0 - dot0d(n1, t)
         return result;
     }
