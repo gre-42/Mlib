@@ -83,10 +83,12 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
             THROW_OR_ABORT("Too many cells");
         }
         auto& cell = cells.emplace_back(uninitialized);
-        static_assert(sizeof(FixedArray<float, 3>) == 3 * 4);
-        cell.aabb = AxisAlignedBoundingBox<float, 3>::from_min_max(
-            read_binary<DefaultUnitialized<FixedArray<float, 3>>>(istr, "aabb min", verbosity),
-            read_binary<DefaultUnitialized<FixedArray<float, 3>>>(istr, "aabb max", verbosity));
+        {
+            static_assert(sizeof(FixedArray<float, 3>) == 3 * 4);
+            auto min = read_binary<DefaultUnitialized<FixedArray<float, 3>>>(istr, "aabb min", verbosity);
+            auto max = read_binary<DefaultUnitialized<FixedArray<float, 3>>>(istr, "aabb max", verbosity);
+            cell.aabb = AxisAlignedBoundingBox<float, 3>::from_min_max(min, max);
+        }
         if (any(verbosity & IoVerbosity::METADATA)) {
             linfo() << "AABB: " << cell.aabb;
         }
