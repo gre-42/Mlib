@@ -9,16 +9,19 @@ using namespace Mlib::Grs;
 struct String16 {
     char c[16];
 };
+static_assert(sizeof(String16) == 16);
 
 struct ResourceGroupBuffer {
     String16 elements[8];
     uint8_t reserved[8];
     char name[16];
 };
+static_assert(sizeof(ResourceGroupBuffer) == 8 * 16 + 8 + 16);
 
 struct ResourceGroupBuffers {
     ResourceGroupBuffer types[8];
 };
+static_assert(sizeof(ResourceGroupBuffers) == 8 * sizeof(ResourceGroupBuffer));
 
 Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
     Model result;
@@ -80,7 +83,10 @@ Model Mlib::Grs::load_grs(std::istream& istr, IoVerbosity verbosity) {
             THROW_OR_ABORT("Too many cells");
         }
         auto& cell = cells.emplace_back(uninitialized);
-        cell.aabb = read_binary<DefaultUnitialized<AxisAlignedBoundingBox<float, 3>>>(istr, "aabb", verbosity);
+        static_assert(sizeof(FixedArray<float, 3>) == 3 * 4);
+        cell.aabb = AxisAlignedBoundingBox<float, 3>::from_min_max(
+            read_binary<DefaultUnitialized<FixedArray<float, 3>>>(istr, "aabb min", verbosity),
+            read_binary<DefaultUnitialized<FixedArray<float, 3>>>(istr, "aabb max", verbosity));
         if (any(verbosity & IoVerbosity::METADATA)) {
             linfo() << "AABB: " << cell.aabb;
         }
