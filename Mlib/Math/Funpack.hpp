@@ -1,6 +1,5 @@
 #pragma once
-#include <Mlib/Array/Array.hpp>
-#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Scaled_Integer.hpp>
 #include <concepts>
 

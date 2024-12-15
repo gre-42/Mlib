@@ -38,7 +38,7 @@ void PointsAndAdjacency<TPoint>::transform(const TransformationMatrix<float, TDa
     for (auto& p : points) {
         using PP = FixedArray<TData, TPoint::length()>;
         PP& pp = p;
-        pp = m.transform(funpack(pp)).casted<TData>();
+        pp = m.transform(funpack(pp)).template casted<TData>();
     }
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Funpack.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <cstddef>
@@ -10,8 +11,8 @@ template <class TPoint>
 TPoint interpolate_default(
     const TPoint& p0,
     const TPoint& p1,
-    typename funpack_t<typename TPoint::value_type> a0,
-    typename funpack_t<typename TPoint::value_type> a1)
+    funpack_t<typename TPoint::value_type> a0,
+    funpack_t<typename TPoint::value_type> a1)
 {
     return p0 * a0 + p1 * a1;
 }

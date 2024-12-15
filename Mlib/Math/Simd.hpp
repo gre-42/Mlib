@@ -3,10 +3,13 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Scaled_Integer.hpp>
 #include <concepts>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #include <eve/std.hpp>
 #pragma GCC diagnostic pop
+#pragma clang diagnostic pop
 
 namespace Mlib {
 

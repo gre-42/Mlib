@@ -112,7 +112,7 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     ColoredVertex<TPos>** pp01)
 {
     using I = funpack_t<TPos>;
-    auto t = FixedArray<TPos, 3, 3>{ p00, p10, p01 }.casted<I>();
+    auto t = FixedArray<TPos, 3, 3>{ p00, p10, p01 }.template casted<I>();
     auto n_o = try_triangle_normal<I>(t);
     if (!n_o.has_value()) {
         if (normal_error_behavior == NormalVectorErrorBehavior::SKIP) {
@@ -650,7 +650,7 @@ void TriangleList<TPos>::smoothen_edges(
         }
         for (auto& [_, m] : vertex_movement) {
             for (auto& n : m.vertices) {
-                *n += (smoothness * (m.amount + m.bias)).casted<TPos>();
+                *n += (smoothness * (m.amount + m.bias)).template casted<TPos>();
             }
             m.amount = 0;
         }

@@ -281,7 +281,7 @@ void Mlib::add_beacons_to_raceways(
         if (tags.contains("raceway", "yes"))
         {
             auto sw = subdivided_way(nodes, w.second.nd, scale, raceway_beacon_distance);
-            for (const auto p : sw) {
+            for (const auto& p : sw) {
                 bri.add_parsed_resource_name(p, (CompressedScenePos)0.f, prn, 0.f, 1.f);
             }
         }

@@ -529,16 +529,6 @@ StbImage3 Mlib::plot_mesh(
     const FixedArray<size_t, 2>& image_size,
     size_t line_thickness,
     size_t point_size,
-    const std::list<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*>& triangles,
-    const std::list<std::list<FixedArray<CompressedScenePos, 3>>>& contours,
-    const std::list<FixedArray<CompressedScenePos, 3>>& highlighted_nodes,
-    const std::list<FixedArray<CompressedScenePos, 3>>& crossed_nodes);
-
-template
-StbImage3 Mlib::plot_mesh(
-    const FixedArray<size_t, 2>& image_size,
-    size_t line_thickness,
-    size_t point_size,
     const std::list<FixedArray<CompressedScenePos, 3, 2>>& triangles,
     const std::list<std::vector<FixedArray<CompressedScenePos, 2>>>& contours,
     const std::list<FixedArray<CompressedScenePos, 2>>& highlighted_nodes,

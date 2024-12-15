@@ -2,6 +2,8 @@
 #include <Mlib/Array/Consteval_Workaround.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
+#include <type_traits>
 
 namespace Mlib {
 
@@ -15,9 +17,13 @@ TData mean(const BaseDenseArray<TDerived, TData>& a) {
 
 template <size_t axis, class TData, size_t... tsize>
 auto mean(const FixedArray<TData, tsize...>& a) {
-    constexpr size_t n = std::remove_reference_t<decltype(a)>::template static_shape<axis>();
+    constexpr size_t n = CW::static_shape<axis>(a);
     static_assert(n > 0);
-    return sum<axis>(a) / n;
+    if constexpr (std::is_floating_point_v<TData>) {
+        return sum<axis>(a) / integral_to_float<TData>(n);
+    } else {
+        return sum<axis>(a) / n;
+    }
 }
 
 template <class TData>

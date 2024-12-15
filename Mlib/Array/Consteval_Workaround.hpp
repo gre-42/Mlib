@@ -21,7 +21,7 @@ size_t nelements(const Array<T>& a) {
 }
 
 template <class T, size_t... tshape>
-size_t nelements(const FixedArray<T, tshape...>&) {
+constexpr size_t nelements(const FixedArray<T, tshape...>&) {
     return FixedArray<T, tshape...>::nelements();
 }
 
@@ -32,7 +32,7 @@ size_t length(const Array<T>& a) {
 }
 
 template <class T, size_t... tshape>
-size_t length(const FixedArray<T, tshape...>&) {
+constexpr size_t length(const FixedArray<T, tshape...>&) {
     return FixedArray<T, tshape...>::length();
 }
 
@@ -48,7 +48,7 @@ size_t ndim(const ConjugateTransposeArray<T>& a) {
 }
 
 template <class T, size_t... tshape>
-size_t ndim(const FixedArray<T, tshape...>&) {
+constexpr size_t ndim(const FixedArray<T, tshape...>&) {
     return FixedArray<T, tshape...>::ndim();
 }
 
@@ -64,7 +64,7 @@ size_t static_shape(const ConjugateTransposeArray<T>& a) {
 }
 
 template <size_t N, class T, size_t... tshape>
-size_t static_shape(const FixedArray<T, tshape...>&) {
+constexpr size_t static_shape(const FixedArray<T, tshape...>&) {
     return FixedArray<T, tshape...>::template static_shape<N>();
 }
 

@@ -132,7 +132,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
                     max_dboundary_,
                     [&up](auto& tt)
                     {
-                        return sum(squared(distance_point_to_triangle_3d(up, tt.casted<ScenePos>())));
+                        return sum(squared(distance_point_to_triangle_3d(up, funpack(tt))));
                     });
                 min_dist2 = md2.has_value()
                     ? (float)(*md2)
