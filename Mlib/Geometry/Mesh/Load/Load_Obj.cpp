@@ -43,7 +43,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     const std::string& filename,
     const LoadMeshConfig<TPos>& cfg)
 {
-    using I = funpack_t<TPos>;
     using Triangle = FixedArray<TPos, 3, 3>;
     using Quad = FixedArray<TPos, 4, 3>;
 
