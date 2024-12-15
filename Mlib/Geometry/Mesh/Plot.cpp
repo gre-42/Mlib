@@ -131,7 +131,7 @@ StbImage3 Mlib::plot_mesh(
     StbImage3 im{ image_size, Rgb24::white() };
     auto normalization_matrix = np.normalization_matrix();
     auto trafo = [&](const FixedArray<TPos, 2>& p) {
-        return ((I)0.5 + normalization_matrix.transform(funpack(p)) * (image_size - (size_t)1).casted<I>()).casted<float>();
+        return ((I)0.5 + normalization_matrix.transform(funpack(p)) * (image_size - (size_t)1).casted<I>()).template casted<float>();
         };
     for (const auto& t : triangles) {
         auto a = trafo(t[0]);
@@ -202,7 +202,7 @@ void Mlib::plot_mesh(
     auto normalization_matrix = np.normalization_matrix();
     auto trafo = [&](const FixedArray<TPos, 2>& p){
         FixedArray<double, 2> size{ svg.width(), svg.height() };
-        return (normalization_matrix.transform(funpack(p)) * size.template casted<I>()).casted<TPos>();
+        return (normalization_matrix.transform(funpack(p)) * size.template casted<I>()).template casted<TPos>();
     };
     for (const auto& t : triangles) {
         auto a = trafo(t[0]);
