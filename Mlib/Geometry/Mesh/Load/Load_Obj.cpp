@@ -44,7 +44,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     const LoadMeshConfig<TPos>& cfg)
 {
     using Triangle = FixedArray<TPos, 3, 3>;
-    using Quad = FixedArray<TPos, 4, 3>;
 
     std::map<std::string, ObjMaterial> mtllib;
     std::vector<ColoredVertexX<TPos>> obj_vertices;
