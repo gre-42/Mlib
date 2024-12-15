@@ -14,10 +14,13 @@ TData mean(const BaseDenseArray<TDerived, TData>& a) {
     return sum(a) / CW::nelements(av);
 }
 
-
 template <size_t axis, class TData, size_t... tsize>
 auto mean(const FixedArray<TData, tsize...>& a) {
+#ifdef _MSC_VER
+    constexpr size_t n = FixedArray<TData, tsize...>::template static_shape<axis>();
+#else
     constexpr size_t n = CW::static_shape<axis>(a);
+#endif
     static_assert(n > 0);
     if constexpr (std::is_floating_point_v<TData>) {
         return sum<axis>(a) / integral_to_float<TData>(n);
