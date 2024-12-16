@@ -7,16 +7,41 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <stb/stb_image_write.h>
+#include <stb_cpp/stb_image_load.hpp>
+
+namespace Mlib {
+class ReadPixelsLogicKeys {
+public:
+    explicit ReadPixelsLogicKeys(ButtonStates& button_states)
+        : ctrl_p{ button_states, key_configurations, "CTRL_P", "" }
+    {
+        key_configurations.insert("CTRL_P", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+    }
+    ButtonPress ctrl_p;
+private:
+    KeyConfigurations key_configurations;
+};
+}
 
 using namespace Mlib;
 
-ReadPixelsLogic::ReadPixelsLogic(RenderLogic& child_logic)
+ReadPixelsLogic::ReadPixelsLogic(
+    RenderLogic& child_logic,
+    ButtonStates& button_states,
+    ReadPixelsRole role)
     : child_logic_{ child_logic }
+    , keys_{ std::make_unique<ReadPixelsLogicKeys>(button_states) }
+    , role_{ role }
 {}
 
 ReadPixelsLogic::~ReadPixelsLogic() {
@@ -28,7 +53,7 @@ std::optional<RenderSetup> ReadPixelsLogic::try_render_setup(
     const LayoutConstraintParameters& ly,
     const RenderedSceneDescriptor& frame_id) const
 {
-    return child_logic_.render_setup(lx, ly, frame_id);
+    return child_logic_.try_render_setup(lx, ly, frame_id);
 }
 
 bool ReadPixelsLogic::render_optional_setup(
@@ -41,7 +66,9 @@ bool ReadPixelsLogic::render_optional_setup(
     const RenderSetup* setup)
 {
     LOG_FUNCTION("ReadPixelsLogic::render");
-    if (render_results != nullptr) {
+    if (any(role_ & ReadPixelsRole::INTERMEDIATE) &&
+        (render_results != nullptr))
+    {
         if (auto oit = render_results->outputs.find(frame_id); oit != render_results->outputs.end())
         {
             auto& o = oit->second;
@@ -74,17 +101,37 @@ bool ReadPixelsLogic::render_optional_setup(
                     frame_id,
                     setup);
             }
-            {
-                fbs->bind(CURRENT_SOURCE_LOCATION);
-                VectorialPixels<float, 3> vp{ArrayShape{size_t(o.height), size_t(o.width)}};
-                CHK(glReadPixels(0, 0, o.width, o.height, GL_RGB, GL_FLOAT, vp->flat_begin()->flat_begin()));
-                o.rgb = o.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
-            }
+            o.rgb = fbs->color_to_array(3);
             if (o.depth_kind == FrameBufferChannelKind::TEXTURE) {
-                Array<float> sp{ ArrayShape{ size_t(o.height), size_t(o.width) } };
-                CHK(glReadPixels(0, 0, o.width, o.height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_begin()));
-                o.depth = o.flip_y ? reverted_axis(sp, 0) : sp;
+                o.depth = fbs->depth_to_array();
             }
+        }
+    }
+    if (any(role_ & ReadPixelsRole::SCREENSHOT) &&
+        keys_->ctrl_p.keys_pressed())
+    {
+        auto fbs = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+        // Setting MSAA
+        fbs->configure({
+            .width = lx.ilength(),
+            .height = ly.ilength(),
+            .target = GL_FRAMEBUFFER,
+            .depth_kind = FrameBufferChannelKind::ATTACHMENT,
+            .nsamples_msaa = render_config.nsamples_msaa });
+        {
+            RenderToFrameBufferGuard rfg{ fbs };
+            child_logic_.render_auto_setup(
+                lx,
+                ly,
+                render_config,
+                scene_graph_config,
+                render_results,
+                frame_id,
+                setup);
+        }
+        auto im = fbs->color_to_stb_image(3);
+        if (!stbi_write_png("screenshot.png", im.width, im.height, im.nrChannels, im.data.get(), 0)) {
+            THROW_OR_ABORT("Could not save screenshot");
         }
     }
     child_logic_.render_auto_setup(

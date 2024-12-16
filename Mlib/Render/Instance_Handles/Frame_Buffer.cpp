@@ -296,8 +296,16 @@ std::shared_ptr<ITextureHandle> FrameBuffer::texture_depth() const {
     return fb_.texture_depth();
 }
 
-StbInfo<uint8_t> FrameBuffer::color_to_stb_image() const {
-    return download_as_stb_image(fb_.frame_buffer_, config_.width, config_.height, 4);
+StbInfo<uint8_t> FrameBuffer::color_to_stb_image(size_t nchannels) const {
+    return download_as_stb_image(fb_.frame_buffer_, config_.width, config_.height, integral_cast<int>(nchannels), FlipMode::VERTICAL);
+}
+
+Array<float> FrameBuffer::color_to_array(size_t nchannels) const {
+    return Mlib::color_to_array(fb_.frame_buffer_, config_.width, config_.height, integral_cast<int>(nchannels), FlipMode::VERTICAL);
+}
+
+Array<float> FrameBuffer::depth_to_array() const {
+    return Mlib::depth_to_array(fb_.frame_buffer_, config_.width, config_.height, FlipMode::VERTICAL);
 }
 
 void FrameBuffer::deallocate() {

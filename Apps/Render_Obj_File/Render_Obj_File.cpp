@@ -1100,7 +1100,10 @@ int main(int argc, char** argv) {
             flying_camera_user_object,
             true,                                       // fly
             !args.has_named("--large_object_mode"));    // rotate
-        ReadPixelsLogic read_pixels_logic{ aggregate_render_logic };
+        ReadPixelsLogic read_pixels_logic{
+            aggregate_render_logic,
+            button_states,
+            ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT };
         std::list<LightmapLogic*> lightmap_logics;
         for (const auto& l : lights) {
             if (any(l.light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {

@@ -141,7 +141,7 @@ RenderableScene::RenderableScene(
           selected_cameras_,
           ui_focus.focuses,
           players_)}
-    , read_pixels_logic_{ *aggregate_render_logic_ }
+    , read_pixels_logic_{ *aggregate_render_logic_, button_states, ReadPixelsRole::INTERMEDIATE }
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(rendering_resources_, read_pixels_logic_) }
     , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW) }
     , post_processing_logic_{std::make_unique<PostProcessingLogic>(

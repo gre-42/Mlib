@@ -153,7 +153,10 @@ void Render::render_scene(
         camera_z,
         background_color,
         beacon_locations};
-    ReadPixelsLogic read_pixels_logic{ rotating_logic };
+    ReadPixelsLogic read_pixels_logic{
+        rotating_logic,
+        button_states,
+        ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT };
     render(read_pixels_logic, []() {}, scene_graph_config, &button_states);
 }
 

@@ -22,6 +22,7 @@
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -237,7 +238,8 @@ int main(int argc, char** argv) {
             standard_camera_logic,
             {1.f, 0.f, 1.f},
             ClearMode::COLOR_AND_DEPTH};
-        ReadPixelsLogic read_pixels_logic{ standard_render_logic };
+        ButtonStates button_states;
+        ReadPixelsLogic read_pixels_logic{ standard_render_logic, button_states, ReadPixelsRole::NONE };
 
         render.render(
             read_pixels_logic,

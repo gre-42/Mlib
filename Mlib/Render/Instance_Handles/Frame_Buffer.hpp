@@ -11,6 +11,8 @@ struct StbInfo;
 
 namespace Mlib {
 
+template <class TData>
+class Array;
 class ITextureHandle;
 class FrameBuffer;
 class RenderToFrameBufferGuard;
@@ -81,7 +83,9 @@ public:
     void deallocate();
     std::shared_ptr<ITextureHandle> texture_color() const;
     std::shared_ptr<ITextureHandle> texture_depth() const;
-    StbInfo<uint8_t> color_to_stb_image() const;
+    StbInfo<uint8_t> color_to_stb_image(size_t nchannels) const;
+    Array<float> color_to_array(size_t nchannels) const;
+    Array<float> depth_to_array() const;
 private:
     FrameBufferStorage fb_;
     FrameBufferStorage ms_fb_;

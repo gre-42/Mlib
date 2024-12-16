@@ -1218,7 +1218,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             RenderToFrameBufferGuard rfg{fb};
             logic.render(ClearMode::COLOR);
         }
-        return fb->color_to_stb_image();
+        return fb->color_to_stb_image(4);
     }
     if (auto it = preloaded_processed_texture_data_.try_get(color); it != nullptr) {
         if (copy_behavior == CopyBehavior::RAISE) {

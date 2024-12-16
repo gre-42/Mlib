@@ -243,7 +243,9 @@ void test_physics_engine(unsigned int seed) {
         false); // false = rotate
     auto& read_pixels_logic = object_pool.create<ReadPixelsLogic>(
         CURRENT_SOURCE_LOCATION,
-        standard_render_logic);
+        standard_render_logic,
+        button_states,
+        ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT);
     auto append_lightmap_logic = [&](){
         DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);
         // Light without shadow

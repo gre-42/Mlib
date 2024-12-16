@@ -54,6 +54,7 @@ using namespace Mlib;
 
 std::future<void> render_thread(
     const ParsedArgs& args,
+    ButtonStates& button_states,
     RenderableScenes& renderable_scenes,
     std::atomic_bool& load_scene_finished,
     Renderer& renderer,
@@ -122,8 +123,9 @@ std::future<void> render_thread(
                         clear_color({0.2f, 0.2f, 0.2f, 1.f});
                     }
                 }};
+            ReadPixelsLogic rpl{ lrl, button_states, ReadPixelsRole::SCREENSHOT };
             ClearWrapperGuard clear_wrapper_guard;
-            renderer.render(lrl, scene_config.scene_graph_config);
+            renderer.render(rpl, scene_config.scene_graph_config);
         } catch (...) {
             add_unhandled_exception(std::current_exception());
         }
@@ -654,6 +656,7 @@ int main(int argc, char** argv) {
                     renderer = std::make_unique<Renderer>(render.generate_renderer());
                     render_future = render_thread(
                         args,
+                        button_states,
                         renderable_scenes,
                         load_scene_finished,
                         *renderer,
