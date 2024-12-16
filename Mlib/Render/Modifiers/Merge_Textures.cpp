@@ -115,7 +115,10 @@ void Mlib::merge_textures(
                                 assert_true(all(v.uv >= UV_ATLAS_MIN));
                                 assert_true(all(v.uv <= UV_ATLAS_MAX));
                                 v.uv = tile.position + v.uv * tile.size;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
                                 v.color = Colors::from_rgb(cva->material.shading.ambient + cva->material.shading.diffuse);
+#pragma GCC diagnostic pop
                             }
                         }
                         {
