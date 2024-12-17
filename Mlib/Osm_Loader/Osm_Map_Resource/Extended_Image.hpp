@@ -18,7 +18,7 @@ public:
     }
 private:
     Array<double> extended_image_;
-    size_t extension_;
+    double dextension_;
 };
 
 }

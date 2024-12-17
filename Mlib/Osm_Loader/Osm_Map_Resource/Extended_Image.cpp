@@ -1,6 +1,7 @@
 #include "Extended_Image.hpp"
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -12,7 +13,7 @@ ExtendedImage::ExtendedImage(
     size_t box_filter_radius,
     size_t niterations,
     bool preserve_original)
-: extension_{ extension }
+: dextension_{ integral_to_float<double>(extension) }
 {
     if (extension == 0 && ((box_filter_radius == 0) || preserve_original)) {
         extended_image_ = image;
@@ -34,7 +35,7 @@ ExtendedImage::ExtendedImage(
         for (size_t r = 0; r < image.shape(0); ++r) {
             for (size_t c = 0; c < image.shape(1); ++c) {
                 if (mask(r, c)) {
-                    extended_image_(r + extension_, c + extension_) = image(r, c);
+                    extended_image_(r + extension, c + extension) = image(r, c);
                 }
             }
         }
@@ -44,7 +45,7 @@ ExtendedImage::ExtendedImage(
         for (size_t r = 0; r < image.shape(0); ++r) {
             for (size_t c = 0; c < image.shape(1); ++c) {
                 if (mask(r, c)) {
-                    extended_image_(r + extension_, c + extension_) = image(r, c);
+                    extended_image_(r + extension, c + extension) = image(r, c);
                 }
             }
         }
@@ -55,5 +56,5 @@ ExtendedImage::ExtendedImage(
 }
 
 bool ExtendedImage::operator () (double r, double c, double& value) const {
-    return bilinear_grayscale_interpolation(r + extension_, c + extension_, extended_image_, value);
+    return bilinear_grayscale_interpolation(r + dextension_, c + dextension_, extended_image_, value);
 }

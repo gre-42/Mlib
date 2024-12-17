@@ -138,10 +138,11 @@ std::string Mlib::parse_string(
     return *value;
 }
 
-double Mlib::parse_meters(
+template <class T>
+T Mlib::parse_meters(
     const std::map<std::string, std::string>& tags,
     const std::string& key,
-    double default_value)
+    T default_value)
 {
     auto* value = try_find(tags, key);
     if (value == nullptr) {
@@ -152,11 +153,11 @@ double Mlib::parse_meters(
     if (!Mlib::re::regex_match(*value, match, re)) {
         THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + *value + '"');
     }
-    double res = safe_stod(match[1].str());
+    T res = safe_sto<T>(match[1].str());
     if ((match[2].str() == "'") ||
         (match[2].str() == "ft"))
     {
-        res *= 0.3048;
+        res *= 0.3048f;
     }
     return res;
 }
@@ -501,3 +502,13 @@ void Mlib::check_curb_validity(float curb_alpha, float curb2_alpha) {
         THROW_OR_ABORT("curb2_alpha > 1");
     }
 }
+
+template float Mlib::parse_meters<float>(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    float default_value);
+
+template double Mlib::parse_meters<double>(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    double default_value);

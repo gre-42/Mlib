@@ -27,7 +27,7 @@ public:
         : edges{ edges }
         , plane{ plane }
     {}
-    ConvexPolygon3D(const FixedArray<TPos, tnvertices, 3>& corners)
+    explicit ConvexPolygon3D(const FixedArray<TPos, tnvertices, 3>& corners)
         : edges{ uninitialized }
         , plane{ uninitialized }
     {

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Round.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <concepts>
@@ -61,57 +62,57 @@ public:
         return res;
     }
     inline constexpr explicit ScaledInteger(const std::floating_point auto& value)
-        : count{ static_cast<TInt>(std::round(value * denominator)) }
+        : count{ static_cast<TInt>(Mlib::round(value * denominator)) }
     {}
-    inline ScaledInteger& operator = (const ScaledInteger& other) {
+    constexpr inline ScaledInteger& operator = (const ScaledInteger& other) {
         count = other.count;
         return *this;
     }
     template <std::floating_point TFloat>
-    inline explicit operator TFloat () const {
+    constexpr inline explicit operator TFloat () const {
         return TFloat(count) / denominator;
     }
     template <std::integral TInt2>
-    inline explicit operator TInt2 () const {
+    constexpr inline explicit operator TInt2 () const {
         return (TInt2)(intermediate_float<TInt>)(*this);
     }
     template <class TInt2>
-    inline explicit operator ScaledInteger<TInt2, denominator> () const {
+    constexpr inline explicit operator ScaledInteger<TInt2, denominator> () const {
         return ScaledInteger<TInt2, denominator>::from_count((TInt2)count);
     }
-    inline ScaledInteger& operator += (const ScaledInteger& other) {
+    constexpr inline ScaledInteger& operator += (const ScaledInteger& other) {
         count += other.count;
         return *this;
     }
-    inline ScaledInteger& operator -= (const ScaledInteger& other) {
+    constexpr inline ScaledInteger& operator -= (const ScaledInteger& other) {
         count -= other.count;
         return *this;
     }
-    inline ScaledInteger operator - () const {
+    constexpr inline ScaledInteger operator - () const {
         return from_count(-count);
     }
-    inline ScaledInteger operator + () const {
+    constexpr inline ScaledInteger operator + () const {
         return from_count(+count);
     }
-    inline bool operator < (const ScaledInteger& other) const {
+    constexpr inline bool operator < (const ScaledInteger& other) const {
         return count < other.count;
     }
-    inline bool operator > (const ScaledInteger& other) const {
+    constexpr inline bool operator > (const ScaledInteger& other) const {
         return count > other.count;
     }
-    inline bool operator == (const ScaledInteger& other) const {
+    constexpr inline bool operator == (const ScaledInteger& other) const {
         return count == other.count;
     }
-    inline bool operator <= (const ScaledInteger& other) const {
+    constexpr inline bool operator <= (const ScaledInteger& other) const {
         return count <= other.count;
     }
-    inline bool operator >= (const ScaledInteger& other) const {
+    constexpr inline bool operator >= (const ScaledInteger& other) const {
         return count >= other.count;
     }
-    inline bool operator != (const ScaledInteger& other) const {
+    constexpr inline bool operator != (const ScaledInteger& other) const {
         return count != other.count;
     }
-    inline void print(std::ostream& ostr) const {
+    constexpr inline void print(std::ostream& ostr) const {
         ostr << (intermediate_float<TInt>)(*this);
     }
     template <class Archive>

@@ -1,32 +1,36 @@
 #pragma once
 #include <Mlib/Array/Consteval_Workaround.hpp>
+#include <Mlib/Assert.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
-#include <type_traits>
+#include <Mlib/Type_Traits/Get_Scalar.hpp>
+#include <Mlib/Type_Traits/Operand.hpp>
 
 namespace Mlib {
 
-template <class TDerived, class TData>
-TData mean(const BaseDenseArray<TDerived, TData>& a) {
-    const auto& av = *a;  // Workaround for MSVC
-    assert(av.nelements() > 0);
-    return sum(a) / CW::nelements(av);
+template <class TData>
+TData mean(const Array<TData>& a) {
+    assert_true(a.nelements() > 0);
+    return sum(a) / integral_to_float<scalar_type_t<TData>>(a.nelements());
+}
+
+template <class TData, size_t... tsize>
+auto mean(const FixedArray<TData, tsize...>& a) {
+    // Produces "function parameter 'a' with unknown value cannot be used in a constant expression".
+    // constexpr size_t n = CW::nelements(a);
+    constexpr size_t n = FixedArray<TData, tsize...>::nelements();
+    static_assert(n > 0);
+    return sum(a) / operand<scalar_type_t<TData>, n>;
 }
 
 template <size_t axis, class TData, size_t... tsize>
 auto mean(const FixedArray<TData, tsize...>& a) {
-#ifdef _MSC_VER
+    // Produces "function parameter 'a' with unknown value cannot be used in a constant expression".
+    // constexpr size_t n = CW::static_shape<axis>(a);
     constexpr size_t n = FixedArray<TData, tsize...>::template static_shape<axis>();
-#else
-    constexpr size_t n = CW::static_shape<axis>(a);
-#endif
     static_assert(n > 0);
-    if constexpr (std::is_floating_point_v<TData>) {
-        return sum<axis>(a) / integral_to_float<TData>(n);
-    } else {
-        return sum<axis>(a) / n;
-    }
+    return sum<axis>(a) / operand<TData, n>;
 }
 
 template <class TData>

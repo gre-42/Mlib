@@ -33,10 +33,10 @@ void Mlib::smoothen_edges(
                         using Triangle = FixedArray<TPos, 3, 3>;
                         FixedArray<float, 3> n0 = triangle_normal(funpack(Triangle{ej, ei, it->second})).template casted<float>();
                         FixedArray<float, 3> n1 = triangle_normal(funpack(Triangle{ei, ej, nn})).template casted<float>();
-                        FixedArray<TPos, 3> cn = (it->second + nn) / 2;
-                        FixedArray<TPos, 3> ce = (ei + ej) / 2;
+                        FixedArray<TPos, 3> cn = (it->second + nn) / operand<TPos, 2>;
+                        FixedArray<TPos, 3> ce = (ei + ej) / operand<TPos, 2>;
                         FixedArray<float, 3> v = (cn - ce).template casted<float>();
-                        FixedArray<float, 3> n01 = (n0 + n1) / 2;
+                        FixedArray<float, 3> n01 = (n0 + n1) / 2.f;
                         n01 /= std::sqrt(sum(squared(n01)));
                         float n0n1 = dot0d(n0, n1);
                         if (n0n1 >= 0 && n0n1 < 1) {

@@ -339,7 +339,7 @@ void TriangleList<TPos>::extrude(
                 va = &t_old(a);
                 vb = &t_old(b);
             }
-            float duv1 = (float)(funpack(height) / scale * uv_scale_y);
+            auto duv1 = (float)(funpack(height) / scale * uv_scale_y);
             auto duv = FixedArray<float, 2>{ 0.f, duv1 };
             if (va->uv(0) == vb->uv(0)) {
                 std::swap(duv(0), duv(1));
@@ -351,9 +351,9 @@ void TriangleList<TPos>::extrude(
                     va->position,
                     vb->position,
                     (*t)(b).position,
-                    va->color * (1.f - old_ambient_occlusion),
-                    vb->color * (1.f - old_ambient_occlusion),
-                    vb->color * (1.f - new_ambient_occlusion),
+                    Colors::scale(va->color, 1.f - old_ambient_occlusion),
+                    Colors::scale(vb->color, 1.f - old_ambient_occlusion),
+                    Colors::scale(vb->color, 1.f - new_ambient_occlusion),
                     va->uv,
                     vb->uv,
                     vb->uv + duv);
@@ -362,23 +362,23 @@ void TriangleList<TPos>::extrude(
                     va->position,
                     vb->position,
                     (*t)(a).position,
-                    va->color * (1.f - old_ambient_occlusion),
-                    vb->color * (1.f - old_ambient_occlusion),
-                    va->color * (1.f - new_ambient_occlusion),
+                    Colors::scale(va->color, 1.f - old_ambient_occlusion),
+                    Colors::scale(vb->color, 1.f - old_ambient_occlusion),
+                    Colors::scale(va->color, 1.f - new_ambient_occlusion),
                     va->uv,
                     vb->uv,
                     va->uv + duv);
             } else {
-                float len = (float)std::sqrt(sum(squared(vb->position - va->position)));
+                auto len = (float)std::sqrt(sum(squared(vb->position - va->position)));
                 dest.draw_rectangle_wo_normals(
                     va->position,
                     vb->position,
                     (*t)(b).position,
                     (*t)(a).position,
-                    va->color * (1.f - old_ambient_occlusion),
-                    vb->color * (1.f - old_ambient_occlusion),
-                    vb->color * (1.f - new_ambient_occlusion),
-                    va->color * (1.f - new_ambient_occlusion),
+                    Colors::scale(va->color, 1.f - old_ambient_occlusion),
+                    Colors::scale(vb->color, 1.f - old_ambient_occlusion),
+                    Colors::scale(vb->color, 1.f - new_ambient_occlusion),
+                    Colors::scale(va->color, 1.f - new_ambient_occlusion),
                     uvs_equal_lengths ? FixedArray<float, 2>{0.f, 0.f} : va->uv,
                     uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, 0.f} : vb->uv,
                     uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, duv1} : vb->uv + duv,
@@ -632,10 +632,10 @@ void TriangleList<TPos>::smoothen_edges(
             const Vertex3& nn = *t.n1;
             FixedArray<float, 3> n0 = triangle_normal<I>(funpack(Triangle{ej, ei, nx})).template casted<float>();
             FixedArray<float, 3> n1 = triangle_normal<I>(funpack(Triangle{ei, ej, nn})).template casted<float>();
-            FixedArray<TPos, 3> cn = (nx + nn) / 2;
-            FixedArray<TPos, 3> ce = (ei + ej) / 2;
+            FixedArray<TPos, 3> cn = (nx + nn) / operand<TPos, 2>;
+            FixedArray<TPos, 3> ce = (ei + ej) / operand<TPos, 2>;
             FixedArray<float, 3> v = (cn - ce).template casted<float>();
-            FixedArray<float, 3> n01 = (n0 + n1) / 2;
+            FixedArray<float, 3> n01 = (n0 + n1) / 2.f;
             n01 /= std::sqrt(sum(squared(n01)));
             float n0n1 = dot0d(n0, n1);
             if (n0n1 >=0 && n0n1 < 1) {

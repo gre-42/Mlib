@@ -79,10 +79,11 @@ std::string parse_string(
     const std::string& key,
     const std::string& default_value);
 
-double parse_meters(
+template <class T>
+T parse_meters(
     const std::map<std::string, std::string>& tags,
     const std::string& key,
-    double default_value);
+    T default_value);
 
 float parse_radians(
     const std::map<std::string, std::string>& tags,

@@ -30,7 +30,19 @@ inline uint8_t from_float(float f) {
 }
 
 inline float to_float(uint8_t c) {
-    return c / 255.f;
+    return (float)c / 255.f;
+}
+
+inline uint8_t scale(uint8_t c, float s) {
+    return (uint8_t)std::clamp(std::round((float)c * s), 0.f, 255.f);
+}
+
+inline FixedArray<uint8_t, 4> scale(const FixedArray<uint8_t, 4>& c, float s) {
+    return {
+        scale(c(0), s),
+        scale(c(1), s),
+        scale(c(2), s),
+        c(3) };
 }
 
 inline FixedArray<uint8_t, 4> from_rgb(const FixedArray<float, 3>& rgb) {
