@@ -131,7 +131,8 @@ using namespace Mlib;
 OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const OsmResourceConfig& config,
-    const std::string& debug_prefix)
+    const std::string& debug_prefix,
+    FileStorageType file_storage_type)
     : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale }
     , scene_node_resources_{ scene_node_resources }
     , scale_{ config.scale }
@@ -952,7 +953,8 @@ OsmMapResource::OsmMapResource(
                 config.racing_line_playback,
                 normalization_matrix_,
                 get_geographic_mapping(TransformationMatrix<double, double, 3>::identity()),
-                *ground_bvh);
+                *ground_bvh,
+                file_storage_type);
         }
         LOG_INFO("add_models_to_model_nodes");
         try {

@@ -11,10 +11,10 @@ TrackElementFile::TrackElementFile(
   filename_{std::move(filename)}
 {
     if (istr_->fail()) {
-        if (filename.empty()) {
+        if (filename_.empty()) {
             THROW_OR_ABORT("Could not open track stream");
         } else {
-            THROW_OR_ABORT("Could not open track reader file \"" + filename + '"');
+            THROW_OR_ABORT("Could not open track reader file \"" + filename_ + '"');
         }
     }
 }

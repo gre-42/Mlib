@@ -1157,7 +1157,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         osm_map_resource = std::make_shared<OsmMapResource>(
             scene_node_resources,
             config,
-            resource_name);
+            resource_name,
+            FileStorageType::CACHE);
         if (enable_cache) {
             osm_map_resource->save_to_file(cache_filename, FileStorageType::CACHE);
             if (old_cache_file_version != CACHE_FILE_VERSION) {

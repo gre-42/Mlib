@@ -18,13 +18,14 @@ void Mlib::generate_racing_line_playback(
     const std::string& playback_filename,
     const TransformationMatrix<double, double, 2>& normalization_matrix,
     const TransformationMatrix<double, double, 3>& geographic_mapping,
-    const GroundBvh& ground_bvh)
+    const GroundBvh& ground_bvh,
+    FileStorageType file_storage_type)
 {
     auto mat = Array<double>::load_txt_2d(racing_line_filename, ArrayShape{0, 6});
     if (mat.shape(1) != 6) {
         THROW_OR_ABORT("File \"" + racing_line_filename + "\" does not have 6 columns");
     }
-    auto ofstr = create_ofstream(playback_filename);
+    auto ofstr = create_ofstream(playback_filename, std::ios_base::out, file_storage_type);
     if (ofstr->fail()) {
         THROW_OR_ABORT("Could not open racing line playback file \"" + playback_filename + "\" for writing");
     }

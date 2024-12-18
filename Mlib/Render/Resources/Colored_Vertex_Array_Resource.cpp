@@ -1090,7 +1090,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 checks.push_back("(cosine <= " + std::to_string(t->cosines(3)) + ')');
             }
             if (t->weight == 0.f) {
-                checks.push_back("(weight != 0.0)");
+                checks.emplace_back("(weight != 0.0)");
             }
             if (!checks.empty()) {
                 sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
@@ -1144,9 +1144,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                         THROW_OR_ABORT("Detail-mask with feather as zero discreteness");
                     }
                     sstr << "            weight += (0.5 - abs(weight - 0.5)) * (w + " << t->plus << ") * " << t->discreteness << ';' << std::endl;
-                    sstr << "            weight = clamp(weight, 0, 1);" << std::endl;
+                    sstr << "            weight = clamp(weight, 0.0, 1.0);" << std::endl;
                 } else if (t->reduction == BlendMapReductionOperation::INVERT) {
-                    sstr << "            weight = 1 - weight;" << std::endl;
+                    sstr << "            weight = 1.0 - weight;" << std::endl;
                 } else {
                     THROW_OR_ABORT("Unknown reduction operation");
                 }
@@ -1155,7 +1155,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 }
             } else if (any(t->texture_descriptor.color.color_mode & ColorMode::RGBA) && (t->discreteness != 0)) {
                 sstr << "            vec4 bcolor = texture(textures_color[" << i << "], " << tex_coords(*t) << ").rgba;" << std::endl;
-                sstr << "            float final_weight = weight * clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
+                sstr << "            float final_weight = weight * clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0.0, 1.0);" << std::endl;
                 // sstr << "            weight *= bcolor.a;" << std::endl;
             } else if (
                 any(t->texture_descriptor.color.color_mode & ColorMode::RGB) ||
@@ -1190,13 +1190,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     if (target == ReductionTarget::COLOR) {
                         if (t->reduction == BlendMapReductionOperation::REPLACE_COLOR) {
                             sstr << "            float brightness = dot(texture_color_ambient_diffuse.rgb, vec3(0.2989, 0.5870, 0.1140));" << std::endl;
-                            sstr << "            texture_color_ambient_diffuse.rgb *= (1 - final_weight);" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse.rgb *= (1.0 - final_weight);" << std::endl;
                             sstr << "            texture_color_ambient_diffuse.rgb += bcolor.rgb * (final_weight * brightness * " << t->discreteness << ");" << std::endl;
                         } else if (t->reduction == BlendMapReductionOperation::COLORIZE) {
-                            sstr << "            texture_color_ambient_diffuse.rgb *= (1 - final_weight) + bcolor.rgb * (final_weight * " << t->discreteness << ");" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse.rgb *= (1.0 - final_weight) + bcolor.rgb * (final_weight * " << t->discreteness << ");" << std::endl;
                         } else {
                             if (t->reduction == BlendMapReductionOperation::BLEND) {
-                                sstr << "            texture_color_ambient_diffuse.rgb *= (1 - final_weight);" << std::endl;
+                                sstr << "            texture_color_ambient_diffuse.rgb *= (1.0 - final_weight);" << std::endl;
                             }
                             sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= final_weight * bcolor.rgb;" << std::endl;
                         }

@@ -42,13 +42,15 @@ typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 class GroundBvh;
 class ColoredVertexArrayResource;
 enum class JoinedWayPointSandbox;
+enum class FileStorageType;
 
 class OsmMapResource: public ISceneNodeResource {
 public:
     OsmMapResource(
         SceneNodeResources& scene_node_resources,
         const OsmResourceConfig& config,
-        const std::string& debug_prefix);
+        const std::string& debug_prefix,
+        FileStorageType file_storage_type);
     OsmMapResource(
         SceneNodeResources& scene_node_resources,
         const std::string& level_filename,
