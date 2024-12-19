@@ -1104,7 +1104,7 @@ void DrawStreets::draw_streets_draw_ways(
                     cva->triangles,
                     scale,
                     wi.curb_alpha,
-                    (CompressedScenePos)42.3f,
+                    (CompressedScenePos)1.f,  // a scale factor for the ditch height
                     uv_sx,
                     (float)(uv_sy * uv_scale * uv_len0 - uv_len_central),
                     (float)(uv_sy * uv_scale * uv_len1 - uv_len_central));

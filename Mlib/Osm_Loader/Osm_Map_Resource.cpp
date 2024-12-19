@@ -1138,7 +1138,7 @@ OsmMapResource::OsmMapResource(
     //     colorize_height_map(l->triangles_);
     // }
 
-    if (!config.grass_resource_names.empty()) {
+    if (!config.grass_resource_names.empty() && config.much_grass_distance.has_value()) {
         ResourceNameCycle rnc{ config.grass_resource_names };
         LOG_INFO("add_grass_inside_triangles");
         add_grass_inside_triangles(
@@ -1146,7 +1146,7 @@ OsmMapResource::OsmMapResource(
             rnc,
             *(*tl_terrain_)[TerrainType::GRASS],
             config.scale,
-            config.much_grass_distance);
+            *config.much_grass_distance);
     }
     LOG_INFO("calculate spawn points");
     calculate_spawn_points(

@@ -126,9 +126,9 @@ struct OsmResourceConfig {
     std::vector<WaysideResourceNames> waysides;
     TerrainType bounding_terrain_type = TerrainType::UNDEFINED;
     TerrainType default_terrain_type = TerrainType::UNDEFINED;
-    float default_street_width = 7;
-    float default_lane_width = 4;
-    float default_tunnel_pipe_width = 1.f;
+    float default_street_width = 7 * meters;
+    float default_lane_width = 4 * meters;
+    float default_tunnel_pipe_width = 1.f * meters;
     CompressedScenePos default_tunnel_pipe_height = (CompressedScenePos)(4 * meters);
     float scale = 1;
     float triangulation_scale = 1;
@@ -158,7 +158,7 @@ struct OsmResourceConfig {
     bool with_tree_nodes = true;
     float forest_outline_tree_distance = 10.f;
     float forest_outline_tree_inwards_distance = 0;
-    CompressedScenePos much_grass_distance = (CompressedScenePos)5.f;
+    std::optional<CompressedScenePos> much_grass_distance = (CompressedScenePos)5.f;
     float raceway_beacon_distance = INFINITY;
     float min_dist_to_road = 0.5f;
     float min_dist_to_terrain_region = 10.f;

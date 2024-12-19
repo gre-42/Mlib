@@ -311,7 +311,11 @@ const std::string LoadOsmResource::key = "osm_resource";
 
 static auto from_meters = [](std::floating_point auto v) {
     return v * meters;
-};
+    };
+
+static auto fixed_from_meters = [](std::floating_point auto v) {
+    return (CompressedScenePos)from_meters(v);
+    };
 
 LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
@@ -865,7 +869,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.forest_outline_tree_inwards_distance = args.arguments.at<float>(KnownArgs::forest_outline_tree_inwards_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_grass_distance)) {
-            config.much_grass_distance = CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::much_grass_distance) * meters);
+            config.much_grass_distance = args.arguments.try_at_non_null<ScenePos>(KnownArgs::much_grass_distance).transform(fixed_from_meters);
         }
         if (args.arguments.contains(KnownArgs::street_mud_grass_distance)) {
             tconfig.street_mud_config.much_near_distance = args.arguments.at<float>(KnownArgs::street_mud_grass_distance) * meters;

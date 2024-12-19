@@ -15,9 +15,6 @@ void Mlib::add_grass_inside_triangles(
     float scale,
     CompressedScenePos distance)
 {
-    if (distance == std::numeric_limits<CompressedScenePos>::max()) {
-        return;
-    }
     TriangleSampler2<CompressedScenePos> ts{ 1 };
     FastNormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
     for (auto& t : triangles.triangles) {
