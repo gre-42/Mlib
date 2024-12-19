@@ -303,6 +303,16 @@ inline FixedArray<double, 3, 3> R_from_NxN<double, 4>(const FixedArray<double, 4
     return R3_from_4x4(a);
 }
 
+template <>
+inline FixedArray<long double, 2, 2> R_from_NxN<long double, 3>(const FixedArray<long double, 3, 3>& a) {
+    return R2_from_3x3(a);
+}
+
+template <>
+inline FixedArray<long double, 3, 3> R_from_NxN<long double, 4>(const FixedArray<long double, 4, 4>& a) {
+    return R3_from_4x4(a);
+}
+
 template <class TData, size_t n>
 FixedArray<TData, n-1> t_from_NxN(const FixedArray<TData, n, n>& a);
 
@@ -323,6 +333,16 @@ inline FixedArray<double, 2> t_from_NxN<double, 3>(const FixedArray<double, 3, 3
 
 template <>
 inline FixedArray<double, 3> t_from_NxN<double, 4>(const FixedArray<double, 4, 4>& a) {
+    return t3_from_4x4(a);
+}
+
+template <>
+inline FixedArray<long double, 2> t_from_NxN<long double, 3>(const FixedArray<long double, 3, 3>& a) {
+    return t2_from_3x3(a);
+}
+
+template <>
+inline FixedArray<long double, 3> t_from_NxN<long double, 4>(const FixedArray<long double, 4, 4>& a) {
     return t3_from_4x4(a);
 }
 
@@ -363,6 +383,13 @@ inline FixedArray<double, 4, 4> assemble_homogeneous_NxN<double, 3>(
     return assemble_homogeneous_4x4(R, t);
 }
 
+template <>
+inline FixedArray<long double, 4, 4> assemble_homogeneous_NxN<long double, 3>(
+    const FixedArray<long double, 3, 3>& R,
+    const FixedArray<long double, 3>& t)
+{
+    return assemble_homogeneous_4x4(R, t);
+}
 
 template <class TData, size_t n>
 inline FixedArray<TData, n, n + 1> assemble_homogeneous_NxN1(
@@ -378,9 +405,41 @@ inline FixedArray<float, 2, 3> assemble_homogeneous_NxN1<float, 2>(
 }
 
 template <>
+inline FixedArray<double, 2, 3> assemble_homogeneous_NxN1<double, 2>(
+    const FixedArray<double, 2, 2>& R,
+    const FixedArray<double, 2>& t)
+{
+    return assemble_homogeneous_2x3(R, t);
+}
+
+template <>
+inline FixedArray<long double, 2, 3> assemble_homogeneous_NxN1<long double, 2>(
+    const FixedArray<long double, 2, 2>& R,
+    const FixedArray<long double, 2>& t)
+{
+    return assemble_homogeneous_2x3(R, t);
+}
+
+template <>
 inline FixedArray<float, 3, 4> assemble_homogeneous_NxN1<float, 3>(
     const FixedArray<float, 3, 3>& R,
     const FixedArray<float, 3>& t)
+{
+    return assemble_homogeneous_3x4(R, t);
+}
+
+template <>
+inline FixedArray<double, 3, 4> assemble_homogeneous_NxN1<double, 3>(
+    const FixedArray<double, 3, 3>& R,
+    const FixedArray<double, 3>& t)
+{
+    return assemble_homogeneous_3x4(R, t);
+}
+
+template <>
+inline FixedArray<long double, 3, 4> assemble_homogeneous_NxN1<long double, 3>(
+    const FixedArray<long double, 3, 3>& R,
+    const FixedArray<long double, 3>& t)
 {
     return assemble_homogeneous_3x4(R, t);
 }

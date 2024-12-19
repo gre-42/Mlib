@@ -101,6 +101,7 @@ public:
         archive(spawn_points_);
         archive(way_points_);
         archive(normalization_matrix_);
+        archive(triangulation_normalization_matrix_);
         archive(tl_terrain_);
         archive(tls_no_grass_);
         archive(tl_mud_street_visuals_);
