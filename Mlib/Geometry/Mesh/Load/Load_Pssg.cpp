@@ -53,9 +53,9 @@ int uncompress2_patched(Bytef *dest, uLongf destLen,
 
     stream.next_in = (z_const Bytef *)source;
     stream.avail_in = 0;
-    stream.zalloc = (alloc_func)0;
-    stream.zfree = (free_func)0;
-    stream.opaque = (voidpf)0;
+    stream.zalloc = (alloc_func)nullptr;
+    stream.zfree = (free_func)nullptr;
+    stream.opaque = (voidpf)nullptr;
 
     // From: https://stackoverflow.com/questions/1838699/how-can-i-decompress-a-gzip-stream-with-zlib
     err = inflateInit2(&stream, 16 + MAX_WBITS);
@@ -107,10 +107,7 @@ std::istringstream uncompress_stream(
         end = begin + nbytes;
     }
     std::vector<char> compressed(integral_cast<size_t>(end - begin));
-    istr.read(compressed.data(), integral_cast<std::streamoff>(compressed.size()));
-    if (istr.fail()) {
-        THROW_OR_ABORT("Could not read compressed data: \"" + filename + '"');
-    }
+    read_vector(istr, compressed, "compressed data", IoVerbosity::SILENT);
 
     auto clength = integral_cast<uLongf>(compressed.size());
     std::string uncompressed_chunk(chunk_size, '?');
