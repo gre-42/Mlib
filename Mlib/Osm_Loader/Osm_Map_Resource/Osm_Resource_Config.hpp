@@ -158,7 +158,7 @@ struct OsmResourceConfig {
     bool with_tree_nodes = true;
     float forest_outline_tree_distance = 10.f * meters;
     float forest_outline_tree_inwards_distance = 0 * meters;
-    std::optional<CompressedScenePos> much_grass_distance = (CompressedScenePos)5.f;
+    float much_grass_distance = 5.f * meters;
     float raceway_beacon_distance = INFINITY;
     float min_dist_to_road = 0.5f;
     float min_dist_to_terrain_region = 10.f;

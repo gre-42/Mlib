@@ -869,7 +869,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.forest_outline_tree_inwards_distance = args.arguments.at<float>(KnownArgs::forest_outline_tree_inwards_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::much_grass_distance)) {
-            config.much_grass_distance = args.arguments.try_at_non_null<ScenePos>(KnownArgs::much_grass_distance).transform(fixed_from_meters);
+            config.much_grass_distance = args.arguments.at<float>(KnownArgs::much_grass_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::street_mud_grass_distance)) {
             tconfig.street_mud_config.much_near_distance = args.arguments.at<float>(KnownArgs::street_mud_grass_distance) * meters;
