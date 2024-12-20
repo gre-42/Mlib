@@ -156,8 +156,8 @@ struct OsmResourceConfig {
     VerticalSubdivision default_building_vertical_subdivision = VerticalSubdivision::SOCLE;
     bool remove_backfacing_triangles = true;
     bool with_tree_nodes = true;
-    float forest_outline_tree_distance = 10.f;
-    float forest_outline_tree_inwards_distance = 0;
+    float forest_outline_tree_distance = 10.f * meters;
+    float forest_outline_tree_inwards_distance = 0 * meters;
     std::optional<CompressedScenePos> much_grass_distance = (CompressedScenePos)5.f;
     float raceway_beacon_distance = INFINITY;
     float min_dist_to_road = 0.5f;

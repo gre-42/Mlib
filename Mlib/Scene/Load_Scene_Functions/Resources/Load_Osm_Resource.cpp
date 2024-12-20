@@ -905,7 +905,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             tconfig.no_grass_decals_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::dirt_decals_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::raceway_beacon_distance)) {
-            config.raceway_beacon_distance = args.arguments.at<float>(KnownArgs::raceway_beacon_distance);
+            config.raceway_beacon_distance = args.arguments.at<float>(KnownArgs::raceway_beacon_distance) * meters;
         }
         if (args.arguments.contains(KnownArgs::with_terrain)) {
             config.with_terrain = args.arguments.at<bool>(KnownArgs::with_terrain);
