@@ -419,12 +419,18 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     for (auto& l : result) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
-                vtrafo.transform_inplace(v);
+                vtrafo.transform_inplace(
+                    v,
+                    NormalVectorErrorBehavior::ZERO,
+                    TriangleTangentErrorBehavior::ZERO);
             }
         }
         for (auto& t : l->quads) {
             for (auto& v : t.flat_iterable()) {
-                vtrafo.transform_inplace(v);
+                vtrafo.transform_inplace(
+                    v,
+                    NormalVectorErrorBehavior::ZERO,
+                    TriangleTangentErrorBehavior::ZERO);
             }
         }
     }

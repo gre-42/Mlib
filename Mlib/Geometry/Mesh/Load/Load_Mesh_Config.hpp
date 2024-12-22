@@ -55,7 +55,7 @@ struct LoadMeshConfig {
     FixedArray<float, 3> lighten = FixedArray<float, 3>(0.f);
     std::vector<BlendMapTexture> textures;
     float period_world;
-    TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;
+    TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::THROW;
     bool apply_static_lighting;
     float laplace_ao_strength;
     bool dynamically_lighted;

@@ -835,7 +835,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     for (auto& l : result) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
-                trafo.transform_inplace(v);
+                trafo.transform_inplace(
+                    v,
+                    NormalVectorErrorBehavior::ZERO,
+                    TriangleTangentErrorBehavior::ZERO);
             }
         }
     }

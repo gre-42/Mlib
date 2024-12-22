@@ -16,7 +16,7 @@ FixedArray<TData, 3> triangle_tangent(
     const FixedArray<TData, 2>& uv0,
     const FixedArray<TData, 2>& uv1,
     const FixedArray<TData, 2>& uv2,
-    TriangleTangentErrorBehavior error_behavior = TriangleTangentErrorBehavior::RAISE)
+    TriangleTangentErrorBehavior error_behavior = TriangleTangentErrorBehavior::THROW)
 {
     FixedArray<TData, 3> edge0 = pos1 - pos0;
     FixedArray<TData, 3> edge1 = pos2 - pos0;

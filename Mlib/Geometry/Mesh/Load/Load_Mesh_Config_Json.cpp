@@ -102,7 +102,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
             : NAN,
         .triangle_tangent_error_behavior = j.contains(KnownArgs::triangle_tangent_error_behavior)
             ? triangle_tangent_error_behavior_from_string(j.at<std::string>(KnownArgs::triangle_tangent_error_behavior))
-            : TriangleTangentErrorBehavior::RAISE,
+            : TriangleTangentErrorBehavior::THROW,
         .apply_static_lighting = false,
         .laplace_ao_strength = 0.f,
         .dynamically_lighted = j.at<bool>(KnownArgs::dynamically_lighted, false),

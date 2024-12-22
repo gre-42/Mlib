@@ -8,7 +8,7 @@ TriangleTangentErrorBehavior Mlib::triangle_tangent_error_behavior_from_string(c
     static const std::map<std::string, TriangleTangentErrorBehavior> m{
         {"zero", TriangleTangentErrorBehavior::ZERO},
         {"warn", TriangleTangentErrorBehavior::WARN},
-        {"raise", TriangleTangentErrorBehavior::RAISE} };
+        {"throw", TriangleTangentErrorBehavior::THROW} };
     auto it = m.find(str);
     if (it == m.end()) {
         THROW_OR_ABORT("Unknown triangle tangent error behavior: " + str);

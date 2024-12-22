@@ -581,6 +581,9 @@ int main(int argc, char** argv) {
                     .shadow_render_pass = ExternalRenderPassType::NONE});
             } else {
                 return std::make_shared<Light>(Light{
+                    .ambient = fixed_full<float, 3>(safe_stof(args.named_value("--ambient", "1"))),
+                    .diffuse = fixed_full<float, 3>(safe_stof(args.named_value("--diffuse", "1"))),
+                    .specular = fixed_full<float, 3>(safe_stof(args.named_value("--specular", "1"))),
                     .lightmap_depth = nullptr,
                     .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
             }
@@ -1118,7 +1121,7 @@ int main(int argc, char** argv) {
                     true,                               // with_depth_texture
                     2048,                               // lightmap_width
                     2048,                               // lightmap_height
-                    FixedArray<uint32_t, 2>{2u, 2u}));  // smooth_niterations
+                    FixedArray<uint32_t, 2>{0u, 0u}));  // smooth_niterations (not supported for depth textures)
             }
         }
 

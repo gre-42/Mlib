@@ -134,7 +134,7 @@ void OsmRectangle2D::draw_z0(
             {},  // Bone weights
             {},  // Bone weights
             NormalVectorErrorBehavior::THROW,
-            TriangleTangentErrorBehavior::RAISE,
+            TriangleTangentErrorBehavior::THROW,
             RectangleTriangulationMode::DELAUNAY);
     }
 
@@ -164,7 +164,7 @@ void OsmRectangle2D::draw_z0(
             {},  // bone weights
             {},  // bone weights
             NormalVectorErrorBehavior::THROW,
-            TriangleTangentErrorBehavior::RAISE,
+            TriangleTangentErrorBehavior::THROW,
             RectangleTriangulationMode::DELAUNAY);
     }
     if (b_entrance_type != EntranceType::NONE && c_entrance_type != EntranceType::NONE) {
@@ -192,7 +192,7 @@ void OsmRectangle2D::draw_z0(
                 {},             // b11
                 {},             // b01
                 NormalVectorErrorBehavior::THROW,
-                TriangleTangentErrorBehavior::RAISE,
+                TriangleTangentErrorBehavior::THROW,
                 RectangleTriangulationMode::DELAUNAY);
         } else if (c_entrance_type == EntranceType::BRIDGE)
         {
@@ -225,7 +225,7 @@ void OsmRectangle2D::draw_z0(
                     {},             // b11
                     {},             // b01
                     NormalVectorErrorBehavior::THROW,
-                    TriangleTangentErrorBehavior::RAISE,
+                    TriangleTangentErrorBehavior::THROW,
                     RectangleTriangulationMode::DELAUNAY);
             }
         } else if (b_entrance_type == EntranceType::BRIDGE)
@@ -259,7 +259,7 @@ void OsmRectangle2D::draw_z0(
                     {},             // b11
                     {},             // b01
                     NormalVectorErrorBehavior::THROW,
-                    TriangleTangentErrorBehavior::RAISE,
+                    TriangleTangentErrorBehavior::THROW,
                     RectangleTriangulationMode::DELAUNAY);
             }
         }
