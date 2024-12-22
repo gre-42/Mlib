@@ -1053,9 +1053,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
         if (!cfg.textures.empty()) {
             r->material.textures_color = cfg.textures;
         }
-        if (!std::isnan(cfg.period_world)) {
-            r->material.period_world = cfg.period_world;
-        }
+        r->material.period_world = cfg.period_world;
         r->material.compute_color_mode();
         r->material.shading.emissive *= cfg.emissive_factor;
         r->material.shading.ambient *= cfg.ambient_factor;

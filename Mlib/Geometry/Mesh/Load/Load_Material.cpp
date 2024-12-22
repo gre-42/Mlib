@@ -31,6 +31,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     static const DECLARE_REGEX(map_Ke_reg, "^\\s*map_Ke +(.+)$");
     static const DECLARE_REGEX(map_Kd_reg, "^\\s*map_Kd +(.+)$");
     static const DECLARE_REGEX(map_Ks_reg, "^\\s*map_Ks +(.+)$");
+    static const DECLARE_REGEX(map_refl_reg, "^\\s*map_refl +(.+)$");
     static const DECLARE_REGEX(map_d_reg, "^\\s*map_d +(.+)$");
     static const DECLARE_REGEX(map_bump_reg, "^\\s*(?:map_Bump|bump) +(?:-bm \\S+ +)?(.+)$");
     static const DECLARE_REGEX(map_Ns_reg, "^\\s*map_Ns +(.+)$");
@@ -49,7 +50,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(line, match, newmtl_reg)) {
             mtl = match[1].str();
-            if (!mtllib.insert(std::make_pair(mtl, ObjMaterial())).second) {
+            if (!mtllib.try_emplace(mtl, ObjMaterial()).second) {
                 if (werror) {
                     THROW_OR_ABORT("Redefinition of material \"" + mtl + '"');
                 } else {
@@ -96,7 +97,9 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
             // do nothing
         } else if (Mlib::re::regex_match(line, match, map_Kd_reg)) {
             mtllib.at(mtl).color_texture = match[1].str();
-        } else if (Mlib::re::regex_match(line, match, map_Ks_reg)) {
+        } else if (Mlib::re::regex_match(line, match, map_Ks_reg) ||
+                   Mlib::re::regex_match(line, match, map_refl_reg))
+        {
             mtllib.at(mtl).specular_texture = match[1].str();
         } else if (Mlib::re::regex_match(line, match, map_bump_reg)) {
             mtllib.at(mtl).bump_texture = match[1].str();

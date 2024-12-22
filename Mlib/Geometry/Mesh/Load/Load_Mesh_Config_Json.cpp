@@ -99,7 +99,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .lighten = j.at<UFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
         .period_world = j.contains(KnownArgs::period_world)
             ? j.at<float>(KnownArgs::period_world)
-            : NAN,
+            : 0.f,
         .triangle_tangent_error_behavior = j.contains(KnownArgs::triangle_tangent_error_behavior)
             ? triangle_tangent_error_behavior_from_string(j.at<std::string>(KnownArgs::triangle_tangent_error_behavior))
             : TriangleTangentErrorBehavior::THROW,

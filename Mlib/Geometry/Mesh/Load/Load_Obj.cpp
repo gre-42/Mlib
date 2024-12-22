@@ -335,7 +335,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 std::string p = fs::path(filename).parent_path().string();
                 mtllib = load_mtllib(p == "" ? std::string{match[1].str()} : p + "/" + std::string{match[1].str()}, cfg.werror);
             } else if (SMatch<2> match; regex_match(line, match, usemtl_reg)) {
-                auto material_name = std::string{match[1].str()};
+                auto material_name = std::string{ match[1].str() };
                 current_mtl = mtllib.at(material_name);
                 TextureDescriptor td;
                 if (!current_mtl.color_texture.empty()) {
