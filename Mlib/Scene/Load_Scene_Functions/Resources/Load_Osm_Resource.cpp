@@ -314,7 +314,7 @@ static auto from_meters = [](std::floating_point auto v) {
     };
 
 static auto fixed_from_meters = [](std::floating_point auto v) {
-    return (CompressedScenePos)from_meters(v);
+    return CompressedScenePos::from_float_safe(from_meters(v));
     };
 
 LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
@@ -652,7 +652,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.water_texture = args.arguments.path_or_variable(KnownArgs::water_texture).path;
         }
         if (args.arguments.contains(KnownArgs::water_height)) {
-            config.water_height = CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::water_height) * meters);
+            config.water_height = fixed_from_meters(args.arguments.at<ScenePos>(KnownArgs::water_height));
         }
         if (args.arguments.contains_non_null(KnownArgs::road_bollard_resource_names)) {
             config.road_bollard_resource_names = args.arguments.at_vector<std::string>(KnownArgs::road_bollard_resource_names, parse_resource_name_func);
@@ -755,7 +755,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.default_tunnel_pipe_width = args.arguments.at<float>(KnownArgs::default_tunnel_pipe_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::default_tunnel_pipe_height)) {
-            config.default_tunnel_pipe_height = CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::default_tunnel_pipe_height) * meters);
+            config.default_tunnel_pipe_height = fixed_from_meters(args.arguments.at<ScenePos>(KnownArgs::default_tunnel_pipe_height));
         }
         if (args.arguments.contains(KnownArgs::scale)) {
             config.scale = args.arguments.at<float>(KnownArgs::scale);
@@ -980,36 +980,36 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.raise_streets_amount = args.arguments.at<float>(KnownArgs::raise_streets_amount) * meters;
         }
         if (args.arguments.contains(KnownArgs::extrude_curb_amount)) {
-            config.extrude_curb_amount = CompressedScenePos::from_float_safe(
-                args.arguments.at<ScenePos>(KnownArgs::extrude_curb_amount) * meters);
+            config.extrude_curb_amount = fixed_from_meters(
+                args.arguments.at<ScenePos>(KnownArgs::extrude_curb_amount));
         }
         if (args.arguments.contains(KnownArgs::extrude_street_amount)) {
-            config.extrude_street_amount = CompressedScenePos::from_float_safe(
-                args.arguments.at<ScenePos>(KnownArgs::extrude_street_amount) * meters);
+            config.extrude_street_amount = fixed_from_meters(
+                args.arguments.at<ScenePos>(KnownArgs::extrude_street_amount));
         }
         if (args.arguments.contains(KnownArgs::extrude_air_curb_amount)) {
-            config.extrude_air_curb_amount = CompressedScenePos::from_float_safe(
-                args.arguments.at<ScenePos>(KnownArgs::extrude_air_curb_amount) * meters);
+            config.extrude_air_curb_amount = fixed_from_meters(
+                args.arguments.at<ScenePos>(KnownArgs::extrude_air_curb_amount));
         }
         if (args.arguments.contains(KnownArgs::extrude_air_support_amount)) {
-            config.extrude_air_support_amount = CompressedScenePos::from_float_safe(
-                args.arguments.at<ScenePos>(KnownArgs::extrude_air_support_amount) * meters);
+            config.extrude_air_support_amount = fixed_from_meters(
+                args.arguments.at<ScenePos>(KnownArgs::extrude_air_support_amount));
         }
         if (args.arguments.contains(KnownArgs::extrude_wall_amount)) {
-            config.extrude_wall_amount = CompressedScenePos::from_float_safe(
-                args.arguments.at<ScenePos>(KnownArgs::extrude_wall_amount) * meters);
+            config.extrude_wall_amount = fixed_from_meters(
+                args.arguments.at<ScenePos>(KnownArgs::extrude_wall_amount));
         }
         if (args.arguments.contains(KnownArgs::extrude_grass_amount)) {
-            config.extrude_grass_amount = CompressedScenePos::from_float_safe(
-                args.arguments.at<ScenePos>(KnownArgs::extrude_grass_amount) * meters);
+            config.extrude_grass_amount = fixed_from_meters(
+                args.arguments.at<ScenePos>(KnownArgs::extrude_grass_amount));
         }
         if (args.arguments.contains(KnownArgs::extrude_elevated_grass_amount)) {
-            config.extrude_elevated_grass_amount = CompressedScenePos::from_float_safe(
-                args.arguments.at<ScenePos>(KnownArgs::extrude_elevated_grass_amount) * meters);
+            config.extrude_elevated_grass_amount = fixed_from_meters(
+                args.arguments.at<ScenePos>(KnownArgs::extrude_elevated_grass_amount));
         }
         if (args.arguments.contains(KnownArgs::extrude_water_floor_amout)) {
-            config.extrude_water_floor_amout = CompressedScenePos::from_float_safe(
-                args.arguments.at<ScenePos>(KnownArgs::extrude_water_floor_amout) * meters);
+            config.extrude_water_floor_amout = fixed_from_meters(
+                args.arguments.at<ScenePos>(KnownArgs::extrude_water_floor_amout));
         }
         if (args.arguments.contains_non_null(KnownArgs::street_light_resource_names)) {
             config.street_light_resource_names = args.arguments.at_vector<std::string>(KnownArgs::street_light_resource_names, parse_resource_name_func);
