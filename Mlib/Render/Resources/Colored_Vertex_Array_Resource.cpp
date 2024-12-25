@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
+#include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -12,6 +13,7 @@
 #include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
+#include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
@@ -2450,6 +2452,11 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
     } else {
         return **pva;
     }
+}
+
+std::list<TypedMesh<std::shared_ptr<IIntersectable>>> ColoredVertexArrayResource::get_intersectables() const
+{
+    return {};
 }
 
 void ColoredVertexArrayResource::set_absolute_joint_poses(
