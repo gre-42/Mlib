@@ -10,6 +10,7 @@
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
+#include <Mlib/Math/Inv.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
@@ -206,7 +207,7 @@ void SceneNodeResources::register_geographic_mapping(
         throw std::runtime_error("register_geographic_mapping for resource \"" + resource_name + "\" failed: " + e.what());
     }
     geographic_mappings_.add(instance_name, m);
-    geographic_mappings_.add(instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv(m.affine()).value() });
+    geographic_mappings_.add(instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv_preconditioned_rc(m.affine()).value() });
 }
 
 const TransformationMatrix<double, double, 3>* SceneNodeResources::get_geographic_mapping(const std::string& name) const

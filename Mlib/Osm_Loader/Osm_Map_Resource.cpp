@@ -1748,10 +1748,7 @@ void OsmMapResource::smoothen_edges(
 TransformationMatrix<double, double, 3> OsmMapResource::get_geographic_mapping(
     const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
 {
-    return get_geographic_mapping_3d(
-        normalization_matrix_.casted<long double, long double>(),
-        absolute_model_matrix.casted<long double, long double>(),
-        (long double)scale_).casted<double, double>();
+    return get_geographic_mapping_3d(normalization_matrix_, absolute_model_matrix, scale_);
 }
 
 std::list<SpawnPoint> OsmMapResource::spawn_points() const {

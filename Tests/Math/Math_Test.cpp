@@ -7,6 +7,7 @@
 #include <Mlib/Math/Huber_Norm.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Interpolate.hpp>
+#include <Mlib/Math/Inv.hpp>
 #include <Mlib/Math/Least_Common_Multiple.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Non_Zero_Ids.hpp>
@@ -524,6 +525,15 @@ void test_fixed_point() {
     linfo() << fixed;
 }
 
+void test_inv() {
+    auto a = FixedArray<float, 4, 4>{ normal_random_array<float>(ArrayShape{ 4, 4 }, 0) };
+    auto i = inv(a).value();
+    linfo() << "a\n" << a;
+    linfo() << "i\n" << i;
+    linfo() << "ip\n" << inv_preconditioned_rc(a).value();
+    linfo() << "ip\n" << inv_preconditioned_cr(a).value();
+}
+
 int main(int argc, const char** argv) {
     try {
         test_blocking_transposed();
@@ -567,6 +577,7 @@ int main(int argc, const char** argv) {
         test_fixed_sum();
         test_simd();
         test_fixed_point();
+        test_inv();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;

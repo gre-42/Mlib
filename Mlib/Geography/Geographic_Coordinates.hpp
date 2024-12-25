@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Math/Inv.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -105,7 +106,7 @@ TransformationMatrix<TData, TData, 3> get_geographic_mapping_3d(
         t2(0),
         t2(1),
         (TData)0};
-    return TransformationMatrix<TData, TData, 3>{inv((absolute_model_matrix * m3).affine()).value()};
+    return TransformationMatrix<TData, TData, 3>{inv_preconditioned_cr((absolute_model_matrix * m3).affine()).value()};
 }
 
 }
