@@ -447,9 +447,9 @@ void KeyBindings::increment_external_forces(
             auto trafo = node->absolute_model_matrix();
             auto z = trafo.R.column(2);
             if (k->geographic_mapping != nullptr) {
-                linfo() << "Position (lat, lon, height): " << k->geographic_mapping->transform(trafo.t);
+                linfo() << "Position (lat, lon, height): " << std::setprecision(18) << k->geographic_mapping->transform(trafo.t);
             }
-            linfo() << "Position: " << trafo.t / (ScenePos)meters;
+            linfo() << "Position: " << std::setprecision(18) << trafo.t / (ScenePos)meters;
             linfo() << "Pitch: " << z_to_pitch(z) / degrees;
             linfo() << "Yaw: " << z_to_yaw(z) / degrees;
         }
