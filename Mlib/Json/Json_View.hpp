@@ -80,7 +80,7 @@ public:
     }
     template <class T>
     T at_non_null(std::string_view name, const T& default_) const {
-        return (j_.at(name).type() != nlohmann::detail::value_t::null)
+        return contains_non_null(name)
             ? at<T>(name)
             : default_;
     }

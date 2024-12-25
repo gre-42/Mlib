@@ -81,7 +81,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .magnifying_interpolation_mode = interpolation_mode_from_string(j.at<std::string>(KnownArgs::magnifying_interpolation_mode, "nearest")),
         .aggregate_mode = aggregate_mode_from_string(j.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(j.at<std::string>(KnownArgs::transformation_mode)),
-        .reflection_map = VariableAndHash{ j.at<std::string>(KnownArgs::reflection_map, "") },
+        .reflection_map = VariableAndHash{ j.at_non_null<std::string>(KnownArgs::reflection_map, "") },
         .emissive_factor = j.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor, fixed_ones<float, 3>()),
         .ambient_factor = j.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
         .diffuse_factor = j.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
