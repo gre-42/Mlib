@@ -1374,6 +1374,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
     }
+    sstr << "    frag_brightness_specular *= vec3(" << specular(0) << ", " << specular(1) << ", " << specular(2) << ");" << std::endl;
     if (has_specularmap) {
         if (textures_color.size() != 1) {
             THROW_OR_ABORT("Specular maps not supported for blended textures");
@@ -1448,7 +1449,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_brightness_emissive_ambient_diffuse += dynamic_emissive;" << std::endl;
     }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
-    sstr << "    frag_brightness_specular *= vec3(" << specular(0) << ", " << specular(1) << ", " << specular(2) << ");" << std::endl;
     if ((fresnel.exponent != 0.f) || has_specularmap) {
         sstr << "    frag_color.rgb = mix(frag_color.rgb, frag_brightness_specular, frag_specular);" << std::endl;
     } else {
