@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scaled_Integer.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <complex>
 
 namespace Mlib {
@@ -11,7 +11,7 @@ inline constexpr float  conju(const float& v) { return v; }
 inline constexpr double conju(const double& v) { return v; }
 inline constexpr long double conju(const long double& v) { return v; }
 template <class TInt, std::intmax_t denominator>
-constexpr ScaledInteger<TInt, denominator> conju(const ScaledInteger<TInt, denominator>& v) {
+constexpr FixedPointNumber<TInt, denominator> conju(const FixedPointNumber<TInt, denominator>& v) {
     return v;
 }
 
@@ -23,7 +23,7 @@ inline bool is_finite(const std::complex<float>& v) { return std::isfinite(v.rea
 inline bool is_finite(const std::complex<double>& v) { return std::isfinite(v.real()) && std::isfinite(v.imag()) ; }
 inline bool is_finite(const std::complex<long double>& v) { return std::isfinite(v.real()) && std::isfinite(v.imag()) ; }
 template <class TInt, std::intmax_t denominator>
-constexpr bool is_finite(const ScaledInteger<TInt, denominator>& v) {
+constexpr bool is_finite(const FixedPointNumber<TInt, denominator>& v) {
     return true;
 }
 

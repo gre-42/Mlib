@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scaled_Integer.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <type_traits>
 
 namespace Mlib {
@@ -16,7 +16,7 @@ template <class T>
 IsNotScalarHelper is_scalar_helper(const T&);
 
 template <class TInt, std::intmax_t denominator>
-IsScalarHelper is_scalar_helper(const ScaledInteger<TInt, denominator>&);
+IsScalarHelper is_scalar_helper(const FixedPointNumber<TInt, denominator>&);
 
 template <class T>
 IsScalarHelper is_scalar_helper(const T&) requires std::is_scalar_v<T>;

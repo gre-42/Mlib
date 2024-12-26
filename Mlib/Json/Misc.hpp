@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Json/Base.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Scaled_Integer.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <map>
 #include <string_view>
@@ -76,10 +76,10 @@ void from_json(const nlohmann::json& j, VariableAndHash<TData>& v) {
 }
 
 template <class TInt, std::intmax_t denominator>
-void from_json(const nlohmann::json& j, ScaledInteger<TInt, denominator>& v) {
+void from_json(const nlohmann::json& j, FixedPointNumber<TInt, denominator>& v) {
     intermediate_float<TInt> vv;
     from_json(j, vv);
-    v = ScaledInteger<TInt, denominator>::from_float_safe(vv);
+    v = FixedPointNumber<TInt, denominator>::from_float_safe(vv);
 }
 
 template <class TData, class TOperation>

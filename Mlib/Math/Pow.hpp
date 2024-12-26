@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scaled_Integer.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Type_Traits/Scalar.hpp>
 #include <cmath>
 
@@ -11,9 +11,9 @@ auto pow(const TScalarA& a, const TScalarB& b) {
 }
 
 template <class TInt, std::intmax_t denominator>
-ScaledInteger<TInt, denominator> pow(
-    const ScaledInteger<TInt, denominator>& a,
-    const ScaledInteger<TInt, denominator>& b)
+FixedPointNumber<TInt, denominator> pow(
+    const FixedPointNumber<TInt, denominator>& a,
+    const FixedPointNumber<TInt, denominator>& b)
 {
     using I = intermediate_float<TInt>;
     return std::pow((I)a, (I)b);

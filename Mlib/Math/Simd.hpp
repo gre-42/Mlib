@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Scaled_Integer.hpp>
 #include <concepts>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
@@ -25,21 +25,21 @@ consteval bool requires_simd_optimization() {
 }
 
 template <std::intmax_t denominator>
-class PaddedFixedArray3Int32: public FixedArray<ScaledInteger<int32_t, denominator>, 3> {
+class PaddedFixedArray3Int32: public FixedArray<FixedPointNumber<int32_t, denominator>, 3> {
 public:
-    using FixedArray<ScaledInteger<int32_t, denominator>, 3>::FixedArray;
-    explicit PaddedFixedArray3Int32(const FixedArray<ScaledInteger<int32_t, denominator>, 3>& other)
-        : FixedArray<ScaledInteger<int32_t, denominator>, 3>{ other }
+    using FixedArray<FixedPointNumber<int32_t, denominator>, 3>::FixedArray;
+    explicit PaddedFixedArray3Int32(const FixedArray<FixedPointNumber<int32_t, denominator>, 3>& other)
+        : FixedArray<FixedPointNumber<int32_t, denominator>, 3>{ other }
     {}
     int32_t padding = 0;
 };
 
 template <std::intmax_t denominator>
-class PaddedFixedArray3Int16: public FixedArray<ScaledInteger<int16_t, denominator>, 3> {
+class PaddedFixedArray3Int16: public FixedArray<FixedPointNumber<int16_t, denominator>, 3> {
 public:
-    using FixedArray<ScaledInteger<int16_t, denominator>, 3>::FixedArray;
-    explicit PaddedFixedArray3Int16(const FixedArray<ScaledInteger<int16_t, denominator>, 3>& other)
-        : FixedArray<ScaledInteger<int16_t, denominator>, 3>{ other }
+    using FixedArray<FixedPointNumber<int16_t, denominator>, 3>::FixedArray;
+    explicit PaddedFixedArray3Int16(const FixedArray<FixedPointNumber<int16_t, denominator>, 3>& other)
+        : FixedArray<FixedPointNumber<int16_t, denominator>, 3>{ other }
     {}
     int16_t padding = 0;
 };
@@ -61,14 +61,14 @@ inline FixedArray<TData, tndim> get_padded_fixed_array(const FixedArray<TData, t
 
 template <std::intmax_t denominator>
 inline PaddedFixedArray3Int32<denominator> get_padded_fixed_array(
-    const FixedArray<ScaledInteger<int32_t, denominator>, 3>&)
+    const FixedArray<FixedPointNumber<int32_t, denominator>, 3>&)
 {
     verbose_abort("xx");
 }
 
 template <std::intmax_t denominator>
 inline PaddedFixedArray3Int16<denominator> get_padded_fixed_array(
-    const FixedArray<ScaledInteger<int16_t, denominator>, 3>&)
+    const FixedArray<FixedPointNumber<int16_t, denominator>, 3>&)
 {
     verbose_abort("xx");
 }

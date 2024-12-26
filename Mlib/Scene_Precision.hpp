@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Hash.hpp>
-#include <Mlib/Scaled_Integer.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Std_Hash.hpp>
 
 namespace Mlib {
@@ -8,8 +8,8 @@ namespace Mlib {
 using SceneDir = float;
 using ScenePos = double;
 
-using CompressedScenePos = ScaledInteger<int32_t, (1 << 11)>;
-using HalfCompressedScenePos = ScaledInteger<int16_t, (1 << 11)>;
+using CompressedScenePos = FixedPointNumber<int32_t, (1 << 11)>;
+using HalfCompressedScenePos = FixedPointNumber<int16_t, (1 << 11)>;
 
 }
 

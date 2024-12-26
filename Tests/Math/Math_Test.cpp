@@ -510,7 +510,7 @@ void test_fixed_sum() {
 }
 
 void test_simd() {
-    using S = ScaledInteger<int32_t, 5>;
+    using S = FixedPointNumber<int32_t, 5>;
     using V = padded_fixed_array_t<S, 3>;
     V a{ (S)1.f, (S)2.f, (S)3.f };
     V b{ (S)10.f, (S)20.f, (S)30.f };
@@ -521,7 +521,7 @@ void test_simd() {
 
 void test_fixed_point() {
     double v = 1.234;
-    auto fixed = ScaledInteger<int32_t, (1 << 11)>::from_float_safe(v);
+    auto fixed = FixedPointNumber<int32_t, (1 << 11)>::from_float_safe(v);
     linfo() << fixed;
 }
 

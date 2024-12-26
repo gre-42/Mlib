@@ -1,12 +1,12 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Scaled_Integer.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <concepts>
 
 namespace Mlib {
 
 template <class TInt, std::intmax_t denominator>
-inline auto funpack(const Array<ScaledInteger<TInt, denominator>>& a) {
+inline auto funpack(const Array<FixedPointNumber<TInt, denominator>>& a) {
     using I = intermediate_float<TInt>;
     return a.template casted<I>();
 }
@@ -17,7 +17,7 @@ inline const auto& funpack(const Array<TFloat>& a) {
 }
 
 template <class TInt, std::intmax_t denominator, size_t... tshape>
-inline auto funpack(const FixedArray<ScaledInteger<TInt, denominator>, tshape...>& a) {
+inline auto funpack(const FixedArray<FixedPointNumber<TInt, denominator>, tshape...>& a) {
     using I = intermediate_float<TInt>;
     return a.template casted<I>();
 }
@@ -28,7 +28,7 @@ inline const auto& funpack(const FixedArray<TFloat, tshape...>& a) {
 }
 
 template <class TInt, std::intmax_t denominator>
-inline auto funpack(const ScaledInteger<TInt, denominator>& a) {
+inline auto funpack(const FixedPointNumber<TInt, denominator>& a) {
     using I = intermediate_float<TInt>;
     return (I)a;
 }

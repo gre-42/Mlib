@@ -37,34 +37,34 @@ using intermediate_float = IntermediateTypes<T>::float_type;
 static const struct Explicit {} explicit_;
 
 template <std::integral TInt, std::intmax_t denominator>
-class ScaledInteger {
+class FixedPointNumber {
 private:
-    constexpr ScaledInteger(TInt count, Explicit)
+    constexpr FixedPointNumber(TInt count, Explicit)
         : count{ count }
     {}
 public:
-    inline ScaledInteger() {}
-    inline constexpr ScaledInteger(const ScaledInteger& other)
+    inline FixedPointNumber() {}
+    inline constexpr FixedPointNumber(const FixedPointNumber& other)
         : count{ other.count }
     {}
-    static constexpr inline ScaledInteger from_count(TInt count) {
+    static constexpr inline FixedPointNumber from_count(TInt count) {
         return { count, explicit_ };
     }
     template <std::floating_point F>
-    static constexpr inline ScaledInteger from_float_safe(const F& value) {
+    static constexpr inline FixedPointNumber from_float_safe(const F& value) {
         if (!std::isfinite(value)) {
             THROW_OR_ABORT("Floating-point value is not finite");
         }
-        auto res = ScaledInteger{ value };
+        auto res = FixedPointNumber{ value };
         if (std::abs((F)res - value) > (F)5 / denominator) {
             THROW_OR_ABORT("Large deviation after converting to fixed point");
         }
         return res;
     }
-    inline constexpr explicit ScaledInteger(const std::floating_point auto& value)
+    inline constexpr explicit FixedPointNumber(const std::floating_point auto& value)
         : count{ static_cast<TInt>(Mlib::round(value * denominator)) }
     {}
-    constexpr inline ScaledInteger& operator = (const ScaledInteger& other) {
+    constexpr inline FixedPointNumber& operator = (const FixedPointNumber& other) {
         count = other.count;
         return *this;
     }
@@ -77,39 +77,39 @@ public:
         return (TInt2)(intermediate_float<TInt>)(*this);
     }
     template <class TInt2>
-    constexpr inline explicit operator ScaledInteger<TInt2, denominator> () const {
-        return ScaledInteger<TInt2, denominator>::from_count((TInt2)count);
+    constexpr inline explicit operator FixedPointNumber<TInt2, denominator> () const {
+        return FixedPointNumber<TInt2, denominator>::from_count((TInt2)count);
     }
-    constexpr inline ScaledInteger& operator += (const ScaledInteger& other) {
+    constexpr inline FixedPointNumber& operator += (const FixedPointNumber& other) {
         count += other.count;
         return *this;
     }
-    constexpr inline ScaledInteger& operator -= (const ScaledInteger& other) {
+    constexpr inline FixedPointNumber& operator -= (const FixedPointNumber& other) {
         count -= other.count;
         return *this;
     }
-    constexpr inline ScaledInteger operator - () const {
+    constexpr inline FixedPointNumber operator - () const {
         return from_count(-count);
     }
-    constexpr inline ScaledInteger operator + () const {
+    constexpr inline FixedPointNumber operator + () const {
         return from_count(+count);
     }
-    constexpr inline bool operator < (const ScaledInteger& other) const {
+    constexpr inline bool operator < (const FixedPointNumber& other) const {
         return count < other.count;
     }
-    constexpr inline bool operator > (const ScaledInteger& other) const {
+    constexpr inline bool operator > (const FixedPointNumber& other) const {
         return count > other.count;
     }
-    constexpr inline bool operator == (const ScaledInteger& other) const {
+    constexpr inline bool operator == (const FixedPointNumber& other) const {
         return count == other.count;
     }
-    constexpr inline bool operator <= (const ScaledInteger& other) const {
+    constexpr inline bool operator <= (const FixedPointNumber& other) const {
         return count <= other.count;
     }
-    constexpr inline bool operator >= (const ScaledInteger& other) const {
+    constexpr inline bool operator >= (const FixedPointNumber& other) const {
         return count >= other.count;
     }
-    constexpr inline bool operator != (const ScaledInteger& other) const {
+    constexpr inline bool operator != (const FixedPointNumber& other) const {
         return count != other.count;
     }
     constexpr inline void print(std::ostream& ostr) const {
@@ -123,91 +123,91 @@ public:
 };
 
 template <std::integral TInt, std::intmax_t denominator>
-inline ScaledInteger<TInt, denominator> operator + (
-    const ScaledInteger<TInt, denominator>& a,
-    const ScaledInteger<TInt, denominator>& b)
+inline FixedPointNumber<TInt, denominator> operator + (
+    const FixedPointNumber<TInt, denominator>& a,
+    const FixedPointNumber<TInt, denominator>& b)
 {
-    return ScaledInteger<TInt, denominator>::from_count(a.count + b.count);
+    return FixedPointNumber<TInt, denominator>::from_count(a.count + b.count);
 }
 
 template <std::integral TInt, std::intmax_t denominator>
 inline intermediate_float<TInt> operator + (
     const intermediate_float<TInt>& a,
-    const ScaledInteger<TInt, denominator>& b)
+    const FixedPointNumber<TInt, denominator>& b)
 {
     return a + (intermediate_float<TInt>)b;
 }
 
 template <std::integral TInt, std::intmax_t denominator>
-inline ScaledInteger<TInt, denominator> operator - (
-        const ScaledInteger<TInt, denominator>& a,
-        const ScaledInteger<TInt, denominator>& b)
+inline FixedPointNumber<TInt, denominator> operator - (
+        const FixedPointNumber<TInt, denominator>& a,
+        const FixedPointNumber<TInt, denominator>& b)
 {
-    return ScaledInteger<TInt, denominator>::from_count(a.count - b.count);
+    return FixedPointNumber<TInt, denominator>::from_count(a.count - b.count);
 }
 
 // template <class TInt, std::intmax_t denominator>
-// inline ScaledInteger<TInt, denominator> operator * (
-//     const ScaledInteger<TInt, denominator>& a,
-//     const ScaledInteger<TInt, denominator>& b)
+// inline FixedPointNumber<TInt, denominator> operator * (
+//     const FixedPointNumber<TInt, denominator>& a,
+//     const FixedPointNumber<TInt, denominator>& b)
 // {
 //     using I = intermediate_float<TInt>;
 //     return { (I)a * (I)b };
 // }
 
 template <std::integral TInt, std::intmax_t denominator, std::integral I>
-inline ScaledInteger<TInt, denominator> operator * (
-    const ScaledInteger<TInt, denominator>& a,
+inline FixedPointNumber<TInt, denominator> operator * (
+    const FixedPointNumber<TInt, denominator>& a,
     I b)
 {
-    return ScaledInteger<TInt, denominator>::from_count((TInt)(a.count * b));
+    return FixedPointNumber<TInt, denominator>::from_count((TInt)(a.count * b));
 }
 
 template <std::integral TInt, std::intmax_t denominator, std::floating_point F>
-inline ScaledInteger<TInt, denominator> operator * (
-    const ScaledInteger<TInt, denominator>& a,
+inline FixedPointNumber<TInt, denominator> operator * (
+    const FixedPointNumber<TInt, denominator>& a,
     F b)
 {
-    return (ScaledInteger<TInt, denominator>)((F)a * b);
+    return (FixedPointNumber<TInt, denominator>)((F)a * b);
 }
 
 template <std::integral TInt, std::intmax_t denominator, std::floating_point F>
-inline ScaledInteger<TInt, denominator> operator * (
+inline FixedPointNumber<TInt, denominator> operator * (
     F a,
-    const ScaledInteger<TInt, denominator>& b)
+    const FixedPointNumber<TInt, denominator>& b)
 {
-    return (ScaledInteger<TInt, denominator>)(a * (F)b);
+    return (FixedPointNumber<TInt, denominator>)(a * (F)b);
 }
 
 // template <std::integral TInt, std::intmax_t denominator>
-// inline ScaledInteger<intermediate_count<TInt>, denominator> operator * (
-//     const ScaledInteger<TInt, denominator>& a,
-//     const ScaledInteger<TInt, denominator>& b)
+// inline FixedPointNumber<intermediate_count<TInt>, denominator> operator * (
+//     const FixedPointNumber<TInt, denominator>& a,
+//     const FixedPointNumber<TInt, denominator>& b)
 // {
 //     using I = intermediate_count<TInt>;
-//     return ScaledInteger<I, denominator>::from_count(((I)a * (I)b) / denominator);
+//     return FixedPointNumber<I, denominator>::from_count(((I)a * (I)b) / denominator);
 // }
 
 template <std::integral TInt, std::intmax_t denominator, std::integral I>
-inline ScaledInteger<TInt, denominator> operator / (
-    const ScaledInteger<TInt, denominator>& a,
+inline FixedPointNumber<TInt, denominator> operator / (
+    const FixedPointNumber<TInt, denominator>& a,
     I b)
 {
-    return ScaledInteger<TInt, denominator>::from_count(a.count / b);
+    return FixedPointNumber<TInt, denominator>::from_count(a.count / b);
 }
 
 // template <std::integral TInt, std::intmax_t denominator>
-// inline ScaledInteger<TInt, denominator> operator / (
-//         const ScaledInteger<TInt, denominator>& a,
-//         const ScaledInteger<TInt, denominator>& b)
+// inline FixedPointNumber<TInt, denominator> operator / (
+//         const FixedPointNumber<TInt, denominator>& a,
+//         const FixedPointNumber<TInt, denominator>& b)
 // {
 //     using I = intermediate_float<TInt>;
 //     return { (I)a / (I)b };
 // }
 
 template <std::integral TInt, std::intmax_t denominator, std::integral I>
-inline ScaledInteger<TInt, denominator>& operator /= (
-    ScaledInteger<TInt, denominator>& a,
+inline FixedPointNumber<TInt, denominator>& operator /= (
+    FixedPointNumber<TInt, denominator>& a,
     I n)
 {
     a.count /= n;
@@ -215,8 +215,8 @@ inline ScaledInteger<TInt, denominator>& operator /= (
 }
 
 template <std::integral TInt, std::intmax_t denominator>
-inline ScaledInteger<TInt, denominator>& operator *= (
-    ScaledInteger<TInt, denominator>& a,
+inline FixedPointNumber<TInt, denominator>& operator *= (
+    FixedPointNumber<TInt, denominator>& a,
     TInt n)
 {
     a.count *= n;
@@ -224,8 +224,8 @@ inline ScaledInteger<TInt, denominator>& operator *= (
 }
 
 template <std::integral TInt, std::intmax_t denominator, std::floating_point F>
-inline ScaledInteger<TInt, denominator>& operator *= (
-    ScaledInteger<TInt, denominator>& a,
+inline FixedPointNumber<TInt, denominator>& operator *= (
+    FixedPointNumber<TInt, denominator>& a,
     F b)
 {
     a = a * b;
@@ -233,17 +233,17 @@ inline ScaledInteger<TInt, denominator>& operator *= (
 }
 
 template <std::integral TInt, std::intmax_t denominator>
-inline std::ostream& operator << (std::ostream& ostr, const ScaledInteger<TInt, denominator>& i) {
+inline std::ostream& operator << (std::ostream& ostr, const FixedPointNumber<TInt, denominator>& i) {
     i.print(ostr);
     return ostr;
 }
 
 template <std::integral TInt, std::intmax_t denominator>
-inline std::iostream& operator >> (std::iostream& istr, ScaledInteger<TInt, denominator>& i) {
+inline std::iostream& operator >> (std::iostream& istr, FixedPointNumber<TInt, denominator>& i) {
     intermediate_float<TInt> f;
     istr >> f;
     if (!istr.fail()) {
-        i = ScaledInteger<TInt, denominator>{ f };
+        i = FixedPointNumber<TInt, denominator>{ f };
     }
     return istr;
 }
@@ -252,15 +252,15 @@ inline std::iostream& operator >> (std::iostream& istr, ScaledInteger<TInt, deno
 
 namespace std {
     template <std::integral TInt, std::intmax_t denominator>
-    class numeric_limits<Mlib::ScaledInteger<TInt, denominator>> {
-        using T = Mlib::ScaledInteger<TInt, denominator>;
+    class numeric_limits<Mlib::FixedPointNumber<TInt, denominator>> {
+        using T = Mlib::FixedPointNumber<TInt, denominator>;
     public:
         static constexpr T lowest() { return T::from_count(std::numeric_limits<TInt>::lowest()); };
         static constexpr T max() { return T::from_count(std::numeric_limits<TInt>::max()); };
     };
 
     template <std::integral TInt, std::intmax_t denominator>
-    std::string to_string(const Mlib::ScaledInteger<TInt, denominator>& v) {
+    std::string to_string(const Mlib::FixedPointNumber<TInt, denominator>& v) {
         return (std::stringstream() << v).str();
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
-#include <Mlib/Scaled_Integer.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
@@ -15,7 +15,7 @@ class AudioBuffer;
 template <class TPosition>
 struct AudioSourceState;
 
-using Gain = ScaledInteger<int32_t, (1 << 13)>;
+using Gain = FixedPointNumber<int32_t, (1 << 13)>;
 
 struct AudioSourceAndGain {
     const AudioBuffer* audio_buffer;

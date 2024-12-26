@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scaled_Integer.hpp>
+#include <Mlib/Math/Fixed_Point_Number.hpp>
 
 namespace Mlib {
 
