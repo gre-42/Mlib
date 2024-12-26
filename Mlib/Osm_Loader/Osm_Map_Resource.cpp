@@ -1650,6 +1650,33 @@ OsmMapResource::~OsmMapResource()
 
 void OsmMapResource::preload(const RenderableResourceFilter& filter) const {
     hri_.preload(filter);
+    auto preload_styles = [&](const TerrainStyle& style) {
+        if (style.is_visible()) {
+            for (const auto& p : style.config.near_resource_names_valley_regular) {
+                scene_node_resources_.preload_single(*p.name, filter);
+            }
+            for (const auto& p : style.config.near_resource_names_mountain_regular) {
+                scene_node_resources_.preload_single(*p.name, filter);
+            }
+            for (const auto& p : style.config.near_resource_names_valley_dirt) {
+                scene_node_resources_.preload_single(*p.name, filter);
+            }
+            for (const auto& p : style.config.near_resource_names_mountain_dirt) {
+                scene_node_resources_.preload_single(*p.name, filter);
+            }
+        }
+        };
+    preload_styles(terrain_styles_.street_mud_terrain_style);
+    preload_styles(terrain_styles_.path_mud_terrain_style);
+    preload_styles(terrain_styles_.near_grass_terrain_style);
+    preload_styles(terrain_styles_.far_grass_terrain_style);
+    preload_styles(terrain_styles_.near_wayside1_grass_terrain_style);
+    preload_styles(terrain_styles_.near_wayside2_grass_terrain_style);
+    preload_styles(terrain_styles_.near_flowers_terrain_style);
+    preload_styles(terrain_styles_.far_flowers_terrain_style);
+    preload_styles(terrain_styles_.near_trees_terrain_style);
+    preload_styles(terrain_styles_.far_trees_terrain_style);
+    preload_styles(terrain_styles_.no_grass_decals_terrain_style);
 }
 
 TerrainTriangles OsmMapResource::terrain_triangles() const {
