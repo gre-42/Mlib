@@ -169,6 +169,7 @@ void TextResource::render() const
     CHK(glEnable(GL_CULL_FACE));
     CHK(glEnable(GL_BLEND));
     CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    CHK(glDepthMask(GL_FALSE));
 
     rp_.use();
     CHK(glUniform3fv(rp_.color_location, 1, color_.flat_begin()));
@@ -181,8 +182,10 @@ void TextResource::render() const
 
     // render quad
     CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(vdata_.size() * 2 * 3)));
+    CHK(glBindVertexArray(0));
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
+    CHK(glDepthMask(GL_TRUE));
 }
 
 void TextResource::render(

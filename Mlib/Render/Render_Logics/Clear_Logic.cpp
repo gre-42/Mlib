@@ -1,5 +1,6 @@
 #include "Clear_Logic.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 
 using namespace Mlib;
@@ -70,6 +71,7 @@ void ClearLogic::ensure_va_initialized() {
 }
 
 void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
+    notify_rendering(CURRENT_SOURCE_LOCATION);
     std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_color_only_.allocated()) {
@@ -84,6 +86,7 @@ void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
 }
 
 void ClearLogic::clear_depth() {
+    notify_rendering(CURRENT_SOURCE_LOCATION);
     std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_depth_only_.allocated()) {
@@ -105,6 +108,7 @@ void ClearLogic::clear_depth() {
 }
 
 void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
+    notify_rendering(CURRENT_SOURCE_LOCATION);
     std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_color_and_depth_.allocated()) {

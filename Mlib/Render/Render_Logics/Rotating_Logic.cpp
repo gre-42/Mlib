@@ -155,7 +155,7 @@ void RotatingLogic::render_with_setup(
 
     key_callback(window_, button_states_, user_object_, *keys_);
 
-    RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
+    notify_rendering(CURRENT_SOURCE_LOCATION);
     float aspect_ratio = lx.flength() / ly.flength();
 
     DanglingRef<SceneNode> cn = scene_.get_node("camera", DP_LOC);

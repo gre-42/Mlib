@@ -48,12 +48,14 @@ RenderToFrameBufferGuard::RenderToFrameBufferGuard(std::shared_ptr<IFrameBuffer>
 }
 
 RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
+    last_frame_buffer->unbind(CURRENT_SOURCE_LOCATION);
+    bound_frame_buffer = nullptr;
     last_frame_buffer = previous_frame_buffer_;
 }
 
-RenderToScreenGuard::RenderToScreenGuard(SourceLocation loc) {
-    is_active_ = (bound_frame_buffer != last_frame_buffer);
-    if (!is_active_) {
+void Mlib::notify_rendering(SourceLocation loc) {
+    bool is_active = (bound_frame_buffer != last_frame_buffer);
+    if (!is_active) {
         return;
     }
     if (last_frame_buffer != nullptr) {
@@ -64,15 +66,5 @@ RenderToScreenGuard::RenderToScreenGuard(SourceLocation loc) {
         last_frame_buffer->bind(loc);
         bound_frame_buffer = last_frame_buffer;
         bound_source_location = loc;
-    }
-}
-
-RenderToScreenGuard::~RenderToScreenGuard() {
-    if (!is_active_) {
-        return;
-    }
-    if (last_frame_buffer != nullptr) {
-        last_frame_buffer->unbind(CURRENT_SOURCE_LOCATION);
-        bound_frame_buffer = nullptr;
     }
 }

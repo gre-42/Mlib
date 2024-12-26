@@ -89,6 +89,7 @@ void FillWithTextureLogic::render_wo_update_and_bind()
 
     ensure_allocated();
 
+    notify_rendering(CURRENT_SOURCE_LOCATION);
     if (cull_face_mode_ == CullFaceMode::CULL) {
         CHK(glEnable(GL_CULL_FACE));
     }
@@ -141,7 +142,6 @@ void FillWithTextureLogic::render_wo_update_and_bind()
 }
 
 void FillWithTextureLogic::render(ClearMode clear_mode) {
-    RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
     switch (clear_mode) {
     case ClearMode::OFF:
         break;
@@ -161,6 +161,6 @@ void FillWithTextureLogic::render(
     LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
     auto vg = ViewportGuard::from_widget(PixelRegion{ lx, ly });
     if (vg.has_value()) {
-        render(ClearMode::OFF);
+        render_wo_update_and_bind();
     }
 }

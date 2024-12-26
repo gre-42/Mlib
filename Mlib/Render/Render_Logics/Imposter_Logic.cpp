@@ -314,7 +314,7 @@ void ImposterLogic::render_without_setup(
             InstancesRendererGuard irg{
                 std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                 std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
-            // RenderToScreenGuard rsg;
+            // notify_rendering(CURRENT_SOURCE_LOCATION);
             // CHK(glClearColor(1.f, 0.f, 1.f, 1.f));
             // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
             child_logic_.render_toplevel(

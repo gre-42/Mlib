@@ -196,7 +196,7 @@ void FxaaLogic::render_with_setup(
         // CHK(glClear(GL_COLOR_BUFFER_BIT));
 
         {
-            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
+            notify_rendering(CURRENT_SOURCE_LOCATION);
             rp_.use();
 
             CHK(glUniform1i(rp_.screen_texture_color_location, 0));

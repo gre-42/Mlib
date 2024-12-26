@@ -151,7 +151,7 @@ bool BloomLogic::render_optional_setup(
         {
             RenderToFrameBufferGuard rfg{ bloom_fbs_[bloom_target_id] };
             ViewportGuard vg{ width, height };
-            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
+            notify_rendering(CURRENT_SOURCE_LOCATION);
 
             rp_threshold_.use();
 
@@ -169,7 +169,7 @@ bool BloomLogic::render_optional_setup(
         }
         lowpass_.render(width, height, niterations_, bloom_fbs_, bloom_target_id);
         {
-            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
+            notify_rendering(CURRENT_SOURCE_LOCATION);
             rp_blend_.use();
 
             CHK(glUniform1i(rp_blend_.screen_texture_color_location, 0));

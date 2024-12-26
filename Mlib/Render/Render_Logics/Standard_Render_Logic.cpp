@@ -49,8 +49,6 @@ void StandardRenderLogic::render_with_setup(
 {
     LOG_FUNCTION("StandardRenderLogic::render");
 
-    RenderToScreenGuard rg{ CURRENT_SOURCE_LOCATION };
-
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
         clear_color_and_depth({0.f, 0.f, 0.f, 1.f});
     } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {

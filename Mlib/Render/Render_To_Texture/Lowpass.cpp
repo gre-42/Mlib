@@ -76,7 +76,7 @@ void Lowpass::render(
             target_id = 1 - source_id;
             RenderToFrameBufferGuard rfg{ fbs[target_id] };
             ViewportGuard vg{ width, height };
-            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
+            notify_rendering(CURRENT_SOURCE_LOCATION);
 
             CHK(glUniform1i(rp.texture_color_location, 0));
             CHK(glUniform1f(rp.lowpass_offset_location, offset2));
