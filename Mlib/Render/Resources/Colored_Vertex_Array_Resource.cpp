@@ -1410,13 +1410,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 fresnel_emissive = vec3(" << fresnel_emissive(0) << ", " << fresnel_emissive(1) << ", " << fresnel_emissive(2) << ");" << std::endl;
         sstr << "    frag_brightness_specular += fresnel_emissive;" << std::endl;
     }
-    if (has_lightmap_color && !black_shadow_indices.empty()) {
-        sstr << "    frag_brightness_emissive_ambient_diffuse *= black_fac;" << std::endl;
-        sstr << "    frag_brightness_specular *= black_fac;" << std::endl;
-    }
-    if (!skidmarks.empty()) {
-        sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac;" << std::endl;
-        sstr << "    frag_brightness_specular *= skidmark_fac;" << std::endl;
+    if (!ambient.all_equal(0) || !diffuse.all_equal(0) || !specular.all_equal(0)) {
+        if (has_lightmap_color && !black_shadow_indices.empty()) {
+            sstr << "    frag_brightness_emissive_ambient_diffuse *= black_fac;" << std::endl;
+            sstr << "    frag_brightness_specular *= black_fac;" << std::endl;
+        }
+        if (!skidmarks.empty()) {
+            sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac;" << std::endl;
+            sstr << "    frag_brightness_specular *= skidmark_fac;" << std::endl;
+        }
     }
     if ((ntextures_color == 0) && has_dirtmap) {
         THROW_OR_ABORT("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");

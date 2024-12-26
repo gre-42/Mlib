@@ -303,76 +303,82 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> black_shadow_indices;
     std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> filtered_skidmarks;
     bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
-    bool depends_on_light =
-        !cva->material.shading.ambient.all_equal(0) ||
-        !cva->material.shading.diffuse.all_equal(0) ||
-        !cva->material.shading.specular.all_equal(0) ||
-        !cva->material.shading.fresnel.ambient.all_equal(0);
     if (!is_lightmap) {
-        if (depends_on_light) {
-            filtered_lights.reserve(lights.size());
-            light_noshadow_indices.reserve(lights.size());
-            light_shadow_indices.reserve(lights.size());
-            black_shadow_indices.reserve(lights.size());
-            lightmap_indices.reserve(lights.size());
-            {
-                for (const auto& tl : lights) {
-                    const auto& l = *tl.second;
-                    // By this definition, objects are occluded/lighted (occluded_pass)
-                    // by several shadowmaps/lightmaps (low-resolution and high-resolution shadowmaps).
-                    // The occluder_pass is checked in the "VisibilityCheck" class.
-                    if (cva->material.occluded_pass < l.shadow_render_pass) {
-                        continue;
-                    }
-                    bool light_emits_colors = l.emits_colors();
-                    bool light_casts_shadows = any(l.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
+        filtered_lights.reserve(lights.size());
+        light_noshadow_indices.reserve(lights.size());
+        light_shadow_indices.reserve(lights.size());
+        black_shadow_indices.reserve(lights.size());
+        lightmap_indices.reserve(lights.size());
+        for (const auto& tl : lights) {
+            const auto& l = *tl.second;
+            // By this definition, objects are occluded/lighted (occluded_pass)
+            // by several shadowmaps/lightmaps (low-resolution and high-resolution shadowmaps).
+            // The occluder_pass is checked in the "VisibilityCheck" class.
+            if (cva->material.occluded_pass < l.shadow_render_pass) {
+                continue;
+            }
+            bool light_emits_colors = l.emits_colors();
+            bool light_casts_shadows = any(l.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
 
-                    if (!light_emits_colors && !light_casts_shadows) {
-                        continue;
+            if (!light_casts_shadows) {
+                if (!light_emits_colors) {
+                    continue;
+                }
+                if (all(l.ambient * cva->material.shading.ambient == 0.f) &&
+                    all(l.diffuse * cva->material.shading.diffuse == 0.f) &&
+                    all(l.specular * cva->material.shading.specular == 0.f) &&
+                    all(l.fresnel_ambient * cva->material.shading.fresnel.ambient == 0.f))
+                {
+                    continue;
+                }
+            }
+            size_t i = filtered_lights.size();
+            filtered_lights.push_back(tl);
+            if (light_emits_colors) {
+                if (light_casts_shadows) {
+                    lightmap_indices.push_back(i);
+                    light_shadow_indices.push_back(i);
+                    if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) &&
+                        (l.lightmap_color == nullptr))
+                    {
+                        THROW_OR_ABORT("Light with color shadows has no color texture");
                     }
-                    size_t i = filtered_lights.size();
-                    filtered_lights.push_back(tl);
-                    if (light_emits_colors) {
-                        if (light_casts_shadows) {
-                            lightmap_indices.push_back(i);
-                            light_shadow_indices.push_back(i);
-                            if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) &&
-                                (l.lightmap_color == nullptr))
-                            {
-                                THROW_OR_ABORT("Light with color shadows has no color texture");
-                            }
-                            if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) &&
-                                (l.lightmap_depth == nullptr))
-                            {
-                                THROW_OR_ABORT("Light with depth shadows has no depth texture");
-                            }
-                        } else {
-                            light_noshadow_indices.push_back(i);
-                            if (l.lightmap_color != nullptr) {
-                                THROW_OR_ABORT("Light without shadow has a color texture");
-                            }
-                            if (l.lightmap_depth != nullptr) {
-                                THROW_OR_ABORT("Light without shadow has a depth texture");
-                            }
-                        }
-                    } else {
-                        lightmap_indices.push_back(i);
-                        black_shadow_indices.push_back(i);
-                        if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) &&
-                            (l.lightmap_color == nullptr))
-                        {
-                            THROW_OR_ABORT("Black shadow has no color texture");
-                        }
-                        if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) &&
-                            (l.lightmap_depth == nullptr))
-                        {
-                            THROW_OR_ABORT("Black shadow has no depth texture");
-                        }
+                    if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) &&
+                        (l.lightmap_depth == nullptr))
+                    {
+                        THROW_OR_ABORT("Light with depth shadows has no depth texture");
                     }
+                } else {
+                    light_noshadow_indices.push_back(i);
+                    if (l.lightmap_color != nullptr) {
+                        THROW_OR_ABORT("Light without shadow has a color texture");
+                    }
+                    if (l.lightmap_depth != nullptr) {
+                        THROW_OR_ABORT("Light without shadow has a depth texture");
+                    }
+                }
+            } else {
+                lightmap_indices.push_back(i);
+                black_shadow_indices.push_back(i);
+                if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) &&
+                    (l.lightmap_color == nullptr))
+                {
+                    THROW_OR_ABORT("Black shadow has no color texture");
+                }
+                if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) &&
+                    (l.lightmap_depth == nullptr))
+                {
+                    THROW_OR_ABORT("Black shadow has no depth texture");
                 }
             }
         }
-        if (cva->material.contains_skidmarks && (depends_on_light || !cva->material.shading.emissive.all_equal(0.f))) {
+        bool no_light_active = light_noshadow_indices.empty() && light_shadow_indices.empty();
+        if (no_light_active) {
+            filtered_lights.clear();
+            black_shadow_indices.clear();
+            lightmap_indices.clear();
+        }
+        if (cva->material.contains_skidmarks && (!no_light_active || !cva->material.shading.emissive.all_equal(0.f))) {
             filtered_skidmarks = std::vector(skidmarks.begin(), skidmarks.end());
         }
     }
