@@ -477,7 +477,7 @@ void Player::increment_external_forces(
         }
     }
     bool unstucking = false;
-    if (game_mode_ == GameMode::RACING) {
+    if (game_mode_ == GameMode::RALLY) {
         if (playback_waypoints_.has_waypoints()) {
             playback_waypoints_.select_next_waypoint();
         }
@@ -1056,15 +1056,15 @@ SingleWaypoint& Player::single_waypoint() {
 }
 
 PathfindingWaypoints& Player::pathfinding_waypoints() {
-    if (game_mode_ == GameMode::RACING) {
-        THROW_OR_ABORT("Player::pathfinding_waypoints called, but game mode is racing");
+    if (game_mode_ == GameMode::RALLY) {
+        THROW_OR_ABORT("Player::pathfinding_waypoints called, but game mode is rally");
     }
     return pathfinding_waypoints_;
 }
 
 PlaybackWaypoints& Player::playback_waypoints() {
-    if (game_mode_ != GameMode::RACING) {
-        THROW_OR_ABORT("Player::playback_waypoints called, but game mode is not racing");
+    if (game_mode_ != GameMode::RALLY) {
+        THROW_OR_ABORT("Player::playback_waypoints called, but game mode is not rally");
     }
     return playback_waypoints_;
 }
