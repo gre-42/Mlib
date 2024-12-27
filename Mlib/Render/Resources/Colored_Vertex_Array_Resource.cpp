@@ -1866,6 +1866,16 @@ void ColoredVertexArrayResource::print(std::ostream& ostr) const {
 AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calculator(
     const ColoredVertexArray<float>& cva) const
 {
+    bool has_injected_texture_layers = [&]() {
+        std::shared_lock lock{ mutex_ };
+        auto pva = vertex_arrays_.try_get(&cva);
+        if (pva == nullptr) {
+            return false;
+        }
+        return
+            (*pva)->has_continuous_triangle_texture_layers() ||
+            (*pva)->has_discrete_triangle_texture_layers();
+        }();
     return AttributeIndexCalculator{
         .has_position = true,
         .has_color = true,
@@ -1879,7 +1889,8 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
         .has_texture_layer =
             ((instances_ != nullptr) && instances_->at(&cva)->has_continuous_texture_layer()) ||
             !cva.continuous_triangle_texture_layers.empty() ||
-            !cva.discrete_triangle_texture_layers.empty(),
+            !cva.discrete_triangle_texture_layers.empty() ||
+            has_injected_texture_layers,
         .has_interior_mapping_bottom_left = !cva.material.interior_textures.empty(),
         .has_interior_mapping_multiplier = !cva.material.interior_textures.empty(),
         .nuvs = cva.uv1.size() + 1,
