@@ -62,19 +62,7 @@ enum class GameMode {
     BYSTANDER,
 };
 
-inline GameMode game_mode_from_string(const std::string& game_mode) {
-    if (game_mode == "ramming") {
-        return GameMode::RAMMING;
-    } if (game_mode == "team_deathmatch") {
-        return GameMode::TEAM_DEATHMATCH;
-    } else if (game_mode == "racing") {
-        return GameMode::RACING;
-    } else if (game_mode == "bystander") {
-        return GameMode::BYSTANDER;
-    } else {
-        THROW_OR_ABORT("Unknown game mode: " + game_mode);
-    }
-}
+GameMode game_mode_from_string(const std::string& game_mode);
 
 enum class ExternalsMode;
 
@@ -84,17 +72,7 @@ enum class UnstuckMode {
     DELETE
 };
 
-inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
-    if (unstuck_mode == "off") {
-        return UnstuckMode::OFF;
-    } else if (unstuck_mode == "reverse") {
-        return UnstuckMode::REVERSE;
-    } else if (unstuck_mode == "delete") {
-        return UnstuckMode::DELETE;
-    } else {
-        THROW_OR_ABORT("Unknown unstuck mode: " + unstuck_mode);
-    }
-}
+UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode);
 
 enum class OpponentSelectionStrategy {
     KEEP,

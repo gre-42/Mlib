@@ -41,6 +41,33 @@
 
 using namespace Mlib;
 
+GameMode Mlib::game_mode_from_string(const std::string& game_mode) {
+    static const std::map<std::string, GameMode> m{
+        {"ramming", GameMode::RAMMING},
+        {"team_deathmatch", GameMode::TEAM_DEATHMATCH},
+        {"racing", GameMode::RACING},
+        {"bystander", GameMode::BYSTANDER},
+    };
+    auto it = m.find(game_mode);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown game mode: \"" + game_mode + '"');
+    }
+    return it->second;
+}
+
+UnstuckMode Mlib::unstuck_mode_from_string(const std::string& unstuck_mode) {
+    static const std::map<std::string, UnstuckMode> m{
+        {"off", UnstuckMode::OFF},
+        {"reverse", UnstuckMode::REVERSE},
+        {"delete", UnstuckMode::DELETE}
+    };
+    auto it = m.find(unstuck_mode);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown unstuck mode: \"" + unstuck_mode + '"');
+    }
+    return it->second;
+}
+
 bool PlayerControlled::has_aim_at() const {
     return (gun_node != nullptr) && Mlib::has_aim_at(*gun_node);
 }
