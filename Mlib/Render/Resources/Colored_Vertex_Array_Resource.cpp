@@ -1883,7 +1883,7 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
         .has_normal =
             !cva.material.shading.diffuse.all_equal(0) ||
             !cva.material.shading.specular.all_equal(0) ||
-            !cva.material.shading.reflectance.all_equal(0.f) ||
+            (!cva.material.shading.reflectance.all_equal(0.f) && !cva.material.reflection_map->empty()) ||
             (cva.material.shading.fresnel.reflectance.exponent != 0.f) ||
             cva.material.fragments_depend_on_normal(),
         .has_tangent = cva.material.has_normalmap() || !cva.material.interior_textures.empty(),
