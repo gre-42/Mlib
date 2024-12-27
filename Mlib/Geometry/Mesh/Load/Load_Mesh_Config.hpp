@@ -42,6 +42,7 @@ struct LoadMeshConfig {
     FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specular_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> reflectance = FixedArray<float, 3>(0.f);
     FresnelAndAmbient fresnel{
         .reflectance = {
             .min = 0.f,

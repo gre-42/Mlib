@@ -63,7 +63,7 @@ struct RenderProgramIdentifier {
     std::vector<size_t> lightmap_indices_color;
     std::vector<size_t> lightmap_indices_depth;
     bool has_specularmap;
-    float reflection_strength;
+    OrderableFixedArray<float, 3> reflectance;
     bool reflect_only_y;
     size_t ntextures_reflection;
     size_t ntextures_dirt;

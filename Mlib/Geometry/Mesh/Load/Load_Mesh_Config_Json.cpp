@@ -38,6 +38,7 @@ DECLARE_ARGUMENT(emissive_factor);
 DECLARE_ARGUMENT(ambient_factor);
 DECLARE_ARGUMENT(diffuse_factor);
 DECLARE_ARGUMENT(specular_factor);
+DECLARE_ARGUMENT(reflectance);
 DECLARE_ARGUMENT(fresnel_ambient);
 DECLARE_ARGUMENT(fresnel_min);
 DECLARE_ARGUMENT(fresnel_max);
@@ -86,6 +87,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .ambient_factor = j.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
         .diffuse_factor = j.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
         .specular_factor = j.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
+        .reflectance = j.at<UFixedArray<float, 3>>(KnownArgs::reflectance, fixed_zeros<float, 3>()),
         .fresnel{
             .reflectance = {
                 .min = j.at<float>(KnownArgs::fresnel_min, 0.f),

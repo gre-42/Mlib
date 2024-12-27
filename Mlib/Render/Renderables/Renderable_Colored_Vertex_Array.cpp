@@ -514,8 +514,11 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     const VariableAndHash<std::string>* reflection_map = nullptr;
-    float reflection_strength = 0.f;
-    if (!is_lightmap && !cva->material.reflection_map->empty()) {
+    FixedArray<float, 3> reflectance{ 0.f };
+    if (!is_lightmap &&
+        !cva->material.reflection_map->empty() &&
+        !cva->material.shading.reflectance.all_equal(0.f))
+    {
         if (color_style == nullptr) {
             THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + *cva->material.reflection_map + "\" has no style");
         }
@@ -529,9 +532,9 @@ void RenderableColoredVertexArray::render_cva(
         }
         if (!it->second->empty()) {
             reflection_map = &it->second;
-            reflection_strength = color_style->reflection_strength;
-            if (reflection_strength == 0.f) {
-                THROW_OR_ABORT("Reflection strength cannot be zero");
+            reflectance = cva->material.shading.reflectance * color_style->reflection_strength;
+            if (any(reflectance <= 0.f)) {
+                THROW_OR_ABORT("Reflectance must be positive");
             }
         }
     }
@@ -641,7 +644,7 @@ void RenderableColoredVertexArray::render_cva(
             .lightmap_indices_color = lightmap_indices_color,
             .lightmap_indices_depth = lightmap_indices_depth,
             .has_specularmap = (tic.ntextures_specular != 0),
-            .reflection_strength = reflection_strength,
+            .reflectance = OrderableFixedArray{reflectance},
             .reflect_only_y = cva->material.reflect_only_y,
             .ntextures_reflection = tic.ntextures_reflection,
             .ntextures_dirt = tic.ntextures_dirt,
@@ -845,10 +848,10 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     {
-        bool pred0 = has_lookat || (any(specular != 0.f) && (specular_exponent != 0.f)) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
+        bool pred0 = has_lookat || (any(specular != 0.f) && (specular_exponent != 0.f)) || any(reflectance != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
         bool pred1 = (fresnel.exponent != 0.f);
         bool pred2 = (fog_distances != default_step_distances);
-        bool pred3 = (reflection_strength != 0.f);
+        bool pred3 = any(reflectance != 0.f);
         if (pred0 || pred1 || pred2 || pred3 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;
@@ -862,7 +865,7 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
-    if (reflection_strength != 0.f) {
+    if (any(reflectance != 0.f)) {
         CHK(glUniformMatrix3fv(rp.r_location, 1, GL_TRUE, m.R.T().flat_begin()));
     }
     if (!rcva_->triangles_res_->bone_indices.empty()) {

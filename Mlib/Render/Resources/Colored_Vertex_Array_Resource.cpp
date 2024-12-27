@@ -582,7 +582,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_normalmap,
     bool has_dynamic_emissive,
     size_t nbillboard_ids,
-    float reflection_strength,
+    const OrderableFixedArray<float, 3>& reflectance,
     bool reflect_only_y,
     bool has_dirtmap,
     bool has_continuous_texture_layer_color,
@@ -658,7 +658,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_alpha || ((nbillboard_ids != 0) && !orthographic)) {
         sstr << "in float alpha_fac_v;" << std::endl;
     }
-    if (reflection_strength != 0.f) {
+    if (!reflectance.all_equal(0.f)) {
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (ntextures_color != 0) {
@@ -699,7 +699,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_normalmap) {
         sstr << "uniform sampler2D texture_normalmap[" << ntextures_normal << "];" << std::endl;
     }
-    if (reflection_strength != 0.f) {
+    if (!reflectance.all_equal(0.f)) {
         sstr << "uniform samplerCube texture_reflection;" << std::endl;
     }
     if (has_dirtmap) {
@@ -750,7 +750,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         bool pred0 = (!specular.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
         bool pred1 = (fresnel.exponent != 0.f);
         bool pred2 = (fog_distances != default_step_distances);
-        bool pred3 = (reflection_strength != 0.f);
+        bool pred3 = !reflectance.all_equal(0.f);
         if (pred0 || pred1 || pred2 || pred3 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
             sstr << "in vec3 FragPos;" << std::endl;
             if ((pred0 || pred1 || pred2 || reorient_uv0 || reorient_normals) && orthographic) {
@@ -1383,7 +1383,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else {
         sstr << "    float frag_specular = 1.0;" << std::endl;
     }
-    if ((reflection_strength != 0.f) || (fresnel.exponent != 0.f)) {
+    if (!reflectance.all_equal(0.f) || (fresnel.exponent != 0.f)) {
         if (!orthographic) {
             sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
         }
@@ -1396,7 +1396,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        frag_specular *= fresnel_factor;" << std::endl;
         sstr << "    }" << std::endl;
     }
-    if (reflection_strength != 0.f) {
+    if (!reflectance.all_equal(0.f)) {
         if (reflect_only_y) {
             sstr << "    vec3 reflectedDir = R * reflect(-viewDir, R[1]);" << std::endl;
         } else {
@@ -1404,7 +1404,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
         // This works in combination with not flipping the y-coordinate when loading the texture.
-        sstr << "    frag_brightness_specular += " << reflection_strength << " * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
+        sstr << "    vec3 reflectance = vec3(" << reflectance(0) << ", " << reflectance(1) << ", " << reflectance(2) << ");" << std::endl;
+        sstr << "    frag_brightness_specular += reflectance * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
     if (!fresnel_emissive.all_equal(0.f)) {
         sstr << "    vec3 fresnel_emissive = vec3(" << fresnel_emissive(0) << ", " << fresnel_emissive(1) << ", " << fresnel_emissive(2) << ");" << std::endl;
@@ -1879,7 +1880,12 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
     return AttributeIndexCalculator{
         .has_position = true,
         .has_color = true,
-        .has_normal = !cva.material.shading.diffuse.all_equal(0) || !cva.material.shading.specular.all_equal(0) || cva.material.fragments_depend_on_normal(),
+        .has_normal =
+            !cva.material.shading.diffuse.all_equal(0) ||
+            !cva.material.shading.specular.all_equal(0) ||
+            !cva.material.shading.reflectance.all_equal(0.f) ||
+            (cva.material.shading.fresnel.reflectance.exponent != 0.f) ||
+            cva.material.fragments_depend_on_normal(),
         .has_tangent = cva.material.has_normalmap() || !cva.material.interior_textures.empty(),
         .has_instance_attrs = instances_ != nullptr,
         .has_rotation_quaternion = (instances_ != nullptr) && (cva.material.transformation_mode == TransformationMode::ALL),
@@ -1988,7 +1994,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ntextures_normal != 0,
         id.has_dynamic_emissive,
         id.nbillboard_ids,
-        id.reflection_strength,
+        id.reflectance,
         id.reflect_only_y,
         id.ntextures_dirt != 0,
         id.has_continuous_texture_layer,
@@ -2135,7 +2141,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         } else {
             rp->texture_specularmap_location = 0;
         }
-        if (id.reflection_strength != 0.f) {
+        if (!id.reflectance.all_equal(0.f)) {
             rp->r_location = rp->get_uniform_location("R");
         } else {
             rp->r_location = 0;

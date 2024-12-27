@@ -10,9 +10,8 @@ struct Shading {
     OrderableFixedArray<float, 3> ambient{ 1.f, 1.f, 1.f };
     OrderableFixedArray<float, 3> diffuse{ 0.8f, 0.8f, 0.8f };
     OrderableFixedArray<float, 3> specular{ 0.5f, 0.5f, 0.5f };
-    // Disabled in favor of the Fresnel coefficients.
-    // float reflection_strength = 1.f;
     float specular_exponent = 4.f;
+    OrderableFixedArray<float, 3> reflectance{ 0.f, 0.f, 0.f };
     FresnelAndAmbient fresnel;
     OrderableFixedArray<float, 2> fog_distances{ default_step_distances };
     OrderableFixedArray<float, 3> fog_ambient{ 1.f, 1.f, 1.f };
@@ -23,6 +22,7 @@ struct Shading {
         archive(diffuse);
         archive(specular);
         archive(specular_exponent);
+        archive(reflectance);
         archive(fresnel);
         archive(fog_distances);
         archive(fog_ambient);
