@@ -192,7 +192,7 @@ struct AttributeIndexCalculator {
 
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
-    const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
+    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     const NotSortedStruct<AttributeIndices>& attr_ids,
     size_t nuv_indices,
@@ -558,8 +558,8 @@ static void bisect_texture_layer(
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>>& skidmarks,
-    const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
-    const NotSortedArray<std::vector<BlendMapTexture*>>& textures_alpha,
+    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
+    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
@@ -920,16 +920,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         return sstr.str();
     };
-    auto normalmap_coords = [&](size_t i) {
-        if (i >= textures_color.size()) {
+    auto normalmap_coords = [&](const BlendMapTextureAndId& t) {
+        if (t.id_normal >= ntextures_color) {
             THROW_OR_ABORT("Texture index too large");
         }
-        const auto& t = *textures_color[i];
         std::stringstream sstr;
-        if (any(t.texture_descriptor.normal.color_mode & ColorMode::AGR_NORMAL)) {
-            sstr << "(2.0 * texture(texture_normalmap[" << i << "], " << tex_coords(t) << ").agr - 1.0)";
+        if (any(t->texture_descriptor.normal.color_mode & ColorMode::AGR_NORMAL)) {
+            sstr << "(2.0 * texture(texture_normalmap[" << t.id_normal << "], " << tex_coords(*t) << ").agr - 1.0)";
         } else {
-            sstr << "(2.0 * texture(texture_normalmap[" << i << "], " << tex_coords(t) << ").rgb - 1.0)";
+            sstr << "(2.0 * texture(texture_normalmap[" << t.id_normal << "], " << tex_coords(*t) << ").rgb - 1.0)";
         }
         return sstr.str();
     };
@@ -1035,7 +1034,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    }" << std::endl;
     }
     sstr << "    float weight;" << std::endl;
-    auto sample_textures = [&](const std::vector<BlendMapTexture*>& textures, ReductionTarget target) {
+    auto sample_textures = [&](const std::vector<BlendMapTextureAndId>& textures, ReductionTarget target) {
         sstr << "    weight = 1.0;" << std::endl;
         if (target == ReductionTarget::COLOR) {
             sstr << "    float sum_weights = 0.0;" << std::endl;
@@ -1045,7 +1044,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 } else if (textures_color[0]->role != BlendMapRole::DETAIL_BASE) {
                     sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
                 } else {
-                    sstr << "    vec3 tnorm = " << normalmap_coords(0) << ';' << std::endl;
+                    sstr << "    vec3 tnorm = " << normalmap_coords(textures_color[0]) << ';' << std::endl;
                 }
             }
         }
@@ -1056,7 +1055,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             if (fog_distances != default_step_distances) {
                 define_dist_if_necessary();
             } else {
-                for (const BlendMapTexture* t : textures) {
+                for (const BlendMapTextureAndId& t : textures) {
                     if (t->distances != default_linear_distances) {
                         define_dist_if_necessary();
                         break;
@@ -1064,8 +1063,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 }
             }
         }
-        for (const auto& [i, t] : enumerate(textures)) {
-            if ((i == 0) && (t->role == BlendMapRole::DETAIL_BASE)) {
+        for (const auto& [i_, t] : enumerate(textures)) {
+            if ((i_ == 0) && (t->role == BlendMapRole::DETAIL_BASE)) {
                 continue;
             }
             sstr << "    {" << std::endl;
@@ -1138,7 +1137,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     case BlendMapRole::DETAIL_MASK_A: c = 'a'; break;
                     default: THROW_OR_ABORT("Unknown detail mask");
                 }
-                sstr << "            float w = texture(textures_color[" << i << "], " << tex_coords(*t) << ")." << c << ';' << std::endl;
+                sstr << "            float w = texture(textures_color[" << t.id_color << "], " << tex_coords(*t) << ")." << c << ';' << std::endl;
                 if (t->reduction == BlendMapReductionOperation::TIMES) {
                     sstr << "            weight *= w;" << std::endl;
                 } else if (t->reduction == BlendMapReductionOperation::FEATHER) {
@@ -1156,20 +1155,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "            weight = max(weight, " << t->min_detail_weight << ");" << std::endl;
                 }
             } else if (any(t->texture_descriptor.color.color_mode & ColorMode::RGBA) && (t->discreteness != 0)) {
-                sstr << "            vec4 bcolor = texture(textures_color[" << i << "], " << tex_coords(*t) << ").rgba;" << std::endl;
+                sstr << "            vec4 bcolor = texture(textures_color[" << t.id_color << "], " << tex_coords(*t) << ").rgba;" << std::endl;
                 sstr << "            float final_weight = weight * clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0.0, 1.0);" << std::endl;
                 // sstr << "            weight *= bcolor.a;" << std::endl;
             } else if (
                 any(t->texture_descriptor.color.color_mode & ColorMode::RGB) ||
                 (any(t->texture_descriptor.color.color_mode & ColorMode::RGBA) && (t->discreteness == 0)))
             {
-                sstr << "            vec3 bcolor = texture(textures_color[" << i << "], " << tex_coords(*t) << ").rgb;" << std::endl;
+                sstr << "            vec3 bcolor = texture(textures_color[" << t.id_color << "], " << tex_coords(*t) << ").rgb;" << std::endl;
                 sstr << "            float final_weight = weight;" << std::endl;
             } else if (target == ReductionTarget::ALPHA) {
                 if (t->texture_descriptor.color.color_mode != ColorMode::GRAYSCALE) {
                     THROW_OR_ABORT("Alpha-texture not loaded as grayscale");
                 }
-                sstr << "            float intensity = texture(textures_alpha[" << i << "], " << tex_coords(*t) << ").r;" << std::endl;
+                sstr << "            float intensity = texture(textures_alpha[" << t.id_color << "], " << tex_coords(*t) << ").r;" << std::endl;
                 sstr << "            float final_weight = weight;" << std::endl;
             } else {
                 THROW_OR_ABORT("Texture: \"" + *t->texture_descriptor.color.filename + "\". Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color.color_mode) + '"');
@@ -1215,7 +1214,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                         if (t->texture_descriptor.normal.filename->empty()) {
                             sstr << "            tnorm.z += final_weight;" << std::endl;
                         } else {
-                            sstr << "            tnorm += final_weight * " << normalmap_coords(i) << ';' << std::endl;
+                            sstr << "            tnorm += final_weight * " << normalmap_coords(t) << ';' << std::endl;
                         }
                     }
                     sstr << "            sum_weights += final_weight;" << std::endl;
@@ -1264,7 +1263,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_normalmap) {
         if (ntextures_color == 1) {
-            sstr << "    vec3 tnorm = " << normalmap_coords(0) << ';' << std::endl;
+            sstr << "    vec3 tnorm = " << normalmap_coords(textures_color[0]) << ';' << std::endl;
         }
         if (!has_interiormap) {
             compute_TBN();
@@ -1914,8 +1913,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendMapTexture*>& textures_color,
-    const std::vector<BlendMapTexture*>& textures_alpha) const
+    const std::vector<BlendMapTextureAndId>& textures_color,
+    const std::vector<BlendMapTextureAndId>& textures_alpha) const
 {
     auto& rps = rendering_resources_.render_programs();
     if (auto it = rps.try_get(id); it != nullptr) {
@@ -2106,9 +2105,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             // rp->texture_lightmap_depth_location = 0;
         }
         if (id.ntextures_normal != 0) {
-            for (const auto& [i, r] : enumerate(textures_color)) {
+            for (const auto& r : textures_color) {
                 if (!r->texture_descriptor.normal.filename->empty()) {
-                    rp->texture_normalmap_locations[i] = rp->get_uniform_location(("texture_normalmap[" + std::to_string(i) + "]").c_str());
+                    rp->texture_normalmap_locations[r.id_normal] = rp->get_uniform_location(("texture_normalmap[" + std::to_string(r.id_normal) + "]").c_str());
                 }
             }
         }

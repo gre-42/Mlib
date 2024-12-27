@@ -26,6 +26,19 @@ class IVertexData;
 class IInstanceBuffers;
 enum class TaskLocation;
 
+struct BlendMapTextureAndId {
+    const BlendMapTexture* ops;
+    size_t id_color;
+    size_t id_specular;
+    size_t id_normal;
+    const BlendMapTexture& operator * () const {
+        return *ops;
+    }
+    const BlendMapTexture* operator -> () const {
+        return ops;
+    }
+};
+
 class ColoredVertexArrayResource:
     public ISceneNodeResource,
     public std::enable_shared_from_this<ColoredVertexArrayResource>
@@ -128,8 +141,8 @@ private:
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
-        const std::vector<BlendMapTexture*>& textures_color,
-        const std::vector<BlendMapTexture*>& textures_alpha) const;
+        const std::vector<BlendMapTextureAndId>& textures_color,
+        const std::vector<BlendMapTextureAndId>& textures_alpha) const;
     bool requires_aggregation(const ColoredVertexArray<float> &cva) const;
     IVertexData& get_vertex_array(
         const std::shared_ptr<ColoredVertexArray<float>>& cva,
