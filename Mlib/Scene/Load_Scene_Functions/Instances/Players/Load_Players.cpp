@@ -96,7 +96,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
     // Example JSON file:
     // {
     //     "library": "teams",
-    //     "game_mode": "racing",
+    //     "game_mode": "rally",
     //     "teams": {
     //         "red": { "style": { "color": [1, 0.8, 0.8] },
     //         "blue": { "style": { "color": [0.8, 0.8, 1] } }

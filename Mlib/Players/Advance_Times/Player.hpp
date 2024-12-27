@@ -58,7 +58,7 @@ class VehicleSpawners;
 enum class GameMode {
     RAMMING,
     TEAM_DEATHMATCH,
-    RACING,
+    RALLY,
     BYSTANDER,
 };
 
