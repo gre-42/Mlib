@@ -90,6 +90,8 @@ std::filesystem::directory_iterator list_dir(const std::filesystem::path& path);
 bool is_listable(const std::filesystem::directory_entry& entry);
 #endif
 
+void set_thread_name(const std::string& name);
+
 [[ noreturn ]] void verbose_abort(const std::string& message);
 
 }

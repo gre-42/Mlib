@@ -609,7 +609,7 @@ struct JniThreadLocal {
             //   The best solution is to only attach once to
             //   the thread and let it running its course
             //   and automatically detach with thread local storage
-            //   (C++ 11 or higher) when the thread exists.
+            //   (C++ 11 or higher) when the thread exits.
             activity->vm->DetachCurrentThread();
         }
     }

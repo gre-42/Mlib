@@ -63,7 +63,7 @@ std::future<void> render_thread(
 {
     return std::async(std::launch::async, [&](){
         try {
-            ThreadInitializer ti{ "render", ThreadAffinity::POOL };
+            ThreadInitializer ti{ "Render", ThreadAffinity::POOL };
             bool last_load_scene_finished = false;
             LambdaRenderLogic lrl{
                 [&](const LayoutConstraintParameters& lx,
@@ -189,7 +189,7 @@ std::future<void> loader_thread(
 {
     return std::async(std::launch::async, [&, render_delay, velocity_dt](){
         try {
-            ThreadInitializer ti{"scene_loader", ThreadAffinity::POOL};
+            ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
 #ifndef WITHOUT_ALUT
             AudioResourceContext arc;
 #endif
@@ -277,7 +277,7 @@ static void main_func(
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
     reserve_realtime_threads(0);
-    ThreadInitializer ti{"main", ThreadAffinity::POOL};
+    ThreadInitializer ti{"Main", ThreadAffinity::POOL};
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn.json\n"

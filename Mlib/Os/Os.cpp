@@ -361,6 +361,10 @@ bool Mlib::is_listable(const std::filesystem::directory_entry& entry) {
 
 #endif
 
+void Mlib::set_thread_name(const std::string& name) {
+    AUi::SetThreadName(name);
+}
+
 void Mlib::verbose_abort(const std::string& message) {
     lerr() << "Aborting: " << message;
     std::abort();

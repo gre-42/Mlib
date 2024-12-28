@@ -21,7 +21,7 @@ PhysicsLoop::PhysicsLoop(
   physics_iteration_{physics_iteration},
   physics_thread_{run_in_background([&, thread_name, thread_affinity, nframes](){
     try {
-        ThreadInitializer ti{thread_name, thread_affinity};
+        ThreadInitializer ti{ thread_name, thread_affinity };
         SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration.delete_node_mutex_ };
         size_t nframes2 = nframes;
         // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};

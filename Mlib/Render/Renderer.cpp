@@ -205,7 +205,7 @@ void Renderer::render_and_handle_events(
 {
     FutureGuard future_guard{
         std::async(std::launch::async, [&](){
-            ThreadInitializer ti{"render", ThreadAffinity::POOL};
+            ThreadInitializer ti{"Render", ThreadAffinity::POOL};
             render(logic, scene_graph_config);
         })};
     handle_events(*this, button_states, cursor_states, scroll_wheel_states, input_config_, event_handler);

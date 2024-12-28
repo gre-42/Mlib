@@ -237,7 +237,7 @@ std::future<void> loader_thread(
 {
     return std::async(std::launch::async, [&](){
         try {
-            ThreadInitializer ti{"scene_loader", ThreadAffinity::POOL};
+            ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
 #ifndef WITHOUT_ALUT
             AudioResourceContext arc;
 #endif
@@ -309,7 +309,7 @@ void android_main(android_app* app) {
     // This currently has no effect, because the implementation is empty on Android.
     // The render-loop is called by the system, which is therefore in control of the frame rate.
     RealtimeThreadsGuard rttsg{ 0 };
-    ThreadInitializer ti{"main", ThreadAffinity::POOL};
+    ThreadInitializer ti{"Main", ThreadAffinity::POOL};
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn.json\n"

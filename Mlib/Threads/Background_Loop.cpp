@@ -12,7 +12,7 @@ BackgroundLoop::BackgroundLoop(std::string thread_name)
   done_{true},
   thread_{[this, tn = std::move(thread_name)](){
         try {
-            ThreadInitializer ti{tn, ThreadAffinity::POOL};
+            ThreadInitializer ti{ tn, ThreadAffinity::POOL };
             while (true) {
                 std::unique_lock lck{ mutex_ };
                 task_ready_cv_.wait(lck, [this]() { return !done_ || thread_.get_stop_token().stop_requested(); });

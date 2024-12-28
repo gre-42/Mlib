@@ -28,4 +28,5 @@ public:
     static std::string GetFlavor();
     static void SetRequestedScreenOrientation(ScreenOrientation orientation);
     static void RequestReadExternalStoragePermission();
+    static void SetThreadName(const std::string& name);
 };

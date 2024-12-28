@@ -3,6 +3,7 @@
 #include <Mlib/Android/ndk_helper/JNIHelper.h>
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Threads/Set_Thread_Name_Native.hpp>
 #include <fstream>
 #include <sstream>
 
@@ -90,4 +91,10 @@ std::string AUi::GetFlavor() {
     jni->ReleaseStringUTFChars(flavorJstring, flavorUtf);
     jni->DeleteLocalRef(flavorJstring);
     return result;
+}
+
+void AUi::SetThreadName(const std::string& name) {
+    // From: https://stackoverflow.com/questions/50327631/android-ndk-setting-a-name-for-a-c-thread
+    ndk_helper::JNIHelper::GetInstance()->AttachCurrentThread();
+    Mlib::set_thread_name_native(name);
 }
