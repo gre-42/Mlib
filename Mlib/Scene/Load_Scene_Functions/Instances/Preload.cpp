@@ -12,6 +12,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 
 using namespace Mlib;
 
@@ -35,6 +36,8 @@ Preload::Preload(RenderableScene& renderable_scene)
 {}
 
 void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
+    FunctionGuard fg{ "Preloading" };
+
     if (args.arguments.contains(KnownArgs::resources)) {
         for (const auto &r : args.arguments.at<std::vector<std::string>>(KnownArgs::resources))
         {

@@ -21,7 +21,7 @@
 #if defined(WIN32)
 
 // Win32
-#include <windows.h>
+#include <Windows.h>
 
 TimeVal getPerfTime()
 {

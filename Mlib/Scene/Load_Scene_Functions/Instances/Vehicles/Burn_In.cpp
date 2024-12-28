@@ -6,6 +6,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 
 using namespace Mlib;
 
@@ -28,6 +29,8 @@ BurnIn::BurnIn(RenderableScene& renderable_scene)
 
 void BurnIn::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    FunctionGuard fg{ "Physics burn-in" };
+
     StaticWorld world{
         .geographic_mapping = dynamic_world.get_geographic_mapping(),
         .inverse_geographic_mapping = dynamic_world.get_inverse_geographic_mapping(),

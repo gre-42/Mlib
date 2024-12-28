@@ -107,6 +107,7 @@
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/String_To_Scene_Pos.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 #include <cereal/access.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/list.hpp>
@@ -144,6 +145,9 @@ OsmMapResource::OsmMapResource(
     NodesAndWays naws_or;
     NormalizedPointsFixed<double> normalized_points{ ScaleMode::NONE, OffsetMode::CENTERED };
 
+    FunctionGuard fg{ "OSM map resource" };
+
+    fg.update("Parse OSM XML");
     parse_osm_xml(
         config.filename,
         config.scale,
@@ -153,6 +157,7 @@ OsmMapResource::OsmMapResource(
         naws_or.ways);
     triangulation_normalization_matrix_ = normalization_matrix_.pre_scaled(config.triangulation_scale);
     
+    fg.update("Smoothen ways");
     NodesAndWays naws_smooth = smoothen_ways(
         naws_or,
         config.smoothed_highways,
@@ -200,6 +205,7 @@ OsmMapResource::OsmMapResource(
         // draw_test_lines(vertices, 0.02);
         // draw_ways(vertices, nodes, ways, 0.002);
         try {
+            fg.update("Draw streets");
             DrawStreets{DrawStreetsInput{
                 scene_node_resources,
                 osm_triangle_lists,
@@ -263,6 +269,7 @@ OsmMapResource::OsmMapResource(
     if (config.with_buildings || config.with_roofs || config.with_ceilings) {
         FacadeTextureCycle entrance_ftc{ config.entrance_textures };
         FacadeTextureCycle middle_ftc{ config.facade_textures };
+        fg.update("Get buildings");
         buildings = get_buildings_or_wall_barriers(
             BuildingType::BUILDING,
             ways,
@@ -281,6 +288,7 @@ OsmMapResource::OsmMapResource(
     }
     {
         FacadeTextureCycle ftc({});
+        fg.update("Get wall barriers");
         wall_barriers = get_buildings_or_wall_barriers(
             BuildingType::WALL_BARRIER,
             ways,
@@ -294,6 +302,7 @@ OsmMapResource::OsmMapResource(
             VerticalSubdivision::NO);
     }
 
+    fg.update("Determine terrain region contours");
     std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> terrain_region_contours =
         get_terrain_region_contours(nodes, ways);
     WayBvh terrain_region_contours_bvh;
@@ -309,7 +318,7 @@ OsmMapResource::OsmMapResource(
                 lerr() << "Building " << bu.id << " has no closed outline";
             }
         }
-        LOG_INFO("draw_building_walls (facade)");
+        fg.update("Draw building walls (facade)");
         draw_building_walls(
             tls_buildings,
             nullptr,            // Steiner points not required due to existance of ground triangles.
@@ -327,7 +336,7 @@ OsmMapResource::OsmMapResource(
             config.max_wall_width,
             config.extrusion_ambient_occlusion,
             config.height_colors);
-        LOG_INFO("draw building ground");
+        fg.update("Draw building ground");
         draw_buildings_ceiling_or_ground(
             osm_triangle_lists.tls_buildings_ground,
             Material{},
@@ -363,7 +372,7 @@ OsmMapResource::OsmMapResource(
     //         scale);
     // }
     if (config.raceway_beacon_distance != INFINITY) {
-        LOG_INFO("add_beacons_to_raceways");
+        fg.update("Add beacons to raceways");
         add_beacons_to_raceways(
             scene_node_resources,
             *hri_.bri,
@@ -373,7 +382,7 @@ OsmMapResource::OsmMapResource(
             config.scale);
     }
     {
-        LOG_INFO("draw_wall_barriers");
+        fg.update("Draw wall barriers");
         draw_wall_barriers(
             tls_wall_barriers,
             &steiner_points,
@@ -393,7 +402,7 @@ OsmMapResource::OsmMapResource(
             config.barrier_styles);
     }
     if (!config.boundary_barrier_style.empty()) {
-        LOG_INFO("draw_boundary_barriers");
+        fg.update("Draw boundary barriers");
         try {
             draw_boundary_barriers(
                 tls_wall_barriers,
@@ -499,7 +508,7 @@ OsmMapResource::OsmMapResource(
         //     plot_mesh_svg("/tmp/plt.svg", 800, 800, tf, {}, {});
         // }
         steiner_points = removed_duplicates(steiner_points, false);  // false = verbose
-        LOG_INFO("add_street_steiner_points");
+        fg.update("Add street steiner points");
         add_street_steiner_points(
             steiner_points,
             ground_street_bvh,
@@ -520,7 +529,7 @@ OsmMapResource::OsmMapResource(
         //     }
         //     plot_mesh_svg("/tmp/plt.svg", 800, 800, tf, {}, highlighted_nodes);
         // }
-        LOG_INFO("triangulate_terrain_or_ceilings");
+        fg.update("Triangulate terrain");
         try {
             triangulate_terrain_or_ceilings(
                 *tl_terrain_,
@@ -553,7 +562,7 @@ OsmMapResource::OsmMapResource(
             handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         for (const WaysideResourceNames& ws : config.waysides) {
-            LOG_INFO("add_grass_on_steiner_points");
+            fg.update("Add grass on Steiner-points");
             ResourceNameCycle rnc{ ws.resource_names };
             add_grass_on_steiner_points(
                 *hri_.bri,
@@ -572,7 +581,7 @@ OsmMapResource::OsmMapResource(
         // save_obj("/tmp/tl_terrain.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     }
     if (config.with_roofs) {
-        LOG_INFO("draw_roofs");
+        fg.update("Draw roofs");
         auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
         draw_roofs(
             tls_buildings,
@@ -591,11 +600,11 @@ OsmMapResource::OsmMapResource(
             config.max_wall_width);
     }
     if (config.with_ceilings && !tls_buildings.empty()) {
-        LOG_INFO("draw_ceilings");
+        fg.update("Draw ceilings");
         draw_ceilings(tls_buildings, config, buildings, nodes);
     }
     if (config.remove_backfacing_triangles) {
-        LOG_INFO("remove_backfacing_triangles");
+        fg.update("Remove backfacing triangles");
         auto prefix = try_getenv("BACKFACING_TRIANGLES_PREFIX");
         size_t i = 0;
         for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
@@ -614,7 +623,7 @@ OsmMapResource::OsmMapResource(
     }
 
     try {
-        LOG_INFO("smoothen and apply heightmap");
+        fg.update("Smoothen and apply heightmap");
         smoothen_and_apply_heightmap(
             config,
             ground_street_bvh,
@@ -675,7 +684,7 @@ OsmMapResource::OsmMapResource(
     // boundaries have to be calculated at the ends of
     // air and ground street.
     try {
-        LOG_INFO("extrude curbs, walls, grass, water");
+        fg.update("Extrude curbs, walls, grass, water");
         if (config.extrude_air_curb_amount == (CompressedScenePos)0.) {
             // If "extrude_air_curb_amount" IS NAN,
             // insert the air triangle lists here.
@@ -851,7 +860,7 @@ OsmMapResource::OsmMapResource(
     if ((config.extrude_street_amount != (CompressedScenePos)0.) ||
         (config.extrude_air_support_amount != (CompressedScenePos)0.))
     {
-        LOG_INFO("compute vertices for street and air support extrusion");
+        fg.update("Compute vertices for street and air support extrusion");
         std::set<OrderableFixedArray<CompressedScenePos, 3>> terrain_vertices;
         for (const auto& l : osm_triangle_lists.tl_terrain->map()) {
             for (const auto& t : l.second->triangles) {
@@ -871,7 +880,7 @@ OsmMapResource::OsmMapResource(
         }
     }
     if (config.extrude_street_amount != (CompressedScenePos)0.) {
-        LOG_INFO("extrude streets");
+        fg.update("Extrude streets");
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (!osm_triangle_lists.has_curb_or_curb2()) {  // "if (config.curb_alpha == 1)" not working for curbs from obj-models
             TriangleList<CompressedScenePos>::extrude(
@@ -934,7 +943,7 @@ OsmMapResource::OsmMapResource(
 
     std::unique_ptr<GroundBvh> ground_bvh;
     {
-        LOG_INFO("compute ground bvh");
+        fg.update("Compute ground BVH");
         auto ground_bvh_triangles = osm_triangle_lists.tls_smooth();
         if (config.with_terrain) {
             if (!config.base_osm_map_resource.empty()) {
@@ -956,7 +965,7 @@ OsmMapResource::OsmMapResource(
                 *ground_bvh,
                 file_storage_type);
         }
-        LOG_INFO("add_models_to_model_nodes");
+        fg.update("Add models to model nodes");
         try {
             add_models_to_model_nodes(
                 *hri_.bri,
@@ -1000,7 +1009,7 @@ OsmMapResource::OsmMapResource(
 
     if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
         ResourceNameCycle rnc{ config.tree_resource_names };
-        LOG_INFO("add_trees_to_tree_nodes");
+        fg.update("Add trees to tree-nodes");
         add_trees_to_tree_nodes(
             *hri_.bri,
             // steiner_points,
@@ -1025,7 +1034,7 @@ OsmMapResource::OsmMapResource(
             4.f,                // truncate
             FilterExtension::PERIODIC);
         auto zonemap = 1.f - 2.f * abs(imf - 0.5f);
-        LOG_INFO("add_trees_to_zonemap");
+        fg.update("Add trees to zonemap");
         if (std::isnan(config.zonemap_width) || std::isnan(config.zonemap_height)) {
             THROW_OR_ABORT("zonemap width or height not set");
         }
@@ -1048,7 +1057,7 @@ OsmMapResource::OsmMapResource(
 
     if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
         ResourceNameCycle rnc{config.tree_resource_names};
-        LOG_INFO("add_trees_to_forest_outlines");
+        fg.update("Add trees to forest outlines");
         add_trees_to_forest_outlines(
             *hri_.bri,
             // steiner_points,
@@ -1064,7 +1073,7 @@ OsmMapResource::OsmMapResource(
     }
     if (!config.road_bollard_resource_names.empty()) {
         ResourceNameCycle rnc{config.road_bollard_resource_names};
-        LOG_INFO("draw road-bollards");
+        fg.update("Draw road-bollards");
         draw_waysides(
             *hri_.bri,
             rnc,
@@ -1076,7 +1085,7 @@ OsmMapResource::OsmMapResource(
     }
     if (!config.trashcan_resource_names.empty()) {
         ResourceNameCycle rnc{config.trashcan_resource_names};
-        LOG_INFO("draw trashcans");
+        fg.update("Draw trashcans");
         draw_waysides(
             *hri_.bri,
             rnc,
@@ -1093,7 +1102,7 @@ OsmMapResource::OsmMapResource(
             ? osm_triangle_lists
             : air_triangle_lists;
 
-        LOG_INFO("flip air-support normals");
+        fg.update("Flip air-support normals");
         // Must be after "delete_backfacing_triangles".
         air_or_osm.tl_air_support->flip();
         air_or_osm.tl_tunnel_crossing->flip();
@@ -1140,7 +1149,7 @@ OsmMapResource::OsmMapResource(
 
     if (!config.grass_resource_names.empty() && (config.much_grass_distance != INFINITY)) {
         ResourceNameCycle rnc{ config.grass_resource_names };
-        LOG_INFO("add_grass_inside_triangles");
+        fg.update("Add grass inside triangles");
         add_grass_inside_triangles(
             *hri_.bri,
             rnc,
@@ -1148,7 +1157,7 @@ OsmMapResource::OsmMapResource(
             config.scale,
             CompressedScenePos::from_float_safe(config.much_grass_distance));
     }
-    LOG_INFO("calculate spawn points");
+    fg.update("Calculate spawn points");
     calculate_spawn_points(
         spawn_points_,
         street_rectangles,
@@ -1175,7 +1184,7 @@ OsmMapResource::OsmMapResource(
 
     tls_no_grass_ = osm_triangle_lists.tls_no_grass();
 
-    LOG_INFO("calculate normals");
+    fg.update("Calculate normals");
     // Normals are invalid after "apply_heightmap"
     for (auto& l2 : osm_triangle_lists.tls_wo_subtraction_and_water()) {
         l2->calculate_triangle_normals();
@@ -1189,7 +1198,7 @@ OsmMapResource::OsmMapResource(
         !config.street_bumps_endpoint0_resource_names.empty() ||
         !config.street_bumps_endpoint1_resource_names.empty())
     {
-        LOG_INFO("draw bumps");
+        fg.update("Draw bumps");
         draw_into_street_rectangles(osm_triangle_lists.tl_street, street_rectangles, scene_node_resources, config.bump_height, config.scale);
     }
 
@@ -1221,7 +1230,7 @@ OsmMapResource::OsmMapResource(
     }
 
     if (config.extrude_air_curb_amount != (CompressedScenePos)0.) {
-        LOG_INFO("inser air triangles lists");
+        fg.update("Insert air triangles lists");
         // If "extrude_air_curb_amount" is NOT NAN,
         // insert the air triangle lists here.
         for (auto& l : air_triangle_lists.tl_street_curb.map()) {
@@ -1238,7 +1247,7 @@ OsmMapResource::OsmMapResource(
     if (!config.water_texture->empty()) {
         std::list<std::pair<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
             get_water_region_contours(nodes, ways);
-        LOG_INFO("triangulate_water");
+        fg.update("Triangulate water");
         try {
             triangulate_water(
                 osm_triangle_lists.tl_water,
@@ -1283,7 +1292,7 @@ OsmMapResource::OsmMapResource(
         }
     }
     {
-        LOG_INFO("calculate spawn points");
+        fg.update("Calculate spawn-points");
         FacadeTextureCycle ftc({});
         std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
             BuildingType::SPAWN_LINE,
@@ -1327,7 +1336,7 @@ OsmMapResource::OsmMapResource(
             handle_point_exception2(p, "Bould not apply height map to spawn lines");
         }
     }
-    auto split_grass = [this, &ground_street_bvh](
+    auto split_grass = [this, &ground_street_bvh, &fg](
         TerrainType source_terrain_type,
         TerrainType target_terrain_type,
         const TerrainStyleDistancesToBdry& target_terrain_distances_to_bdry)
@@ -1335,7 +1344,7 @@ OsmMapResource::OsmMapResource(
         if (target_terrain_distances_to_bdry.is_active) {
             if (auto tit = tl_terrain_->map().find(source_terrain_type); tit != tl_terrain_->map().end())
             {
-                LOG_INFO(
+                fg.update(
                     "extract " + terrain_type_to_string(target_terrain_type) +
                     " from " + terrain_type_to_string(source_terrain_type));
                 CompressedScenePos max_dist = (CompressedScenePos)(target_terrain_distances_to_bdry.max_distance_to_bdry * scale_);
@@ -1367,16 +1376,16 @@ OsmMapResource::OsmMapResource(
     split_grass(TerrainType::WAYSIDE2_GRASS, TerrainType::WAYSIDE1_GRASS, terrain_styles_.near_wayside1_grass_terrain_style.distances_to_bdry());
     {
         CollidableTriangleSampler cts{terrain_styles_, scale_, UpAxis::Z};
-        LOG_INFO("add near hitboxes");
+        fg.update("Add near hitboxes");
         cts.add_near_hitboxes(terrain_triangles(), street_bvh(), hri_);
-        LOG_INFO("add far instances");
+        fg.update("Add far instances");
         cts.add_far_hitboxes(terrain_triangles(), street_bvh(), hri_);
     }
-    LOG_INFO("save obj files if requested");
+    fg.update("Save obj files if requested");
     save_to_obj_file_if_requested(debug_prefix);
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
     {
-        LOG_INFO("calculate waypoints");
+        fg.update("Calculate waypoints");
         std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
         try {
             if (config.with_street_way_points) {
@@ -1503,7 +1512,7 @@ OsmMapResource::OsmMapResource(
             handle_edge_exception(e, "Could not calculate waypoint adjacency");
         }
     }
-    LOG_INFO("print waypoints if requested");
+    fg.update("Print waypoints if requested");
     print_waypoints_if_requested(debug_prefix);
 }
 
@@ -1517,6 +1526,9 @@ OsmMapResource::OsmMapResource(
     , triangulation_normalization_matrix_{ uninitialized }
     , terrain_styles_{}
 {
+    FunctionGuard fg{ "OSM map resource" };
+
+    fg.update("Load OSM resource from cache");
     auto ifstr = create_ifstream(level_filename, std::ios::binary);
     if (ifstr->fail()) {
         THROW_OR_ABORT("Could not open input OSM-map binary file \"" + level_filename + '"');

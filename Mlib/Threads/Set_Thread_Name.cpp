@@ -16,7 +16,7 @@ void Mlib::set_thread_name(const std::string& name) {
 
 #else
 
-#include <windows.h>
+#include <Windows.h>
 #include <processthreadsapi.h>
 
 using namespace Mlib;
