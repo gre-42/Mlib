@@ -1345,7 +1345,7 @@ OsmMapResource::OsmMapResource(
             if (auto tit = tl_terrain_->map().find(source_terrain_type); tit != tl_terrain_->map().end())
             {
                 fg.update(
-                    "extract " + terrain_type_to_string(target_terrain_type) +
+                    "Extract " + terrain_type_to_string(target_terrain_type) +
                     " from " + terrain_type_to_string(source_terrain_type));
                 CompressedScenePos max_dist = (CompressedScenePos)(target_terrain_distances_to_bdry.max_distance_to_bdry * scale_);
                 tl_terrain_->insert(target_terrain_type, std::make_shared<TriangleList<CompressedScenePos>>(
