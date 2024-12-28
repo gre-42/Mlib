@@ -2,7 +2,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
 
-#ifdef __GNUC__
+#ifdef __linux__
 
 #include <linux/prctl.h>    // PR_* constants
 #include <sys/prctl.h>
