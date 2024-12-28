@@ -1215,7 +1215,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             CullFaceMode::CULL,
             ContinuousBlendMode::NONE};
         {
-            RenderToFrameBufferGuard rfg{fb};
+            RenderToFrameBufferGuard rfg{ fb };
             logic.render(ClearMode::COLOR);
         }
         return fb->color_to_stb_image(4);

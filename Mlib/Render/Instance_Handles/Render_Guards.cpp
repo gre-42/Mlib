@@ -48,6 +48,9 @@ RenderToFrameBufferGuard::RenderToFrameBufferGuard(std::shared_ptr<IFrameBuffer>
 }
 
 RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
+    if (last_frame_buffer != bound_frame_buffer) {
+        verbose_abort("~RenderToFrameBufferGuard error");
+    }
     last_frame_buffer->unbind(CURRENT_SOURCE_LOCATION);
     bound_frame_buffer = nullptr;
     last_frame_buffer = previous_frame_buffer_;
@@ -60,8 +63,7 @@ void Mlib::notify_rendering(SourceLocation loc) {
     }
     if (last_frame_buffer != nullptr) {
         if (bound_frame_buffer != nullptr) {
-            lerr() << bound_source_location.file_name() << ':' << bound_source_location.line();
-            THROW_OR_ABORT("Another frame buffer is already bound");
+            bound_frame_buffer->unbind(CURRENT_SOURCE_LOCATION);
         }
         last_frame_buffer->bind(loc);
         bound_frame_buffer = last_frame_buffer;
