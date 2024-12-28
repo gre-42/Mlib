@@ -4,13 +4,15 @@
 
 #ifdef __GNUC__
 
-#include <linux/prctl.h>  /* Definition of PR_* constants */
+#include <linux/prctl.h>    // PR_* constants
 #include <sys/prctl.h>
+#include <cerrno>
+#include <cstring>          // strerror
 
 std::string Mlib::get_thread_name() {
     char buf[16];
     if (prctl(PR_GET_NAME, buf) != 0) {
-        THROW_OR_ABORT(std::string("Could not set thread name: ") + strerror(errno));
+        THROW_OR_ABORT(std::string("Could not get thread name: ") + strerror(errno));
     }
     return { buf };
 }
