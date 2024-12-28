@@ -13,6 +13,7 @@
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
 #else
 #include <Mlib/Env.hpp>
+#include <Mlib/Os/Set_Thread_Name_Native.hpp>
 #include <iostream>
 #endif
 
@@ -222,6 +223,10 @@ bool Mlib::is_listable(const ndk_helper::DirectoryEntry& entry) {
     return entry.is_listable();
 }
 
+void Mlib::set_thread_name(const std::string& name) {
+    AUi::SetThreadName(name);
+}
+
 #else
 
 LLog Mlib::linfo() {
@@ -359,11 +364,11 @@ bool Mlib::is_listable(const std::filesystem::directory_entry& entry) {
     return is_directory;
 }
 
-#endif
-
 void Mlib::set_thread_name(const std::string& name) {
-    AUi::SetThreadName(name);
+    set_thread_name_native(name);
 }
+
+#endif
 
 void Mlib::verbose_abort(const std::string& message) {
     lerr() << "Aborting: " << message;
