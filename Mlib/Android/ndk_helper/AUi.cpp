@@ -3,7 +3,7 @@
 #include <Mlib/Android/ndk_helper/JNIHelper.h>
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Set_Thread_Name_Native.hpp>
+#include <Mlib/Os/Set_Thread_Name_Native.hpp>
 #include <fstream>
 #include <sstream>
 
