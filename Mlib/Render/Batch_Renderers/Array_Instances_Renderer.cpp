@@ -136,3 +136,11 @@ void ArrayInstancesRenderer::invalidate() {
     rcvai_ = nullptr;
     next_rcvai_ = nullptr;
 }
+
+FixedArray<ScenePos, 3> ArrayInstancesRenderer::offset() const {
+    std::scoped_lock lock_guard{ mutex_ };
+    if (!is_initialized_) {
+        THROW_OR_ABORT("ArrayInstancesRenderer not initialized, cannot return offset");
+    }
+    return offset_;
+}

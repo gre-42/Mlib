@@ -38,6 +38,7 @@ private:
 
 class IAggregateRenderer {
     friend AggregateRendererGuard;
+
 public:
     virtual ~IAggregateRenderer();
     virtual bool is_initialized() const = 0;
@@ -56,8 +57,10 @@ public:
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass,
         const std::list<const ColorStyle*>& color_styles) const = 0;
+    virtual FixedArray<ScenePos, 3> offset() const = 0;
     static std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer();
     static std::shared_ptr<IAggregateRenderer> large_aggregate_renderer();
+
 private:
     static THREAD_LOCAL(const std::shared_ptr<IAggregateRenderer>*) small_sorted_aggregate_renderer_;
     static THREAD_LOCAL(const std::shared_ptr<IAggregateRenderer>*) large_aggregate_renderer_;

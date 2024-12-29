@@ -293,7 +293,7 @@ int main(int argc, char** argv) {
         "    [--fxaa]\n"
         "    [--max_distance_black <distance>]\n"
         "    [--small_aggregate_update_interval <interval>]\n"
-        "    [--large_aggregate_update_interval <interval>]\n"
+        "    [--large_max_offset_deviation <interval>]\n"
         "    [--flavor <flavor>]\n"
         "    [--windowed_width <width>]\n"
         "    [--windowed_height <height>]\n"
@@ -557,9 +557,9 @@ int main(int argc, char** argv) {
             }
 
             SceneGraphConfig scene_graph_config{
-                .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
+                .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")) * meters,
                 .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
-                .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600")),
+                .large_max_offset_deviation = safe_stof(args.named_value("--large_max_offset_deviation", "200")) * meters,
                 .renderable_hider = renderable_hider };
 
             PhysicsEngineConfig physics_engine_config{

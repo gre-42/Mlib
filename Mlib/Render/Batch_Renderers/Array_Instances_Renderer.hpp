@@ -30,6 +30,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const override;
+    virtual FixedArray<ScenePos, 3> offset() const override;
 
 private:
     RenderingResources& rendering_resources_;

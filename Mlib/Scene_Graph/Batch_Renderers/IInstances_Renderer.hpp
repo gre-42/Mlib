@@ -62,6 +62,7 @@ public:
         const SceneGraphConfig &scene_graph_config,
         const RenderConfig &render_config,
         const ExternalRenderPass &external_render_pass) const = 0;
+    virtual FixedArray<ScenePos, 3> offset() const = 0;
     static std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers();
     static std::shared_ptr<IInstancesRenderer> large_instances_renderer();
 

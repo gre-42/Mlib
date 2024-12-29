@@ -324,7 +324,7 @@ void android_main(android_app* app) {
         "    [--fxaa]\n"
         "    [--max_distance_black <distance>]\n"
         "    [--small_aggregate_update_interval <interval>]\n"
-        "    [--large_aggregate_update_interval <interval>]\n"
+        "    [--large_max_offset_deviation <interval>]\n"
         "    [--windowed_width <width>]\n"
         "    [--windowed_height <height>]\n"
         "    [--fullscreen_width <width>]\n"
@@ -523,9 +523,9 @@ void android_main(android_app* app) {
             safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
 
         SceneGraphConfig scene_graph_config{
-            .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
+            .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")) * meters,
             .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
-            .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
+            .large_max_offset_deviation = safe_stof(args.named_value("--large_max_offset_deviation", "200")) * meters};
 
         UiFocus ui_focus;
         ButtonStates button_states;

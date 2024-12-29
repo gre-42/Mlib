@@ -586,8 +586,8 @@ void Scene::render(
                     if (is_foreground_task || (is_background_task && !large_aggregate_renderer->is_initialized())) {
                         large_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
                     } else if (is_background_task && large_aggregate_bg_worker_.done()) {
-                        WorkerStatus status = large_aggregate_bg_worker_.tick(scene_graph_config.large_aggregate_update_interval);
-                        if (status == WorkerStatus::IDLE) {
+                        auto dist = sum(squared(large_aggregate_renderer->offset() - iv.t));
+                        if (dist > squared(scene_graph_config.large_max_offset_deviation)) {
                             large_aggregate_bg_worker_.run(large_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
@@ -618,10 +618,9 @@ void Scene::render(
                     if (is_foreground_task || (is_background_task && !large_instances_renderer->is_initialized())) {
                         large_instances_renderer_update_func(TaskLocation::FOREGROUND)();
                     } else if (is_background_task && large_instances_bg_worker_.done()) {
-                        WorkerStatus status = large_instances_bg_worker_.tick(scene_graph_config.large_aggregate_update_interval);
-                        if (status == WorkerStatus::IDLE) {
-                            large_instances_bg_worker_.run(
-                                large_instances_renderer_update_func(TaskLocation::BACKGROUND));
+                        auto dist = sum(squared(large_instances_renderer->offset() - iv.t));
+                        if (dist > squared(scene_graph_config.large_max_offset_deviation)) {
+                            large_instances_bg_worker_.run(large_instances_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
                     // AperiodicLagFinder lag_finder{ "large instances: ", std::chrono::milliseconds{5} };

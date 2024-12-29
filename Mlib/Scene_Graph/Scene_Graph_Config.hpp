@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Physics/Units.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -6,9 +7,9 @@ namespace Mlib {
 class IRenderableHider;
 
 struct SceneGraphConfig {
-    float max_distance_black = 200.f;
+    float max_distance_black = 200.f * meters;
     size_t small_aggregate_update_interval = 1 * 60;
-    size_t large_aggregate_update_interval = 60 * 60;
+    float large_max_offset_deviation = 200.f * meters;
     IRenderableHider* renderable_hider = nullptr;
 };
 

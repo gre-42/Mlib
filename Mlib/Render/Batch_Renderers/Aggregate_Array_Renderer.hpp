@@ -14,6 +14,7 @@ class RenderableColoredVertexArray;
 class AggregateArrayRenderer: public IAggregateRenderer {
     AggregateArrayRenderer(const AggregateArrayRenderer& other) = delete;
     AggregateArrayRenderer& operator = (const AggregateArrayRenderer& other) = delete;
+
 public:
     explicit AggregateArrayRenderer(RenderingResources& rendering_resources);
     virtual ~AggregateArrayRenderer() override;
@@ -33,6 +34,8 @@ public:
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass,
         const std::list<const ColorStyle*>& color_styles) const override;
+    virtual FixedArray<ScenePos, 3> offset() const override;
+
 private:
     RenderingResources& rendering_resources_;
     mutable std::shared_ptr<ColoredVertexArrayResource> next_rcva_;

@@ -364,3 +364,11 @@ void AggregateArrayRenderer::invalidate() {
     rcvai_ = nullptr;
     next_rcvai_ = nullptr;
 }
+
+FixedArray<ScenePos, 3> AggregateArrayRenderer::offset() const {
+    std::scoped_lock lock_guard{ mutex_ };
+    if (!is_initialized_) {
+        THROW_OR_ABORT("AggregateArrayRenderer not initialized, cannot return offset");
+    }
+    return offset_;
+}
