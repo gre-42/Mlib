@@ -891,7 +891,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         std::stringstream sstr;
         sstr << std::scientific;
         sstr << '(';
-        sstr << "vec2(" << t.offset(0) << ", " << t.offset(1) << ") + ";
+        if (!t.offset.all_equal(0.f)) {
+            sstr << "vec2(" << t.offset(0) << ", " << t.offset(1) << ") + ";
+        }
         static_assert(BlendMapUvSource::VERTICAL_LAST == BlendMapUvSource::VERTICAL4);
         switch (t.uv_source) {
         case BlendMapUvSource::VERTICAL0:
@@ -913,8 +915,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         default:
             THROW_OR_ABORT("Unknown blend-map UV source");
         }
-        if (t.scale(0) == t.scale(1)) {
-            sstr << " * " << t.scale(0) << ")";
+        if (t.scale.all_equal(1.f)) {
+            sstr << ')';
+        } else if (t.scale(0) == t.scale(1)) {
+            sstr << " * " << t.scale(0) << ')';
         } else {
             sstr << " * vec2(" << t.scale(0) << ", " << t.scale(1) << "))";
         }

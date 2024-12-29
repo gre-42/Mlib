@@ -34,6 +34,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Trees_To_Tree_Nodes.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Trees_To_Zonemap.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Displacement_Map.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap_And_Smoothen.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
@@ -70,7 +71,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Report_Osm_Problems.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap_And_Smoothen.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>

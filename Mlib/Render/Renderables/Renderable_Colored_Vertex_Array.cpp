@@ -66,32 +66,69 @@ struct TextureIndexCalculator {
     size_t ntextures_reflection;
     size_t ntextures_specular;
 
-    size_t id_color(size_t i) {
+    size_t id_color(size_t i) const {
+        assert_true(i < ntextures_color);
+        return id_color_(i);
+    }
+    size_t id_alpha(size_t i) const {
+        assert_true(i < ntextures_alpha);
+        return id_alpha_(i);
+    }
+    size_t id_light(size_t i) const {
+        assert_true(i < ntextures_filtered_lights);
+        return id_light_(i);
+    }
+    size_t id_skidmark(size_t i) const {
+        assert_true(i < ntextures_filtered_skidmarks);
+        return id_skidmark_(i);
+    }
+    size_t id_normal(size_t i) const {
+        assert_true(i < ntextures_normal);
+        return id_normal_(i);
+    }
+    size_t id_dirt(size_t i) const {
+        assert_true(i < ntextures_dirt);
+        return id_dirt_(i);
+    }
+    size_t id_reflection() const {
+        assert_true(0 < ntextures_reflection);
+        return id_reflection_();
+    }
+    size_t id_interior(size_t i) const {
+        assert_true(i < ntextures_interior);
+        return id_interior_(i);
+    }
+    size_t id_specular() const {
+        assert_true(0 < ntextures_specular);
+        return id_specular_();
+    }
+
+    size_t id_color_(size_t i) const {
         return i;
     }
-    size_t id_alpha(size_t i) {
-        return id_color(0) + ntextures_color + i;
+    size_t id_alpha_(size_t i) const {
+        return id_color_(0) + ntextures_color + i;
     }
-    size_t id_light(size_t i) {
-        return id_alpha(0) + ntextures_alpha + i;
+    size_t id_light_(size_t i) const {
+        return id_alpha_(0) + ntextures_alpha + i;
     }
-    size_t id_skidmark(size_t i) {
-        return id_light(0) + ntextures_filtered_lights + i;
+    size_t id_skidmark_(size_t i) const {
+        return id_light_(0) + ntextures_filtered_lights + i;
     }
-    size_t id_normal(size_t i) {
-        return id_skidmark(0) + ntextures_filtered_skidmarks + i;
+    size_t id_normal_(size_t i) const {
+        return id_skidmark_(0) + ntextures_filtered_skidmarks + i;
     }
-    size_t id_dirt(size_t i) {
-        return id_normal(0) + ntextures_normal + i;
+    size_t id_dirt_(size_t i) const {
+        return id_normal_(0) + ntextures_normal + i;
     }
-    size_t id_reflection() {
-        return id_dirt(0) + ntextures_dirt;
+    size_t id_reflection_() const {
+        return id_dirt_(0) + ntextures_dirt;
     }
-    size_t id_interior(size_t i) {
-        return id_reflection() + ntextures_reflection + i;
+    size_t id_interior_(size_t i) const {
+        return id_reflection_() + ntextures_reflection + i;
     }
-    size_t id_specular() {
-        return id_interior(0) + ntextures_interior;
+    size_t id_specular_() const {
+        return id_interior_(0) + ntextures_interior;
     }
 };
 
