@@ -90,6 +90,9 @@ void RootNodes::add_root_node(
     if (root_nodes_to_delete_.contains(name)) {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
     }
+    if (node_container_.contains(name)) {
+        THROW_OR_ABORT("Node \"" + name + "\" already exists");
+    }
     if (scene_node == nullptr) {
         THROW_OR_ABORT("add_root_node received nullptr");
     }
