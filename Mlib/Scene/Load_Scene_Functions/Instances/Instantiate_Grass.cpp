@@ -9,6 +9,8 @@
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <Mlib/Strings/Filesystem_Path.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 
 using namespace Mlib;
 
@@ -40,6 +42,7 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
     auto resource_names = args.arguments.at_vector<std::string>(KnownArgs::resources, parse_resource_name_func);
     ResourceNameCycle rnc{ resource_names };
     for (const auto& fpath : args.arguments.try_pathes_or_variables(KnownArgs::filenames)) {
+        FunctionGuard fg{ "Load \"" + short_path(fpath.path) + '"' };
         auto model = Grs::load_grs(
             fpath.path,
             IoVerbosity::SILENT);
@@ -79,6 +82,7 @@ void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {
             }
         }
     }
+    FunctionGuard fg{ "Instantiate grass" };
     bri.instantiate_root_renderables(
         scene_node_resources,
         RootInstantiationOptions{

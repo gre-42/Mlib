@@ -14,6 +14,8 @@
 #include <Mlib/Scene_Graph/Instantiation/Instantiate_Frames.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Read_Ipl.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Strings/Filesystem_Path.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 #include <set>
 
 using namespace Mlib;
@@ -50,6 +52,7 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
     auto ir = args.arguments.try_at<std::string>(KnownArgs::instantiated_resources);
     std::set<std::string> instantiated;
     for (const auto& file : args.arguments.try_pathes_or_variables(KnownArgs::ipl_files)) {
+        FunctionGuard fg{ "Instantiate \"" + short_path(file.path) + '"'};
         for (const auto& info : read_ipl(file.path, dynamics)) {
             instantiate(
                 scene,
@@ -62,6 +65,7 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
         }
     }
     for (const auto& name : args.arguments.try_at_vector<std::string>(KnownArgs::instantiables)) {
+        FunctionGuard fg{ "Instantiate \"" + name + '"' };
         instantiate(
             scene,
             scene_node_resources.instantiable(name),
@@ -104,6 +108,7 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
             auto modulo_uv = false;
             CleanupMesh<CompressedScenePos> cleanup;
             for (const auto& [t, q] : float_queue) {
+                FunctionGuard fg{ "Instantiate \"" + q->name + '"' };
                 auto cva = q->transformed<CompressedScenePos>(t, "_ipl_float");
                 cleanup(*cva, filter, min_vertex_distance, modulo_uv);
                 if (!cva->empty()) {
@@ -111,6 +116,7 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 }
             }
             for (const auto& [t, q] : double_queue) {
+                FunctionGuard fg{ "Instantiate \"" + q->name + '"' };
                 auto cva = q->transformed<CompressedScenePos>(t, "_ipl_double");
                 cleanup(*cva, filter, min_vertex_distance, modulo_uv);
                 if (!cva->empty()) {

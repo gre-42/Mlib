@@ -21,6 +21,8 @@
 #include <Mlib/Render/Resources/Pssg_File_Resource.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Strings/Filesystem_Path.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 
 using namespace Mlib;
 
@@ -137,9 +139,11 @@ static void exec(
         cfg->textures = { rr.get_blend_map_texture(*c) };
     }
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::rw_resource_files)) {
+        FunctionGuard fg{ "Load RW \"" + short_path(s.path) + '"' };
         add_rw_file_resource(s.path, cfg, dddb, added_scene_node_resources);
     }
     for (const auto& s : args.arguments.try_pathes_or_variables(KnownArgs::pssg_files)) {
+        FunctionGuard fg{ "Load PSSG \"" + short_path(s.path) + '"' };
         auto& rr = RenderingContextStack::primary_rendering_resources();
         auto& sr = RenderingContextStack::primary_scene_node_resources();
         auto model = load_pssg(s.path, IoVerbosity::SILENT);
