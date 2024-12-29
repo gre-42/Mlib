@@ -623,16 +623,16 @@ void RenderableColoredVertexArray::render_cva(
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
     bool has_rotation_quaternion = has_instances && (cva->material.transformation_mode == TransformationMode::ALL);
-    OrderableFixedArray<float, 4> alpha_distances = uninitialized;
+    OrderableFixedArray<float, 4> alpha_distances_common = uninitialized;
     OrderableFixedArray<float, 2> fog_distances = uninitialized;
     bool fragments_depend_on_distance;
     if (is_lightmap) {
         fragments_depend_on_distance = false;
-        alpha_distances = default_linear_distances;
+        alpha_distances_common = default_linear_distances;
         fog_distances = default_step_distances;
     } else {
         fragments_depend_on_distance = cva->material.fragments_depend_on_distance();
-        alpha_distances = cva->material.alpha_distances;
+        alpha_distances_common = cva->material.alpha_distances;
         fog_distances = cva->material.shading.fog_distances;
     }
     bool fragments_depend_on_normal =
@@ -699,7 +699,7 @@ void RenderableColoredVertexArray::render_cva(
             .blend_mode = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
                 ? BlendMode::CONTINUOUS
                 : cva->material.blend_mode,
-            .alpha_distances = alpha_distances,
+            .alpha_distances = alpha_distances_common,
             .fog_distances = fog_distances,
             .fog_emissive = OrderableFixedArray{fog_emissive},
             .ntextures_color = tic.ntextures_color,
@@ -793,12 +793,12 @@ void RenderableColoredVertexArray::render_cva(
         UUVector<FixedArray<float, 2>> uv_scale(n);
         UUVector<FixedArray<float, 2>> uv_offset(n);
         std::vector<GLuint> texture_layers;
-        UUVector<FixedArray<float, 4>> alpha_distances;
+        UUVector<FixedArray<float, 4>> alpha_distances_billboards;
         if (has_discrete_atlas_texture_layer) {
             texture_layers.resize(n);
         }
         if (!vc.orthographic()) {
-            alpha_distances.resize(n);
+            alpha_distances_billboards.resize(n);
         }
         for (size_t i = 0; i < n; ++i) {
             uv_offset[i] = cva->material.billboard_atlas_instances[i].uv_offset;
@@ -808,7 +808,7 @@ void RenderableColoredVertexArray::render_cva(
                 texture_layers[i] = integral_cast<GLuint>(cva->material.billboard_atlas_instances[i].texture_layer);
             }
             if (!vc.orthographic()) {
-                alpha_distances[i] = cva->material.billboard_atlas_instances[i].alpha_distances;
+                alpha_distances_billboards[i] = cva->material.billboard_atlas_instances[i].alpha_distances;
             }
         }
         CHK(glUniform2fv(rp.uv_offset_location, ni, (const GLfloat*)uv_offset.data()));
@@ -818,7 +818,7 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glUniform1uiv(rp.texture_layers_location, ni, (const GLuint*)texture_layers.data()));
         }
         if (!vc.orthographic()) {
-            CHK(glUniform4fv(rp.alpha_distances_location, ni, (const GLfloat*)alpha_distances.data()));
+            CHK(glUniform4fv(rp.alpha_distances_location, ni, (const GLfloat*)alpha_distances_billboards.data()));
         }
     }
     if (has_dynamic_emissive) {
@@ -948,7 +948,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform2fv(rp.horizontal_detailmap_remainder, 1, rem.flat_begin()));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");
-    auto setup_texture = [&cva, &render_pass](const ColormapWithModifiers& c, GLenum target = GL_TEXTURE_2D) {
+    auto setup_texture = [&cva, &render_pass](const ColormapWithModifiers& c, GLenum target) {
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(c.wrap_modes(0))));
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(c.wrap_modes(1))));
         if (c.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
@@ -1056,12 +1056,11 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind normalmap texture");
     if (tic.ntextures_normal != 0) {
         for (const auto& [c, i] : texture_ids_normal) {
-            if (!c.filename->empty()) {
-                CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(c)->handle<GLuint>()));
-                setup_texture(c);
-                CHK(glActiveTexture(GL_TEXTURE0));
-            }
+            assert_true(!c.filename->empty());
+            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(c)->handle<GLuint>()));
+            setup_texture(c, GL_TEXTURE_2D);
+            CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind skidmark texture");
@@ -1157,7 +1156,7 @@ void RenderableColoredVertexArray::render_cva(
         assert_true(!desc.specular.filename->empty());
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_specular())));
         CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(desc.specular)->handle<GLuint>()));
-        setup_texture(desc.specular);
+        setup_texture(desc.specular, GL_TEXTURE_2D);
         CHK(glActiveTexture(GL_TEXTURE0));
     }
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
