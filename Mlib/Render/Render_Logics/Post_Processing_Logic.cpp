@@ -270,6 +270,7 @@ void PostProcessingLogic::render_with_setup(
                 CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
                 CHK(glBindTexture(GL_TEXTURE_2D, soft_light_texture_->handle<GLuint>()));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             }
 
             va().bind();
