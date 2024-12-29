@@ -635,6 +635,15 @@ void RenderableColoredVertexArray::render_cva(
         alpha_distances_common = cva->material.alpha_distances;
         fog_distances = cva->material.shading.fog_distances;
     }
+    if (all(fog_emissive == 0.f) &&
+        all(ambient == 0.f) &&
+        all(diffuse == 0.f) &&
+        all(specular == 0.f) &&
+        all(emissive == 0.f) &&
+        all(fresnel_emissive == 0.f))
+    {
+        fog_distances = default_step_distances;
+    }
     bool fragments_depend_on_normal =
         !is_lightmap &&
         (cva->material.fragments_depend_on_normal() || (tic.ntextures_interior != 0));
