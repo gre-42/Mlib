@@ -43,7 +43,7 @@ std::string Mlib::thread_top() {
     for (const auto& [id, ts] : tasks) {
         sstr << "Thread name: " << id.name << ", ID: " << id.id << '\n';
         for (const auto& t : ts) {
-            sstr << "    " << t;
+            sstr << "    " << t << '\n';
         }
     }
     return sstr.str();

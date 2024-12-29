@@ -20,6 +20,7 @@
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/Trim.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <concepts>
 #include <filesystem>
@@ -1158,6 +1159,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             cache_filename,
             resource_name);
     } else {
+        FunctionGuard fg{ "Load OSM map" };
+        if (enable_cache) {
+            fg.update("Load OSM map (cache enabled, future loads are faster)");
+        } else {
+            fg.update("Load OSM map (cache disabled)");
+        }
         osm_map_resource = std::make_shared<OsmMapResource>(
             scene_node_resources,
             config,

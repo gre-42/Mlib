@@ -38,7 +38,7 @@ enum class VertexOutOfHeightMapBehavior {
     DELETE
 };
 
-void smoothen_and_apply_heightmap(
+void apply_heightmap_and_smoothen(
     const OsmResourceConfig& config,
     const StreetBvh& ground_street_bvh,
     const StreetBvh& air_bvh,

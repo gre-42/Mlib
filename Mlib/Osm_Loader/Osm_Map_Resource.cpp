@@ -70,7 +70,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Report_Osm_Problems.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap_And_Smoothen.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
@@ -623,8 +623,8 @@ OsmMapResource::OsmMapResource(
     }
 
     try {
-        fg.update("Smoothen and apply heightmap");
-        smoothen_and_apply_heightmap(
+        fg.update("Apply heightmap and smoothen");
+        apply_heightmap_and_smoothen(
             config,
             ground_street_bvh,
             air_bvh,
@@ -644,12 +644,13 @@ OsmMapResource::OsmMapResource(
             street_rectangles,
             way_point_edge_descriptors);
     } catch (const PointException<CompressedScenePos, 2>& e) {
-        handle_point_exception2(e, "Could not smoothen and apply heighmap. Forgot to set map outer contour?");
+        handle_point_exception2(e, "Could not apply heightmap and smoothen. Forgot to set map outer contour?");
     } catch (const TriangleException<CompressedScenePos>& e) {
-        handle_triangle_exception(e, "Could not smoothen and apply heighmap.");
+        handle_triangle_exception(e, "Could not apply heightmap and smoothen.");
     }
 
     if (!config.displacementmap.empty()) {
+        fg.update("Apply displacement map");
         apply_displacement_map(
             ground_street_bvh,
             air_bvh,

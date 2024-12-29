@@ -1,4 +1,4 @@
-#include "Smoothen_And_Apply_Heightmap.hpp"
+#include "Apply_Heightmap_And_Smoothen.hpp"
 #include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
@@ -18,6 +18,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
 #include <memory>
@@ -29,7 +30,7 @@ enum class SmoothingClass {
     SMOOTHED
 };
 
-void Mlib::smoothen_and_apply_heightmap(
+void Mlib::apply_heightmap_and_smoothen(
     const OsmResourceConfig& config,
     const StreetBvh& ground_street_bvh,
     const StreetBvh& air_bvh,
@@ -49,7 +50,7 @@ void Mlib::smoothen_and_apply_heightmap(
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors)
 {
-    LOG_FUNCTION("smoothen_and_apply_heightmap");
+    FunctionGuard fg{ "Apply heightmap and smoothen" };
     if (config.heightmap.empty() && config.street_edge_smoothness == 0 && config.terrain_edge_smoothness == 0) {
         return;
     }
@@ -132,6 +133,7 @@ void Mlib::smoothen_and_apply_heightmap(
         std::list<FixedArray<CompressedScenePos, 3>*> smoothed_vertices;
         get_smoothed_vertices(tls_smoothed, smoothed_vertices, SmoothingClass::RAISED);
         std::set<const FixedArray<CompressedScenePos, 3>*> vertices_to_delete;
+        fg.update("Applying heightmap");
         apply_heightmap(
             *osm_triangle_lists.tl_terrain,
             osm_triangle_lists.entrances,
@@ -186,11 +188,11 @@ void Mlib::smoothen_and_apply_heightmap(
             std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_street = osm_triangle_lists.tls_street();
             std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_air_street = air_triangle_lists.tls_street();
             tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
-            LOG_INFO("smoothen_edges (street)");
+            fg.update("Smoothen edges (street)");
             TriangleList<CompressedScenePos>::smoothen_edges(vertex_height_bindings, {}, tls_street, {}, smoothed_vertices, config.street_edge_smoothness* config.scale, 100, true);
         }
         if (config.terrain_edge_smoothness > 0) {
-            LOG_INFO("smoothen_edges (ground)");
+            fg.update("Smoothen edges (ground)");
 
             auto tls_smooth = osm_triangle_lists.tls_smooth();
             auto air_tls_smooth = air_triangle_lists.tls_smooth();

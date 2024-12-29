@@ -13,6 +13,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Threads/Thread_Top.hpp>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -542,6 +543,7 @@ void TriangleList<TPos>::smoothen_edges(
     bool move_only_z,
     float decay)
 {
+    FunctionGuard fg{ "Smoothen edges" };
     using Vertex2 = OrderableFixedArray<TPos, 2>;
     std::unordered_set<Vertex2> excluded_vertices;
     for (const auto& tl : excluded_triangle_lists) {
@@ -577,6 +579,7 @@ void TriangleList<TPos>::smoothen_edges(
     using Edge3 = OrderableFixedArray<TPos, 2, 3>;
     std::unordered_map<Edge3, AdjacentTriangles<TPos>> adjacent_triangles;
     {
+        fg.update("Find adjacent triangles");
         for (const auto& l : edge_triangle_lists) {
             for (const auto& t : l->triangles) {
                 auto insert_edge = [&](size_t i, size_t j, size_t n){
@@ -624,6 +627,7 @@ void TriangleList<TPos>::smoothen_edges(
         });
     using I = funpack_t<TPos>;
     for (size_t i = 0; i < niterations; ++i) {
+        fg.update("Smoothen edges, iteration " + std::to_string(i) + '/' + std::to_string(niterations));
         for (auto& [_, t] : adjacent_triangles) {
             using Triangle = FixedArray<TPos, 3, 3>;
             const Vertex3& ei = *t.ej;
