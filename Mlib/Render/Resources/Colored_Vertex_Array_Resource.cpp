@@ -416,7 +416,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec2 interior_multiplier_fs;" << std::endl;
     }
     if (reorient_uv0 || reorient_normals || has_depth_fog || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
-        sstr << "out vec3 FragPos;" << std::endl;
+        sstr << "out highp vec3 FragPos;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
         sstr << "out vec3 Normal;" << std::endl;
@@ -829,7 +829,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         bool pred2 = (fog_distances != default_step_distances);
         bool pred3 = !reflectance.all_equal(0.f);
         if (pred0 || pred1 || pred2 || pred3 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
-            sstr << "in vec3 FragPos;" << std::endl;
+            sstr << "in highp vec3 FragPos;" << std::endl;
             if ((pred0 || pred1 || pred2 || reorient_uv0 || reorient_normals) && orthographic) {
                 sstr << "uniform vec3 viewDir;" << std::endl;
             }
