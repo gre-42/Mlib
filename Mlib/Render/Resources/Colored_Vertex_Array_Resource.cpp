@@ -19,6 +19,7 @@
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -55,10 +56,10 @@ public:
     NotSortedArray(const T& value)
         : value_{ value }
     {}
-    auto begin() const {
+    decltype(auto) begin() const {
         return value_.begin();
     }
-    auto end() const {
+    decltype(auto) end() const {
         return value_.end();
     }
     operator const T&() const {
@@ -76,7 +77,7 @@ public:
     bool empty() const {
         return value_.empty();
     }
-    auto operator [] (size_t i) const {
+    decltype(auto) operator [] (size_t i) const {
         return value_[i];
     }
     std::strong_ordering operator <=> (const NotSortedArray&) const {
@@ -84,6 +85,39 @@ public:
     }
 private:
     const T& value_;
+};
+
+struct UvMapKey {
+    BlendMapUvSource uv_source;
+    OrderableFixedArray<float, 2> offset;
+    OrderableFixedArray<float, 2> scale;
+    std::strong_ordering operator <=> (const UvMapKey&) const = default;
+};
+
+class NotSortedUvMap {
+public:
+    NotSortedUvMap(Map<UvMapKey, size_t>& m): m_{ m }
+    {}
+    decltype(auto) begin() const {
+        return m_.begin();
+    }
+    decltype(auto) end() const {
+        return m_.end();
+    }
+    void insert(const BlendMapTexture& t) const {
+        m_.try_emplace({ t.uv_source, t.offset, t.scale }, m_.size());
+    }
+    size_t operator [] (const BlendMapTexture& t) const {
+        return m_.at({ t.uv_source, t.offset, t.scale });
+    }
+    size_t size() const {
+        return m_.size();
+    }
+    std::strong_ordering operator <=> (const NotSortedUvMap&) const {
+        return std::strong_ordering::equal;
+    }
+private:
+    Map<UvMapKey, size_t>& m_;
 };
 
 template <class T>
@@ -193,8 +227,10 @@ struct AttributeIndexCalculator {
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
     const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
+    const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     const NotSortedStruct<AttributeIndices>& attr_ids,
+    const NotSortedUvMap& uv_map,
     size_t nuv_indices,
     size_t ncweight_indices,
     bool has_alpha,
@@ -230,6 +266,43 @@ static GenShaderText vertex_shader_text_gen{[](
     bool fragments_depend_on_normal)
 {
     assert_true(nlights == lights.size());
+    auto tex_coords = [&nuv_indices](const UvMapKey& t) {
+        std::stringstream sstr;
+        sstr << std::scientific;
+        sstr << '(';
+        if (!t.offset.all_equal(0.f)) {
+            sstr << "vec2(" << t.offset(0) << ", " << t.offset(1) << ") + ";
+        }
+        static_assert(BlendMapUvSource::VERTICAL_LAST == BlendMapUvSource::VERTICAL4);
+        switch (t.uv_source) {
+            case BlendMapUvSource::VERTICAL0:
+            case BlendMapUvSource::VERTICAL1:
+            case BlendMapUvSource::VERTICAL2:
+            case BlendMapUvSource::VERTICAL3:
+            case BlendMapUvSource::VERTICAL4:
+            {
+                auto id = t.uv_source - BlendMapUvSource::VERTICAL0;
+                if (id >= nuv_indices) {
+                    THROW_OR_ABORT("UV index too large");
+                }
+                sstr << "vTexCoord" << id;
+                break;
+            }
+            case BlendMapUvSource::HORIZONTAL:
+                sstr << "(vPosInstance.xz + horizontal_detailmap_remainder)";
+                break;
+            default:
+                THROW_OR_ABORT("Unknown blend-map UV source");
+        }
+        if (t.scale.all_equal(1.f)) {
+            sstr << ')';
+        } else if (t.scale(0) == t.scale(1)) {
+            sstr << " * " << t.scale(0) << ')';
+        } else {
+            sstr << " * vec2(" << t.scale(0) << ", " << t.scale(1) << "))";
+        }
+        return sstr.str();
+    };
     std::stringstream sstr;
     sstr << std::scientific;
     sstr << SHADER_VER;
@@ -299,8 +372,10 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_uv_offset_u) {
         sstr << "uniform float uv_offset_u;" << std::endl;
     }
-    sstr << "out vec3 color;" << std::endl;
-    for (size_t i = 0; i < nuv_indices; ++i) {
+    if (has_horizontal_detailmap) {
+        sstr << "uniform vec2 horizontal_detailmap_remainder;" << std::endl;
+    }    sstr << "out vec3 color;" << std::endl;
+    for (size_t i = 0; i < uv_map.size(); ++i) {
         sstr << "out vec2 tex_coord" << i << ";" << std::endl;
     }
     for (size_t i = 0; i < ncweight_indices; ++i) {
@@ -402,13 +477,6 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (nbillboard_ids != 0) {
         sstr << "    vPosInstance *= vertex_scale[billboard_id];" << std::endl;
-        for (size_t i = 0; i < nuv_indices; ++i) {
-            sstr << "    tex_coord" << i << " = vTexCoord" << i << " * uv_scale[billboard_id] + uv_offset[billboard_id];" << std::endl;
-        }
-    } else {
-        for (size_t i = 0; i < nuv_indices; ++i) {
-            sstr << "    tex_coord" << i << " = vTexCoord" << i << ";" << std::endl;
-        }
     }
     for (size_t i = 0; i < ncweight_indices; ++i) {
         sstr << "    cweight" << i << " = vCWeight" << i << ";" << std::endl;
@@ -451,6 +519,14 @@ static GenShaderText vertex_shader_text_gen{[](
         }
     } else if (has_instances && !has_lookat) {
         sstr << "    vPosInstance = vPosInstance + instancePosition;" << std::endl;
+    }
+    for (const auto& [t, i] : uv_map) {
+        if ((t.uv_source == BlendMapUvSource::HORIZONTAL) || (nbillboard_ids == 0)) {
+            sstr << "    tex_coord" << i << " = " << tex_coords(t) << ";" << std::endl;
+        } else {
+            sstr << "    tex_coord" << i << " = " << tex_coords(t)
+                 << " * uv_scale[billboard_id] + uv_offset[billboard_id];" << std::endl;
+        }
     }
     sstr << "    gl_Position = MVP * vec4(vPosInstance, 1.0);" << std::endl;
     sstr << "    color = vCol;" << std::endl;
@@ -565,6 +641,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
     const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
     const NotSortedStruct<AttributeIndices>& attr_ids,
+    const NotSortedUvMap& uv_map,
     size_t nuv_indices,
     size_t ncweights,
     bool has_alpha,
@@ -639,6 +716,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             ? "texture(" + sampler + ", vec3(" + coordinates + ", texture_layer_fs_transformed))"
             : "texture(" + sampler + ", " + coordinates + ')';
     };
+    std::string tex_coord = reorient_uv0
+        ? "tex_coord_flipped"
+        : "tex_coord";
     std::stringstream sstr;
     sstr << std::scientific;
     sstr << SHADER_VER << FRAGMENT_PRECISION;
@@ -647,7 +727,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform vec3 dynamic_emissive;" << std::endl;
     }
     if (ntextures_color != 0) {
-        for (size_t i = 0; i < nuv_indices; ++i) {
+        for (size_t i = 0; i < uv_map.size(); ++i) {
             sstr << "in vec2 tex_coord" << i << ";" << std::endl;
         }
     }
@@ -742,9 +822,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (!specular.all_equal(0)) {
         sstr << "uniform vec3 lightSpecular[" << lights.size() << "];" << std::endl;
-    }
-    if (has_horizontal_detailmap) {
-        sstr << "uniform vec2 horizontal_detailmap_remainder;" << std::endl;
     }
     {
         bool pred0 = (!specular.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
@@ -864,6 +941,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
         }
         if (reorient_uv0 || reorient_normals) {
+            if (reorient_uv0) {
+                for (size_t i = 0; i < nuv_indices; ++i) {
+                    sstr << "    vec2 tex_coord_flipped" << i << " = tex_coord" << i << ";" << std::endl;
+                }
+            }
             if (orthographic) {
                 sstr << "    if (dot(norm, viewDir) < 0.0) {" << std::endl;
             } else {
@@ -875,8 +957,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "        norm = -norm;" << std::endl;
             }
             if (reorient_uv0) {
-                for (size_t i = 0; i < nuv_indices; ++i) {
-                    sstr << "        tex_coord_flipped" << i << ".s = -tex_coord_flipped" << i << ".s;" << std::endl;
+                for (size_t i = 0; i < uv_map.size(); ++i) {
+                    sstr << "        tex_coord_flipped" << i << ".s = -tex_coord" << i << ".s;" << std::endl;
                 }
             }
             sstr << "    }" << std::endl;
@@ -887,41 +969,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
         sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
     };
-    auto tex_coords = [&nuv_indices](const BlendMapTexture& t) {
+    auto tex_coords = [&](const BlendMapTexture& t) {
         std::stringstream sstr;
-        sstr << std::scientific;
-        sstr << '(';
-        if (!t.offset.all_equal(0.f)) {
-            sstr << "vec2(" << t.offset(0) << ", " << t.offset(1) << ") + ";
-        }
-        static_assert(BlendMapUvSource::VERTICAL_LAST == BlendMapUvSource::VERTICAL4);
-        switch (t.uv_source) {
-        case BlendMapUvSource::VERTICAL0:
-        case BlendMapUvSource::VERTICAL1:
-        case BlendMapUvSource::VERTICAL2:
-        case BlendMapUvSource::VERTICAL3:
-        case BlendMapUvSource::VERTICAL4:
-        {
-            auto id = t.uv_source - BlendMapUvSource::VERTICAL0;
-            if (id >= nuv_indices) {
-                THROW_OR_ABORT("UV index too large");
-            }
-            sstr << "tex_coord_flipped" << id;
-            break;
-        }
-        case BlendMapUvSource::HORIZONTAL:
-            sstr << "(FragPos.xz + horizontal_detailmap_remainder)";
-            break;
-        default:
-            THROW_OR_ABORT("Unknown blend-map UV source");
-        }
-        if (t.scale.all_equal(1.f)) {
-            sstr << ')';
-        } else if (t.scale(0) == t.scale(1)) {
-            sstr << " * " << t.scale(0) << ')';
-        } else {
-            sstr << " * vec2(" << t.scale(0) << ", " << t.scale(1) << "))";
-        }
+        sstr << tex_coord << uv_map[t];
         return sstr.str();
     };
     auto normalmap_coords = [&](const BlendMapTextureAndId& t) {
@@ -979,11 +1029,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (alpha != 1.f) {
         sstr << "    alpha_fac *= " << alpha << ';' << std::endl;
-    }
-    if (ntextures_color != 0) {
-        for (size_t i = 0; i < nuv_indices; ++i) {
-            sstr << "    vec2 tex_coord_flipped" << i << " = tex_coord" << i << ";" << std::endl;
-        }
     }
     if (has_interiormap) {
         compute_normal_and_reorient_uv0();
@@ -1429,7 +1474,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
-        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_flipped0 * " << dirt_scale << " );" << std::endl;
+        sstr << "    vec4 dirt_color = texture(texture_dirt, " << tex_coord << "0 * " << dirt_scale << " );" << std::endl;
         if (any(dirt_color_mode & ColorMode::RGBA)) {
             sstr << "    dirtiness *= dirt_color.a;" << std::endl;
         } else if (!any(dirt_color_mode & ColorMode::RGB)) {
@@ -1932,11 +1977,21 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
     auto attr_idc = get_attribute_index_calculator(cva);
     auto attr_ids = attr_idc.build();
+    Map<UvMapKey, size_t> uv_map;
+    NotSortedUvMap not_sorted_uv_map{ uv_map };
+    for (const auto& t : textures_color) {
+        NotSortedUvMap{ uv_map }.insert(*t);
+    }
+    for (const auto& t : textures_alpha) {
+        NotSortedUvMap{ uv_map }.insert(*t);
+    }
     const char* vs_text = vertex_shader_text_gen(
         NotSortedArray{ filtered_lights },
         NotSortedArray{ textures_color },
+        NotSortedArray{ textures_alpha },
         NotSortedArray{ lightmap_indices },
         NotSortedStruct{ attr_ids },
+        NotSortedUvMap{ uv_map },
         id.nuv_indices,
         id.ncweights,
         id.has_alpha,
@@ -1980,6 +2035,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ light_shadow_indices },
         NotSortedArray{ black_shadow_indices },
         NotSortedStruct{ attr_ids },
+        NotSortedUvMap{ uv_map },
         id.nuv_indices,
         id.ncweights,
         id.has_alpha,
