@@ -36,9 +36,11 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/IInstantiation_Reference.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
@@ -226,6 +228,7 @@ struct AttributeIndexCalculator {
 
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>>& lights,
+    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>>& skidmarks,
     const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
     const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
@@ -387,13 +390,24 @@ static GenShaderText vertex_shader_text_gen{[](
         }
         for (size_t i : lightmap_indices) {
             sstr << "uniform mat4 MVP_light" << i << ";" << std::endl;
-            // vec4 to avoid clipping problems
-            sstr << "out vec4 FragPosLightSpace" << i << ";" << std::endl;
+            if (i > lights.size()) {
+                THROW_OR_ABORT("Light index out of bounds");
+            }
+            const auto& l = *lights[i].second;
+            if (!l.vp.has_value()) {
+                THROW_OR_ABORT("Light has no projection matrix");
+            }
+            if (has_lightmap_depth || !VisibilityCheck{*l.vp}.orthographic()) {
+                // vec4 to avoid clipping problems
+                sstr << "out vec4 FragPosLightSpace" << i << ";" << std::endl;
+            } else {
+                sstr << "out vec2 proj_coords01_light" << i << ";" << std::endl;
+            }
         }
     }
     if (nskidmarks != 0) {
         sstr << "uniform mat4 MVP_skidmarks[" << nskidmarks << "];" << std::endl;
-        sstr << "out vec4 FragPosSkidmarkSpace[" << nskidmarks << "];" << std::endl;
+        sstr << "out vec2 proj_coords01_skidmarks[" << nskidmarks << "];" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
         sstr << "out vec3 tangent;" << std::endl;
@@ -555,16 +569,6 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "    tex_coord" << i << ".s += uv_offset_u;" << std::endl;
         }
     }
-    if (has_lightmap_color || has_lightmap_depth) {
-        for (size_t i : lightmap_indices) {
-            sstr << "    FragPosLightSpace" << i << " = MVP_light" << i << " * vec4(vPosInstance, 1.0);" << std::endl;
-        }
-    }
-    for (size_t i = 0; i < nskidmarks; ++i) {
-        sstr << "    for (int i = 0; i < " << nskidmarks << "; ++i) {" << std::endl;
-        sstr << "        FragPosSkidmarkSpace[i] = MVP_skidmarks[i] * vec4(vPosInstance, 1.0);" << std::endl;
-        sstr << "    }" << std::endl;
-    }
     if (has_dirtmap) {
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1.0) / 2.0;" << std::endl;
@@ -578,6 +582,35 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_normalmap || has_interiormap) {
         sstr << "    tangent = vTangent;" << std::endl;
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
+    }
+    for (size_t i : lightmap_indices) {
+        if (i > lights.size()) {
+            THROW_OR_ABORT("Light index too large");
+        }
+        const auto& light = *lights[i].second;
+        if (!light.vp.has_value()) {
+            THROW_OR_ABORT("Light has no projection matrix");
+        }
+        if (!has_lightmap_depth && VisibilityCheck{*light.vp}.orthographic()) {
+            sstr << "    {" << std::endl;
+            sstr << "        vec4 FragPosLightSpace = MVP_light" << i << " * vec4(vPosInstance, 1.0);" << std::endl;
+            sstr << "        vec2 proj_coords11 = FragPosLightSpace.xy / FragPosLightSpace.w;" << std::endl;
+            sstr << "        proj_coords01_light" << i << " = proj_coords11 * 0.5 + 0.5;" << std::endl;
+            sstr << "    }" << std::endl;
+        } else {
+            sstr << "    FragPosLightSpace" << i << " = MVP_light" << i << " * vec4(vPosInstance, 1.0);" << std::endl;
+        }
+    }
+    for (const auto& [i, skidmark]: enumerate(skidmarks)) {
+        const auto& s = *skidmark.second;
+        if (!VisibilityCheck{s.vp}.orthographic()) {
+            THROW_OR_ABORT("Skidmark projection matrix not orthographic");
+        }
+        sstr << "    {" << std::endl;
+        sstr << "        vec4 FragPosSkidmarkSpace = MVP_skidmarks[" << i << "] * vec4(vPosInstance, 1.0);" << std::endl;
+        sstr << "        vec2 proj_coords11 = FragPosSkidmarkSpace.xy / FragPosSkidmarkSpace.w;" << std::endl;
+        sstr << "        proj_coords01_skidmarks[" << i << "] = proj_coords11 * 0.5 + 0.5;" << std::endl;
+        sstr << "    }" << std::endl;
     }
     sstr << "}" << std::endl;
     if (getenv_default_bool("PRINT_SHADERS", false)) {
@@ -752,11 +785,22 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             THROW_OR_ABORT("No lights despite has_lightmap_color or has_lightmap_depth");
         }
         for (size_t i : lightmap_indices) {
-            sstr << "in vec4 FragPosLightSpace" << i << ";" << std::endl;
+            if (i > lights.size()) {
+                THROW_OR_ABORT("Light index too large");
+            }
+            const auto& light = *lights[i].second;
+            if (!light.vp.has_value()) {
+                THROW_OR_ABORT("Light has no projection matrix");
+            }
+            if (!has_lightmap_depth && VisibilityCheck{ *light.vp }.orthographic()) {
+                sstr << "in vec2 proj_coords01_light" << i << ";" << std::endl;
+            } else {
+                sstr << "in vec4 FragPosLightSpace" << i << ";" << std::endl;
+            }
         }
     }
     if (nskidmarks != 0) {
-        sstr << "in vec4 FragPosSkidmarkSpace[" << nskidmarks << "];" << std::endl;
+        sstr << "in vec2 proj_coords01_skidmarks[" << nskidmarks << "];" << std::endl;
     }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
     if (has_lightmap_color) {
@@ -1322,6 +1366,22 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     sstr << "    vec3 frag_brightness_emissive_ambient_diffuse = vec3(0.0, 0.0, 0.0);" << std::endl;
     sstr << "    vec3 frag_brightness_specular = vec3(0.0, 0.0, 0.0);" << std::endl;
     if (!ambient.all_equal(0) || !diffuse.all_equal(0) || !specular.all_equal(0)) {
+        auto compute_light_color = [&sstr, &lights](size_t i){
+            if (i > lights.size()) {
+                THROW_OR_ABORT("Light index too large");
+            }
+            const auto& light = *lights[i].second;
+            if (!light.vp.has_value()) {
+                THROW_OR_ABORT("Light has no projection matrix");
+            }
+            if (VisibilityCheck{*light.vp}.orthographic()) {
+                sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01_light" << i << ").rgb;" << std::endl;
+            } else {
+                sstr << "            vec2 proj_coords11 = FragPosLightSpace" << i << ".xy / FragPosLightSpace" << i << ".w;" << std::endl;
+                sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+                sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01).rgb;" << std::endl;
+            }
+        };
         if (has_lightmap_color && !black_shadow_indices.empty()) {
             sstr << "    vec3 black_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
         }
@@ -1331,9 +1391,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             for (size_t i : black_shadow_indices) {
                 assert_true(i < lights.size());
                 sstr << "        {" << std::endl;
-                sstr << "            vec2 proj_coords11 = FragPosLightSpace" << i << ".xy / FragPosLightSpace" << i << ".w;" << std::endl;
-                sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                sstr << "            black_fac = min(black_fac, texture(texture_light_color" << i << ", proj_coords01.xy).rgb);" << std::endl;
+                compute_light_color(i);
+                sstr << "            black_fac = min(black_fac, light_color);" << std::endl;
                 sstr << "        }" << std::endl;
             }
             sstr << "    }" << std::endl;
@@ -1343,9 +1402,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    {" << std::endl;
             for (const auto& [i, _]: enumerate(skidmarks)) {
                 sstr << "        {" << std::endl;
-                sstr << "            vec2 proj_coords11 = FragPosSkidmarkSpace[" << i << "].xy / FragPosSkidmarkSpace[" << i << "].w;" << std::endl;
-                sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                sstr << "            skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01.xy).rgb);" << std::endl;
+                sstr << "            skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
                 sstr << "        }" << std::endl;
             }
             sstr << "    }" << std::endl;
@@ -1379,23 +1436,21 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 assert_true(i < lights.size());
                 sstr << "    {" << std::endl;
                 if (has_lightmap_color) {
-                    sstr << "        vec2 proj_coords11 = FragPosLightSpace" << i << ".xy / FragPosLightSpace" << i << ".w;" << std::endl;
-                    sstr << "        vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                    sstr << "        vec3 light_fac = texture(texture_light_color" << i << ", proj_coords01.xy).rgb;" << std::endl;
+                    compute_light_color(i);
                 } else {
-                    sstr << "        vec3 light_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
+                    sstr << "        vec3 light_color = vec3(1.0, 1.0, 1.0);" << std::endl;
                 }
                 if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
-                    sstr << "        frag_brightness_emissive_ambient_diffuse += light_fac * phong_ambient(" << i << ");" << std::endl;
+                    sstr << "        frag_brightness_emissive_ambient_diffuse += light_color * phong_ambient(" << i << ");" << std::endl;
                 }
                 if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
-                    sstr << "        frag_brightness_emissive_ambient_diffuse += light_fac * phong_diffuse(" << i << ", norm);" << std::endl;
+                    sstr << "        frag_brightness_emissive_ambient_diffuse += light_color * phong_diffuse(" << i << ", norm);" << std::endl;
                 }
                 if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
                     if (specular_exponent == 0.f) {
-                        sstr << "        frag_brightness_specular += light_fac * lightSpecular[" << i << "];" << std::endl;
+                        sstr << "        frag_brightness_specular += light_color * lightSpecular[" << i << "];" << std::endl;
                     } else {
-                        sstr << "        frag_brightness_specular += light_fac * phong_specular(" << i << ", norm);" << std::endl;
+                        sstr << "        frag_brightness_specular += light_color * phong_specular(" << i << ", norm);" << std::endl;
                     }
                 }
                 sstr << "    }" << std::endl;
@@ -1987,6 +2042,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     }
     const char* vs_text = vertex_shader_text_gen(
         NotSortedArray{ filtered_lights },
+        NotSortedArray{ filtered_skidmarks },
         NotSortedArray{ textures_color },
         NotSortedArray{ textures_alpha },
         NotSortedArray{ lightmap_indices },
