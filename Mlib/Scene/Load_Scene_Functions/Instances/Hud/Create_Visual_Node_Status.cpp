@@ -14,6 +14,8 @@
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Text_Logger.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -31,6 +33,7 @@ DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
+DECLARE_ARGUMENT(font_color);
 DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(pointer);
@@ -41,6 +44,8 @@ DECLARE_ARGUMENT(minimum_value);
 DECLARE_ARGUMENT(maximum_value);
 DECLARE_ARGUMENT(blank_angle);
 DECLARE_ARGUMENT(ticks);
+DECLARE_ARGUMENT(focus_mask);
+DECLARE_ARGUMENT(submenus);
 }
 
 const std::string CreateVisualNodeStatus::key = "visual_node_status";
@@ -69,7 +74,10 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.advance_times_,
         render_logics,
         node,
-        nullptr);
+        nullptr,
+        FocusFilter{
+            .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
+            .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
     auto widget = std::make_unique<Widget>(
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
@@ -86,6 +94,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash(),
             std::move(widget),
+            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::tick_radius)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pointer_width)),

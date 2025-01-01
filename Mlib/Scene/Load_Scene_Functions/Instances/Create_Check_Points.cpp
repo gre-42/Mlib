@@ -22,6 +22,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -49,7 +50,8 @@ DECLARE_ARGUMENT(pacenotes_maximum_number);
 DECLARE_ARGUMENT(pacenotes_pictures_left);
 DECLARE_ARGUMENT(pacenotes_pictures_right);
 DECLARE_ARGUMENT(pacenotes_ttf);
-DECLARE_ARGUMENT(pacenotes_color);
+DECLARE_ARGUMENT(pacenotes_font_color);
+DECLARE_ARGUMENT(pacenotes_font_height);
 DECLARE_ARGUMENT(pacenotes_widget_distance);
 DECLARE_ARGUMENT(pacenotes_text_left);
 DECLARE_ARGUMENT(pacenotes_text_right);
@@ -59,10 +61,11 @@ DECLARE_ARGUMENT(pacenotes_picture_left);
 DECLARE_ARGUMENT(pacenotes_picture_right);
 DECLARE_ARGUMENT(pacenotes_picture_bottom);
 DECLARE_ARGUMENT(pacenotes_picture_top);
-DECLARE_ARGUMENT(pacenotes_font_height);
 DECLARE_ARGUMENT(selection_emissivity);
 DECLARE_ARGUMENT(deselection_emissivity);
 DECLARE_ARGUMENT(on_finish);
+DECLARE_ARGUMENT(focus_mask);
+DECLARE_ARGUMENT(submenus);
 }
 
 const std::string CreateCheckPoints::key = "check_points";
@@ -158,13 +161,16 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             std::move(picture_widget),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_font_height)),
             args.arguments.path(KnownArgs::pacenotes_ttf),
-            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::pacenotes_color),
+            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::pacenotes_font_color),
             args.arguments.path(KnownArgs::pacenotes_filename),
             DanglingBaseClassRef<const CheckPoints>{ check_points, CURRENT_SOURCE_LOCATION },
             nlaps,
             args.arguments.at<double>(KnownArgs::pacenotes_meters_ahead),
             args.arguments.at<double>(KnownArgs::pacenotes_minimum_covered_meters),
-            args.arguments.at<size_t>(KnownArgs::pacenotes_maximum_number));
+            args.arguments.at<size_t>(KnownArgs::pacenotes_maximum_number),
+            FocusFilter{
+                .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
+                .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
         render_logics.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
         physics_engine.advance_times_.add_advance_time({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     }

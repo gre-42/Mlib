@@ -16,17 +16,20 @@ PlayersStatsLogic::PlayersStatsLogic(
     const Players& players,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
+    const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
-    ScoreBoardConfiguration score_board_configuration)
+    ScoreBoardConfiguration score_board_configuration,
+    FocusFilter focus_filter)
     : RenderTextLogic{
         ttf_filename,
-        {1.f, 1.f, 1.f},
+        font_color,
         font_height,
         line_distance }
     , players_{ players }
     , score_board_configuration_{ score_board_configuration }
     , widget_{ std::move(widget) }
+    , focus_filter_{ std::move(focus_filter) }
 {}
 
 PlayersStatsLogic::~PlayersStatsLogic() {
@@ -55,6 +58,10 @@ void PlayersStatsLogic::render_without_setup(
         *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         players_.get_score_board(score_board_configuration_),
         line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
+}
+
+FocusFilter PlayersStatsLogic::focus_filter() const {
+    return focus_filter_;
 }
 
 void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {

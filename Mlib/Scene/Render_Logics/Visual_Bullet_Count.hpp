@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 
 namespace Mlib {
@@ -15,6 +16,8 @@ class Player;
 class RenderLogics;
 class IWidget;
 class ObjectPool;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class VisualBulletCount:
     public RenderLogic,
@@ -29,8 +32,10 @@ public:
         const DanglingBaseClassRef<Player>& player,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
+        const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
-        const ILayoutPixels& line_distance);
+        const ILayoutPixels& line_distance,
+        FocusFilter focus_filter);
     virtual ~VisualBulletCount();
 
     virtual void advance_time(float dt, const StaticWorld& world) override;
@@ -46,6 +51,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    virtual FocusFilter focus_filter() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
@@ -56,6 +62,7 @@ private:
     std::unique_ptr<IWidget> widget_;
     std::string text_;
     AtomicMutex mutex_;
+    FocusFilter focus_filter_;
 };
 
 }

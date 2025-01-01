@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Track_Writer.hpp>
+#include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Format.hpp>
@@ -265,14 +266,16 @@ uint32_t RaceHistory::rank(float race_time_seconds) const {
     return rank;
 }
 
-std::string RaceHistory::get_level_history() const {
+std::string RaceHistory::get_level_history(ScoreBoardConfiguration score_board_config) const {
     std::stringstream sstr;
     {
-        size_t rank = 0;
         std::shared_lock guard{ mutex_ };
-        for (const auto& l : lap_time_events_) {
-            ++rank;
-            sstr << rank << ": " << l.event.player_name << ", race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
+        for (const auto& [rank, l] : enumerate(lap_time_events_)) {
+            if (any(score_board_config & ScoreBoardConfiguration::PLAYER)) {
+                sstr << (rank + 1) << ": " << l.event.player_name << ", race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
+            } else {
+                sstr << (rank + 1) << ": " << "Race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
+            }
         }
     }
     return sstr.str();

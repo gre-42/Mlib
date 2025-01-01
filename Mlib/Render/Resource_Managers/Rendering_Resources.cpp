@@ -64,6 +64,7 @@
 #include <stb_cpp/stb_invert.hpp>
 #include <stb_cpp/stb_lighten.hpp>
 #include <stb_cpp/stb_mipmaps.hpp>
+#include <stb_cpp/stb_replace_color.hpp>
 #include <stb_cpp/stb_saturate.hpp>
 #include <stb_cpp/stb_set_alpha.hpp>
 #include <stb_cpp/stb_transform.hpp>
@@ -315,6 +316,17 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         assert_true(m.shape(2) == (size_t)si0.width);
         array_2_stb_image(m, si0.data.get());
     }
+    if (!color.mean_color.all_equal(-1.f)) {
+        if (!stb_colorize(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (color.mean_color * 255.f).casted<unsigned char>().flat_begin()))
+        {
+            lwarn() << "alpha = 0: " << color << std::endl;
+        }
+    }
     if (!color.lighten.all_equal(0.f)) {
         const FixedArray<float, 3>& lighten = color.lighten;
         if (any(lighten > 1.f) ||
@@ -380,17 +392,6 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             (color.lighten_top * 255.f).casted<short>().flat_begin(),
             (color.lighten_bottom * 255.f).casted<short>().flat_begin());
     }
-    if (!color.mean_color.all_equal(-1.f)) {
-        if (!stb_colorize(
-            si0.data.get(),
-            si0.width,
-            si0.height,
-            si0.nrChannels,
-            (color.mean_color * 255.f).casted<unsigned char>().flat_begin()))
-        {
-            lwarn() << "alpha = 0: " << color << std::endl;
-        }
-    }
     if (!color.alpha_blend.empty()) {
         auto si1 = stb_load_texture(
             color.alpha_blend, 4, flip_mode);
@@ -413,6 +414,16 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             si0.height,
             si0.nrChannels,
             color.alpha_fac);
+    }
+    if (!color.color_to_replace.all_equal(-1.f)) {
+        stb_replace_color(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (color.color_to_replace * 255.f).casted<uint8_t>().flat_begin(),
+            (color.replacement_color * 255.f).casted<uint8_t>().flat_begin(),
+            (uint8_t)(std::round(color.replacement_tolerance * 255.f)));
     }
     if (has_color_selector)
     {

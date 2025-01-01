@@ -1,42 +1,30 @@
 #include "Score_Board_Configuration.hpp"
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <map>
 #include <stdexcept>
 
 using namespace Mlib;
 
 static ScoreBoardConfiguration single_score_board_configuration_from_string(const std::string& s) {
-    if (s == "none") {
-        return ScoreBoardConfiguration::NONE;
+    static const std::map<std::string, ScoreBoardConfiguration> m{
+        {"none", ScoreBoardConfiguration::NONE},
+        {"player", ScoreBoardConfiguration::PLAYER},
+        {"team", ScoreBoardConfiguration::TEAM},
+        {"best_lap_time", ScoreBoardConfiguration::BEST_LAP_TIME},
+        {"car_hp", ScoreBoardConfiguration::CAR_HP},
+        {"history", ScoreBoardConfiguration::HISTORY},
+        {"nwins", ScoreBoardConfiguration::NWINS},
+        {"nkills", ScoreBoardConfiguration::NKILLS},
+        {"laps", ScoreBoardConfiguration::LAPS},
+        {"rank", ScoreBoardConfiguration::RANK},
+        {"race_time", ScoreBoardConfiguration::RACE_TIME},
+    };
+    auto it = m.find(s);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown score board configuration: \"" + s + '"');
     }
-    if (s == "team") {
-        return ScoreBoardConfiguration::TEAM;
-    }
-    if (s == "best_lap_time") {
-        return ScoreBoardConfiguration::BEST_LAP_TIME;
-    }
-    if (s == "car_hp") {
-        return ScoreBoardConfiguration::CAR_HP;
-    }
-    if (s == "history") {
-        return ScoreBoardConfiguration::HISTORY;
-    }
-    if (s == "nwins") {
-        return ScoreBoardConfiguration::NWINS;
-    }
-    if (s == "nkills") {
-        return ScoreBoardConfiguration::NKILLS;
-    }
-    if (s == "laps") {
-        return ScoreBoardConfiguration::LAPS;
-    }
-    if (s == "rank") {
-        return ScoreBoardConfiguration::RANK;
-    }
-    if (s == "race_time") {
-        return ScoreBoardConfiguration::RACE_TIME;
-    }
-    THROW_OR_ABORT("Unknown score board configuration: \"" + s + '"');
+    return it->second;
 }
 
 ScoreBoardConfiguration Mlib::score_board_configuration_from_string(const std::string& s) {

@@ -5,12 +5,15 @@
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
 #include <atomic>
+#include <cstddef>
 
 namespace Mlib {
 
 enum class StatusComponents;
 class StatusWriter;
 class IWidget;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class VisualMovableCircularLogger: public VisualMovableLoggerView {
 public:
@@ -18,8 +21,9 @@ public:
         StatusWriter& status_writer,
         StatusComponents log_components,
         const std::string& ttf_filename,
-        ColormapWithModifiers pointer_texture_name,
+        const ColormapWithModifiers& pointer_texture_name,
         std::unique_ptr<IWidget>&& widget,
+        const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& tick_radius,
         const ILayoutPixels& pointer_width,

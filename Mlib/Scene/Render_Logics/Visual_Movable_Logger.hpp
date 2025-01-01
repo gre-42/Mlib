@@ -5,6 +5,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <list>
 #include <memory>
 
@@ -27,7 +28,8 @@ public:
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
         DanglingRef<SceneNode> node,
-        DanglingBaseClassPtr<Player> player);
+        DanglingBaseClassPtr<Player> player,
+        FocusFilter focus_filter);
     virtual ~VisualMovableLogger();
 
     void add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger);
@@ -48,6 +50,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    virtual FocusFilter focus_filter() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
@@ -58,6 +61,7 @@ private:
     DestructionFunctionsRemovalTokens on_node_clear_;
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     std::list<std::unique_ptr<VisualMovableLoggerView>> loggers_;
+    FocusFilter focus_filter_;
 };
 
 }

@@ -29,6 +29,9 @@ DECLARE_ARGUMENT(lighten_left);
 DECLARE_ARGUMENT(lighten_right);
 DECLARE_ARGUMENT(lighten_top);
 DECLARE_ARGUMENT(lighten_bottom);
+DECLARE_ARGUMENT(color_to_replace);
+DECLARE_ARGUMENT(replacement_color);
+DECLARE_ARGUMENT(replacement_tolerance);
 DECLARE_ARGUMENT(selected_color);
 DECLARE_ARGUMENT(selected_color_near);
 DECLARE_ARGUMENT(selected_color_far);
@@ -92,6 +95,9 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .lighten_right = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::lighten_right, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_top = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::lighten_top, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_bottom = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::lighten_bottom, OrderableFixedArray<float, 3>(0.f)),
+                .color_to_replace = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::color_to_replace, OrderableFixedArray<float, 3>(-1.f)),
+                .replacement_color = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::replacement_color, OrderableFixedArray<float, 3>(-1.f)),
+                .replacement_tolerance = args.arguments.at<float>(KnownArgs::replacement_tolerance, 0.f),
                 .selected_color = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::selected_color, OrderableFixedArray<float, 3>(0.f)),
                 .selected_color_near = args.arguments.at<float>(KnownArgs::selected_color_near, 0),
                 .selected_color_far = args.arguments.at<float>(KnownArgs::selected_color_far, INFINITY),

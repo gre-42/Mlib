@@ -33,10 +33,12 @@ DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
+DECLARE_ARGUMENT(font_color);
 DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(deflt);
 DECLARE_ARGUMENT(reload_transient_objects);
+DECLARE_ARGUMENT(z_order);
 }
 
 const std::string CreateTabMenuLogic::key = "tab_menu";
@@ -83,6 +85,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.path(KnownArgs::ttf_file),
         std::move(icon_widget),
         std::move(widget),
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         args.external_json_macro_arguments,
@@ -101,6 +104,6 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         });
     render_logics.append(
         { tab_menu_logic, CURRENT_SOURCE_LOCATION },
-        1 /* z_order */,
+        args.arguments.at<int>(KnownArgs::z_order, 0),
         CURRENT_SOURCE_LOCATION);
 }

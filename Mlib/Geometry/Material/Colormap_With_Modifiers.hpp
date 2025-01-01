@@ -25,6 +25,9 @@ struct ColormapWithModifiers {
     OrderableFixedArray<float, 3> lighten_right = { 0.f, 0.f, 0.f };
     OrderableFixedArray<float, 3> lighten_top = { 0.f, 0.f, 0.f };
     OrderableFixedArray<float, 3> lighten_bottom = { 0.f, 0.f, 0.f };
+    OrderableFixedArray<float, 3> color_to_replace = { -1.f, -1.f, -1.f };
+    OrderableFixedArray<float, 3> replacement_color = { -1.f, -1.f, -1.f };
+    float replacement_tolerance = 0;
     OrderableFixedArray<float, 3> selected_color = { -1.f, -1.f, -1.f };
     float selected_color_near = 0;
     float selected_color_far = INFINITY;
@@ -63,6 +66,9 @@ struct ColormapWithModifiers {
         archive(selected_color);
         archive(selected_color_near);
         archive(selected_color_far);
+        archive(color_to_replace);
+        archive(replacement_color);
+        archive(replacement_tolerance);
         archive(edge_sigma);
         archive(times);
         archive(plus);

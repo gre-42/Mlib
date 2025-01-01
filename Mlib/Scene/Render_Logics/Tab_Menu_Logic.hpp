@@ -5,6 +5,7 @@
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <vector>
 
@@ -21,7 +22,8 @@ class IWidget;
 class ILayoutPixels;
 class RenderLogicGallery;
 enum class ListViewStyle;
-
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class SubmenuHeaderContents: public IListViewContents {
 public:
@@ -53,6 +55,7 @@ public:
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& icon_widget,
         std::unique_ptr<IWidget>&& widget,
+        const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         NotifyingJsonMacroArguments& substitutions,

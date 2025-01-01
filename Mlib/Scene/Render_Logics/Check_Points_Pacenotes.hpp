@@ -6,6 +6,7 @@
 #include <Mlib/Render/Data_Display/Pacenote_Display.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <optional>
 #include <vector>
@@ -30,13 +31,14 @@ public:
         std::unique_ptr<IWidget>&& picture_widget,
         const ILayoutPixels& font_height,
         const std::string& ttf_filename,
-        const FixedArray<float, 3>& color,
+        const FixedArray<float, 3>& font_color,
         const std::string& pacenotes_filename,
         const DanglingBaseClassRef<const CheckPoints>& check_points,
         size_t nlaps,
         double pacenotes_meters_read_ahead,
         double pacenotes_minimum_covered_meters,
-        size_t pacenotes_maximum_number);
+        size_t pacenotes_maximum_number,
+        FocusFilter focus_filter);
     ~CheckPointsPacenotes();
 
     // IAdvanceTime
@@ -53,6 +55,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    virtual FocusFilter focus_filter() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
@@ -65,6 +68,7 @@ private:
     std::vector<const Pacenote*> pacenotes_;
     TextResource text_;
     PacenoteDisplay display_;
+    FocusFilter focus_filter_;
     DestructionFunctionsRemovalTokens on_destroy_check_points_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };

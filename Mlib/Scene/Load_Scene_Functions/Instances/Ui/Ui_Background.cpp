@@ -52,10 +52,11 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::make_shared<FillWithTextureLogic>(
             RenderingContextStack::primary_rendering_resources().get_texture_lazy(
                 ColormapWithModifiers{
-                    .filename = VariableAndHash{args.arguments.path(KnownArgs::texture)},
+                    .filename = VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture).path},
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                }.compute_hash())),
+                }.compute_hash(),
+                TextureRole::COLOR_FROM_DB)),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
@@ -63,7 +64,7 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
         delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
         FocusFilter{ .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)) });
-    scene_render_logics.append(
+    render_logics.append(
         { bg, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order),
         CURRENT_SOURCE_LOCATION);

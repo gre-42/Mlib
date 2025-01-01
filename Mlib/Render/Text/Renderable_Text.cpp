@@ -8,6 +8,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -165,6 +166,8 @@ void TextResource::render() const
     if (!rp_.allocated()) {
         return;
     }
+    notify_rendering(CURRENT_SOURCE_LOCATION);
+
     // TimeGuard time_guard{"TextResource::render", "TextResource::render"};
     CHK(glEnable(GL_CULL_FACE));
     CHK(glEnable(GL_BLEND));

@@ -18,13 +18,14 @@ VisualGlobalLog::VisualGlobalLog(
     BaseLog& base_log,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
+    const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     size_t nentries,
     LogEntrySeverity severity)
     : RenderTextLogic{
         ttf_filename,
-        {1.f, 1.f, 1.f},
+        font_color,
         font_height,
         line_distance }
     , base_log_{ base_log }

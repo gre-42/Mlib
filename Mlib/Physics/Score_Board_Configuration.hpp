@@ -5,15 +5,16 @@ namespace Mlib {
 
 enum class ScoreBoardConfiguration {
     NONE = 0,
-    TEAM = (1 << 0),
-    BEST_LAP_TIME = (1 << 1),
-    CAR_HP = (1 << 2),
-    HISTORY = (1 << 3),
-    NWINS = (1 << 4),
-    NKILLS = (1 << 5),
-    LAPS = (1 << 6),
-    RANK = (1 << 7),
-    RACE_TIME = (1 << 8)
+    PLAYER = (1 << 0),
+    TEAM = (1 << 1),
+    BEST_LAP_TIME = (1 << 2),
+    CAR_HP = (1 << 3),
+    HISTORY = (1 << 4),
+    NWINS = (1 << 5),
+    NKILLS = (1 << 6),
+    LAPS = (1 << 7),
+    RANK = (1 << 8),
+    RACE_TIME = (1 << 9)
 };
 
 inline ScoreBoardConfiguration operator & (ScoreBoardConfiguration a, ScoreBoardConfiguration b) {

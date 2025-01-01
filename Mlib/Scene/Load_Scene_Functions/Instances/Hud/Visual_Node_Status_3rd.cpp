@@ -21,6 +21,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(format);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(offset);
+DECLARE_ARGUMENT(font_color);
 DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 }
@@ -52,6 +53,7 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         log_components,
         args.arguments.path(KnownArgs::ttf_file),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::offset),
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
 }

@@ -16,6 +16,8 @@ class ThreadSafeString;
 class IWidget;
 class ILayoutPixels;
 struct ReplacementParameterAndFilename;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class SceneEntry {
 public:
@@ -53,6 +55,7 @@ public:
         std::vector<SceneEntry> scene_files,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
+        const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,

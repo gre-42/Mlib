@@ -144,59 +144,65 @@ std::optional<LapTimeEventAndIdAndMfilename> Players::get_winner_track_filename(
 std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     std::stringstream sstr;
     for (const auto& [tname, team] : teams_) {
-        sstr << "Team: " << tname;
-        if (any(config & ScoreBoardConfiguration::NWINS)) {
-            sstr << ", wins: " << team->nwins();
-        }
-        if (any(config & ScoreBoardConfiguration::NKILLS)) {
-            sstr << ", kills: " << team->nkills();
-        }
-        sstr << std::endl;
-        for (const auto& pname : team->players()) {
-            auto p = get_player(pname, CURRENT_SOURCE_LOCATION);
-            if (p->game_mode() == GameMode::BYSTANDER) {
-                continue;
-            }
-            sstr << "Player: " << pname;
-            if (any(config & ScoreBoardConfiguration::TEAM)) {
-                sstr << ", team: " << p->team_name();
-            }
-            if (any(config & ScoreBoardConfiguration::BEST_LAP_TIME)) {
-                sstr << ", best lap time: " << format_minutes_seconds(p->stats().best_lap_time);
-            }
-            if (any(config & ScoreBoardConfiguration::RACE_TIME)) {
-                if (p->stats().race_time != INFINITY) {
-                    sstr << ", race time: " << format_minutes_seconds(p->stats().race_time);
-                }
-            }
-            if (any(config & ScoreBoardConfiguration::LAPS)) {
-                if ((race_history_->race_identifier().laps != 1) &&
-                    (p->stats().nlaps != race_history_->race_identifier().laps))
-                {
-                    sstr << ", lap " <<  (p->stats().nlaps + 1) << "/" << race_history_->race_identifier().laps;
-                }
-            }
-            if (any(config & ScoreBoardConfiguration::RANK)) {
-                if (p->stats().rank != UINT32_MAX) {
-                    sstr << ", rank " <<  (p->stats().rank + 1);
-                }
-            }
-            if (any(config & ScoreBoardConfiguration::CAR_HP)) {
-                sstr << ", car HP: " << p->car_health();
-            }
+        if (any(config & ScoreBoardConfiguration::TEAM)) {
+            sstr << "Team: " << tname;
             if (any(config & ScoreBoardConfiguration::NWINS)) {
-                sstr << ", wins: " << p->stats().nwins;
+                sstr << ", wins: " << team->nwins();
             }
             if (any(config & ScoreBoardConfiguration::NKILLS)) {
-                sstr << ", kills: " << p->stats().nkills;
+                sstr << ", kills: " << team->nkills();
             }
             sstr << std::endl;
         }
+        if (any(config & ScoreBoardConfiguration::PLAYER)) {
+            for (const auto &pname: team->players()) {
+                auto p = get_player(pname, CURRENT_SOURCE_LOCATION);
+                if (p->game_mode() == GameMode::BYSTANDER) {
+                    continue;
+                }
+                sstr << "Player: " << pname;
+                if (any(config & ScoreBoardConfiguration::TEAM)) {
+                    sstr << ", team: " << p->team_name();
+                }
+                if (any(config & ScoreBoardConfiguration::BEST_LAP_TIME)) {
+                    sstr << ", best lap time: " << format_minutes_seconds(p->stats().best_lap_time);
+                }
+                if (any(config & ScoreBoardConfiguration::RACE_TIME)) {
+                    if (p->stats().race_time != INFINITY) {
+                        sstr << ", race time: " << format_minutes_seconds(p->stats().race_time);
+                    }
+                }
+                if (any(config & ScoreBoardConfiguration::LAPS)) {
+                    if ((race_history_->race_identifier().laps != 1) &&
+                        (p->stats().nlaps != race_history_->race_identifier().laps)) {
+                        sstr << ", lap " << (p->stats().nlaps + 1) << "/"
+                             << race_history_->race_identifier().laps;
+                    }
+                }
+                if (any(config & ScoreBoardConfiguration::RANK)) {
+                    if (p->stats().rank != UINT32_MAX) {
+                        sstr << ", rank " << (p->stats().rank + 1);
+                    }
+                }
+                if (any(config & ScoreBoardConfiguration::CAR_HP)) {
+                    sstr << ", car HP: " << p->car_health();
+                }
+                if (any(config & ScoreBoardConfiguration::NWINS)) {
+                    sstr << ", wins: " << p->stats().nwins;
+                }
+                if (any(config & ScoreBoardConfiguration::NKILLS)) {
+                    sstr << ", kills: " << p->stats().nkills;
+                }
+                sstr << std::endl;
+            }
+        }
     }
     if (any(config & ScoreBoardConfiguration::HISTORY)) {
-        sstr << std::endl;
-        sstr << "History" << std::endl;
-        sstr << race_history_->get_level_history() << std::endl;
+        if (sstr.tellg() != 0) {
+            sstr << std::endl;
+            sstr << "History" << std::endl;
+        }
+        sstr << race_history_->get_level_history(config) << std::endl;
     }
     return sstr.str();
 }

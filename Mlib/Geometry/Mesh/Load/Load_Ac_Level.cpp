@@ -149,14 +149,16 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                     continue;
                 }
                 auto stage = stage_dir.path().filename();
-                auto level_id = level_dir.path().filename().string() + '_' + stage.string();
-                add_level(
-                    (level_dir / fs::path{ "models_" + stage.string() }).string() + ".ini",
-                    stage_dir / fs::path{ "preview.png" },
-                    stage_dir / fs::path{ "ui_track.json" },
-                    level_dir / stage / fs::path{ "map.png" },
-                    level_dir / stage / fs::path{ "data" } / fs::path{ "map.ini" },
-                    level_id);
+                if (auto ui_track_filename = stage_dir / fs::path{ "ui_track.json" }; path_exists(ui_track_filename)) {
+                    auto level_id = level_dir.path().filename().string() + '_' + stage.string();
+                    add_level(
+                        (level_dir / fs::path{ "models_" + stage.string() }).string() + ".ini",
+                        stage_dir / fs::path{ "preview.png" },
+                        ui_track_filename,
+                        level_dir / stage / fs::path{ "map.png" },
+                        level_dir / stage / fs::path{ "data" } / fs::path{ "map.ini" },
+                        level_id);
+                }
             }
         }
     }

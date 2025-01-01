@@ -74,6 +74,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     std::vector<SceneEntry> scene_files,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
+    const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
@@ -85,7 +86,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     : mle_{ std::move(mle) }
     , renderable_text_{ std::make_unique<TextResource>(
         ttf_filename,
-        FixedArray<float, 3>{1.f, 1.f, 1.f}) }
+        font_color) }
     , scene_files_{ std::move(scene_files) }
     , contents_{ scene_files_, mle_ }
     , widget_{ std::move(widget) }

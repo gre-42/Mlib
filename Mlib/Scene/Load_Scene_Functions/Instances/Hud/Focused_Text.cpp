@@ -15,6 +15,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(font_color);
 DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(focus_mask);
@@ -38,7 +39,7 @@ void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& loading_logic = object_pool.create<FocusedTextLogic>(
         CURRENT_SOURCE_LOCATION,
         args.arguments.path(KnownArgs::ttf_file),
-        FixedArray<float, 3>{1.f, 1.f, 1.f},
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::position),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),

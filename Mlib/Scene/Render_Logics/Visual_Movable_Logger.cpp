@@ -19,13 +19,15 @@ VisualMovableLogger::VisualMovableLogger(
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
     DanglingRef<SceneNode> node,
-    DanglingBaseClassPtr<Player> player)
+    DanglingBaseClassPtr<Player> player,
+    FocusFilter focus_filter)
     : player_{ player }
     , node_{ node }
     , advance_times_ { advance_times }
     , render_logics_{ render_logics }
     , on_node_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
     , on_player_delete_vehicle_internals_{ player != nullptr ? &player->delete_vehicle_internals : nullptr, CURRENT_SOURCE_LOCATION }
+    , focus_filter_{ std::move(focus_filter) }
 {
     advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     if (!on_player_delete_vehicle_internals_.is_null()) {
@@ -79,6 +81,10 @@ void VisualMovableLogger::render_without_setup(
             render_results,
             frame_id);
     }
+}
+
+FocusFilter VisualMovableLogger::focus_filter() const {
+    return focus_filter_;
 }
 
 void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {

@@ -20,11 +20,13 @@ VisualBulletCount::VisualBulletCount(
     const DanglingBaseClassRef<Player>& player,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
+    const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
-    const ILayoutPixels& line_distance)
+    const ILayoutPixels& line_distance,
+    FocusFilter focus_filter)
     : RenderTextLogic{
         ttf_filename,
-        {1.f, 1.f, 1.f},
+        font_color,
         font_height,
         line_distance }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
@@ -32,6 +34,7 @@ VisualBulletCount::VisualBulletCount(
     , render_logics_{ render_logics }
     , player_{ player }
     , widget_{ std::move(widget) }
+    , focus_filter_{ std::move(focus_filter) }
 {
     advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
@@ -76,6 +79,10 @@ void VisualBulletCount::render_without_setup(
             text_,
             line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
     }
+}
+
+FocusFilter VisualBulletCount::focus_filter() const {
+    return focus_filter_;
 }
 
 void VisualBulletCount::print(std::ostream& ostr, size_t depth) const {

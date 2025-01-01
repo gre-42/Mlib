@@ -26,6 +26,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     StatusComponents log_components,
     std::string ttf_filename,
     const FixedArray<float, 2>& offset,
+    const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
     : on_node_clear{ scene_node->on_clear, CURRENT_SOURCE_LOCATION }
@@ -34,6 +35,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     , status_writer_{ status_writer }
     , log_components_{ log_components }
     , offset_{ offset }
+    , font_color_{ font_color }
     , line_distance_{ line_distance }
     , ttf_filename_{ std::move(ttf_filename) }
     , font_height_{ font_height }
@@ -87,7 +89,7 @@ void VisualMovable3rdLogger::render_with_setup(
     if (renderable_text_ == nullptr) {
         renderable_text_ = std::make_unique<TextResource>(
             ttf_filename_,
-            FixedArray<float, 3>{1.f, 1.f, 1.f});
+            font_color_);
     }
     auto position4 = dot1d(setup.vp, homogenized_4(node_pos));
     if (position4(2) > setup.camera->get_near_plane()) {

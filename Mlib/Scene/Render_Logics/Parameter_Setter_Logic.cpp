@@ -39,6 +39,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     std::vector<ReplacementParameter> options,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
+    const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
@@ -51,7 +52,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     , contents_{options_, mle_}
     , renderable_text_{std::make_unique<TextResource>(
         ttf_filename,
-        FixedArray<float, 3>{1.f, 1.f, 1.f})}
+        font_color)}
     , widget_{std::move(widget)}
     , font_height_{font_height}
     , line_distance_{line_distance}

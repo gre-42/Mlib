@@ -7,6 +7,7 @@
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <atomic>
+#include <cstddef>
 #include <memory>
 #include <vector>
 
@@ -16,6 +17,8 @@ class ButtonStates;
 class IWidget;
 class ILayoutPixels;
 struct ReplacementParameter;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class ReplacementParameterContents: public IListViewContents {
 public:
@@ -38,6 +41,7 @@ public:
         std::vector<ReplacementParameter> options,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
+        const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,

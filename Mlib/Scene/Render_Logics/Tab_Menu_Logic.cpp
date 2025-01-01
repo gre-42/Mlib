@@ -56,6 +56,7 @@ TabMenuLogic::TabMenuLogic(
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& icon_widget,
     std::unique_ptr<IWidget>&& widget,
+    const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     NotifyingJsonMacroArguments& substitutions,
@@ -69,7 +70,7 @@ TabMenuLogic::TabMenuLogic(
     : confirm_button_press_{ button_states, key_configurations_, "confirm", "" }
     , renderable_text_{ std::make_unique<TextResource>(
         ttf_filename,
-        FixedArray<float, 3>{1.f, 1.f, 1.f}) }
+        font_color) }
     , options_{ options }
     , contents_{ options, substitutions, asset_references, ui_focus }
     , gallery_{ gallery }
@@ -143,12 +144,12 @@ void TabMenuLogic::render_without_setup(
         auto iw = icon_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
         ListViewWidgetDrawer drawer{
             [&](const IPixelRegion& ew){
-                gallery_["dots"]->render(
+                gallery_["dots_icon"]->render(
                     LayoutConstraintParameters::child_x(lx, ew),
                     LayoutConstraintParameters::child_y(ly, ew));
             },
             [&](const IPixelRegion& ew){
-                gallery_["dots"]->render(
+                gallery_["dots_icon"]->render(
                     LayoutConstraintParameters::child_x(lx, ew),
                     LayoutConstraintParameters::child_y(ly, ew));
             },

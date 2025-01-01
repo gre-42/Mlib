@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
+#include <cstddef>
 
 namespace Mlib {
 
@@ -9,6 +10,8 @@ class TextResource;
 class BaseLog;
 enum class LogEntrySeverity;
 class IWidget;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class VisualGlobalLog: public RenderLogic, public RenderTextLogic {
 public:
@@ -16,6 +19,7 @@ public:
         BaseLog& base_log,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
+        const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         size_t nentries,

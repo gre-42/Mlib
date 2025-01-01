@@ -21,21 +21,23 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     std::unique_ptr<IWidget>&& picture_widget,
     const ILayoutPixels& font_height,
     const std::string& ttf_filename,
-    const FixedArray<float, 3>& color,
+    const FixedArray<float, 3>& font_color,
     const std::string& pacenotes_filename,
     const DanglingBaseClassRef<const CheckPoints>& check_points,
     size_t nlaps,
     double pacenotes_meters_read_ahead,
     double pacenotes_minimum_covered_meters,
-    size_t pacenotes_maximum_number)
+    size_t pacenotes_maximum_number,
+    FocusFilter focus_filter)
     : widget_distance_{ widget_distance }
     , text_widget_{ std::move(text_widget) }
     , picture_widget_{ std::move(picture_widget) }
     , font_height_{ font_height }
     , check_points_{ check_points.ptr() }
     , pacenote_reader_{ pacenotes_filename, nlaps, pacenotes_meters_read_ahead, pacenotes_minimum_covered_meters }
-    , text_{ ttf_filename, color }
+    , text_{ ttf_filename, font_color }
     , display_{ gallery, text_, pictures_left, pictures_right }
+    , focus_filter_{ std::move(focus_filter) }
     , on_destroy_check_points_{ check_points->on_destroy, CURRENT_SOURCE_LOCATION }
 {
     pacenotes_.reserve(pacenotes_maximum_number);
@@ -95,6 +97,10 @@ void CheckPointsPacenotes::render_without_setup(
             PixelRegion::transformed(*picture_region, dx, 0.f));
         dx += dx1;
     }
+}
+
+FocusFilter CheckPointsPacenotes::focus_filter() const {
+    return focus_filter_;
 }
 
 void CheckPointsPacenotes::print(std::ostream& ostr, size_t depth) const {

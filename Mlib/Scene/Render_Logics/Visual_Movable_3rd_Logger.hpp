@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <cstddef>
 #include <memory>
 
 namespace Mlib {
@@ -19,6 +20,8 @@ class AdvanceTimes;
 class SceneNode;
 class TextResource;
 class ILayoutPixels;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<SceneNode&>, public IAdvanceTime {
 public:
@@ -31,6 +34,7 @@ public:
         StatusComponents log_components,
         std::string ttf_filename,
         const FixedArray<float, 2>& offset,
+        const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance);
     virtual ~VisualMovable3rdLogger();
@@ -63,6 +67,7 @@ private:
     StatusComponents log_components_;
     ThreadSafeString text_;
     FixedArray<float, 2> offset_;
+    FixedArray<float, 3> font_color_;
     const ILayoutPixels& line_distance_;
     std::string ttf_filename_;
     const ILayoutPixels& font_height_;

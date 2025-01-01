@@ -35,6 +35,7 @@ struct LapTimeEventAndIdAndMfilename {
 
 struct RaceIdentifier;
 struct RaceConfiguration;
+enum class ScoreBoardConfiguration;
 
 class RaceHistory {
 public:
@@ -49,7 +50,7 @@ public:
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track);
     uint32_t rank(float race_time_seconds) const;
-    std::string get_level_history() const;
+    std::string get_level_history(ScoreBoardConfiguration score_board_config) const;
     std::optional<LapTimeEventAndIdAndMfilename> get_winner_track_filename(size_t position) const;
     void set_race_identifier_and_reload(const RaceIdentifier& race_identifier);
     void start_race(const RaceConfiguration& race_configuration);
