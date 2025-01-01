@@ -1116,13 +1116,13 @@ void RenderableColoredVertexArray::render_cva(
             auto cwm = ColormapWithModifiers{
                 .filename = secondary_rendering_resources_.get_alias(mname),
                 .color_mode = ColorMode::GRAYSCALE,
-                .mipmap_mode = MipmapMode::NO_MIPMAPS
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash();
             auto texture = secondary_rendering_resources_.contains_texture(secondary_rendering_resources_.colormap(cwm))
                 ? secondary_rendering_resources_.get_texture(cwm, TextureRole::COLOR_FROM_DB)
                 : rcva_->rendering_resources_.get_texture(cwm, TextureRole::COLOR_FROM_DB);
             CHK(glBindTexture(GL_TEXTURE_2D, texture->handle<GLuint>()));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         }
         {
