@@ -266,7 +266,8 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_depth_fog,
     bool orthographic,
     bool fragments_depend_on_distance,
-    bool fragments_depend_on_normal)
+    bool fragments_depend_on_normal,
+    float dirt_scale)
 {
     assert_true(nlights == lights.size());
     auto tex_coords = [&nuv_indices](const UvMapKey& t) {
@@ -416,6 +417,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_dirtmap) {
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
+        sstr << "out vec2 tex_coord_dirt;" << std::endl;
     }
     if (has_continuous_vertex_texture_layer) {
         sstr << "out float texture_layer_fs;" << std::endl;
@@ -572,6 +574,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_dirtmap) {
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1.0) / 2.0;" << std::endl;
+        sstr << "    tex_coord_dirt = tex_coord0 * " << dirt_scale << ';' << std::endl;
     }
     if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "    FragPos = vPosInstance;" << std::endl;
@@ -722,8 +725,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool fragments_depend_on_distance,
     bool fragments_depend_on_normal,
     float dirtmap_offset,
-    float dirtmap_discreteness,
-    float dirt_scale)
+    float dirtmap_discreteness)
 {
     if (nuv_indices > attr_ids->uv_count) {
         THROW_OR_ABORT("UV index too large");
@@ -828,6 +830,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "in vec2 tex_coord_dirtmap;" << std::endl;
+        sstr << "in vec2 tex_coord_dirt;" << std::endl;
         sstr << "uniform sampler2D texture_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirt;" << std::endl;
     }
@@ -1529,7 +1532,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
-        sstr << "    vec4 dirt_color = texture(texture_dirt, " << tex_coord << "0 * " << dirt_scale << " );" << std::endl;
+        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_dirt);" << std::endl;
         if (any(dirt_color_mode & ColorMode::RGBA)) {
             sstr << "    dirtiness *= dirt_color.a;" << std::endl;
         } else if (!any(dirt_color_mode & ColorMode::RGB)) {
@@ -2080,7 +2083,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.fog_distances != default_step_distances,
         id.orthographic,
         id.fragments_depend_on_distance,
-        id.fragments_depend_on_normal);
+        id.fragments_depend_on_normal,
+        id.dirt_scale);
     const char* fs_text = fragment_shader_text_textured_rgb_gen(
         NotSortedArray{ filtered_lights },
         NotSortedArray{ filtered_skidmarks },
@@ -2151,8 +2155,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.fragments_depend_on_distance,
         id.fragments_depend_on_normal,
         id.dirtmap_offset,
-        id.dirtmap_discreteness,
-        id.dirt_scale);
+        id.dirtmap_discreteness);
     try {
         rp->allocate(vs_text, fs_text);
 

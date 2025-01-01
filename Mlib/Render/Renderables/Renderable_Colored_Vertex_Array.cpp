@@ -228,7 +228,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 
 RenderableColoredVertexArray::~RenderableColoredVertexArray() = default;
 
-GLint get_wrap_param(WrapMode mode) {
+static GLint get_wrap_param(WrapMode mode) {
     switch(mode) {
     case WrapMode::REPEAT:
         return GL_REPEAT;
@@ -236,9 +236,8 @@ GLint get_wrap_param(WrapMode mode) {
         return GL_CLAMP_TO_EDGE;
     case WrapMode::CLAMP_TO_BORDER:
         return GL_CLAMP_TO_BORDER;
-    default:
-        THROW_OR_ABORT("Unknown wrap mode");
     }
+    THROW_OR_ABORT("Unknown wrap mode");
 }
 
 UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calculate_absolute_bone_transformations(const AnimationState* animation_state) const
@@ -1116,13 +1115,14 @@ void RenderableColoredVertexArray::render_cva(
         {
             auto cwm = ColormapWithModifiers{
                 .filename = secondary_rendering_resources_.get_alias(mname),
-                .color_mode = ColorMode::GRAYSCALE
+                .color_mode = ColorMode::GRAYSCALE,
+                .mipmap_mode = MipmapMode::NO_MIPMAPS
             }.compute_hash();
             auto texture = secondary_rendering_resources_.contains_texture(secondary_rendering_resources_.colormap(cwm))
                 ? secondary_rendering_resources_.get_texture(cwm, TextureRole::COLOR_FROM_DB)
                 : rcva_->rendering_resources_.get_texture(cwm, TextureRole::COLOR_FROM_DB);
             CHK(glBindTexture(GL_TEXTURE_2D, texture->handle<GLuint>()));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         }
         {
