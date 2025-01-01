@@ -88,7 +88,7 @@ void SkidmarkLogic::render_without_setup(
         THROW_OR_ABORT("Skidmark camera is not an ortho-camera");
     }
     auto p = ortho_camera->projection_matrix();
-    auto bi = skidmark_node_->absolute_bijection();
+    auto bi = skidmark_node_->absolute_bijection(std::chrono::steady_clock::time_point());
     auto vp = dot2d(p.casted<ScenePos>(), bi.view.affine());
     fbs_(new_fbs_id)->configure({
         .width = texture_width_,
@@ -109,7 +109,6 @@ void SkidmarkLogic::render_without_setup(
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
         RenderToFrameBufferGuard rfg{ fbs_(new_fbs_id) };
-        notify_rendering(CURRENT_SOURCE_LOCATION);
         {
             ViewportGuard vg{ texture_width_, texture_height_ };
             clear_color({ 1.f, 1.f, 1.f, 1.f });

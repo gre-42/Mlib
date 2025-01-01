@@ -43,7 +43,7 @@ static void from_json(const nlohmann::json& j, BulletTrail& item) {
 
     item.resource_name = jv.at<std::string>(KnownBulletTrailArgs::resource, "");
     item.dt = jv.at<float>(KnownBulletTrailArgs::dt, NAN) * seconds;
-    item.air_resistance = jv.at<float>(KnownBulletTrailArgs::air_resistance, 1.f);
+    item.air_resistance = jv.at<float>(KnownBulletTrailArgs::air_resistance);
     item.animation_duration = jv.at<float>(KnownBulletTrailArgs::animation_duration, NAN) * seconds;
 }
 

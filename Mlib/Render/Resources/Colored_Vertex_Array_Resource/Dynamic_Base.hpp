@@ -21,6 +21,7 @@ public:
     tvalue_type& operator [] (size_t index);
     void update();
     void bind() const;
+    size_t size() const;    // for debugging purposes only
     size_t capacity() const;
 private:
     void allocate();

@@ -17,6 +17,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -1221,6 +1222,7 @@ void RenderableColoredVertexArray::render_cva(
                 instances->update();
             }
             try {
+                notify_rendering(CURRENT_SOURCE_LOCATION);
                 CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles()), instances->num_instances()));
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error(

@@ -106,6 +106,11 @@ void DynamicBase<tvalue_type>::bind() const {
 }
 
 template <class tvalue_type>
+size_t DynamicBase<tvalue_type>::size() const {
+    return num_instances_;
+}
+
+template <class tvalue_type>
 size_t DynamicBase<tvalue_type>::capacity() const {
     return max_num_instances_;
 }

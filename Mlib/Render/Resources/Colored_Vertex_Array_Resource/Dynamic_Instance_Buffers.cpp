@@ -83,7 +83,7 @@ void DynamicInstanceBuffers::append(
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.append(m);
         if (has_per_instance_continuous_texture_layer_) {
-            texture_layers_.value().append(0.f);
+            texture_layers_->append(0.f);
         }
         animation_times_[tmp_num_instances_] = 0.f;
         billboard_sequences_[tmp_num_instances_] = &sequence;
@@ -131,7 +131,7 @@ void DynamicInstanceBuffers::move(float dt, const StaticWorld& world) {
             }
             billboard_ids_[i] = bi->billboard_ids[frame_index];
             if (has_per_instance_continuous_texture_layer_) {
-                texture_layers_.value()[i] = ai / bi->duration * bi->final_texture_w;
+                (*texture_layers_)[i] = ai / bi->duration * bi->final_texture_w;
             }
             ++i;
         } else {
@@ -150,7 +150,7 @@ void DynamicInstanceBuffers::move(float dt, const StaticWorld& world) {
             }
             billboard_ids_.remove(i);
             if (has_per_instance_continuous_texture_layer_) {
-                texture_layers_.value().remove(i);
+                texture_layers_->remove(i);
             }
             --tmp_num_instances_;
             if (tmp_num_instances_ != 0) {
@@ -213,12 +213,12 @@ void DynamicInstanceBuffers::update()
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.update();
         if (has_per_instance_continuous_texture_layer_) {
-            texture_layers_.value().update();
+            texture_layers_->update();
         }
         if (clear_on_update_ == ClearOnUpdate::YES) {
             billboard_ids_.clear();
             if (has_per_instance_continuous_texture_layer_) {
-                texture_layers_.value().clear();
+                texture_layers_->clear();
             }
         }
     }
@@ -255,7 +255,7 @@ void DynamicInstanceBuffers::bind(
         billboard_ids_.bind(billboard_ids_attribute_index);
     }
     if (has_per_instance_continuous_texture_layer_) {
-        texture_layers_.value().bind(texture_layer_attribute_index);
+        texture_layers_->bind(texture_layer_attribute_index);
     }
 }
 
