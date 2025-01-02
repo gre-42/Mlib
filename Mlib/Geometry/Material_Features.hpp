@@ -31,6 +31,9 @@ bool fragments_depend_on_distance(
     const std::vector<BlendMapTextureAndId>& textures,
 	const std::map<ColormapWithModifiers, size_t>& texture_ids_color);
 bool fragments_depend_on_normal(const std::vector<BlendMapTexture>& textures_color);
+bool fragments_depend_on_normal(
+    const std::vector<BlendMapTextureAndId>& textures,
+    const std::map<ColormapWithModifiers, size_t>& texture_ids);
 bool has_horizontal_detailmap(
     const std::vector<BlendMapTextureAndId>& textures,
     const std::map<ColormapWithModifiers, size_t>& texture_ids);

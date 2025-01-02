@@ -640,7 +640,7 @@ void RenderableColoredVertexArray::render_cva(
         fog_distances, alpha_distances_common, blended_textures_color, texture_ids_color);
     bool fragments_depend_on_normal =
         !is_lightmap &&
-        (fragments_depend_on_distance || (tic.ntextures_interior != 0));
+        (Mlib::fragments_depend_on_normal(blended_textures_color, texture_ids_color) || (tic.ntextures_interior != 0));
     if ((tic.ntextures_color == 0) && (tic.ntextures_dirt != 0)) {
         THROW_OR_ABORT(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +

@@ -44,6 +44,18 @@ bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTexture>& textur
     return false;
 }
 
+bool Mlib::fragments_depend_on_normal(
+    const std::vector<BlendMapTextureAndId>& textures,
+    const std::map<ColormapWithModifiers, size_t>& texture_ids)
+{
+    for (const auto& [_, i] : texture_ids) {
+        if (textures.at(i).ops->cosines != default_linear_cosines) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool Mlib::has_horizontal_detailmap(
     const std::vector<BlendMapTextureAndId>& textures,
     const std::map<ColormapWithModifiers, size_t>& texture_ids)

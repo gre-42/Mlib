@@ -233,6 +233,7 @@ static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_color,
     const NotSortedArray<std::vector<BlendMapTextureAndId>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
+    const NotSortedStruct<AttributeIndexCalculator>& attr_idc,
     const NotSortedStruct<AttributeIndices>& attr_ids,
     const NotSortedUvMap& uv_map,
     size_t nuv_indices,
@@ -317,40 +318,48 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "uniform mat4 MVP;" << std::endl;
     sstr << "layout (location=" << attr_ids->idx_position << ") in vec3 vPos;" << std::endl;
     sstr << "layout (location=" << attr_ids->idx_color << ") in vec3 vCol;" << std::endl;
-    if (nuv_indices > attr_ids->uv_count) {
-        THROW_OR_ABORT("UV index too large");
-    }
+    assert_true(attr_idc->nuvs == attr_ids->uv_count);
+    assert_true(
+        (attr_idc->nuvs == nuv_indices) ||
+        ((nuv_indices == 1) && (attr_idc->nuvs != 0)));
     for (size_t i = 0; i < nuv_indices; ++i) {
         sstr << "layout (location=" << (attr_ids->idx_uv_0 + i) << ") in vec2 vTexCoord" << i << ";" << std::endl;
     }
     if (ncweight_indices > attr_ids->cweight_count) {
         THROW_OR_ABORT("CWeight index too large");
     }
+    assert_true(attr_idc->ncweights == ncweight_indices);
     for (size_t i = 0; i < ncweight_indices; ++i) {
         sstr << "layout (location=" << (attr_ids->idx_cweight_0 + i) << ") in float vCWeight" << i << ";" << std::endl;
     }
     if (has_alpha) {
+        assert_true(attr_idc->has_alpha);
         sstr << "layout (location=" << (attr_ids->idx_alpha) << ") in float vAlpha;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_normalmap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
+        assert_true(attr_idc->has_normal);
         sstr << "layout (location=" << attr_ids->idx_normal << ") in vec3 vNormal;" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
+        assert_true(attr_idc->has_tangent);
         sstr << "layout (location=" << attr_ids->idx_tangent << ") in vec3 vTangent;" << std::endl;
     }
     if (has_instances) {
+        assert_true(attr_idc->has_instance_attrs);
         if (has_yangle) {
             sstr << "layout (location=" << attr_ids->idx_instance_attrs << ") in vec4 instancePosition;" << std::endl;
         } else {
             sstr << "layout (location=" << attr_ids->idx_instance_attrs << ") in vec3 instancePosition;" << std::endl;
         }
         if (has_rotation_quaternion) {
+            assert_true(attr_idc->has_rotation_quaternion);
             sstr << "layout (location=" << attr_ids->idx_rotation_quaternion << ") in vec4 rotationQuaternion;" << std::endl;
         }
     } else if (has_lookat && !orthographic) {
         sstr << "const vec3 instancePosition = vec3(0.0, 0.0, 0.0);" << std::endl;
     }
     if (nbillboard_ids != 0) {
+        assert_true(attr_idc->has_billboard_ids);
         sstr << "layout (location=" << attr_ids->idx_billboard_ids << ") in mediump uint billboard_id;" << std::endl;
         sstr << "uniform vec3 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
@@ -2052,6 +2061,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ textures_color },
         NotSortedArray{ textures_alpha },
         NotSortedArray{ lightmap_indices },
+        NotSortedStruct{ attr_idc },
         NotSortedStruct{ attr_ids },
         NotSortedUvMap{ uv_map },
         id.nuv_indices,
