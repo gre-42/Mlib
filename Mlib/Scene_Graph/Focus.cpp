@@ -126,31 +126,24 @@ bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
 }
 
 Focus Mlib::single_focus_from_string(const std::string& str) {
-    if (str == "menu") {
-        return Focus::MENU;
-    } else if (str == "loading") {
-        return Focus::LOADING;
-    } else if (str == "countdown_pending") {
-        return Focus::COUNTDOWN_PENDING;
-    } else if (str == "countdown_counting") {
-        return Focus::COUNTDOWN_COUNTING;
-    } else if (str == "countdown_any") {
-        return Focus::COUNTDOWN_ANY;
-    } else if (str == "game_over_countdown_pending") {
-        return Focus::GAME_OVER_COUNTDOWN_PENDING;
-    } else if (str == "game_over_countdown_counting") {
-        return Focus::GAME_OVER_COUNTDOWN_COUNTING;
-    } else if (str == "game_over_countdown_any") {
-        return Focus::GAME_OVER_COUNTDOWN_ANY;
-    } else if (str == "scene") {
-        return Focus::SCENE;
-    } else if (str == "game_over") {
-        return Focus::GAME_OVER;
-    } else if (str == "always") {
-        return Focus::ALWAYS;
-    } else {
+    static const std::map<std::string, Focus> m{
+        {"menu", Focus::MENU},
+        {"loading", Focus::LOADING},
+        {"countdown_pending", Focus::COUNTDOWN_PENDING},
+        {"countdown_counting", Focus::COUNTDOWN_COUNTING},
+        {"countdown_any", Focus::COUNTDOWN_ANY},
+        {"game_over_countdown_pending", Focus::GAME_OVER_COUNTDOWN_PENDING},
+        {"game_over_countdown_counting", Focus::GAME_OVER_COUNTDOWN_COUNTING},
+        {"game_over_countdown_any", Focus::GAME_OVER_COUNTDOWN_ANY},
+        {"scene", Focus::SCENE},
+        {"game_over", Focus::GAME_OVER},
+        {"always", Focus::ALWAYS}
+    };
+    auto it = m.find(str);
+    if (it == m.end()) {
         THROW_OR_ABORT("Unknown focus name \"" + str + '"');
     }
+    return it->second;
 }
 
 Focus Mlib::focus_from_string(const std::string& s) {

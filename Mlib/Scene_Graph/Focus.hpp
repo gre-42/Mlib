@@ -21,7 +21,7 @@ enum class Focus {
     GAME_OVER_COUNTDOWN_PENDING = 1 << 5,
     GAME_OVER_COUNTDOWN_COUNTING = 1 << 6,
     SCENE = 1 << 7,
-    GAME_OVER = 1 << 8,
+    GAME_OVER = 1 << 8,  // currently not in use, countdown is used instead.
     COUNTDOWN_ANY = COUNTDOWN_PENDING | COUNTDOWN_COUNTING,
     GAME_OVER_COUNTDOWN_ANY = GAME_OVER_COUNTDOWN_PENDING | GAME_OVER_COUNTDOWN_COUNTING,
     ALWAYS =
