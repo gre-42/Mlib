@@ -20,6 +20,7 @@ struct Light {
     std::optional<FixedArray<ScenePos, 4, 4>> vp;
     ExternalRenderPassType shadow_render_pass;
     bool emits_colors() const;
+    size_t shading_hash() const;
 };
 
 }

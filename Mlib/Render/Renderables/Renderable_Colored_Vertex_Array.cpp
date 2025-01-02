@@ -550,15 +550,19 @@ void RenderableColoredVertexArray::render_cva(
     }
     bool color_requires_normal = any(diffuse != 0.f) || any(specular != 0.f);
     TextureIndexCalculator tic;
-    if (!is_lightmap ||
-        ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL)))
-    {
-        tic.ntextures_color = texture_ids_color.size();
-        tic.ntextures_alpha = texture_ids_alpha.size();
-    } else {
-        tic.ntextures_color = 0;
-        tic.ntextures_alpha = 0;
+    if (is_lightmap || (filtered_lights.empty() && all(emissive == 0.f))) {
+        if ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL))
+        {
+            if (!texture_ids_color.empty()) {
+                texture_ids_color = { *texture_ids_color.begin() };
+            }
+        } else {
+            texture_ids_color.clear();
+            texture_ids_alpha.clear();
+        }
     }
+    tic.ntextures_color = texture_ids_color.size();
+    tic.ntextures_alpha = texture_ids_alpha.size();
     bool has_horizontal_detailmap = false;
     auto compute_has_horizontal_detailmap = [&has_horizontal_detailmap](const std::vector<BlendMapTexture>& textures) {
         for (const auto& t : textures) {
@@ -617,7 +621,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     tic.ntextures_normal = !filtered_lights.empty() && color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? texture_ids_normal.size() : 0;
     tic.ntextures_reflection = (size_t)(!is_lightmap && (reflection_map != nullptr) && !(*reflection_map)->empty());
-    tic.ntextures_dirt = (!cva->material.dirt_texture->empty()) && !is_lightmap ? 2 : 0;
+    tic.ntextures_dirt = ((!cva->material.dirt_texture->empty()) && !is_lightmap && !filtered_lights.empty()) ? 2 : 0;
     tic.ntextures_interior = (!cva->material.interior_textures.empty()) && !is_lightmap ? INTERIOR_COUNT : 0;
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
@@ -666,6 +670,10 @@ void RenderableColoredVertexArray::render_cva(
     }
     for (const auto& t : cva->material.textures_alpha) {
         texture_modifiers_hash.combine(t.modifiers_hash());
+    }
+    Hasher lights_hash;
+    for (const auto& [_, l] : filtered_lights) {
+        lights_hash.combine(l->shading_hash());
     }
     bool has_discrete_atlas_texture_layer = get_has_discrete_atlas_texture_layer(*cva);
     if (has_discrete_atlas_texture_layer) {
@@ -761,7 +769,8 @@ void RenderableColoredVertexArray::render_cva(
             .dirtmap_offset = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_offset(dirtmap_name) : -1234,
             .dirtmap_discreteness = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_discreteness(dirtmap_name) : -1234,
             .dirt_scale = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_scale(dirtmap_name) : -1234,
-            .texture_modifiers_hash = texture_modifiers_hash},
+            .texture_modifiers_hash = texture_modifiers_hash,
+            .lights_hash = lights_hash},
         *cva,
         filtered_lights,
         filtered_skidmarks,

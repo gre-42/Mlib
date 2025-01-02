@@ -104,6 +104,7 @@ struct RenderProgramIdentifier {
     float dirtmap_discreteness;
     float dirt_scale;
     size_t texture_modifiers_hash;
+    size_t lights_hash;
     std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;
 };
 

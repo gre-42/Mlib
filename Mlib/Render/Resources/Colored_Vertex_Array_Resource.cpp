@@ -237,11 +237,14 @@ static GenShaderText vertex_shader_text_gen{[](
     size_t nuv_indices,
     size_t ncweight_indices,
     bool has_alpha,
-    size_t texture_modifier_hash,
+    size_t texture_modifiers_hash,
+    size_t lights_hash,
     size_t nlights,
     size_t nskidmarks,
     size_t ntextures_color,
     BillboardId nbillboard_ids,
+    const OrderableFixedArray<float, 3>& reflectance,
+    bool reflect_only_y,
     bool has_lightmap_color,
     bool has_lightmap_depth,
     bool has_normalmap,
@@ -328,7 +331,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_alpha) {
         sstr << "layout (location=" << (attr_ids->idx_alpha) << ") in float vAlpha;" << std::endl;
     }
-    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_normalmap || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_normalmap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         sstr << "layout (location=" << attr_ids->idx_normal << ") in vec3 vNormal;" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
@@ -434,7 +437,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_uv0 || reorient_normals || has_depth_fog || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "out highp vec3 FragPos;" << std::endl;
     }
-    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         sstr << "out vec3 Normal;" << std::endl;
     }
     if (has_lookat) {
@@ -462,12 +465,12 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    interior_multiplier_fs = interior_multiplier;" << std::endl;
     }
     sstr << "    vec3 vPosInstance;" << std::endl;
-    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         sstr << "    vec3 vNormalInstance;" << std::endl;
     }
     if (nbones != 0) {
         sstr << "    vPosInstance = vec3(0.0, 0.0, 0.0);" << std::endl;
-        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
+        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
         for (size_t k = 0; k < ANIMATION_NINTERPOLATED; ++k) {
@@ -487,7 +490,7 @@ static GenShaderText vertex_shader_text_gen{[](
         }
     } else {
         sstr << "    vPosInstance = vPos;" << std::endl;
-        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
+        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
     }
@@ -526,7 +529,7 @@ static GenShaderText vertex_shader_text_gen{[](
         if (has_instances) {
             sstr << "    vPosInstance += instancePosition.xyz;" << std::endl;
         }
-        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
+        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
             if (has_rotation_quaternion) {
                 sstr << "    vNormalInstance = rotate(rotationQuaternion, vNormalInstance);" << std::endl;
             } else {
@@ -579,7 +582,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "    FragPos = vPosInstance;" << std::endl;
     }
-    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         sstr << "    Normal = vNormalInstance;" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
@@ -683,7 +686,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_alpha,
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y,
-    size_t texture_modifier_hash,
+    size_t texture_modifiers_hash,
+    size_t lights_hash,
     size_t nlights,
     size_t nskidmarks,
     size_t ntextures_color,
@@ -851,6 +855,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!diffuse.all_equal(0) ||
         (!specular.all_equal(0) && specular_exponent != 0.f) ||
         (fresnel.exponent != 0.f) ||
+        (!reflectance.all_equal(0.f) && !reflect_only_y) ||
         fragments_depend_on_normal)
     {
         sstr << "in vec3 Normal;" << std::endl;
@@ -982,7 +987,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!diffuse.all_equal(0) ||
             (!specular.all_equal(0) && (specular_exponent != 0.f)) ||
             (fresnel.exponent != 0.f) ||
-            fragments_depend_on_normal) {
+            fragments_depend_on_normal ||
+            (!reflectance.all_equal(0.f) && !reflect_only_y))
+        {
             // sstr << "    vec3 norm = normalize(Normal);" << std::endl;
             sstr << "    vec3 norm = normalize(Normal);" << std::endl;
             // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
@@ -1086,12 +1093,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    }" << std::endl;
         }
     }
-    if (((ntextures_color != 0) ||
-        !diffuse.all_equal(0) ||
-        (!specular.all_equal(0) && (specular_exponent != 0.f)) ||
-        (fresnel.exponent != 0.f)) &&
-        !has_interiormap)
-    {
+    if (!has_interiormap) {
         compute_normal_and_reorient_uv0();
     }
     if (continuous_layer_x.size() != continuous_layer_y.size()) {
@@ -1989,7 +1991,7 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
         .has_normal =
             !cva.material.shading.diffuse.all_equal(0) ||
             !cva.material.shading.specular.all_equal(0) ||
-            (!cva.material.shading.reflectance.all_equal(0.f) && !cva.material.reflection_map->empty()) ||
+            (!cva.material.shading.reflectance.all_equal(0.f) && !cva.material.reflect_only_y && !cva.material.reflection_map->empty()) ||
             (cva.material.shading.fresnel.reflectance.exponent != 0.f) ||
             cva.material.fragments_depend_on_normal(),
         .has_tangent = cva.material.has_normalmap() || !cva.material.interior_textures.empty(),
@@ -2055,10 +2057,13 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ncweights,
         id.has_alpha,
         id.texture_modifiers_hash,
+        id.lights_hash,
         id.nlights,
         id.nskidmarks,
         id.ntextures_color,
         id.nbillboard_ids,
+        id.reflectance,
+        id.reflect_only_y,
         !id.lightmap_indices_color.empty(),
         !id.lightmap_indices_depth.empty(),
         id.ntextures_normal != 0,
@@ -2102,6 +2107,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.continuous_layer_x,
         id.continuous_layer_y,
         id.texture_modifiers_hash,
+        id.lights_hash,
         filtered_lights.size(),
         filtered_skidmarks.size(),
         id.ntextures_color,
