@@ -24,18 +24,29 @@ struct BlendMapTextureAndId {
     }
 };
 
+struct ColormapAndId {
+    const ColormapWithModifiers* cm;
+    size_t id;
+    const ColormapWithModifiers& operator * () const {
+        return *cm;
+    }
+    const ColormapWithModifiers* operator -> () const {
+        return cm;
+    }
+};
+
 bool has_normalmap(const std::vector<BlendMapTexture>& textures_color);
 bool fragments_depend_on_distance(
     const FixedArray<float, 2>& fog_distances,
     const FixedArray<float, 4>& alpha_distances,
     const std::vector<BlendMapTextureAndId>& textures,
-	const std::map<ColormapWithModifiers, size_t>& texture_ids_color);
+	const std::vector<ColormapAndId>& texture_ids_color);
 bool fragments_depend_on_normal(const std::vector<BlendMapTexture>& textures_color);
 bool fragments_depend_on_normal(
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapWithModifiers, size_t>& texture_ids);
+    const std::vector<ColormapAndId>& texture_ids);
 bool has_horizontal_detailmap(
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapWithModifiers, size_t>& texture_ids);
+    const std::vector<ColormapAndId>& texture_ids);
 
 }

@@ -18,7 +18,7 @@ bool Mlib::fragments_depend_on_distance(
     const FixedArray<float, 2>& fog_distances,
     const FixedArray<float, 4>& alpha_distances,
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapWithModifiers, size_t>& texture_ids_color)
+    const std::vector<ColormapAndId>& texture_ids_color)
 {
     if (any(fog_distances != default_step_distances)) {
         return true;
@@ -46,7 +46,7 @@ bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTexture>& textur
 
 bool Mlib::fragments_depend_on_normal(
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapWithModifiers, size_t>& texture_ids)
+    const std::vector<ColormapAndId>& texture_ids)
 {
     for (const auto& [_, i] : texture_ids) {
         if (textures.at(i).ops->cosines != default_linear_cosines) {
@@ -58,7 +58,7 @@ bool Mlib::fragments_depend_on_normal(
 
 bool Mlib::has_horizontal_detailmap(
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapWithModifiers, size_t>& texture_ids)
+    const std::vector<ColormapAndId>& texture_ids)
 {
     for (const auto& [_, i] : texture_ids) {
         if (textures.at(i).ops->uv_source == BlendMapUvSource::HORIZONTAL) {

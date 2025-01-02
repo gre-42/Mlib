@@ -421,40 +421,45 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     std::vector<BlendMapTextureAndId> blended_textures_color(cva->material.textures_color.size());
-    std::map<ColormapWithModifiers, size_t> texture_ids_color;
-    std::map<ColormapWithModifiers, size_t> texture_ids_specular;
-    std::map<ColormapWithModifiers, size_t> texture_ids_normal;
+    std::vector<ColormapAndId> texture_ids_color;
+    std::vector<ColormapAndId> texture_ids_specular;
+    std::vector<ColormapAndId> texture_ids_normal;
+    texture_ids_color.reserve(cva->material.textures_color.size());
+    texture_ids_specular.reserve(cva->material.textures_color.size());
+    texture_ids_normal.reserve(cva->material.textures_color.size());
     for (size_t i = 0; i < blended_textures_color.size(); ++i) {
         const auto& c = cva->material.textures_color[i];
         if (!c.texture_descriptor.color.filename->empty()) {
-            auto ins = texture_ids_color.try_emplace(c.texture_descriptor.color, texture_ids_color.size());
-            blended_textures_color[i].id_color = ins.first->second;
+            blended_textures_color[i].id_color = texture_ids_color.size();
+            texture_ids_color.emplace_back(&c.texture_descriptor.color, i);
         } else {
             blended_textures_color[i].id_color = SIZE_MAX;
         }
         if (!c.texture_descriptor.specular.filename->empty()) {
-            auto ins = texture_ids_specular.try_emplace(c.texture_descriptor.specular, texture_ids_specular.size());
-            blended_textures_color[i].id_specular = ins.first->second;
+            blended_textures_color[i].id_specular = texture_ids_specular.size();
+            texture_ids_specular.emplace_back(&c.texture_descriptor.specular, i);
         } else {
             blended_textures_color[i].id_specular = SIZE_MAX;
         }
         if (!c.texture_descriptor.normal.filename->empty()) {
-            auto ins = texture_ids_normal.try_emplace(c.texture_descriptor.normal, texture_ids_normal.size());
-            blended_textures_color[i].id_normal = ins.first->second;
+            blended_textures_color[i].id_normal = texture_ids_normal.size();
+            texture_ids_normal.emplace_back(&c.texture_descriptor.normal, i);
         } else {
             blended_textures_color[i].id_normal = SIZE_MAX;
         }
         blended_textures_color[i].ops = &c;
     }
     std::vector<BlendMapTextureAndId> blended_textures_alpha(cva->material.textures_alpha.size());
-    std::map<ColormapWithModifiers, size_t> texture_ids_alpha;
+    std::vector<ColormapAndId> texture_ids_alpha;
+    texture_ids_alpha.reserve(cva->material.textures_alpha.size());
     for (size_t i = 0; i < blended_textures_alpha.size(); ++i) {
         const auto& c = cva->material.textures_alpha[i];
-        auto ins = texture_ids_alpha.try_emplace(c.texture_descriptor.color, texture_ids_alpha.size());
-        blended_textures_alpha[i].id_color = ins.first->second;
+        assert_true(!c.texture_descriptor.color.filename->empty());
+        blended_textures_alpha[i].id_color = texture_ids_alpha.size();
         blended_textures_alpha[i].id_specular = SIZE_MAX;
         blended_textures_alpha[i].id_normal = SIZE_MAX;
         blended_textures_alpha[i].ops = &c;
+        texture_ids_alpha.emplace_back(&c.texture_descriptor.color, i);
     }
     auto check_sanity_common = [&cva](const std::vector<BlendMapTexture>& textures){
         for (const auto& t : textures) {
@@ -554,9 +559,10 @@ void RenderableColoredVertexArray::render_cva(
         if ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL))
         {
             if (!texture_ids_color.empty()) {
-                texture_ids_color = { *texture_ids_color.begin() };
                 assert_true(!blended_textures_color.empty());
-                blended_textures_color = { *blended_textures_color.begin() };
+                assert_true(blended_textures_color[0].id_color == 0);
+                texture_ids_color = { texture_ids_color[0] };
+                blended_textures_color = { blended_textures_color[0] };
             }
             texture_ids_normal.clear();
         } else {
@@ -981,12 +987,12 @@ void RenderableColoredVertexArray::render_cva(
         }
     };
     if (tic.ntextures_color != 0) {
-        for (const auto& [c, i] : texture_ids_color) {
-            LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + c.filename + '"');
-            auto texture = secondary_rendering_resources_.contains_texture(c)
-                ? secondary_rendering_resources_.get_texture(c, TextureRole::COLOR_FROM_DB)
-                : rcva_->rendering_resources_.get_texture(c, TextureRole::COLOR_FROM_DB);
-            LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c.filename + '"');
+        for (const auto& [i, c] : enumerate(texture_ids_color)) {
+            LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + c->filename + '"');
+            auto texture = secondary_rendering_resources_.contains_texture(*c)
+                ? secondary_rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB)
+                : rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
+            LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c->filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
             GLenum target = has_continuous_texture_layer
                 ? GL_TEXTURE_3D
@@ -994,22 +1000,22 @@ void RenderableColoredVertexArray::render_cva(
                     ? GL_TEXTURE_2D_ARRAY
                     : GL_TEXTURE_2D;
             CHK(glBindTexture(target, texture->handle<GLuint>()));
-            LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c.filename + '"');
-            setup_texture(c, target);
+            LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
+            setup_texture(*c, target);
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
     if (tic.ntextures_alpha != 0) {
-        for (const auto& [c, i] : texture_ids_alpha) {
-            LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + c.filename + '"');
-            auto texture = secondary_rendering_resources_.contains_texture(c)
-                ? secondary_rendering_resources_.get_texture(c, TextureRole::COLOR_FROM_DB)
-                : rcva_->rendering_resources_.get_texture(c, TextureRole::COLOR_FROM_DB);
-            LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c.filename + '"');
+        for (const auto& [i, c] : enumerate(texture_ids_alpha)) {
+            LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + c->filename + '"');
+            auto texture = secondary_rendering_resources_.contains_texture(*c)
+                ? secondary_rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB)
+                : rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
+            LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c->filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_alpha(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, texture->handle<GLuint>()));
-            LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c.filename + '"');
-            setup_texture(c, GL_TEXTURE_2D);
+            LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
+            setup_texture(*c, GL_TEXTURE_2D);
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
@@ -1063,11 +1069,11 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind normalmap texture");
     if (tic.ntextures_normal != 0) {
-        for (const auto& [c, i] : texture_ids_normal) {
-            assert_true(!c.filename->empty());
+        for (const auto& [i, c] : enumerate(texture_ids_normal)) {
+            assert_true(!c->filename->empty());
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(c)->handle<GLuint>()));
-            setup_texture(c, GL_TEXTURE_2D);
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(*c)->handle<GLuint>()));
+            setup_texture(*c, GL_TEXTURE_2D);
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
