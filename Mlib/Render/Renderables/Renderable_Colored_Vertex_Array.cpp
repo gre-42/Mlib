@@ -549,7 +549,6 @@ void RenderableColoredVertexArray::render_cva(
     if ((fresnel.exponent == 0.f) && ((fresnel.max != 0.f) || (fresnel.min != 0.f))) {
         THROW_OR_ABORT("Zero fresnel exponent requires zero fresnel coefficients");
     }
-    bool color_requires_normal = any(diffuse != 0.f) || any(specular != 0.f);
     TextureIndexCalculator tic;
     if (is_lightmap || (filtered_lights.empty() && all(emissive == 0.f))) {
         if ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL))

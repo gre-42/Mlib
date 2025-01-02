@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <map>
 #include <vector>
 
@@ -7,6 +8,8 @@ namespace Mlib {
 struct BlendMapTexture;
 struct ColormapWithModifiers;
 struct Material;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 struct BlendMapTextureAndId {
     const BlendMapTexture* ops;
