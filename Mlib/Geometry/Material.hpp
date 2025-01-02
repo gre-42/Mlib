@@ -75,9 +75,6 @@ struct Material {
     size_t draw_distance_noperations = 0;
     bool dynamically_lighted = false;
     Material& compute_color_mode();
-    bool has_normalmap() const;
-    bool fragments_depend_on_distance() const;
-    bool fragments_depend_on_normal() const;
     const BillboardAtlasInstance& billboard_atlas_instance(BillboardId billboard_id) const;
     ScenePos max_center_distance(BillboardId billboard_id, const Morphology& morphology) const;
     ExternalRenderPassType get_occluder_pass(BillboardId billboard_id) const;

@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
+#include <Mlib/Geometry/Material_Features.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
@@ -1993,8 +1994,8 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
             !cva.material.shading.specular.all_equal(0) ||
             (!cva.material.shading.reflectance.all_equal(0.f) && !cva.material.reflect_only_y && !cva.material.reflection_map->empty()) ||
             (cva.material.shading.fresnel.reflectance.exponent != 0.f) ||
-            cva.material.fragments_depend_on_normal(),
-        .has_tangent = cva.material.has_normalmap() || !cva.material.interior_textures.empty(),
+            fragments_depend_on_normal(cva.material.textures_color),
+        .has_tangent = has_normalmap(cva.material.textures_color) || !cva.material.interior_textures.empty(),
         .has_instance_attrs = instances_ != nullptr,
         .has_rotation_quaternion = (instances_ != nullptr) && (cva.material.transformation_mode == TransformationMode::ALL),
         .has_billboard_ids = !cva.material.billboard_atlas_instances.empty(),

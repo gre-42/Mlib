@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
+#include <Mlib/Geometry/Material_Features.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
@@ -555,29 +556,24 @@ void RenderableColoredVertexArray::render_cva(
         {
             if (!texture_ids_color.empty()) {
                 texture_ids_color = { *texture_ids_color.begin() };
+                assert_true(!blended_textures_color.empty());
+                blended_textures_color = { *blended_textures_color.begin() };
             }
+            texture_ids_normal.clear();
         } else {
             texture_ids_color.clear();
+            texture_ids_normal.clear();
             texture_ids_alpha.clear();
+            blended_textures_color.clear();
+            blended_textures_alpha.clear();
         }
     }
     tic.ntextures_color = texture_ids_color.size();
+    tic.ntextures_normal = texture_ids_normal.size();
     tic.ntextures_alpha = texture_ids_alpha.size();
     bool has_horizontal_detailmap = false;
-    auto compute_has_horizontal_detailmap = [&has_horizontal_detailmap](const std::vector<BlendMapTexture>& textures) {
-        for (const auto& t : textures) {
-            if (t.uv_source == BlendMapUvSource::HORIZONTAL) {
-                has_horizontal_detailmap = true;
-                break;
-            }
-        }
-    };
-    if (tic.ntextures_color != 0) {
-        compute_has_horizontal_detailmap(cva->material.textures_color);
-    }
-    if (tic.ntextures_alpha != 0) {
-        compute_has_horizontal_detailmap(cva->material.textures_alpha);
-    }
+    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_color, texture_ids_color);
+    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_alpha, texture_ids_alpha);
     tic.ntextures_filtered_lights = filtered_lights.size();
     tic.ntextures_filtered_skidmarks = filtered_skidmarks.size();
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
@@ -619,7 +615,6 @@ void RenderableColoredVertexArray::render_cva(
         }
         tic.ntextures_specular = 0;
     }
-    tic.ntextures_normal = !filtered_lights.empty() && color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? texture_ids_normal.size() : 0;
     tic.ntextures_reflection = (size_t)(!is_lightmap && (reflection_map != nullptr) && !(*reflection_map)->empty());
     tic.ntextures_dirt = ((!cva->material.dirt_texture->empty()) && !is_lightmap && !filtered_lights.empty()) ? 2 : 0;
     tic.ntextures_interior = (!cva->material.interior_textures.empty()) && !is_lightmap ? INTERIOR_COUNT : 0;
@@ -627,17 +622,11 @@ void RenderableColoredVertexArray::render_cva(
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
     bool has_rotation_quaternion = has_instances && (cva->material.transformation_mode == TransformationMode::ALL);
-    OrderableFixedArray<float, 4> alpha_distances_common = uninitialized;
-    OrderableFixedArray<float, 2> fog_distances = uninitialized;
-    bool fragments_depend_on_distance;
+    OrderableFixedArray<float, 4> alpha_distances_common = cva->material.alpha_distances;
+    OrderableFixedArray<float, 2> fog_distances = cva->material.shading.fog_distances;
     if (is_lightmap) {
-        fragments_depend_on_distance = false;
         alpha_distances_common = default_linear_distances;
         fog_distances = default_step_distances;
-    } else {
-        fragments_depend_on_distance = cva->material.fragments_depend_on_distance();
-        alpha_distances_common = cva->material.alpha_distances;
-        fog_distances = cva->material.shading.fog_distances;
     }
     if (all(fog_emissive == 0.f) &&
         all(ambient == 0.f) &&
@@ -648,9 +637,11 @@ void RenderableColoredVertexArray::render_cva(
     {
         fog_distances = default_step_distances;
     }
+    bool fragments_depend_on_distance = Mlib::fragments_depend_on_distance(
+        fog_distances, alpha_distances_common, blended_textures_color, texture_ids_color);
     bool fragments_depend_on_normal =
         !is_lightmap &&
-        (cva->material.fragments_depend_on_normal() || (tic.ntextures_interior != 0));
+        (fragments_depend_on_distance || (tic.ntextures_interior != 0));
     if ((tic.ntextures_color == 0) && (tic.ntextures_dirt != 0)) {
         THROW_OR_ABORT(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +

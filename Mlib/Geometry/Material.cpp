@@ -15,39 +15,6 @@ Material& Material::compute_color_mode() {
     return *this;
 }
 
-bool Material::has_normalmap() const {
-    for (const auto& t : textures_color) {
-        if (!t.texture_descriptor.normal.filename->empty()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Material::fragments_depend_on_distance() const {
-    if (shading.fog_distances != default_step_distances) {
-        return true;
-    }
-    if (alpha_distances != default_linear_distances) {
-        return true;
-    }
-    for (const auto& t : textures_color) {
-        if (t.distances != default_linear_distances) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Material::fragments_depend_on_normal() const {
-    for (const auto& t : textures_color) {
-        if (t.cosines != default_linear_cosines) {
-            return true;
-        }
-    }
-    return false;
-}
-
 std::string Material::identifier() const {
     if (textures_color.size() > 0) {
         return "color: " + *textures_color.front().texture_descriptor.color.filename;

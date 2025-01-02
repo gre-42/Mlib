@@ -25,19 +25,7 @@ struct BlendMapTexture;
 class IVertexData;
 class IInstanceBuffers;
 enum class TaskLocation;
-
-struct BlendMapTextureAndId {
-    const BlendMapTexture* ops;
-    size_t id_color;
-    size_t id_specular;
-    size_t id_normal;
-    const BlendMapTexture& operator * () const {
-        return *ops;
-    }
-    const BlendMapTexture* operator -> () const {
-        return ops;
-    }
-};
+struct BlendMapTextureAndId;
 
 class ColoredVertexArrayResource:
     public ISceneNodeResource,
