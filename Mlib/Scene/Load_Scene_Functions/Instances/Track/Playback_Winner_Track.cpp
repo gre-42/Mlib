@@ -43,7 +43,7 @@ PlaybackWinnerTrack::PlaybackWinnerTrack(RenderableScene& renderable_scene)
 
 void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    size_t rank = args.arguments.at<size_t>(KnownArgs::rank);
+    auto rank = args.arguments.at<size_t>(KnownArgs::rank);
     auto wt = players.get_winner_track_filename(rank);
     if (!wt.has_value()) {
         THROW_OR_ABORT("Winner with rank " + std::to_string(rank) + " does not exist");

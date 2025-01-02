@@ -6,6 +6,7 @@ namespace Mlib {
 
 struct RaceIdentifier {
     std::string level;
+    std::string time_of_day;
     std::string restrictions;
     std::string session;
     size_t laps = 0;

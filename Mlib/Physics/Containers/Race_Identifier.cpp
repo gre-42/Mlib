@@ -30,10 +30,14 @@ std::string RaceIdentifier::dirname() const {
         THROW_OR_ABORT("Empty session name");
     }
     check_dirname_part(level);
+    check_dirname_part(time_of_day);
     check_dirname_part(restrictions);
     check_dirname_part(session);
     std::stringstream sstr;
     sstr << level << '.' << session;
+    if (time_of_day != "day") {
+        sstr << '.' << time_of_day;
+    }
     if (!restrictions.empty()) {
         sstr << '.' << restrictions;
     }
