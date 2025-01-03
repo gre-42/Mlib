@@ -40,6 +40,7 @@ UUVector<FixedArray<TPos, 3, 3>> Mlib::barrier_triangle_hitbox(
     }
     UUVector<FixedArray<TPos, 3, 3>> result;
     result.reserve(
+        2 +
         ab_is_contour_edge * 2 +
         bc_is_contour_edge * 2 +
         ca_is_contour_edge * 2);
@@ -87,7 +88,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
     vertex_normals.compute_vertex_normals(NormalVectorErrorBehavior::THROW);
 
     std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> result;
-    result.reserve(cva.triangles.size() + 1);
+    result.reserve(2);
     result.push_back(
         std::make_shared<ColoredVertexArray<TPos>>(
             cva.name + "_visual",
@@ -160,5 +161,5 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
 template
 std::vector<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> Mlib::create_barrier_triangle_hitboxes(
     const ColoredVertexArray<CompressedScenePos>& cva,
-    float width,
+    float half_width,
     PhysicsMaterial destination_physics_material);
