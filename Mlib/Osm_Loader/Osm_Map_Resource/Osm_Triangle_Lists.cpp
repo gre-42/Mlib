@@ -211,7 +211,7 @@ OsmTriangleLists::OsmTriangleLists(
                     ? rit->second
                     : VariableAndHash<std::string>{},
                 .dirt_texture = config.street_dirt_texture,
-                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .contains_skidmarks = true,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
@@ -256,7 +256,7 @@ OsmTriangleLists::OsmTriangleLists(
                                 ? rit->second
                                 : VariableAndHash<std::string>{},
                             .dirt_texture = config.street_dirt_texture,
-                            .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                            .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                             .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .contains_skidmarks = true,
                             // .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
@@ -325,7 +325,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : VariableAndHash<std::string>{},
-                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
@@ -346,7 +346,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : VariableAndHash<std::string>{},
-                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = material_specularity((tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),

@@ -388,6 +388,7 @@ OsmMapResource::OsmMapResource(
             &steiner_points,
             vertex_height_bindings,
             Material{
+                .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
                 .cull_faces = false,
