@@ -386,6 +386,7 @@ OsmMapResource::OsmMapResource(
         draw_wall_barriers(
             tls_wall_barriers,
             &steiner_points,
+            vertex_height_bindings,
             Material{
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
@@ -410,8 +411,6 @@ OsmMapResource::OsmMapResource(
                 Material{
                     .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                     .aggregate_mode = AggregateMode::ONCE,
-                    .cull_faces = false,
-                    .reorient_uv0 = true,
                     .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                     .draw_distance_noperations = 1000},
                 Morphology{ .physics_material = PhysicsMaterial::NONE },

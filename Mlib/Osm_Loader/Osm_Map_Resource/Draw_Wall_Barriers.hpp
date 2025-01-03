@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -15,10 +16,13 @@ struct SteinerPointInfo;
 template <class TPos>
 class TriangleList;
 struct BarrierStyle;
+template <class TPos>
+class VertexHeightBinding;
 
 void draw_wall_barriers(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
+    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const Material& material,
     const Morphology& morphology,
     const std::list<Building>& buildings,

@@ -3,14 +3,24 @@
 
 using namespace Mlib;
 
+Morphology& Mlib::operator += (Morphology& a, PhysicsMaterial b) {
+    a.physics_material |= b;
+    return a;
+}
+
+Morphology& Mlib::operator -= (Morphology& a, PhysicsMaterial b) {
+    a.physics_material &= ~b;
+    return a;
+}
+
 Morphology Mlib::operator + (const Morphology& a, PhysicsMaterial b) {
     Morphology result = a;
-    result.physics_material |= b;
+    result += b;
     return result;
 }
 
-Morphology Mlib::operator - (const Morphology& a, PhysicsMaterial value) {
+Morphology Mlib::operator - (const Morphology& a, PhysicsMaterial b) {
     Morphology result = a;
-    result.physics_material &= ~value;
+    result -= b;
     return result;
 }

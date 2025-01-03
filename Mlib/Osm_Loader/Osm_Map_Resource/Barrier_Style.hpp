@@ -12,7 +12,10 @@ enum class WrapMode;
 struct BarrierStyle {
     VariableAndHash<std::string> texture;
     FixedArray<float, 2> uv;
+    float depth;
+    FixedArray<float, 3> depth_color;
     BlendMode blend_mode;
+    bool cull_faces;
     bool reorient_uv0;
     Shading shading;
 };

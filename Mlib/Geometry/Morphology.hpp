@@ -18,6 +18,8 @@ struct Morphology {
     }
 };
 
+Morphology& operator += (Morphology& a, PhysicsMaterial b);
+Morphology& operator -= (Morphology& a, PhysicsMaterial b);
 Morphology operator + (const Morphology& a, PhysicsMaterial b);
 Morphology operator - (const Morphology& a, PhysicsMaterial b);
 

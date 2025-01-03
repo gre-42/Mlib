@@ -3,7 +3,6 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
-#include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Json/Map.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -289,8 +288,10 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(texture);
 DECLARE_ARGUMENT(uv);
+DECLARE_ARGUMENT(depth);
+DECLARE_ARGUMENT(depth_color);
 DECLARE_ARGUMENT(blend_mode);
-DECLARE_ARGUMENT(wrap_mode_t);
+DECLARE_ARGUMENT(cull_faces);
 DECLARE_ARGUMENT(reorient_uv0);
 DECLARE_ARGUMENT(ambient);
 DECLARE_ARGUMENT(diffuse);
@@ -354,8 +355,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                 BarrierStyle as{
                     .texture = VariableAndHash{barrier_style.path_or_variable(BS::texture).path},
                     .uv = barrier_style.at<UFixedArray<float, 2>>(BS::uv),
+                    .depth = barrier_style.at<float>(BS::depth),
+                    .depth_color = barrier_style.at<UFixedArray<float, 3>>(BS::depth_color, fixed_ones<float, 3>()),
                     .blend_mode = blend_mode_from_string(barrier_style.at<std::string>(BS::blend_mode)),
-                    // .wrap_mode_t = wrap_mode_from_string(barrier_style.at<std::string>(BS::wrap_mode_t)),
+                    .cull_faces = barrier_style.at<bool>(BS::cull_faces),
                     .reorient_uv0 = barrier_style.at<bool>(BS::reorient_uv0),
                     .shading = {
                         .ambient = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::ambient),
