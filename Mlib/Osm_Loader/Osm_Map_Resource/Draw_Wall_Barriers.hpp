@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
+#include <cstddef>
 #include <list>
 #include <map>
 #include <memory>
@@ -18,6 +19,8 @@ class TriangleList;
 struct BarrierStyle;
 template <class TPos>
 class VertexHeightBinding;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 void draw_wall_barriers(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,

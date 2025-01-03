@@ -1,4 +1,5 @@
 #include "Visit_Line_Segments.hpp"
+#include <Mlib/Array/Fixed_Array.hpp>
 
 using namespace Mlib;
 

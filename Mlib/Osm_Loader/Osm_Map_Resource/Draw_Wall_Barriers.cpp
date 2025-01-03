@@ -1,6 +1,5 @@
 #include "Draw_Wall_Barriers.hpp"
 #include <Mlib/Geometry/Material.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
@@ -10,6 +9,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Visit_Line_Segments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
