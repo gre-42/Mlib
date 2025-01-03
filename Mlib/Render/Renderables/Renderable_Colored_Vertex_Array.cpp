@@ -1043,7 +1043,7 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
             auto border_brightness = (float)!any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
-            float border_color[] = { border_brightness, border_brightness, border_brightness, 1.f};
+            float border_color[] = { border_brightness, border_brightness, border_brightness, 1.f };
             CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color));
             CHK(glActiveTexture(GL_TEXTURE0));
         }
