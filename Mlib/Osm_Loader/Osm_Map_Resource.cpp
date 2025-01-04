@@ -391,8 +391,6 @@ OsmMapResource::OsmMapResource(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
-                .cull_faces = false,
-                .reorient_uv0 = true,
                 .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                 .draw_distance_noperations = 1000},
             Morphology{ .physics_material = PhysicsMaterial::NONE },
@@ -410,6 +408,7 @@ OsmMapResource::OsmMapResource(
                 tls_wall_barriers,
                 street_hole_triangles,
                 Material{
+                    .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                     .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                     .aggregate_mode = AggregateMode::ONCE,
                     .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),

@@ -66,10 +66,13 @@ void Mlib::draw_boundary_barriers(
 
     tl->material.textures_color = { primary_rendering_resources.get_blend_map_texture(barrier_style.texture) };
     tl->material.blend_mode = barrier_style.blend_mode;
-    // tl->material.wrap_mode_t = barrier_style.wrap_mode_t;
+    tl->material.cull_faces = barrier_style.cull_faces;
     tl->material.reorient_uv0 = barrier_style.reorient_uv0;
     tl->material.shading = barrier_style.shading;
     tl->material.compute_color_mode();
+    if (barrier_style.depth != 0.f) {
+        THROW_OR_ABORT("Boundary barrier depth must be zero");
+    }
     for (const auto& contour : contours) {
         if (contour.size() < 4) {
             continue;

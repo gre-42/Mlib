@@ -198,7 +198,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
         }
     }
     if (any(config & ScoreBoardConfiguration::HISTORY)) {
-        if (sstr.tellg() != 0) {
+        if (sstr.tellp() != 0) {
             sstr << std::endl;
             sstr << "History" << std::endl;
         }
