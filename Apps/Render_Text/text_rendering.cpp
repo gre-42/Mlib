@@ -124,21 +124,21 @@ int main(int argc, char** argv)
             glClear(GL_COLOR_BUFFER_BIT);
 
             {
-                PixelRegion ew{ 0.f, 400, 0.f, 100, RegionRoundMode::ENABLED };
+                PixelRegion ew{ 0.f, 400, 0.f, 500, RegionRoundMode::ENABLED };
                 renderable_text.render(
                     large_font_height.to_pixels(ly, PixelsRoundMode::ROUND),
                     ew,
-                    "This is sample text",
+                    "12345\n54321\nThis is\nsample\ntext",
                     line_distance.to_pixels(ly, PixelsRoundMode::NONE));
             }
             {
                 PixelRegion ew{ 10.f, 400, 120.f, 500.f, RegionRoundMode::ENABLED };
                 circular_data_display.render(
-                    value,          // value
-                    20.f,           // font_height
+                    value,              // value
+                    20.f,               // font_height
                     ew,
-                    100.f,          // tick_radius
-                    {7.f, 100.f}); // pointer_size
+                    100.f,              // tick_radius
+                    { 7.f, 100.f });    // pointer_size
                 value = std::fmod(value + 0.5f, 100.f);
             }
 
