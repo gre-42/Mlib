@@ -7,6 +7,7 @@
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
@@ -64,9 +65,10 @@ void ThreadTopLogic::render_without_setup(
     renderable_text().render(
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
         position_,
-        {lx.flength(), ly.flength()},
+        { lx.flength(), ly.flength() },
         text_,
         AlignText::TOP,
+        TextInterpolationMode::NEAREST_NEIGHBOR,
         line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }
 

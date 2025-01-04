@@ -9,6 +9,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 
 using namespace Mlib;
@@ -60,6 +61,7 @@ void VisualMovableCircularLogger::render(
     display_.render(
         value_,
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+        TextInterpolationMode::NEAREST_NEIGHBOR,
         *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         tick_radius_.to_pixels(ly, PixelsRoundMode::NONE),
         { pointer_width_.to_pixels(ly, PixelsRoundMode::NONE), pointer_length_.to_pixels(ly, PixelsRoundMode::NONE) });

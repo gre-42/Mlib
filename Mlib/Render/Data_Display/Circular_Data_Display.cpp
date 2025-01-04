@@ -36,6 +36,7 @@ CircularDataDisplay::CircularDataDisplay(
 void CircularDataDisplay::render(
     float value,
     float font_height,
+    TextInterpolationMode text_interpolation_mode,
     const IPixelRegion& evaluated_widget,
     float tick_radius,
     const FixedArray<float, 2>& pointer_size)
@@ -43,6 +44,7 @@ void CircularDataDisplay::render(
     FixedArray<float, 2> canvas_size{evaluated_widget.width(), evaluated_widget.height()};
     ensure_initialized(
         font_height,
+        text_interpolation_mode,
         canvas_size,
         tick_radius);
     
@@ -69,6 +71,7 @@ void CircularDataDisplay::render(
 
 void CircularDataDisplay::ensure_initialized(
     float font_height,
+    TextInterpolationMode text_interpolation_mode,
     const FixedArray<float, 2>& canvas_size,
     float tick_radius)
 {
@@ -87,7 +90,7 @@ void CircularDataDisplay::ensure_initialized(
             .align = AlignText::TOP,
             .line_distance = 0.f});
     }
-    tick_text_.set_contents(font_height, canvas_size, contents);
+    tick_text_.set_contents(font_height, canvas_size, text_interpolation_mode, contents);
     is_initialized_ = true;
 }
 

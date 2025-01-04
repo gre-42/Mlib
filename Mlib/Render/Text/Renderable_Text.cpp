@@ -16,6 +16,7 @@
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Loaded_Font.hpp>
 #include <Mlib/Render/Text/Text_And_Position.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <stb/stb_truetype.h>
@@ -100,11 +101,13 @@ void TextResource::ensure_initialized(float font_height) const
 void TextResource::set_contents(
     float font_height,
     const FixedArray<float, 2>& canvas_size,
+    TextInterpolationMode interpolation_mode,
     const std::vector<TextAndPosition>& contents)
 {
     ensure_initialized(font_height);
     
     canvas_size_ = canvas_size;
+    interpolation_mode_ = interpolation_mode;
 
     vdata_.clear();
     for (const auto& tp : contents) {
@@ -154,6 +157,13 @@ void TextResource::set_contents(
                 }
             }
         }
+        if (interpolation_mode == TextInterpolationMode::NEAREST_NEIGHBOR) {
+            for (auto& t : vdata_) {
+                for (auto& v : t.flat_iterable()) {
+                    v.pos = round(v.pos);
+                }
+            }
+        }
     }
     // update content of VBO memory
     vertices_.bind();
@@ -181,6 +191,13 @@ void TextResource::render() const
     mat4x4_ortho(projection, 0, canvas_size_(0), 0, canvas_size_(1), -2, 2);
     CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*)projection));
     CHK(glBindTexture(GL_TEXTURE_2D, loaded_font_->texture_handle));
+    if (interpolation_mode_ == TextInterpolationMode::NEAREST_NEIGHBOR) {
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    } else {
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    }
     va_.bind();
 
     // render quad
@@ -197,11 +214,13 @@ void TextResource::render(
     const FixedArray<float, 2>& canvas_size,
     const std::string& text,
     AlignText align,
+    TextInterpolationMode interpolation_mode,
     float line_distance)
 {
     set_contents(
         font_height,
         canvas_size,
+        interpolation_mode,
         {TextAndPosition{
         .text = text,
         .position = position,
@@ -214,13 +233,15 @@ void TextResource::render(
     float font_height,
     const IPixelRegion& evaluated_widget,
     const std::string& text,
-    float line_distance)
+    float line_distance,
+    TextInterpolationMode interpolation_mode)
 {
     auto vg = ViewportGuard::from_widget(evaluated_widget);
     if (vg.has_value()) {
         set_contents(
             font_height,
             {evaluated_widget.width(), evaluated_widget.height()},
+            interpolation_mode,
             {TextAndPosition{
             .text = text,
             .position = {0.f, 0.f},

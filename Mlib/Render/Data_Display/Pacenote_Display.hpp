@@ -10,6 +10,7 @@ class FixedArray;
 class TextResource;
 class IPixelRegion;
 struct Pacenote;
+enum class TextInterpolationMode;
 
 class PacenoteDisplay {
 public:
@@ -21,6 +22,7 @@ public:
     void render(
         const Pacenote& pacenote,
         float font_height,
+        TextInterpolationMode text_interpolation_mode,
         const IPixelRegion& text_evaluated_widget,
         const IPixelRegion& picture_evaluated_widget);
 private:

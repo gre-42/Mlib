@@ -7,6 +7,7 @@
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
@@ -57,6 +58,7 @@ void FocusedTextLogic::render_without_setup(
         {lx.flength(), ly.flength()},
         text_,
         AlignText::BOTTOM,
+        TextInterpolationMode::NEAREST_NEIGHBOR,
         line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }
 

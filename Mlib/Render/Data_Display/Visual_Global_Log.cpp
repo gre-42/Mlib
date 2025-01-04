@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
@@ -61,7 +62,8 @@ void VisualGlobalLog::render_without_setup(
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
         *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         sstr.str(),
-        line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
+        line_distance_.to_pixels(ly, PixelsRoundMode::NONE),
+        TextInterpolationMode::NEAREST_NEIGHBOR);
 }
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {

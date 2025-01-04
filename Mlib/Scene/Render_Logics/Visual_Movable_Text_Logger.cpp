@@ -6,6 +6,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <sstream>
 
@@ -49,5 +50,6 @@ void VisualMovableTextLogger::render(
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
         *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         (std::string)text_,
-        line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
+        line_distance_.to_pixels(ly, PixelsRoundMode::NONE),
+        TextInterpolationMode::NEAREST_NEIGHBOR);
 }

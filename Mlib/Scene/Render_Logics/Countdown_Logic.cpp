@@ -10,6 +10,7 @@
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <mutex>
 
@@ -76,6 +77,7 @@ void CountDownLogic::render_without_setup(
                 ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / seconds))
                 : text_,
             AlignText::BOTTOM,
+            TextInterpolationMode::NEAREST_NEIGHBOR,
             line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
     }
 }

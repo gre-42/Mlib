@@ -11,6 +11,7 @@
 namespace Mlib {
 
 enum class AlignText;
+enum class TextInterpolationMode;
 
 struct TextRenderProgram: public RenderProgram {
     GLint color_location;
@@ -46,6 +47,7 @@ public:
     void set_contents(
         float font_height,
         const FixedArray<float, 2>& canvas_size,
+        TextInterpolationMode interpolation_mode,
         const std::vector<TextAndPosition>& contents);
     void render() const;
     void render(
@@ -54,12 +56,14 @@ public:
         const FixedArray<float, 2>& canvas_size,
         const std::string& text,
         AlignText align,
+        TextInterpolationMode interpolation_mode,
         float line_distance);
     void render(
         float font_height,
         const IPixelRegion& evaluated_widget,
         const std::string& text,
-        float line_distance);
+        float line_distance,
+        TextInterpolationMode interpolation_mode);
 private:
     void ensure_initialized(float font_height) const;
     void deallocate();
@@ -68,6 +72,7 @@ private:
     mutable VertexArray va_;
     mutable const LoadedFont* loaded_font_;
     mutable FixedArray<float, 2> canvas_size_;
+    mutable TextInterpolationMode interpolation_mode_;
 
     mutable FontNameAndHeight font_descriptor_;
     FixedArray<float, 3> color_;

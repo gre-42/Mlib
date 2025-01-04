@@ -7,6 +7,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <mutex>
 
@@ -93,6 +94,7 @@ void CheckPointsPacenotes::render_without_setup(
         display_.render(
             *pacenote,
             font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+            TextInterpolationMode::NEAREST_NEIGHBOR,
             PixelRegion::transformed(*text_region, dx, 0.f),
             PixelRegion::transformed(*picture_region, dx, 0.f));
         dx += dx1;

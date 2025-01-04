@@ -10,6 +10,7 @@ class FixedArray;
 class TextResource;
 class PointerImageLogic;
 class IPixelRegion;
+enum class TextInterpolationMode;
 
 struct DisplayTick {
     float value;
@@ -29,12 +30,14 @@ public:
     void render(
         float value,
         float font_height,
+        TextInterpolationMode text_interpolation_mode,
         const IPixelRegion& evaluated_widget,
         float tick_radius,
         const FixedArray<float, 2>& pointer_size);
 private:
     void ensure_initialized(
         float font_height,
+        TextInterpolationMode text_interpolation_mode,
         const FixedArray<float, 2>& canvas_size,
         float tick_radius);
     void deallocate();

@@ -25,6 +25,7 @@ PacenoteDisplay::PacenoteDisplay(
 void PacenoteDisplay::render(
     const Pacenote& pacenote,
     float font_height,
+    TextInterpolationMode text_interpolation_mode,
     const IPixelRegion& text_evaluated_widget,
     const IPixelRegion& picture_evaluated_widget)
 {
@@ -51,6 +52,7 @@ void PacenoteDisplay::render(
         text_.set_contents(
             font_height,
             canvas_size,
+            text_interpolation_mode,
             {TextAndPosition{
                 .text =
                     std::to_string(pacenote.gear) + " " +

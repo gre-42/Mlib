@@ -3,6 +3,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -94,5 +95,6 @@ void ListViewStringDrawer::render() {
         font_height_.to_pixels(ly_, PixelsRoundMode::ROUND),
         ew_,
         sstr_.str(),
-        line_distance_.to_pixels(ly_, PixelsRoundMode::NONE));
+        line_distance_.to_pixels(ly_, PixelsRoundMode::NONE),
+        TextInterpolationMode::NEAREST_NEIGHBOR);
 }

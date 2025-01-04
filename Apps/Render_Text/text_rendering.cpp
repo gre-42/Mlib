@@ -15,6 +15,7 @@
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
@@ -129,13 +130,15 @@ int main(int argc, char** argv)
                     large_font_height.to_pixels(ly, PixelsRoundMode::ROUND),
                     ew,
                     "12345\n54321\nThis is\nsample\ntext",
-                    line_distance.to_pixels(ly, PixelsRoundMode::NONE));
+                    line_distance.to_pixels(ly, PixelsRoundMode::NONE),
+                    TextInterpolationMode::NEAREST_NEIGHBOR);
             }
             {
                 PixelRegion ew{ 10.f, 400, 120.f, 500.f, RegionRoundMode::ENABLED };
                 circular_data_display.render(
                     value,              // value
                     20.f,               // font_height
+                    TextInterpolationMode::NEAREST_NEIGHBOR,
                     ew,
                     100.f,              // tick_radius
                     { 7.f, 100.f });    // pointer_size
