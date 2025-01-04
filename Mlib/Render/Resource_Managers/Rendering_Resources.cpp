@@ -1580,10 +1580,9 @@ const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& 
         CHK(glGenTextures(1, &font.texture_handle));
         CHK(glBindTexture(GL_TEXTURE_2D, font.texture_handle));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
+        CHK(glBindTexture(GL_TEXTURE_2D, 0));
         // can free temp_bitmap at this point
     }
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     return font_textures_.add(font_descriptor, std::move(font));
 }
 
