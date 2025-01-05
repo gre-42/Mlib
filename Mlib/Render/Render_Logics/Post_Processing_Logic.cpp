@@ -15,7 +15,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Render/Shader_Version_3_0.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 

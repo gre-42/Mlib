@@ -1,6 +1,6 @@
 #include "Generic_Post_Processing_Logic.hpp"
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Render/Shader_Version_3_0.hpp>
 
 using namespace Mlib;
 
@@ -23,8 +23,7 @@ GenericPostProcessingLogic::GenericPostProcessingLogic(const float* quad_vertice
     va_.add_array_buffer(vertices_);
 }
 
-GenericPostProcessingLogic::~GenericPostProcessingLogic()
-{}
+GenericPostProcessingLogic::~GenericPostProcessingLogic() = default;
 
 VertexArray& GenericPostProcessingLogic::va() {
     if (!va_.initialized()) {
@@ -32,7 +31,7 @@ VertexArray& GenericPostProcessingLogic::va() {
         va_.initialize();
         vertices_.set(quad_vertices_, quad_vertices_ + 4 * 6, TaskLocation::FOREGROUND);
         CHK(glEnableVertexAttribArray(0));
-        CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0));
+        CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr));
         CHK(glEnableVertexAttribArray(1));
         CHK(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float))));
         CHK(glBindVertexArray(0));

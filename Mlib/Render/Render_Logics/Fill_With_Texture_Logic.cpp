@@ -11,14 +11,13 @@
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Render/Shader_Version_3_0.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <sstream>
 
 using namespace Mlib;
 
-FillWithTextureRenderProgram::FillWithTextureRenderProgram()
-{}
+FillWithTextureRenderProgram::FillWithTextureRenderProgram() = default;
 
 FillWithTextureRenderProgram::~FillWithTextureRenderProgram() = default;
 
@@ -56,7 +55,7 @@ FillWithTextureLogic::FillWithTextureLogic(
     const float* quad_vertices,
     std::optional<size_t> layer)
     : GenericPostProcessingLogic{ quad_vertices }
-    , texture_{ texture }
+    , texture_{ std::move(texture) }
     , cull_face_mode_{ cull_face_mode }
     , blend_mode_{ blend_mode }
     , layer_{ layer }

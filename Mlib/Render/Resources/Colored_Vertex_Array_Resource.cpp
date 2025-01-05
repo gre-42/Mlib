@@ -35,7 +35,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Distant_Triangle_Hider.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
-#include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Render/Shader_Version_3_0.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>

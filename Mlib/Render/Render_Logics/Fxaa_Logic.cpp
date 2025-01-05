@@ -13,7 +13,7 @@
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Render/Shader_Version_3_0.hpp>
 
 using namespace Mlib;
 

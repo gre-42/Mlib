@@ -6,7 +6,7 @@
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
-#include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Render/Shader_Version_3_0.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 
 using namespace Mlib;
