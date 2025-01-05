@@ -607,7 +607,7 @@ struct JniThreadLocal {
         : activity{ nullptr }
         , env{ nullptr }
     {}
-    explicit JniThreadLocal(const JniThreadLocal& other)
+    JniThreadLocal(const JniThreadLocal& other)
         : JniThreadLocal{ nullptr }
     {
         if (other.activity != nullptr) {
