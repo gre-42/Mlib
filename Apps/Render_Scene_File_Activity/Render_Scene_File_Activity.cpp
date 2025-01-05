@@ -544,7 +544,7 @@ void android_main(android_app* app) {
             args,
             render_set_fps,
             menu_logic};
-        AEngine a_engine{ scene_renderer, button_states.tap_buttons_ };
+        AEngine a_engine{ scene_renderer, button_states };
         AContext context;
         ContextQueryGuard context_query_guard{ context };
         ClearWrapperGuard clear_wrapper_guard;

@@ -4,16 +4,16 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/IRenderer.hpp>
-#include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 
 //-------------------------------------------------------------------------
 // Ctor
 //-------------------------------------------------------------------------
 AEngine::AEngine(
     Mlib::IRenderer& renderer,
-    Mlib::TapButtonsStates& tap_buttons_states)
+    Mlib::ButtonStates& buttons_states)
     : renderer_{ renderer }
-    , tap_buttons_states_{ tap_buttons_states }
+    , buttons_states_{ buttons_states }
     , initialized_resources_{ false }
     , has_focus_{ false }
     , xdpi_{ 0 }
@@ -111,46 +111,88 @@ void AEngine::InvalidateContext() {
  */
 int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
     auto* eng = (AEngine*)app->userData;
-    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
-        {
-            std::scoped_lock lock{eng->tap_buttons_states_.mutex};
-            for (auto &[_, tb]: eng->tap_buttons_states_.button_down) {
-                tb = false;
-            }
-            for (auto &[_, tb]: eng->tap_buttons_states_.joystick_axis_position) {
-                tb = NAN;
-            }
+    switch (AInputEvent_getType(event)) {
+        case AINPUT_EVENT_TYPE_KEY: {
+            eng->buttons_states_.notify_key_event(AKeyEvent_getKeyCode(event), AKeyEvent_getAction(event));
+            break;
+        }
+        case AINPUT_EVENT_TYPE_MOTION: {
+            std::scoped_lock lock{eng->buttons_states_.tap_buttons_.mutex};
             for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
-                if ((AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN) ||
-                    (AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE))
-                {
-                    float x = AMotionEvent_getX(event, i);
-                    float y = AMotionEvent_getY(event, i);
-                    for (auto &tb: eng->tap_buttons_states_.button_states) {
-                        auto ew = tb.widget->evaluate(
-                            eng->LayoutParametersX(),
-                            eng->LayoutParametersY(),
-                            Mlib::YOrientation::SWAPPED,
-                            Mlib::RegionRoundMode::ENABLED);
-                        if ((ew->width() > 0.f) && (ew->height() > 0.f) &&
-                            (x >= ew->left()) && (x <= ew->right()) &&
-                            (y >= ew->bottom()) && (y <= ew->top()))
-                        {
-                            if (const auto& k = tb.key) {
-                                eng->tap_buttons_states_.button_down[*k] = true;
+                int32_t pointer_id = AMotionEvent_getPointerId(event, i);
+                int32_t action = AMotionEvent_getAction(event);
+                switch (action) {
+                    case AMOTION_EVENT_ACTION_UP: {
+                        auto it = eng->buttons_states_.tap_buttons_.pointer_ids.find(pointer_id);
+                        if (it != eng->buttons_states_.tap_buttons_.pointer_ids.end()) {
+                            const auto &bs = *it->second;
+                            if (bs.key.has_value()) {
+                                auto kit = eng->buttons_states_.tap_buttons_.button_down.find(
+                                    *bs.key);
+                                if (kit != eng->buttons_states_.tap_buttons_.button_down.end()) {
+                                    kit->second = false;
+                                }
                             }
-                            if (const auto& v = tb.joystick_xaxis) {
-                                eng->tap_buttons_states_.joystick_axis_position[*v] =
-                                    std::clamp((2.f * x - (ew->left() + ew->right())) / ew->width(), -1.f, 1.f);
+                            if (bs.joystick_xaxis.has_value()) {
+                                auto jit = eng->buttons_states_.tap_buttons_.joystick_axis_position.find(
+                                    *bs.joystick_xaxis);
+                                if (jit !=
+                                    eng->buttons_states_.tap_buttons_.joystick_axis_position.end()) {
+                                    jit->second = NAN;
+                                }
                             }
-                            if (const auto& v = tb.joystick_yaxis) {
-                                eng->tap_buttons_states_.joystick_axis_position[*v] =
-                                    std::clamp((2.f * y - (ew->bottom() + ew->top())) / ew->height(), -1.f, 1.f);
+                            if (bs.joystick_yaxis.has_value()) {
+                                auto jit = eng->buttons_states_.tap_buttons_.joystick_axis_position.find(
+                                    *bs.joystick_yaxis);
+                                if (jit !=
+                                    eng->buttons_states_.tap_buttons_.joystick_axis_position.end()) {
+                                    jit->second = NAN;
+                                }
+                            }
+                            eng->buttons_states_.tap_buttons_.pointer_ids.erase(it);
+                        }
+                        break;
+                    }
+                    case AMOTION_EVENT_ACTION_DOWN:
+                    case AMOTION_EVENT_ACTION_MOVE: {
+                        float x = AMotionEvent_getX(event, i);
+                        float y = AMotionEvent_getY(event, i);
+                        for (auto &tb: eng->buttons_states_.tap_buttons_.button_states) {
+                            auto ew = tb.widget->evaluate(
+                                eng->LayoutParametersX(),
+                                eng->LayoutParametersY(),
+                                Mlib::YOrientation::SWAPPED,
+                                Mlib::RegionRoundMode::ENABLED);
+                            if ((ew->width() > 0.f) && (ew->height() > 0.f) &&
+                                (x >= ew->left()) && (x <= ew->right()) &&
+                                (y >= ew->bottom()) && (y <= ew->top()))
+                            {
+                                if (action == AMOTION_EVENT_ACTION_DOWN) {
+                                    eng->buttons_states_.tap_buttons_.pointer_ids[pointer_id] = &tb;
+                                }
+                                if (const auto &k = tb.key) {
+                                    eng->buttons_states_.tap_buttons_.button_down[*k] = true;
+                                }
+                                if (const auto &v = tb.joystick_xaxis) {
+                                    eng->buttons_states_.tap_buttons_.joystick_axis_position[*v] =
+                                        std::clamp(
+                                            (2.f * x - (ew->left() + ew->right())) / ew->width(),
+                                            -1.f, 1.f);
+                                }
+                                if (const auto &v = tb.joystick_yaxis) {
+                                    eng->buttons_states_.tap_buttons_.joystick_axis_position[*v] =
+                                        std::clamp(
+                                            (2.f * y - (ew->bottom() + ew->top())) / ew->height(),
+                                            -1.f, 1.f);
+                                }
                             }
                         }
+                        break;
                     }
+                    default: ;// Do nothing
                 }
             }
+            break;
         }
 
         ndk_helper::GESTURE_STATE doubleTapState =

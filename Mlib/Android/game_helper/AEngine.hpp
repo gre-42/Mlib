@@ -4,7 +4,7 @@
 namespace Mlib {
     class IRenderer;
     enum class RenderEvent;
-    struct TapButtonsStates;
+    class ButtonStates;
     struct LayoutConstraintParameters;
 }
 
@@ -16,7 +16,7 @@ namespace Mlib {
 struct android_app;
 class AEngine {
     Mlib::IRenderer& renderer_;
-    Mlib::TapButtonsStates& tap_buttons_states_;
+    Mlib::ButtonStates& buttons_states_;
 
     ndk_helper::GLContext* gl_context_;
 
@@ -46,7 +46,7 @@ public:
 
     explicit AEngine(
         Mlib::IRenderer& renderer,
-        Mlib::TapButtonsStates& tap_buttons_states);
+        Mlib::ButtonStates& buttons_states);
     ~AEngine();
     void SetState(android_app* app);
     int InitDisplay(android_app* app);

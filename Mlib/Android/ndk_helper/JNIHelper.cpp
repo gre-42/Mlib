@@ -603,7 +603,7 @@ jstring JNIHelper::GetFilesDirJString(JNIEnv* env, StorageType storageType) {
 
 struct JniThreadLocal {
     ~JniThreadLocal() {
-        if (activity != nullptr) {
+        if ((activity != nullptr) && (activity->vm != nullptr)) {
             // Unregister this thread from the VM
             // https://stackoverflow.com/a/59935021/2292832:
             //   The best solution is to only attach once to
