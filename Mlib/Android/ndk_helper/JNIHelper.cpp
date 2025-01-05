@@ -642,13 +642,13 @@ JNIEnv* JNIHelper::AttachCurrentThread() {
         JniThreadLocal{ nullptr };
     JniThreadLocal& jniTls = jniTlsManager;
     if (jniTls.env == nullptr) {
-        jniTls.activity = activity_;
         if (activity_->vm->AttachCurrentThread(&jniTls.env, nullptr) != JNI_OK) {
           Mlib::verbose_abort("Could not attach current thread");
         }
         if (jniTls.env == nullptr) {
           Mlib::verbose_abort("Env is null after attach current thread");
         }
+        jniTls.activity = activity_;
     }
     return jniTls.env;
 }
