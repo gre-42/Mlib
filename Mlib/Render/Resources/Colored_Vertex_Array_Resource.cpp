@@ -988,7 +988,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        best_sign = false;" << std::endl;
         sstr << "        best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size).xy;" << std::endl;
         sstr << "    }" << std::endl;
+#ifdef __ANDROID__
+        sstr << "    int idx = 2 * best_axis + int(best_sign);";
+        for (size_t i = 0; i < 5; ++i) {
+            sstr << "    if (idx == " << i << ") frag_color = texture(texture_interior[" << i << "], best_uv);" << std::endl;
+        }
+#else
         sstr << "    frag_color = texture(texture_interior[2 * best_axis + int(best_sign)], best_uv);" << std::endl;
+#endif
         sstr << "    frag_color.a *= alpha_fac;" << std::endl;
         sstr << "    return true;" << std::endl;
         sstr << "}" << std::endl;
