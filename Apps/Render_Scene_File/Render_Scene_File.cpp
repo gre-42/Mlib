@@ -39,20 +39,19 @@
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
-#include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Threads/J_Thread.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <filesystem>
-#include <future>
 
 namespace fs = std::filesystem;
 
 using namespace Mlib;
 
-std::future<void> render_thread(
+std::unique_ptr<JThread> render_thread(
     const ParsedArgs& args,
     ButtonStates& button_states,
     RenderableScenes& renderable_scenes,
@@ -61,7 +60,7 @@ std::future<void> render_thread(
     const SceneConfig& scene_config,
     MenuLogic& menu_logic)
 {
-    return std::async(std::launch::async, [&](){
+    return std::make_unique<JThread>([&](){
         try {
             ThreadInitializer ti{ "Render", ThreadAffinity::POOL };
             bool last_load_scene_finished = false;
@@ -160,7 +159,7 @@ void print_debug_info(
     }
 }
 
-std::future<void> loader_thread(
+JThread loader_thread(
     const ParsedArgs& args,
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
@@ -187,7 +186,7 @@ std::future<void> loader_thread(
     std::chrono::steady_clock::duration render_delay,
     std::chrono::steady_clock::duration velocity_dt)
 {
-    return std::async(std::launch::async, [&, render_delay, velocity_dt](){
+    return JThread{[&, render_delay, velocity_dt](){
         try {
             ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
 #ifndef WITHOUT_ALUT
@@ -243,7 +242,7 @@ std::future<void> loader_thread(
         } catch (...) {
             add_unhandled_exception(std::current_exception());
         }
-    });
+    }};
 }
 
 static void main_func(
@@ -650,7 +649,7 @@ int main(int argc, char** argv) {
                 RenderableScenes renderable_scenes;
 
                 std::atomic_bool load_scene_finished = false;
-                std::future<void> render_future;
+                std::unique_ptr<JThread> render_future;
                 std::unique_ptr<Renderer> renderer;
                 if (!args.has_named("--no_render")) {
                     renderer = std::make_unique<Renderer>(render.generate_renderer());
@@ -663,8 +662,7 @@ int main(int argc, char** argv) {
                         scene_config,
                         menu_logic);
                 }
-                FutureGuard render_future_guard{std::move(render_future)};
-                FutureGuard loader_future_guard{loader_thread(
+                JThread loader_future_guard{loader_thread(
                     args,
                     gallery,
                     asset_references,

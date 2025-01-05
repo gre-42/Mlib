@@ -53,13 +53,12 @@
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
-#include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Threads/J_Thread.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <filesystem>
-#include <future>
 
 namespace fs = std::filesystem;
 
@@ -210,7 +209,7 @@ void print_debug_info(
     }
 }
 
-std::future<void> loader_thread(
+JThread loader_thread(
     const ParsedArgs& args,
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
@@ -235,7 +234,7 @@ std::future<void> loader_thread(
     std::chrono::steady_clock::duration render_delay,
     std::chrono::steady_clock::duration velocity_dt)
 {
-    return std::async(std::launch::async, [&](){
+    return JThread{[&](){
         try {
             ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
 #ifndef WITHOUT_ALUT
@@ -290,7 +289,7 @@ std::future<void> loader_thread(
         } catch (...) {
             add_unhandled_exception(std::current_exception());
         }
-    });
+    }};
 }
 
 void android_main(android_app* app) {
@@ -654,7 +653,7 @@ void android_main(android_app* app) {
                 DestructionGuard dg0{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr); }};
 
                 DestructionGuard dg1{[](){discard_render_allocators();}};
-                FutureGuard loader_future_guard{loader_thread(
+                JThread loader_future_guard{loader_thread(
                     args,
                     gallery,
                     asset_references,
