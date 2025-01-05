@@ -187,6 +187,8 @@ class JNIHelper {
   static void Init(ANativeActivity* activity, const char* helper_class_name,
                    const char* native_soname);
 
+  void Destroy();
+
   /*
    * Retrieve the singleton object of the helper.
    * Static member of the class
@@ -301,6 +303,8 @@ class JNIHelper {
    * as application process is only killed and VM does not shut down
    */
   JNIEnv* AttachCurrentThread();
+
+  void DetachCurrentThreadIfNecessary();
 
   /*
    * Decrement a global reference to the object

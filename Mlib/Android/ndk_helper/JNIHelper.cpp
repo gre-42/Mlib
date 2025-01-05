@@ -64,13 +64,17 @@ JNIHelper::JNIHelper() : activity_(nullptr) {}
 //---------------------------------------------------------------------------
 // Dtor
 //---------------------------------------------------------------------------
-JNIHelper::~JNIHelper() {
-  // Lock mutex
-  std::scoped_lock lock{mutex_};
+JNIHelper::~JNIHelper() = default;
 
-  JNIEnv* env = AttachCurrentThread();
-  env->DeleteGlobalRef(jni_helper_java_ref_);
-  env->DeleteGlobalRef(jni_helper_java_class_);
+void JNIHelper::Destroy() {
+    // Lock mutex
+    std::scoped_lock lock{mutex_};
+    {
+        JNIEnv *env = AttachCurrentThread();
+        env->DeleteGlobalRef(jni_helper_java_ref_);
+        env->DeleteGlobalRef(jni_helper_java_class_);
+    }
+    DetachCurrentThreadIfNecessary();
 }
 
 //---------------------------------------------------------------------------
@@ -618,6 +622,9 @@ struct JniThreadLocal {
         }
     }
     ~JniThreadLocal() {
+        DetachCurrentThreadIfNecessary();
+    }
+    void DetachCurrentThreadIfNecessary() {
         if (activity != nullptr) {
             // Unregister this thread from the VM
             // https://stackoverflow.com/a/59935021/2292832:
@@ -626,11 +633,19 @@ struct JniThreadLocal {
             //   and automatically detach with thread local storage
             //   (C++ 11 or higher) when the thread exits.
             activity->vm->DetachCurrentThread();
+            activity = nullptr;
+            env = nullptr;
         }
     }
     ANativeActivity *activity;
     JNIEnv *env;
 };
+
+static JniThreadLocal& GetJniThreadLocal() {
+    static THREAD_LOCAL(JniThreadLocal) jniTlsManager =
+        JniThreadLocal{ nullptr };
+    return jniTlsManager;
+}
 
 JNIEnv* JNIHelper::AttachCurrentThread() {
     {
@@ -638,9 +653,7 @@ JNIEnv* JNIHelper::AttachCurrentThread() {
         if (activity_->vm->GetEnv((void **) &env, JNI_VERSION_1_4) == JNI_OK)
             return env;
     }
-    static THREAD_LOCAL(JniThreadLocal) jniTlsManager =
-        JniThreadLocal{ nullptr };
-    JniThreadLocal& jniTls = jniTlsManager;
+    JniThreadLocal& jniTls = GetJniThreadLocal();
     if (jniTls.env == nullptr) {
         if (activity_->vm->AttachCurrentThread(&jniTls.env, nullptr) != JNI_OK) {
           Mlib::verbose_abort("Could not attach current thread");
@@ -651,6 +664,11 @@ JNIEnv* JNIHelper::AttachCurrentThread() {
         jniTls.activity = activity_;
     }
     return jniTls.env;
+}
+
+void JNIHelper::DetachCurrentThreadIfNecessary() {
+    JniThreadLocal& jniTls = GetJniThreadLocal();
+    jniTls.DetachCurrentThreadIfNecessary();
 }
 
 void JNIHelper::DeleteObject(jobject obj) {

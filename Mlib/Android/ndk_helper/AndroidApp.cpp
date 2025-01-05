@@ -21,6 +21,7 @@ void AndroidApp::Destroy() {
     if (app_ == nullptr) {
         Mlib::verbose_abort("AndroidApp already destroyed");
     }
+    ndk_helper::JNIHelper::GetInstance()->Destroy();
     app_ = nullptr;
 }
 
