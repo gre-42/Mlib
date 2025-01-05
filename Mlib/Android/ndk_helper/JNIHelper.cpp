@@ -602,8 +602,23 @@ jstring JNIHelper::GetFilesDirJString(JNIEnv* env, StorageType storageType) {
 }
 
 struct JniThreadLocal {
+    JniThreadLocal& operator = (const JniThreadLocal&) = delete;
+    explicit JniThreadLocal(nullptr_t)
+        : activity{ nullptr }
+        , env{ nullptr }
+    {}
+    explicit JniThreadLocal(const JniThreadLocal& other)
+        : JniThreadLocal{ nullptr }
+    {
+        if (other.activity != nullptr) {
+            THROW_OR_ABORT("JniThreadLocal already has an activity");
+        }
+        if (other.env != nullptr) {
+            THROW_OR_ABORT("JniThreadLocal already has an environment");
+        }
+    }
     ~JniThreadLocal() {
-        if ((activity != nullptr) && (activity->vm != nullptr)) {
+        if (activity != nullptr) {
             // Unregister this thread from the VM
             // https://stackoverflow.com/a/59935021/2292832:
             //   The best solution is to only attach once to
@@ -624,9 +639,7 @@ JNIEnv* JNIHelper::AttachCurrentThread() {
             return env;
     }
     static THREAD_LOCAL(JniThreadLocal) jniTlsManager =
-        JniThreadLocal{
-            .activity = nullptr,
-            .env = nullptr};
+        JniThreadLocal{ nullptr };
     JniThreadLocal& jniTls = jniTlsManager;
     if (jniTls.env == nullptr) {
         jniTls.activity = activity_;
