@@ -46,6 +46,7 @@
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <climits>
+#include <unordered_map>
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -421,26 +422,26 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     std::vector<BlendMapTextureAndId> blended_textures_color(cva->material.textures_color.size());
-    std::map<ColormapPtr, size_t> texture_ids_color;
-    std::map<ColormapPtr, size_t> texture_ids_specular;
-    std::map<ColormapPtr, size_t> texture_ids_normal;
+    std::unordered_map<ColormapPtr, size_t> texture_ids_color;
+    std::unordered_map<ColormapPtr, size_t> texture_ids_specular;
+    std::unordered_map<ColormapPtr, size_t> texture_ids_normal;
     for (size_t i = 0; i < blended_textures_color.size(); ++i) {
         const auto& c = cva->material.textures_color[i];
         auto& b = blended_textures_color[i];
         if (!c.texture_descriptor.color.filename->empty()) {
-            auto it = texture_ids_color.try_emplace(&c.texture_descriptor.color, texture_ids_color.size());
+            auto it = texture_ids_color.try_emplace(c.texture_descriptor.color, texture_ids_color.size());
             b.id_color = it.first->second;
         } else {
             b.id_color = SIZE_MAX;
         }
         if (!c.texture_descriptor.specular.filename->empty()) {
-            auto it = texture_ids_specular.try_emplace(&c.texture_descriptor.specular, texture_ids_specular.size());
+            auto it = texture_ids_specular.try_emplace(c.texture_descriptor.specular, texture_ids_specular.size());
             b.id_specular = it.first->second;
         } else {
             b.id_specular = SIZE_MAX;
         }
         if (!c.texture_descriptor.normal.filename->empty()) {
-            auto it = texture_ids_normal.try_emplace(&c.texture_descriptor.normal, texture_ids_normal.size());
+            auto it = texture_ids_normal.try_emplace(c.texture_descriptor.normal, texture_ids_normal.size());
             b.id_normal = it.first->second;
         } else {
             b.id_normal = SIZE_MAX;
@@ -448,12 +449,12 @@ void RenderableColoredVertexArray::render_cva(
         b.ops = &c;
     }
     std::vector<BlendMapTextureAndId> blended_textures_alpha(cva->material.textures_alpha.size());
-    std::map<ColormapPtr, size_t> texture_ids_alpha;
+    std::unordered_map<ColormapPtr, size_t> texture_ids_alpha;
     for (size_t i = 0; i < blended_textures_alpha.size(); ++i) {
         const auto& c = cva->material.textures_alpha[i];
         auto& b = blended_textures_alpha[i];
         assert_true(!c.texture_descriptor.color.filename->empty());
-        auto it = texture_ids_alpha.try_emplace(&c.texture_descriptor.color, texture_ids_alpha.size());
+        auto it = texture_ids_alpha.try_emplace(c.texture_descriptor.color, texture_ids_alpha.size());
         b.id_color = it.first->second;
         b.id_specular = SIZE_MAX;
         b.id_normal = SIZE_MAX;
@@ -563,7 +564,7 @@ void RenderableColoredVertexArray::render_cva(
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
                 blended_textures_color = { b };
-                texture_ids_color = {{ &b.ops->texture_descriptor.color, 0 }};
+                texture_ids_color = {{ b.ops->texture_descriptor.color, 0 }};
 #pragma GCC diagnostic pop
             }
             texture_ids_specular.clear();

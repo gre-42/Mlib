@@ -1,6 +1,7 @@
 #include "Material_Features.hpp"
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers_Hash.hpp>
 
 using namespace Mlib;
 
@@ -18,7 +19,7 @@ bool Mlib::fragments_depend_on_distance(
     const FixedArray<float, 2>& fog_distances,
     const FixedArray<float, 4>& alpha_distances,
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapPtr, size_t>& texture_ids_color)
+    const std::unordered_map<ColormapPtr, size_t>& texture_ids_color)
 {
     if (any(fog_distances != default_step_distances)) {
         return true;
@@ -46,7 +47,7 @@ bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTexture>& textur
 
 bool Mlib::fragments_depend_on_normal(
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapPtr, size_t>& texture_ids)
+    const std::unordered_map<ColormapPtr, size_t>& texture_ids)
 {
     for (const auto& [_, i] : texture_ids) {
         if (textures.at(i).ops->cosines != default_linear_cosines) {
@@ -58,7 +59,7 @@ bool Mlib::fragments_depend_on_normal(
 
 bool Mlib::has_horizontal_detailmap(
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapPtr, size_t>& texture_ids)
+    const std::unordered_map<ColormapPtr, size_t>& texture_ids)
 {
     for (const auto& [_, i] : texture_ids) {
         if (textures.at(i).ops->uv_source == BlendMapUvSource::HORIZONTAL) {
@@ -68,6 +69,11 @@ bool Mlib::has_horizontal_detailmap(
     return false;
 }
 
-std::partial_ordering ColormapPtr::operator <=> (const ColormapPtr& other) const {
-    return *cm_ <=> *other.cm_;
+bool ColormapPtr::operator == (const ColormapPtr& other) const {
+    return *cm_ == *other.cm_;
+}
+
+std::size_t std::hash<Mlib::ColormapPtr>::operator() (const Mlib::ColormapPtr& k) const {
+    auto hasher = std::hash<Mlib::ColormapWithModifiers>();
+    return hasher(*k);
 }

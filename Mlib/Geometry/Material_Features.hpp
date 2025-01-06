@@ -1,6 +1,7 @@
 #pragma once
+#include <Mlib/Std_Hash.hpp>
 #include <cstddef>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace Mlib {
@@ -26,14 +27,14 @@ struct BlendMapTextureAndId {
 
 class ColormapPtr {
 public:
-    inline ColormapPtr(const ColormapWithModifiers* cm): cm_{cm} {}
+    inline ColormapPtr(const ColormapWithModifiers& cm): cm_{&cm} {}
     inline const ColormapWithModifiers& operator * () const {
         return *cm_;
     }
     inline const ColormapWithModifiers* operator -> () const {
         return cm_;
     }
-    std::partial_ordering operator <=> (const ColormapPtr& other) const;
+    bool operator == (const ColormapPtr& other) const;
 private:
     const ColormapWithModifiers* cm_;
 };
@@ -43,13 +44,19 @@ bool fragments_depend_on_distance(
     const FixedArray<float, 2>& fog_distances,
     const FixedArray<float, 4>& alpha_distances,
     const std::vector<BlendMapTextureAndId>& textures,
-	const std::map<ColormapPtr, size_t>& texture_ids_color);
+	const std::unordered_map<ColormapPtr, size_t>& texture_ids_color);
 bool fragments_depend_on_normal(const std::vector<BlendMapTexture>& textures_color);
 bool fragments_depend_on_normal(
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapPtr, size_t>& texture_ids);
+    const std::unordered_map<ColormapPtr, size_t>& texture_ids);
 bool has_horizontal_detailmap(
     const std::vector<BlendMapTextureAndId>& textures,
-    const std::map<ColormapPtr, size_t>& texture_ids);
+    const std::unordered_map<ColormapPtr, size_t>& texture_ids);
 
 }
+
+template <>
+struct std::hash<Mlib::ColormapPtr>
+{
+    std::size_t operator() (const Mlib::ColormapPtr& k) const;
+};
