@@ -25,6 +25,7 @@ public:
         TextInterpolationMode text_interpolation_mode,
         const IPixelRegion& text_evaluated_widget,
         const IPixelRegion& picture_evaluated_widget);
+    void preload() const;
 private:
     RenderLogicGallery& gallery_;
     TextResource& text_;

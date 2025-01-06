@@ -108,3 +108,7 @@ FocusFilter CheckPointsPacenotes::focus_filter() const {
 void CheckPointsPacenotes::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "CheckPointsPacenotes\n";
 }
+
+void CheckPointsPacenotes::preload() const {
+    display_.preload();
+}

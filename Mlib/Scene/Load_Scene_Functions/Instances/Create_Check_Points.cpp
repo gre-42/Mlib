@@ -173,6 +173,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
         render_logics.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
         physics_engine.advance_times_.add_advance_time({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        renderable_pace_notes.preload();
     }
     physics_engine.advance_times_.add_advance_time({ check_points, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

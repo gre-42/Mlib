@@ -58,6 +58,8 @@ public:
     virtual FocusFilter focus_filter() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    void preload() const;
+
 private:
     const ILayoutPixels& widget_distance_;
     std::unique_ptr<IWidget> text_widget_;

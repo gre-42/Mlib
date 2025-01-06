@@ -65,3 +65,12 @@ void PacenoteDisplay::render(
         text_.render();
     }
 }
+
+void PacenoteDisplay::preload() const {
+    for (const auto& p : pictures_left_) {
+        gallery_[p]->texture_is_loaded_and_try_preload();
+    }
+    for (const auto& p : pictures_right_) {
+        gallery_[p]->texture_is_loaded_and_try_preload();
+    }
+}
