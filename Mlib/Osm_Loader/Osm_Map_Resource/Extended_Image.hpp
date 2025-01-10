@@ -14,9 +14,10 @@ public:
         bool preserve_original = true);
     bool operator () (double r, double c, double& value) const;
     inline size_t original_shape(size_t i) const {
-        return extended_image_.shape(i);
+        return original_shape_(i);
     }
 private:
+    ArrayShape original_shape_;
     Array<double> extended_image_;
     double dextension_;
 };

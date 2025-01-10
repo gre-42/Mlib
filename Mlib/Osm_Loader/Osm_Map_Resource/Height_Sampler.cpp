@@ -10,7 +10,7 @@ HeightSampler::HeightSampler(
 {}
 
 bool HeightSampler::operator () (const FixedArray<CompressedScenePos, 2>& pos, CompressedScenePos& z) const {
-    FixedArray<double, 2> p = normalization_matrix_.transform(pos.casted<double>());
+    FixedArray<double, 2> p = normalization_matrix_.transform(funpack(pos));
 	double dz;
     bool res = image_(
 		(1 - p(1)) * double(image_.original_shape(0) - 1),

@@ -13,7 +13,8 @@ ExtendedImage::ExtendedImage(
     size_t box_filter_radius,
     size_t niterations,
     bool preserve_original)
-: dextension_{ integral_to_float<double>(extension) }
+    : original_shape_{ image.shape() }
+    , dextension_{ integral_to_float<double>(extension) }
 {
     if (extension == 0 && ((box_filter_radius == 0) || preserve_original)) {
         extended_image_ = image;

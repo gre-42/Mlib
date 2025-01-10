@@ -8,6 +8,7 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -57,7 +58,11 @@ public:
         if (el.type() != nlohmann::detail::value_t::array) {
             THROW_OR_ABORT("Not an array: \"" + std::string{ name } + '"');
         }
-        return Mlib::get_vector<nlohmann::json>(el, [this, &op](const nlohmann::json& c){return op(as_child(c));});
+        try {
+            return Mlib::get_vector<nlohmann::json>(el, [this, &op](const nlohmann::json& c){return op(as_child(c));});
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Could not interpret \"" + std::string{ name } + "\" as a child array: " + e.what());
+        }
     }
     JsonMacroArguments child(std::string_view name) const;
     std::optional<JsonMacroArguments> try_get_child(std::string_view name) const;
