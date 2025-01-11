@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Intersectables_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
@@ -88,4 +89,10 @@ void Mlib::collide_convex_meshes(
         PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT);
     collide(o0, o1, msh0, msh1, history, line_mask);
     collide(o1, o0, msh1, msh0, history, line_mask);
+    collide_intersectables_and_intersectables(
+        o0,
+        o1,
+        msh0,
+        msh1,
+        history);
 }

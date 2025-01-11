@@ -17,7 +17,7 @@ SweptSphereAabb::SweptSphereAabb(
     , radius_{ radius }
     , bounding_sphere_{ FixedArray<CompressedScenePos, 2, 3>{ min, max } }
 {
-    if (any(aabb_small_.size() < (CompressedScenePos)0.f)) {
+    if (any(aabb_small_.size() < (CompressedScenePos)1e-3f)) {
         THROW_OR_ABORT("SweptSphereAabb: AABB too small for the given radius");
     }
 }
@@ -145,7 +145,7 @@ bool SweptSphereAabb::intersects(
             closest_point.closest_point1.casted<ScenePos>(),
             (ScenePos)radius_ / (ScenePos)(sum_radius));
         normal = closest_point.normal;
-        overlap = closest_point.distance - (ScenePos)sum_radius;
+        overlap = (ScenePos)sum_radius - closest_point.distance;
         return true;
     } else {
         return false;
