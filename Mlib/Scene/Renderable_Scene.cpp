@@ -43,9 +43,6 @@ RenderableScene::RenderableScene(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
-#ifndef __ANDROID__
-    GLFWwindow& glfw_window,
-#endif
     const SceneConfigResource& config,
     size_t max_tracks,
     bool save_playback,

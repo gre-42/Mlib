@@ -12,13 +12,13 @@ RenderableScenes::~RenderableScenes() {
     {
         // Set the state to "STOPPING", so the "try_emplace" routine
         // refuses to create new scenes.
-        std::scoped_lock lock{mutex_};
+        std::scoped_lock lock{ mutex_ };
         state_ = RenderableScenesState::STOPPING;
     }
     {
         // Stop all scenes in arbitrary order and join them
         // (i.e. destroy their threads).
-        std::shared_lock lock{mutex_};
+        std::shared_lock lock{ mutex_ };
         for (auto& [_, rs] : renderable_scenes_) {
             rs.stop_and_join();
         }
@@ -30,7 +30,7 @@ RenderableScenes::~RenderableScenes() {
     {
         // Set the state to "SHUTTING_DOWN", so index-access to scenes
         // results in an exception.
-        std::scoped_lock lock{mutex_};
+        std::scoped_lock lock{ mutex_ };
         state_ = RenderableScenesState::SHUTTING_DOWN;
     }
     // Erase scenes in order of creation.
@@ -62,7 +62,7 @@ RenderableScenes::map_type::iterator RenderableScenes::unsafe_end() {
 }
 
 RenderableScene& RenderableScenes::operator[](const std::string& name) {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     if (shutting_down()) {
         verbose_abort("Renderable scenes are shutting down (0)");
     }
@@ -78,7 +78,7 @@ const RenderableScene& RenderableScenes::operator[](const std::string& name) con
 }
 
 RenderableScene* RenderableScenes::try_get(const std::string& name) {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     if (shutting_down()) {
         verbose_abort("Renderable scenes are shutting down (1)");
     }

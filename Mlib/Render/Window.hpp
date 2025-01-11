@@ -28,6 +28,8 @@ public:
         int swap_interval,
         int fullscreen_refresh_rate);
     ~Window();
+    bool close_requested();
+    void request_close();
     GLFWwindow& glfw_window() const;
     FixedArray<float, 2> dpi() const;
     void draw() const;

@@ -4,8 +4,6 @@
 #include <list>
 #include <string>
 
-struct GLFWwindow;
-
 namespace Mlib {
 
 class JsonMacroArguments;
@@ -43,9 +41,6 @@ struct LoadSceneJsonUserFunctionArgs {
     CursorStates& scroll_wheel_states;
     UiFocus& ui_focus;
     LayoutConstraints& layout_constraints;
-#ifndef __ANDROID__
-    GLFWwindow& glfw_window;
-#endif
     std::atomic_size_t& num_renderings;
     RealtimeDependentFps& render_set_fps;
     const std::string& script_filename;

@@ -94,13 +94,15 @@ Render::Render(
 }
 
 Render::~Render() {
-    assert_true(window_ != nullptr);
+    if (window_ == nullptr) {
+        verbose_abort("Render::~Render has null window");
+    }
     {
         // This internally calls "execute_render_gc"
         GlContextGuard gcg{ *window_ };
     }
     window_ = nullptr;
-    GLFW_WARN(glfwTerminate());
+    GLFW_ABORT(glfwTerminate());
 }
 
 void Render::print_hardware_info() const {
@@ -201,7 +203,7 @@ IWindow& Render::window() const {
 
 bool Render::window_should_close() const {
     assert_true(window_ != nullptr);
-    return GLFW_CHK(glfwWindowShouldClose(&window_->glfw_window()));
+    return window_->close_requested();
 }
 
 #endif

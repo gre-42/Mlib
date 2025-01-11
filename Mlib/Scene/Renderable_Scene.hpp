@@ -34,10 +34,6 @@
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
 
-#ifndef __ANDROID__
-struct GLFWwindow;
-#endif
-
 namespace Mlib {
 
 class SceneNodeResources;
@@ -100,9 +96,6 @@ public:
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
-#ifndef __ANDROID__
-        GLFWwindow& glfw_window,
-#endif
         const SceneConfigResource& config,
         size_t max_tracks,
         bool save_playback,

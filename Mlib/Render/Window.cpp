@@ -61,6 +61,15 @@ Window::~Window() {
     window_ = nullptr;
 }
 
+bool Window::close_requested() {
+    auto result = GLFW_ABORT(glfwWindowShouldClose(window_));
+    return (result == GLFW_TRUE);
+}
+
+void Window::request_close() {
+    GLFW_ABORT(glfwSetWindowShouldClose(window_, GLFW_TRUE));
+}
+
 GLFWwindow& Window::glfw_window() const {
     if (window_ == nullptr) {
         THROW_OR_ABORT("GLFW window not set");

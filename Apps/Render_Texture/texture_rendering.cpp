@@ -213,7 +213,7 @@ int main(int argc, char** argv)
 
         // render loop
         // -----------
-        while (!glfwWindowShouldClose(&window.glfw_window()))
+        while (!window.close_requested())
         {
             int width, height;
 

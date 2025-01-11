@@ -526,9 +526,6 @@ void LoadScene::operator()(
     CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
-#ifndef __ANDROID__
-    GLFWwindow& glfw_window,
-#endif
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
     RenderableScenes& renderable_scenes)
@@ -559,9 +556,6 @@ void LoadScene::operator()(
             .scroll_wheel_states = scroll_wheel_states,
             .ui_focus = ui_focus,
             .layout_constraints = layout_constraints,
-#ifndef __ANDROID__
-            .glfw_window = glfw_window,
-#endif
             .num_renderings = num_renderings,
             .render_set_fps = render_set_fps,
             .script_filename = script_filename,

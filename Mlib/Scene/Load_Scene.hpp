@@ -4,8 +4,6 @@
 #include <atomic>
 #include <map>
 
-struct GLFWwindow;
-
 namespace Mlib {
 
 class RenderLogicGallery;
@@ -46,9 +44,6 @@ public:
         CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
         LayoutConstraints& layout_constraints,
-#ifndef __ANDROID__
-        GLFWwindow& glfw_window,
-#endif
         RenderLogicGallery& gallery,
         AssetReferences& asset_references,
         RenderableScenes& renderable_scenes);

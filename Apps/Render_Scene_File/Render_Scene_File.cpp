@@ -215,7 +215,6 @@ JThread loader_thread(
                     scroll_wheel_states,
                     ui_focus,
                     layout_constraints,
-                    render.glfw_window(),
                     gallery,
                     asset_references,
                     renderable_scenes);

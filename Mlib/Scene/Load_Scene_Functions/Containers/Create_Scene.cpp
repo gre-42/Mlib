@@ -61,9 +61,6 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         args.cursor_states,
         args.scroll_wheel_states,
         args.ui_focus,
-#ifndef __ANDROID__
-        args.glfw_window,
-#endif
         SceneConfigResource{
             .fly = args.arguments.at<bool>(KnownArgs::fly),
             .rotate = args.arguments.at<bool>(KnownArgs::rotate),
