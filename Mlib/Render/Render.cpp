@@ -98,7 +98,7 @@ Render::~Render() {
         // This internally calls "execute_render_gc"
         GlContextGuard gcg{ *window_ };
     }
-    window_.reset();
+    window_ = nullptr;
     GLFW_WARN(glfwTerminate());
 }
 
@@ -114,7 +114,7 @@ void Render::print_hardware_info() const {
 
 Renderer Render::generate_renderer() const
 {
-    return Renderer{*window_, render_config_, input_config_, num_renderings_, set_fps_, frame_time_, render_results_};
+    return Renderer{ *window_, render_config_, input_config_, num_renderings_, set_fps_, frame_time_, render_results_ };
 }
 
 void Render::render(
@@ -189,17 +189,18 @@ void Render::render_node(
 }
 
 GLFWwindow& Render::glfw_window() const {
-    assert_true(window_.get());
+    assert_true(window_ != nullptr);
     return window_->glfw_window();
 }
 
 IWindow& Render::window() const {
-    assert_true(window_.get());
+    assert_true(window_ != nullptr);
     return *window_;
 }
 
 bool Render::window_should_close() const {
-    return (window_ != nullptr) && GLFW_CHK(glfwWindowShouldClose(&window_->glfw_window()));
+    assert_true(window_ != nullptr);
+    return GLFW_CHK(glfwWindowShouldClose(&window_->glfw_window()));
 }
 
 #endif

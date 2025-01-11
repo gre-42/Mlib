@@ -347,7 +347,7 @@ void AggregateArrayRenderer::render_aggregates(
         skidmarks,
         scene_graph_config,
         render_config,
-        {external_render_pass, InternalRenderPass::AGGREGATE},
+        { external_render_pass, InternalRenderPass::AGGREGATE },
         nullptr,    // animation_state
         &r_style);  // color_style
 }

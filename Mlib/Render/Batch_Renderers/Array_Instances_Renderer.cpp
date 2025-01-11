@@ -121,7 +121,7 @@ void ArrayInstancesRenderer::render_instances(
         render_config,
         { external_render_pass, InternalRenderPass::AGGREGATE },
         nullptr,    // animation_state
-        {});        // color_style
+        nullptr);   // color_style
 }
 
 bool ArrayInstancesRenderer::is_initialized() const {

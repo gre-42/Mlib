@@ -246,7 +246,6 @@ JThread loader_thread(
 }
 
 static void main_func(
-    const ParsedArgs& args,
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
@@ -255,12 +254,12 @@ static void main_func(
     const InputConfig& input_config,
     const std::function<void()>& event_callback)
 {
-    if (args.has_named("--no_render")) {
-        std::cout << "Exiting because of --no_render" << std::endl;
+    if (renderer == nullptr) {
+        linfo() << "Exiting because of --no_render";
     } else {
         handle_events(*renderer, &button_states, &cursor_states, &scroll_wheel_states, input_config, event_callback);
         if (args_num_renderings != SIZE_MAX) {
-            std::cout << "Exiting because of --num_renderings" << std::endl;
+            linfo() << "Exiting because of --num_renderings";
         }
         // if (!render2.window_should_close() && !unhandled_exceptions_occured()) {
         //     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
@@ -690,7 +689,6 @@ int main(int argc, char** argv) {
                     velocity_dt)};
                 try {
                     main_func(
-                        args,
                         button_states,
                         cursor_states,
                         scroll_wheel_states,

@@ -56,7 +56,9 @@ Window::Window(
 }
 
 Window::~Window() {
+    context_query_guard_ = nullptr;
     GLFW_WARN(glfwDestroyWindow(window_));
+    window_ = nullptr;
 }
 
 GLFWwindow& Window::glfw_window() const {
