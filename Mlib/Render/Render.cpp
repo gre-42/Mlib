@@ -94,6 +94,7 @@ Render::Render(
 }
 
 Render::~Render() {
+    assert_true(window_ != nullptr);
     {
         // This internally calls "execute_render_gc"
         GlContextGuard gcg{ *window_ };

@@ -46,7 +46,7 @@ Window::Window(
         monitor,
         share));
     if (window_ == nullptr) {
-        THROW_OR_ABORT("Could not initialize window");
+        THROW_OR_ABORT("Could not create window");
     }
     context_query_guard_ = std::make_unique<ContextQueryGuard>(*this);
     if (use_double_buffering) {
