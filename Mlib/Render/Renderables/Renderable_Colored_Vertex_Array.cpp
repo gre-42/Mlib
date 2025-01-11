@@ -342,6 +342,27 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> black_shadow_indices;
     std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> filtered_skidmarks;
     bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
+    FixedArray<float, 3> fog_emissive = fixed_zeros<float, 3>();
+    FixedArray<float, 3> emissive = fixed_zeros<float, 3>();
+    FixedArray<float, 3> ambient = fixed_zeros<float, 3>();
+    FixedArray<float, 3> diffuse = fixed_zeros<float, 3>();
+    FixedArray<float, 3> specular = fixed_zeros<float, 3>();
+    float specular_exponent = 0.f;
+    FixedArray<float, 3> fresnel_ambient = fixed_zeros<float, 3>();
+    if (!is_lightmap) {
+        emissive = color_style && !color_style->emissive.all_equal(-1.f)
+            ? color_style->emissive
+            : cva->material.shading.emissive;
+        ambient = color_style && !color_style->ambient.all_equal(-1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
+        diffuse = color_style && !color_style->diffuse.all_equal(-1.f) ? color_style->diffuse * cva->material.shading.diffuse : cva->material.shading.diffuse;
+        specular = color_style && !color_style->specular.all_equal(-1.f) ? color_style->specular * cva->material.shading.specular : cva->material.shading.specular;
+        specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
+        fresnel_ambient = color_style && !color_style->fresnel_ambient.all_equal(-1.f)
+            ? color_style->fresnel_ambient * cva->material.shading.fresnel.ambient
+            : cva->material.shading.fresnel.ambient;
+    } else {
+        emissive = 1.f;
+    }
     if (!is_lightmap) {
         filtered_lights.reserve(lights.size());
         light_noshadow_indices.reserve(lights.size());
@@ -363,10 +384,10 @@ void RenderableColoredVertexArray::render_cva(
                 if (!light_emits_colors) {
                     continue;
                 }
-                if (all(l.ambient * cva->material.shading.ambient == 0.f) &&
-                    all(l.diffuse * cva->material.shading.diffuse == 0.f) &&
-                    all(l.specular * cva->material.shading.specular == 0.f) &&
-                    all(l.fresnel_ambient * cva->material.shading.fresnel.ambient == 0.f))
+                if (all(l.ambient * ambient == 0.f) &&
+                    all(l.diffuse * diffuse == 0.f) &&
+                    all(l.specular * specular == 0.f) &&
+                    all(l.fresnel_ambient * fresnel_ambient == 0.f))
                 {
                     continue;
                 }
@@ -417,7 +438,7 @@ void RenderableColoredVertexArray::render_cva(
             black_shadow_indices.clear();
             lightmap_indices.clear();
         }
-        if (cva->material.contains_skidmarks && (!no_light_active || !cva->material.shading.emissive.all_equal(0.f))) {
+        if (cva->material.contains_skidmarks && (!no_light_active || any(emissive != 0.f))) {
             filtered_skidmarks = std::vector(skidmarks.begin(), skidmarks.end());
         }
     }
@@ -498,54 +519,38 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
-    FixedArray<float, 3> emissive = fixed_zeros<float, 3>();
-    FixedArray<float, 3> ambient = fixed_zeros<float, 3>();
-    FixedArray<float, 3> diffuse = fixed_zeros<float, 3>();
-    FixedArray<float, 3> specular = fixed_zeros<float, 3>();
-    float specular_exponent = 0.f;
     FixedArray<float, 3> fresnel_emissive = fixed_zeros<float, 3>();
     FresnelReflectance fresnel;
-    FixedArray<float, 3> fog_emissive = fixed_zeros<float, 3>();
-    if (!is_lightmap) {
-        emissive = color_style && !color_style->emissive.all_equal(-1.f)
-            ? color_style->emissive
-            : cva->material.shading.emissive;
-    } else {
-        emissive = 1.f;
-    }
+    bool any_light_has_ambient = false;
+    bool any_light_has_diffuse = false;
+    bool any_light_has_specular = false;
     if (!filtered_lights.empty() && !is_lightmap) {
-        bool any_light_has_ambient = false;
-        bool any_light_has_diffuse = false;
-        bool any_light_has_specular = false;
         FixedArray<float, 3> sum_light_fresnel_ambient = fixed_zeros<float, 3>();
         FixedArray<float, 3> sum_light_fog_ambient = fixed_zeros<float, 3>();
         for (const auto& [_, light] : filtered_lights) {
             if (light->emits_colors()) {
                 sum_light_fresnel_ambient += light->fresnel_ambient;
                 sum_light_fog_ambient += light->fog_ambient;
-                any_light_has_ambient |= any(light->ambient != 0.f);
-                any_light_has_diffuse |= any(light->diffuse != 0.f);
-                any_light_has_specular |= any(light->specular != 0.f);
+                any_light_has_ambient |= any((light->ambient * ambient) != 0.f);
+                any_light_has_diffuse |= any((light->diffuse * diffuse) != 0.f);
+                any_light_has_specular |= any((light->specular * specular) != 0.f);
             }
         }
-        if (any_light_has_ambient) {
-            ambient = color_style && !color_style->ambient.all_equal(-1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
-        }
-        if (any_light_has_diffuse) {
-            diffuse = color_style && !color_style->diffuse.all_equal(-1.f) ? color_style->diffuse * cva->material.shading.diffuse : cva->material.shading.diffuse;
-        }
-        if (any_light_has_specular) {
-            specular = color_style && !color_style->specular.all_equal(-1.f) ? color_style->specular * cva->material.shading.specular : cva->material.shading.specular;
-            specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
-        }
-        FixedArray<float, 3> fresnel_ambient = color_style && !color_style->fresnel_ambient.all_equal(-1.f)
-            ? color_style->fresnel_ambient * cva->material.shading.fresnel.ambient
-            : cva->material.shading.fresnel.ambient;
         fresnel_emissive = sum_light_fresnel_ambient * fresnel_ambient;
         if (any_light_has_specular || any(fresnel_emissive != 0.f)) {
             fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
         }
         fog_emissive = sum_light_fog_ambient * cva->material.shading.fog_ambient;
+    }
+    if (!any_light_has_ambient) {
+        ambient = 0.f;
+    }
+    if (!any_light_has_diffuse) {
+        diffuse = 0.f;
+    }
+    if (!any_light_has_specular) {
+        specular = 0.f;
+        specular_exponent = 0.f;
     }
     if ((fresnel.exponent != 0.f) && (std::abs(fresnel.max - fresnel.min) < 1e-12)) {
         THROW_OR_ABORT("Nonzero fresnel exponent requires nonzero fresnel range");
@@ -578,16 +583,9 @@ void RenderableColoredVertexArray::render_cva(
             blended_textures_alpha.clear();
         }
     }
-    tic.ntextures_color = texture_ids_color.size();
-    tic.ntextures_normal = texture_ids_normal.size();
-    tic.ntextures_alpha = texture_ids_alpha.size();
-    bool has_horizontal_detailmap = false;
-    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_color, texture_ids_color);
-    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_alpha, texture_ids_alpha);
-    tic.ntextures_filtered_lights = filtered_lights.size();
-    tic.ntextures_filtered_skidmarks = filtered_skidmarks.size();
-    std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
-    std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
+    bool fragments_depend_on_normal =
+        !is_lightmap &&
+        Mlib::fragments_depend_on_normal(blended_textures_color, texture_ids_color);
     const VariableAndHash<std::string>* reflection_map = nullptr;
     FixedArray<float, 3> reflectance{ 0.f };
     if (!is_lightmap &&
@@ -613,6 +611,25 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
+    if (!(cva->material.reorient_uv0 ||
+          any(diffuse != 0.f) ||
+          (specular_exponent != 0.f) ||
+          (fresnel.exponent != 0.f) ||
+          fragments_depend_on_normal ||
+          (any(reflectance != 0.f) && !cva->material.reflect_only_y)))
+    {
+        texture_ids_normal.clear();
+    }
+    tic.ntextures_color = texture_ids_color.size();
+    tic.ntextures_normal = texture_ids_normal.size();
+    tic.ntextures_alpha = texture_ids_alpha.size();
+    bool has_horizontal_detailmap = false;
+    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_color, texture_ids_color);
+    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_alpha, texture_ids_alpha);
+    tic.ntextures_filtered_lights = filtered_lights.size();
+    tic.ntextures_filtered_skidmarks = filtered_skidmarks.size();
+    std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
+    std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     if (is_lightmap || cva->material.textures_color.empty() || filtered_lights.empty() || all(specular == 0.f)) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures_color.size() == 1) {
@@ -649,9 +666,6 @@ void RenderableColoredVertexArray::render_cva(
     }
     bool fragments_depend_on_distance = Mlib::fragments_depend_on_distance(
         fog_distances, alpha_distances_common, blended_textures_color, texture_ids_color);
-    bool fragments_depend_on_normal =
-        !is_lightmap &&
-        (Mlib::fragments_depend_on_normal(blended_textures_color, texture_ids_color) || (tic.ntextures_interior != 0));
     if ((tic.ntextures_color == 0) && (tic.ntextures_dirt != 0)) {
         THROW_OR_ABORT(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +

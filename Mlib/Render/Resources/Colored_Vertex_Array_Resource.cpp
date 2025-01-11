@@ -336,7 +336,7 @@ static GenShaderText vertex_shader_text_gen{[](
         assert_true(attr_idc->has_alpha);
         sstr << "layout (location=" << (attr_ids->idx_alpha) << ") in float vAlpha;" << std::endl;
     }
-    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_normalmap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_interiormap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         assert_true(attr_idc->has_normal);
         sstr << "layout (location=" << attr_ids->idx_normal << ") in vec3 vNormal;" << std::endl;
     }
@@ -1387,116 +1387,114 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "    vec3 frag_brightness_emissive_ambient_diffuse = vec3(0.0, 0.0, 0.0);" << std::endl;
     sstr << "    vec3 frag_brightness_specular = vec3(0.0, 0.0, 0.0);" << std::endl;
-    if (!ambient.all_equal(0) || !diffuse.all_equal(0) || !specular.all_equal(0)) {
-        auto compute_light_color = [&sstr, &lights](size_t i){
-            if (i > lights.size()) {
-                THROW_OR_ABORT("Light index too large");
-            }
-            const auto& light = *lights[i].second;
-            if (!light.vp.has_value()) {
-                THROW_OR_ABORT("Light has no projection matrix");
-            }
-            if (VisibilityCheck{*light.vp}.orthographic()) {
-                sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01_light" << i << ").rgb;" << std::endl;
-            } else {
-                sstr << "            vec2 proj_coords11 = FragPosLightSpace" << i << ".xy / FragPosLightSpace" << i << ".w;" << std::endl;
-                sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01).rgb;" << std::endl;
-            }
-        };
-        if (has_lightmap_color && !black_shadow_indices.empty()) {
-            sstr << "    vec3 black_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
+    auto compute_light_color = [&sstr, &lights](size_t i){
+        if (i > lights.size()) {
+            THROW_OR_ABORT("Light index too large");
         }
-        assert_true(!(has_lightmap_color && has_lightmap_depth));
-        if (has_lightmap_color && !black_shadow_indices.empty()) {
+        const auto& light = *lights[i].second;
+        if (!light.vp.has_value()) {
+            THROW_OR_ABORT("Light has no projection matrix");
+        }
+        if (VisibilityCheck{*light.vp}.orthographic()) {
+            sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01_light" << i << ").rgb;" << std::endl;
+        } else {
+            sstr << "            vec2 proj_coords11 = FragPosLightSpace" << i << ".xy / FragPosLightSpace" << i << ".w;" << std::endl;
+            sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+            sstr << "            vec3 light_color = texture(texture_light_color" << i << ", proj_coords01).rgb;" << std::endl;
+        }
+    };
+    if (has_lightmap_color && !black_shadow_indices.empty()) {
+        sstr << "    vec3 black_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
+    }
+    assert_true(!(has_lightmap_color && has_lightmap_depth));
+    if (has_lightmap_color && !black_shadow_indices.empty()) {
+        sstr << "    {" << std::endl;
+        for (size_t i : black_shadow_indices) {
+            assert_true(i < lights.size());
+            sstr << "        {" << std::endl;
+            compute_light_color(i);
+            sstr << "            black_fac = min(black_fac, light_color);" << std::endl;
+            sstr << "        }" << std::endl;
+        }
+        sstr << "    }" << std::endl;
+    }
+    if (!skidmarks.empty()) {
+        sstr << "    vec3 skidmark_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
+        sstr << "    {" << std::endl;
+        for (const auto& [i, _]: enumerate(skidmarks)) {
+            sstr << "        {" << std::endl;
+            sstr << "            skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
+            sstr << "        }" << std::endl;
+        }
+        sstr << "    }" << std::endl;
+    }
+    if (has_lightmap_depth) {
+        for (size_t i : light_shadow_indices) {
+            assert_true(i < lights.size());
             sstr << "    {" << std::endl;
-            for (size_t i : black_shadow_indices) {
-                assert_true(i < lights.size());
-                sstr << "        {" << std::endl;
-                compute_light_color(i);
-                sstr << "            black_fac = min(black_fac, light_color);" << std::endl;
-                sstr << "        }" << std::endl;
+            sstr << "        vec3 proj_coords11 = FragPosLightSpace" << i << ".xyz / FragPosLightSpace" << i << ".w;" << std::endl;
+            sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+            sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth" << i << ", proj_coords01.xy).r) {" << std::endl;
+            if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
+                sstr << "            frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
             }
-            sstr << "    }" << std::endl;
-        }
-        if (!skidmarks.empty()) {
-            sstr << "    vec3 skidmark_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
-            sstr << "    {" << std::endl;
-            for (const auto& [i, _]: enumerate(skidmarks)) {
-                sstr << "        {" << std::endl;
-                sstr << "            skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
-                sstr << "        }" << std::endl;
+            if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
+                sstr << "            frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
             }
-            sstr << "    }" << std::endl;
-        }
-        if (has_lightmap_depth) {
-            for (size_t i : light_shadow_indices) {
-                assert_true(i < lights.size());
-                sstr << "    {" << std::endl;
-                sstr << "        vec3 proj_coords11 = FragPosLightSpace" << i << ".xyz / FragPosLightSpace" << i << ".w;" << std::endl;
-                sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth" << i << ", proj_coords01.xy).r) {" << std::endl;
-                if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
-                    sstr << "            frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
-                }
-                if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
-                    sstr << "            frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
-                }
-                if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
-                    if (specular_exponent == 0.f) {
-                        sstr << "            frag_brightness_specular += lightSpecular[" << i << "];" << std::endl;
-                    } else {
-                        sstr << "            frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
-                    }
-                }
-                sstr << "        }" << std::endl;
-                sstr << "    }" << std::endl;
-            }
-        }
-        if (!has_lightmap_depth) {
-            for (size_t i : light_shadow_indices) {
-                assert_true(i < lights.size());
-                sstr << "    {" << std::endl;
-                if (has_lightmap_color) {
-                    compute_light_color(i);
+            if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
+                if (specular_exponent == 0.f) {
+                    sstr << "            frag_brightness_specular += lightSpecular[" << i << "];" << std::endl;
                 } else {
-                    sstr << "        vec3 light_color = vec3(1.0, 1.0, 1.0);" << std::endl;
+                    sstr << "            frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
                 }
-                if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
-                    sstr << "        frag_brightness_emissive_ambient_diffuse += light_color * phong_ambient(" << i << ");" << std::endl;
-                }
-                if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
-                    sstr << "        frag_brightness_emissive_ambient_diffuse += light_color * phong_diffuse(" << i << ", norm);" << std::endl;
-                }
-                if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
-                    if (specular_exponent == 0.f) {
-                        sstr << "        frag_brightness_specular += light_color * lightSpecular[" << i << "];" << std::endl;
-                    } else {
-                        sstr << "        frag_brightness_specular += light_color * phong_specular(" << i << ", norm);" << std::endl;
-                    }
-                }
-                sstr << "    }" << std::endl;
             }
+            sstr << "        }" << std::endl;
+            sstr << "    }" << std::endl;
         }
-        if (!light_noshadow_indices.empty()) {
-            for (size_t i : light_noshadow_indices) {
-                assert_true(i < lights.size());
-                sstr << "    {" << std::endl;
-                if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
-                    sstr << "        frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
-                }
-                if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
-                    sstr << "        frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
-                }
-                if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
-                    if (specular_exponent == 0.f) {
-                        sstr << "        frag_brightness_specular += lightSpecular[" << i << "];" << std::endl;
-                    } else {
-                        sstr << "        frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
-                    }
-                }
-                sstr << "    }" << std::endl;
+    }
+    if (!has_lightmap_depth) {
+        for (size_t i : light_shadow_indices) {
+            assert_true(i < lights.size());
+            sstr << "    {" << std::endl;
+            if (has_lightmap_color) {
+                compute_light_color(i);
+            } else {
+                sstr << "        vec3 light_color = vec3(1.0, 1.0, 1.0);" << std::endl;
             }
+            if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
+                sstr << "        frag_brightness_emissive_ambient_diffuse += light_color * phong_ambient(" << i << ");" << std::endl;
+            }
+            if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
+                sstr << "        frag_brightness_emissive_ambient_diffuse += light_color * phong_diffuse(" << i << ", norm);" << std::endl;
+            }
+            if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
+                if (specular_exponent == 0.f) {
+                    sstr << "        frag_brightness_specular += light_color * lightSpecular[" << i << "];" << std::endl;
+                } else {
+                    sstr << "        frag_brightness_specular += light_color * phong_specular(" << i << ", norm);" << std::endl;
+                }
+            }
+            sstr << "    }" << std::endl;
+        }
+    }
+    if (!light_noshadow_indices.empty()) {
+        for (size_t i : light_noshadow_indices) {
+            assert_true(i < lights.size());
+            sstr << "    {" << std::endl;
+            if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
+                sstr << "        frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
+            }
+            if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
+                sstr << "        frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
+            }
+            if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
+                if (specular_exponent == 0.f) {
+                    sstr << "        frag_brightness_specular += lightSpecular[" << i << "];" << std::endl;
+                } else {
+                    sstr << "        frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
+                }
+            }
+            sstr << "    }" << std::endl;
         }
     }
     sstr << "    frag_brightness_specular *= vec3(" << specular(0) << ", " << specular(1) << ", " << specular(2) << ");" << std::endl;
@@ -1541,10 +1539,16 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    frag_brightness_emissive_ambient_diffuse *= black_fac;" << std::endl;
             sstr << "    frag_brightness_specular *= black_fac;" << std::endl;
         }
-        if (!skidmarks.empty()) {
-            sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac;" << std::endl;
-            sstr << "    frag_brightness_specular *= skidmark_fac;" << std::endl;
-        }
+    }
+    if (!emissive.all_equal(0.f)) {
+        sstr << "    frag_brightness_emissive_ambient_diffuse += vec3(" << emissive(0) << ", " << emissive(1) << ", " << emissive(2) << ");" << std::endl;
+    }
+    if (has_dynamic_emissive) {
+        sstr << "    frag_brightness_emissive_ambient_diffuse += dynamic_emissive;" << std::endl;
+    }
+    if (!skidmarks.empty()) {
+        sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac;" << std::endl;
+        sstr << "    frag_brightness_specular *= skidmark_fac;" << std::endl;
     }
     if ((ntextures_color == 0) && has_dirtmap) {
         THROW_OR_ABORT("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
@@ -1569,12 +1573,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color = texture_color_ambient_diffuse * vec4(color, 1.0);" << std::endl;
     } else {
         sstr << "    frag_color = vec4(color, alpha_fac);" << std::endl;
-    }
-    if (!emissive.all_equal(0.f)) {
-        sstr << "    frag_brightness_emissive_ambient_diffuse += vec3(" << emissive(0) << ", " << emissive(1) << ", " << emissive(2) << ");" << std::endl;
-    }
-    if (has_dynamic_emissive) {
-        sstr << "    frag_brightness_emissive_ambient_diffuse += dynamic_emissive;" << std::endl;
     }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
     if ((fresnel.exponent != 0.f) || has_specularmap) {
@@ -2006,11 +2004,13 @@ AttributeIndexCalculator ColoredVertexArrayResource::get_attribute_index_calcula
         .has_position = true,
         .has_color = true,
         .has_normal =
+            cva.material.reorient_uv0 ||
             !cva.material.shading.diffuse.all_equal(0) ||
             !cva.material.shading.specular.all_equal(0) ||
             (!cva.material.shading.reflectance.all_equal(0.f) && !cva.material.reflect_only_y && !cva.material.reflection_map->empty()) ||
             (cva.material.shading.fresnel.reflectance.exponent != 0.f) ||
-            fragments_depend_on_normal(cva.material.textures_color),
+            fragments_depend_on_normal(cva.material.textures_color) ||
+            !cva.material.interior_textures.empty(),
         .has_tangent = has_normalmap(cva.material.textures_color) || !cva.material.interior_textures.empty(),
         .has_instance_attrs = instances_ != nullptr,
         .has_rotation_quaternion = (instances_ != nullptr) && (cva.material.transformation_mode == TransformationMode::ALL),
