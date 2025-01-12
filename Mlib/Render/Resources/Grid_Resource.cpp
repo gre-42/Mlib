@@ -75,15 +75,16 @@ void GridResource::generate_triangle_rays(size_t npoints, const FixedArray<float
     return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
 }
 
-AggregateMode GridResource::aggregate_mode() const {
-    return rva_->aggregate_mode();
+AggregateMode GridResource::get_aggregate_mode() const {
+    return rva_->get_aggregate_mode();
 }
 
-std::list<SpawnPoint> GridResource::spawn_points() const {
+std::list<SpawnPoint> GridResource::get_spawn_points() const
+{
     return {};
 }
 
-std::map<JoinedWayPointSandbox, GridResource::PointsAndAdjacencyResource> GridResource::way_points() const
+WayPointSandboxes GridResource::get_way_points() const
 {
     return {};
 }

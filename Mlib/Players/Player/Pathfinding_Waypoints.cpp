@@ -14,6 +14,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -28,27 +29,21 @@ PathfindingWaypoints::PathfindingWaypoints(
 PathfindingWaypoints::~PathfindingWaypoints() = default;
 
 void PathfindingWaypoints::set_waypoint(size_t waypoint_id) {
-    player_.single_waypoint_.set_waypoint(waypoints_->points.at(waypoint_id), waypoint_id);
+    if (waypoints_ == nullptr) {
+        THROW_OR_ABORT("Waypoints not set");
+    }
+    player_.single_waypoint_.set_waypoint(waypoints_->way_points.points.at(waypoint_id), waypoint_id);
 }
 
-void PathfindingWaypoints::set_waypoints(const PointsAndAdjacencyResource& waypoints)
+void PathfindingWaypoints::set_waypoints(std::shared_ptr<const WayPointsAndBvh> waypoints)
 {
-    waypoints_bvh_ = std::make_unique<Bvh<CompressedScenePos, 3, size_t>>(
-        FixedArray<CompressedScenePos, 3>{
-            cfg_.bvh_max_size,
-            cfg_.bvh_max_size,
-            cfg_.bvh_max_size},
-        cfg_.bvh_levels);
-    waypoints_ = std::make_unique<PointsAndAdjacencyResource>(waypoints);
-    for (const auto& [i, p] : enumerate(waypoints.points)) {
-        waypoints_bvh_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(p.position), i);
-    }
+    waypoints_ = std::move(waypoints);
     // waypoints_bvh_->optimize_search_time(std::cout);
-    player_.single_waypoint_.notify_set_waypoints(waypoints_->points.size());
+    player_.single_waypoint_.notify_set_waypoints(waypoints_->way_points.points.size());
 }
 
 bool PathfindingWaypoints::has_waypoints() const {
-    return (waypoints_ != nullptr) && (!waypoints_->points.empty());
+    return (waypoints_ != nullptr) && (!waypoints_->way_points.points.empty());
 }
 
 void PathfindingWaypoints::select_next_waypoint() {
@@ -57,11 +52,11 @@ void PathfindingWaypoints::select_next_waypoint() {
         return;
     }
     if (getenv_default_bool("DRAW_ALL_WAYPOINTS", false)) {
-        if (waypoints_->points.size() > 30'000) {
-            lwarn() << "Refusing to add beacons, number of points is " << waypoints_->points.size() << " > 30,000";
+        if (waypoints_->way_points.points.size() > 30'000) {
+            lwarn() << "Refusing to add beacons, number of points is " << waypoints_->way_points.points.size() << " > 30,000";
         } else {
             auto pp = player_.rigid_body().rbp_.abs_position().casted<CompressedScenePos>();
-            for (const auto& p : waypoints_->points) {
+            for (const auto& p : waypoints_->way_points.points) {
                 if (sum(squared(p.position - pp)) > squared(200 * meters)) {
                     continue;
                 }
@@ -69,7 +64,7 @@ void PathfindingWaypoints::select_next_waypoint() {
             }
         }
     }
-    assert_true(waypoints_->adjacency.initialized());
+    assert_true(waypoints_->way_points.adjacency.initialized());
     if (!player_.has_scene_vehicle()) {
         return;
     }
@@ -80,13 +75,13 @@ void PathfindingWaypoints::select_next_waypoint() {
         float max_distance = 100;
         size_t closest_id = SIZE_MAX;
         ScenePos closest_distance2 = INFINITY;
-        waypoints_bvh_->visit(
+        waypoints_->bvh.visit(
             AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
                 pos3.casted<CompressedScenePos>(),
                 (CompressedScenePos)max_distance),
             [&](size_t i)
         {
-            const auto& rs = waypoints_->points.at(i).position;
+            const auto& rs = waypoints_->way_points.points.at(i).position;
             auto diff = funpack(rs) - pos3;
             auto dist2 = sum(squared(diff));
             if ((dist2 < 1e-6) ||
@@ -110,9 +105,9 @@ void PathfindingWaypoints::select_next_waypoint() {
             size_t best_id = SIZE_MAX;
             auto best_time = deflt;
             ScenePos best_distance = NAN;
-            for (const auto& [r, _] : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
+            for (const auto& [r, _] : waypoints_->way_points.adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
                 auto candidate_time = player_.single_waypoint_.last_visited(r);
-                auto candidate_distance = dot0d(funpack(waypoints_->points.at(r).position) - pos3, z3.casted<ScenePos>());
+                auto candidate_distance = dot0d(funpack(waypoints_->way_points.points.at(r).position) - pos3, z3.casted<ScenePos>());
                 auto r_is_better = [&]() {
                     if (best_id == SIZE_MAX) {
                         return true;

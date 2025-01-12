@@ -30,7 +30,7 @@ public:
     // ISceneNodeResource, Misc
     virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
-    virtual AggregateMode aggregate_mode() const override;
+    virtual AggregateMode get_aggregate_mode() const override;
 
     // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;

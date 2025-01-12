@@ -43,6 +43,7 @@ class SupplyDepots;
 class CollisionQuery;
 class AimAt;
 class Gun;
+class Navigate;
 enum class DrivingDirection;
 enum class JoinedWayPointSandbox;
 enum class WayPointLocation;
@@ -106,11 +107,10 @@ class Player final:
     Player(const Player&) = delete;
     Player& operator = (const Player&) = delete;
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>;
-
     Player(
         Scene& scene,
         SupplyDepots& supply_depots,
+        const Navigate& navigate,
         const PhysicsEngineConfig& cfg,
         CollisionQuery& collision_query,
         VehicleSpawners& vehicle_spawners,
@@ -144,7 +144,6 @@ public:
     const SceneVehicle& vehicle() const;
     void set_gun_node(DanglingRef<SceneNode> gun_node);
     void change_gun_node(DanglingPtr<SceneNode> gun_node);
-    void set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource>& way_points);
     bool has_way_points() const;
     void set_way_point_location_filter(JoinedWayPointSandbox filter);
     const std::string& team_name() const;
@@ -290,7 +289,7 @@ private:
     const Focuses& focuses_;
     ScenePos select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
-    std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points_;
+    const Navigate& navigate_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 

@@ -1965,7 +1965,7 @@ void ColoredVertexArrayResource::downsample(size_t factor) {
     }
 }
 
-AggregateMode ColoredVertexArrayResource::aggregate_mode() const {
+AggregateMode ColoredVertexArrayResource::get_aggregate_mode() const {
     std::set<AggregateMode> aggregate_modes;
     for (const auto& t : triangles_res_->scvas) {
         aggregate_modes.insert(t->material.aggregate_mode);

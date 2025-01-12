@@ -8,11 +8,9 @@
 
 using namespace Mlib;
 
-ISceneNodeResource::ISceneNodeResource()
-{}
+ISceneNodeResource::ISceneNodeResource() = default;
 
-ISceneNodeResource::~ISceneNodeResource()
-{}
+ISceneNodeResource::~ISceneNodeResource() = default;
 
 void ISceneNodeResource::preload(const RenderableResourceFilter& filter) const {
     THROW_OR_ABORT("preload not implemented");
@@ -92,16 +90,16 @@ void ISceneNodeResource::smoothen_edges(
     THROW_OR_ABORT("smoothen not implemented");
 }
 
-AggregateMode ISceneNodeResource::aggregate_mode() const {
+AggregateMode ISceneNodeResource::get_aggregate_mode() const {
     THROW_OR_ABORT("aggregate_mode not implemented");
 }
 
-std::list<SpawnPoint> ISceneNodeResource::spawn_points() const {
-    THROW_OR_ABORT("spawn_points not implemented");
+std::list<SpawnPoint> ISceneNodeResource::get_spawn_points() const {
+    THROW_OR_ABORT("get_spawn_points not implemented");
 }
 
-std::map<JoinedWayPointSandbox, ISceneNodeResource::PointsAndAdjacencyResource> ISceneNodeResource::way_points() const {
-    THROW_OR_ABORT("way_points not implemented");
+WayPointSandboxes ISceneNodeResource::get_way_points() const {
+    THROW_OR_ABORT("get_way_points not implemented");
 }
 
 void ISceneNodeResource::save_to_obj_file(

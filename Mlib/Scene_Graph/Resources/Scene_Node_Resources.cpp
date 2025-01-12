@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -182,7 +183,7 @@ void SceneNodeResources::instantiate_root_renderables(
     }
 }
 
-const TransformationMatrix<double, double, 3> SceneNodeResources::get_geographic_mapping(
+TransformationMatrix<double, double, 3> SceneNodeResources::get_geographic_mapping(
     const std::string& name,
     const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
 {
@@ -199,15 +200,10 @@ void SceneNodeResources::register_geographic_mapping(
     const std::string& instance_name,
     const TransformationMatrix<double, double, 3>& absolute_model_matrix)
 {
-    auto resource = get_resource(resource_name);
-    TransformationMatrix<double, double, 3> m = uninitialized;
-    try {
-        m = resource->get_geographic_mapping(absolute_model_matrix);
-    } catch (const std::runtime_error& e) {
-        throw std::runtime_error("register_geographic_mapping for resource \"" + resource_name + "\" failed: " + e.what());
-    }
+    auto m = get_geographic_mapping(resource_name, absolute_model_matrix);
+    auto im = TransformationMatrix<double, double, 3>{ inv_preconditioned_rc(m.affine()).value() };
     geographic_mappings_.add(instance_name, m);
-    geographic_mappings_.add(instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv_preconditioned_rc(m.affine()).value() });
+    geographic_mappings_.add(instance_name + ".inverse", im);
 }
 
 const TransformationMatrix<double, double, 3>* SceneNodeResources::get_geographic_mapping(const std::string& name) const
@@ -299,26 +295,27 @@ void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<
 AggregateMode SceneNodeResources::aggregate_mode(const std::string& name) const {
     auto resource = get_resource(name);
     try {
-        return resource->aggregate_mode();
+        return resource->get_aggregate_mode();
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("aggregate_mode for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
-std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) const {
+std::list<SpawnPoint> SceneNodeResources::get_spawn_points(const std::string& name) const
+{
     auto resource = get_resource(name);
     try {
-        return resource->spawn_points();
+        return resource->get_spawn_points();
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("spawn_points for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
-std::map<JoinedWayPointSandbox, SceneNodeResources::PointsAndAdjacencyResource> SceneNodeResources::way_points(const std::string& name) const
+WayPointSandboxes SceneNodeResources::get_way_points(const std::string& name) const
 {
     auto resource = get_resource(name);
     try {
-        return resource->way_points();
+        return resource->get_way_points();
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("way_points for resource \"" + name + "\" failed: " + e.what());
     }

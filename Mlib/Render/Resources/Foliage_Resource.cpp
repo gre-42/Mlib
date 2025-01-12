@@ -80,11 +80,11 @@ void FoliageResource::instantiate_root_renderables(const RootInstantiationOption
         RenderingDynamics::STATIC);
 }
 
-std::list<SpawnPoint> FoliageResource::spawn_points() const {
+std::list<SpawnPoint> FoliageResource::get_spawn_points() const {
     return {};
 }
 
-std::map<JoinedWayPointSandbox, FoliageResource::PointsAndAdjacencyResource> FoliageResource::way_points() const {
+WayPointSandboxes FoliageResource::get_way_points() const {
     return {};
 }
 

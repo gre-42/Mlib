@@ -25,9 +25,9 @@ public:
     virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const override;
-    virtual AggregateMode aggregate_mode() const override;
-    virtual std::list<SpawnPoint> spawn_points() const override;
-    virtual std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points() const override;
+    virtual AggregateMode get_aggregate_mode() const override;
+    virtual std::list<SpawnPoint> get_spawn_points() const override;
+    virtual WayPointSandboxes get_way_points() const override;
 
     // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Map/Threadsafe_String_Map.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
@@ -20,10 +21,6 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
-template <class TPoint>
-struct PointsAndAdjacency;
-template <class TPoint, class TFlags>
-struct PointAndFlags;
 template <class TData, size_t n>
 struct FixedScaledUnitVector;
 
@@ -45,8 +42,6 @@ template <class TPosition>
 struct InstanceInformation;
 
 enum class AggregateMode;
-enum class WayPointLocation;
-enum class JoinedWayPointSandbox;
 enum class PhysicsMaterial: uint32_t;
 enum class SmoothnessTarget;
 
@@ -54,8 +49,6 @@ class SceneNodeResources {
 public:
     SceneNodeResources();
     ~SceneNodeResources();
-
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>;
 
     // Preload
     void write_loaded_resources(const std::string& filename) const;
@@ -94,7 +87,7 @@ public:
         const std::string& resource_name,
         const std::string& instance_name,
         const TransformationMatrix<double, double, 3>& absolute_model_matrix);
-    const TransformationMatrix<double, double, 3> get_geographic_mapping(
+    TransformationMatrix<double, double, 3> get_geographic_mapping(
         const std::string& name,
         const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
     const TransformationMatrix<double, double, 3>* get_geographic_mapping(const std::string& name) const;
@@ -108,10 +101,11 @@ public:
         std::string name,
         const FixedArray<float, 3>& gravity);
     const FixedScaledUnitVector<float, 3>* get_gravity(const std::string& name) const;
+    // Navigation
+    std::list<SpawnPoint> get_spawn_points(const std::string& name) const;
+    WayPointSandboxes get_way_points(const std::string& name) const;
     // Other
     AggregateMode aggregate_mode(const std::string& name) const;
-    std::list<SpawnPoint> spawn_points(const std::string& name) const;
-    std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points(const std::string& name) const;
     void add_companion(
         const std::string& resource_name,
         const std::string& companion_resource_name,

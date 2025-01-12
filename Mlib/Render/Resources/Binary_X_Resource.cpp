@@ -115,9 +115,9 @@ void BinaryXResource::instantiate_child_renderable(const ChildInstantiationOptio
     options.scene_node->add_child(*options.instance_name + "_node90", std::move(node90));
 }
 
-AggregateMode BinaryXResource::aggregate_mode() const {
-    AggregateMode am_0 = rva_0_->aggregate_mode();
-    AggregateMode am_90 = rva_90_->aggregate_mode();
+AggregateMode BinaryXResource::get_aggregate_mode() const {
+    AggregateMode am_0 = rva_0_->get_aggregate_mode();
+    AggregateMode am_90 = rva_90_->get_aggregate_mode();
     if (am_0 != am_90) {
         THROW_OR_ABORT("Conflicting aggregate modes");
     }

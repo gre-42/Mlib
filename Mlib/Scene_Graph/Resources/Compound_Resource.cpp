@@ -9,6 +9,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Scene_Graph/Resources/Animated_Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -23,8 +24,8 @@ using namespace Mlib;
 CompoundResource::CompoundResource(
     SceneNodeResources& scene_node_resources,
     const std::vector<std::string>& resource_names)
-: scene_node_resources_{scene_node_resources},
-  resource_names_{resource_names}
+    : scene_node_resources_{ scene_node_resources }
+    , resource_names_{ resource_names }
 {}
 
 CompoundResource::~CompoundResource()
@@ -33,7 +34,7 @@ CompoundResource::~CompoundResource()
 void CompoundResource::preload(const RenderableResourceFilter& filter) const {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         scene_node_resources_.preload_single(resource_name, filter);
     }
 }
@@ -42,7 +43,7 @@ void CompoundResource::instantiate_child_renderable(const ChildInstantiationOpti
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (auto&& [i, resource_name] : enumerate(resource_names_)) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         scene_node_resources_.instantiate_child_renderable(
             resource_name,
             ChildInstantiationOptions{
@@ -57,7 +58,7 @@ void CompoundResource::instantiate_root_renderables(const RootInstantiationOptio
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (auto&& [i, resource_name] : enumerate(resource_names_)) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         scene_node_resources_.instantiate_root_renderables(
             resource_name,
             RootInstantiationOptions{
@@ -77,27 +78,27 @@ TransformationMatrix<double, double, 3> CompoundResource::get_geographic_mapping
         THROW_OR_ABORT("Compound resource is empty");
     }
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
-    RecursionGuard rg{recursion_counter};
+    RecursionGuard rg{ recursion_counter };
     return scene_node_resources_.get_geographic_mapping(resource_names_.front(), absolute_model_matrix);
 }
 
-std::list<SpawnPoint> CompoundResource::spawn_points() const {
+std::list<SpawnPoint> CompoundResource::get_spawn_points() const {
     std::list<SpawnPoint> result;
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
-        auto sp = scene_node_resources_.spawn_points(resource_name);
+        RecursionGuard rg{ recursion_counter };
+        auto sp = scene_node_resources_.get_spawn_points(resource_name);
         result.insert(result.end(), sp.begin(), sp.end());
     }
     return result;
 }
 
-std::map<JoinedWayPointSandbox, ISceneNodeResource::PointsAndAdjacencyResource> CompoundResource::way_points() const {
-    std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> result;
+WayPointSandboxes CompoundResource::get_way_points() const {
+    WayPointSandboxes result;
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
-        auto wpts = scene_node_resources_.way_points(resource_name);
+        RecursionGuard rg{ recursion_counter };
+        auto wpts = scene_node_resources_.get_way_points(resource_name);
         for (const auto& [l, a] : wpts) {
             auto& rl = result[l];
             if (!rl.adjacency.initialized()) {
@@ -115,7 +116,7 @@ void CompoundResource::save_to_obj_file(
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& [i, n] : enumerate(resource_names_)) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         scene_node_resources_.save_to_obj_file(
             n,
             prefix + "_" + std::to_string(i),
@@ -127,7 +128,7 @@ void CompoundResource::compute_animated_arrays_unsafe() {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         auto ar = scene_node_resources_.get_physics_arrays(resource_name);
         if (!ar->bone_indices.empty()) {
             THROW_OR_ABORT("Compound resource does not support bone indices");
@@ -160,7 +161,7 @@ std::list<std::shared_ptr<AnimatedColoredVertexArrays>> CompoundResource::get_re
     std::list<std::shared_ptr<AnimatedColoredVertexArrays>> result;
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         auto c = scene_node_resources_.get_rendering_arrays(resource_name);
         result.insert(result.end(), c.begin(), c.end());
     }
@@ -171,7 +172,7 @@ std::list<TypedMesh<std::shared_ptr<IIntersectable>>> CompoundResource::get_inte
     std::list<TypedMesh<std::shared_ptr<IIntersectable>>> result;
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         auto c = scene_node_resources_.get_intersectables(resource_name);
         result.insert(result.end(), c.begin(), c.end());
     }
@@ -185,7 +186,7 @@ void CompoundResource::modify_physics_material_tags(
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         scene_node_resources_.modify_physics_material_tags(resource_name, filter, add, remove);
     }
 }
@@ -193,7 +194,7 @@ void CompoundResource::modify_physics_material_tags(
 void CompoundResource::generate_instances() {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         scene_node_resources_.generate_instances(resource_name);
     }
 }
@@ -205,7 +206,7 @@ void CompoundResource::create_barrier_triangle_hitboxes(
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         scene_node_resources_.create_barrier_triangle_hitboxes(
             resource_name,
             depth,
@@ -223,7 +224,7 @@ std::shared_ptr<ISceneNodeResource> CompoundResource::generate_grind_lines(
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
-        RecursionGuard rg{recursion_counter};
+        RecursionGuard rg{ recursion_counter };
         auto gl = scene_node_resources_.get_physics_arrays(resource_name)->generate_grind_lines(
             edge_angle,
             averaged_normal_angle,

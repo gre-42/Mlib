@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
+#include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -38,9 +39,13 @@ CreatePlayer::CreatePlayer(RenderableScene& renderable_scene)
 
 void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    if (game_logic == nullptr) {
+        THROW_OR_ABORT("Game logic is null, cannot create player");
+    }
     auto player = std::make_unique<Player>(
         scene,
         supply_depots,
+        game_logic->navigate,
         scene_config.physics_engine_config,
         physics_engine.collision_query_,
         vehicle_spawners,

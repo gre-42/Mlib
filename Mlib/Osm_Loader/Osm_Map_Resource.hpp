@@ -60,9 +60,10 @@ public:
     // ISceneNodeResource, Misc
     virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const override;
-    virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
-    virtual std::list<SpawnPoint> spawn_points() const override;
-    virtual std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points() const override;
+    virtual TransformationMatrix<double, double, 3> get_geographic_mapping(
+        const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
+    virtual std::list<SpawnPoint> get_spawn_points() const override;
+    virtual WayPointSandboxes get_way_points() const override;
     virtual void print(std::ostream& ostr) const override;
 
     // ISceneNodeResource, Output
@@ -129,7 +130,7 @@ private:
     SceneNodeResources& scene_node_resources_;
     double scale_;
     std::list<SpawnPoint> spawn_points_;
-    std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points_;
+    WayPointSandboxes way_points_;
     TransformationMatrix<double, double, 2> normalization_matrix_;
     TransformationMatrix<double, double, 2> triangulation_normalization_matrix_;
 

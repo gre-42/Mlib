@@ -7,31 +7,24 @@
 
 namespace Mlib {
 
-template <typename TData, size_t... tshape>
-class FixedArray;
-template <class TPoint>
-struct PointsAndAdjacency;
-enum class WayPointLocation;
 class Player;
 struct PhysicsEngineConfig;
+struct WayPointsAndBvh;
 
 class PathfindingWaypoints {
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>;
-
     explicit PathfindingWaypoints(
         Player& player,
         const PhysicsEngineConfig& cfg);
     ~PathfindingWaypoints();
     bool has_waypoints() const;
     void select_next_waypoint();
-    void set_waypoints(const PointsAndAdjacencyResource& waypoints);
+    void set_waypoints(std::shared_ptr<const WayPointsAndBvh> waypoints);
 private:
     void set_waypoint(size_t waypoint_id);
     Player& player_;
     const PhysicsEngineConfig& cfg_;
-    std::unique_ptr<PointsAndAdjacencyResource> waypoints_;
-    std::unique_ptr<Bvh<CompressedScenePos, 3, size_t>> waypoints_bvh_;
+    std::shared_ptr<const WayPointsAndBvh> waypoints_;
 };
 
 }

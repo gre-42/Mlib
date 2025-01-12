@@ -43,7 +43,7 @@ enum class BvhDataRadiusType {
 template <class TPosition, size_t tndim, class TData>
 class GenericBvh {
 public:
-    explicit GenericBvh(const FixedArray<TPosition, tndim>& max_size, size_t level)
+    GenericBvh(const FixedArray<TPosition, tndim>& max_size, size_t level)
         : max_size_{max_size}
         , level_{level}
     {

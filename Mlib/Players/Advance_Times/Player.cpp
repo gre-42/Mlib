@@ -23,6 +23,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
+#include <Mlib/Players/Game_Logic/Navigate.hpp>
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
@@ -34,6 +35,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -82,6 +84,7 @@ AimAt& PlayerControlled::aim_at() {
 Player::Player(
     Scene& scene,
     SupplyDepots& supply_depots,
+    const Navigate& navigate,
     const PhysicsEngineConfig& cfg,
     CollisionQuery& collision_query,
     VehicleSpawners& vehicle_spawners,
@@ -125,6 +128,7 @@ Player::Player(
     , focuses_{ focuses }
     , select_opponent_hysteresis_factor_{ (ScenePos)0.9 }
     , destruction_observers_{ *this }
+    , navigate_{ navigate }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
 }
@@ -1132,22 +1136,19 @@ DestructionFunctions& Player::on_clear_vehicle() {
     return on_clear_vehicle_;
 }
 
-void Player::set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource>& way_points)
-{
-    std::scoped_lock lock{ mutex_ };
-    way_points_ = way_points;
-}
-
 bool Player::has_way_points() const {
     std::shared_lock lock{ mutex_ };
-    return !way_points_.empty();
+    return navigate_.has_way_points();
 }
 
 void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
     std::scoped_lock lock{ mutex_ };
+    if (!navigate_.has_way_points()) {
+        THROW_OR_ABORT("Player \"" + name_ + "\" has no waypoints");
+    }
     auto final_filter = joined_way_point_sandbox_ & filter;
     size_t nfound = 0;
-    for (const auto& [location, wp] : way_points_) {
+    for (const auto& [location, wp] : navigate_.way_points()) {
         if (!any(location & final_filter)) {
             continue;
         }
@@ -1157,7 +1158,7 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
                 joined_way_point_sandbox_to_string(final_filter) + '"');
         }
         pathfinding_waypoints_.set_waypoints(wp);
-        supply_depots_waypoints_.set_waypoints(wp);
+        supply_depots_waypoints_.set_waypoints(wp->way_points);
         ++nfound;
     }
     if (nfound == 0) {

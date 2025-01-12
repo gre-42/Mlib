@@ -19,7 +19,6 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(json);
-DECLARE_ARGUMENT(way_points);
 }
 
 namespace ToplevelKeys {
@@ -41,7 +40,6 @@ DECLARE_ARGUMENT(game_mode);
 DECLARE_ARGUMENT(unstuck_mode);
 DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(role);
-DECLARE_ARGUMENT(set_way_points);
 }
 
 namespace TeamKeys {
@@ -179,7 +177,6 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"INITIAL_BEHAVIOR", get(PlayerKeys::behavior).get<std::string>()},
                             {"ROLE", get(PlayerKeys::role).get<std::string>()},
                             {"UNSTUCK_MODE", get(PlayerKeys::unstuck_mode).get<std::string>()},
-                            {"IF_SET_WAY_POINTS", get(PlayerKeys::set_way_points)},
                             {"IF_HUMAN_STYLE", true},
                             {"IF_CAR_BODY_RENDERABLE_STYLE", true},
                             {"COLOR", color},
@@ -196,8 +193,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
                             {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
                             {"RESPAWN_COOLDOWN_TIME", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
-                            {"MUTE", false},
-                            {"TEAMS_WAY_POINTS_RESOURCE", args.arguments.at(KnownArgs::way_points)}
+                            {"MUTE", false}
                         }
                     }
                 };

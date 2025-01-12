@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class PlayerSetPathfindingWaypoints: public LoadSceneInstanceFunction {
+class SetWayPoints: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit PlayerSetPathfindingWaypoints(RenderableScene& renderable_scene);
+    explicit SetWayPoints(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

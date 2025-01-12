@@ -158,8 +158,8 @@ void HeterogeneousResource::modify_physics_material_tags(
     return ColoredVertexArrayResource(acvas).modify_physics_material_tags(add, remove, filter);
 }
 
-AggregateMode HeterogeneousResource::aggregate_mode() const {
-    return ColoredVertexArrayResource(acvas).aggregate_mode();
+AggregateMode HeterogeneousResource::get_aggregate_mode() const {
+    return ColoredVertexArrayResource(acvas).get_aggregate_mode();
 }
 
 void HeterogeneousResource::print(std::ostream& ostr) const {

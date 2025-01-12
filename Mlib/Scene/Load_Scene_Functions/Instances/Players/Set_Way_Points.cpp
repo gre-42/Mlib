@@ -1,4 +1,4 @@
-#include "Set_Spawn_Points.hpp"
+#include "Set_Way_Points.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -6,7 +6,6 @@
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
 using namespace Mlib;
 
@@ -16,25 +15,25 @@ DECLARE_ARGUMENT(location);
 DECLARE_ARGUMENT(resource);
 }
 
-const std::string SetSpawnPoints::key = "set_spawn_points";
+const std::string SetWayPoints::key = "set_way_points";
 
-LoadSceneJsonUserFunction SetSpawnPoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetWayPoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetSpawnPoints(args.renderable_scene()).execute(args);
+    SetWayPoints(args.renderable_scene()).execute(args);
 };
 
-SetSpawnPoints::SetSpawnPoints(RenderableScene& renderable_scene) 
+SetWayPoints::SetWayPoints(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetSpawnPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
+void SetWayPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     if (game_logic == nullptr) {
         THROW_OR_ABORT("Scene has no game logic");
     }
     auto location = transformation_matrix_from_json<float, ScenePos, 3>(
         args.arguments.at(KnownArgs::location));
-    auto spawn_points = scene_node_resources.get_spawn_points(args.arguments.at<std::string>(KnownArgs::resource));
-    game_logic->spawn.set_spawn_points(location, std::move(spawn_points));
+    auto way_points = scene_node_resources.get_way_points(args.arguments.at<std::string>(KnownArgs::resource));
+    game_logic->navigate.set_way_points(location, std::move(way_points));
 }

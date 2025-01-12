@@ -88,6 +88,6 @@ void SquareResource::generate_triangle_rays(size_t npoints, const FixedArray<flo
     return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
 }
 
-AggregateMode SquareResource::aggregate_mode() const {
-    return rva_->aggregate_mode();
+AggregateMode SquareResource::get_aggregate_mode() const {
+    return rva_->get_aggregate_mode();
 }

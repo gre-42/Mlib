@@ -1792,11 +1792,11 @@ TransformationMatrix<double, double, 3> OsmMapResource::get_geographic_mapping(
     return get_geographic_mapping_3d(normalization_matrix_, absolute_model_matrix, scale_);
 }
 
-std::list<SpawnPoint> OsmMapResource::spawn_points() const {
+std::list<SpawnPoint> OsmMapResource::get_spawn_points() const {
     return spawn_points_;
 }
 
-std::map<JoinedWayPointSandbox, ISceneNodeResource::PointsAndAdjacencyResource> OsmMapResource::way_points() const {
+WayPointSandboxes OsmMapResource::get_way_points() const {
     return way_points_;
 }
 
@@ -1812,7 +1812,7 @@ void OsmMapResource::print(std::ostream& ostr) const {
 
 static void plot_way_points_and_obstacles(
     const std::string& filename,
-    const ISceneNodeResource::PointsAndAdjacencyResource& pa,
+    const PointsAndAdjacencyResource& pa,
     const std::list<FixedArray<CompressedScenePos, 2>>& bounding_contour,
     const std::list<FixedArray<CompressedScenePos, 3>>& hitbox_positions)
 {

@@ -109,7 +109,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Select_Opponent.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Select_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Shoot.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Pathfinding_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Playback_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Vehicle_Control_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Waypoint.hpp>
@@ -118,6 +117,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Identifier_And_Reload_History.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Spawn_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Vip.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Way_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
@@ -376,7 +376,6 @@ LoadScene::LoadScene() {
     register_json_user_function(PlayerSetCanSelectBestWeapon::key, PlayerSetCanSelectBestWeapon::json_user_function);
     register_json_user_function(PlayerSetCanSelectOpponent::key, PlayerSetCanSelectOpponent::json_user_function);
     register_json_user_function(PlayerSetCanShoot::key, PlayerSetCanShoot::json_user_function);
-    register_json_user_function(PlayerSetPathfindingWaypoints::key, PlayerSetPathfindingWaypoints::json_user_function);
     register_json_user_function(PlayerSetPlaybackWaypoints::key, PlayerSetPlaybackWaypoints::json_user_function);
     register_json_user_function(PlayerSetVehicleControlParameters::key, PlayerSetVehicleControlParameters::json_user_function);
     register_json_user_function(PlayerSetWaypoint::key, PlayerSetWaypoint::json_user_function);
@@ -429,6 +428,7 @@ LoadScene::LoadScene() {
     register_json_user_function(ResetSupplyDepotCooldowns::key, ResetSupplyDepotCooldowns::json_user_function);
     register_json_user_function(SetSoftLight::key, SetSoftLight::json_user_function);
     register_json_user_function(SetSpawnPoints::key, SetSpawnPoints::json_user_function);
+    register_json_user_function(SetWayPoints::key, SetWayPoints::json_user_function);
     register_json_user_function(SetVip::key, SetVip::json_user_function);
     register_json_user_function(SpawnerSetNodes::key, SpawnerSetNodes::json_user_function);
     register_json_user_function(SpawnerSetPlayer::key, SpawnerSetPlayer::json_user_function);

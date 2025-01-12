@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
 #include <iosfwd>
@@ -41,8 +41,6 @@ enum class SmoothnessTarget;
 
 class ISceneNodeResource {
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>;
-
     ISceneNodeResource();
     virtual ~ISceneNodeResource();
     // Misc
@@ -50,14 +48,14 @@ public:
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const;
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
-    virtual AggregateMode aggregate_mode() const;
-    virtual std::list<SpawnPoint> spawn_points() const;
-    virtual std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points() const;
+    virtual AggregateMode get_aggregate_mode() const;
+    virtual std::list<SpawnPoint> get_spawn_points() const;
+    virtual WayPointSandboxes get_way_points() const;
 
     // Output
     virtual void save_to_obj_file(
         const std::string& prefix,
-        const TransformationMatrix<float, ScenePos, 3>* model_matrix) const;
+        const TransformationMatrix<SceneDir, ScenePos, 3>* model_matrix) const;
     virtual void print(std::ostream& ostr) const;
 
     // Animation

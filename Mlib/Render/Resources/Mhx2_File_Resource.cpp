@@ -34,8 +34,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mhx2FileResource::get_physics_array
     return rva_->get_physics_arrays();
 }
 
-AggregateMode Mhx2FileResource::aggregate_mode() const {
-    return rva_->aggregate_mode();
+AggregateMode Mhx2FileResource::get_aggregate_mode() const {
+    return rva_->get_aggregate_mode();
 }
 
 void Mhx2FileResource::set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) {
