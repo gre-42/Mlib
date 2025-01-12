@@ -10,11 +10,11 @@
 
 using namespace Mlib;
 
-VehicleSpawner::VehicleSpawner(Scene& scene, const std::string& team_name)
+VehicleSpawner::VehicleSpawner(Scene& scene, std::string team_name)
     : scene_{ scene }
     , player_{ nullptr }
     , on_player_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
-    , team_name_{ team_name }
+    , team_name_{ std::move(team_name) }
     , time_since_spawn_{ NAN }
     , time_since_deletion_{ 0.f }
     , spotted_by_vip_{ false }
