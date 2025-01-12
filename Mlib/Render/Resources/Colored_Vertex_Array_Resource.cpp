@@ -592,7 +592,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "    FragPos = vPosInstance;" << std::endl;
     }
-    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_interiormap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         sstr << "    Normal = vNormalInstance;" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
