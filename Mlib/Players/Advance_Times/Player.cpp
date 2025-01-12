@@ -1138,7 +1138,7 @@ DestructionFunctions& Player::on_clear_vehicle() {
 
 bool Player::has_way_points() const {
     std::shared_lock lock{ mutex_ };
-    return navigate_.has_way_points();
+    return navigate_.has_way_points() && any(joined_way_point_sandbox_);
 }
 
 void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
