@@ -647,8 +647,8 @@ int main(int argc, char** argv) {
                 RenderableScenes renderable_scenes;
 
                 std::atomic_bool load_scene_finished = false;
-                std::unique_ptr<JThread> render_future;
                 std::unique_ptr<Renderer> renderer;
+                std::unique_ptr<JThread> render_future;
                 if (!args.has_named("--no_render")) {
                     renderer = std::make_unique<Renderer>(render.generate_renderer());
                     render_future = render_thread(
