@@ -29,6 +29,10 @@ StopToken& JThread::get_stop_token() {
     return stop_token_;
 }
 
+const StopToken& JThread::get_stop_token() const {
+    return stop_token_;
+}
+
 void JThread::request_stop() {
     stop_token_.request_stop();
 }

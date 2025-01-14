@@ -19,6 +19,7 @@ public:
     ~JThread();
     void request_stop();
     StopToken& get_stop_token();
+    const StopToken& get_stop_token() const;
     bool joinable() const;
     void join();
 private:
