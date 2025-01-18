@@ -93,7 +93,7 @@ void SceneNodeResources::add_resource(
     const std::string& name,
     const std::shared_ptr<ISceneNodeResource>& resource)
 {
-    std::scoped_lock lock_guard{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     if (resource_loaders_.contains(name)) {
         THROW_OR_ABORT("Resource loader with name \"" + name + "\" already exists");
     }
@@ -104,7 +104,7 @@ void SceneNodeResources::add_resource_loader(
     const std::string& name,
     const std::function<std::shared_ptr<ISceneNodeResource>()>& resource)
 {
-    std::scoped_lock lock_guard{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     if (resources_.contains(name)) {
         THROW_OR_ABORT("Cannot add loader for name \"" + name + "\", because a resource with that name already exists");
     }
@@ -128,6 +128,7 @@ void SceneNodeResources::instantiate_child_renderable(
             resource->preload(options.renderable_resource_filter);
         }
         resource->instantiate_child_renderable(options);
+        std::shared_lock lock{ companion_mutex_ };
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
             for (const auto& [resource_name, filter] : cit->second) {
@@ -162,6 +163,7 @@ void SceneNodeResources::instantiate_root_renderables(
             resource->preload(options.renderable_resource_filter);
         }
         resource->instantiate_root_renderables(options);
+        std::shared_lock lock{ companion_mutex_ };
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
             for (const auto& [resource_name, filter] : cit->second) {
@@ -524,20 +526,25 @@ void SceneNodeResources::add_companion(
     const std::string& companion_resource_name,
     const RenderableResourceFilter& renderable_resource_filter)
 {
-    std::scoped_lock lock_guard{ mutex_ };
-    if (!resources_.contains(resource_name) &&
-        !resource_loaders_.contains(resource_name))
     {
-        THROW_OR_ABORT("Could not find resource or loader with name \"" + resource_name + '"');
+        std::shared_lock lock{ mutex_ };
+        if (!resources_.contains(resource_name) &&
+            !resource_loaders_.contains(resource_name))
+        {
+            THROW_OR_ABORT("Could not find resource or loader with name \"" + resource_name + '"');
+        }
     }
-    companions_[resource_name].push_back({ companion_resource_name, renderable_resource_filter });
+    {
+        std::scoped_lock lock{ companion_mutex_ };
+        companions_[resource_name].push_back({ companion_resource_name, renderable_resource_filter });
+    }
 }
 
 std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(const std::string& name) const {
     if (auto* r = resources_.try_get(name); r != nullptr) {
         return *r;
     }
-    std::scoped_lock lock_guard{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     if (auto* r = resources_.try_get(name); r != nullptr) {
         return *r;
     }
@@ -568,7 +575,7 @@ void SceneNodeResources::add_modifier(
     const std::string& resource_name,
     const std::function<void(ISceneNodeResource&)>& modifier)
 {
-    std::scoped_lock lock_guard{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     auto* r = resources_.try_get(resource_name);
     if (r != nullptr) {
         modifier(**r);

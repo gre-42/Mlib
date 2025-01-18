@@ -179,6 +179,7 @@ private:
     std::map<std::string, std::function<std::shared_ptr<ISceneNodeResource>()>> resource_loaders_;
     mutable std::map<std::string, std::list<std::function<void(ISceneNodeResource&)>>> modifiers_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex companion_mutex_;
 };
 
 }
