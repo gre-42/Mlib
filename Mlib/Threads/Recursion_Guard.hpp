@@ -7,6 +7,9 @@ public:
     RecursionCounter();
     void operator ++();
     void operator --();
+    inline operator unsigned int() const {
+        return recursion_counter_;
+    }
 private:
     unsigned int recursion_counter_;
 };

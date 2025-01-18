@@ -3,7 +3,6 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <iostream>
@@ -19,15 +18,15 @@ void MacroRecorder::operator()(
     const JsonMacroArguments* caller_args)
 {
     if (macro_line_executor.script_filename_.ends_with(".scn.json")) {
+        std::scoped_lock lock{ include_mutex_ };
         if (included_files_.contains(macro_line_executor.script_filename_)) {
             return;
         }
         if (!included_files_.insert(macro_line_executor.script_filename_).second) {
             verbose_abort("Internal error, could not insert included file");
         }
-        auto ifs_p = create_ifstream(macro_line_executor.script_filename_);
-        auto& ifs = *ifs_p;
-        if (ifs.fail()) {
+        auto ifs = create_ifstream(macro_line_executor.script_filename_);
+        if (ifs->fail()) {
             THROW_OR_ABORT("Could not open script file \"" + macro_line_executor.script_filename_ + '"');
         }
         if (macro_line_executor.verbose_) {
@@ -35,11 +34,11 @@ void MacroRecorder::operator()(
         }
         nlohmann::json j;
         try {
-            ifs >> j;
+            *ifs >> j;
         } catch (const nlohmann::json::exception& e) {
             throw std::runtime_error("Error loading file \"" + macro_line_executor.script_filename_ + "\": " + e.what());
         }
-        if (!ifs.eof() && ifs.fail()) {
+        if (!ifs->eof() && ifs->fail()) {
             THROW_OR_ABORT("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
         }
         macro_line_executor(j, caller_args, nullptr);

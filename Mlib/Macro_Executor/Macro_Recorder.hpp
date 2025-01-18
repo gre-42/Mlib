@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Json/Misc.hpp>
 #include <map>
+#include <mutex>
 #include <string>
 
 namespace Mlib {
@@ -25,6 +26,7 @@ public:
 private:
     std::map<std::string, JsonMacro> json_macros_;
     std::set<std::string> included_files_;
+    std::recursive_mutex include_mutex_;
 };
 
 }
