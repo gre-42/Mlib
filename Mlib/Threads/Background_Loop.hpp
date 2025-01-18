@@ -17,12 +17,14 @@ public:
     bool try_run(const std::function<void()>& task);
     bool done() const;
     void wait_until_done() const;
+    void wait_until_done_and_run(const std::function<void()>& task);
     void shutdown();
 private:
     size_t i_;
-    std::atomic_bool done_;
+    bool done_;
+    mutable std::mutex mutex_;
     std::condition_variable task_ready_cv_;
-    std::mutex mutex_;
+    mutable std::condition_variable done_cv_;
     JThread thread_;
     std::function<void()> task_;
 };

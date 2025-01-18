@@ -584,6 +584,7 @@ void Scene::render(
                         });
                     };
                     if (is_foreground_task || (is_background_task && !large_aggregate_renderer->is_initialized())) {
+                        large_aggregate_bg_worker_.wait_until_done();
                         large_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
                     } else if (is_background_task && large_aggregate_bg_worker_.done()) {
                         auto dist = sum(squared(large_aggregate_renderer->offset() - iv.t));
@@ -616,6 +617,7 @@ void Scene::render(
                         });
                     };
                     if (is_foreground_task || (is_background_task && !large_instances_renderer->is_initialized())) {
+                        large_instances_bg_worker_.wait_until_done();
                         large_instances_renderer_update_func(TaskLocation::FOREGROUND)();
                     } else if (is_background_task && large_instances_bg_worker_.done()) {
                         auto dist = sum(squared(large_instances_renderer->offset() - iv.t));
@@ -652,6 +654,7 @@ void Scene::render(
                         });
                     };
                     if (is_foreground_task || (is_background_task && !small_sorted_aggregate_renderer->is_initialized())) {
+                        small_aggregate_bg_worker_.wait_until_done();
                         small_sorted_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
                     } else if (is_background_task && small_aggregate_bg_worker_.done()) {
                         WorkerStatus status = small_aggregate_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
@@ -711,6 +714,7 @@ void Scene::render(
                             });
                         };
                         if (is_foreground_task || (is_background_task && !small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->is_initialized())) {
+                            small_instances_bg_worker_.wait_until_done();
                             small_instances_renderer_update_func(TaskLocation::FOREGROUND)();
                         } else if (is_background_task && small_instances_bg_worker_.done()) {
                             WorkerStatus status = small_instances_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
