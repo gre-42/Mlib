@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Regex/Default_Regex.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 
 namespace Mlib {
@@ -11,8 +12,8 @@ struct ColoredVertexArrayFilter {
     ~ColoredVertexArrayFilter();
     PhysicsMaterial included_tags = PhysicsMaterial::NONE;
     PhysicsMaterial excluded_tags = PhysicsMaterial::NONE;
-    DECLARE_REGEX(included_names, "");
-    DECLARE_REGEX(excluded_names, "$ ^");
+    Mlib::regex included_names = ALWAYS;
+    Mlib::regex excluded_names = NEVER;
     template <class TPos>
     bool matches(const ColoredVertexArray<TPos>& cva) const;
 };

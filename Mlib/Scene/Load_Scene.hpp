@@ -1,8 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
-#include <Mlib/Scene/Json_User_Function.hpp>
 #include <atomic>
-#include <map>
 
 namespace Mlib {
 
@@ -47,10 +45,8 @@ public:
         RenderLogicGallery& gallery,
         AssetReferences& asset_references,
         RenderableScenes& renderable_scenes);
-    void register_json_user_function(const std::string& key, LoadSceneJsonUserFunction function);
 private:
     MacroRecorder macro_file_executor_;
-    std::map<std::string, LoadSceneJsonUserFunction> json_user_functions_;
 };
 
 }

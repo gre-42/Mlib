@@ -7,7 +7,7 @@
 #define DECLARE_REGEX(name, value) decltype(boost::xpressive::sregex::compile(value)) name = boost::xpressive::sregex::compile(value)
 
 namespace Mlib {
-    typedef boost::xpressive::sregex regex;
+    using regex = boost::xpressive::sregex;
     namespace re = boost::xpressive;
     inline boost::xpressive::sregex compile_regex(const std::string& s) {
         return boost::xpressive::sregex::compile(s);
@@ -29,7 +29,7 @@ namespace Mlib {
 #define DECLARE_REGEX(name, value) std::regex name{value}
 
 namespace Mlib {
-    typedef std::regex regex;
+    using regex = std::regex;
     namespace re = std;
     inline std::regex compile_regex(const std::string& s) {
         return std::regex{ s };

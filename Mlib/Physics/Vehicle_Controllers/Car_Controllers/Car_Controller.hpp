@@ -15,8 +15,8 @@ class CarController: public RigidBodyVehicleController, public IControllable {
 public:
     CarController(
         RigidBodyVehicle& rb,
-        std::string front_engine,
-        std::string rear_engine,
+        VariableAndHash<std::string> front_engine,
+        VariableAndHash<std::string> rear_engine,
         std::vector<size_t> front_tire_ids,
         float max_tire_angle,
         Interp<float> tire_angle_interp,

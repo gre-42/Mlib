@@ -102,10 +102,10 @@ public:
         return elements_.size();
     }
 
-    auto begin() { return elements_.begin(); }
-    auto end() { return elements_.end(); }
-    auto begin() const { return elements_.begin(); }
-    auto end() const { return elements_.end(); }
+    decltype(auto) begin() { return elements_.begin(); }
+    decltype(auto) end() { return elements_.end(); }
+    decltype(auto) begin() const { return elements_.begin(); }
+    decltype(auto) end() const { return elements_.end(); }
 private:
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     TBaseMap elements_;

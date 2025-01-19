@@ -51,10 +51,10 @@ public:
         THROW_OR_ABORT("Could not find element or creator with name \"" + name + '"');
     }
 
-    auto begin() { return elements_.begin(); }
-    auto end() { return elements_.end(); }
-    auto begin() const { return elements_.begin(); }
-    auto end() const { return elements_.end(); }
+    decltype(auto) begin() { return elements_.begin(); }
+    decltype(auto) end() { return elements_.end(); }
+    decltype(auto) begin() const { return elements_.begin(); }
+    decltype(auto) end() const { return elements_.end(); }
 private:
     SafeAtomicRecursiveSharedMutex& mutex_;
     std::map<std::string, T> elements_;

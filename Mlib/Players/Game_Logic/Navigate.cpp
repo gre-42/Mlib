@@ -27,7 +27,7 @@ void Navigate::set_way_points(
     for (const auto& [l, wps] : way_points) {
         PointsAndAdjacencyResource t = wps;
         t.transform(absolute_model_matrix.casted<SceneDir, CompressedScenePos>());
-        auto& twps = w->add(l, std::make_shared<WayPointsAndBvh>(t));
+        w->add(l, std::make_shared<WayPointsAndBvh>(t));
     }
     way_points_ = std::move(w);
 }

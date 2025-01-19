@@ -55,8 +55,8 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto front_tire_ids = args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {});
     rb.vehicle_controller_ = std::make_unique<CarController>(
         rb,
-        args.arguments.at<std::string>(KnownArgs::front_engine),
-        args.arguments.at<std::string>(KnownArgs::rear_engine),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::front_engine),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rear_engine),
         front_tire_ids,
         front_tire_ids.empty()
             ? NAN

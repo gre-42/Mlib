@@ -54,11 +54,11 @@ CreateEngine::CreateEngine(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-float stow(float v) {
+static inline float stow(float v) {
     return v * rpm;
 }
 
-float stop(float v) {
+static inline float stop(float v) {
     return v * hp;
 }
 
@@ -97,7 +97,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
     }
 #endif
-    auto ep = rb.engines_.try_emplace(
+    rb.engines_.add(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         engine_power,
         args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
@@ -107,7 +107,4 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         av
 #endif
         );
-    if (!ep.second) {
-        THROW_OR_ABORT("Engine with name \"" + args.arguments.at<std::string>(KnownArgs::name) + "\" already exists");
-    }
 }

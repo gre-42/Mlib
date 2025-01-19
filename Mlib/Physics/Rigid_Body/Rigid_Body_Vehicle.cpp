@@ -55,6 +55,11 @@ RigidBodyVehicle::RigidBodyVehicle(
     const TransformationMatrix<double, double, 3>* geographic_mapping)
     : destruction_observers{ *this }
     , max_velocity_{ INFINITY }
+    , tires_{ "Tire", [](size_t i) { return std::to_string(i); } }
+    , rotors_{ "Rotor", [](size_t i) { return std::to_string(i); } }
+    , wings_{ "Wing", [](size_t i) { return std::to_string(i); } }
+    , engines_{ "Engine" }
+    , delta_engines_{ "Delta engine" }
     , flags_{ RigidBodyVehicleFlags::NONE }
 #ifdef COMPUTE_POWER
     , power_{ NAN }
@@ -544,11 +549,8 @@ void RigidBodyVehicle::set_wing_brake_angle(size_t id, float angle) {
 
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_z(size_t id) const {
     FixedArray<float, 3> z{ tires_z_ };
-    auto t = tires_.find(id);
-    if (t == tires_.end()) {
-        THROW_OR_ABORT("Could not find tire with ID \"" + std::to_string(id) + '"');
-    }
-    z = dot1d(rodrigues2(t->second.vertical_line, t->second.angle_y), z);
+    const auto& t = tires_.get(id);
+    z = dot1d(rodrigues2(t.vertical_line, t.angle_y), z);
     return dot1d(rbp_.rotation_, z);
 }
 
@@ -658,56 +660,41 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(
     VelocityClassification velocity_classification)
 {
     Tire& tire = get_tire(id);
-    auto e = engines_.find(tire.engine);
-    if (e == engines_.end()) {
-        THROW_OR_ABORT("No engine with name \"" + *tire.engine + "\" exists");
-    }
-    auto de = delta_engines_.end();
+    auto& e = engines_.get(tire.engine);
+    const RigidBodyDeltaEngine* de = nullptr;
     if (tire.delta_engine.has_value()) {
-        de = delta_engines_.find(*tire.delta_engine);
-        if (de == delta_engines_.end()) {
-            THROW_OR_ABORT("No delta engine with name \"" + **tire.delta_engine + "\" exists");
-        }
+        de = &delta_engines_.get(*tire.delta_engine);
     }
-    return e->second.consume_tire_power(
+    return e.consume_tire_power(
         id,
         &tire.angular_velocity,
-        de == delta_engines_.end()
+        de == nullptr
             ? EnginePowerDeltaIntent::zero()
-            : de->second.engine_power_delta_intent(),
+            : de->engine_power_delta_intent(),
         velocity_classification);
 }
 
 TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     Rotor& rotor = get_rotor(id);
-    auto e = engines_.find(rotor.engine);
-    if (e == engines_.end()) {
-        THROW_OR_ABORT("No engine with name \"" + *rotor.engine + "\" exists");
-    }
-    auto de = delta_engines_.end();
+    auto& e = engines_.get(rotor.engine);
+    const RigidBodyDeltaEngine* de = nullptr;
     if (rotor.delta_engine.has_value()) {
-        de = delta_engines_.find(*rotor.delta_engine);
-        if (de == delta_engines_.end()) {
-            THROW_OR_ABORT("No delta engine with name \"" + **rotor.delta_engine + "\" exists");
-        }
+        de = &delta_engines_.get(*rotor.delta_engine);
     }
-    return e->second.consume_rotor_power(
+    return e.consume_rotor_power(
         id,
         &rotor.angular_velocity,
-        de == delta_engines_.end()
+        de == nullptr
             ? EnginePowerDeltaIntent::zero()
-            : de->second.engine_power_delta_intent());
+            : de->engine_power_delta_intent());
 }
 
 void RigidBodyVehicle::set_surface_power(
     const VariableAndHash<std::string>& engine_name,
     const EnginePowerIntent& engine_power_intent)
 {
-    auto e = engines_.find(engine_name);
-    if (e == engines_.end()) {
-        THROW_OR_ABORT("No engine with name \"" + *engine_name + "\" exists");
-    }
-    e->second.set_surface_power(
+    auto& e = engines_.get(engine_name);
+    e.set_surface_power(
         EnginePowerIntent{
             .surface_power = revert_surface_power_state_.revert_surface_power_
                 ? -engine_power_intent.surface_power
@@ -719,11 +706,8 @@ void RigidBodyVehicle::set_delta_surface_power(
     const VariableAndHash<std::string>& delta_engine_name,
     const EnginePowerDeltaIntent& engine_power_delta_intent)
 {
-    auto e = delta_engines_.find(delta_engine_name);
-    if (e == delta_engines_.end()) {
-        THROW_OR_ABORT("No delta engine with name \"" + *delta_engine_name + "\" exists");
-    }
-    e->second.set_surface_power(
+    auto& e = delta_engines_.get(delta_engine_name);
+    e.set_surface_power(
         EnginePowerDeltaIntent{
             .delta_power = engine_power_delta_intent.delta_power,
             .delta_relaxation = engine_power_delta_intent.delta_relaxation});
@@ -745,11 +729,7 @@ const Tire& RigidBodyVehicle::get_tire(size_t id) const {
 }
 
 Tire& RigidBodyVehicle::get_tire(size_t id) {
-    auto it = tires_.find(id);
-    if (it == tires_.end()) {
-        THROW_OR_ABORT("No tire with ID " + std::to_string(id) + " exists");
-    }
-    return it->second;
+    return tires_.get(id);
 }
 
 const Rotor& RigidBodyVehicle::get_rotor(size_t id) const {
@@ -757,11 +737,7 @@ const Rotor& RigidBodyVehicle::get_rotor(size_t id) const {
 }
 
 Rotor& RigidBodyVehicle::get_rotor(size_t id) {
-    auto it = rotors_.find(id);
-    if (it == rotors_.end()) {
-        THROW_OR_ABORT("No rotor with ID " + std::to_string(id) + " exists");
-    }
-    return *it->second;
+    return *rotors_.get(id);
 }
 
 const Wing& RigidBodyVehicle::get_wing(size_t id) const {
@@ -769,11 +745,7 @@ const Wing& RigidBodyVehicle::get_wing(size_t id) const {
 }
 
 Wing& RigidBodyVehicle::get_wing(size_t id) {
-    auto it = wings_.find(id);
-    if (it == wings_.end()) {
-        THROW_OR_ABORT("No wing with ID " + std::to_string(id) + " exists");
-    }
-    return *it->second;
+    return *wings_.get(id);
 }
 
 float RigidBodyVehicle::energy() const {
@@ -928,10 +900,7 @@ StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<VariableAn
     if (name[0] != engines_name) {
         THROW_OR_ABORT("Unknown child status writer");
     }
-    if (!engines_.contains(name[1])) {
-        THROW_OR_ABORT("Could not find engine with name \"" + *name[1] + '"');
-    }
-    return engines_.at(name[1]);
+    return engines_.get(name[1]);
 }
 
 bool RigidBodyVehicle::node_shall_be_hidden(

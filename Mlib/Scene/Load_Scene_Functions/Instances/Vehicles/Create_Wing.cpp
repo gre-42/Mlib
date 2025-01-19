@@ -86,7 +86,7 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.contains(KnownArgs::brake_angle_node)) {
         brake_angle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::brake_angle_node), DP_LOC).ptr();
     }
-    auto tp = vehicle_rb.wings_.insert({
+    vehicle_rb.wings_.add(
         wing_id,
         std::make_unique<Wing>(
             angle_of_attack_node,
@@ -99,8 +99,5 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
             DRAG_COEFF_UNITS * args.arguments.at<UFixedArray<float, 3>>(KnownArgs::drag),
             0.f,
             0.f,
-            std::move(trail_source))});
-    if (!tp.second) {
-        THROW_OR_ABORT("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
-    }
+            std::move(trail_source)));
 }

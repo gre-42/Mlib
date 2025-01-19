@@ -413,7 +413,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
         force_min,
         force_max);
 
-    const auto& tire = rb_.tires_.at(tire_id_);
+    const auto& tire = rb_.tires_.get(tire_id_);
 
     float tv_len = rb_.get_tire_angular_velocity(tire_id_) * rb_.get_tire_radius(tire_id_);
     FixedArray<float, 3> tv = n3_ * tv_len;

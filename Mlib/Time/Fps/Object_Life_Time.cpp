@@ -8,5 +8,9 @@ ObjectLifeTime::ObjectLifeTime(std::function<void(std::chrono::steady_clock::dur
 {}
 
 ObjectLifeTime::~ObjectLifeTime() {
-	func_(std::chrono::steady_clock::now() - start_time_);
+	func_(elapsed());
+}
+
+std::chrono::steady_clock::duration ObjectLifeTime::elapsed() const {
+	return std::chrono::steady_clock::now() - start_time_;
 }

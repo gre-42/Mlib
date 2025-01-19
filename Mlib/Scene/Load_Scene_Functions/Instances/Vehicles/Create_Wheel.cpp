@@ -92,7 +92,7 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
         // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
         // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
         // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-        auto tp = rb.tires_.try_emplace(
+        rb.tires_.add(
             tire_id,
             engine,
             std::move(delta_engine),
@@ -111,8 +111,5 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<UFixedArray<float, 3>>(KnownArgs::vehicle_mount_0),
             args.arguments.at<UFixedArray<float, 3>>(KnownArgs::vehicle_mount_1),
             radius);
-        if (!tp.second) {
-            THROW_OR_ABORT("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
-        }
     }
 }

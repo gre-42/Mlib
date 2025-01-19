@@ -14,6 +14,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -113,3 +114,9 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     }
 }
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(CreateRigidStatics::key, CreateRigidStatics::json_user_function);
+    }
+} obj;

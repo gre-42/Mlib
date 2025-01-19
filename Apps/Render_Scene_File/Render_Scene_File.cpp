@@ -34,6 +34,7 @@
 #include <Mlib/Render/Ui/Static_Renderable_Hider.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
+#include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>

@@ -21,6 +21,14 @@ public:
         , key_to_string_{ std::move(key_to_string) } {
     }
 
+    bool empty() const {
+        return elements_.empty();
+    }
+
+    size_t size() const {
+        return elements_.size();
+    }
+
     iterator begin() {
         return elements_.begin();
     }

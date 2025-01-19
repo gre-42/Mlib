@@ -2,6 +2,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
+#include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
@@ -275,11 +277,11 @@ public:
     float power_;
     float energy_old_;
 #endif
-    std::unordered_map<size_t, Tire> tires_;
-    std::unordered_map<size_t, std::unique_ptr<Rotor>> rotors_;
-    std::unordered_map<size_t, std::unique_ptr<Wing>> wings_;
-    std::unordered_map<VariableAndHash<std::string>, RigidBodyEngine> engines_;
-    std::unordered_map<VariableAndHash<std::string>, RigidBodyDeltaEngine> delta_engines_;
+    VerboseUnorderedMap<size_t, Tire> tires_;
+    VerboseUnorderedMap<size_t, std::unique_ptr<Rotor>> rotors_;
+    VerboseUnorderedMap<size_t, std::unique_ptr<Wing>> wings_;
+    StringWithHashUnorderedMap<RigidBodyEngine> engines_;
+    StringWithHashUnorderedMap<RigidBodyDeltaEngine> delta_engines_;
     RigidBodyVehicleFlags flags_;
     Inventory inventory_;
     // std::map<size_t, bool> tire_sliding_;

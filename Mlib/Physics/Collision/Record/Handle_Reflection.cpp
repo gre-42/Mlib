@@ -121,7 +121,7 @@ static void handle_extended_reflection(
             {
                 jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
             }
-            auto& tire = c.o1.tires_.at(c.tire_id1);
+            auto& tire = c.o1.tires_.get(c.tire_id1);
             if (tire.rbp != nullptr) {
                 float fsap = -(float)dot0d(tire.rbp->abs_position() - intersection_point, c.l1->ray.direction.casted<ScenePos>()) - tire.radius;
                 if (fsap < 0.f) {

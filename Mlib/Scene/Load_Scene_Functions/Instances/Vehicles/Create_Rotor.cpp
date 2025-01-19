@@ -112,7 +112,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
         pid_params(1),
         pid_params(2),
         pid_child.has_value() ? pid_child->at<float>(PidArgs::alpha) : NAN};
-    auto tp = vehicle_rb.rotors_.insert({
+    vehicle_rb.rotors_.add(
         rotor_id,
         std::make_unique<Rotor>(
             engine,
@@ -135,8 +135,5 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
             vehicle_mount_1,
             blades_mount_0,
             blades_mount_1,
-            (blades_rb == nullptr) ? nullptr : &blades_rb->rbp_)});
-    if (!tp.second) {
-        THROW_OR_ABORT("Rotor with ID \"" + std::to_string(rotor_id) + "\" already exists");
-    }
+            (blades_rb == nullptr) ? nullptr : &blades_rb->rbp_));
 }

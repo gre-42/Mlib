@@ -13,6 +13,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -53,10 +54,11 @@ CreateRigidCuboid::CreateRigidCuboid(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args) const
 {
-    auto rb = rigid_cuboid(
+    (*this)(CreateRigidCuboidArgs{
         global_object_pool,
+        args.arguments.at<std::string>(KnownArgs::node),
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::asset_id),
         args.arguments.at<float>(KnownArgs::mass) * kg,
@@ -65,26 +67,41 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::I_rotation, fixed_zeros<float, 3>()) * degrees,
-        scene_node_resources.get_geographic_mapping("world"));
-    if (args.arguments.contains(KnownArgs::flags)) {
-        rb->flags_ = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags));
-    }
-    if (args.arguments.contains(KnownArgs::waypoint_dy)) {
-        rb->set_waypoint_ofs(CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::waypoint_dy) * meters));
-    }
+        scene_node_resources.get_geographic_mapping("world"),
+        rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags, "none")),
+        CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::waypoint_dy, 0.f) * meters),
+        args.arguments.try_at_non_null(KnownArgs::hitboxes),
+        PhysicsResourceFilter{
+            .cva_filter = {
+                .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+                .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}},
+        collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode))});
+}
+
+RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& args) const
+{
+    auto rb = rigid_cuboid(
+        global_object_pool,
+        args.name,
+        args.asset_id,
+        args.mass,
+        args.size,
+        args.com,
+        args.v,
+        args.w,
+        args.I_rotation,
+        args.geographic_coordinates);
+    rb->flags_ = args.flags;
+    rb->set_waypoint_ofs(args.waypoint_dy);
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> d_hitboxes;
     std::list<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables;
-    if (auto hbs = args.arguments.try_at_non_null(KnownArgs::hitboxes); hbs.has_value()) {
+    if (args.hitboxes.has_value()) {
         {
-            PhysicsResourceFilter filter{
-                .cva_filter = {
-                    .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}};
-            auto acva = scene_node_resources.get_physics_arrays(*hbs);
-            auto insert = [&filter](auto& hitboxes, const auto& cvas){
+            auto acva = scene_node_resources.get_physics_arrays(*args.hitboxes);
+            auto insert = [&args](auto& hitboxes, const auto& cvas){
                 for (const auto& cva: cvas) {
-                    if (filter.matches(*cva)) {
+                    if (args.hitbox_filter.matches(*cva)) {
                         hitboxes.push_back(cva);
                     }
                 }
@@ -92,11 +109,11 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
             insert(s_hitboxes, acva->scvas);
             insert(d_hitboxes, acva->dcvas);
         }
-        intersectables = scene_node_resources.get_intersectables(*hbs);
+        intersectables = scene_node_resources.get_intersectables(*args.hitboxes);
     }
-    CollidableMode collidable_mode = collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode));
     // 1. Set movable, which updates the transformation-matrix.
-    AbsoluteMovableSetter ams{ scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC), std::move(rb) };
+    auto& result = *rb;
+    AbsoluteMovableSetter ams{ scene.get_node(args.node, DP_LOC), std::move(rb) };
     // 2. Add to physics engine.
     try {
         physics_engine.rigid_bodies_.add_rigid_body(
@@ -104,7 +121,7 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
             s_hitboxes,
             d_hitboxes,
             intersectables,
-            collidable_mode);
+            args.collidable_mode);
         ams.absolute_movable.release();
     } catch (const TriangleException<double>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
@@ -122,4 +139,11 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     }
+    return result;
 }
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(CreateRigidCuboid::key, CreateRigidCuboid::json_user_function);
+    }
+} obj;

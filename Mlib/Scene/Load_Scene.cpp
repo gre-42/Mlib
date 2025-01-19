@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_Ac_Loader.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
@@ -79,7 +80,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Append_Externals_Deleter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Renderable_Instance.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Copy_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Externals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Internals.hpp>
@@ -121,7 +121,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Clear_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Root_Renderable_Instances.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Background_Color.hpp>
@@ -157,9 +156,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Delta_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Statics.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rotor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Trailer_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Weapon_Cycle.hpp>
@@ -247,264 +243,258 @@
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 
 using namespace Mlib;
-
-void LoadScene::register_json_user_function(const std::string& key, LoadSceneJsonUserFunction function) {
-    if (!json_user_functions_.try_emplace(key, function).second) {
-        THROW_OR_ABORT("Multiple functions with name \"" + key + "\" exist");
-    }
-}
+using namespace LoadSceneFuncs;
 
 LoadScene::LoadScene() {
-    // Containers
-    register_json_user_function(AddAcLoader::key, AddAcLoader::json_user_function);
-    register_json_user_function(AddToGallery::key, AddToGallery::json_user_function);
-    register_json_user_function(CreateScene::key, CreateScene::json_user_function);
-    register_json_user_function(LoadAssetManifests::key, LoadAssetManifests::json_user_function);
-    register_json_user_function(LoadReplacementParameters::key, LoadReplacementParameters::json_user_function);
-    register_json_user_function(UpdateGallery::key, UpdateGallery::json_user_function);
+    static struct RegisterJsonUserFunctions {
+        RegisterJsonUserFunctions() {
+            // Containers
+            register_json_user_function(AddAcLoader::key, AddAcLoader::json_user_function);
+            register_json_user_function(AddToGallery::key, AddToGallery::json_user_function);
+            register_json_user_function(CreateScene::key, CreateScene::json_user_function);
+            register_json_user_function(LoadAssetManifests::key, LoadAssetManifests::json_user_function);
+            register_json_user_function(LoadReplacementParameters::key, LoadReplacementParameters::json_user_function);
+            register_json_user_function(UpdateGallery::key, UpdateGallery::json_user_function);
 
-    // Render
-    register_json_user_function(SetRenderFps::key, SetRenderFps::json_user_function);
-    register_json_user_function(SetTexturesLazy::key, SetTexturesLazy::json_user_function);
+            // Render
+            register_json_user_function(SetRenderFps::key, SetRenderFps::json_user_function);
+            register_json_user_function(SetTexturesLazy::key, SetTexturesLazy::json_user_function);
 
-    // Instances
-    register_json_user_function(AddColorStyle::key, AddColorStyle::json_user_function);
-    register_json_user_function(AddToInventory::key, AddToInventory::json_user_function);
-    register_json_user_function(AddWeaponToInventory::key, AddWeaponToInventory::json_user_function);
-    register_json_user_function(AppendExternalsDeleter::key, AppendExternalsDeleter::json_user_function);
-    register_json_user_function(ConnectTrailer::key, ConnectTrailer::json_user_function);
-    register_json_user_function(BurnIn::key, BurnIn::json_user_function);
-    register_json_user_function(ClearNode::key, ClearNode::json_user_function);
-    register_json_user_function(ClearParameters::key, ClearParameters::json_user_function);
-    register_json_user_function(ClearRenderableInstance::key, ClearRenderableInstance::json_user_function);
-    register_json_user_function(ClearSkybox::key, ClearSkybox::json_user_function);
-    register_json_user_function(ConsoleLog::key, ConsoleLog::json_user_function);
-    register_json_user_function(Controls::key, Controls::json_user_function);
-    register_json_user_function(Countdown::key, Countdown::json_user_function);
-    register_json_user_function(CreateAbsKeyBinding::key, CreateAbsKeyBinding::json_user_function);
-    register_json_user_function(CreateAvatarControllerIdleBinding::key, CreateAvatarControllerIdleBinding::json_user_function);
-    register_json_user_function(CreateAvatarControllerKeyBinding::key, CreateAvatarControllerKeyBinding::json_user_function);
-    register_json_user_function(CreateCameraKeyBinding::key, CreateCameraKeyBinding::json_user_function);
-    register_json_user_function(CreateCarControllerIdleBinding::key, CreateCarControllerIdleBinding::json_user_function);
-    register_json_user_function(CreateCarControllerKeyBinding::key, CreateCarControllerKeyBinding::json_user_function);
-    register_json_user_function(CreateCarController::key, CreateCarController::json_user_function);
-    register_json_user_function(CreateCheckPoints::key, CreateCheckPoints::json_user_function);
-    register_json_user_function(CreateSkidmark::key, CreateSkidmark::json_user_function);
-    register_json_user_function(CreateChildNode::key, CreateChildNode::json_user_function);
-    register_json_user_function(CreateAimAt::key, CreateAimAt::json_user_function);
-    register_json_user_function(CreateCrash::key, CreateCrash::json_user_function);
-    register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);
-    register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
-    register_json_user_function(CreateDestinationReachedAi::key, CreateDestinationReachedAi::json_user_function);
-    register_json_user_function(CreateDriverKeyBinding::key, CreateDriverKeyBinding::json_user_function);
-    register_json_user_function(CreateEngine::key, CreateEngine::json_user_function);
-    register_json_user_function(CreateExternals::key, CreateExternals::json_user_function);
-    register_json_user_function(CreateGunKeyBinding::key, CreateGunKeyBinding::json_user_function);
-    register_json_user_function(CreateGun::key, CreateGun::json_user_function);
-    register_json_user_function(CreateMissileAi::key, CreateMissileAi::json_user_function);
-    register_json_user_function(CreateHeliController::key, CreateHeliController::json_user_function);
-    register_json_user_function(CreateHudOpponentTracker::key, CreateHudOpponentTracker::json_user_function);
-    register_json_user_function(CreateHudOpponentZoom::key, CreateHudOpponentZoom::json_user_function);
-    register_json_user_function(CreateHudTargetPointLogic::key, CreateHudTargetPointLogic::json_user_function);
-    register_json_user_function(CreateAvatarAsAvatarController::key, CreateAvatarAsAvatarController::json_user_function);
-    register_json_user_function(CreateAvatarAsCarController::key, CreateAvatarAsCarController::json_user_function);
-    register_json_user_function(CreateInternals::key, CreateInternals::json_user_function);
-    register_json_user_function(CreateKeepOffsetFromCamera::key, CreateKeepOffsetFromCamera::json_user_function);
-    register_json_user_function(CreateKeepOffsetFromMovable::key, CreateKeepOffsetFromMovable::json_user_function);
-    register_json_user_function(CreateLightOnlyShadow::key, CreateLightOnlyShadow::json_user_function);
-    register_json_user_function(CreateLightWithoutShadow::key, CreateLightWithoutShadow::json_user_function);
-    register_json_user_function(CreateLightWithShadow::key, CreateLightWithShadow::json_user_function);
-    register_json_user_function(CreateMissileController::key, CreateMissileController::json_user_function);
-    register_json_user_function(CreateParameterSetterLogic::key, CreateParameterSetterLogic::json_user_function);
-    register_json_user_function(CreatePlaneAsCarController::key, CreatePlaneAsCarController::json_user_function);
-    register_json_user_function(CreatePlaneControllerIdleBinding::key, CreatePlaneControllerIdleBinding::json_user_function);
-    register_json_user_function(CreatePlaneControllerKeyBinding::key, CreatePlaneControllerKeyBinding::json_user_function);
-    register_json_user_function(CreatePlaneController::key, CreatePlaneController::json_user_function);
-    register_json_user_function(CreatePlayer::key, CreatePlayer::json_user_function);
-    register_json_user_function(CreateRelativeTransformer::key, CreateRelativeTransformer::json_user_function);
-    register_json_user_function(CreateCopyRotation::key, CreateCopyRotation::json_user_function);
-    register_json_user_function(CreatePrintCameraNodeInfoKeyBinding::key, CreatePrintCameraNodeInfoKeyBinding::json_user_function);
-    register_json_user_function(CreateRelKeyBinding::key, CreateRelKeyBinding::json_user_function);
-    register_json_user_function(CreateRelKeyBindingTripod::key, CreateRelKeyBindingTripod::json_user_function);
-    register_json_user_function(CreateRigidCuboid::key, CreateRigidCuboid::json_user_function);
-    register_json_user_function(CreateRigidDisk::key, CreateRigidDisk::json_user_function);
-    register_json_user_function(CreateRigidStatics::key, CreateRigidStatics::json_user_function);
-    register_json_user_function(CreateRotor::key, CreateRotor::json_user_function);
-    register_json_user_function(CreateSceneSelectorLogic::key, CreateSceneSelectorLogic::json_user_function);
-    register_json_user_function(CreateSpawner::key, CreateSpawner::json_user_function);
-    register_json_user_function(CreateTabMenuLogic::key, CreateTabMenuLogic::json_user_function);
-    register_json_user_function(CreateTankController::key, CreateTankController::json_user_function);
-    register_json_user_function(CreateTrailerNode::key, CreateTrailerNode::json_user_function);
-    register_json_user_function(CreateVisualGlobalLog::key, CreateVisualGlobalLog::json_user_function);
-    register_json_user_function(CreateVisualNodeStatus::key, CreateVisualNodeStatus::json_user_function);
-    register_json_user_function(CreateVisualPlayerBulletCount::key, CreateVisualPlayerBulletCount::json_user_function);
-    register_json_user_function(CreateVisualPlayerStatus::key, CreateVisualPlayerStatus::json_user_function);
-    register_json_user_function(CreateWeaponCycleKeyBinding::key, CreateWeaponCycleKeyBinding::json_user_function);
-    register_json_user_function(CreateWeaponCycle::key, CreateWeaponCycle::json_user_function);
-    register_json_user_function(CreateWheel::key, CreateWheel::json_user_function);
-    register_json_user_function(CreateWing::key, CreateWing::json_user_function);
-    register_json_user_function(CreateYawPitchLookatNodes::key, CreateYawPitchLookatNodes::json_user_function);
-    register_json_user_function(DefineWinnerConditionals::key, DefineWinnerConditionals::json_user_function);
-    register_json_user_function(MoveNodeToBvh::key, MoveNodeToBvh::json_user_function);
-    register_json_user_function(TryDeleteNode::key, TryDeleteNode::json_user_function);
-    register_json_user_function(TryDeleteRootNode::key, TryDeleteRootNode::json_user_function);
-    register_json_user_function(DeleteNode::key, DeleteNode::json_user_function);
-    register_json_user_function(DeleteRootNodes::key, DeleteRootNodes::json_user_function);
-    register_json_user_function(DeleteRootNode::key, DeleteRootNode::json_user_function);
-    register_json_user_function(ExecuteInPhysicsThread::key, ExecuteInPhysicsThread::json_user_function);
-    register_json_user_function(FillPixelRegionWithTexture::key, FillPixelRegionWithTexture::json_user_function);
-    register_json_user_function(FocusedText::key, FocusedText::json_user_function);
-    register_json_user_function(FollowNode::key, FollowNode::json_user_function);
-    register_json_user_function(Minimap::key, Minimap::json_user_function);
-    register_json_user_function(Instantiate::key, Instantiate::json_user_function);
-    register_json_user_function(InstantiateGameLogic::key, InstantiateGameLogic::json_user_function);
-    register_json_user_function(InstantiateGrass::key, InstantiateGrass::json_user_function);
-    register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);
-    register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
-    register_json_user_function(LookAtNode::key, LookAtNode::json_user_function);
-    register_json_user_function(CreateDriveOrWalkAi::key, CreateDriveOrWalkAi::json_user_function);
-    register_json_user_function(CreateVehicleFollowerAi::key, CreateVehicleFollowerAi::json_user_function);
-    register_json_user_function(CreateOrthoCamera::key, CreateOrthoCamera::json_user_function);
-    register_json_user_function(CreatePerspectiveCamera::key, CreatePerspectiveCamera::json_user_function);
-    register_json_user_function(PlaybackTrack::key, PlaybackTrack::json_user_function);
-    register_json_user_function(PlaybackWinnerTrack::key, PlaybackWinnerTrack::json_user_function);
-    register_json_user_function(PlayerChangeAimingGun::key, PlayerChangeAimingGun::json_user_function);
-    register_json_user_function(PlayerSetAimingGun::key, PlayerSetAimingGun::json_user_function);
-    register_json_user_function(PlayerSetBehavior::key, PlayerSetBehavior::json_user_function);
-    register_json_user_function(PlayerSetCanAim::key, PlayerSetCanAim::json_user_function);
-    register_json_user_function(PlayerSetCanDrive::key, PlayerSetCanDrive::json_user_function);
-    register_json_user_function(PlayerSetCanSelectBestWeapon::key, PlayerSetCanSelectBestWeapon::json_user_function);
-    register_json_user_function(PlayerSetCanSelectOpponent::key, PlayerSetCanSelectOpponent::json_user_function);
-    register_json_user_function(PlayerSetCanShoot::key, PlayerSetCanShoot::json_user_function);
-    register_json_user_function(PlayerSetPlaybackWaypoints::key, PlayerSetPlaybackWaypoints::json_user_function);
-    register_json_user_function(PlayerSetVehicleControlParameters::key, PlayerSetVehicleControlParameters::json_user_function);
-    register_json_user_function(PlayerSetWaypoint::key, PlayerSetWaypoint::json_user_function);
-    register_json_user_function(PlayersStats::key, PlayersStats::json_user_function);
-    register_json_user_function(Preload::key, Preload::json_user_function);
-    register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);
-    register_json_user_function(RecordTrack::key, RecordTrack::json_user_function);
-    register_json_user_function(RegisterGeographicMapping::key, RegisterGeographicMapping::json_user_function);
-    register_json_user_function(RegisterGravity::key, RegisterGravity::json_user_function);
-    register_json_user_function(RegisterWind::key, RegisterWind::json_user_function);
-    register_json_user_function(RootRenderableInstances::key, RootRenderableInstances::json_user_function);
-    register_json_user_function(ChildRenderableInstance::key, ChildRenderableInstance::json_user_function);
-    register_json_user_function(RespawnAllPlayers::key, RespawnAllPlayers::json_user_function);
-    register_json_user_function(RootNodeInstance::key, RootNodeInstance::json_user_function);
-    register_json_user_function(SaveToObjFile::key, SaveToObjFile::json_user_function);
-    register_json_user_function(SceneToPixelRegion::key, SceneToPixelRegion::json_user_function);
-    register_json_user_function(SceneToTexture::key, SceneToTexture::json_user_function);
-    register_json_user_function(ThreadTop::key, ThreadTop::json_user_function);
-    register_json_user_function(SetAnimationState::key, SetAnimationState::json_user_function);
-    register_json_user_function(SetAvatarStyleUpdater::key, SetAvatarStyleUpdater::json_user_function);
-    register_json_user_function(SetBackgroundColor::key, SetBackgroundColor::json_user_function);
-    register_json_user_function(FitCanvasToRenderables::key, FitCanvasToRenderables::json_user_function);
-    register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
-    register_json_user_function(SetAvailableRoles::key, SetAvailableRoles::json_user_function);
-    register_json_user_function(SetBevelBoxSurfaceNormal::key, SetBevelBoxSurfaceNormal::json_user_function);
-    register_json_user_function(SetCapsuleSurfaceNormal::key, SetCapsuleSurfaceNormal::json_user_function);
-    register_json_user_function(SetSlidingNormalModifier::key, SetSlidingNormalModifier::json_user_function);
-    register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
-    register_json_user_function(SetCamera::key, SetCamera::json_user_function);
-    register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);
-    register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
-    register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
-    register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
-    register_json_user_function(SetJumpDv::key, SetJumpDv::json_user_function);
-    register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
-    register_json_user_function(SetNodeHider::key, SetNodeHider::json_user_function);
-    register_json_user_function(SetNodeRotation::key, SetNodeRotation::json_user_function);
-    register_json_user_function(SetPreferredCarSpawner::key, SetPreferredCarSpawner::json_user_function);
-    register_json_user_function(SetRaceIdentifierAndReloadHistory::key, SetRaceIdentifierAndReloadHistory::json_user_function);
-    register_json_user_function(SetRigidBodyAlignToSurfaceRelaxation::key, SetRigidBodyAlignToSurfaceRelaxation::json_user_function);
-    register_json_user_function(SetRigidBodyDoorDistance::key, SetRigidBodyDoorDistance::json_user_function);
-    register_json_user_function(SetRigidBodyGrindPoint::key, SetRigidBodyGrindPoint::json_user_function);
-    register_json_user_function(SetRigidBodyRevertSurfacePowerThreshold::key, SetRigidBodyRevertSurfacePowerThreshold::json_user_function);
-    register_json_user_function(SetRigidBodyTarget::key, SetRigidBodyTarget::json_user_function);
-    register_json_user_function(SetSkaterStyleUpdater::key, SetSkaterStyleUpdater::json_user_function);
-    register_json_user_function(SetTrailerHitchPositions::key, SetTrailerHitchPositions::json_user_function);
-    register_json_user_function(SetWaypointOfs::key, SetWaypointOfs::json_user_function);
-    register_json_user_function(SetSkybox::key, SetSkybox::json_user_function);
-    register_json_user_function(SetObjective::key, SetObjective::json_user_function);
-    register_json_user_function(ResetSupplyDepotCooldowns::key, ResetSupplyDepotCooldowns::json_user_function);
-    register_json_user_function(SetSoftLight::key, SetSoftLight::json_user_function);
-    register_json_user_function(SetSpawnPoints::key, SetSpawnPoints::json_user_function);
-    register_json_user_function(SetWayPoints::key, SetWayPoints::json_user_function);
-    register_json_user_function(SetVip::key, SetVip::json_user_function);
-    register_json_user_function(SpawnerSetNodes::key, SpawnerSetNodes::json_user_function);
-    register_json_user_function(SpawnerSetPlayer::key, SpawnerSetPlayer::json_user_function);
-    register_json_user_function(SpawnerSetRespawnCooldownTime::key, SpawnerSetRespawnCooldownTime::json_user_function);
-    register_json_user_function(StartRace::key, StartRace::json_user_function);
-    register_json_user_function(TeamSetWaypoint::key, TeamSetWaypoint::json_user_function);
-    register_json_user_function(UiBackground::key, UiBackground::json_user_function);
-    register_json_user_function(UiExhibit::key, UiExhibit::json_user_function);
-    register_json_user_function(VisualNodeStatus3rd::key, VisualNodeStatus3rd::json_user_function);
-    register_json_user_function(YplnUpdateBulletProperties::key, YplnUpdateBulletProperties::json_user_function);
-    register_json_user_function(LoadKeyConfigurations::key, LoadKeyConfigurations::json_user_function);
+            // Instances
+            register_json_user_function(AddColorStyle::key, AddColorStyle::json_user_function);
+            register_json_user_function(AddToInventory::key, AddToInventory::json_user_function);
+            register_json_user_function(AddWeaponToInventory::key, AddWeaponToInventory::json_user_function);
+            register_json_user_function(AppendExternalsDeleter::key, AppendExternalsDeleter::json_user_function);
+            register_json_user_function(ConnectTrailer::key, ConnectTrailer::json_user_function);
+            register_json_user_function(BurnIn::key, BurnIn::json_user_function);
+            register_json_user_function(ClearNode::key, ClearNode::json_user_function);
+            register_json_user_function(ClearParameters::key, ClearParameters::json_user_function);
+            register_json_user_function(ClearRenderableInstance::key, ClearRenderableInstance::json_user_function);
+            register_json_user_function(ClearSkybox::key, ClearSkybox::json_user_function);
+            register_json_user_function(ConsoleLog::key, ConsoleLog::json_user_function);
+            register_json_user_function(Controls::key, Controls::json_user_function);
+            register_json_user_function(Countdown::key, Countdown::json_user_function);
+            register_json_user_function(CreateAbsKeyBinding::key, CreateAbsKeyBinding::json_user_function);
+            register_json_user_function(CreateAvatarControllerIdleBinding::key, CreateAvatarControllerIdleBinding::json_user_function);
+            register_json_user_function(CreateAvatarControllerKeyBinding::key, CreateAvatarControllerKeyBinding::json_user_function);
+            register_json_user_function(CreateCameraKeyBinding::key, CreateCameraKeyBinding::json_user_function);
+            register_json_user_function(CreateCarControllerIdleBinding::key, CreateCarControllerIdleBinding::json_user_function);
+            register_json_user_function(CreateCarControllerKeyBinding::key, CreateCarControllerKeyBinding::json_user_function);
+            register_json_user_function(CreateCarController::key, CreateCarController::json_user_function);
+            register_json_user_function(CreateCheckPoints::key, CreateCheckPoints::json_user_function);
+            register_json_user_function(CreateSkidmark::key, CreateSkidmark::json_user_function);
+            register_json_user_function(CreateAimAt::key, CreateAimAt::json_user_function);
+            register_json_user_function(CreateCrash::key, CreateCrash::json_user_function);
+            register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);
+            register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
+            register_json_user_function(CreateDestinationReachedAi::key, CreateDestinationReachedAi::json_user_function);
+            register_json_user_function(CreateDriverKeyBinding::key, CreateDriverKeyBinding::json_user_function);
+            register_json_user_function(CreateEngine::key, CreateEngine::json_user_function);
+            register_json_user_function(CreateExternals::key, CreateExternals::json_user_function);
+            register_json_user_function(CreateGunKeyBinding::key, CreateGunKeyBinding::json_user_function);
+            register_json_user_function(CreateGun::key, CreateGun::json_user_function);
+            register_json_user_function(CreateMissileAi::key, CreateMissileAi::json_user_function);
+            register_json_user_function(CreateHeliController::key, CreateHeliController::json_user_function);
+            register_json_user_function(CreateHudOpponentTracker::key, CreateHudOpponentTracker::json_user_function);
+            register_json_user_function(CreateHudOpponentZoom::key, CreateHudOpponentZoom::json_user_function);
+            register_json_user_function(CreateHudTargetPointLogic::key, CreateHudTargetPointLogic::json_user_function);
+            register_json_user_function(CreateAvatarAsAvatarController::key, CreateAvatarAsAvatarController::json_user_function);
+            register_json_user_function(CreateAvatarAsCarController::key, CreateAvatarAsCarController::json_user_function);
+            register_json_user_function(CreateInternals::key, CreateInternals::json_user_function);
+            register_json_user_function(CreateKeepOffsetFromCamera::key, CreateKeepOffsetFromCamera::json_user_function);
+            register_json_user_function(CreateKeepOffsetFromMovable::key, CreateKeepOffsetFromMovable::json_user_function);
+            register_json_user_function(CreateLightOnlyShadow::key, CreateLightOnlyShadow::json_user_function);
+            register_json_user_function(CreateLightWithoutShadow::key, CreateLightWithoutShadow::json_user_function);
+            register_json_user_function(CreateLightWithShadow::key, CreateLightWithShadow::json_user_function);
+            register_json_user_function(CreateMissileController::key, CreateMissileController::json_user_function);
+            register_json_user_function(CreateParameterSetterLogic::key, CreateParameterSetterLogic::json_user_function);
+            register_json_user_function(CreatePlaneAsCarController::key, CreatePlaneAsCarController::json_user_function);
+            register_json_user_function(CreatePlaneControllerIdleBinding::key, CreatePlaneControllerIdleBinding::json_user_function);
+            register_json_user_function(CreatePlaneControllerKeyBinding::key, CreatePlaneControllerKeyBinding::json_user_function);
+            register_json_user_function(CreatePlaneController::key, CreatePlaneController::json_user_function);
+            register_json_user_function(CreatePlayer::key, CreatePlayer::json_user_function);
+            register_json_user_function(CreateRelativeTransformer::key, CreateRelativeTransformer::json_user_function);
+            register_json_user_function(CreateCopyRotation::key, CreateCopyRotation::json_user_function);
+            register_json_user_function(CreatePrintCameraNodeInfoKeyBinding::key, CreatePrintCameraNodeInfoKeyBinding::json_user_function);
+            register_json_user_function(CreateRelKeyBinding::key, CreateRelKeyBinding::json_user_function);
+            register_json_user_function(CreateRelKeyBindingTripod::key, CreateRelKeyBindingTripod::json_user_function);
+            register_json_user_function(CreateRotor::key, CreateRotor::json_user_function);
+            register_json_user_function(CreateSceneSelectorLogic::key, CreateSceneSelectorLogic::json_user_function);
+            register_json_user_function(CreateSpawner::key, CreateSpawner::json_user_function);
+            register_json_user_function(CreateTabMenuLogic::key, CreateTabMenuLogic::json_user_function);
+            register_json_user_function(CreateTankController::key, CreateTankController::json_user_function);
+            register_json_user_function(CreateTrailerNode::key, CreateTrailerNode::json_user_function);
+            register_json_user_function(CreateVisualGlobalLog::key, CreateVisualGlobalLog::json_user_function);
+            register_json_user_function(CreateVisualNodeStatus::key, CreateVisualNodeStatus::json_user_function);
+            register_json_user_function(CreateVisualPlayerBulletCount::key, CreateVisualPlayerBulletCount::json_user_function);
+            register_json_user_function(CreateVisualPlayerStatus::key, CreateVisualPlayerStatus::json_user_function);
+            register_json_user_function(CreateWeaponCycleKeyBinding::key, CreateWeaponCycleKeyBinding::json_user_function);
+            register_json_user_function(CreateWeaponCycle::key, CreateWeaponCycle::json_user_function);
+            register_json_user_function(CreateWheel::key, CreateWheel::json_user_function);
+            register_json_user_function(CreateWing::key, CreateWing::json_user_function);
+            register_json_user_function(CreateYawPitchLookatNodes::key, CreateYawPitchLookatNodes::json_user_function);
+            register_json_user_function(DefineWinnerConditionals::key, DefineWinnerConditionals::json_user_function);
+            register_json_user_function(MoveNodeToBvh::key, MoveNodeToBvh::json_user_function);
+            register_json_user_function(TryDeleteNode::key, TryDeleteNode::json_user_function);
+            register_json_user_function(TryDeleteRootNode::key, TryDeleteRootNode::json_user_function);
+            register_json_user_function(DeleteNode::key, DeleteNode::json_user_function);
+            register_json_user_function(DeleteRootNodes::key, DeleteRootNodes::json_user_function);
+            register_json_user_function(DeleteRootNode::key, DeleteRootNode::json_user_function);
+            register_json_user_function(ExecuteInPhysicsThread::key, ExecuteInPhysicsThread::json_user_function);
+            register_json_user_function(FillPixelRegionWithTexture::key, FillPixelRegionWithTexture::json_user_function);
+            register_json_user_function(FocusedText::key, FocusedText::json_user_function);
+            register_json_user_function(FollowNode::key, FollowNode::json_user_function);
+            register_json_user_function(Minimap::key, Minimap::json_user_function);
+            register_json_user_function(Instantiate::key, Instantiate::json_user_function);
+            register_json_user_function(InstantiateGameLogic::key, InstantiateGameLogic::json_user_function);
+            register_json_user_function(InstantiateGrass::key, InstantiateGrass::json_user_function);
+            register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);
+            register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
+            register_json_user_function(LookAtNode::key, LookAtNode::json_user_function);
+            register_json_user_function(CreateDriveOrWalkAi::key, CreateDriveOrWalkAi::json_user_function);
+            register_json_user_function(CreateVehicleFollowerAi::key, CreateVehicleFollowerAi::json_user_function);
+            register_json_user_function(CreateOrthoCamera::key, CreateOrthoCamera::json_user_function);
+            register_json_user_function(CreatePerspectiveCamera::key, CreatePerspectiveCamera::json_user_function);
+            register_json_user_function(PlaybackTrack::key, PlaybackTrack::json_user_function);
+            register_json_user_function(PlaybackWinnerTrack::key, PlaybackWinnerTrack::json_user_function);
+            register_json_user_function(PlayerChangeAimingGun::key, PlayerChangeAimingGun::json_user_function);
+            register_json_user_function(PlayerSetAimingGun::key, PlayerSetAimingGun::json_user_function);
+            register_json_user_function(PlayerSetBehavior::key, PlayerSetBehavior::json_user_function);
+            register_json_user_function(PlayerSetCanAim::key, PlayerSetCanAim::json_user_function);
+            register_json_user_function(PlayerSetCanDrive::key, PlayerSetCanDrive::json_user_function);
+            register_json_user_function(PlayerSetCanSelectBestWeapon::key, PlayerSetCanSelectBestWeapon::json_user_function);
+            register_json_user_function(PlayerSetCanSelectOpponent::key, PlayerSetCanSelectOpponent::json_user_function);
+            register_json_user_function(PlayerSetCanShoot::key, PlayerSetCanShoot::json_user_function);
+            register_json_user_function(PlayerSetPlaybackWaypoints::key, PlayerSetPlaybackWaypoints::json_user_function);
+            register_json_user_function(PlayerSetVehicleControlParameters::key, PlayerSetVehicleControlParameters::json_user_function);
+            register_json_user_function(PlayerSetWaypoint::key, PlayerSetWaypoint::json_user_function);
+            register_json_user_function(PlayersStats::key, PlayersStats::json_user_function);
+            register_json_user_function(Preload::key, Preload::json_user_function);
+            register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);
+            register_json_user_function(RecordTrack::key, RecordTrack::json_user_function);
+            register_json_user_function(RegisterGeographicMapping::key, RegisterGeographicMapping::json_user_function);
+            register_json_user_function(RegisterGravity::key, RegisterGravity::json_user_function);
+            register_json_user_function(RegisterWind::key, RegisterWind::json_user_function);
+            register_json_user_function(RootRenderableInstances::key, RootRenderableInstances::json_user_function);
+            register_json_user_function(RespawnAllPlayers::key, RespawnAllPlayers::json_user_function);
+            register_json_user_function(RootNodeInstance::key, RootNodeInstance::json_user_function);
+            register_json_user_function(SaveToObjFile::key, SaveToObjFile::json_user_function);
+            register_json_user_function(SceneToPixelRegion::key, SceneToPixelRegion::json_user_function);
+            register_json_user_function(SceneToTexture::key, SceneToTexture::json_user_function);
+            register_json_user_function(ThreadTop::key, ThreadTop::json_user_function);
+            register_json_user_function(SetAnimationState::key, SetAnimationState::json_user_function);
+            register_json_user_function(SetAvatarStyleUpdater::key, SetAvatarStyleUpdater::json_user_function);
+            register_json_user_function(SetBackgroundColor::key, SetBackgroundColor::json_user_function);
+            register_json_user_function(FitCanvasToRenderables::key, FitCanvasToRenderables::json_user_function);
+            register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
+            register_json_user_function(SetAvailableRoles::key, SetAvailableRoles::json_user_function);
+            register_json_user_function(SetBevelBoxSurfaceNormal::key, SetBevelBoxSurfaceNormal::json_user_function);
+            register_json_user_function(SetCapsuleSurfaceNormal::key, SetCapsuleSurfaceNormal::json_user_function);
+            register_json_user_function(SetSlidingNormalModifier::key, SetSlidingNormalModifier::json_user_function);
+            register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
+            register_json_user_function(SetCamera::key, SetCamera::json_user_function);
+            register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);
+            register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
+            register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
+            register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
+            register_json_user_function(SetJumpDv::key, SetJumpDv::json_user_function);
+            register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
+            register_json_user_function(SetNodeHider::key, SetNodeHider::json_user_function);
+            register_json_user_function(SetNodeRotation::key, SetNodeRotation::json_user_function);
+            register_json_user_function(SetPreferredCarSpawner::key, SetPreferredCarSpawner::json_user_function);
+            register_json_user_function(SetRaceIdentifierAndReloadHistory::key, SetRaceIdentifierAndReloadHistory::json_user_function);
+            register_json_user_function(SetRigidBodyAlignToSurfaceRelaxation::key, SetRigidBodyAlignToSurfaceRelaxation::json_user_function);
+            register_json_user_function(SetRigidBodyDoorDistance::key, SetRigidBodyDoorDistance::json_user_function);
+            register_json_user_function(SetRigidBodyGrindPoint::key, SetRigidBodyGrindPoint::json_user_function);
+            register_json_user_function(SetRigidBodyRevertSurfacePowerThreshold::key, SetRigidBodyRevertSurfacePowerThreshold::json_user_function);
+            register_json_user_function(SetRigidBodyTarget::key, SetRigidBodyTarget::json_user_function);
+            register_json_user_function(SetSkaterStyleUpdater::key, SetSkaterStyleUpdater::json_user_function);
+            register_json_user_function(SetTrailerHitchPositions::key, SetTrailerHitchPositions::json_user_function);
+            register_json_user_function(SetWaypointOfs::key, SetWaypointOfs::json_user_function);
+            register_json_user_function(SetSkybox::key, SetSkybox::json_user_function);
+            register_json_user_function(SetObjective::key, SetObjective::json_user_function);
+            register_json_user_function(ResetSupplyDepotCooldowns::key, ResetSupplyDepotCooldowns::json_user_function);
+            register_json_user_function(SetSoftLight::key, SetSoftLight::json_user_function);
+            register_json_user_function(SetSpawnPoints::key, SetSpawnPoints::json_user_function);
+            register_json_user_function(SetWayPoints::key, SetWayPoints::json_user_function);
+            register_json_user_function(SetVip::key, SetVip::json_user_function);
+            register_json_user_function(SpawnerSetNodes::key, SpawnerSetNodes::json_user_function);
+            register_json_user_function(SpawnerSetPlayer::key, SpawnerSetPlayer::json_user_function);
+            register_json_user_function(SpawnerSetRespawnCooldownTime::key, SpawnerSetRespawnCooldownTime::json_user_function);
+            register_json_user_function(StartRace::key, StartRace::json_user_function);
+            register_json_user_function(TeamSetWaypoint::key, TeamSetWaypoint::json_user_function);
+            register_json_user_function(UiBackground::key, UiBackground::json_user_function);
+            register_json_user_function(UiExhibit::key, UiExhibit::json_user_function);
+            register_json_user_function(VisualNodeStatus3rd::key, VisualNodeStatus3rd::json_user_function);
+            register_json_user_function(YplnUpdateBulletProperties::key, YplnUpdateBulletProperties::json_user_function);
+            register_json_user_function(LoadKeyConfigurations::key, LoadKeyConfigurations::json_user_function);
 
-    // Resources
-    register_json_user_function(AddCubemap::key, AddCubemap::json_user_function);
-    register_json_user_function(AddAudio::key, AddAudio::json_user_function);
-    register_json_user_function(AddAudioSequence::key, AddAudioSequence::json_user_function);
-    register_json_user_function(AddBlendMapTexture::key, AddBlendMapTexture::json_user_function);
-    register_json_user_function(AddBvhResource::key, AddBvhResource::json_user_function);
-    register_json_user_function(AddCompanionRenderable::key, AddCompanionRenderable::json_user_function);
-    register_json_user_function(AddFoliageResource::key, AddFoliageResource::json_user_function);
-    register_json_user_function(AddSweptSphereAabb::key, AddSweptSphereAabb::json_user_function);
-    register_json_user_function(AddTextureAtlas::key, AddTextureAtlas::json_user_function);
-    register_json_user_function(AddTextureDescriptor::key, AddTextureDescriptor::json_user_function);
-    register_json_user_function(AppendFocuses::key, AppendFocuses::json_user_function);
-    register_json_user_function(AnimatableBillboards::key, AnimatableBillboards::json_user_function);
-    register_json_user_function(AnimatedBillboards::key, AnimatedBillboards::json_user_function);
-    register_json_user_function(AnimatableTrails::key, AnimatableTrails::json_user_function);
-    register_json_user_function(AnimatedTrails::key, AnimatedTrails::json_user_function);
-    register_json_user_function(CleanupMesh::key, CleanupMesh::json_user_function);
-    register_json_user_function(CreateBinaryXResource::key, CreateBinaryXResource::json_user_function);
-    register_json_user_function(CreateBlendingXResource::key, CreateBlendingXResource::json_user_function);
-    register_json_user_function(ConvexDecomposeTerrain::key, ConvexDecomposeTerrain::json_user_function);
-    register_json_user_function(DeleteMesh::key, DeleteMesh::json_user_function);
-    register_json_user_function(Downsample::key, Downsample::json_user_function);
-    register_json_user_function(GenRay::key, GenRay::json_user_function);
-    register_json_user_function(GenTriangleRays::key, GenTriangleRays::json_user_function);
-    register_json_user_function(GenGrindLines::key, GenGrindLines::json_user_function);
-    register_json_user_function(GenContourEdges::key, GenContourEdges::json_user_function);
-    register_json_user_function(GenInstances::key, GenInstances::json_user_function);
-    register_json_user_function(GenCompoundResource::key, GenCompoundResource::json_user_function);
-    register_json_user_function(ImportBoneWeights::key, ImportBoneWeights::json_user_function);
-    register_json_user_function(LoadOsmResource::key, LoadOsmResource::json_user_function);
-    register_json_user_function(ObjResource::key, ObjResource::json_user_function);
-    register_json_user_function(Repeat::key, Repeat::json_user_function);
-    register_json_user_function(ReplaceTerrainMaterial::key, ReplaceTerrainMaterial::json_user_function);
-    register_json_user_function(ResourceLocations::key, ResourceLocations::json_user_function);
-    register_json_user_function(SaveTextureArrayPng::key, SaveTextureArrayPng::json_user_function);
-    register_json_user_function(SaveTexturePng::key, SaveTexturePng::json_user_function);
-    register_json_user_function(SetFocuses::key, SetFocuses::json_user_function);
-    register_json_user_function(CreateSquareResource::key, CreateSquareResource::json_user_function);
-    register_json_user_function(CreateGridResource::key, CreateGridResource::json_user_function);
-    register_json_user_function(MergeBlendedMaterials::key, MergeBlendedMaterials::json_user_function);
-    register_json_user_function(MergeMeshes::key, MergeMeshes::json_user_function);
-    register_json_user_function(ModifyPhysicsMaterialTags::key, ModifyPhysicsMaterialTags::json_user_function);
-    register_json_user_function(ModifyRenderingMaterial::key, ModifyRenderingMaterial::json_user_function);
-    register_json_user_function(PrintResource::key, PrintResource::json_user_function);
-    register_json_user_function(Echo::key, Echo::json_user_function);
-    register_json_user_function(CreateTapButton::key, CreateTapButton::json_user_function);
-    register_json_user_function(CreateAdditiveScreenConstraint::key, CreateAdditiveScreenConstraint::json_user_function);
-    register_json_user_function(CreateConstantScreenConstraint::key, CreateConstantScreenConstraint::json_user_function);
-    register_json_user_function(CreateFractionalScreenConstraint::key, CreateFractionalScreenConstraint::json_user_function);
-    register_json_user_function(SetAnimatedDynamicLightProperties::key, SetAnimatedDynamicLightProperties::json_user_function);
-    register_json_user_function(SetBounds::key, SetBounds::json_user_function);
-    register_json_user_function(SetConstantDynamicLightProperties::key, SetConstantDynamicLightProperties::json_user_function);
-    register_json_user_function(SetBulletProperties::key, SetBulletProperties::json_user_function);
-    register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
-    register_json_user_function(SmoothenEdges::key, SmoothenEdges::json_user_function);
-    register_json_user_function(ShadeAuto::key, ShadeAuto::json_user_function);
+            // Resources
+            register_json_user_function(AddCubemap::key, AddCubemap::json_user_function);
+            register_json_user_function(AddAudio::key, AddAudio::json_user_function);
+            register_json_user_function(AddAudioSequence::key, AddAudioSequence::json_user_function);
+            register_json_user_function(AddBlendMapTexture::key, AddBlendMapTexture::json_user_function);
+            register_json_user_function(AddBvhResource::key, AddBvhResource::json_user_function);
+            register_json_user_function(AddCompanionRenderable::key, AddCompanionRenderable::json_user_function);
+            register_json_user_function(AddFoliageResource::key, AddFoliageResource::json_user_function);
+            register_json_user_function(AddSweptSphereAabb::key, AddSweptSphereAabb::json_user_function);
+            register_json_user_function(AddTextureAtlas::key, AddTextureAtlas::json_user_function);
+            register_json_user_function(AddTextureDescriptor::key, AddTextureDescriptor::json_user_function);
+            register_json_user_function(AppendFocuses::key, AppendFocuses::json_user_function);
+            register_json_user_function(AnimatableBillboards::key, AnimatableBillboards::json_user_function);
+            register_json_user_function(AnimatedBillboards::key, AnimatedBillboards::json_user_function);
+            register_json_user_function(AnimatableTrails::key, AnimatableTrails::json_user_function);
+            register_json_user_function(AnimatedTrails::key, AnimatedTrails::json_user_function);
+            register_json_user_function(CleanupMesh::key, CleanupMesh::json_user_function);
+            register_json_user_function(CreateBinaryXResource::key, CreateBinaryXResource::json_user_function);
+            register_json_user_function(CreateBlendingXResource::key, CreateBlendingXResource::json_user_function);
+            register_json_user_function(ConvexDecomposeTerrain::key, ConvexDecomposeTerrain::json_user_function);
+            register_json_user_function(DeleteMesh::key, DeleteMesh::json_user_function);
+            register_json_user_function(Downsample::key, Downsample::json_user_function);
+            register_json_user_function(GenRay::key, GenRay::json_user_function);
+            register_json_user_function(GenTriangleRays::key, GenTriangleRays::json_user_function);
+            register_json_user_function(GenGrindLines::key, GenGrindLines::json_user_function);
+            register_json_user_function(GenContourEdges::key, GenContourEdges::json_user_function);
+            register_json_user_function(GenInstances::key, GenInstances::json_user_function);
+            register_json_user_function(GenCompoundResource::key, GenCompoundResource::json_user_function);
+            register_json_user_function(ImportBoneWeights::key, ImportBoneWeights::json_user_function);
+            register_json_user_function(LoadOsmResource::key, LoadOsmResource::json_user_function);
+            register_json_user_function(ObjResource::key, ObjResource::json_user_function);
+            register_json_user_function(Repeat::key, Repeat::json_user_function);
+            register_json_user_function(ReplaceTerrainMaterial::key, ReplaceTerrainMaterial::json_user_function);
+            register_json_user_function(ResourceLocations::key, ResourceLocations::json_user_function);
+            register_json_user_function(SaveTextureArrayPng::key, SaveTextureArrayPng::json_user_function);
+            register_json_user_function(SaveTexturePng::key, SaveTexturePng::json_user_function);
+            register_json_user_function(SetFocuses::key, SetFocuses::json_user_function);
+            register_json_user_function(CreateSquareResource::key, CreateSquareResource::json_user_function);
+            register_json_user_function(CreateGridResource::key, CreateGridResource::json_user_function);
+            register_json_user_function(MergeBlendedMaterials::key, MergeBlendedMaterials::json_user_function);
+            register_json_user_function(MergeMeshes::key, MergeMeshes::json_user_function);
+            register_json_user_function(ModifyPhysicsMaterialTags::key, ModifyPhysicsMaterialTags::json_user_function);
+            register_json_user_function(ModifyRenderingMaterial::key, ModifyRenderingMaterial::json_user_function);
+            register_json_user_function(PrintResource::key, PrintResource::json_user_function);
+            register_json_user_function(Echo::key, Echo::json_user_function);
+            register_json_user_function(CreateTapButton::key, CreateTapButton::json_user_function);
+            register_json_user_function(CreateAdditiveScreenConstraint::key, CreateAdditiveScreenConstraint::json_user_function);
+            register_json_user_function(CreateConstantScreenConstraint::key, CreateConstantScreenConstraint::json_user_function);
+            register_json_user_function(CreateFractionalScreenConstraint::key, CreateFractionalScreenConstraint::json_user_function);
+            register_json_user_function(SetAnimatedDynamicLightProperties::key, SetAnimatedDynamicLightProperties::json_user_function);
+            register_json_user_function(SetBounds::key, SetBounds::json_user_function);
+            register_json_user_function(SetConstantDynamicLightProperties::key, SetConstantDynamicLightProperties::json_user_function);
+            register_json_user_function(SetBulletProperties::key, SetBulletProperties::json_user_function);
+            register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
+            register_json_user_function(SmoothenEdges::key, SmoothenEdges::json_user_function);
+            register_json_user_function(ShadeAuto::key, ShadeAuto::json_user_function);
 
-    // Main
-    register_json_user_function(ReloadScene::key, ReloadScene::json_user_function);
-    register_json_user_function(ClearSelectionIds::key, ClearSelectionIds::json_user_function);
+            // Main
+            register_json_user_function(ReloadScene::key, ReloadScene::json_user_function);
+            register_json_user_function(ClearSelectionIds::key, ClearSelectionIds::json_user_function);
 
-    // Misc
-    register_json_user_function(Sleep::key, Sleep::json_user_function);
-    register_json_user_function(Globals::key, Globals::json_user_function);
+            // Misc
+            register_json_user_function(Sleep::key, Sleep::json_user_function);
+            register_json_user_function(Globals::key, Globals::json_user_function);
+        }
+    } add_funcs;
 }
 
 LoadScene::~LoadScene() = default;
@@ -563,8 +553,9 @@ void LoadScene::operator()(
             .gallery = gallery,
             .asset_references = asset_references,
             .renderable_scenes = renderable_scenes};
-        auto it = json_user_functions_.find(args.name);
-        if (it == json_user_functions_.end()) {
+        auto& funcs = json_user_functions();
+        auto it = funcs.find(args.name);
+        if (it == funcs.end()) {
             return false;
         }
         it->second(args);
