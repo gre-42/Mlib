@@ -163,9 +163,9 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             child_renderable_instance("main" + suffix, parent, NAME + "/main" + decimate);
 
             child_renderable_instance("wheel" + suffix, "wheel_left_front_node" + TESUFFIX, NAME + "/wheel_front" + decimate);
-            child_renderable_instance("wheel" + suffix, "wheel_right_front_node" + TESUFFIX, NAME + "/wheel_front" + decimate);
+            child_renderable_instance("wheel" + suffix, "wheel_right_front_node_visual" + TESUFFIX, NAME + "/wheel_front" + decimate);
             child_renderable_instance("wheel" + suffix, "wheel_left_rear_node" + TESUFFIX, NAME + "/wheel_rear" + decimate);
-            child_renderable_instance("wheel" + suffix, "wheel_right_rear_node" + TESUFFIX, NAME + "/wheel_rear" + decimate);
+            child_renderable_instance("wheel" + suffix, "wheel_right_rear_node_visual" + TESUFFIX, NAME + "/wheel_rear" + decimate);
             };
         create_graphics(TESUFFIX, DECIMATE);
         create_graphics("_lowres" + TESUFFIX, "_lowres");
