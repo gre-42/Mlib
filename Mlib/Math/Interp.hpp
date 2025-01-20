@@ -42,6 +42,13 @@ public:
     TDataY operator () (const TDataX& vx) const {
         auto interpolate = [&](size_t i) {
             TDataX alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
+            // This ensures that INF * 0 = 0
+            if (alpha == 0) {
+                return y_[i - 1];
+            }
+            if (alpha == 1) {
+                return y_[i];
+            }
             return (TDataY)(y_[i - 1] * (1 - alpha) + y_[i] * alpha);
             };
         if (x_.empty()) {

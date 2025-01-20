@@ -27,11 +27,11 @@ DECLARE_ARGUMENT(HUMAN_NODE_POSITION);
 DECLARE_ARGUMENT(HUMAN_NODE_ANGLE_Y);
 DECLARE_ARGUMENT(CAR_NODE_POSITION);
 DECLARE_ARGUMENT(CAR_NODE_ANGLES);
-DECLARE_ARGUMENT(VELOCITY);
-DECLARE_ARGUMENT(ANGULAR_VELOCITY);
+DECLARE_ARGUMENT(velocity);
+DECLARE_ARGUMENT(angular_velocity);
 DECLARE_ARGUMENT(SUFFIX);
-DECLARE_ARGUMENT(IF_WITH_GRAPHICS);
-DECLARE_ARGUMENT(IF_WITH_PHYSICS);
+DECLARE_ARGUMENT(if_with_graphics);
+DECLARE_ARGUMENT(if_with_physics);
 }
 
 const std::string SetPreferredCarSpawner::key = "set_preferred_car_spawner";
@@ -65,11 +65,11 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 // Velocity and angular velocity should be calculated dynamically from the parent of the
                 // spawn point using "parent.velocity_at_position" and "parent.angular_velocity_at_position".
                 // Spawn points do not yet have a parent, so the values are set to zero here.
-                {KnownLet::VELOCITY, fixed_zeros<float, 3>() / kph},
-                {KnownLet::ANGULAR_VELOCITY, fixed_zeros<float, 3>() / rpm},  // this is not yet used in the scripts
+                {KnownLet::velocity, fixed_zeros<float, 3>() / kph},
+                {KnownLet::angular_velocity, fixed_zeros<float, 3>() / rpm},  // this is not yet used in the scripts
                 {KnownLet::SUFFIX, "_" + spawner_name + scene.get_temporary_instance_suffix()},
-                {KnownLet::IF_WITH_GRAPHICS, true},
-                {KnownLet::IF_WITH_PHYSICS, true} };
+                {KnownLet::if_with_graphics, true},
+                {KnownLet::if_with_physics, true} };
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
         }
     );

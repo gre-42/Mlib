@@ -57,13 +57,14 @@ void Mlib::add_street_steiner_points(
             if (min_distance <= (CompressedScenePos)0.f) {
                 continue;
             }
-            double dist = interp(funpack(min_distance) / scale);
-            size_t refinement = std::max<size_t>(1, (size_t)((dist * scale) / funpack(dist0)));
-            bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
-            if (is_included) {
-                steiner_points.push_back(SteinerPointInfo{
-                    .position = {pt(0), pt(1), (CompressedScenePos)0.f},
-                    .type = SteinerPointType::STREET_NEIGHBOR });
+            if (double dist = interp(funpack(min_distance) / scale); dist != INFINITY) {
+                size_t refinement = std::max<size_t>(1, (size_t)((dist * scale) / funpack(dist0)));
+                bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
+                if (is_included) {
+                    steiner_points.push_back(SteinerPointInfo{
+                        .position = {pt(0), pt(1), (CompressedScenePos)0.f},
+                        .type = SteinerPointType::STREET_NEIGHBOR });
+                }
             }
             ++iy;
         }

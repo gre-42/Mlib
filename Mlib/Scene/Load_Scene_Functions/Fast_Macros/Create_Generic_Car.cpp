@@ -35,11 +35,12 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(NAME);
 DECLARE_ARGUMENT(TESUFFIX);
 DECLARE_ARGUMENT(DECIMATE);
-DECLARE_ARGUMENT(IF_WITH_GRAPHICS);
-DECLARE_ARGUMENT(IF_WITH_PHYSICS);
-DECLARE_ARGUMENT(HAND_BRAKE_PULLED);
-DECLARE_ARGUMENT(VELOCITY);
-DECLARE_ARGUMENT(ANGULAR_VELOCITY);
+DECLARE_ARGUMENT(if_with_graphics);
+DECLARE_ARGUMENT(if_with_physics);
+DECLARE_ARGUMENT(hand_brake_pulled);
+DECLARE_ARGUMENT(velocity);
+DECLARE_ARGUMENT(angular_velocity);
+DECLARE_ARGUMENT(mute);
 }
 
 namespace KnownDb {
@@ -68,12 +69,11 @@ DECLARE_ARGUMENT(size);
 DECLARE_ARGUMENT(com);
 DECLARE_ARGUMENT(mass);
 DECLARE_ARGUMENT(wheels);
-DECLARE_ARGUMENT(mute);
 DECLARE_ARGUMENT(w_clutch);
 DECLARE_ARGUMENT(max_dw);
 DECLARE_ARGUMENT(front_engine);
 DECLARE_ARGUMENT(rear_engine);
-DECLARE_ARGUMENT(audio);
+DECLARE_ARGUMENT(engine_audio);
 }
 
 namespace KnownAudio {
@@ -81,7 +81,6 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(p_idle);
 DECLARE_ARGUMENT(p_reference);
-DECLARE_ARGUMENT(mute);
 }
 
 namespace KnownWheels {
@@ -135,8 +134,8 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto NAME = args.arguments.at<std::string>(KnownArgs::NAME);
     auto TESUFFIX = args.arguments.at<std::string>(KnownArgs::TESUFFIX);
     auto DECIMATE = args.arguments.at<std::string>(KnownArgs::DECIMATE);
-    auto IF_WITH_GRAPHICS = args.arguments.at<bool>(KnownArgs::IF_WITH_GRAPHICS);
-    auto IF_WITH_PHYSICS = args.arguments.at<bool>(KnownArgs::IF_WITH_PHYSICS);
+    auto if_with_graphics = args.arguments.at<bool>(KnownArgs::if_with_graphics);
+    auto if_with_physics = args.arguments.at<bool>(KnownArgs::if_with_physics);
     const auto& vdb = args.asset_references["vehicles"].at(NAME).rp.database;
     auto wheels = vdb.at<std::string>(KnownDb::wheels);
     const auto& wdb = args.asset_references["wheels"].at(wheels).rp.database;
@@ -156,7 +155,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
     create_child_node("dynamic", parent, "wheel_left_rear_node" + TESUFFIX, wheel_left_rear_mount_0.casted<ScenePos>());
     create_child_node("dynamic", parent, "wheel_right_rear_node" + TESUFFIX, wheel_right_rear_mount_0.casted<ScenePos>());
 
-    if (IF_WITH_GRAPHICS) {
+    if (if_with_graphics) {
         create_child_node("dynamic", "wheel_right_front_node" + TESUFFIX, "wheel_right_front_node_visual" + TESUFFIX, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
         create_child_node("dynamic", "wheel_right_rear_node" + TESUFFIX, "wheel_right_rear_node_visual" + TESUFFIX, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
         auto create_graphics = [&](const std::string& suffix, const std::string& decimate){
@@ -191,8 +190,8 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             .mass = vdb.at<float>(KnownDb::mass) * kg,
             .size = vdb.at<UFixedArray<float, 3>>(KnownDb::size) * meters,
             .com = vdb.at<UFixedArray<float, 3>>(KnownDb::com) * meters,
-            .v = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::VELOCITY) * kph,
-            .w = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ANGULAR_VELOCITY) * rpm,
+            .v = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::velocity) * kph,
+            .w = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::angular_velocity) * rpm,
             .I_rotation = fixed_zeros<float, 3>(),
             .geographic_coordinates = scene_node_resources.get_geographic_mapping("world"),
             .waypoint_dy = (CompressedScenePos)1.2f,
@@ -200,15 +199,15 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             .collidable_mode = CollidableMode::MOVING});
 
         std::shared_ptr<EngineAudio> av;
-        if (vdb.contains(KnownDb::audio)) {
-            auto a = vdb.child(KnownDb::audio);
-            a.validate(KnownAudio::options);
-            if (!a.at<bool>(KnownAudio::mute)) {
+        if (!args.arguments.at<bool>(KnownArgs::mute)) {
+            if (auto engine_audio = vdb.try_at<std::string>(KnownDb::engine_audio); engine_audio.has_value()) {
+                const auto& adb = args.asset_references["engine_audio"].at(*engine_audio).rp.database;
+                adb.validate(KnownAudio::options);
                 av = std::make_shared<EngineAudio>(
-                    a.at<std::string>(KnownAudio::name),
+                    adb.at<std::string>(KnownAudio::name),
                     paused,
-                    a.at<float>(KnownAudio::p_idle) * hp,
-                    a.at<float>(KnownAudio::p_reference) * hp);
+                    adb.at<float>(KnownAudio::p_idle) * hp,
+                    adb.at<float>(KnownAudio::p_reference) * hp);
             }
         }
 
@@ -227,7 +226,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 rb.engines_.add(
                     VariableAndHash<std::string>{ "front" },
                     std::move(engine_power),
-                    args.arguments.at<bool>(KnownArgs::HAND_BRAKE_PULLED, false),
+                    args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
                     av);
             }
             {
@@ -242,7 +241,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 rb.engines_.add(
                     VariableAndHash<std::string>{ "rear" },
                     std::move(engine_power),
-                    args.arguments.at<bool>(KnownArgs::HAND_BRAKE_PULLED, false),
+                    args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
                     av);
             }
         } else if (vdb.contains_non_null(KnownDb::powers)) {
@@ -257,7 +256,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             rb.engines_.add(
                 VariableAndHash<std::string>{ "engine" },
                 std::move(engine_power),
-                args.arguments.at<bool>(KnownArgs::HAND_BRAKE_PULLED, false),
+                args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
                 av);
         }
 
@@ -405,7 +404,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
 
         rb.drivers_.set_roles({ "driver" });
         };
-    if (IF_WITH_PHYSICS) {
+    if (if_with_physics) {
         create_physics();
     }
 }

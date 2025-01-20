@@ -193,7 +193,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
                             {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
                             {"RESPAWN_COOLDOWN_TIME", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
-                            {"MUTE", false}
+                            {"mute", false}
                         }
                     }
                 };
@@ -220,7 +220,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
                             {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
                             {"RESPAWN_COOLDOWN_TIME", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
-                            {"MUTE", false}
+                            {"mute", false}
                         }
                     }
                 };
