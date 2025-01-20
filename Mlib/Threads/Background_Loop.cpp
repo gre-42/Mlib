@@ -24,7 +24,10 @@ BackgroundLoop::BackgroundLoop(std::string thread_name)
                     if (!task_) {
                         verbose_abort("Task not set");
                     }
-                    task_();
+                }
+                task_();
+                {
+                    std::scoped_lock lck{ mutex_ };
                     task_ = std::function<void()>();
                     done_ = true;
                 }
