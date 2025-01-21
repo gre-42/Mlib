@@ -113,7 +113,7 @@ RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& a
     }
     // 1. Set movable, which updates the transformation-matrix.
     auto& result = *rb;
-    AbsoluteMovableSetter ams{ scene.get_node(args.node, DP_LOC), std::move(rb) };
+    AbsoluteMovableSetter ams{ scene.get_node(args.node, DP_LOC), std::move(rb), CURRENT_SOURCE_LOCATION };
     // 2. Add to physics engine.
     try {
         physics_engine.rigid_bodies_.add_rigid_body(

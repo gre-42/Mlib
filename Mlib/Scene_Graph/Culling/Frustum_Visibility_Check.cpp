@@ -18,7 +18,7 @@ bool FrustumVisibilityCheck<TData>::is_visible(
     BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
-    const AxisAlignedBoundingBox<TData, 3>& aabb) const
+    const ExtremalAxisAlignedBoundingBox<TData, 3>& aabb) const
 {
     return Mlib::is_visible<TData>(vc_, object_name, material, morphology, billboard_id, scene_graph_config, external_render_pass, &frustum_, &aabb);
 }

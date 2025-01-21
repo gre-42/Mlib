@@ -72,11 +72,11 @@ void Renderable::extend_aabb(
     THROW_OR_ABORT("Renderable::extend_aabb not implemented");
 }
 
-AxisAlignedBoundingBox<CompressedScenePos, 3> Renderable::aabb() const {
+ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> Renderable::aabb() const {
     THROW_OR_ABORT("Renderable::aabb not implemented");
 }
 
-BoundingSphere<CompressedScenePos, 3> Renderable::bounding_sphere() const {
+ExtremalBoundingSphere<CompressedScenePos, 3> Renderable::bounding_sphere() const {
     THROW_OR_ABORT("Renderable::bounding_sphere not implemented");
 }
 

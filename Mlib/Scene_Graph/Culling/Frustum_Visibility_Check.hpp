@@ -13,7 +13,7 @@ struct Morphology;
 struct SceneGraphConfig;
 enum class ExternalRenderPassType;
 template <class TData, size_t tndim>
-class AxisAlignedBoundingBox;
+class ExtremalAxisAlignedBoundingBox;
 template <class TData>
 class Frustum3;
 
@@ -28,7 +28,7 @@ public:
         BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,
         ExternalRenderPassType external_render_pass,
-        const AxisAlignedBoundingBox<TData, 3>& aabb) const;
+        const ExtremalAxisAlignedBoundingBox<TData, 3>& aabb) const;
 private:
     const VisibilityCheck<TData>& vc_;
     Frustum3<TData> frustum_;

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Billboard_Id.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Intersection/Extremal_Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <memory>
@@ -89,8 +89,8 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const;
-    virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const;
-    virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const;
+    virtual ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const;
+    virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere() const;
     template <class TBoundingPrimitive>
     TBoundingPrimitive bounding_primitive() const {
         if constexpr (std::is_same_v<TBoundingPrimitive, AxisAlignedBoundingBox<CompressedScenePos, 3>>) {

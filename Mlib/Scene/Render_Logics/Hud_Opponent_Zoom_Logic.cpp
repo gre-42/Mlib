@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Bounding_Sphere.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Intersection/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
@@ -86,10 +86,10 @@ void HudOpponentZoomLogic::render_without_setup(
         return;
     }
     auto rel_sphere = observed_node->relative_bounding_sphere();
-    if (rel_sphere.radius == 0.) {
+    if (rel_sphere.empty() || rel_sphere.full()) {
         return;
     }
-    auto abs_sphere = rel_sphere.transformed(observed_node->absolute_model_matrix());
+    auto abs_sphere = rel_sphere.data().transformed(observed_node->absolute_model_matrix());
     auto la = gl_lookat_bounding_sphere(
         fov_,
         observer_node->absolute_model_matrix(),

@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Cameras/Perspective_Camera_Config.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Aabb.hpp>
 #include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
+#include <Mlib/Geometry/Intersection/Extremal_Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
@@ -102,11 +103,11 @@ ImposterLogic::ImposterLogic(
         THROW_OR_ABORT("Imposter texture size out of bounds");
     }
     auto aabb = orig_node_->relative_aabb();
-    if (!aabb.has_value()) {
+    if (aabb.empty() || aabb.full()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + debug_prefix_ + '"');
     }
-    obj_relative_aabb_ = *aabb;
-    orig_node->insert_node_hider(orig_hider);
+    obj_relative_aabb_ = aabb.data();
+    orig_node->insert_node_hider({ orig_hider, CURRENT_SOURCE_LOCATION });
 }
 
 ImposterLogic::~ImposterLogic() {
@@ -153,7 +154,7 @@ void ImposterLogic::add_imposter(
         .instance_name = VariableAndHash<std::string>{ "imposter" },
         .scene_node = new_imposter_node.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    new_imposter_node->insert_node_hider(imposter_hider_);
+    new_imposter_node->insert_node_hider({ imposter_hider_, CURRENT_SOURCE_LOCATION });
     scene_.add_root_imposter_node(new_imposter_node.ref(DP_LOC));
     imposter_node_ = std::move(new_imposter_node);
 }

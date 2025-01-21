@@ -78,7 +78,7 @@ public:
         } else {
             verbose_abort("Unknown destroyed object");
         }
-        node_to_hide_->remove_node_hider(*this);
+        node_to_hide_->remove_node_hider({ *this, CURRENT_SOURCE_LOCATION });
         node_to_hide_ = nullptr;
         camera_node_ = nullptr;
         global_object_pool.remove(this);
@@ -177,6 +177,6 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& nh = global_object_pool.add(std::move(node_hider), CURRENT_SOURCE_LOCATION);
     node_to_hide->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
     camera_node->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
-    node_to_hide->insert_node_hider(nh);
+    node_to_hide->insert_node_hider({ nh, CURRENT_SOURCE_LOCATION });
     physics_engine.advance_times_.add_advance_time({ nh, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

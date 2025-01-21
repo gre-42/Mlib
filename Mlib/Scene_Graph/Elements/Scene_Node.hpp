@@ -25,9 +25,9 @@
 namespace Mlib {
 
 template <class TData, size_t tndim>
-class AxisAlignedBoundingBox;
+class ExtremalAxisAlignedBoundingBox;
 template <class TPos, size_t tndim>
-class BoundingSphere;
+class ExtremalBoundingSphere;
 
 struct ColoredVertexArrayFilter;
 struct SceneGraphConfig;
@@ -152,8 +152,9 @@ public:
     IAbsoluteObserver& get_sticky_absolute_observer() const;
     void set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_observer);
 
-    void insert_node_hider(INodeHider& node_hider);
-    void remove_node_hider(INodeHider& node_hider);
+    bool contains_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider) const;
+    void insert_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider);
+    void remove_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider);
     void add_renderable(
         const VariableAndHash<std::string>& name,
         const std::shared_ptr<const Renderable>& renderable);
@@ -293,8 +294,8 @@ public:
     FixedArray<float, 3> velocity(
         std::chrono::steady_clock::time_point time,
         std::chrono::steady_clock::duration dt) const;
-    std::optional<AxisAlignedBoundingBox<ScenePos, 3>> relative_aabb() const;
-    BoundingSphere<ScenePos, 3> relative_bounding_sphere() const;
+    ExtremalAxisAlignedBoundingBox<ScenePos, 3> relative_aabb() const;
+    ExtremalBoundingSphere<ScenePos, 3> relative_bounding_sphere() const;
     ScenePos max_center_distance(BillboardId billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const VariableAndHash<std::string>& name) const;
@@ -337,7 +338,7 @@ private:
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_;
     DanglingBaseClassPtr<IRelativeMovable> relative_movable_;
     std::unique_ptr<INodeModifier> node_modifier_;
-    std::set<INodeHider*> node_hiders_;
+    std::set<DanglingBaseClassPtr<INodeHider>> node_hiders_;
     IAbsoluteObserver* absolute_observer_;
     IAbsoluteObserver* sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;

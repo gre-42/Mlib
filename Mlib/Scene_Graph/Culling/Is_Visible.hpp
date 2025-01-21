@@ -7,7 +7,7 @@
 namespace Mlib {
 
 template <class TData, size_t tndim>
-class AxisAlignedBoundingBox;
+class ExtremalAxisAlignedBoundingBox;
 template <class TData>
 class Frustum3;
 struct Material;
@@ -27,6 +27,6 @@ bool is_visible(
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const Frustum3<TData>* frustum,
-    const AxisAlignedBoundingBox<TData, 3>* aabb);
+    const ExtremalAxisAlignedBoundingBox<TData, 3>* aabb);
 
 }

@@ -34,8 +34,8 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     std::vector<UUVector<FixedArray<float, 3, 2>>>&& uv1,
     std::vector<UUVector<FixedArray<float, 3>>>&& cweight,
     UUVector<FixedArray<float, 3>>&& alpha,
-    const AxisAlignedBoundingBox<TPos, 3>* aabb,
-    const BoundingSphere<TPos, 3>* bounding_sphere)
+    const ExtremalAxisAlignedBoundingBox<TPos, 3>* aabb,
+    const ExtremalBoundingSphere<TPos, 3>* bounding_sphere)
     : name{ std::move(name) }
     , material{ material }
     , morphology{ morphology }
@@ -574,7 +574,7 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
 }
 
 template <class TPos>
-const AxisAlignedBoundingBox<TPos, 3>& ColoredVertexArray<TPos>::aabb() const {
+const ExtremalAxisAlignedBoundingBox<TPos, 3>& ColoredVertexArray<TPos>::aabb() const {
     if (aabb_has_value_) {
         return *aabb_;
     }
@@ -586,13 +586,13 @@ const AxisAlignedBoundingBox<TPos, 3>& ColoredVertexArray<TPos>::aabb() const {
     if (vs.empty()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + name + "\" because it has no vertices");
     }
-    aabb_ = AxisAlignedBoundingBox<TPos, 3>::from_iterator(vs.begin(), vs.end());
+    aabb_.emplace(AxisAlignedBoundingBox<TPos, 3>::from_iterator(vs.begin(), vs.end()));
     aabb_has_value_ = true;
     return *aabb_;
 }
 
 template <class TPos>
-const BoundingSphere<TPos, 3>& ColoredVertexArray<TPos>::bounding_sphere() const {
+const ExtremalBoundingSphere<TPos, 3>& ColoredVertexArray<TPos>::bounding_sphere() const {
     if (bounding_sphere_has_value_) {
         return *bounding_sphere_;
     }
@@ -604,7 +604,7 @@ const BoundingSphere<TPos, 3>& ColoredVertexArray<TPos>::bounding_sphere() const
     if (vs.empty()) {
         THROW_OR_ABORT("Cannot compute bounding sphere of \"" + name + "\" because it has no vertices");
     }
-    bounding_sphere_ = BoundingSphere<TPos, 3>::from_iterator(vs.begin(), vs.end());
+    bounding_sphere_.emplace(BoundingSphere<TPos, 3>::from_iterator(vs.begin(), vs.end()));
     bounding_sphere_has_value_ = true;
     return *bounding_sphere_;
 }

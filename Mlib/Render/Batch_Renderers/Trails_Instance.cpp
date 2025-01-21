@@ -16,12 +16,8 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y)
 {
-    auto aabb = AxisAlignedBoundingBox<float, 3>::from_min_max(
-        fixed_full<float, 3>(-INFINITY),
-        fixed_full<float, 3>(INFINITY));
-    BoundingSphere<float, 3> bounding_sphere(
-        fixed_zeros<float, 3>(),
-        INFINITY);
+    auto aabb = ExtremalAxisAlignedBoundingBox<float, 3>{ ExtremalBoundingVolume::FULL };
+    auto bounding_sphere = ExtremalBoundingSphere<float, 3>{ ExtremalBoundingVolume::FULL };
     return std::make_shared<ColoredVertexArray<float>>(
         "empty_trails",
         Material{

@@ -1,5 +1,6 @@
 #include "Is_Visible.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Intersection/Extremal_Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
@@ -19,7 +20,7 @@ bool Mlib::is_visible(
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const Frustum3<TData>* frustum,
-    const AxisAlignedBoundingBox<TData, 3>* aabb)
+    const ExtremalAxisAlignedBoundingBox<TData, 3>* aabb)
 {
     assert_true((billboard_id != BILLBOARD_ID_NONE) || material.billboard_atlas_instances.empty());
     if ((scene_graph_config.renderable_hider != nullptr) &&
@@ -51,7 +52,7 @@ bool Mlib::is_visible(
         if (frustum == nullptr) {
             return true;
         } else {
-            return frustum->intersects(*aabb);
+            return aabb->full() || frustum->intersects(aabb->data());
         }
     }
     THROW_OR_ABORT("VisibilityCheck::is_visible received unknown render pass type");
@@ -66,7 +67,7 @@ template bool Mlib::is_visible<float>(
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const Frustum3<float>* frustum,
-    const AxisAlignedBoundingBox<float, 3>* aabb);
+    const ExtremalAxisAlignedBoundingBox<float, 3>* aabb);
 
 template bool Mlib::is_visible<double>(
     const VisibilityCheck<double>& vc,
@@ -77,4 +78,4 @@ template bool Mlib::is_visible<double>(
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const Frustum3<double>* frustum,
-    const AxisAlignedBoundingBox<double, 3>* aabb);
+    const ExtremalAxisAlignedBoundingBox<double, 3>* aabb);

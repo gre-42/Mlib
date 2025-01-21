@@ -145,8 +145,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     : rcva_{ rcva }
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
     , secondary_rendering_resources_{ rendering_resources }
-    , aabb_{ AxisAlignedBoundingBox<CompressedScenePos, 3>::empty() }
-    , bounding_sphere_(fixed_zeros<CompressedScenePos, 3>(), (CompressedScenePos)0.f)
+    , aabb_{ ExtremalBoundingVolume::EMPTY }
+    , bounding_sphere_{ ExtremalBoundingVolume::EMPTY }
 {
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
@@ -1482,11 +1482,11 @@ void RenderableColoredVertexArray::extend_aabb(
     extend(instances_sorted_continuously_);
 }
 
-AxisAlignedBoundingBox<CompressedScenePos, 3> RenderableColoredVertexArray::aabb() const {
+ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> RenderableColoredVertexArray::aabb() const {
     return aabb_;
 }
 
-BoundingSphere<CompressedScenePos, 3> RenderableColoredVertexArray::bounding_sphere() const {
+ExtremalBoundingSphere<CompressedScenePos, 3> RenderableColoredVertexArray::bounding_sphere() const {
     return bounding_sphere_;
 }
 

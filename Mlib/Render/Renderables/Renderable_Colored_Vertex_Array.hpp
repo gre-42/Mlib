@@ -75,8 +75,8 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const override;
-    virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
-    virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
+    virtual ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
+    virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
     virtual ScenePos max_center_distance(BillboardId billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
 private:
@@ -106,8 +106,8 @@ private:
     bool requires_blending_pass_;
     int continuous_blending_z_order_;
     RenderingResources& secondary_rendering_resources_;
-    AxisAlignedBoundingBox<CompressedScenePos, 3> aabb_;
-    BoundingSphere<CompressedScenePos, 3> bounding_sphere_;
+    ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb_;
+    ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi);

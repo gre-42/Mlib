@@ -188,17 +188,22 @@ void SceneNode::set_node_modifier(std::unique_ptr<INodeModifier>&& node_modifier
     node_modifier_ = std::move(node_modifier);
 }
 
-void SceneNode::insert_node_hider(INodeHider& node_hider) {
+bool SceneNode::contains_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider) const {
+    std::shared_lock lock{ mutex_ };
+    return node_hiders_.contains(node_hider.ptr());
+}
+
+void SceneNode::insert_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider) {
     std::scoped_lock lock{ mutex_ };
-    if (!node_hiders_.insert(&node_hider).second) {
+    if (!node_hiders_.insert(node_hider.ptr()).second) {
         THROW_OR_ABORT("Node hider already inserted");
     }
 }
 
-void SceneNode::remove_node_hider(INodeHider& node_hider) {
+void SceneNode::remove_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider) {
     std::scoped_lock lock{ mutex_ };
-    if (node_hiders_.erase(&node_hider) != 1) {
-        THROW_OR_ABORT("Could not remove node hider");
+    if (node_hiders_.erase(node_hider.ptr()) != 1) {
+        verbose_abort("Could not remove node hider");
     }
 }
 
@@ -1430,40 +1435,40 @@ void SceneNode::set_absolute_pose(
     }
 }
 
-std::optional<AxisAlignedBoundingBox<ScenePos, 3>> SceneNode::relative_aabb() const {
+ExtremalAxisAlignedBoundingBox<ScenePos, 3> SceneNode::relative_aabb() const {
     std::shared_lock lock{ mutex_ };
-    std::optional<AxisAlignedBoundingBox<ScenePos, 3>> result;
+    ExtremalAxisAlignedBoundingBox<ScenePos, 3> result = ExtremalBoundingVolume::EMPTY;
     if (!renderables_.empty()) {
-        result = AxisAlignedBoundingBox<ScenePos, 3>::empty();
+        result = ExtremalBoundingVolume::EMPTY;
     }
     for (const auto& [_, r] : renderables_) {
-        result.value().extend((*r)->aabb().casted<ScenePos>());
+        result.extend((*r)->aabb().casted<ScenePos>());
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_aabb();
-        if (cb.has_value()) {
+        if (cb.full()) {
+            return ExtremalBoundingVolume::FULL;
+        } else if (!cb.empty()) {
             auto m = c.scene_node->relative_model_matrix();
-            if (!result.has_value()) {
-                result = cb->transformed(m);
-            } else {
-                result->extend(cb->transformed(m));
-            }
+            result.extend(cb.data().transformed(m));
         }
     }
     return result;
 }
 
-BoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
+ExtremalBoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
     std::shared_lock lock{ mutex_ };
-    BoundingSphere<ScenePos, 3> result(fixed_zeros<ScenePos, 3>(), 0.);
+    ExtremalBoundingSphere<ScenePos, 3> result = ExtremalBoundingVolume::EMPTY;
     for (const auto& [_, r] : renderables_) {
         result.extend((*r)->bounding_sphere().casted<ScenePos>());
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_bounding_sphere();
-        if (cb.radius != 0.) {
+        if (cb.full()) {
+            return ExtremalBoundingVolume::FULL;
+        } else if (!cb.empty()) {
             auto m = c.scene_node->relative_model_matrix();
-            result.extend(cb.transformed(m));
+            result.extend(cb.data().transformed(m));
         }
     }
     return result;

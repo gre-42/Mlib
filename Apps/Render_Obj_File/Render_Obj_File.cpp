@@ -1006,14 +1006,17 @@ int main(int argc, char** argv) {
         
         if (args.has_named("--look_at_aabb")) {
             auto aabb = scene.get_node("obj", DP_LOC)->relative_aabb();
-            if (!aabb.has_value()) {
-                throw std::runtime_error("Node has no AABB");
+            if (aabb.empty()) {
+                throw std::runtime_error("Node has an empty AABB");
+            }
+            if (aabb.full()) {
+                throw std::runtime_error("Node has a full AABB");
             }
             scene.add_root_node("follower_camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
             auto la = gl_lookat_aabb(
                 scene.get_node("follower_camera", DP_LOC)->position(),
                 scene.get_node("obj", DP_LOC)->absolute_model_matrix(),
-                *aabb);
+                aabb.data());
             if (!la.has_value()) {
                 throw std::runtime_error("Could not compute frustum, camera might be inside the object's AABB");
             }

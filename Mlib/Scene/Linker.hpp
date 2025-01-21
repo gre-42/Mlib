@@ -21,7 +21,7 @@ public:
         SourceLocation loc) const
     {
         // 1. Set movable, which updates the transformation-matrix.
-        AbsoluteMovableSetter ams{ moved_node, std::move(absolute_movable) };
+        AbsoluteMovableSetter ams{ moved_node, std::move(absolute_movable), loc };
         // 2. Add to physics engine.
         advance_times_.add_advance_time({ *ams.absolute_movable, loc }, loc);
         // 3. Observe an additional node.
@@ -36,7 +36,7 @@ public:
         SourceLocation loc) const
     {
         // 1. Set movable, which updates the transformation-matrix.
-        AbsoluteMovableSetter ams{ node, std::move(absolute_movable) };
+        AbsoluteMovableSetter ams{ node, std::move(absolute_movable), loc };
         // 2. Add to physics engine.
         advance_times_.add_advance_time({ *ams.absolute_movable, loc }, loc);
         ams.absolute_movable.release();

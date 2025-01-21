@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Intersection/Extremal_Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Extremal_Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
@@ -57,8 +57,8 @@ public:
         std::vector<UUVector<FixedArray<float, 3, 2>>>&& uv1,
         std::vector<UUVector<FixedArray<float, 3>>>&& cweight,
         UUVector<FixedArray<float, 3>>&& alpha,
-        const AxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
-        const BoundingSphere<TPos, 3>* bounding_sphere = nullptr);
+        const ExtremalAxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
+        const ExtremalBoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
     std::string name;
     Material material;
@@ -92,8 +92,8 @@ public:
     }
     bool empty() const;
     UUVector<FixedArray<TPos, 3>> vertices() const;
-    const AxisAlignedBoundingBox<TPos, 3>& aabb() const;
-    const BoundingSphere<TPos, 3>& bounding_sphere() const;
+    const ExtremalAxisAlignedBoundingBox<TPos, 3>& aabb() const;
+    const ExtremalBoundingSphere<TPos, 3>& bounding_sphere() const;
     void set_bounds(
         const AxisAlignedBoundingBox<TPos, 3>& aabb,
         const BoundingSphere<TPos, 3>& bounding_sphere);
@@ -200,8 +200,8 @@ public:
 private:
     template <PrimitiveDimensions tfirst_dim>
     bool empty_from() const;
-    mutable std::optional<AxisAlignedBoundingBox<TPos, 3>> aabb_;
-    mutable std::optional<BoundingSphere<TPos, 3>> bounding_sphere_;
+    mutable std::optional<ExtremalAxisAlignedBoundingBox<TPos, 3>> aabb_;
+    mutable std::optional<ExtremalBoundingSphere<TPos, 3>> bounding_sphere_;
     mutable SafeAtomicRecursiveSharedMutex aabb_mutex_;
     mutable SafeAtomicRecursiveSharedMutex bounding_sphere_mutex_;
     mutable std::atomic_bool aabb_has_value_;

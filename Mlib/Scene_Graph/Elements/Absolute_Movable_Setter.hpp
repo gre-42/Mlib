@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Optional_Cast.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 
 namespace Mlib {
 
@@ -15,11 +16,11 @@ public:
         DanglingRef<SceneNode> node,
         std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
         DanglingBaseClassPtr<DestructionObserver<SceneNode&>> destruction_observer,
-        INodeHider* node_hider)
+        DanglingBaseClassPtr<INodeHider> node_hider)
         : absolute_movable{ nullptr, nullptr }
         , absolute_movable_ptr_{ *absolute_movable, CURRENT_SOURCE_LOCATION }
         , destruction_observer_{ std::move(destruction_observer) }
-        , node_hider_{ node_hider }
+        , node_hider_{ std::move(node_hider) }
         , node_{ node }
         , lock_{ node->mutex_ }
     {
@@ -33,12 +34,13 @@ public:
     }
     AbsoluteMovableSetter(
         DanglingRef<SceneNode> node,
-        std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable)
+        std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
+        SourceLocation loc)
         : AbsoluteMovableSetter{
             node,
             std::move(absolute_movable),
-            { *absolute_movable, CURRENT_SOURCE_LOCATION },
-            optional_cast<INodeHider*>(absolute_movable.get()) }
+            { *absolute_movable, loc },
+            { optional_cast<INodeHider*>(absolute_movable.get()), loc } }
     {}
     AbsoluteMovableSetter(
         DanglingRef<SceneNode> node,
@@ -64,7 +66,7 @@ public:
 private:
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_ptr_;
     DanglingBaseClassPtr<DestructionObserver<SceneNode&>> destruction_observer_;
-    INodeHider* node_hider_;
+    DanglingBaseClassPtr<INodeHider> node_hider_;
     DanglingRef<SceneNode> node_;
     std::scoped_lock<SafeAtomicRecursiveSharedMutex> lock_;
 };
