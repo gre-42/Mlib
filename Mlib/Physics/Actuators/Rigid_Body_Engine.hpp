@@ -29,7 +29,7 @@ public:
     explicit RigidBodyEngine(
         const std::optional<EnginePower>& engine_power,
         bool hand_brake_pulled,
-        const std::shared_ptr<EngineEventListener>& audio);
+        std::shared_ptr<EngineEventListener> audio);
     ~RigidBodyEngine();
 
     // StatusWriter

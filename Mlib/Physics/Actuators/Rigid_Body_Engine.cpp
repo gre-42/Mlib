@@ -15,14 +15,14 @@ using namespace Mlib;
 RigidBodyEngine::RigidBodyEngine(
     const std::optional<EnginePower>& engine_power,
     bool hand_brake_pulled,
-    const std::shared_ptr<EngineEventListener>& audio)
+    std::shared_ptr<EngineEventListener> audio)
 : engine_power_intent_{
     .surface_power = 0.f,
     .drive_relaxation = 0.f},
   engine_power_{ engine_power },
   ntires_old_{ 0 },
   hand_brake_pulled_{ hand_brake_pulled },
-  audio_{ audio }
+  audio_{ std::move(audio) }
 {
     if ((audio != nullptr) && !engine_power.has_value()) {
         THROW_OR_ABORT("Engine audio is set but no engine was provided");

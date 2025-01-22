@@ -200,7 +200,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
 
         std::shared_ptr<EngineAudio> av;
         if (!args.arguments.at<bool>(KnownArgs::mute)) {
-            if (auto engine_audio = vdb.try_at<std::string>(KnownDb::engine_audio); engine_audio.has_value()) {
+            if (auto engine_audio = vdb.try_at_non_null<std::string>(KnownDb::engine_audio); engine_audio.has_value()) {
                 const auto& adb = args.asset_references["engine_audio"].at(*engine_audio).rp.database;
                 adb.validate(KnownAudio::options);
                 av = std::make_shared<EngineAudio>(
@@ -258,6 +258,12 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 std::move(engine_power),
                 args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
                 av);
+        } else {
+            rb.engines_.add(
+                VariableAndHash<std::string>{ "engine" },
+                std::nullopt,   // power
+                args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
+                nullptr);       // audio
         }
 
         wdb.validate(KnownWheels::options);
