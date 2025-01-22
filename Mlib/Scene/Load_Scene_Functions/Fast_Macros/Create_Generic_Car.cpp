@@ -226,7 +226,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 rb.engines_.add(
                     VariableAndHash<std::string>{ "front" },
                     std::move(engine_power),
-                    args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
+                    args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
                     av);
             }
             {
@@ -241,7 +241,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 rb.engines_.add(
                     VariableAndHash<std::string>{ "rear" },
                     std::move(engine_power),
-                    args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
+                    args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
                     av);
             }
         } else if (vdb.contains_non_null(KnownDb::powers)) {
@@ -256,13 +256,13 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             rb.engines_.add(
                 VariableAndHash<std::string>{ "engine" },
                 std::move(engine_power),
-                args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
+                args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
                 av);
         } else {
             rb.engines_.add(
                 VariableAndHash<std::string>{ "engine" },
                 std::nullopt,   // power
-                args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
+                args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
                 nullptr);       // audio
         }
 
