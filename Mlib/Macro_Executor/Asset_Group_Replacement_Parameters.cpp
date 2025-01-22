@@ -11,11 +11,16 @@ AssetGroupReplacementParameters::AssetGroupReplacementParameters() = default;
 
 AssetGroupReplacementParameters::~AssetGroupReplacementParameters() = default;
 
-void AssetGroupReplacementParameters::insert(
+void AssetGroupReplacementParameters::insert_if_active(
     const std::string& filename,
     const MacroLineExecutor& mle)
 {
     auto rp = ReplacementParameterAndFilename::from_json(filename);
+    for (const auto& r : rp.rp.required.fixed) {
+        if (!mle.eval<bool>(r)) {
+            return;
+        }
+    }
     auto mlecd = mle.changed_script_filename(filename);
     if (rp.rp.on_init != nlohmann::detail::value_t::null) {
         mlecd(rp.rp.on_init, nullptr, nullptr);

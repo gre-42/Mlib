@@ -10,6 +10,12 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+namespace KnownRequired {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(fixed);
+DECLARE_ARGUMENT(dynamic);
+}
+
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
@@ -40,6 +46,13 @@ ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const
         throw std::runtime_error("Error loading file \"" + filename + "\": " + e.what());
     }
 }
+
+void Mlib::from_json(const nlohmann::json& j, ReplacementParameterRequired& rp) {
+    validate(j, KnownRequired::options);
+    j.at(KnownRequired::fixed).get_to(rp.fixed);
+    j.at(KnownRequired::dynamic).get_to(rp.dynamic);
+}
+
 
 void Mlib::from_json(const nlohmann::json& j, ReplacementParameter& rp) {
     validate(j, KnownArgs::options);

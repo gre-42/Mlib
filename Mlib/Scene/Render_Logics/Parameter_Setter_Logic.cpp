@@ -26,7 +26,7 @@ size_t ReplacementParameterContents::num_entries() const {
 }
 
 bool ReplacementParameterContents::is_visible(size_t index) const {
-    for (const auto& r : options_[index].required) {
+    for (const auto& r : options_[index].required.dynamic) {
         if (!mle_.eval<bool>(r)) {
             return false;
         }

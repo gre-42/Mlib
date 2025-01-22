@@ -101,7 +101,10 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             .rp = ReplacementParameter{
                 .id = level_id,
                 .title = jv.at<std::string>("name"),
-                .required = std::move(required),
+                .required = {
+                    .fixed = {},
+                    .dynamic = std::move(required)
+                },
                 .database = std::move(database),
                 .on_before_select = std::move(on_before_select)
             },

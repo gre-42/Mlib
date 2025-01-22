@@ -16,6 +16,7 @@ class ThreadSafeString;
 class IWidget;
 class ILayoutPixels;
 struct ReplacementParameterAndFilename;
+struct ReplacementParameterRequired;
 template <typename TData, size_t... tshape>
 class FixedArray;
 
@@ -26,7 +27,7 @@ public:
     const std::string& name() const;
     const std::string& filename() const;
     const nlohmann::json& on_before_select() const;
-    const std::vector<std::string>& required() const;
+    const ReplacementParameterRequired& required() const;
     JsonView locals() const;
     bool operator < (const SceneEntry& other) const;
 private:

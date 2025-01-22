@@ -3,10 +3,17 @@
 
 namespace Mlib {
 
+struct ReplacementParameterRequired {
+    std::vector<std::string> fixed;
+    std::vector<std::string> dynamic;
+};
+
+void from_json(const nlohmann::json& j, ReplacementParameterRequired& rp);
+
 struct ReplacementParameter {
     std::string id;
     std::string title;
-    std::vector<std::string> required;
+    ReplacementParameterRequired required;
     JsonMacroArguments database;
     nlohmann::json on_init;
     nlohmann::json on_before_select;

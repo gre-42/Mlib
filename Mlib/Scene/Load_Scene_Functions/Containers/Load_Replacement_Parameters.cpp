@@ -38,7 +38,7 @@ LoadSceneJsonUserFunction LoadReplacementParameters::json_user_function = [](con
                 }
                 auto path_string = candidate_file.path().string();
                 try {
-                    group.insert(path_string, args.macro_line_executor);
+                    group.insert_if_active(path_string, args.macro_line_executor);
                 } catch (const std::runtime_error& e) {
                     throw std::runtime_error("Error processing replacement parameter file \"" + path_string + "\": " + e.what());
                 }
