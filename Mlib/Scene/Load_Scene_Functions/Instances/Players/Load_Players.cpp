@@ -113,8 +113,8 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
     // }
     //
     // Example macro calls:
-    // macro_playback teams.create_player_and_car_for_pc DECIMATE: PLAYER_NAME:you CAR_NAME:_tiger_tank TEAM:red GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8;
-    // macro_playback teams.create_player_and_car_for_npc CAR_NAME:_tiger_tank DECIMATE: PLAYER_NAME:npc1 TEAM:red  GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8
+    // macro_playback teams.create_player_and_car_for_pc decimate: player_name:you car_name:_tiger_tank TEAM:red GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8;
+    // macro_playback teams.create_player_and_car_for_npc car_name:_tiger_tank decimate: player_name:npc1 TEAM:red  GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8
     //    TEAMS_WAY_POINTS_RESOURCE:TEAMS_WAY_POINTS_RESOURCE;
 
     try {
@@ -162,37 +162,37 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {
                         MacroKeys::playback,
                         (jv.at(ToplevelKeys::library).get<std::string>() + ".create_player_and_" +
-                            vars.database.at<std::string>("CLASS") +
+                            vars.database.at<std::string>("class") +
                             "_for_" + *controller)
                     },
                     {
                         MacroKeys::let,
                         {
-                            {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
-                            {"PLAYER_NAME", player.at<std::string>(PlayerKeys::name)},
-                            {"HUMAN_NAME", vehicle_name},
-                            {"CAR_NAME", vehicle_name},
-                            {"TEAM", team},
-                            {"GAME_MODE", get(PlayerKeys::game_mode).get<std::string>()},
-                            {"INITIAL_BEHAVIOR", get(PlayerKeys::behavior).get<std::string>()},
-                            {"ROLE", get(PlayerKeys::role).get<std::string>()},
-                            {"UNSTUCK_MODE", get(PlayerKeys::unstuck_mode).get<std::string>()},
-                            {"IF_HUMAN_STYLE", true},
-                            {"IF_CAR_BODY_RENDERABLE_STYLE", true},
-                            {"COLOR", color},
-                            {"USER_DRIVE", get_skill(SourceKeys::user, SkillsKeys::can_drive)},
-                            {"USER_AIM", get_skill(SourceKeys::user, SkillsKeys::can_aim)},
-                            {"USER_SHOOT", get_skill(SourceKeys::user, SkillsKeys::can_shoot)},
-                            {"AI_DRIVE", get_skill(SourceKeys::ai, SkillsKeys::can_drive)},
-                            {"AI_AIM", get_skill(SourceKeys::ai, SkillsKeys::can_aim)},
-                            {"AI_SHOOT", get_skill(SourceKeys::ai, SkillsKeys::can_shoot)},
-                            {"AI_SELECT_OPPONENT", get_skill(SourceKeys::ai, SkillsKeys::can_select_opponent)},
-                            {"AI_SELECT_WEAPON", get_skill(SourceKeys::ai, SkillsKeys::can_select_weapon)},
-                            {"VELOCITY_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
-                            {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
-                            {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
-                            {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
-                            {"RESPAWN_COOLDOWN_TIME", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
+                            {"spawner_name", player.at<std::string>(PlayerKeys::name)},
+                            {"player_name", player.at<std::string>(PlayerKeys::name)},
+                            {"human_name", vehicle_name},
+                            {"car_name", vehicle_name},
+                            {"team", team},
+                            {"game_mode", get(PlayerKeys::game_mode).get<std::string>()},
+                            {"initial_behavior", get(PlayerKeys::behavior).get<std::string>()},
+                            {"role", get(PlayerKeys::role).get<std::string>()},
+                            {"unstuck_mode", get(PlayerKeys::unstuck_mode).get<std::string>()},
+                            {"if_human_style", true},
+                            {"if_car_body_renderable_style", true},
+                            {"color", color},
+                            {"user_drive", get_skill(SourceKeys::user, SkillsKeys::can_drive)},
+                            {"user_aim", get_skill(SourceKeys::user, SkillsKeys::can_aim)},
+                            {"user_shoot", get_skill(SourceKeys::user, SkillsKeys::can_shoot)},
+                            {"ai_drive", get_skill(SourceKeys::ai, SkillsKeys::can_drive)},
+                            {"ai_aim", get_skill(SourceKeys::ai, SkillsKeys::can_aim)},
+                            {"ai_shoot", get_skill(SourceKeys::ai, SkillsKeys::can_shoot)},
+                            {"ai_select_opponent", get_skill(SourceKeys::ai, SkillsKeys::can_select_opponent)},
+                            {"ai_select_weapon", get_skill(SourceKeys::ai, SkillsKeys::can_select_weapon)},
+                            {"velocity_error_std", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
+                            {"yaw_error_std", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
+                            {"pitch_error_std", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
+                            {"error_alpha", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
+                            {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
                             {"mute", false}
                         }
                     }
@@ -203,23 +203,23 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {
                         MacroKeys::playback,
                         (jv.at(ToplevelKeys::library).get<std::string>() + ".create_spawner_and_" +
-                            vars.database.at<std::string>("CLASS"))
+                            vars.database.at<std::string>("class"))
                     },
                     {
                         MacroKeys::let,
                         {
-                            {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
-                            {"HUMAN_NAME", vehicle_name},
-                            {"CAR_NAME", vehicle_name},
-                            {"TEAM", team},
-                            {"IF_HUMAN_STYLE", true},
-                            {"IF_CAR_BODY_RENDERABLE_STYLE", true},
-                            {"COLOR", color},
-                            {"VELOCITY_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
-                            {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
-                            {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
-                            {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
-                            {"RESPAWN_COOLDOWN_TIME", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
+                            {"spawner_name", player.at<std::string>(PlayerKeys::name)},
+                            {"human_name", vehicle_name},
+                            {"car_name", vehicle_name},
+                            {"team", team},
+                            {"if_human_style", true},
+                            {"if_car_body_renderable_style", true},
+                            {"color", color},
+                            {"velocity_error_std", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
+                            {"yaw_error_std", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
+                            {"pitch_error_std", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
+                            {"error_alpha", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
+                            {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
                             {"mute", false}
                         }
                     }

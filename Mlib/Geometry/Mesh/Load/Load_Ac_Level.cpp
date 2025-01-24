@@ -81,22 +81,22 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             THROW_OR_ABORT("Unknown \"run\" parameter in file \"" + preview_filename.string() + "\": " + run);
         }
         auto globals = nlohmann::json{
-            {"SELECTED_LEVEL_ID", level_id},
-            {"LEVEL_ICON_FILE", preview_filename.string()},
-            {"STAGE_INI_FILENAME", stage_filename.string()},
-            {"MINIMAP_FILE", any(minimap_size != 20.f) || any(minimap_offset != 20.f)
+            {"selected_level_id", level_id},
+            {"level_icon_file", preview_filename.string()},
+            {"stage_ini_filename", stage_filename.string()},
+            {"minimap_file", any(minimap_size != 20.f) || any(minimap_offset != 20.f)
                 ? nlohmann::json(minimap_filename.string())
                 : nlohmann::json()},
-            {"MINIMAP_SCALE", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
-            {"MINIMAP_SIZE", minimap_size},
-            {"MINIMAP_OFFSET", minimap_offset} };
+            {"minimap_scale", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
+            {"minimap_size", minimap_size},
+            {"minimap_offset", minimap_offset} };
         auto on_before_select = nlohmann::json{
             {"call", "globals"},
             {"arguments", globals} };
         auto database = JsonMacroArguments(nlohmann::json{
-            {"IF_RACEWAY_CIRCULAR", circular},
+            {"if_raceway_circular", circular},
             {"game_modes", std::vector<std::string>{"rally"}} });
-        auto required = std::vector<std::string>({ "%GAME_MODE == 'rally'" });
+        auto required = std::vector<std::string>({ "%game_mode == 'rally'" });
         result.push_back(ReplacementParameterAndFilename{
             .rp = ReplacementParameter{
                 .id = level_id,

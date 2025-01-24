@@ -23,13 +23,13 @@ DECLARE_ARGUMENT(macro);
 
 namespace KnownLet {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(HUMAN_NODE_POSITION);
-DECLARE_ARGUMENT(HUMAN_NODE_ANGLE_Y);
-DECLARE_ARGUMENT(CAR_NODE_POSITION);
-DECLARE_ARGUMENT(CAR_NODE_ANGLES);
+DECLARE_ARGUMENT(human_node_position);
+DECLARE_ARGUMENT(human_node_angle_y);
+DECLARE_ARGUMENT(car_node_position);
+DECLARE_ARGUMENT(car_node_angles);
 DECLARE_ARGUMENT(velocity);
 DECLARE_ARGUMENT(angular_velocity);
-DECLARE_ARGUMENT(SUFFIX);
+DECLARE_ARGUMENT(suffix);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
 }
@@ -58,16 +58,16 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
          &scene = scene](const SpawnPoint& p){
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
             nlohmann::json let{
-                {KnownLet::HUMAN_NODE_POSITION, funpack(p.position) / (ScenePos)meters},
-                {KnownLet::HUMAN_NODE_ANGLE_Y, std::atan2(z(0), z(2)) / degrees},
-                {KnownLet::CAR_NODE_POSITION, funpack(p.position) / (ScenePos)meters},
-                {KnownLet::CAR_NODE_ANGLES, p.rotation / degrees},
+                {KnownLet::human_node_position, funpack(p.position) / (ScenePos)meters},
+                {KnownLet::human_node_angle_y, std::atan2(z(0), z(2)) / degrees},
+                {KnownLet::car_node_position, funpack(p.position) / (ScenePos)meters},
+                {KnownLet::car_node_angles, p.rotation / degrees},
                 // Velocity and angular velocity should be calculated dynamically from the parent of the
                 // spawn point using "parent.velocity_at_position" and "parent.angular_velocity_at_position".
                 // Spawn points do not yet have a parent, so the values are set to zero here.
                 {KnownLet::velocity, fixed_zeros<float, 3>() / kph},
                 {KnownLet::angular_velocity, fixed_zeros<float, 3>() / rpm},  // this is not yet used in the scripts
-                {KnownLet::SUFFIX, "_" + spawner_name + scene.get_temporary_instance_suffix()},
+                {KnownLet::suffix, "_" + spawner_name + scene.get_temporary_instance_suffix()},
                 {KnownLet::if_with_graphics, true},
                 {KnownLet::if_with_physics, true} };
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);

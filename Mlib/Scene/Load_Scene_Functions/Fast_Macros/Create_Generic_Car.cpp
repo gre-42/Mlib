@@ -32,9 +32,9 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(NAME);
-DECLARE_ARGUMENT(TESUFFIX);
-DECLARE_ARGUMENT(DECIMATE);
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(tesuffix);
+DECLARE_ARGUMENT(decimate);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
 DECLARE_ARGUMENT(hand_brake_pulled);
@@ -131,15 +131,15 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto create_rigid_cuboid = CreateRigidCuboid{ renderable_scene };
     auto create_rigid_disk = CreateRigidDisk{ renderable_scene };
 
-    auto NAME = args.arguments.at<std::string>(KnownArgs::NAME);
-    auto TESUFFIX = args.arguments.at<std::string>(KnownArgs::TESUFFIX);
-    auto DECIMATE = args.arguments.at<std::string>(KnownArgs::DECIMATE);
+    auto name = args.arguments.at<std::string>(KnownArgs::name);
+    auto tesuffix = args.arguments.at<std::string>(KnownArgs::tesuffix);
+    auto decimate = args.arguments.at<std::string>(KnownArgs::decimate);
     auto if_with_graphics = args.arguments.at<bool>(KnownArgs::if_with_graphics);
     auto if_with_physics = args.arguments.at<bool>(KnownArgs::if_with_physics);
-    const auto& vdb = args.asset_references["vehicles"].at(NAME).rp.database;
+    const auto& vdb = args.asset_references["vehicles"].at(name).rp.database;
     auto wheels = vdb.at<std::string>(KnownDb::wheels);
     const auto& wdb = args.asset_references["wheels"].at(wheels).rp.database;
-    auto parent = "car_node" + TESUFFIX;
+    auto parent = "car_node" + tesuffix;
 
     auto wheel_left_front_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_0);
     auto wheel_left_front_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_1);
@@ -150,32 +150,32 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto wheel_right_rear_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_0);
     auto wheel_right_rear_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_1);
 
-    create_child_node("dynamic", parent, "wheel_left_front_node" + TESUFFIX, wheel_left_front_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, "wheel_right_front_node" + TESUFFIX, wheel_right_front_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, "wheel_left_rear_node" + TESUFFIX, wheel_left_rear_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, "wheel_right_rear_node" + TESUFFIX, wheel_right_rear_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, "wheel_left_front_node" + tesuffix, wheel_left_front_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, "wheel_right_front_node" + tesuffix, wheel_right_front_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, "wheel_left_rear_node" + tesuffix, wheel_left_rear_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, "wheel_right_rear_node" + tesuffix, wheel_right_rear_mount_0.casted<ScenePos>());
 
     if (if_with_graphics) {
-        create_child_node("dynamic", "wheel_right_front_node" + TESUFFIX, "wheel_right_front_node_visual" + TESUFFIX, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
-        create_child_node("dynamic", "wheel_right_rear_node" + TESUFFIX, "wheel_right_rear_node_visual" + TESUFFIX, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+        create_child_node("dynamic", "wheel_right_front_node" + tesuffix, "wheel_right_front_node_visual" + tesuffix, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+        create_child_node("dynamic", "wheel_right_rear_node" + tesuffix, "wheel_right_rear_node_visual" + tesuffix, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
         auto create_graphics = [&](const std::string& suffix, const std::string& decimate){
-            child_renderable_instance("main" + suffix, parent, NAME + "/main" + decimate);
+            child_renderable_instance("main" + suffix, parent, name + "/main" + decimate);
 
-            child_renderable_instance("wheel" + suffix, "wheel_left_front_node" + TESUFFIX, NAME + "/wheel_front" + decimate);
-            child_renderable_instance("wheel" + suffix, "wheel_right_front_node_visual" + TESUFFIX, NAME + "/wheel_front" + decimate);
-            child_renderable_instance("wheel" + suffix, "wheel_left_rear_node" + TESUFFIX, NAME + "/wheel_rear" + decimate);
-            child_renderable_instance("wheel" + suffix, "wheel_right_rear_node_visual" + TESUFFIX, NAME + "/wheel_rear" + decimate);
+            child_renderable_instance("wheel" + suffix, "wheel_left_front_node" + tesuffix, name + "/wheel_front" + decimate);
+            child_renderable_instance("wheel" + suffix, "wheel_right_front_node_visual" + tesuffix, name + "/wheel_front" + decimate);
+            child_renderable_instance("wheel" + suffix, "wheel_left_rear_node" + tesuffix, name + "/wheel_rear" + decimate);
+            child_renderable_instance("wheel" + suffix, "wheel_right_rear_node_visual" + tesuffix, name + "/wheel_rear" + decimate);
             };
-        create_graphics(TESUFFIX, DECIMATE);
-        create_graphics("_lowres" + TESUFFIX, "_lowres");
+        create_graphics(tesuffix, decimate);
+        create_graphics("_lowres" + tesuffix, "_lowres");
         auto create_lights = [&]() {
             if (auto p = vdb.try_at_non_null<UFixedArray<ScenePos, 3>>(KnownDb::light_left_front_position); p.has_value()) {
-                create_child_node("dynamic", parent, "light_left_front" + TESUFFIX, *p);
-                child_renderable_instance("blob" + TESUFFIX, "light_left_front" + TESUFFIX, "car_light_beam");
+                create_child_node("dynamic", parent, "light_left_front" + tesuffix, *p);
+                child_renderable_instance("blob" + tesuffix, "light_left_front" + tesuffix, "car_light_beam");
             }
             if (auto p = vdb.try_at_non_null<UFixedArray<ScenePos, 3>>(KnownDb::light_right_front_position); p.has_value()) {
-                create_child_node("dynamic", parent, "light_right_front_position" + TESUFFIX, *p);
-                child_renderable_instance("blob" + TESUFFIX, "light_right_front_position" + TESUFFIX, "car_light_beam");
+                create_child_node("dynamic", parent, "light_right_front_position" + tesuffix, *p);
+                child_renderable_instance("blob" + tesuffix, "light_right_front_position" + tesuffix, "car_light_beam");
             }};
         create_lights();
     }
@@ -185,8 +185,8 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
             .object_pool = object_pool,
             .node = parent,
-            .name = "generic_car_" + NAME + TESUFFIX,
-            .asset_id = NAME,
+            .name = "generic_car_" + name + tesuffix,
+            .asset_id = name,
             .mass = vdb.at<float>(KnownDb::mass) * kg,
             .size = vdb.at<UFixedArray<float, 3>>(KnownDb::size) * meters,
             .com = vdb.at<UFixedArray<float, 3>>(KnownDb::com) * meters,
@@ -195,7 +195,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             .I_rotation = fixed_zeros<float, 3>(),
             .geographic_coordinates = scene_node_resources.get_geographic_mapping("world"),
             .waypoint_dy = (CompressedScenePos)1.2f,
-            .hitboxes = NAME + "_hitboxes",
+            .hitboxes = name + "_hitboxes",
             .collidable_mode = CollidableMode::MOVING});
 
         std::shared_ptr<EngineAudio> av;
@@ -353,36 +353,36 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             };
         create_wheel(
             0,
-            "wheel_left_front_node" + TESUFFIX,
-            "wheel_left_front" + NAME + TESUFFIX,
-            "wheel_left_front" + NAME,
+            "wheel_left_front_node" + tesuffix,
+            "wheel_left_front" + name + tesuffix,
+            "wheel_left_front" + name,
             front_engine,
             std::nullopt,
             wheel_left_front_mount_0,
             wheel_left_front_mount_1);
         create_wheel(
             1,
-            "wheel_right_front_node" + TESUFFIX,
-            "wheel_right_front" + NAME + TESUFFIX,
-            "wheel_right_front" + NAME,
+            "wheel_right_front_node" + tesuffix,
+            "wheel_right_front" + name + tesuffix,
+            "wheel_right_front" + name,
             front_engine,
             std::nullopt,
             wheel_right_front_mount_0,
             wheel_right_front_mount_1);
         create_wheel(
             2,
-            "wheel_left_rear_node" + TESUFFIX,
-            "wheel_left_rear" + NAME + TESUFFIX,
-            "wheel_left_rear" + NAME,
+            "wheel_left_rear_node" + tesuffix,
+            "wheel_left_rear" + name + tesuffix,
+            "wheel_left_rear" + name,
             rear_engine,
             std::nullopt,
             wheel_left_rear_mount_0,
             wheel_left_rear_mount_1);
         create_wheel(
             3,
-            "wheel_right_rear_node" + TESUFFIX,
-            "wheel_right_rear" + NAME + TESUFFIX,
-            "wheel_right_rear" + NAME,
+            "wheel_right_rear_node" + tesuffix,
+            "wheel_right_rear" + name + tesuffix,
+            "wheel_right_rear" + name,
             rear_engine,
             std::nullopt,
             wheel_right_rear_mount_0,

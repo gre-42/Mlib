@@ -24,13 +24,13 @@ DECLARE_ARGUMENT(internals);
 
 namespace LetKeys {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(EXTERNALS_PLAYER_NAME);
-DECLARE_ARGUMENT(IF_PC);
-DECLARE_ARGUMENT(IF_MANUAL_AIM);
-DECLARE_ARGUMENT(IF_MANUAL_SHOOT);
-DECLARE_ARGUMENT(IF_MANUAL_DRIVE);
-DECLARE_ARGUMENT(BEHAVIOR);
-DECLARE_ARGUMENT(EXTERNALS_ROLE);
+DECLARE_ARGUMENT(externals_player_name);
+DECLARE_ARGUMENT(if_pc);
+DECLARE_ARGUMENT(if_manual_aim);
+DECLARE_ARGUMENT(if_manual_shoot);
+DECLARE_ARGUMENT(if_manual_drive);
+DECLARE_ARGUMENT(behavior);
+DECLARE_ARGUMENT(externals_role);
 }
 
 const std::string SetExternalsCreator::key = "set_externals_creator";
@@ -65,9 +65,9 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 THROW_OR_ABORT("Invalid externals mode");
             }
             nlohmann::json let{
-                {LetKeys::EXTERNALS_PLAYER_NAME, player_name},
-                {LetKeys::IF_PC, (externals_mode == ExternalsMode::PC)},
-                {LetKeys::BEHAVIOR, behavior}
+                {LetKeys::externals_player_name, player_name},
+                {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
+                {LetKeys::behavior, behavior}
             };
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
         }
@@ -86,13 +86,13 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 THROW_OR_ABORT("Invalid externals mode");
             }
             nlohmann::json let{
-                {LetKeys::EXTERNALS_PLAYER_NAME, player_name},
-                {LetKeys::IF_PC, (externals_mode == ExternalsMode::PC)},
-                {LetKeys::IF_MANUAL_AIM, skills.skills(ControlSource::USER).can_aim},
-                {LetKeys::IF_MANUAL_SHOOT, skills.skills(ControlSource::USER).can_shoot},
-                {LetKeys::IF_MANUAL_DRIVE, skills.skills(ControlSource::USER).can_drive},
-                {LetKeys::BEHAVIOR, behavior},
-                {LetKeys::EXTERNALS_ROLE, internals_mode.role}
+                {LetKeys::externals_player_name, player_name},
+                {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
+                {LetKeys::if_manual_aim, skills.skills(ControlSource::USER).can_aim},
+                {LetKeys::if_manual_shoot, skills.skills(ControlSource::USER).can_shoot},
+                {LetKeys::if_manual_drive, skills.skills(ControlSource::USER).can_drive},
+                {LetKeys::behavior, behavior},
+                {LetKeys::externals_role, internals_mode.role}
             };
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
         }

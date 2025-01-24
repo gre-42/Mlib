@@ -56,7 +56,9 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
     DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
     float yaw_error_std = args.arguments.at<float>(KnownArgs::yaw_error_std);
     float pitch_velocity_error_std = args.arguments.at<float>(KnownArgs::pitch_error_std);
-    float error_alpha = args.arguments.at<float>(KnownArgs::error_alpha);
+    float error_alpha = (pitch_velocity_error_std != 0.f)
+        ? args.arguments.at<float>(KnownArgs::error_alpha)
+        : 1.f;
     // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
     // ans = 1.9980
     // octave> a=0.004; a/sum((a * (1 - a).^(0 : 100000)).^2)

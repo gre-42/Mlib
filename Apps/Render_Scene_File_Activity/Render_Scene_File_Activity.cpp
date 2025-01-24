@@ -598,31 +598,31 @@ void android_main(android_app* app) {
             LayoutConstraints layout_constraints;
             {
                 nlohmann::json j{
-                    {"PRIMARY_SCENE_FLY", args.has_named("--fly")},
-                    {"PRIMARY_SCENE_ROTATE", args.has_named("--rotate")},
-                    {"PRIMARY_SCENE_DEPTH_FOG", !args.has_named("--no_depth_fog")},
-                    {"PRIMARY_SCENE_LOW_PASS", args.has_named("--low_pass")},
-                    {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},
-                    {"PRIMARY_SCENE_BLOOM_ITERATIONS", FixedArray<unsigned int, 2>{
+                    {"primary_scene_fly", args.has_named("--fly")},
+                    {"primary_scene_rotate", args.has_named("--rotate")},
+                    {"primary_scene_depth_fog", !args.has_named("--no_depth_fog")},
+                    {"primary_scene_low_pass", args.has_named("--low_pass")},
+                    {"primary_scene_high_pass", args.has_named("--high_pass")},
+                    {"primary_scene_bloom_iterations", FixedArray<unsigned int, 2>{
                         safe_stou(args.named_value("--bloom_x", "3")),
                         safe_stou(args.named_value("--bloom_y", "3"))}},
-                    {"PRIMARY_SCENE_BLOOM_THRESHOLDS", fixed_full<float, 3>(
+                    {"primary_scene_bloom_thresholds", fixed_full<float, 3>(
                         safe_stof(args.named_value("--bloom_threshold", "1")))},
-                    {"PRIMARY_SCENE_WITH_SKYBOX", true},
-                    {"PRIMARY_SCENE_WITH_FLYING_LOGIC", true},
-                    {"PRIMARY_SCENE_SAVE_PLAYBACK", args.has_named("--save_playback")},
-                    {"FAR_PLANE", safe_stof(args.named_value("--far_plane", "10000"))},
-                    {"IF_RECORD_TRACK", args.has_named("--record_track")},
+                    {"primary_scene_with_skybox", true},
+                    {"primary_scene_with_flying_logic", true},
+                    {"primary_scene_save_playback", args.has_named("--save_playback")},
+                    {"far_plane", safe_stof(args.named_value("--far_plane", "10000"))},
+                    {"if_record_track", args.has_named("--record_track")},
                     {"IF_DEVEL", args.has_named("--devel_mode")},
-                    {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels")},
-                    {"IF_ANDROID", true},
-                    {"FLAVOR", AUi::GetFlavor()},
-                    {"SCENE_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
-                    {"SCENE_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
-                    {"BLACK_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
-                    {"BLACK_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
-                    {"SCENE_SKIDMARKS_WIDTH", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
-                    {"SCENE_SKIDMARKS_HEIGHT", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))}};
+                    {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
+                    {"if_android", true},
+                    {"flavor", AUi::GetFlavor()},
+                    {"scene_lightmap_width", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
+                    {"scene_lightmap_height", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
+                    {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
+                    {"black_lightmap_height", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
+                    {"scene_skidmarks_width", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
+                    {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))}};
                 external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
             }
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background

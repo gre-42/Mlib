@@ -81,7 +81,7 @@ TabMenuLogic::TabMenuLogic(
     , font_height_{ font_height }
     , line_distance_{ line_distance }
     , substitutions_{ substitutions }
-    , previous_level_id_{ substitutions.at<std::string>("LOADED_LEVEL_ID", "") }
+    , previous_level_id_{ substitutions.at<std::string>("loaded_level_id", "") }
     , num_renderings_{ num_renderings }
     , reload_transient_objects_{ std::move(reload_transient_objects) }
     , list_view_{
@@ -118,7 +118,7 @@ void TabMenuLogic::render_without_setup(
     LOG_FUNCTION("TabMenuLogic::render");
     if (confirm_button_press_.keys_pressed()) {
         // ui_focus_.focus.pop_back();
-        if (previous_level_id_ != substitutions_.at<std::string>("SELECTED_LEVEL_ID")) {
+        if (previous_level_id_ != substitutions_.at<std::string>("selected_level_id")) {
             num_renderings_ = 0;
         }
         else {

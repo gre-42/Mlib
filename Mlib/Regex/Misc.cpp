@@ -57,7 +57,7 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
     //                                  1      2      3        4         5           6      7       8          9
     static const DECLARE_REGEX(s0, "(?:(\\w+):(!)?(?:(\\w+)-)?(\\w*)(?:=(\\S*))?|(?:([-!]?)(\\w+))|([^-!\\w]+)|(.))");
     find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
-        // if (v[1].str() == "-DECIMATE") {
+        // if (v[1].str() == "-decimate") {
         //     lerr() << "x";
         // }
         if (v[1].matched) {

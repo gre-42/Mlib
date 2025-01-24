@@ -55,10 +55,10 @@ public:
       asset_id_{std::move(asset_id)}
     {}
     ~RaceLogic() {
-        if (!asset_references_["levels"].at(asset_id_).rp.database.contains("CHECKPOINTS")) {
+        if (!asset_references_["levels"].at(asset_id_).rp.database.contains("checkpoints")) {
             asset_references_["levels"].merge_into_database(
                 asset_id_,
-                JsonMacroArguments{{{"CHECKPOINTS", nlohmann::json()}}});
+                JsonMacroArguments{{{"checkpoints", nlohmann::json()}}});
         }
     }
     void set_start_pose(
@@ -71,10 +71,10 @@ public:
             asset_references_["levels"].merge_into_database(
                 asset_id_,
                 JsonMacroArguments{{
-                    {"CAR_NODE_POSITION", pose.t},
-                    {"CAR_NODE_ANGLES", matrix_2_tait_bryan_angles(pose.R) / degrees},
-                    {"VEHICLE_VELOCITY", velocity},
-                    {"VEHICLE_ANGULAR_VELOCITY", angular_velocity}
+                    {"car_node_position", pose.t},
+                    {"car_node_angles", matrix_2_tait_bryan_angles(pose.R) / degrees},
+                    {"vehicle_velocity", velocity},
+                    {"vehicle_angular_velocity", angular_velocity}
                 }});
         }
     }
@@ -96,10 +96,10 @@ public:
         }
         asset_references_["levels"].merge_into_database(
             asset_id_,
-            JsonMacroArguments{{{"CHECKPOINTS", std::move(global_checkpoints)}}});
+            JsonMacroArguments{{{"checkpoints", std::move(global_checkpoints)}}});
     }
     void set_circularity(bool is_circular) override {
-        if (asset_references_["levels"].at(asset_id_).rp.database.at<bool>("IF_RACEWAY_CIRCULAR") != is_circular) {
+        if (asset_references_["levels"].at(asset_id_).rp.database.at<bool>("if_raceway_circular") != is_circular) {
             THROW_OR_ABORT("Inconsistent raceway circularity in level \"" + asset_id_ + '"');
         }
     }
