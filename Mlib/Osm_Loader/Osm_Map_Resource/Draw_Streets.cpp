@@ -440,18 +440,18 @@ void DrawStreets::draw_holes() {
         THROW_OR_ABORT("Only 1 or 2 lanes are supported");
     }
     auto draw_air_holes = [this](const auto& hole_contours, auto& hole_triangles) {
-        for (const auto& nh : hole_contours) {
-            Array<NodeHoleVertex> hv{ArrayShape{nh.second.size()}};
+        for (const auto& [n, nh] : hole_contours) {
+            Array<NodeHoleVertex> hv{ArrayShape{nh.size()}};
             {
                 size_t i = 0;
-                for (const auto& h : nh.second) {
+                for (const auto& h : nh) {
                     hv(i++) = h.second;
                 }
                 hv.reshape(ArrayShape{i});
             }
-            if (nh.second.size() == 0) {
+            if (nh.size() == 0) {
                 // do nothing
-            } else if (nh.second.size() == 3) {
+            } else if (nh.size() == 3) {
                 hole_triangles->draw_triangle_wo_normals(
                     FixedArray<CompressedScenePos, 3>{hv(0).position(0), hv(0).position(1), (CompressedScenePos)0.},
                     FixedArray<CompressedScenePos, 3>{hv(1).position(0), hv(1).position(1), (CompressedScenePos)0.},
@@ -459,7 +459,7 @@ void DrawStreets::draw_holes() {
                     Colors::from_rgb(way_infos.at(hv(0).way_id).colors[0]),
                     Colors::from_rgb(way_infos.at(hv(1).way_id).colors[0]),
                     Colors::from_rgb(way_infos.at(hv(2).way_id).colors[0]));
-            } else if (nh.second.size() > 3) {
+            } else if (nh.size() > 3) {
                 // Draw center fan
                 FixedArray<CompressedScenePos, 2> center =
                     mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return funpack(v.position);}))
@@ -477,7 +477,7 @@ void DrawStreets::draw_holes() {
                         Colors::from_rgb(center_color));
                 }
             } else {
-                THROW_OR_ABORT("Unexpected air hole size");
+                THROW_OR_ABORT("Unexpected air hole size: \"" + n + '"');
             }
         }
     };

@@ -16,7 +16,10 @@ void Mlib::draw_ceilings(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_buildings,
     const OsmResourceConfig& config,
     const std::list<Building>& buildings,
-    const std::map<std::string, Node>& nodes)
+    const std::map<std::string, Node>& nodes,
+    const std::string& contour_triangles_filename,
+    const std::string& contour_filename,
+    const std::string& triangle_filename)
 {
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     draw_buildings_ceiling_or_ground(
@@ -35,5 +38,8 @@ void Mlib::draw_ceilings(
         config.uv_scale_ceiling,
         1.f,                        // uv_period
         config.max_wall_width,
-        DrawBuildingPartType::CEILING);
+        DrawBuildingPartType::CEILING,
+        contour_triangles_filename,
+        contour_filename,
+        triangle_filename);
 }

@@ -26,6 +26,9 @@ void draw_buildings_ceiling_or_ground(
     float uv_scale,
     float uv_period,
     float max_width,
-    DrawBuildingPartType tpe);
+    DrawBuildingPartType tpe,
+    const std::string& contour_triangles_filename,
+    const std::string& contour_filename,
+    const std::string& triangle_filename);
 
 }

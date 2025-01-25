@@ -337,18 +337,31 @@ OsmMapResource::OsmMapResource(
             config.extrusion_ambient_occlusion,
             config.height_colors);
         fg.update("Draw building ground");
-        draw_buildings_ceiling_or_ground(
-            osm_triangle_lists.tls_buildings_ground,
-            Material{},
-            Morphology{ .physics_material = PhysicsMaterial::NONE },
-            buildings,
-            nodes,
-            config.scale,
-            config.triangulation_scale,
-            config.uv_scale_ceiling,
-            1.f,                     // uv_period
-            config.max_wall_width,
-            DrawBuildingPartType::GROUND);
+        try {
+            draw_buildings_ceiling_or_ground(
+                osm_triangle_lists.tls_buildings_ground,
+                Material{},
+                Morphology{ .physics_material = PhysicsMaterial::NONE },
+                buildings,
+                nodes,
+                config.scale,
+                config.triangulation_scale,
+                config.uv_scale_ceiling,
+                1.f,                     // uv_period
+                config.max_wall_width,
+                DrawBuildingPartType::GROUND,
+                getenv_default("BUILDING_CONTOUR_TRIANGLES_FILENAME", ""),
+                getenv_default("BUILDING_CONTOUR_FILENAME", ""),
+                getenv_default("BUILDING_TRIANGLE_FILENAME", ""));
+        } catch (const PointException<CompressedScenePos, 2>& e) {
+            handle_point_exception2(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const p2t::PointException& e) {
+            handle_point_exception(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const EdgeException<CompressedScenePos>& e) {
+            handle_edge_exception(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const TriangleException<CompressedScenePos>& e) {
+            handle_triangle_exception(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        }
     }
 
     auto all_hole_triangles = osm_triangle_lists.all_hole_triangles();
@@ -602,7 +615,24 @@ OsmMapResource::OsmMapResource(
     }
     if (config.with_ceilings && !tls_buildings.empty()) {
         fg.update("Draw ceilings");
-        draw_ceilings(tls_buildings, config, buildings, nodes);
+        try {
+            draw_ceilings(
+                tls_buildings,
+                config,
+                buildings,
+                nodes,
+                getenv_default("CEILING_CONTOUR_TRIANGLES_FILENAME", ""),
+                getenv_default("CEILING_CONTOUR_FILENAME", ""),
+                getenv_default("CEILING_TRIANGLE_FILENAME", ""));
+        } catch (const PointException<CompressedScenePos, 2>& e) {
+            handle_point_exception2(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const p2t::PointException& e) {
+            handle_point_exception(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const EdgeException<CompressedScenePos>& e) {
+            handle_edge_exception(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const TriangleException<CompressedScenePos>& e) {
+            handle_triangle_exception(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        }
     }
     if (config.remove_backfacing_triangles) {
         fg.update("Remove backfacing triangles");
@@ -1269,6 +1299,8 @@ OsmMapResource::OsmMapResource(
                 getenv_default("WATER_TRIANGLE_FILENAME", ""),
                 WaterType::UNDEFINED,
                 WaterType::UNDEFINED);
+        } catch (const PointException<CompressedScenePos, 2>& e) {
+            handle_point_exception2(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<CompressedScenePos>& e) {

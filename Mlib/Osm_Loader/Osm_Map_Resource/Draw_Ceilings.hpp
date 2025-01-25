@@ -17,6 +17,9 @@ void draw_ceilings(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_buildings,
     const OsmResourceConfig& config,
     const std::list<Building>& buildings,
-    const std::map<std::string, Node>& nodes);
+    const std::map<std::string, Node>& nodes,
+    const std::string& contour_triangles_filename,
+    const std::string& contour_filename,
+    const std::string& triangle_filename);
 
 }

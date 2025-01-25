@@ -117,7 +117,8 @@ static void plot_contours(const std::string& filename, const std::vector<std::ve
         500.,
         {},
         contours,
-        highlighted_nodes);
+        highlighted_nodes,
+        (CompressedScenePos)0.1f); // line_width
 }
 
 double compute_area_ccw(
