@@ -13,7 +13,7 @@
 
 using namespace Mlib;
 
-void download_tile(
+StbInfo<uint8_t> download_tile(
     size_t tile_pixels,
     size_t zoom,
     size_t x,
@@ -39,13 +39,21 @@ void download_tile(
     if (res->status != 200) {
         throw std::runtime_error("Error status: " + std::to_string(res->status) + "\n" + res->body);
     }
-    std::ofstream ofstr(filename, std::ios::binary);
-    for (char c : res->body) {
-        ofstr.put(c);
-    }
-    ofstr.flush();
-    if (ofstr.fail()) {
-        throw std::runtime_error("Could not write tile file \"" + filename + '"');
+    if (filename.empty()) {
+        std::vector<std::byte> data{
+            (const std::byte*)res->body.data(),
+            (const std::byte*)res->body.data() + res->body.length() };
+        return stb_load8(filename, FlipMode::NONE, &data);
+    } else {
+        std::ofstream ofstr(filename, std::ios::binary);
+        for (char c : res->body) {
+            ofstr.put(c);
+        }
+        ofstr.flush();
+        if (ofstr.fail()) {
+            throw std::runtime_error("Could not write tile file \"" + filename + '"');
+        }
+        return stb_load8(filename, FlipMode::NONE);
     }
 }
 
@@ -129,7 +137,7 @@ int main(int argc, char** argv) {
         size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
         size_t result_width = safe_stoz(args.named_value("--result_width"));
         size_t result_height = safe_stoz(args.named_value("--result_height"));
-        std::string tmp_png = args.named_value("--tmp_png", "/tmp/tile.png");
+        std::string tmp_png = args.named_value("--tmp_png", "");
 
         // From: https://epsg.io/3857
         double max_y_global = M_PI;  // get_y(85.06 * degrees);
@@ -171,14 +179,13 @@ int main(int argc, char** argv) {
             for (size_t o = 0; o < ntiles_x; ++o) {
                 size_t y = tiles_min_y + a;
                 size_t x = tiles_min_x + o;
-                download_tile(
+                auto image = download_tile(
                     tile_pixels,
                     zoom,
                     x,
                     y,
                     args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
                     tmp_png);
-                auto image = stb_load8(tmp_png, FlipMode::NONE);
                 if (image.nrChannels != 3 && image.nrChannels != 4) {
                     throw std::runtime_error("Only 3 or 4 channels are supported");
                 }
