@@ -130,8 +130,6 @@ void draw_line_ext(
     bool infinite,
     const TColor* short_line_color = nullptr)
 {
-    assert(all(from.shape() == ArrayShape{2}));
-    assert(all(to.shape() == ArrayShape{2}));
     auto draw_point = [&image, &thickness](const FixedArray<float, 2>& p, const TColor& color){
         FixedArray<size_t, 2> index{ fi2i(p(0)), fi2i(p(1)) };
         if (any(index >= FixedArray<size_t, 2>{ image.shape(0), image.shape(1) })) {
