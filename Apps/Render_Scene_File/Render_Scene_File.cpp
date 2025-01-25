@@ -611,7 +611,7 @@ int main(int argc, char** argv) {
                     {"primary_scene_save_playback", args.has_named("--save_playback")},
                     {"far_plane", safe_stof(args.named_value("--far_plane", "10000"))},
                     {"if_record_track", args.has_named("--record_track")},
-                    {"IF_DEVEL", args.has_named("--devel_mode")},
+                    {"if_devel", args.has_named("--devel_mode")},
                     {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                     {"if_android", false},
                     {"flavor", args.named_value("--flavor", "extended")},
