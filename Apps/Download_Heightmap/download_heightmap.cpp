@@ -116,7 +116,8 @@ int main(int argc, char** argv) {
          "--stitched_normalized_png",
          "--resampled_normalized_png",
          "--out_png",
-         "--out_pgm"});
+         "--out_pgm",
+         "--tmp_png"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(0);
