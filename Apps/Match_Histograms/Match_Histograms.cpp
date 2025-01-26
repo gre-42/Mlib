@@ -42,9 +42,9 @@ int main(int argc, char **argv) {
         {
             THROW_OR_ABORT("Could not write " + args.named_value("--out"));
         }
-        return 0;
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;
     }
+    return 0;
 }

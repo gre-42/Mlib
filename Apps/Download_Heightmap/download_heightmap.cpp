@@ -266,9 +266,9 @@ int main(int argc, char** argv) {
         if (args.has_named_value("--out_pgm")) {
             PgmImage{meters_to_cities_skylines(resampled)}.save_to_file(args.named_value("--out_pgm"));
         }
-        
-        return 0;
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
+        return 1;
     }
+    return 0;
 }

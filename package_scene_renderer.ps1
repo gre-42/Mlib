@@ -29,10 +29,23 @@ $files = "openal-soft\build\Release\OpenAL32.dll",
          "VSZlibBuild\Release\zlib.dll",
          "glfw_vc2022\lib\glfw3.dll"
 
+$dest_dir = "${BUILD_PREFIX}GVS\Bin\$CMAKE_BUILD_TYPE\"
 foreach ($file in $files) {
-    $dest = "${BUILD_PREFIX}GVS\Bin\$CMAKE_BUILD_TYPE\"
-    Write-Host "Copy $file -> $dest"
-    Copy-Item $file -Destination $dest
+    Write-Host "Copy $file -> $dest_dir"
+    Copy-Item $file -Destination $dest_dir
+}
+
+Write-Host "Execute ./$dest_dir/download_heightmap --help > $null"
+.\$dest_dir\download_heightmap --help > $null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Command returned exit code $LASTEXITCODE"
+    exit 1
+}
+Write-Host "Execute ./$dest_dir/render_scene_file --help > $null"
+.\$dest_dir\render_scene_file --help > $null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Command returned exit code $LASTEXITCODE"
+    exit 1
 }
 
 Pop-Location

@@ -44,9 +44,9 @@ int main(int argc, char** argv) {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(2);
         downsample_file(args.unnamed_value(0).c_str(), args.unnamed_value(1).c_str());
-        return 0;
     } catch (const CommandLineArgumentError& e) {
         lerr() << e.what();
         return 1;
     }
+    return 0;
 }

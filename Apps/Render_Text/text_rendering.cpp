@@ -154,4 +154,5 @@ int main(int argc, char** argv)
         lerr() << e.what();
         return 1;
     }
+    return 0;
 }
