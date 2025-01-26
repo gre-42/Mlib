@@ -113,8 +113,8 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     ColoredVertex<TPos>** pp01)
 {
     using I = funpack_t<TPos>;
-    auto t = FixedArray<TPos, 3, 3>{ p00, p10, p01 }.template casted<I>();
-    auto n_o = try_triangle_normal<I>(t);
+    auto t = FixedArray<TPos, 3, 3>{ p00, p10, p01 };
+    auto n_o = try_triangle_normal(t.template casted<I>());
     if (!n_o.has_value()) {
         if (normal_error_behavior == NormalVectorErrorBehavior::SKIP) {
             if (pp00 != nullptr) {
@@ -128,7 +128,7 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
             }
             return;
         }
-        n_o = get_alternative_or_throw(t, normal_error_behavior);
+        n_o = get_alternative_or_throw<I>(t, normal_error_behavior);
     }
     auto n = n_o->template casted<float>();
     draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior, pp00, pp10, pp01);

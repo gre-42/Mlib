@@ -36,14 +36,14 @@ FixedArray<TData, 3> triangle_normal(
 {
     auto res = try_triangle_normal(t);
     if (!res.has_value()) {
-        return get_alternative_or_throw(t, error_behavior);
+        return get_alternative_or_throw<TData>(t, error_behavior);
     }
     return *res;
 }
 
-template <class TData>
-FixedArray<TData, 3> get_alternative_or_throw(
-    const FixedArray<TData, 3, 3>& t,
+template <class TNormal, class TTriangle>
+FixedArray<TNormal, 3> get_alternative_or_throw(
+    const FixedArray<TTriangle, 3, 3>& t,
     NormalVectorErrorBehavior error_behavior) {
     if (any(error_behavior & NormalVectorErrorBehavior::WARN)) {
         lwarn() << "Cannot calculate triangle normal";
@@ -51,7 +51,7 @@ FixedArray<TData, 3> get_alternative_or_throw(
     if (any(error_behavior & NormalVectorErrorBehavior::THROW)) {
         THROW_OR_ABORT2(TriangleException(t[0], t[1], t[2], "Cannot calculate triangle normal"));
     }
-    return fixed_zeros<TData, 3>();
+    return fixed_zeros<TNormal, 3>();
 }
 
 }

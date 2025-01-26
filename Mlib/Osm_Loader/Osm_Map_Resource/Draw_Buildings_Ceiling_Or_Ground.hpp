@@ -14,6 +14,7 @@ struct Morphology;
 struct Node;
 struct Building;
 enum class DrawBuildingPartType;
+enum class ContourDetectionStrategy;
 
 void draw_buildings_ceiling_or_ground(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
@@ -29,6 +30,7 @@ void draw_buildings_ceiling_or_ground(
     DrawBuildingPartType tpe,
     const std::string& contour_triangles_filename,
     const std::string& contour_filename,
-    const std::string& triangle_filename);
+    const std::string& triangle_filename,
+    ContourDetectionStrategy contour_detection_strategy);
 
 }

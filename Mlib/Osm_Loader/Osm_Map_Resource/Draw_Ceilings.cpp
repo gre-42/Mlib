@@ -9,6 +9,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -19,8 +20,12 @@ void Mlib::draw_ceilings(
     const std::map<std::string, Node>& nodes,
     const std::string& contour_triangles_filename,
     const std::string& contour_filename,
-    const std::string& triangle_filename)
+    const std::string& triangle_filename,
+    ContourDetectionStrategy contour_detection_strategy)
 {
+    if (config.ceiling_texture->empty()) {
+        THROW_OR_ABORT("Ceiling texture empty");
+    }
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     draw_buildings_ceiling_or_ground(
         tls_buildings,
@@ -41,5 +46,6 @@ void Mlib::draw_ceilings(
         DrawBuildingPartType::CEILING,
         contour_triangles_filename,
         contour_filename,
-        triangle_filename);
+        triangle_filename,
+        contour_detection_strategy);
 }

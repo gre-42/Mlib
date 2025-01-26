@@ -14,12 +14,7 @@ namespace Mlib {
 
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
-
-enum class ContourDetectionStrategy {
-    NODE_NEIGHBOR,
-    EDGE_NEIGHBOR,
-    TRIANGLE
-};
+enum class ContourDetectionStrategy;
 
 template <class TPos>
 std::unordered_set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
@@ -101,8 +96,8 @@ void extract_triangles_inside_contours(
         }
         return false;
     });
-    // Add all vertices touching an inside vertex
-    // to the "inner_vertices" set,
+    // Add all edges overlapping an inside edge
+    // to the "inner_edges" set,
     // and loop until nothing changes.
     while(true) {
         size_t old_size = inner_edges.size();

@@ -48,10 +48,11 @@ void Mlib::draw_boundary_barriers(
     float scale,
     float uv_scale,
     float barrier_height,
-    const BarrierStyle& barrier_style)
+    const BarrierStyle& barrier_style,
+    ContourDetectionStrategy contour_detection_strategy)
 {
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
-    auto contours = find_contours(inner_triangles, ContourDetectionStrategy::NODE_NEIGHBOR);
+    auto contours = find_contours(inner_triangles, contour_detection_strategy);
     const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
         "boundary_barriers",
         material,

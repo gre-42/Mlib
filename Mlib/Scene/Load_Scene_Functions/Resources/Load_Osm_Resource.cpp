@@ -3,6 +3,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
+#include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Json/Map.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -206,6 +207,7 @@ DECLARE_ARGUMENT(much_near_trees_distance);
 DECLARE_ARGUMENT(much_far_trees_distance);
 DECLARE_ARGUMENT(dirt_decals_distance);
 DECLARE_ARGUMENT(raceway_beacon_distance);
+DECLARE_ARGUMENT(contour_detection_strategy);
 DECLARE_ARGUMENT(with_terrain);
 DECLARE_ARGUMENT(with_buildings);
 DECLARE_ARGUMENT(only_raceways_and_walls);
@@ -910,6 +912,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::raceway_beacon_distance)) {
             config.raceway_beacon_distance = args.arguments.at<float>(KnownArgs::raceway_beacon_distance) * meters;
+        }
+        if (args.arguments.contains(KnownArgs::contour_detection_strategy)) {
+            config.contour_detection_strategy = contour_detection_strategy_from_string(
+                args.arguments.at<std::string>(KnownArgs::contour_detection_strategy));
         }
         if (args.arguments.contains(KnownArgs::with_terrain)) {
             config.with_terrain = args.arguments.at<bool>(KnownArgs::with_terrain);

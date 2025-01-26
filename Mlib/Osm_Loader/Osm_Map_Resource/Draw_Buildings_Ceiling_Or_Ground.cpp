@@ -32,7 +32,8 @@ void Mlib::draw_buildings_ceiling_or_ground(
     DrawBuildingPartType tpe,
     const std::string& contour_triangles_filename,
     const std::string& contour_filename,
-    const std::string& triangle_filename)
+    const std::string& triangle_filename,
+    ContourDetectionStrategy contour_detection_strategy)
 {
     size_t mid = 0;
     for (const auto& bu : buildings) {
@@ -81,7 +82,8 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 triangle_filename,                                               // triangle_filename
                 TerrainType::UNDEFINED,                                          // bounding_terrain_type
                 TerrainType::UNDEFINED,                                          // default_terrain_type
-                {});                                                             // excluded_terrain_types
+                {},                                                              // excluded_terrain_types
+                contour_detection_strategy);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Could not triangulate building " + bu.id + ": " + e.what());
         }

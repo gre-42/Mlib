@@ -21,10 +21,11 @@ void Mlib::draw_waysides(
     const GroundBvh& ground_bvh,
     const StreetBvh& entrance_bvh,
     double scale,
-    const WaysideDistances& distances)
+    const WaysideDistances& distances,
+    ContourDetectionStrategy contour_detection_strategy)
 {
     FastNormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
-    auto contours = find_contours(inner_triangles, ContourDetectionStrategy::NODE_NEIGHBOR);
+    auto contours = find_contours(inner_triangles, contour_detection_strategy);
 
     for (const auto& contour_coarse : contours) {
         auto interp = interpolated_contour(contour_coarse);

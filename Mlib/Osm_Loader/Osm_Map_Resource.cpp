@@ -352,7 +352,8 @@ OsmMapResource::OsmMapResource(
                 DrawBuildingPartType::GROUND,
                 getenv_default("BUILDING_CONTOUR_TRIANGLES_FILENAME", ""),
                 getenv_default("BUILDING_CONTOUR_FILENAME", ""),
-                getenv_default("BUILDING_TRIANGLE_FILENAME", ""));
+                getenv_default("BUILDING_TRIANGLE_FILENAME", ""),
+                config.contour_detection_strategy);
         } catch (const PointException<CompressedScenePos, 2>& e) {
             handle_point_exception2(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::PointException& e) {
@@ -430,7 +431,8 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 config.uv_scale_barrier_wall,
                 config.boundary_barrier_height,
-                config.barrier_styles.get(config.boundary_barrier_style));
+                config.barrier_styles.get(config.boundary_barrier_style),
+                config.contour_detection_strategy);
         } catch (const EdgeException<CompressedScenePos>& e) {
             handle_edge_exception(e, "Could not draw boundary barriers");
         }
@@ -565,7 +567,8 @@ OsmMapResource::OsmMapResource(
                 config.default_terrain_type,
                 // Delete street holes because their untriangulated version is
                 // used for terrain smoothing.
-                { TerrainType::STREET_HOLE });
+                { TerrainType::STREET_HOLE },
+                config.contour_detection_strategy);
         } catch (const PointException<CompressedScenePos, 2>& e) {
             handle_point_exception2(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::PointException& e) {
@@ -623,7 +626,8 @@ OsmMapResource::OsmMapResource(
                 nodes,
                 getenv_default("CEILING_CONTOUR_TRIANGLES_FILENAME", ""),
                 getenv_default("CEILING_CONTOUR_FILENAME", ""),
-                getenv_default("CEILING_TRIANGLE_FILENAME", ""));
+                getenv_default("CEILING_TRIANGLE_FILENAME", ""),
+                config.contour_detection_strategy);
         } catch (const PointException<CompressedScenePos, 2>& e) {
             handle_point_exception2(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::PointException& e) {
@@ -1113,7 +1117,8 @@ OsmMapResource::OsmMapResource(
             *ground_bvh,
             entrance_bvh,
             config.scale,
-            config.road_bollard_distances);
+            config.road_bollard_distances,
+            config.contour_detection_strategy);
     }
     if (!config.trashcan_resource_names.empty()) {
         ResourceNameCycle rnc{config.trashcan_resource_names};
@@ -1125,7 +1130,8 @@ OsmMapResource::OsmMapResource(
             *ground_bvh,
             entrance_bvh,
             config.scale,
-            config.trashcan_distances);
+            config.trashcan_distances,
+            config.contour_detection_strategy);
     }
 
     {
@@ -1298,7 +1304,8 @@ OsmMapResource::OsmMapResource(
                 getenv_default("WATER_CONTOUR_FILENAME", ""),
                 getenv_default("WATER_TRIANGLE_FILENAME", ""),
                 WaterType::UNDEFINED,
-                WaterType::UNDEFINED);
+                WaterType::UNDEFINED,
+                config.contour_detection_strategy);
         } catch (const PointException<CompressedScenePos, 2>& e) {
             handle_point_exception2(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::PointException& e) {

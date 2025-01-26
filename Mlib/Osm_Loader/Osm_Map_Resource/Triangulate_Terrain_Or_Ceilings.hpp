@@ -23,6 +23,7 @@ template <class EntityType>
 class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 typedef EntityTypeTriangleList<WaterType> WaterTypeTriangleList;
+enum class ContourDetectionStrategy;
 
 void triangulate_terrain_or_ceilings(
     TerrainTypeTriangleList& tl_terrain,
@@ -42,7 +43,8 @@ void triangulate_terrain_or_ceilings(
     const std::string& triangle_filename,
     TerrainType bounding_terrain_type,
     TerrainType default_terrain_type,
-    const std::set<TerrainType>& excluded_terrain_types);
+    const std::set<TerrainType>& excluded_terrain_types,
+    ContourDetectionStrategy contour_detection_strategy);
 
 void triangulate_water(
     WaterTypeTriangleList& tl_water,
@@ -61,6 +63,7 @@ void triangulate_water(
     const std::string& contour_filename,
     const std::string& triangle_filename,
     WaterType bounding_water_type,
-    WaterType default_water_type);
+    WaterType default_water_type,
+    ContourDetectionStrategy contour_detection_strategy);
 
 }

@@ -229,15 +229,16 @@ void Mlib::plot_mesh(
         svg.draw_line(a(0), a(1), b(0), b(1), line_width, "blue");
     }
     for (const auto& c : contours) {
-        for (auto it = c.begin(); ; ) {
-            auto it0 = it++;
-            if (it == c.end()) {
-                break;
-            }
-            auto a = trafo(*it0);
-            auto b = trafo(*it);
-            svg.draw_line(a(0), a(1), b(0), b(1), line_width, "blue");
+        std::vector<TPos> x;
+        std::vector<TPos> y;
+        x.reserve(c.size());
+        y.reserve(c.size());
+        for (const auto& p : c) {
+            auto pt = trafo(p);
+            x.push_back(pt(0));
+            y.push_back(pt(1));
         }
+        svg.draw_path(x, y, line_width, "blue");
     }
     for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);

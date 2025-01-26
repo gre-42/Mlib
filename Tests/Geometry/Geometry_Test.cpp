@@ -16,6 +16,7 @@
 #include <Mlib/Geometry/Intersection/Ray_Sphere_Intersection.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
+#include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>

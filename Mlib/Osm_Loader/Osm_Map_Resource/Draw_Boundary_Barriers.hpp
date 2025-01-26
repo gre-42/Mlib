@@ -15,6 +15,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TPos>
 class TriangleList;
+enum class ContourDetectionStrategy;
 
 void draw_boundary_barriers(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
@@ -24,6 +25,7 @@ void draw_boundary_barriers(
     float scale,
     float uv_scale,
     float barrier_height,
-    const BarrierStyle& barrier_style);
+    const BarrierStyle& barrier_style,
+    ContourDetectionStrategy contour_detection_strategy);
 
 }

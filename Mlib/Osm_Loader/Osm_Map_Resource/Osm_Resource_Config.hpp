@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
+#include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
@@ -199,6 +200,7 @@ struct OsmResourceConfig {
     float terrain_edge_smoothness = 0;
     Interp<float> terrain_edge_bias{ std::vector<float>{}, std::vector<float>{} };
     float bump_height = 1.f * meters;
+    ContourDetectionStrategy contour_detection_strategy = ContourDetectionStrategy::NODE_NEIGHBOR;
     FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);

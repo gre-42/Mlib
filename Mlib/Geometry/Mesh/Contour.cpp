@@ -2,6 +2,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
+#include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Precision.hpp>

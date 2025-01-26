@@ -73,14 +73,14 @@ static void plot_contours(const std::string& filename, const std::vector<std::ve
     std::list<std::list<FixedArray<CompressedScenePos, 3>>> contours;
     std::list<FixedArray<CompressedScenePos, 3>> highlighted_nodes;
     for (const auto& c : p2t_hole_contours) {
-        contours.emplace_back();
+        auto& cs = contours.emplace_back();
         for (const auto& p : c) {
-            contours.back().emplace_back(
+            cs.emplace_back(
                 (CompressedScenePos)(p->x / scale),
                 (CompressedScenePos)(-p->y / scale),
                 (CompressedScenePos)0.);
         }
-        contours.back().emplace_back(
+        cs.emplace_back(
             (CompressedScenePos)(c.front()->x / scale),
             (CompressedScenePos)(-c.front()->y / scale),
             (CompressedScenePos)0.);
@@ -202,7 +202,8 @@ void triangulate_entity_list(
     const std::string& triangle_filename,
     EntityType bounding_terrain_type,
     EntityType default_terrain_type,
-    const std::set<EntityType>& excluded_entitities)
+    const std::set<EntityType>& excluded_entitities,
+    ContourDetectionStrategy contour_detection_strategy)
 {
     std::list<FixedArray<CompressedScenePos, 2>> steiner_point_positions;
     for (const auto& p : steiner_points) {
@@ -270,7 +271,7 @@ void triangulate_entity_list(
             }
         }
         try {
-            auto cs3 = find_contours(t, ContourDetectionStrategy::NODE_NEIGHBOR);
+            auto cs3 = find_contours(t, contour_detection_strategy);
             auto& cs2 = hole_contours[e];
             for (const auto& c3 : cs3) {
                 auto& c2 = cs2.emplace_back();
@@ -345,6 +346,9 @@ void triangulate_entity_list(
     if (ncontours == 0) {
         auto tris0 = cdt.GetTriangles();
         tris.insert(tris.end(), tris0.begin(), tris0.end());
+        if (!triangle_filename.empty()) {
+            plot_tris(triangle_filename, tris);
+        }
     } else {
         auto tris0 = cdt.GetMap();
         tris.insert(tris.end(), tris0.begin(), tris0.end());
@@ -431,7 +435,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     const std::string& triangle_filename,
     TerrainType bounding_terrain_type,
     TerrainType default_terrain_type,
-    const std::set<TerrainType>& excluded_terrain_types)
+    const std::set<TerrainType>& excluded_terrain_types,
+    ContourDetectionStrategy contour_detection_strategy)
 {
     triangulate_entity_list(
         tl_terrain,
@@ -451,7 +456,8 @@ void Mlib::triangulate_terrain_or_ceilings(
         triangle_filename,
         bounding_terrain_type,
         default_terrain_type,
-        excluded_terrain_types);
+        excluded_terrain_types,
+        contour_detection_strategy);
 }
 
 void Mlib::triangulate_water(
@@ -471,7 +477,8 @@ void Mlib::triangulate_water(
     const std::string& contour_filename,
     const std::string& triangle_filename,
     WaterType bounding_water_type,
-    WaterType default_water_type)
+    WaterType default_water_type,
+    ContourDetectionStrategy contour_detection_strategy)
 {
     triangulate_entity_list(
         tl_water,
@@ -491,5 +498,6 @@ void Mlib::triangulate_water(
         triangle_filename,
         bounding_water_type,
         default_water_type,
-        {WaterType::HOLE});
+        { WaterType::HOLE },  // excluded_entitities
+        contour_detection_strategy);
 }
