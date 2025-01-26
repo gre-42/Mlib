@@ -35,13 +35,13 @@ foreach ($file in $files) {
     Copy-Item $file -Destination $dest_dir
 }
 
-Write-Host "Execute ./$dest_dir/download_heightmap --help > $null"
+Write-Host "Execute .\$dest_dir\download_heightmap --help > $null"
 .\$dest_dir\download_heightmap --help > $null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Command returned exit code $LASTEXITCODE"
     exit 1
 }
-Write-Host "Execute ./$dest_dir/render_scene_file --help > $null"
+Write-Host "Execute .\$dest_dir\render_scene_file --help > $null"
 .\$dest_dir\render_scene_file --help > $null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Command returned exit code $LASTEXITCODE"
