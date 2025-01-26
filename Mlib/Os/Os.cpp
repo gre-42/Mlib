@@ -155,6 +155,13 @@ LLog Mlib::lraw() {
         }};
 }
 
+LLog Mlib::lout() {
+    return LLog{
+        [](const std::string& s) {
+            LOGI("%s", s.c_str());
+        }};
+}
+
 std::unique_ptr<std::istream> Mlib::create_ifstream(
     const std::filesystem::path& filename,
     std::ios_base::openmode mode)
@@ -273,7 +280,14 @@ LLog Mlib::lraw() {
     return LLog{
         [](const std::string& s) {
             std::cerr << s << std::endl;
-            }};
+        }};
+}
+
+LLog Mlib::lout() {
+    return LLog{
+        [](const std::string& s) {
+            std::cout << s << std::endl;
+        }};
 }
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(

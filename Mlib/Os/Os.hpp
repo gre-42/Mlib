@@ -55,6 +55,7 @@ LLog linfo();
 LLog lwarn();
 LLog lerr();
 LLog lraw();
+LLog lout();
 
 std::unique_ptr<std::istream> create_ifstream(
     const std::filesystem::path& filename,

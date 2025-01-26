@@ -277,8 +277,9 @@ int main(int argc, char** argv) {
     reserve_realtime_threads(0);
     ThreadInitializer ti{"Main", ThreadAffinity::POOL};
 
-    const ArgParser parser(
+    const char* help =
         "Usage: render_scene_file working_directory scene.scn.json\n"
+        "    [--help]\n"
         "    [--app_reldir]\n"
         "    [--wire_frame]\n"
         "    [--cull_faces]\n"
@@ -357,8 +358,11 @@ int main(int argc, char** argv) {
         "    [--tty_hider]\n"
         "    [--show_only <name>]\n"
         "    [--check_gl_errors]\n"
-        "    [--verbose]",
-        {"--wire_frame",
+        "    [--verbose]";
+    const ArgParser parser(
+        help,
+        {"--help",
+         "--wire_frame",
          "--cull_faces",
          "--fly",
          "--rotate",
@@ -439,6 +443,10 @@ int main(int argc, char** argv) {
          "--show_only"});
     try {
         const auto args = parser.parsed(argc, argv);
+        if (args.has_named("--help")) {
+            lout() << help;
+            return 0;
+        }
         if (args.has_named_value("--app_reldir")) {
             set_app_reldir(args.named_value("--app_reldir"));
             create_directories(get_appdata_directory());

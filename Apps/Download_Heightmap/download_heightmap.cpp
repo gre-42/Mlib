@@ -92,8 +92,9 @@ double get_y(double phi) {
 }
 
 int main(int argc, char** argv) {
-    const ArgParser parser(
+    const char* help =
         "Usage: download_heightmap"
+        " [--help]"
         " --zoom <zoom>"
         " --tile_pixels <tile_pixels>"
         " --result_width <result_width>"
@@ -108,8 +109,10 @@ int main(int argc, char** argv) {
         " [--tmp_png <filename>]"
         " [--stitched_png <filename>]"
         " [--stitched_normalized_png <filename>]"
-        " [--resampled_normalized_png <filename>]",
-        {},
+        " [--resampled_normalized_png <filename>]";
+    const ArgParser parser(
+        help,
+        {"--help"},
         {"--zoom",
          "--tile_pixels",
          "--result_width",
@@ -128,6 +131,10 @@ int main(int argc, char** argv) {
          "--tmp_png"});
     try {
         const auto args = parser.parsed(argc, argv);
+        if (args.has_named("--help")) {
+            lout() << help;
+            return 0;
+        }
         args.assert_num_unnamed(0);
         size_t zoom = safe_stoz(args.named_value("--zoom"));
         double min_lat = safe_stod(args.named_value("--min_lat"));
