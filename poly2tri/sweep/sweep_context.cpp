@@ -29,6 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "sweep_context.h"
+#include "../point_exception.hpp"
 #include <algorithm>
 #include "advancing_front.h"
 
@@ -46,6 +47,7 @@ SweepContext::SweepContext(std::vector<Point*> polyline) :
   edge_event = EdgeEvent();
 
   points_ = polyline;
+  point_set_ = std::unordered_set(polyline.begin(), polyline.end());
 
   InitEdges(points_);
 }
@@ -54,11 +56,16 @@ void SweepContext::AddHole(std::vector<Point*> polyline)
 {
   InitEdges(polyline);
   for (unsigned int i = 0; i < polyline.size(); i++) {
-    points_.push_back(polyline[i]);
+    if (point_set_.insert(polyline[i]).second) {
+      points_.push_back(polyline[i]);
+    }
   }
 }
 
 void SweepContext::AddPoint(Point* point) {
+  if (!point_set_.insert(point).second) {
+    throw PointException(*point, "Point already exists");
+  }
   points_.push_back(point);
 }
 
@@ -127,7 +134,9 @@ Node& SweepContext::LocateNode(Point& point)
 
 void SweepContext::CreateAdvancingFront(std::vector<Node*> nodes)
 {
-
+  if (points_.size() < 3) {
+    throw std::runtime_error("Not enough points");
+  }
   (void) nodes;
   // Initial triangle
   Triangle* triangle = new Triangle(*points_[0], *tail_, *head_);
