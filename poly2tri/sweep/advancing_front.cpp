@@ -29,6 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "advancing_front.h"
+#include "../point_exception.hpp"
 
 namespace p2t {
 
@@ -82,7 +83,7 @@ Node* AdvancingFront::LocatePoint(const Point* point)
       } else if (point == node->next->point) {
         node = node->next;
       } else {
-        assert(0);
+        throw PointException{ *point, "Could not locate point" };
       }
     }
   } else if (px < nx) {

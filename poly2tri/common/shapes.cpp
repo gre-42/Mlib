@@ -29,6 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "shapes.h"
+#include "../edge_exception.hpp"
 #include "../point_exception.hpp"
 #include <iostream>
 #include <sstream>
@@ -54,7 +55,7 @@ void Triangle::MarkNeighbor(Point* p1, Point* p2, Triangle* t)
   else if ((p1 == points_[0] && p2 == points_[1]) || (p1 == points_[1] && p2 == points_[0]))
     neighbors_[2] = t;
   else
-    assert(0);
+    throw EdgeException{*p1, *p2, "Could not mark neighbor"};
 }
 
 // Exhaustive search to update neighbor pointers
@@ -136,7 +137,7 @@ void Triangle::Legalize(Point& point)
   points_[2] = &point;
 }
 
-// Legalize triagnle by rotating clockwise around oPoint
+// Legalize triangle by rotating clockwise around oPoint
 void Triangle::Legalize(Point& opoint, Point& npoint)
 {
   if (&opoint == points_[0]) {
@@ -152,7 +153,7 @@ void Triangle::Legalize(Point& opoint, Point& npoint)
     points_[2] = points_[1];
     points_[1] = &npoint;
   } else {
-    assert(0);
+    throw EdgeException{ opoint, npoint, "Could not legalize triangle" };
   }
 }
 

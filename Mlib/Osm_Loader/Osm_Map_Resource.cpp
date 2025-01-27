@@ -118,6 +118,7 @@
 #include <cereal/types/vector.hpp>
 #include <fstream>
 #include <mutex>
+#include <poly2tri/edge_exception.hpp>
 #include <poly2tri/point_exception.hpp>
 #include <stb_cpp/stb_array.hpp>
 #include <stb_cpp/stb_image_load.hpp>
@@ -360,6 +361,8 @@ OsmMapResource::OsmMapResource(
             handle_point_exception(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<CompressedScenePos>& e) {
             handle_edge_exception(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const p2t::EdgeException& e) {
+            handle_edge_exception(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not triangulate building ground (BUILDING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
@@ -575,6 +578,8 @@ OsmMapResource::OsmMapResource(
             handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<CompressedScenePos>& e) {
             handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const p2t::EdgeException& e) {
+            handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
@@ -633,6 +638,8 @@ OsmMapResource::OsmMapResource(
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<CompressedScenePos>& e) {
+            handle_edge_exception(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const p2t::EdgeException& e) {
             handle_edge_exception(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not triangulate ceilings (CEILING_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
@@ -1312,6 +1319,8 @@ OsmMapResource::OsmMapResource(
             handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<CompressedScenePos>& e) {
             handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const p2t::EdgeException& e) {
+            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
@@ -1948,6 +1957,23 @@ void OsmMapResource::handle_point_exception(
     std::stringstream sstr;
     sstr.precision(15);
     sstr << message << " at position " << m.transform(pos) << " | " << pos << ": " << e.what() << std::endl;
+    throw std::runtime_error(sstr.str());
+}
+
+void OsmMapResource::handle_edge_exception(
+    const p2t::EdgeException& e,
+    const std::string& message) const
+{
+    FixedArray<double, 2, 3> edge{
+        FixedArray<double, 3>{ e.edge[0].x, e.edge[0].y, 0.},
+        FixedArray<double, 3>{ e.edge[1].x, e.edge[1].y, 0.} };
+    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
+    std::stringstream sstr;
+    sstr.precision(15);
+    sstr << message << " at edge " <<
+        m.transform(edge[0]) << " | " << edge[0] << " <-> " <<
+        m.transform(edge[1]) << " | " << edge[1] <<
+        ": " << e.what() << std::endl;
     throw std::runtime_error(sstr.str());
 }
 
