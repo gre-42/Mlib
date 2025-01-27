@@ -200,7 +200,7 @@ struct OsmResourceConfig {
     float terrain_edge_smoothness = 0;
     Interp<float> terrain_edge_bias{ std::vector<float>{}, std::vector<float>{} };
     float bump_height = 1.f * meters;
-    ContourDetectionStrategy contour_detection_strategy = ContourDetectionStrategy::NODE_NEIGHBOR;
+    ContourDetectionStrategy contour_detection_strategy = ContourDetectionStrategy::EDGE_NEIGHBOR;
     FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);
