@@ -23,6 +23,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Geometry/Mesh/Quad_Area.hpp>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -41,6 +42,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
+#include <poly2tri/poly2tri.h>
 
 using namespace Mlib;
 
@@ -739,10 +741,54 @@ void test_plane_shift() {
     }
 }
 
+void plot_tris(const std::string& filename, const std::vector<p2t::Triangle*>& tris) {
+    std::list<FixedArray<ColoredVertex<double>, 3>> triangles;
+    for (const auto& t : tris) {
+        triangles.push_back(FixedArray<ColoredVertex<double>, 3>{
+            ColoredVertex<double>{{t->GetPoint(0)->x, t->GetPoint(0)->y, 0.}, Colors::WHITE, {0.f, 0.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}},
+            ColoredVertex<double>{{t->GetPoint(1)->x, t->GetPoint(1)->y, 0.}, Colors::WHITE, {0.f, 0.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}},
+            ColoredVertex<double>{{t->GetPoint(2)->x, t->GetPoint(2)->y, 0.}, Colors::WHITE, {0.f, 0.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}}
+        });
+    }
+    save_obj(
+        filename,
+        IndexedFaceSet<float, double, size_t>{ triangles },
+        nullptr);  // material
+}
+
+void test_touching_holes() {
+    std::list<p2t::Point> points;
+    std::vector<p2t::Point*> polyline{
+        &points.emplace_back(0, 0),
+        &points.emplace_back(1, 0),
+        &points.emplace_back(0.5, 1),
+    };
+    auto p2t_Point_02_02 = p2t::Point(0.2, 0.2);
+    std::vector<p2t::Point*> hole0 {
+        &points.emplace_back(0.1, 0.1),
+        &points.emplace_back(0.2, 0.1),
+        &p2t_Point_02_02,
+    };
+    std::vector<p2t::Point*> hole1 {
+        &p2t_Point_02_02,
+        &points.emplace_back(0.3, 0.2),
+        &points.emplace_back(0.3, 0.3),
+    };
+    p2t::CDT cdt{ polyline };
+    cdt.AddHole(hole0);
+    cdt.AddHole(hole1);
+    cdt.Triangulate();
+    // auto result = cdt.GetMap();
+    auto result = cdt.GetTriangles();
+    // plot_tris("/tmp/tris_test.obj", result);
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     try {
+        test_touching_holes();
+
         test_special_tait_bryan_angles();
         test_tait_bryan_angles_2_matrix();
         test_inverse_tait_bryan_angles();
