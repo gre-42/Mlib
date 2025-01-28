@@ -116,6 +116,8 @@ void Mlib::apply_heightmap_and_smoothen(
         Array<bool> heightmap_mask;
         if (!config.heightmap_mask.empty()) {
             heightmap_mask = PgmImage::load_from_file(config.heightmap_mask).casted<bool>();
+        } else {
+            heightmap_mask.move() = ones<bool>(heightmap.shape());
         }
         size_t ext = std::max({ heightmap.shape(0), heightmap.shape(1), config.heightmap_extension });
         ExtendedImage extended_heightmap{
