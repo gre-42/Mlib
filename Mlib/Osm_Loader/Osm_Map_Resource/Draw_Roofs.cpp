@@ -44,9 +44,12 @@ void Mlib::draw_roofs(
             bu.way.nd,
             scale,
             max_length);
+        if (bu.levels.empty()) {
+            THROW_OR_ABORT("Building has no levels");
+        }
         float zz0 = bu.levels.back().top;
-        float zz1 = bu.levels.back().top + bu.roof_9_2.value().height;
-        float width = bu.roof_9_2.value().width;
+        float zz1 = bu.levels.back().top + bu.roof_9_2->height;
+        float width = bu.roof_9_2->width;
         if (bu.area < 0) {
             std::swap(zz0, zz1);
         }
@@ -85,7 +88,7 @@ void Mlib::draw_roofs(
                         rect.p00_ = b;
                         rect.p10_ = c;
                     }
-                    float uheight = bu.roof_9_2.value().height;
+                    float uheight = bu.roof_9_2->height;
                     float uwidth = std::sqrt(squared(width) + squared(uheight));
                     rect.draw_z(
                         *tl,
