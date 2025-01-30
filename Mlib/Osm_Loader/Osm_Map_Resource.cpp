@@ -249,7 +249,8 @@ OsmMapResource::OsmMapResource(
                 street_lights,
                 config.with_height_bindings,
                 config.driving_direction,
-                config.layer_heights
+                config.layer_heights,
+                config.use_terrain_holes
             }};
         } catch (const PointException<CompressedScenePos, 3>& e) {
             handle_point_exception3(e, "Could not draw streets");

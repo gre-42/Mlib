@@ -211,6 +211,7 @@ struct OsmResourceConfig {
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     std::map<RoadType, bool> blend_street;
     Interp<double> layer_heights{ std::vector<double>{}, std::vector<double>{} };
+    bool use_terrain_holes = false;
     std::string game_level;
     std::string base_osm_map_resource;
     std::string navmesh_resource;

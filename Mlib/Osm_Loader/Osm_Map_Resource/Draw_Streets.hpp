@@ -90,6 +90,7 @@ struct DrawStreetsInput {
     bool with_height_bindings;
     DrivingDirection driving_direction;
     Interp<double> layer_heights;
+    bool use_terrain_holes;
 };
 
 class DrawStreets: private DrawStreetsInput {

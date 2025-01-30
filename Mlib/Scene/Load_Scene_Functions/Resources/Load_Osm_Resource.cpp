@@ -275,6 +275,7 @@ DECLARE_ARGUMENT(displacementmap_distances);
 DECLARE_ARGUMENT(displacementmap_heights);
 DECLARE_ARGUMENT(fog_distances);
 DECLARE_ARGUMENT(fog_ambient);
+DECLARE_ARGUMENT(use_terrain_holes);
 }
 
 namespace ST {
@@ -1131,6 +1132,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::fog_ambient)) {
             config.fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
         }
+        config.use_terrain_holes = args.arguments.at<bool>(KnownArgs::use_terrain_holes, false);
     };
     if (resource_name.empty()) {
         THROW_OR_ABORT("Osm resource name not set");

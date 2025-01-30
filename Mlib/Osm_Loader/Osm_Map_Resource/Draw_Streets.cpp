@@ -412,6 +412,71 @@ void DrawStreets::draw_streets() {
     }
 }
 
+static void draw_terrain_triangle_hole(
+    const Array<NodeHoleVertex>& hv,
+    const std::map<std::string, WayInfo>& way_infos,
+    TriangleList<CompressedScenePos>& triangles)
+{
+    if (hv.length() != 3) {
+        THROW_OR_ABORT2("Triangle hole does not have 3 corners");
+    }
+    triangles.draw_triangle_wo_normals(
+        FixedArray<CompressedScenePos, 3>{hv(0).position(0), hv(0).position(1), (CompressedScenePos)0.},
+        FixedArray<CompressedScenePos, 3>{hv(1).position(0), hv(1).position(1), (CompressedScenePos)0.},
+        FixedArray<CompressedScenePos, 3>{hv(2).position(0), hv(2).position(1), (CompressedScenePos)0.},
+        Colors::from_rgb(way_infos.at(hv(0).way_id).colors[0]),
+        Colors::from_rgb(way_infos.at(hv(1).way_id).colors[0]),
+        Colors::from_rgb(way_infos.at(hv(2).way_id).colors[0]));
+}
+
+static void draw_terrain_fan_hole(
+    const Node& center,
+    const Array<NodeHoleVertex>& hv,
+    const std::map<std::string, WayInfo>& way_infos,
+    TriangleList<CompressedScenePos>& triangles)
+{
+    if (hv.length() < 3) {
+        THROW_OR_ABORT2("Fan has less than 3 corners");
+    }
+    FixedArray<float, 3> center_color =
+        mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors[0];}));
+    for (size_t i = 0; i < hv.length(); ++i) {
+        size_t j = (i + 1) % hv.length();
+        triangles.draw_triangle_wo_normals(
+            FixedArray<CompressedScenePos, 3>{hv(i).position(0), hv(i).position(1), (CompressedScenePos)0.f},
+            FixedArray<CompressedScenePos, 3>{hv(j).position(0), hv(j).position(1), (CompressedScenePos)0.f},
+            FixedArray<CompressedScenePos, 3>{center.position(0), center.position(1), (CompressedScenePos)0.f},
+            Colors::from_rgb(way_infos.at(hv(i).way_id).colors[0]),
+            Colors::from_rgb(way_infos.at(hv(j).way_id).colors[0]),
+            Colors::from_rgb(center_color));
+    }
+}
+
+static void draw_street_fan_hole_segment(
+    const Node& center,
+    const AngleWay& angle_way,
+    const FixedArray<CompressedScenePos, 2>& left,
+    const FixedArray<CompressedScenePos, 2>& right,
+    const std::map<std::string, WayInfo>& way_infos,
+    float uv_len0,
+    float uv_len1,
+    float uv_scale,
+    TriangleList<CompressedScenePos>& triangles)
+{
+    auto center1 = (left + right) / 2;
+    auto dist1 = (float)std::sqrt(sum(squared(center1 - center.position)));
+    triangles.draw_triangle_wo_normals(
+        FixedArray<CompressedScenePos, 3>{left(0), left(1), (CompressedScenePos)0.f},
+        FixedArray<CompressedScenePos, 3>{right(0), right(1), (CompressedScenePos)0.f},
+        FixedArray<CompressedScenePos, 3>{center.position(0), center.position(1), (CompressedScenePos)0.f},
+        Colors::from_rgb(way_infos.at(angle_way.way_id).colors[0]),
+        Colors::from_rgb(way_infos.at(angle_way.way_id).colors[0]),
+        Colors::from_rgb(way_infos.at(angle_way.way_id).colors[0]),
+        FixedArray<float, 2>{0.f, uv_scale * uv_len0},
+        FixedArray<float, 2>{1.f, uv_scale * uv_len0},
+        FixedArray<float, 2>{0.5f, uv_scale * (uv_len0 + sign(uv_len1 - uv_len0) * dist1)});
+}
+
 void DrawStreets::draw_holes() {
     if (driving_direction == DrivingDirection::LEFT ||
         driving_direction == DrivingDirection::RIGHT)
@@ -439,53 +504,33 @@ void DrawStreets::draw_holes() {
     } else if (driving_direction != DrivingDirection::CENTER) {
         THROW_OR_ABORT("Only 1 or 2 lanes are supported");
     }
-    auto draw_air_holes = [this](const auto& hole_contours, auto& hole_triangles) {
-        for (const auto& [n, nh] : hole_contours) {
-            Array<NodeHoleVertex> hv{ArrayShape{nh.size()}};
-            {
-                size_t i = 0;
-                for (const auto& h : nh) {
-                    hv(i++) = h.second;
+    if (use_terrain_holes) {
+        auto draw_air_holes = [this](const auto& hole_contours, auto& hole_triangles) {
+            for (const auto& [n, nh] : hole_contours) {
+                Array<NodeHoleVertex> hv{ArrayShape{nh.size()}};
+                {
+                    size_t i = 0;
+                    for (const auto& [_, h] : nh) {
+                        hv(i++) = h;
+                    }
+                    hv.reshape(ArrayShape{i});
                 }
-                hv.reshape(ArrayShape{i});
-            }
-            if (nh.size() == 0) {
-                // do nothing
-            } else if (nh.size() == 3) {
-                hole_triangles->draw_triangle_wo_normals(
-                    FixedArray<CompressedScenePos, 3>{hv(0).position(0), hv(0).position(1), (CompressedScenePos)0.},
-                    FixedArray<CompressedScenePos, 3>{hv(1).position(0), hv(1).position(1), (CompressedScenePos)0.},
-                    FixedArray<CompressedScenePos, 3>{hv(2).position(0), hv(2).position(1), (CompressedScenePos)0.},
-                    Colors::from_rgb(way_infos.at(hv(0).way_id).colors[0]),
-                    Colors::from_rgb(way_infos.at(hv(1).way_id).colors[0]),
-                    Colors::from_rgb(way_infos.at(hv(2).way_id).colors[0]));
-            } else if (nh.size() > 3) {
-                // Draw center fan
-                FixedArray<CompressedScenePos, 2> center =
-                    mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return funpack(v.position);}))
-                    .template casted<CompressedScenePos>();
-                FixedArray<float, 3> center_color =
-                    mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors[0];}));
-                for (size_t i = 0; i < hv.length(); ++i) {
-                    size_t j = (i + 1) % hv.length();
-                    hole_triangles->draw_triangle_wo_normals(
-                        FixedArray<CompressedScenePos, 3>{hv(i).position(0), hv(i).position(1), (CompressedScenePos)0.f},
-                        FixedArray<CompressedScenePos, 3>{hv(j).position(0), hv(j).position(1), (CompressedScenePos)0.f},
-                        FixedArray<CompressedScenePos, 3>{center(0), center(1), (CompressedScenePos)0.f},
-                        Colors::from_rgb(way_infos.at(hv(i).way_id).colors[0]),
-                        Colors::from_rgb(way_infos.at(hv(j).way_id).colors[0]),
-                        Colors::from_rgb(center_color));
+                if (nh.size() == 0) {
+                    // do nothing
+                } else if (nh.size() == 3) {
+                    draw_terrain_triangle_hole(hv, way_infos, *hole_triangles);
+                } else if (nh.size() > 3) {
+                    // Draw center fan
+                    draw_terrain_fan_hole(nodes.at(n), hv, way_infos, *hole_triangles);
+                } else {
+                    THROW_OR_ABORT("Unexpected air hole size: \"" + n + '"');
                 }
-            } else {
-                THROW_OR_ABORT("Unexpected air hole size: \"" + n + '"');
             }
-        }
-    };
-    draw_air_holes(air_support_node_hole_contours, air_triangles.tl_air_support);
-    draw_air_holes(tunnel_node_hole_contours, air_triangles.tl_tunnel_crossing);
-    for (const auto& nit : node_hole_contours) {
-        const auto& nid = nit.first;
-        const auto& nh = nit.second;
+        };
+        draw_air_holes(air_support_node_hole_contours, air_triangles.tl_air_support);
+        draw_air_holes(tunnel_node_hole_contours, air_triangles.tl_tunnel_crossing);
+    }
+    for (const auto& [nid, nh] : node_hole_contours) {
         if (nh.empty()) {
             continue;
         }
@@ -544,32 +589,17 @@ void DrawStreets::draw_holes() {
         auto& crossings = *tlist2->tl_street_crossing[road_type];
         // A single triangle does not work with curbs when an angle is ~90°
         if ((nh.size() == 3) && (curb_alpha_ == 1)) {
-            crossings.draw_triangle_wo_normals(
-                FixedArray<CompressedScenePos, 3>{hv(0).position(0), hv(0).position(1), (CompressedScenePos)0.f},
-                FixedArray<CompressedScenePos, 3>{hv(1).position(0), hv(1).position(1), (CompressedScenePos)0.f},
-                FixedArray<CompressedScenePos, 3>{hv(2).position(0), hv(2).position(1), (CompressedScenePos)0.f},
-                Colors::from_rgb(way_infos.at(hv(0).way_id).colors[0]),
-                Colors::from_rgb(way_infos.at(hv(1).way_id).colors[0]),
-                Colors::from_rgb(way_infos.at(hv(2).way_id).colors[0]));
+            if (use_terrain_holes) {
+                draw_terrain_triangle_hole(hv, way_infos, crossings);
+            }
         } else if (nh.size() >= 3) {
             // Draw center fan
-            {
-                FixedArray<CompressedScenePos, 2> center = mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return funpack(v.position);})).casted<CompressedScenePos>();
-                FixedArray<float, 3> center_color = mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors[0];}));
-                for (size_t i = 0; i < hv.length(); ++i) {
-                    size_t j = (i + 1) % hv.length();
-                    crossings.draw_triangle_wo_normals(
-                        FixedArray<CompressedScenePos, 3>{hv(i).position(0), hv(i).position(1), (CompressedScenePos)0.},
-                        FixedArray<CompressedScenePos, 3>{hv(j).position(0), hv(j).position(1), (CompressedScenePos)0.},
-                        FixedArray<CompressedScenePos, 3>{center(0), center(1), (CompressedScenePos)0.f},
-                        Colors::from_rgb(way_infos.at(hv(i).way_id).colors[0]),
-                        Colors::from_rgb(way_infos.at(hv(j).way_id).colors[0]),
-                        Colors::from_rgb(center_color));
-                }
-                if (with_height_bindings && !nodes.at(nid).tags.contains("bind_height", "no")) {
-                    node_height_bindings[OrderableFixedArray{ center }] = nid;
-                }
+            if (use_terrain_holes) {
+                draw_terrain_fan_hole(nodes.at(nid), hv, way_infos, crossings);
             }
+            // if (with_height_bindings && !nodes.at(nid).tags.contains("bind_height", "no")) {
+            //     node_height_bindings[OrderableFixedArray{ nodes.at(nid).position }] = nid;
+            // }
             // Draw corners
             if (curb_alpha_ != 1) {
                 std::vector<float> angles;
@@ -918,14 +948,14 @@ std::string DrawStreets::auto_model_name(
         } else if (model_name_endpoint0 != nullptr) {
             // assert_true(node_angles.at(node_id).size() != 2);
             assert_true(node_angles0.size() == 2);
-            if ((*model_name_endpoint0).empty()) {
+            if (model_name_endpoint0->empty()) {
                 THROW_OR_ABORT("Empty model names not supported");
             }
             return *model_name_endpoint0;
         } else if (model_name_endpoint1 != nullptr) {
             assert_true(node_angles1.size() == 2);
             // assert_true(node_angles.at(angle_way.neighbor_id).size() != 2);
-            if ((*model_name_endpoint1).empty()) {
+            if (model_name_endpoint1->empty()) {
                 THROW_OR_ABORT("Empty model names not supported");
             }
             return *model_name_endpoint1;
@@ -1149,6 +1179,16 @@ void DrawStreets::draw_streets_draw_ways(
             b_entrance_type,
             c_entrance_type,
             angle_way.road_type);
+        if (node_angles0.size() > 2) {
+            draw_street_fan_hole_segment(
+                node0, angle_way, rect.p01_, rect.p00_, way_infos,
+                uv_len0, uv_len1, uv_scale, *street_lst.triangle_list);
+        }
+        if (node_angles1.size() > 2) {
+            draw_street_fan_hole_segment(
+                node1, angle_way, rect.p10_, rect.p11_, way_infos,
+                uv_len1, uv_len0, uv_scale, *street_lst.triangle_list);
+        }
     };
     if (wi.model.empty()) {
         std::string model_name = auto_model_name(
