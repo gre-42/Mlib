@@ -43,7 +43,7 @@ void apply_heightmap_and_smoothen(
     const StreetBvh& ground_street_bvh,
     const StreetBvh& air_bvh,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding>& node_height_bindings,
-    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
+    std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const NormalizedPointsFixed<ScenePos>& normalized_points,

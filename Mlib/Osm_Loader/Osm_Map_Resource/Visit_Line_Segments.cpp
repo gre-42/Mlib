@@ -19,7 +19,7 @@ void Mlib::visit_line_segments(
     }
     if (all(path.front() == path.back())) {
         auto a = ++path.begin();
-        for (size_t i = 0; i < path.size(); ++i) {
+        for (size_t i = 0; i < path.size() - 1; ++i) {
             auto b = a;
             ++b;
             if (b == path.end()) {

@@ -21,7 +21,7 @@ using namespace Mlib;
 void Mlib::draw_wall_barriers(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
-    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
+    std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const Material& material,
     const Morphology& morphology,
     const std::list<Building>& buildings,
@@ -77,21 +77,35 @@ void Mlib::draw_wall_barriers(
             auto sw = subdivided_way(nodes, bu.way.nd, scale, max_width);
             if (bs.depth == 0.f) {
                 float length_mod1 = 0.f;
-                for (auto it = sw.begin(); it != sw.end(); ++it) {
-                    auto s = it;
-                    ++s;
-                    if (s != sw.end()) {
-                        const auto& p0 = *s;
-                        const auto& p1 = *it;
+                visit_line_segments(sw, [&](
+                    const FixedArray<CompressedScenePos, 2>& aL,
+                    const FixedArray<CompressedScenePos, 2>& aR,
+                    const FixedArray<CompressedScenePos, 2>& b,
+                    const FixedArray<CompressedScenePos, 2>& c,
+                    const FixedArray<CompressedScenePos, 2>& dL,
+                    const FixedArray<CompressedScenePos, 2>& dR,
+                    SegmentPosition position)
+                    {
+                        const auto& p0 = b;
+                        const auto& p1 = c;
                         float width = (float)std::sqrt(sum(squared(p0 - p1)));
                         float height = (bl.top - bl.bottom) * scale;
                         if (steiner_points != nullptr) {
                             steiner_points->push_back({
-                                .position = {p0(0), p0(1), (CompressedScenePos)0.f},
+                                .position = {b(0), b(1), (CompressedScenePos)0.f},
+                                .type = SteinerPointType::WALL });
+                            steiner_points->push_back({
+                                .position = {c(0), c(1), (CompressedScenePos)0.f},
                                 .type = SteinerPointType::WALL });
                         }
                         FixedArray<float, 2> uv = 1.f / scale * uv_scale * bs.uv;
                         // some buildings are clock-wise, others counter-clock-wise
+                        ColoredVertex<CompressedScenePos>* pp00a;
+                        ColoredVertex<CompressedScenePos>* pp11a;
+                        ColoredVertex<CompressedScenePos>* pp01a;
+                        ColoredVertex<CompressedScenePos>* pp00b;
+                        ColoredVertex<CompressedScenePos>* pp10b;
+                        ColoredVertex<CompressedScenePos>* pp11b;
                         tl.draw_rectangle_wo_normals(
                             { p1(0), p1(1), (CompressedScenePos)(bl.bottom * scale) },
                             { p0(0), p0(1), (CompressedScenePos)(bl.bottom * scale) },
@@ -104,10 +118,28 @@ void Mlib::draw_wall_barriers(
                             FixedArray<float, 2>{length_mod1, 0.f} *uv,
                             FixedArray<float, 2>{length_mod1 + width, 0.f} *uv,
                             FixedArray<float, 2>{length_mod1 + width, height} *uv,
-                            FixedArray<float, 2>{length_mod1, height} *uv);
+                            FixedArray<float, 2>{length_mod1, height} *uv,
+                            {},
+                            {},
+                            {},
+                            {},
+                            NormalVectorErrorBehavior::THROW,
+                            TriangleTangentErrorBehavior::THROW,
+                            RectangleTriangulationMode::FIRST,
+                            &pp00a,
+                            &pp11a,
+                            &pp01a,
+                            &pp00b,
+                            &pp10b,
+                            &pp11b);
+                        vertex_height_bindings[&pp00a->position] = c;
+                        vertex_height_bindings[&pp11a->position] = b;
+                        vertex_height_bindings[&pp01a->position] = c;
+                        vertex_height_bindings[&pp00b->position] = c;
+                        vertex_height_bindings[&pp10b->position] = b;
+                        vertex_height_bindings[&pp11b->position] = b;
                         length_mod1 = std::fmod(length_mod1 + width, 1.f / uv(0));
-                    }
-                }
+                    });
             } else {
                 FixedArray<float, 2> length_mod1{ 0.f };
                 visit_line_segments(sw, [&](
@@ -151,7 +183,7 @@ void Mlib::draw_wall_barriers(
                             }
                             FixedArray<float, 2> uv = 1.f / scale * uv_scale * bs.uv;
                             auto set_height_binding = [&](
-                                const FixedArray<CompressedScenePos, 3>& addr,
+                                FixedArray<CompressedScenePos, 3>& addr,
                                 const FixedArray<CompressedScenePos, 2>& source){
                                     auto addr2 = FixedArray<CompressedScenePos, 2>{ addr(0), addr(1) };
                                     auto dist = sum(squared(addr2 - source));

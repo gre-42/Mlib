@@ -177,7 +177,7 @@ OsmMapResource::OsmMapResource(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_buildings;
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_wall_barriers;
     std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding> node_height_bindings;
-    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>> vertex_height_bindings;
+    std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
@@ -698,6 +698,7 @@ OsmMapResource::OsmMapResource(
             ground_street_bvh,
             air_bvh,
             osm_triangle_lists.tls_smoothed(),
+            vertex_height_bindings,
             StbImage1::load_from_file(config.displacementmap).to_float_grayscale().casted<double>(),
             config.displacementmap_min,
             config.displacementmap_uv_scale,

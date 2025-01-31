@@ -25,7 +25,7 @@ class FixedArray;
 void draw_wall_barriers(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
-    std::unordered_map<const FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
+    std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>>& vertex_height_bindings,
     const Material& material,
     const Morphology& morphology,
     const std::list<Building>& buildings,

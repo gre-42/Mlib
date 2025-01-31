@@ -533,7 +533,7 @@ struct AdjacentTriangles {
 
 template <class TPos>
 void TriangleList<TPos>::smoothen_edges(
-    std::unordered_map<const FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
+    std::unordered_map<FixedArray<TPos, 3>*, VertexHeightBinding<TPos>>& vertex_height_bindings,
     const std::unordered_map<OrderableFixedArray<TPos, 3>, FixedArray<float, 3>>& bias,
     const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
