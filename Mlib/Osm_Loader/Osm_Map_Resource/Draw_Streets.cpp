@@ -597,9 +597,9 @@ void DrawStreets::draw_holes() {
             if (use_terrain_holes) {
                 draw_terrain_fan_hole(nodes.at(nid), hv, way_infos, crossings);
             }
-            // if (with_height_bindings && !nodes.at(nid).tags.contains("bind_height", "no")) {
-            //     node_height_bindings[OrderableFixedArray{ nodes.at(nid).position }] = nid;
-            // }
+            if (with_height_bindings && !nodes.at(nid).tags.contains("bind_height", "no")) {
+                node_height_bindings[OrderableFixedArray{ nodes.at(nid).position }] = nid;
+            }
             // Draw corners
             if (curb_alpha_ != 1) {
                 std::vector<float> angles;
@@ -1183,11 +1183,17 @@ void DrawStreets::draw_streets_draw_ways(
             draw_street_fan_hole_segment(
                 node0, angle_way, rect.p01_, rect.p00_, way_infos,
                 uv_len0, uv_len1, uv_scale, *street_lst.triangle_list);
+            if (with_height_bindings && !node0.tags.contains("bind_height", "no")) {
+                node_height_bindings[OrderableFixedArray{ node0.position }] = node_id;
+            }
         }
         if (node_angles1.size() > 2) {
             draw_street_fan_hole_segment(
                 node1, angle_way, rect.p10_, rect.p11_, way_infos,
                 uv_len1, uv_len0, uv_scale, *street_lst.triangle_list);
+            if (with_height_bindings && !node1.tags.contains("bind_height", "no")) {
+                node_height_bindings[OrderableFixedArray{ node1.position }] = angle_way.neighbor_id;
+            }
         }
     };
     if (wi.model.empty()) {
