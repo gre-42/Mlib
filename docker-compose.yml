@@ -1,0 +1,23 @@
+version: '2.3'
+services:
+  mlib-glfw3:
+    build: .
+    image: mlib-glfw3
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${PWD}:/MlibGlfw3-Docker
+      - /tmp:/tmp-host
+    # devices:
+    #   - /dev/video0:/dev/video0
+    environment:
+      - DISPLAY
+      - BUILD_PREFIX=O
+    working_dir: /MlibGlfw3-Docker
+    runtime: nvidia
+    command: tail -f /dev/null
+
+# Run "docker-compose up", then get a shell with:
+# docker-compose exec mlib-glfw3 bash
+
+# The same without compose:
+# docker run --rm -it -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -w /MlibGlfw3-patched -v $(pwd)/MlibGlfw3-patched:/MlibGlfw3-patched --runtime nvidia mlib-glx

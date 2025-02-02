@@ -1,0 +1,12 @@
+/Caches
+/*Debug
+/*Release
+/*RelWithDebInfo
+/*VS*
+/Testing
+/RecastBuild
+*.pyc
+/freealut
+/OpenAL
+/engine-sim
+/Android

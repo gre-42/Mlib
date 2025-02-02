@@ -1,0 +1,6 @@
+{
+    "default": {
+        "only": [],
+        "except": ["UDebug", "URelease"]
+    }
+}

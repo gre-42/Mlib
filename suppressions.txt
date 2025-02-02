@@ -1,0 +1,24 @@
+#####################################
+# Thread sanitizer suppression file #
+#####################################
+
+# False positives
+# deadlock:.*
+
+# OpenMP
+race:Math.hpp
+race:Array.hpp
+race:Cdf.hpp
+
+# OpenAL
+race:alcOpenDevice
+race:libopenal
+
+# NVIDIA
+race:libnvidia
+
+# AMD
+race:radeonsi_dri
+
+# STL
+race:shared_ptr.h

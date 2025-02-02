@@ -1,0 +1,7 @@
+./.git/*
+./*MDebug/*
+./*UDebug/*
+./*MRelease/*
+./*URelease/*
+./*MRelWithDebInfo/*
+./*URelWithDebInfo/*

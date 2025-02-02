@@ -1,0 +1,24 @@
+CostVolume.cpp
+    depthStep
+Regularizer.cpp
+    sigmas
+Regulariser/Regulariser_computeG.cu
+    Scharr kernels, alpha, beta
+        data/openDTAM_settings_ahanda.yaml
+            regulariser.alpha_G : 100.0
+            regulariser.beta_G  : 1.6 
+
+            costvolume.images_per_costvolume : 30
+            costvolume.layers                : 64
+            costvolume.near_inverse_distance : 10 # change to .002 or slightly larger
+            costvolume.far_inverse_distance  : 0.1 # 0.0 
+
+
+DenseMapper.cpp
+    DenseMapper::optimize
+
+    DenseMapper::processImage(const sensor_msgs::ImageConstPtr& image_msg)
+        nframes before / after?
+        only mapping, no tracking is implemented
+
+ORB descriptors (ROS) or PTAM

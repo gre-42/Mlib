@@ -1,0 +1,42 @@
+#pragma once
+#include <Mlib/Array/Array.hpp>
+#include <Mlib/Array/Sparse_Array.hpp>
+#include <Mlib/Math/Schur_Complement.hpp>
+#include <Mlib/Sfm/Marginalization/Regrid_Array.hpp>
+#include <Mlib/Sfm/Marginalization/UUID.hpp>
+#include <map>
+#include <set>
+
+namespace Mlib {
+
+class MarginalizingSolver {
+public:
+    MarginalizingSolver(float alpha, float beta);
+    void update_indices(const std::map<UUID, size_t>& uuids_ka);
+    void update_indices2(const std::map<UUID, size_t>& uuids_ka);
+    void recompute_hessian(const SparseArrayCcs<float>& J);
+    void marginalize(
+        const SparseArrayCcs<float>& J,
+        const Array<float>& residual,
+        const Array<float>& x0,
+        const Array<size_t>& ids_k,
+        const Array<size_t>& ids_a,
+        const Array<size_t>& ids_b,
+        const Array<size_t>& ids_ka);
+    void update_x(
+        const SparseArrayCcs<float>& J,
+        const Array<float>& residual,
+        const Array<float>& x);
+    void solve();
+    Array<float> lhs_ka_;
+    Array<float> rhs_ka_;
+    Array<size_t> ids_a_;
+    std::map<size_t, UUID> uuids_ka_map_;
+    Array<float> x_;
+    ArrayShape shape_;
+private:
+    float alpha_;
+    float beta_;
+};
+
+}

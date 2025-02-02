@@ -1,0 +1,116 @@
+--- result_plots_mintime.py	2022-05-22 15:36:21.304171000 +0200
++++ result_plots_mintime.py	2022-05-22 15:41:51.080879206 +0200
+@@ -1,3 +1,5 @@
++import os.path
++
+ import numpy as np
+ import matplotlib.pyplot as plt
+ 
+@@ -126,7 +128,7 @@
+                     r'$\it{a_y}$' + ' in ' + r'$\it{\frac{m}{s^2}}$',
+                     r'$\it{a_{tot}}$' + ' in ' + r'$\it{\frac{m}{s^2}}$',
+                     r'$\it{t}$' + ' in ' + r'$\it{s}$'])
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'v_a_t.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: SIDE SLIP ANGLE + YAW RATE + RELATIVE ANGLE TO TANGENT ON REFLINE + STEERING ANGLE -------------------------
+@@ -156,7 +158,7 @@
+         plt.xlabel('distance ' + r'$\it{s}$' + ' in ' + r'$\it{m}$')
+         plt.ylabel('steering angle ' + r'$\delta$' + ' in ' + r'$\it{°}$')
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'general.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: LATERAL DISTANCE TO REFERENCE LINE + ROAD BOUNDARIES -------------------------------------------------------
+@@ -176,7 +178,7 @@
+         plt.ylabel('lateral distance to reference line ' + r'$\it{n}$' + ' in ' + r'$\it{m}$')
+         plt.legend(['raceline', 'road boundaries', 'road boundaries - safety margin'], ncol=1, loc=4)
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'lateral_distance.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: KAMM's CIRCLE ----------------------------------------------------------------------------------------------
+@@ -242,7 +244,7 @@
+         plt.ylabel(r'$\it{\frac{F_{x}}{F_{xmax}}}$')
+         plt.axis('equal')
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'kamm_circle.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: TIRE FORCES (LONGITUDINAL + LATERAL + NORMAL) --------------------------------------------------------------
+@@ -288,7 +290,7 @@
+         plt.ylabel(r'$\it{F_{i}}$' + ' in ' + r'$\it{N}$')
+         plt.legend([r'$\it{F_{x}}$', r'$\it{F_{y}}$', r'$\it{F_{z}}$'], ncol=3, loc=4)
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'tire_forces.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: TIRE FORCES (LONGITUDINAL) ---------------------------------------------------------------------------------
+@@ -306,7 +308,7 @@
+                     r'$\it{F_{drive}}$' + " + " + r'$\it{F_{brake}}$',
+                     r'$\it{F_{P_{max}}}$'], ncol=1, loc=4)
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'tire_forces_longitudinal.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: DYNAMIC WHEEL LOAD TRANSFER --------------------------------------------------------------------------------
+@@ -371,7 +373,7 @@
+         plt.legend([r'$\it{F_{lift}}$', r'$\it{F_{dyn,long}}$', r'$\it{F_{dyn,lat}}$',
+                     r'$\it{F_{lift}}$' + ' + ' + r'$\it{F_{dyn,long}}$' + ' + ' + r'$\it{F_{dyn,lat}}$'], ncol=2, loc=4)
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'tire_forces_dynamic.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: ENERGY CONSUMPTION -----------------------------------------------------------------------------------------
+@@ -385,7 +387,7 @@
+         plt.xlabel('distance ' + r'$\it{s}$' + ' in ' + r'$\it{m}$')
+         plt.ylabel('energy consumption ' + r'$\it{ec}$' + ' in ' + r'$\it{Wh}$')
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'energy_consumption.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: POWER ------------------------------------------------------------------------------------------------------
+@@ -402,7 +404,7 @@
+         if pwr is not None:
+             plt.plot(s[:-1], pwr["batt"].p_loss_total + pwr["batt"].p_out_batt)
+             plt.legend([r'$\it{P_{wheel}}$', r'$\it{P_{system}}$'])
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'power.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: POWERTRAIN TEMPERATURES ------------------------------------------------------------------------------------
+@@ -422,7 +424,7 @@
+         plt.legend([r'$\it{T_\mathrm{Machine}}$', r'$\it{T_\mathrm{Battery}}$', r'$\it{T_\mathrm{Inverter}}$',
+                     r'$\it{T_\mathrm{Fluid_{MI}}}$', r'$\it{T_\mathrm{Fluid_B}}$'])
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'pwr_states.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: SOC BATTERY ------------------------------------------------------------------------------------------------
+@@ -435,7 +437,7 @@
+         plt.xlabel('distance ' + r'$\it{s}$' + ' in ' + r'$\it{m}$')
+         plt.ylabel('SOC battery [1 - 0]')
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'pwr_soc.svg'))
+ 
+     # ------------------------------------------------------------------------------------------------------------------
+     # PLOT: POWER LOSSES -----------------------------------------------------------------------------------------------
+@@ -476,7 +478,7 @@
+ 
+         plt.xlabel('distance ' + r'$\it{s}$' + ' in ' + r'$\it{m}$')
+         plt.grid()
+-        plt.show()
++        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs', 'mintime', 'pwr_losses.svg'))
+ 
+ # testing --------------------------------------------------------------------------------------------------------------
+     if __name__ == "__main__":

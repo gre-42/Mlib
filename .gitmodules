@@ -1,0 +1,12 @@
+[submodule "recastnavigation"]
+	path = recastnavigation
+	url = https://github.com/recastnavigation/recastnavigation
+[submodule "cereal"]
+	path = cereal
+	url = https://github.com/gre-42/cereal.git
+[submodule "zlib"]
+	path = zlib
+	url = https://github.com/madler/zlib.git
+[submodule "eve"]
+	path = eve
+	url = https://github.com/jfalcou/eve.git

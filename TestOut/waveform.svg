@@ -1,0 +1,11 @@
+<svg width="200" height="100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path stroke-width="1" stroke="#000" fill="none" d="M 20,87.5 92,87.5 164,87.5 164,62.5 200,62.5 200,87.5 "/>
+  <text text-anchor="start" x="0" y="75" fill="black">a</text>
+  <path stroke-width="1" stroke="#FF5733" fill="none" d="M 20,37.5 92,37.5 92,12.5 164,12.5 164,37.5 200,37.5 "/>
+  <text text-anchor="start" x="0" y="25" fill="black">b</text>
+  <text text-anchor="end" x="20" y="100" fill="black">1</text>
+  <text text-anchor="end" x="65" y="100" fill="black">2.2</text>
+  <text text-anchor="end" x="110" y="100" fill="black">3.5</text>
+  <text text-anchor="end" x="155" y="100" fill="black">4.8</text>
+  <text text-anchor="end" x="200" y="100" fill="black">6</text>
+</svg>

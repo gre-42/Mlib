@@ -1,0 +1,21 @@
+--- opt_mintime.py	2022-05-22 01:28:46.311512847 +0200
++++ opt_mintime.py	2022-05-22 01:27:21.000000000 +0200
+@@ -778,12 +778,12 @@
+ 
+         # path constraint: safe trajectories with acceleration ellipse
+         if pars["optim_opts"]["safe_traj"]:
+-            g.append((ca.fmax(axk, 0) / pars["optim_opts"]["ax_pos_safe"]) ** 2
+-                     + (ayk / pars["optim_opts"]["ay_safe"]) ** 2)
+-            g.append((ca.fmin(axk, 0) / pars["optim_opts"]["ax_neg_safe"]) ** 2
+-                     + (ayk / pars["optim_opts"]["ay_safe"]) ** 2)
+-            lbg.append([0.0] * 2)
+-            ubg.append([1.0] * 2)
++            g.append(axk)
++            lbg.append([pars["optim_opts"]["ax_neg_safe"]])
++            ubg.append([pars["optim_opts"]["ax_pos_safe"]])
++            g.append(ayk)
++            lbg.append([-pars["optim_opts"]["ay_safe"]])
++            ubg.append([pars["optim_opts"]["ay_safe"]])
+ 
+         # append controls (for regularization)
+         delta_p.append(Uk[0] * delta_s)
