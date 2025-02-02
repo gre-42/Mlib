@@ -387,10 +387,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 } else {
                     tl.material.occluder_pass = cfg.occluder_pass;
                 }
-                tl.material.shading.emissive = cfg.emissive_factor * current_mtl.emissive;
-                tl.material.shading.ambient = cfg.ambient_factor * current_mtl.ambient;
-                tl.material.shading.diffuse = cfg.diffuse_factor * current_mtl.diffuse;
-                tl.material.shading.specular = cfg.specular_factor * current_mtl.specular;
+                tl.material.shading.emissive = current_mtl.emissive;
+                tl.material.shading.ambient = current_mtl.ambient;
+                tl.material.shading.diffuse = current_mtl.diffuse;
+                tl.material.shading.specular = current_mtl.specular;
                 tl.material.shading.specular_exponent = current_mtl.specular_exponent;
                 tl.material.alpha = current_mtl.alpha;
                 tl.material.compute_color_mode();
@@ -434,6 +434,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     TriangleTangentErrorBehavior::ZERO);
             }
         }
+        l->material.shading.emissive *= cfg.emissive_factor;
+        l->material.shading.ambient *= cfg.ambient_factor;
+        l->material.shading.diffuse *= cfg.diffuse_factor;
+        l->material.shading.specular *= cfg.specular_factor;
     }
     ambient_occlusion_by_curvature(result, cfg.laplace_ao_strength);
     return result;

@@ -193,16 +193,16 @@ void Mlib::apply_heightmap_and_smoothen(
             std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_air_street = air_triangle_lists.tls_street();
             tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
             fg.update("Smoothen edges (street)");
-            TriangleList<CompressedScenePos>::smoothen_edges(       // vertex_height_bindings
-                vertex_height_bindings,                             // bias
-                {},                                                 // edge_triangle_lists
-                tls_street,                                         // excluded_triangle_lists
-                tls_move_only_z,                                    // move_only_z_triangle_lists
-                {},                                                 // smoothed_vertices
-                smoothed_vertices,                                  // smoothness
-                config.street_edge_smoothness* config.scale,        // niterations
-                100,                                                // move_only_z
-                true);                                              // decay
+            TriangleList<CompressedScenePos>::smoothen_edges(
+                vertex_height_bindings,                             // vertex_height_bindings
+                {},                                                 // bias
+                tls_street,                                         // edge_triangle_lists
+                tls_move_only_z,                                    // excluded_triangle_lists
+                {},                                                 // move_only_z_triangle_lists
+                smoothed_vertices,                                  // smoothed_vertices
+                config.street_edge_smoothness* config.scale,        // smoothness
+                100,                                                // niterations
+                true);                                              // move_only_z
         }
         if (config.terrain_edge_smoothness > 0) {
             fg.update("Smoothen edges (ground)");

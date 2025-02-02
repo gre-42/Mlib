@@ -320,7 +320,7 @@ int main(int argc, char** argv) {
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
         "    [--far_plane <value>]\n"
-        "    [--record_track]\n"
+        "    [--record_track_basename <value>]\n"
         "    [--devel_mode]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
@@ -382,7 +382,6 @@ int main(int argc, char** argv) {
          "--save_playback",
          "--optimize_search_time",
          "--plot_triangle_bvh",
-         "--record_track",
          "--devel_mode",
          "--show_mouse_cursor",
          "--no_slip",
@@ -395,6 +394,7 @@ int main(int argc, char** argv) {
          "--check_gl_errors",
          "--verbose"},
         {"--app_reldir",
+         "--record_track_basename",
          "--swap_interval",
          "--fullscreen_refresh_rate",
          "--nsamples_msaa",
@@ -603,6 +603,7 @@ int main(int argc, char** argv) {
             DynamicLightDb dynamic_light_db;
             LayoutConstraints layout_constraints;
             {
+                auto record_track_basename = args.try_named_value("--record_track_basename");
                 nlohmann::json j{
                     {"primary_scene_fly", args.has_named("--fly")},
                     {"primary_scene_rotate", args.has_named("--rotate")},
@@ -618,7 +619,9 @@ int main(int argc, char** argv) {
                     {"primary_scene_with_flying_logic", true},
                     {"primary_scene_save_playback", args.has_named("--save_playback")},
                     {"far_plane", safe_stof(args.named_value("--far_plane", "10000"))},
-                    {"if_record_track", args.has_named("--record_track")},
+                    {"record_track_basename", (record_track_basename == nullptr)
+                        ? nlohmann::json()
+                        : nlohmann::json(*record_track_basename)},
                     {"if_devel", args.has_named("--devel_mode")},
                     {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
                     {"if_android", false},
