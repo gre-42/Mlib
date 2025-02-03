@@ -107,6 +107,8 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
 }
 
+namespace {
+
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
@@ -118,3 +120,5 @@ static struct RegisterJsonUserFunction {
             });
     }
 } obj;
+
+}

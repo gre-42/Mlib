@@ -53,6 +53,8 @@ void ChildRenderableInstance::operator () (
             .renderable_resource_filter = resource_filter });
 }
 
+namespace {
+
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
@@ -64,3 +66,5 @@ static struct RegisterJsonUserFunction {
             });
     }
 } obj;
+
+}

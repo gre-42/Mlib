@@ -67,6 +67,8 @@ void CreateChildNode::operator () (
     scene.register_node(name, node_ref);
 }
 
+namespace {
+
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
@@ -78,3 +80,5 @@ static struct RegisterJsonUserFunction {
             });
     }
 } obj;
+
+}
