@@ -42,14 +42,6 @@ DECLARE_ARGUMENT(flags);
 DECLARE_ARGUMENT(waypoint_dy);
 }
 
-const std::string CreateRigidDisk::key = "rigid_disk";
-
-LoadSceneJsonUserFunction CreateRigidDisk::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateRigidDisk(args.renderable_scene()).execute(args);
-};
-
 CreateRigidDisk::CreateRigidDisk(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
@@ -144,6 +136,12 @@ RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args)
 
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
-        LoadSceneFuncs::register_json_user_function(CreateRigidDisk::key, CreateRigidDisk::json_user_function);
+        LoadSceneFuncs::register_json_user_function(
+            "rigid_disk",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateRigidDisk(args.renderable_scene()).execute(args);
+            });
     }
 } obj;

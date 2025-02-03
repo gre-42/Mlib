@@ -42,14 +42,6 @@ DECLARE_ARGUMENT(flags);
 DECLARE_ARGUMENT(waypoint_dy);
 }
 
-const std::string CreateRigidCuboid::key = "rigid_cuboid";
-
-LoadSceneJsonUserFunction CreateRigidCuboid::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateRigidCuboid(args.renderable_scene()).execute(args);
-};
-
 CreateRigidCuboid::CreateRigidCuboid(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
@@ -144,6 +136,12 @@ RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& a
 
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
-        LoadSceneFuncs::register_json_user_function(CreateRigidCuboid::key, CreateRigidCuboid::json_user_function);
+        LoadSceneFuncs::register_json_user_function(
+            "rigid_cuboid",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateRigidCuboid(args.renderable_scene()).execute(args);
+            });
     }
 } obj;

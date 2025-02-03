@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <atomic>
 #include <cstdint>
 #include <vector>
@@ -54,7 +54,7 @@ private:
     mutable std::vector<CollisionLineSphere<CompressedScenePos>> transformed_edges_;
     mutable std::vector<CollisionRidgeSphere<CompressedScenePos>> transformed_ridges_;
     mutable std::vector<TypedMesh<std::shared_ptr<IIntersectable>>> transformed_intersectables_;
-    mutable AtomicMutex mutex_;
+    mutable FastMutex mutex_;
     mutable std::atomic_bool quads_calculated_ = false;
     mutable std::atomic_bool triangles_calculated_ = false;
     mutable std::atomic_bool lines_calculated_ = false;

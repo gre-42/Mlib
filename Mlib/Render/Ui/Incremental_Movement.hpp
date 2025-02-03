@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 
 namespace Mlib {
 
@@ -19,7 +19,7 @@ private:
     double cursor_x_;
     double cursor_y_;
     CursorStates& cursor_states_;
-    AtomicMutex cursor_coordinates_mutex_;
+    FastMutex cursor_coordinates_mutex_;
 };
 
 }

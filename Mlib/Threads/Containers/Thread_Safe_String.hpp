@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <compare>
 #include <string>
 
@@ -13,7 +13,7 @@ public:
     explicit operator std::string() const;
 private:
     std::string str_;
-    mutable AtomicMutex mutex_;
+    mutable FastMutex mutex_;
 };
 
 }

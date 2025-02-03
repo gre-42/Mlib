@@ -22,14 +22,6 @@ DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 }
 
-const std::string ChildRenderableInstance::key = "child_renderable_instance";
-
-LoadSceneJsonUserFunction ChildRenderableInstance::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    ChildRenderableInstance(args.renderable_scene()).execute(args);
-};
-
 ChildRenderableInstance::ChildRenderableInstance(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
@@ -63,6 +55,12 @@ void ChildRenderableInstance::operator () (
 
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
-        LoadSceneFuncs::register_json_user_function(ChildRenderableInstance::key, ChildRenderableInstance::json_user_function);
+        LoadSceneFuncs::register_json_user_function(
+            "child_renderable_instance",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                ChildRenderableInstance(args.renderable_scene()).execute(args);
+            });
     }
 } obj;

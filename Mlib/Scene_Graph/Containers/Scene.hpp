@@ -6,8 +6,8 @@
 #include <Mlib/Scene_Graph/Containers/Map_Of_Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <functional>
@@ -173,7 +173,7 @@ private:
     mutable BackgroundLoop large_instances_bg_worker_;
     mutable BackgroundLoop small_aggregate_bg_worker_;
     mutable BackgroundLoop small_instances_bg_worker_;
-    mutable AtomicMutex uuid_mutex_;
+    mutable FastMutex uuid_mutex_;
     size_t uuid_;
     std::atomic_bool shutting_down_;
     ThreadSafeList<std::unique_ptr<const ColorStyle>> color_styles_;

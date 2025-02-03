@@ -7,8 +7,8 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <cstddef>
 #include <memory>
 
@@ -61,7 +61,7 @@ public:
 private:
     std::unique_ptr<TextResource> renderable_text_;
     RenderLogic& scene_logic_;
-    AtomicMutex mutex_;
+    FastMutex mutex_;
     DanglingPtr<SceneNode> scene_node_;
     StatusWriter& status_writer_;
     StatusComponents log_components_;

@@ -5,7 +5,7 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <chrono>
 #include <optional>
 #include <unordered_map>
@@ -38,7 +38,7 @@ public:
 		AudioSource& source,
 		const AudioSourceState<ScenePos>& state);
 private:
-	static AtomicMutex mutex_;
+	static FastMutex mutex_;
 	static float default_alpha_;
 	static VerboseUnorderedMap<const AudioSource*, AudioSourceNode> source_nodes_;
 	static DanglingPtr<SceneNode> listener_node_;

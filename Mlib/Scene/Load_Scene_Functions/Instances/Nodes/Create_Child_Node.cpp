@@ -23,14 +23,6 @@ DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(interpolation);
 }
 
-const std::string CreateChildNode::key = "child_node_instance";
-
-LoadSceneJsonUserFunction CreateChildNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateChildNode(args.renderable_scene()).execute(args);
-};
-
 CreateChildNode::CreateChildNode(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
@@ -77,6 +69,12 @@ void CreateChildNode::operator () (
 
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
-        LoadSceneFuncs::register_json_user_function(CreateChildNode::key, CreateChildNode::json_user_function);
+        LoadSceneFuncs::register_json_user_function(
+            "child_node_instance",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateChildNode(args.renderable_scene()).execute(args);
+            });
     }
 } obj;

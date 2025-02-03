@@ -110,7 +110,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         IntersectionSceneAndContact cc{
             .scene = c,
             .iinfo = std::move(iinfo)};
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
         assert_true(c.l1.has_value());
+#pragma GCC diagnostic pop
         auto res = c.history.raycast_intersections.try_emplace(OrderableFixedArray{c.l1->line}, std::move(cc));
         if (!res.second) {
             if (!cc.iinfo.ray_t.has_value()) {

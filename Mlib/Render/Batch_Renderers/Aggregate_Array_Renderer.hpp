@@ -3,7 +3,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <atomic>
 
 namespace Mlib {
@@ -43,7 +43,7 @@ private:
     mutable std::unique_ptr<RenderableColoredVertexArray> next_rcvai_;
     mutable FixedArray<ScenePos, 3> offset_;
     FixedArray<ScenePos, 3> next_offset_;
-    mutable AtomicMutex mutex_;
+    mutable FastMutex mutex_;
     bool is_initialized_;
 };
 

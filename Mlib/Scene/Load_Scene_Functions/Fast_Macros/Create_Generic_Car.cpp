@@ -14,7 +14,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.cpp>
+#include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
@@ -111,14 +111,6 @@ static inline float stov(float v) {
 static inline float stoa(float v) {
     return v * degrees;
 }
-
-const std::string CreateGenericCar::key = "create_generic_car";
-
-LoadSceneJsonUserFunction CreateGenericCar::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateGenericCar(args.renderable_scene()).execute(args);
-};
 
 CreateGenericCar::CreateGenericCar(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
@@ -417,6 +409,12 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
 
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
-        LoadSceneFuncs::register_json_user_function(CreateGenericCar::key, CreateGenericCar::json_user_function);
+        LoadSceneFuncs::register_json_user_function(
+            "create_generic_car",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateGenericCar(args.renderable_scene()).execute(args);
+            });
     }
 } obj;

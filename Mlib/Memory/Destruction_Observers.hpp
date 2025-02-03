@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <atomic>
 #include <set>
 
@@ -36,7 +36,7 @@ public:
     void clear();
 private:
     std::set<DanglingBaseClassPtr<DestructionObserver<T>>> observers_;
-    mutable AtomicMutex mutex_;
+    mutable FastMutex mutex_;
     std::atomic_bool clearing_;
     T obj_;
 };

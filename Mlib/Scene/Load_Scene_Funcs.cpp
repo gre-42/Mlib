@@ -13,4 +13,3 @@ void Mlib::LoadSceneFuncs::register_json_user_function(const std::string& key, L
         THROW_OR_ABORT("Multiple functions with name \"" + key + "\" exist");
     }
 }
-

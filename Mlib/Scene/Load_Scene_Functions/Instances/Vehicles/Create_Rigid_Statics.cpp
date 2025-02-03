@@ -37,14 +37,6 @@ DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(flags);
 }
 
-const std::string CreateRigidStatics::key = "rigid_statics";
-
-LoadSceneJsonUserFunction CreateRigidStatics::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateRigidStatics(args.renderable_scene()).execute(args);
-};
-
 CreateRigidStatics::CreateRigidStatics(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
@@ -117,6 +109,12 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
 
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
-        LoadSceneFuncs::register_json_user_function(CreateRigidStatics::key, CreateRigidStatics::json_user_function);
+        LoadSceneFuncs::register_json_user_function(
+            "rigid_statics",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateRigidStatics(args.renderable_scene()).execute(args);
+            });
     }
 } obj;

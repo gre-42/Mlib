@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <cstdint>
 #include <mutex>
 
@@ -51,7 +51,7 @@ public:
 private:
     bool locked_;
     uint32_t nlocked_shared_;
-    AtomicMutex mutex_;
+    FastMutex mutex_;
 };
 
 }

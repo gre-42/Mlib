@@ -3,7 +3,7 @@
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 
 namespace Mlib {
 
@@ -54,8 +54,8 @@ public:
         const RenderedSceneDescriptor& frame_id,
         const RenderSetup& setup);
 private:
-    mutable AtomicMutex render_mutex_;
-    AtomicMutex offset_mutex_;
+    mutable FastMutex render_mutex_;
+    FastMutex offset_mutex_;
     FixedArray<float, 2> center_;
     FixedArray<float, 2> size_;
     HudErrorBehavior hud_error_behavior_;

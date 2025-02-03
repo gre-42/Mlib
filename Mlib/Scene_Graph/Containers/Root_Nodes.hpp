@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <functional>
 #include <map>
 #include <set>
@@ -59,7 +59,7 @@ private:
     NodeContainer node_container_;
     TrashCan trash_can_;
     std::set<std::string> root_nodes_to_delete_;
-    mutable AtomicMutex root_nodes_to_delete_mutex_;
+    mutable FastMutex root_nodes_to_delete_mutex_;
     bool emptying_trash_can_;
 };
 

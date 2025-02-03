@@ -1,13 +1,13 @@
 #include "Render_Allocator.hpp"
 #include <Mlib/Memory/Recursive_Deletion.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <list>
 #include <mutex>
 
 using namespace Mlib;
 
 static std::list<std::function<void()>> funcs;
-static AtomicMutex mutex;
+static FastMutex mutex;
 
 void Mlib::execute_render_allocators() {
     std::unique_lock lock{ mutex };

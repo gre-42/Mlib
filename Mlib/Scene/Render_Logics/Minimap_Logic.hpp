@@ -7,7 +7,7 @@
 #include <Mlib/Render/Data_Display/Centered_Texture_Image_Logic.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <mutex>
 
 namespace Mlib {
@@ -70,7 +70,7 @@ private:
     float scale_;
     FixedArray<float, 2> size_;
     FixedArray<double, 2> offset_;
-    AtomicMutex pose_mutex_;
+    FastMutex pose_mutex_;
     FixedArray<double, 2> position_;
     float angle_;
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;

@@ -3,7 +3,7 @@
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 
 namespace Mlib {
 
@@ -28,7 +28,7 @@ private:
     ClearRenderProgram rp_color_only_;
     RenderProgram rp_depth_only_;
     ClearRenderProgram rp_color_and_depth_;
-    AtomicMutex mutex_;
+    FastMutex mutex_;
 };
 
 }

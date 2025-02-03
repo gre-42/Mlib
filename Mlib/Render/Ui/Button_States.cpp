@@ -61,7 +61,7 @@ bool ButtonStates::get_gamepad_button_down(int button) const {
 }
 
 void ButtonStates::update_gamepad_state() {
-    std::scoped_lock lock{gamepad_state_mutex_};
+    std::scoped_lock lock{ gamepad_state_mutex_ };
     GLFW_CHK(has_gamepad_ = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state_));
 }
 #else

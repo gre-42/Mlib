@@ -3,7 +3,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Continuous_Texture_Layer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Triangle.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 
 namespace Mlib {
 
@@ -61,7 +61,7 @@ private:
     DynamicContinuousTextureLayer texture_layer_;
     VertexArray va_;
     std::chrono::steady_clock::time_point time_;
-    mutable AtomicMutex mutex_;
+    mutable FastMutex mutex_;
 };
 
 }

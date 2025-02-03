@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
-#include <Mlib/Scene/Json_User_Function.hpp>
 #include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
 #include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Precision.hpp>
@@ -11,6 +10,7 @@
 
 namespace Mlib {
 
+struct LoadSceneJsonUserFunctionArgs;
 class ObjectPool;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
@@ -38,11 +38,8 @@ struct CreateRigidDiskArgs {
 
 class CreateRigidDisk: public LoadSceneInstanceFunction {
 public:
-    static LoadSceneJsonUserFunction json_user_function;
-    static const std::string key;
     explicit CreateRigidDisk(RenderableScene& renderable_scene);
     RigidBodyVehicle& operator () (const CreateRigidDiskArgs& args) const;
-private:
     void execute(const LoadSceneJsonUserFunctionArgs& args) const;
 };
 

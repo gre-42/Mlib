@@ -8,7 +8,7 @@
 
 using namespace Mlib;
 
-AtomicMutex AudioScene::mutex_;
+FastMutex AudioScene::mutex_;
 float AudioScene::default_alpha_ = 1.f;
 VerboseUnorderedMap<const AudioSource*, AudioSourceNode> AudioScene::source_nodes_{
 	"Audio source",

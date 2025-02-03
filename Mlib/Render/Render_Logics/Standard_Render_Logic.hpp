@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <mutex>
 
 namespace Mlib {
@@ -38,7 +38,7 @@ private:
     RenderLogic& child_logic_;
     FixedArray<float, 3> background_color_;
     ClearMode clear_mode_;
-    mutable AtomicMutex mutex_;
+    mutable FastMutex mutex_;
 };
 
 }

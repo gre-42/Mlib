@@ -1,6 +1,6 @@
 #include "Thread_Top.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <Mlib/Threads/Get_Thread_Name.hpp>
 #include <list>
 #include <map>
@@ -9,7 +9,7 @@
 
 using namespace Mlib;
 
-static AtomicMutex mutex;
+static FastMutex mutex;
 static std::map<ThreadIdentifier, std::list<std::string>> tasks;
 
 FunctionGuard::FunctionGuard(std::string task_name)

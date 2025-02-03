@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -31,7 +31,7 @@ public:
 private:
     const DynamicLightDb& db_;
     std::set<IDynamicLight*> instances_;
-    mutable AtomicMutex mutex_;
+    mutable FastMutex mutex_;
 };
 
 }

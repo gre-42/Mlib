@@ -6,7 +6,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 
 namespace Mlib {
 
@@ -61,7 +61,7 @@ private:
     DanglingBaseClassRef<Player> player_;
     std::unique_ptr<IWidget> widget_;
     std::string text_;
-    AtomicMutex mutex_;
+    FastMutex mutex_;
     FocusFilter focus_filter_;
 };
 

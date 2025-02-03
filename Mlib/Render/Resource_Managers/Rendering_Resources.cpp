@@ -650,9 +650,12 @@ RenderingResources::RenderingResources(
                 }
             });
         }
-        for (const auto& state : set_textures_lazy_) {
-            state->notify_deactivated();
-            append_render_allocator(state->generate_activator());
+        {
+            std::shared_lock lock{ mutex_ };
+            for (const auto& state : set_textures_lazy_) {
+                state->notify_deactivated();
+                append_render_allocator(state->generate_activator());
+            }
         }
         deallocate();
     }) }

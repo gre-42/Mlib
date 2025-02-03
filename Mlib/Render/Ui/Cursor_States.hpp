@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <list>
 #include <set>
 
@@ -17,7 +17,7 @@ public:
     void update_cursor(double x, double y);
 private:
     std::list<IncrementalMovement*> cursor_movements_;
-    AtomicMutex cursor_movements_mutex_;
+    FastMutex cursor_movements_mutex_;
 };
 
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Object.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <atomic>
 #include <list>
 #include <memory>
@@ -15,7 +15,7 @@ public:
     void clear();
 private:
     std::list<std::shared_ptr<Object>> ptrs_;
-    mutable AtomicMutex mutex_;
+    mutable FastMutex mutex_;
     std::atomic_bool clearing_;
 };
 
