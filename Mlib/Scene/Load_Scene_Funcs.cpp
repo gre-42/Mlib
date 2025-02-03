@@ -8,8 +8,8 @@ std::map<std::string, LoadSceneJsonUserFunction>& Mlib::LoadSceneFuncs::json_use
     return result;
 }
 
-void Mlib::LoadSceneFuncs::register_json_user_function(const std::string& key, LoadSceneJsonUserFunction function) {
-    if (!json_user_functions().try_emplace(key, function).second) {
+void Mlib::LoadSceneFuncs::register_json_user_function(std::string key, LoadSceneJsonUserFunction function) {
+    if (!json_user_functions().try_emplace(std::move(key), std::move(function)).second) {
         THROW_OR_ABORT("Multiple functions with name \"" + key + "\" exist");
     }
 }
