@@ -65,7 +65,6 @@ void DynamicInstanceBuffers::append(
     TransformationAndBillboardId m{
         .transformation_matrix = transformation_matrix,
         .billboard_id = sequence.billboard_ids[0]};
-    std::scoped_lock lock{ mutex_ };
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.append(m);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
@@ -92,7 +91,6 @@ void DynamicInstanceBuffers::append(
 }
 
 void DynamicInstanceBuffers::move(float dt, const StaticWorld& world) {
-    std::scoped_lock lock{ mutex_ };
     if (num_billboard_atlas_components_ == 0) {
         return;
     }
@@ -183,7 +181,6 @@ void DynamicInstanceBuffers::wait() const {
 
 void DynamicInstanceBuffers::update()
 {
-    std::scoped_lock lock{ mutex_ };
     gl_num_instances_ = integral_cast<GLsizei>(tmp_num_instances_);
     if (tmp_num_instances_ == 0) {
         return;
@@ -237,7 +234,6 @@ void DynamicInstanceBuffers::bind(
     if (task_location != TaskLocation::FOREGROUND) {
         THROW_OR_ABORT("DynamicInstanceBuffers only supports foreground tasks");
     }
-    std::shared_lock lock{ mutex_ };
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.bind(instance_attribute_index);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
@@ -257,11 +253,6 @@ void DynamicInstanceBuffers::bind(
     if (has_per_instance_continuous_texture_layer_) {
         texture_layers_->bind(texture_layer_attribute_index);
     }
-}
-
-size_t DynamicInstanceBuffers::tmp_num_instances() const {
-    std::shared_lock lock{ mutex_ };
-    return tmp_num_instances_;
 }
 
 GLsizei DynamicInstanceBuffers::num_instances() const {

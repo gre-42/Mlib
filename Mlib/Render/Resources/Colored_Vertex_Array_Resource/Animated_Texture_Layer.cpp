@@ -24,7 +24,6 @@ void AnimatedTextureLayer::update(std::chrono::steady_clock::time_point time) {
     if (time == std::chrono::steady_clock::time_point()) {
         THROW_OR_ABORT("AnimatedTextureLayer::update received uninitialized time");
     }
-    std::scoped_lock lock{ mutex_ };
     if (time_ == std::chrono::steady_clock::time_point()) {
         if (tmp_num_triangles_ != 0) {
             THROW_OR_ABORT("AnimatedTextureLayer::update without previous move");
@@ -40,6 +39,9 @@ void AnimatedTextureLayer::update(std::chrono::steady_clock::time_point time) {
     va_.update();
     gl_num_triangles_ = integral_cast<GLsizei>(tmp_num_triangles_);
 }
+
+void AnimatedTextureLayer::update_legacy()
+{}
 
 void AnimatedTextureLayer::bind() const {
     va_.bind();
@@ -109,7 +111,6 @@ void AnimatedTextureLayer::append(
     const FixedArray<float, 3>& time,
     const TrailSequence& sequence)
 {
-    std::scoped_lock lock{ mutex_ };
     if (tmp_num_triangles_ >= max_num_triangles_) {
         THROW_OR_ABORT("Maximum number of triangles exceeded");
     }
@@ -121,7 +122,6 @@ void AnimatedTextureLayer::append(
 }
 
 void AnimatedTextureLayer::move(float dt, const StaticWorld& world) {
-    std::scoped_lock lock{ mutex_ };
     for (size_t i = 0; i < tmp_length();) {
         auto& ai = animation_times_[i];
         auto& bi = animation_sequences_[i];
@@ -145,7 +145,7 @@ std::chrono::steady_clock::time_point AnimatedTextureLayer::time() const {
     return time_;
 }
 
-void AnimatedTextureLayer::delete_triangles_far_away(
+void AnimatedTextureLayer::delete_triangles_far_away_legacy(
     const FixedArray<float, 3>& position,
     const TransformationMatrix<float, float, 3>& m,
     float draw_distance_add,

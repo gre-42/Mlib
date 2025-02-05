@@ -6,7 +6,6 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position_YAngles.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Rotation_Quaternion.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <string>
 #include <vector>
 
@@ -52,14 +51,13 @@ public:
     // IInstanceBuffers
     virtual bool copy_in_progress() const override;
     virtual void wait() const override;
-    virtual void update() override;
+    void update();
     virtual void bind(
         GLuint instance_attribute_index,
         GLuint rotation_quaternion_attribute_index,
         GLuint billboard_ids_attribute_index,
         GLuint texture_layer_attribute_index,
         TaskLocation task_location) const override;
-    virtual size_t tmp_num_instances() const override;
     virtual GLsizei num_instances() const override;
     virtual bool has_continuous_texture_layer() const override;
 private:
@@ -78,7 +76,6 @@ private:
     std::vector<float> animation_times_;
     std::vector<const BillboardSequence*> billboard_sequences_;
     ClearOnUpdate clear_on_update_;
-    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

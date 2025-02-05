@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <list>
 #include <memory>
 
@@ -66,6 +67,7 @@ private:
     std::unique_ptr<RenderableColoredVertexArray> rcva_;
     RenderableResourceFilter filter_;
     ParticleSubstrate substrate_;
+    mutable FastMutex mutex_;
 };
 
 }

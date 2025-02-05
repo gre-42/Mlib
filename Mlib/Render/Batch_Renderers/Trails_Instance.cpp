@@ -71,6 +71,7 @@ void TrailsInstance::add_triangle(
     const TrailSequence& sequence)
 {
     if (dynamic_vertex_buffers_->tmp_length() < dynamic_vertex_buffers_->capacity()) {
+        std::scoped_lock lock{ mutex_ };
         if (dynamic_vertex_buffers_->tmp_empty()) {
             offset_ = triangle(0).position;
         }
@@ -80,6 +81,7 @@ void TrailsInstance::add_triangle(
 }
 
 void TrailsInstance::move(float dt, const StaticWorld& world) {
+    std::scoped_lock lock{ mutex_ };
     dynamic_vertex_buffers_->move(dt, world);
 }
 
@@ -100,7 +102,14 @@ void TrailsInstance::render(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    if (dynamic_vertex_buffers_->tmp_empty()) {
+    FixedArray<ScenePos, 3> offset = uninitialized;
+    {
+        // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
+        std::scoped_lock lock{ mutex_ };
+        dynamic_vertex_buffers_->update(external_render_pass.time);
+        offset = offset_;
+    }
+    if (dynamic_vertex_buffers_->ntriangles() == 0) {
         return;
     }
     if (any(isnan(offset_))) {

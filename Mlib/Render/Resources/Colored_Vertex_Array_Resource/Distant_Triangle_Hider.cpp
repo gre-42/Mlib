@@ -44,7 +44,7 @@ DistantTriangleHider::DistantTriangleHider(
     va_.add_array_buffer(alpha_);
 }
 
-void DistantTriangleHider::update(std::chrono::steady_clock::time_point time) {
+void DistantTriangleHider::update_legacy() {
     return va_.update();
 }
 
@@ -144,7 +144,7 @@ void DistantTriangleHider::insert_triangle(size_t id, FixedArray<ColoredVertex<f
 /**
  * From: https://learnopengl.com/Advanced-OpenGL/Advanced-Data
  */
-void DistantTriangleHider::delete_triangles_far_away(
+void DistantTriangleHider::delete_triangles_far_away_legacy(
     const FixedArray<float, 3>& position,
     const TransformationMatrix<float, float, 3>& m,
     float draw_distance_add,

@@ -329,7 +329,7 @@ void RenderableColoredVertexArray::render_cva(
             return;
         }
         instances = rcva_->instances_->at(cva.get());
-        if (instances->tmp_num_instances() == 0) {
+        if (instances->num_instances() == 0) {
             return;
         }
     }
@@ -1207,7 +1207,7 @@ void RenderableColoredVertexArray::render_cva(
         // As of now, deleting triangles far away is done during
         // the aggregation step, which also converts double to float,
         // making the following code obsolete.
-        si.delete_triangles_far_away(
+        si.delete_triangles_far_away_legacy(
             iv.t.casted<float>(),
             m.casted<float, float>(),
             std::isnan(render_config.draw_distance_add)
@@ -1237,14 +1237,10 @@ void RenderableColoredVertexArray::render_cva(
         {
             verbose_abort("Preloaded render pass has incomplete triangles (" + cva->name + ')');
         }
-        si.update(render_pass.external.time);
+        si.update_legacy();
         si.bind();
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
-            {
-                // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
-                instances->update();
-            }
             try {
                 notify_rendering(CURRENT_SOURCE_LOCATION);
                 CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles()), instances->num_instances()));

@@ -103,10 +103,6 @@ void StaticInstanceBuffers::bind(
     }
 }
 
-size_t StaticInstanceBuffers::tmp_num_instances() const {
-    return instances_.size();
-}
-
 GLsizei StaticInstanceBuffers::num_instances() const {
     return integral_cast<GLsizei>(instances_.size());
 }

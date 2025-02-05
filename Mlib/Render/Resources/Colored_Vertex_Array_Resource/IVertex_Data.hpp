@@ -1,5 +1,4 @@
 #pragma once
-#include <chrono>
 #include <cstddef>
 
 namespace Mlib {
@@ -14,7 +13,7 @@ class IArrayBuffer;
 class IVertexData {
 public:
     virtual ~IVertexData() = default;
-    virtual void update(std::chrono::steady_clock::time_point time) = 0;
+    virtual void update_legacy() = 0;
     virtual void bind() const = 0;
     virtual bool copy_in_progress() const = 0;
     virtual bool initialized() const = 0;
@@ -30,7 +29,7 @@ public:
     virtual IArrayBuffer& uv1_buffer(size_t i) = 0;
     virtual IArrayBuffer& cweight_buffer(size_t i) = 0;
     virtual IArrayBuffer& alpha_buffer() = 0;
-    virtual void delete_triangles_far_away(
+    virtual void delete_triangles_far_away_legacy(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, float, 3>& m,
         float draw_distance_add,

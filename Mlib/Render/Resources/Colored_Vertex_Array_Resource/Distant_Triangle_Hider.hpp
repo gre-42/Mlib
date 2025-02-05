@@ -23,7 +23,7 @@ public:
         std::shared_ptr<ColoredVertexArray<float>> cva,
         size_t ntriangles,
         std::shared_ptr<IArrayBuffer> inherited_vertices);
-    virtual void update(std::chrono::steady_clock::time_point time) override;
+    virtual void update_legacy() override;
     virtual void bind() const override;
     virtual bool copy_in_progress() const override;
     virtual bool initialized() const override;
@@ -39,7 +39,7 @@ public:
     virtual IArrayBuffer& uv1_buffer(size_t i) override;
     virtual IArrayBuffer& cweight_buffer(size_t i) override;
     virtual IArrayBuffer& alpha_buffer() override;
-    virtual void delete_triangles_far_away(
+    virtual void delete_triangles_far_away_legacy(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, float, 3>& m,
         float draw_distance_add,

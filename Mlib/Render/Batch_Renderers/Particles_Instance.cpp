@@ -54,6 +54,8 @@ void ParticlesInstance::add_particle(
     const FixedArray<float, 3>& velocity,
     float air_resistance)
 {
+    // Lock must be above the condition for "ClearOnUpdate::YES".
+    std::scoped_lock lock{ mutex_ };
     if (dynamic_instance_buffers_->tmp_length() < dynamic_instance_buffers_->capacity()) {
         if (dynamic_instance_buffers_->tmp_empty()) {
             offset_ = transformation_matrix.t;
@@ -66,6 +68,7 @@ void ParticlesInstance::add_particle(
 }
 
 void ParticlesInstance::move(float dt, const StaticWorld& world) {
+    std::scoped_lock lock{ mutex_ };
     dynamic_instance_buffers_->move(dt, world);
 }
 
@@ -82,13 +85,20 @@ void ParticlesInstance::render(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    if (dynamic_instance_buffers_->tmp_empty()) {
+    FixedArray<ScenePos, 3> offset = uninitialized;
+    {
+        // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
+        std::scoped_lock lock{ mutex_ };
+        dynamic_instance_buffers_->update();
+        offset = offset_;
+    }
+    if (dynamic_instance_buffers_->num_instances() == 0) {
         return;
     }
-    if (any(isnan(offset_))) {
+    if (any(isnan(offset))) {
         verbose_abort("ParticlesInstance::render internal error");
     }
-    TransformationMatrix<float, ScenePos, 3> m{ fixed_identity_array<float, 3>(), offset_ };
+    TransformationMatrix<float, ScenePos, 3> m{ fixed_identity_array<float, 3>(), offset };
     rcva_->render(
         dot2d(vp, m.affine()),
         m,

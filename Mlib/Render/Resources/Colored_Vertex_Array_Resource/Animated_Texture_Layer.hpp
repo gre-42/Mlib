@@ -3,7 +3,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Continuous_Texture_Layer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Triangle.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
-#include <Mlib/Threads/Fast_Mutex.hpp>
+#include <chrono>
 
 namespace Mlib {
 
@@ -14,7 +14,8 @@ class AnimatedTextureLayer: public IVertexData {
 public:
     explicit AnimatedTextureLayer(size_t max_num_triangles);
 
-    virtual void update(std::chrono::steady_clock::time_point time) override;
+    void update(std::chrono::steady_clock::time_point time);
+    virtual void update_legacy() override;
     virtual void bind() const override;
     virtual bool copy_in_progress() const override;
     virtual bool initialized() const override;
@@ -30,7 +31,7 @@ public:
     virtual IArrayBuffer& uv1_buffer(size_t i) override;
     virtual IArrayBuffer& cweight_buffer(size_t i) override;
     virtual IArrayBuffer& alpha_buffer() override;
-    virtual void delete_triangles_far_away(
+    virtual void delete_triangles_far_away_legacy(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, float, 3>& m,
         float draw_distance_add,
@@ -61,7 +62,6 @@ private:
     DynamicContinuousTextureLayer texture_layer_;
     VertexArray va_;
     std::chrono::steady_clock::time_point time_;
-    mutable FastMutex mutex_;
 };
 
 }
