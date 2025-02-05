@@ -13,11 +13,11 @@ void CheckedMutex::lock() {
         THROW_OR_ABORT("Mutex already locked by caller");
     }
     mutex_.lock();
-    m_holder = std::this_thread::get_id(); 
+    holder_ = std::this_thread::get_id(); 
 }
 
 void CheckedMutex::unlock() {
-    m_holder = std::thread::id();
+    holder_ = std::thread::id();
     mutex_.unlock();
 }
 
@@ -30,7 +30,7 @@ void CheckedMutex::unlock_shared() {
 }
 
 bool CheckedMutex::locked_by_caller() const {
-    return m_holder == std::this_thread::get_id();
+    return holder_ == std::this_thread::get_id();
 }
 
 void CheckedMutex::assert_locked_by_caller() const {

@@ -17,7 +17,7 @@ public:
     void assert_locked_by_caller() const;
 
 private:
-    std::atomic<std::thread::id> m_holder;
+    std::atomic<std::thread::id> holder_;
     SafeAtomicRecursiveSharedMutex mutex_;
 };
 

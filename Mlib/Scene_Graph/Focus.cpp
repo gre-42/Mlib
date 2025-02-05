@@ -55,6 +55,9 @@ void Focuses::erase(const std::list<Focus>::iterator& it) {
 
 void Focuses::pop_back() {
     mutex.assert_locked_by_caller();
+    if (focuses_.empty()) {
+        THROW_OR_ABORT("pop_back called on empty focuses");
+    }
     focuses_.pop_back();
 }
 
