@@ -15,7 +15,7 @@ private:
 
 class JThread {
 public:
-    explicit JThread(const std::function<void()>& f);
+    explicit JThread(std::function<void()> f);
     ~JThread();
     void request_stop();
     StopToken& get_stop_token();

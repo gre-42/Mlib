@@ -3,6 +3,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
+#include <shared_mutex>
 
 using namespace Mlib;
 
@@ -14,7 +15,7 @@ LayoutConstraints::LayoutConstraints() {
 LayoutConstraints::~LayoutConstraints() = default;
 
 ILayoutPixels& LayoutConstraints::get_pixels(const std::string& name) const {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     auto it = pixels_.find(name);
     if (it == pixels_.end()) {
         THROW_OR_ABORT("Could not find constraint with name \"" + name + '"');
@@ -22,9 +23,9 @@ ILayoutPixels& LayoutConstraints::get_pixels(const std::string& name) const {
     return *it->second;
 }
 
-void LayoutConstraints::set_pixels(const std::string& name, std::unique_ptr<ILayoutPixels>&& constraint) {
-    std::scoped_lock lock{mutex_};
-    if (!pixels_.insert({name, std::move(constraint)}).second) {
+void LayoutConstraints::set_pixels(std::string name, std::unique_ptr<ILayoutPixels>&& constraint) {
+    std::scoped_lock lock{ mutex_ };
+    if (!pixels_.insert({std::move(name), std::move(constraint)}).second) {
         THROW_OR_ABORT("Constraint with name \"" + name + "\" already exists");
     }
 }

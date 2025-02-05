@@ -966,10 +966,16 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     }
     check_color_mode(color, role);
     LOG_FUNCTION("RenderingResources::get_texture " + color.filename);
+    {
+        std::shared_lock lock{ mutex_ };
+        if (auto it = textures_.try_get(color); it != nullptr) {
+            return it->handle;
+        }
+    }
+    std::scoped_lock lock{ mutex_ };
     if (auto it = textures_.try_get(color); it != nullptr) {
         return it->handle;
     }
-    std::scoped_lock lock{ mutex_ };
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{recursion_counter};
     if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
@@ -1566,6 +1572,13 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const RenderingResources& r
 
 const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& font_descriptor) const
 {
+    {
+        std::shared_lock lock{ font_mutex_ };
+        if (auto it = font_textures_.try_get(font_descriptor); it != nullptr) {
+            return *it;
+        }
+    }
+    std::scoped_lock lock{ font_mutex_ };
     if (auto it = font_textures_.try_get(font_descriptor); it != nullptr) {
         return *it;
     }

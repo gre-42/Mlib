@@ -14,8 +14,8 @@ bool StopToken::stop_requested() const {
     return stop_requested_;
 }
 
-JThread::JThread(const std::function<void()>& f)
-: thread_{f}
+JThread::JThread(std::function<void()> f)
+    : thread_{ std::move(f) }
 {}
 
 JThread::~JThread() {

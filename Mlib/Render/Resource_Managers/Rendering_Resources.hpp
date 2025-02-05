@@ -250,6 +250,7 @@ private:
         const ColormapWithModifiers& name,
         const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable SafeAtomicRecursiveSharedMutex mutex_;
+    mutable SafeAtomicSharedMutex font_mutex_;
     mutable std::list<std::shared_ptr<ActivationState>> set_textures_lazy_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
