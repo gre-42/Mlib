@@ -22,3 +22,6 @@ race:radeonsi_dri
 
 # STL
 race:shared_ptr.h
+
+# Mesa 3D
+race:libgallium
