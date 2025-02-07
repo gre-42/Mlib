@@ -6,6 +6,7 @@
 #include <Mlib/Render/Deallocate/Deallocation_Mode.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
+#include <Mlib/Threads/Launch_Async.hpp>
 
 using namespace Mlib;
 
@@ -83,7 +84,8 @@ void BufferBackgroundCopy::set_type_erased(
         CHK(glBufferStorage(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT));
         CHK(char* dest = (char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         is_mapped_ = true;
-        future_ = std::async(std::launch::async, [dest, begin, end]() {
+        static LaunchAsync launch_async{ "Buffer BG copy" };
+        future_ = launch_async([dest, begin, end]() {
             std::copy(begin, end, dest);
             });
 #endif
