@@ -35,6 +35,7 @@ CountDownLogic::CountDownLogic(
         line_distance }
     , on_node_clear{ node->on_clear, CURRENT_SOURCE_LOCATION }
     , node_{ node.ptr() }
+    , elapsed_time_{ NAN }
     , duration_{ duration }
     , pending_focus_{ pending_focus }
     , counting_focus_{ counting_focus }
@@ -65,16 +66,23 @@ void CountDownLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("CountDownLogic::render");
-    if ([&](){
-        std::shared_lock lock{focuses_.mutex};
-        return focuses_.contains(counting_focus_);}())
+    bool counting;
+    float elapsed;
     {
+        std::shared_lock lock{focuses_.mutex};
+        counting = focuses_.contains(counting_focus_);
+        elapsed = elapsed_time_;
+    }
+    if (counting) {
+        if (std::isnan(elapsed)) {
+            THROW_OR_ABORT("Countdown elapsed time is NAN (0)");
+        }
         renderable_text().render(
             font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
             position_,
             {lx.flength(), ly.flength()},
             text_.empty()
-                ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / seconds))
+                ? std::to_string((unsigned int)std::ceil((duration_ - elapsed) / seconds))
                 : text_,
             AlignText::BOTTOM,
             TextInterpolationMode::NEAREST_NEIGHBOR,
@@ -89,11 +97,15 @@ void CountDownLogic::advance_time(float dt, const StaticWorld& world) {
         *it = counting_focus_;
     }
     if (auto it = focuses_.find(counting_focus_); it != focuses_.end()) {
+        if (std::isnan(elapsed_time_)) {
+            THROW_OR_ABORT("Countdown elapsed time is NAN (1)");
+        }
         if (focuses_.focus() == counting_focus_) {
             elapsed_time_ += dt;
         }
         if (elapsed_time_ >= duration_) {
             focuses_.erase(it);
+            elapsed_time_ = NAN;
         }
     }
 }
