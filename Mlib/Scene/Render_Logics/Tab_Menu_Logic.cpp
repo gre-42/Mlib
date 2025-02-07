@@ -120,8 +120,7 @@ void TabMenuLogic::render_without_setup(
         // ui_focus_.focus.pop_back();
         if (previous_level_id_ != substitutions_.at<std::string>("selected_level_id")) {
             num_renderings_ = 0;
-        }
-        else {
+        } else {
             reload_transient_objects_();
         }
     }
