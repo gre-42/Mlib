@@ -8,17 +8,11 @@ using namespace Mlib;
 LaunchAsync::LaunchAsync(const std::string& thread_name)
     : thread_ { [&](){
         ThreadInitializer init{ thread_name, ThreadAffinity::POOL };
-        while (true) {
+        while (!thread_.get_stop_token().stop_requested()) {
             std::list<std::pair<std::promise<void>, std::function<void()>>> tasks;
             {
                 std::unique_lock lck{ mutex_ };
                 task_ready_cv_.wait(lck, [this]() { return !tasks_.empty() || thread_.get_stop_token().stop_requested(); });
-                if (thread_.get_stop_token().stop_requested()) {
-                    return;
-                }
-                if (tasks_.empty()) {
-                    verbose_abort("No tasks set");
-                }
                 tasks = std::move(tasks_);
             }
             for (auto& [promise, task] : tasks) {
