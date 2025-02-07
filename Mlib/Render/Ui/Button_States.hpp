@@ -10,7 +10,7 @@
 
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
-#include <set>
+#include <unordered_set>
 
 namespace Mlib {
 
@@ -49,8 +49,8 @@ private:
     bool has_gamepad_;
     mutable SafeAtomicRecursiveSharedMutex gamepad_state_mutex_;
 #endif
-    std::set<int> keys_down_;
-    std::set<int> mouse_buttons_down_;
+    std::unordered_set<int> keys_down_;
+    std::unordered_set<int> mouse_buttons_down_;
     mutable SafeAtomicRecursiveSharedMutex keys_mutex_;
     mutable SafeAtomicRecursiveSharedMutex mouse_button_mutex_;
 };
