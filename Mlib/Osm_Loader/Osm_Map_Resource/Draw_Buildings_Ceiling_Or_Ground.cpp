@@ -63,7 +63,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
             auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
             if (displacements != nullptr) {
                 for (const auto& v : sw.outline) {
-                    auto it = displacements->find(OrderableFixedArray{v});
+                    auto it = displacements->find(OrderableFixedArray{v.orig});
                     if (it == displacements->end()) {
                         lerr() << "Building " + bu.id + ": could not determine displacement";
                         max_height = std::numeric_limits<CompressedScenePos>::lowest();
@@ -77,7 +77,11 @@ void Mlib::draw_buildings_ceiling_or_ground(
             }
             gz = max_height;
         }
-        UUVector<FixedArray<CompressedScenePos, 2>> outline(sw.outline.begin(), sw.outline.end());
+        UUVector<FixedArray<CompressedScenePos, 2>> outline;
+        outline.reserve(sw.outline.size());
+        for (const auto& v : sw.outline) {
+            outline.emplace_back(v.indented);
+        }
         outline = removed_duplicates(outline);
         tls.push_back(std::make_shared<TriangleList<CompressedScenePos>>(
             "ceilings_" + std::to_string(mid++),

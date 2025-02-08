@@ -8,7 +8,7 @@
 
 using namespace Mlib;
 
-std::list<FixedArray<CompressedScenePos, 2, 2>> Mlib::smooth_building_level(
+std::list<BuildingSegment> Mlib::smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
     double max_length,
@@ -22,7 +22,7 @@ std::list<FixedArray<CompressedScenePos, 2, 2>> Mlib::smooth_building_level(
     if (bu.way.nd.front() != bu.way.nd.back()) {
         THROW_OR_ABORT("Cannot compute smooth level of building " + bu.id + ": outline not closed");
     }
-    std::list<FixedArray<CompressedScenePos, 2, 2>> result;
+    std::list<BuildingSegment> result;
     auto sw = subdivided_way(
         nodes,
         bu.way.nd,
@@ -67,10 +67,9 @@ std::list<FixedArray<CompressedScenePos, 2, 2>> Mlib::smooth_building_level(
         {
             THROW_OR_ABORT("Error triangulating level of building " + bu.id);
         } else {
-            result.push_back(
-                FixedArray<CompressedScenePos, 2, 2>{
-                    rect.p01_.casted<CompressedScenePos>(),
-                    rect.p11_.casted<CompressedScenePos>()});
+            result.emplace_back(
+                FixedArray<CompressedScenePos, 2, 2>{*a, *b},
+                FixedArray<CompressedScenePos, 2, 2>{rect.p01_, rect.p11_});
         }
         // draw_node(triangles, nodes.at(*a));
         ++a;
@@ -92,7 +91,7 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
         ? bu.levels.back()
         : bu.levels.front();
     BuildingLevelOutline result;
-    std::list<FixedArray<CompressedScenePos, 2, 2>> segments;
+    std::list<BuildingSegment> segments;
     if ((tpe == DrawBuildingPartType::CEILING) && bu.roof_9_2.has_value()) {
         segments = smooth_building_level(
             bu,
@@ -115,7 +114,7 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
             : (CompressedScenePos)0.;
     }
     for (const auto& w : segments) {
-        result.outline.push_back(w[0]);
+        result.outline.emplace_back(w.orig[0], w.indented[0]);
     }
     return result;
 }

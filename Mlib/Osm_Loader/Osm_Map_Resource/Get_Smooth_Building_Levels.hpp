@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <map>
@@ -9,16 +10,24 @@ namespace Mlib {
 struct OsmRectangle2D;
 struct Building;
 struct Node;
-template <typename TData, size_t... tshape>
-class FixedArray;
 enum class DrawBuildingPartType;
 
+struct BuildingVertex {
+    FixedArray<CompressedScenePos, 2> orig;
+    FixedArray<CompressedScenePos, 2> indented;
+};
+
 struct BuildingLevelOutline {
-    std::list<FixedArray<CompressedScenePos, 2>> outline;
+    std::list<BuildingVertex> outline;
     CompressedScenePos z;
 };
 
-std::list<FixedArray<CompressedScenePos, 2, 2>> smooth_building_level(
+struct BuildingSegment {
+    FixedArray<CompressedScenePos, 2, 2> orig;
+    FixedArray<CompressedScenePos, 2, 2> indented;
+};
+
+std::list<BuildingSegment> smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
     double max_length,

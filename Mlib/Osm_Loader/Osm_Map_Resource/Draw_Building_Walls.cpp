@@ -35,7 +35,7 @@ void Mlib::draw_building_walls(
         auto outline = smooth_building_level_outline(bu, nodes, scale, max_width, DrawBuildingPartType::GROUND);
         auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
         for (const auto& v : outline.outline) {
-            auto it = displacements.find(OrderableFixedArray{v});
+            auto it = displacements.find(OrderableFixedArray{v.orig});
             if (it == displacements.end()) {
                 lwarn() << "Displacements not found for building " + bu.id;
                 max_height = std::numeric_limits<CompressedScenePos>::lowest();
@@ -68,8 +68,8 @@ void Mlib::draw_building_walls(
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
             for (const auto& we : sw) {
-                const auto& p0 = displacements.at(OrderableFixedArray{we[0]});
-                const auto& p1 = displacements.at(OrderableFixedArray{we[1]});
+                const auto& p0 = displacements.at(OrderableFixedArray{we.indented[0]});
+                const auto& p1 = displacements.at(OrderableFixedArray{we.indented[1]});
                 float width = (float)std::sqrt(sum(squared(p0 - p1)));
                 float height = (bl.top - bl.bottom) * scale;
                 if ((steiner_points != nullptr) && (&bl == &*bu.levels.begin())) {
