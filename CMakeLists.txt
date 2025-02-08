@@ -25,7 +25,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 # Add options #
 ###############
 
-option(BUILD_TRIANGLE "Build the Triangle library" ON)
+option(BUILD_TRIANGLE "Build the Triangle library" OFF)
 option(BUILD_CORK "Build the Cork Boolean/CSG library" OFF)
 option(BUILD_SFM "Build the structure from motion library" ON)
 option(BUILD_CV "Build the computer vision library" ON)
