@@ -4,7 +4,7 @@
 
 ## License
 
-Mlib is licensed under the [MIT license](LICENSE), except for the libraies
+Mlib is licensed under the [MIT license](LICENSE), except for the dependencies
 
 - [Triangle](https://www.cs.cmu.edu/~quake/triangle.html) and
 - [cork](https://github.com/gilbo/cork).
