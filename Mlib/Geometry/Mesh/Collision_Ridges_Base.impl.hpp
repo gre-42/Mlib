@@ -61,7 +61,10 @@ bool CollisionRidgesBase<TOrderableRidgeSphere>::empty() const {
 
 template <class TOrderableRidgeSphere>
 void CollisionRidgesBase<TOrderableRidgeSphere>::clear() {
-    return ridges_.clear();
+    // Only clear if not empty due to slow implementation.
+    if (!ridges_.empty()) {
+        ridges_.clear();
+    }
 }
 
 }
