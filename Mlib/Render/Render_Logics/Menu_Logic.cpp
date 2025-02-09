@@ -37,12 +37,12 @@ void MenuLogic::handle_events() {
     if (keys_->start.keys_pressed()) {
         std::scoped_lock lock{user_object_.focuses.mutex};
         Focus focus = user_object_.focuses.focus();
-        if (focus == Focus::MENU) {
+        if (any(focus & Focus::MENU_ANY)) {
             if (user_object_.focuses.size() > 1) {
                 user_object_.focuses.pop_back();
             }
         } else if (user_object_.focuses.countdown_active() || any(focus & (Focus::LOADING | Focus::SCENE | Focus::GAME_OVER))) {
-            user_object_.focuses.push_back(Focus::MENU);
+            user_object_.focuses.push_back(Focus::MAIN_MENU);
         } else if (user_object_.focuses.game_over_countdown_active()) {
             // Do nothing, menu will show automatically after the countdown is finished
         } else if (focus != Focus::BASE) {

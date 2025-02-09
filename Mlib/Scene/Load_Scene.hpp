@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <atomic>
+#include <functional>
 
 namespace Mlib {
 
@@ -12,6 +13,7 @@ struct SceneConfig;
 struct RenderConfig;
 class ButtonStates;
 class CursorStates;
+class ButtonPress;
 struct UiFocus;
 class RenderLogics;
 class ThreadSafeString;
@@ -40,11 +42,13 @@ public:
         ButtonStates& button_states,
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
+        ButtonPress& confirm_button_press,
         UiFocus& ui_focus,
         LayoutConstraints& layout_constraints,
         RenderLogicGallery& gallery,
         AssetReferences& asset_references,
-        RenderableScenes& renderable_scenes);
+        RenderableScenes& renderable_scenes,
+        const std::function<void()>& exit);
 private:
     MacroRecorder macro_file_executor_;
 };

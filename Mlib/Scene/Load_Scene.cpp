@@ -514,11 +514,13 @@ void LoadScene::operator()(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
+    ButtonPress& confirm_button_press,
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
-    RenderableScenes& renderable_scenes)
+    RenderableScenes& renderable_scenes,
+    const std::function<void()>& exit)
 {
     MacroLineExecutor::JsonUserFunction json_user_function = [&](
         const std::string& context,
@@ -544,6 +546,7 @@ void LoadScene::operator()(
             .button_states = button_states,
             .cursor_states = cursor_states,
             .scroll_wheel_states = scroll_wheel_states,
+            .confirm_button_press = confirm_button_press,
             .ui_focus = ui_focus,
             .layout_constraints = layout_constraints,
             .num_renderings = num_renderings,
@@ -552,7 +555,8 @@ void LoadScene::operator()(
             .next_scene_filename = next_scene_filename,
             .gallery = gallery,
             .asset_references = asset_references,
-            .renderable_scenes = renderable_scenes};
+            .renderable_scenes = renderable_scenes,
+            .exit = exit};
         auto& funcs = json_user_functions();
         auto it = funcs.find(args.name);
         if (it == funcs.end()) {

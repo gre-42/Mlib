@@ -81,6 +81,7 @@ public:
     GLFWwindow& glfw_window() const;
     IWindow& window() const;
 
+    void request_window_close();
     bool window_should_close() const;
 
 private:

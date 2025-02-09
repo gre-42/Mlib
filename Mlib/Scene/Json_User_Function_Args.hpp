@@ -20,6 +20,7 @@ class ThreadSafeString;
 struct SceneConfig;
 class ButtonStates;
 class CursorStates;
+class ButtonPress;
 struct UiFocus;
 class LayoutConstraints;
 class AssetReferences;
@@ -39,6 +40,7 @@ struct LoadSceneJsonUserFunctionArgs {
     ButtonStates& button_states;
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
+    ButtonPress& confirm_button_press;
     UiFocus& ui_focus;
     LayoutConstraints& layout_constraints;
     std::atomic_size_t& num_renderings;
@@ -48,6 +50,7 @@ struct LoadSceneJsonUserFunctionArgs {
     RenderLogicGallery& gallery;
     AssetReferences& asset_references;
     RenderableScenes& renderable_scenes;
+    const std::function<void()>& exit;
 };
 
 }

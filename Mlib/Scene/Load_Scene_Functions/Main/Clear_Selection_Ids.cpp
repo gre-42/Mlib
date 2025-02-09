@@ -22,7 +22,7 @@ LoadSceneJsonUserFunction ClearSelectionIds::json_user_function = [](const LoadS
 void ClearSelectionIds::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::erase_if(
-        args.ui_focus.selection_ids,
+        args.ui_focus.all_selection_ids,
         [except=args.arguments.at<std::string>(KnownArgs::except)]
         (const auto& it)
         {return it.first != except;});

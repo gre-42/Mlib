@@ -8,11 +8,12 @@
 
 using namespace Mlib;
 
-Focuses::Focuses()
-{}
+Focuses::Focuses() = default;
+
+Focuses::~Focuses() = default;
 
 Focuses::Focuses(const std::initializer_list<Focus>& focuses)
-: focuses_{focuses}
+    : focuses_{focuses}
 {}
 
 void Focuses::set_focuses(const std::initializer_list<Focus>& focuses) {
@@ -99,28 +100,32 @@ UiFocus::~UiFocus() = default;
 void UiFocus::insert_submenu(
     const std::string& id,
     const SubmenuHeader& header,
+    Focus focus_mask,
     size_t default_selection)
 {
     if (!submenu_numbers.insert({id, submenu_headers.size()}).second) {
         THROW_OR_ABORT("Submenu with ID \"" + id + "\" already exists");
     }
     submenu_headers.push_back(header);
+    focus_masks.push_back(focus_mask);
     // If the selection_ids array is not yet initialized, apply the default value.
-    selection_ids.try_emplace(id, default_selection);
+    all_selection_ids.try_emplace(id, default_selection);
 }
 
 bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
     if (!any(focuses.focus() & focus_filter.focus_mask)) {
         return false;
     }
-    if (!focus_filter.submenu_ids.empty() && (focuses.focus() == Focus::MENU)) {
+    if (!focus_filter.submenu_ids.empty() && any(focuses.focus() & Focus::MENU_ANY)) {
         for (const std::string& submenu_id : focus_filter.submenu_ids) {
             auto it = submenu_numbers.find(submenu_id);
             if (it == submenu_numbers.end()) {
                 THROW_OR_ABORT("Could not find submenu with ID " + submenu_id);
             }
-            if (it->second == submenu_number) {
-                return true;
+            for (const auto& [_, n] : menu_selection_ids) {
+                if (it->second == n) {
+                    return true;
+                }
             }
         }
         return false;
@@ -128,9 +133,18 @@ bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
     return true;
 }
 
+void UiFocus::clear() {
+    submenu_numbers.clear();
+    submenu_headers.clear();
+    focus_masks.clear();
+}
+
 Focus Mlib::single_focus_from_string(const std::string& str) {
     static const std::map<std::string, Focus> m{
-        {"menu", Focus::MENU},
+        {"main_menu", Focus::MAIN_MENU},
+        {"settings_menu", Focus::SETTINGS_MENU},
+        {"new_game_menu", Focus::NEW_GAME_MENU},
+        {"menu_any", Focus::MENU_ANY},
         {"loading", Focus::LOADING},
         {"countdown_pending", Focus::COUNTDOWN_PENDING},
         {"countdown_counting", Focus::COUNTDOWN_COUNTING},
@@ -160,13 +174,16 @@ Focus Mlib::focus_from_string(const std::string& s) {
 
 std::string Mlib::focus_to_string(Focus focus) {
     std::string result;
-    if (any(focus & Focus::MENU)) result += "m";
+    if (any(focus & Focus::BASE)) result += "b";
+    if (any(focus & Focus::MAIN_MENU)) result += "m";
+    if (any(focus & Focus::NEW_GAME_MENU)) result += "n";
+    if (any(focus & Focus::SETTINGS_MENU)) result += "s";
     if (any(focus & Focus::LOADING)) result += "l";
     if (any(focus & Focus::COUNTDOWN_PENDING)) result += "p";
     if (any(focus & Focus::COUNTDOWN_COUNTING)) result += "c";
     if (any(focus & Focus::GAME_OVER_COUNTDOWN_PENDING)) result += "P";
     if (any(focus & Focus::GAME_OVER_COUNTDOWN_COUNTING)) result += "C";
-    if (any(focus & Focus::SCENE)) result += "s";
+    if (any(focus & Focus::SCENE)) result += "S";
     if (any(focus & Focus::GAME_OVER)) result += "o";
     return '(' + result + ')';
 }

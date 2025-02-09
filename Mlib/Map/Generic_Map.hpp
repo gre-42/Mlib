@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <compare>
 #include <map>
 #include <stdexcept>
 #include <vector>
@@ -84,6 +85,12 @@ public:
             result.push_back(k);
         }
         return result;
+    }
+
+    decltype(auto) operator <=> (const GenericMap& other) const {
+        const TBaseMap& a = *this;
+        const TBaseMap& b = other;
+        return a <=> b;
     }
 };
 

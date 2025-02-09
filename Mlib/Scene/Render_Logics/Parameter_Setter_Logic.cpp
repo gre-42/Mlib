@@ -37,6 +37,7 @@ bool ReplacementParameterContents::is_visible(size_t index) const {
 ParameterSetterLogic::ParameterSetterLogic(
     std::string debug_hint,
     std::vector<ReplacementParameter> options,
+    ButtonPress& confirm_button,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -57,6 +58,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     , font_height_{font_height}
     , line_distance_{line_distance}
     , focus_filter_{ std::move(focus_filter) }
+    , confirm_button_{ confirm_button }
     , list_view_{
         std::move(debug_hint),
         button_states,
@@ -93,6 +95,12 @@ void ParameterSetterLogic::render_without_setup(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    if (confirm_button_.keys_pressed()) {
+        const auto& f = options_.at(list_view_.selected_element()).on_execute;
+        if (!f.is_null()) {
+            mle_(f, nullptr, nullptr);
+        }
+    }
     LOG_FUNCTION("ParameterSetterLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     ListViewStringDrawer drawer{

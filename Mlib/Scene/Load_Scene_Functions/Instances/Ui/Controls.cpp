@@ -41,12 +41,16 @@ Controls::Controls(RenderableScene& renderable_scene)
 
 void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string id = args.arguments.at<std::string>(KnownArgs::id);
+    auto id = args.arguments.at<std::string>(KnownArgs::id);
+    auto focus_filter = FocusFilter{
+        .focus_mask = Focus::SETTINGS_MENU,
+        .submenu_ids = { id } };
     args.ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),
             .icon = args.arguments.at<std::string>(KnownArgs::icon)},
+        focus_filter.focus_mask,
         0);
     auto& controls_logic = object_pool.create<ControlsLogic>(
         CURRENT_SOURCE_LOCATION,
@@ -60,9 +64,7 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
         delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
-        FocusFilter{
-            .focus_mask = Focus::MENU,
-            .submenu_ids = { id } });
+        focus_filter);
     render_logics.append(
         { controls_logic, CURRENT_SOURCE_LOCATION },
         1 /* z_order */,

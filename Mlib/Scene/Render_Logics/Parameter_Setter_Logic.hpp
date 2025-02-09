@@ -39,6 +39,7 @@ public:
     ParameterSetterLogic(
         std::string debug_hint,
         std::vector<ReplacementParameter> options,
+        ButtonPress& confirm_button,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
@@ -76,6 +77,7 @@ private:
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
+    ButtonPress& confirm_button_;
     ListView list_view_;
 };
 

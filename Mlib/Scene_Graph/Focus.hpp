@@ -13,20 +13,25 @@ struct FocusFilter;
 
 enum class Focus {
     NONE = 0,
-    BASE = 1,
-    MENU = 1 << 1,
-    LOADING = 1 << 2,
-    COUNTDOWN_PENDING = 1 << 3,
-    COUNTDOWN_COUNTING = 1 << 4,
-    GAME_OVER_COUNTDOWN_PENDING = 1 << 5,
-    GAME_OVER_COUNTDOWN_COUNTING = 1 << 6,
-    SCENE = 1 << 7,
-    GAME_OVER = 1 << 8,  // currently not in use, countdown is used instead.
+    BASE = 1 << 0,
+    MAIN_MENU = 1 << 1,
+    NEW_GAME_MENU = 1 << 2,
+    SETTINGS_MENU = 1 << 3,
+    LOADING = 1 << 4,
+    COUNTDOWN_PENDING = 1 << 5,
+    COUNTDOWN_COUNTING = 1 << 6,
+    GAME_OVER_COUNTDOWN_PENDING = 1 << 7,
+    GAME_OVER_COUNTDOWN_COUNTING = 1 << 8,
+    SCENE = 1 << 9,
+    GAME_OVER = 1 << 10,  // currently not in use, countdown is used instead.
+    MENU_ANY = MAIN_MENU | NEW_GAME_MENU | SETTINGS_MENU,
     COUNTDOWN_ANY = COUNTDOWN_PENDING | COUNTDOWN_COUNTING,
     GAME_OVER_COUNTDOWN_ANY = GAME_OVER_COUNTDOWN_PENDING | GAME_OVER_COUNTDOWN_COUNTING,
     ALWAYS =
         BASE |
-        MENU |
+        MAIN_MENU |
+        NEW_GAME_MENU |
+        SETTINGS_MENU |
         LOADING |
         COUNTDOWN_PENDING |
         COUNTDOWN_COUNTING |
@@ -57,6 +62,7 @@ class Focuses {
     friend std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 public:
     Focuses();
+    ~Focuses();
     Focuses(const std::initializer_list<Focus>& focuses);
     Focuses(const Focuses&) = delete;
     Focuses& operator = (const Focuses&) = delete;
@@ -93,15 +99,18 @@ struct UiFocus {
     UiFocus(const UiFocus&) = delete;
     UiFocus& operator = (const UiFocus&) = delete;
     Focuses focuses;
-    std::atomic_size_t submenu_number = 0;
+    std::map<std::string, std::atomic_size_t> menu_selection_ids;
     std::map<std::string, size_t> submenu_numbers;
     std::vector<SubmenuHeader> submenu_headers;
-    std::map<std::string, std::atomic_size_t> selection_ids;
+    std::vector<Focus> focus_masks;
+    std::map<std::string, std::atomic_size_t> all_selection_ids;
     void insert_submenu(
         const std::string& id,
         const SubmenuHeader& header,
+        Focus focus_mask,
         size_t default_selection);
     bool has_focus(const FocusFilter& focus_filter) const;
+    void clear();
 };
 
 Focus single_focus_from_string(const std::string& str);

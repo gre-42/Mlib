@@ -25,10 +25,12 @@
 #include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Window_Logic.hpp>
 #include <Mlib/Render/Renderer.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Render/Ui/Static_Renderable_Hider.hpp>
@@ -178,6 +180,7 @@ JThread loader_thread(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
+    ButtonPress& confirm_button_press,
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
@@ -185,7 +188,8 @@ JThread loader_thread(
     std::atomic_bool& load_scene_finished,
     const Render& render,
     std::chrono::steady_clock::duration render_delay,
-    std::chrono::steady_clock::duration velocity_dt)
+    std::chrono::steady_clock::duration velocity_dt,
+    const std::function<void()>& exit)
 {
     return JThread{[&, render_delay, velocity_dt](){
         try {
@@ -214,11 +218,13 @@ JThread loader_thread(
                     button_states,
                     cursor_states,
                     scroll_wheel_states,
+                    confirm_button_press,
                     ui_focus,
                     layout_constraints,
                     gallery,
                     asset_references,
-                    renderable_scenes);
+                    renderable_scenes,
+                    exit);
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
@@ -523,6 +529,14 @@ int main(int argc, char** argv) {
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
+        BaseKeyCombination confirm_key_combination{{{
+            BaseKeyBinding{
+                .key = "ENTER",
+                .gamepad_button = "A",
+                .tap_button = "START"}}}};
+        KeyConfigurations key_configurations;
+        key_configurations.insert("confirm", { std::move(confirm_key_combination) });
+        ButtonPress confirm_button_press{ button_states, key_configurations, "confirm", "" };
         UiFocus ui_focus;
         NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
@@ -546,8 +560,7 @@ int main(int argc, char** argv) {
         while (!render.window_should_close() && !unhandled_exceptions_occured()) {
             JsonMacroArgumentsObserverGuard smog{ external_json_macro_arguments };
             num_renderings = args_num_renderings;
-            ui_focus.submenu_numbers.clear();
-            ui_focus.submenu_headers.clear();
+            ui_focus.clear();
 
             TtyRenderableHider tty_renderable_hider{ button_states };
             StaticRenderableHider static_renderable_hider{ args.named_value("--show_only", "") };
@@ -672,6 +685,9 @@ int main(int argc, char** argv) {
                         scene_config,
                         menu_logic);
                 }
+                std::function<void()> exit = [&render](){
+                    render.request_window_close();
+                };
                 JThread loader_future_guard{loader_thread(
                     args,
                     gallery,
@@ -690,6 +706,7 @@ int main(int argc, char** argv) {
                     button_states,
                     cursor_states,
                     scroll_wheel_states,
+                    confirm_button_press,
                     ui_focus,
                     layout_constraints,
                     load_scene,
@@ -697,7 +714,8 @@ int main(int argc, char** argv) {
                     load_scene_finished,
                     render,
                     render_delay,
-                    velocity_dt)};
+                    velocity_dt,
+                    exit)};
                 try {
                     main_func(
                         button_states,

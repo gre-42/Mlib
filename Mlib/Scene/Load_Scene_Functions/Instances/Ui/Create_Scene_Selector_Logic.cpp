@@ -60,11 +60,15 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
     }
     scene_entries.sort();
     auto id = args.arguments.at<std::string>(KnownArgs::id);
+    auto focus_filter = FocusFilter{
+        .focus_mask = Focus::NEW_GAME_MENU,
+        .submenu_ids = { id } };
     args.ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title=args.arguments.at<std::string>(KnownArgs::title),
             .icon=args.arguments.at<std::string>(KnownArgs::icon)},
+        focus_filter.focus_mask,
         0);
     auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
@@ -79,13 +83,11 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
-        FocusFilter{
-            .focus_mask = Focus::MENU,
-            .submenu_ids = { id } },
+        focus_filter,
         args.macro_line_executor,
         args.next_scene_filename,
         args.button_states,
-        args.ui_focus.selection_ids.at(id),
+        args.ui_focus.all_selection_ids.at(id),
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]()
         {
             if (on_change.has_value()) {

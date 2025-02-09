@@ -5,8 +5,6 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -22,21 +20,24 @@
 using namespace Mlib;
 
 SubmenuHeaderContents::SubmenuHeaderContents(
-    const std::vector<SubmenuHeader>& options,
     const NotifyingJsonMacroArguments& substitutions,
     const AssetReferences& asset_references,
+    Focus focus_mask,
     UiFocus& ui_focus)
-    : options_{ options }
-    , substitutions_{ substitutions }
+    : substitutions_{ substitutions }
     , asset_references_{ asset_references }
+    , focus_mask_{ focus_mask }
     , ui_focus_{ ui_focus }
 {}
     
 size_t SubmenuHeaderContents::num_entries() const {
-    return options_.size();
+    return ui_focus_.submenu_headers.size();
 }
 
 bool SubmenuHeaderContents::is_visible(size_t index) const {
+    if (!any(focus_mask_ & ui_focus_.focus_masks.at(index))) {
+        return false;
+    }
     auto variables = substitutions_.json_macro_arguments();
     for (const auto& r : ui_focus_.submenu_headers.at(index).requires_) {
         if (!eval<bool>(r, variables, asset_references_)) {
@@ -48,8 +49,8 @@ bool SubmenuHeaderContents::is_visible(size_t index) const {
 
 TabMenuLogic::TabMenuLogic(
     std::string debug_hint,
-    BaseKeyCombination key_binding,
-    const std::vector<SubmenuHeader>& options,
+    Focus focus_mask,
+    ButtonPress& confirm_button,
     RenderLogicGallery& gallery,
     ListViewStyle list_view_style,
     const std::string& selection_marker,
@@ -67,12 +68,13 @@ TabMenuLogic::TabMenuLogic(
     std::atomic_size_t& selection_index,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
-    : confirm_button_press_{ button_states, key_configurations_, "confirm", "" }
+    : focus_mask_{ focus_mask }
+    , confirm_button_{ confirm_button }
     , renderable_text_{ std::make_unique<TextResource>(
         ttf_filename,
         font_color) }
-    , options_{ options }
-    , contents_{ options, substitutions, asset_references, ui_focus }
+    , ui_focus_{ ui_focus }
+    , contents_{ substitutions, asset_references, focus_mask, ui_focus }
     , gallery_{ gallery }
     , list_view_style_{ list_view_style }
     , selection_marker_{ selection_marker }
@@ -81,19 +83,16 @@ TabMenuLogic::TabMenuLogic(
     , font_height_{ font_height }
     , line_distance_{ line_distance }
     , substitutions_{ substitutions }
-    , previous_level_id_{ substitutions.at<std::string>("loaded_level_id", "") }
     , num_renderings_{ num_renderings }
-    , reload_transient_objects_{ std::move(reload_transient_objects) }
+    , on_execute_{ std::move(reload_transient_objects) }
     , list_view_{
         std::move(debug_hint),
         button_states,
-        ui_focus.submenu_number,
+        selection_index,
         contents_,
         ListViewOrientation::HORIZONTAL,
         on_change }
-{
-    key_configurations_.insert("confirm", { std::move(key_binding) });
-}
+{}
 
 TabMenuLogic::~TabMenuLogic() {
     on_destroy.clear();
@@ -116,13 +115,8 @@ void TabMenuLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("TabMenuLogic::render");
-    if (confirm_button_press_.keys_pressed()) {
-        // ui_focus_.focus.pop_back();
-        if (previous_level_id_ != substitutions_.at<std::string>("selected_level_id")) {
-            num_renderings_ = 0;
-        } else {
-            reload_transient_objects_();
-        }
+    if (confirm_button_.keys_pressed()) {
+        on_execute_();
     }
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     if (list_view_style_ == ListViewStyle::TEXT) {
@@ -133,7 +127,7 @@ void TabMenuLogic::render_without_setup(
             line_distance_,
             *ew,
             ly,
-            [this](size_t index) {return options_.at(index).title;}};
+            [this](size_t index) {return ui_focus_.submenu_headers.at(index).title;}};
         list_view_.render_and_handle_input(lx, ly, drawer);
         drawer.render();
     } else if (list_view_style_ == ListViewStyle::ICON) {
@@ -153,7 +147,7 @@ void TabMenuLogic::render_without_setup(
                     LayoutConstraintParameters::child_y(ly, ew));
             },
             [&](const IPixelRegion& ew, size_t index, bool is_selected){
-                gallery_[options_.at(index).icon]->render(
+                gallery_[ui_focus_.submenu_headers.at(index).icon]->render(
                     LayoutConstraintParameters::child_x(lx, ew),
                     LayoutConstraintParameters::child_y(ly, ew));
                 if (is_selected) {
@@ -173,7 +167,7 @@ void TabMenuLogic::render_without_setup(
 }
 
 FocusFilter TabMenuLogic::focus_filter() const {
-    return { .focus_mask = Focus::MENU };
+    return { .focus_mask = focus_mask_ };
 }
 
 void TabMenuLogic::print(std::ostream& ostr, size_t depth) const {

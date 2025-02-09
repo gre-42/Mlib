@@ -1,6 +1,4 @@
 #pragma once
-#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -11,6 +9,7 @@
 
 namespace Mlib {
 
+enum class Focus;
 struct UiFocus;
 struct SubmenuHeader;
 class ButtonPress;
@@ -28,18 +27,18 @@ class FixedArray;
 class SubmenuHeaderContents: public IListViewContents {
 public:
     explicit SubmenuHeaderContents(
-        const std::vector<SubmenuHeader>& options,
         const NotifyingJsonMacroArguments& substitutions,
         const AssetReferences& asset_references,
+        Focus focus_mask,
         UiFocus& ui_focus);
 
     // IListViewContents
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
-    const std::vector<SubmenuHeader>& options_;
     const NotifyingJsonMacroArguments& substitutions_;
     const AssetReferences& asset_references_;
+    Focus focus_mask_;
     UiFocus& ui_focus_;
 };
 
@@ -47,8 +46,8 @@ class TabMenuLogic: public RenderLogic {
 public:
     TabMenuLogic(
         std::string debug_hint,
-        BaseKeyCombination key_binding,
-        const std::vector<SubmenuHeader>& options,
+        Focus focus_mask,
+        ButtonPress& confirm_button,
         RenderLogicGallery& gallery,
         ListViewStyle list_view_style,
         const std::string& selection_marker,
@@ -64,7 +63,7 @@ public:
         std::atomic_size_t& num_renderings,
         ButtonStates& button_states,
         std::atomic_size_t& selection_index,
-        std::function<void()> reload_transient_objects,
+        std::function<void()> on_execute,
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();
 
@@ -84,9 +83,10 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    ButtonPress confirm_button_press_;
+    Focus focus_mask_;
+    ButtonPress& confirm_button_;
     std::unique_ptr<TextResource> renderable_text_;
-    const std::vector<SubmenuHeader>& options_;
+    const UiFocus& ui_focus_;
     SubmenuHeaderContents contents_;
     RenderLogicGallery& gallery_;
     ListViewStyle list_view_style_;
@@ -96,10 +96,8 @@ private:
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     const NotifyingJsonMacroArguments& substitutions_;
-    KeyConfigurations key_configurations_;
-    std::string previous_level_id_;
     std::atomic_size_t& num_renderings_;
-    std::function<void()> reload_transient_objects_;
+    std::function<void()> on_execute_;
     ListView list_view_;
 };
 

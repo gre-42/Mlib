@@ -53,6 +53,8 @@ DECLARE_ARGUMENT(assets);
 DECLARE_ARGUMENT(database_filter);
 DECLARE_ARGUMENT(hide_if_trivial);
 DECLARE_ARGUMENT(parameters);
+DECLARE_ARGUMENT(focus_mask);
+DECLARE_ARGUMENT(submenus);
 }
 
 const std::string CreateParameterSetterLogic::key = "parameter_setter";
@@ -107,6 +109,9 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             return;
         }
     }
+    auto focus_filter = FocusFilter{
+        .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
+        .submenu_ids = args.arguments.at<std::set<std::string>>(KnownArgs::submenus, { id }) };
     args.ui_focus.insert_submenu(
         id,
         SubmenuHeader{
@@ -114,11 +119,13 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             .icon = args.arguments.at<std::string>(KnownArgs::icon),
             .requires_ = args.arguments.at<std::vector<std::string>>(KnownArgs::required, std::vector<std::string>{})
         },
+        focus_filter.focus_mask,
         args.arguments.at<size_t>(KnownArgs::deflt));
     auto& parameter_setter_logic = object_pool.create<ParameterSetterLogic>(
         CURRENT_SOURCE_LOCATION,
         "id = " + id,
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
+        args.confirm_button_press,
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
@@ -128,12 +135,10 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
-        FocusFilter{
-            .focus_mask = Focus::MENU,
-            .submenu_ids = { id } },
+        focus_filter,
         args.macro_line_executor,
         args.button_states,
-        args.ui_focus.selection_ids.at(id),
+        args.ui_focus.all_selection_ids.at(id),
         [mle=args.macro_line_executor, on_change=args.arguments.try_at<nlohmann::json>(KnownArgs::on_change)]() {
             if (on_change.has_value() ) {
                 mle(*on_change, nullptr, nullptr);

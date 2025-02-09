@@ -201,6 +201,11 @@ IWindow& Render::window() const {
     return *window_;
 }
 
+void Render::request_window_close() {
+    assert_true(window_ != nullptr);
+    window_->request_close();
+}
+
 bool Render::window_should_close() const {
     assert_true(window_ != nullptr);
     return window_->close_requested();

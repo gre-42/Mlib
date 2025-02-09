@@ -19,9 +19,6 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(key);
-DECLARE_ARGUMENT(gamepad_button);
-DECLARE_ARGUMENT(tap_button);
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(selection_marker);
 DECLARE_ARGUMENT(ttf_file);
@@ -37,8 +34,9 @@ DECLARE_ARGUMENT(font_color);
 DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(deflt);
-DECLARE_ARGUMENT(reload_transient_objects);
+DECLARE_ARGUMENT(on_execute);
 DECLARE_ARGUMENT(z_order);
+DECLARE_ARGUMENT(focus_mask);
 }
 
 const std::string CreateTabMenuLogic::key = "tab_menu";
@@ -67,18 +65,14 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
     size_t deflt = args.arguments.at<size_t>(KnownArgs::deflt);
-    auto reload_transient_objects = args.arguments.at(KnownArgs::reload_transient_objects);
+    auto on_execute = args.arguments.try_at(KnownArgs::on_execute);
     // If the selection_ids array is not yet initialized, apply the default value.
-    args.ui_focus.selection_ids.try_emplace(id, deflt);
+    args.ui_focus.all_selection_ids.try_emplace(id, deflt);
     auto& tab_menu_logic = object_pool.create<TabMenuLogic>(
         CURRENT_SOURCE_LOCATION,
         "id = " + id,
-        BaseKeyCombination{{{
-            BaseKeyBinding{
-                .key = args.arguments.at<std::string>(KnownArgs::key),
-                .gamepad_button = args.arguments.at<std::string>(KnownArgs::gamepad_button),
-                .tap_button = args.arguments.at<std::string>(KnownArgs::tap_button)}}}},
-        args.ui_focus.submenu_headers,
+        focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
+        args.confirm_button_press,
         args.gallery,
         ListViewStyle::ICON,
         args.arguments.at<std::string>(KnownArgs::selection_marker),
@@ -93,10 +87,10 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.ui_focus,
         args.num_renderings,
         args.button_states,
-        args.ui_focus.selection_ids.at(id),
-        [macro_line_executor = args.macro_line_executor, reload_transient_objects]() {
-            if (!reload_transient_objects.empty()) {
-                macro_line_executor(reload_transient_objects, nullptr, nullptr);
+        args.ui_focus.menu_selection_ids[id],
+        [macro_line_executor = args.macro_line_executor, on_execute]() {
+            if (on_execute.has_value()) {
+                macro_line_executor(*on_execute, nullptr, nullptr);
                 // This results in a deadlock because both "delete_node_mutex" and "delete_rigid_body_mutex" are acquired.
                 // std::scoped_lock rb_lock{ delete_rigid_body_mutex };
                 // macro_line_executor(reload_transient_objects, nullptr);
