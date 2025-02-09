@@ -95,11 +95,10 @@ void ParameterSetterLogic::render_without_setup(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (confirm_button_.keys_pressed()) {
-        const auto& f = options_.at(list_view_.selected_element()).on_execute;
-        if (!f.is_null()) {
-            mle_(f, nullptr, nullptr);
-        }
+    if (const auto& f = options_.at(list_view_.selected_element()).on_execute;
+        !f.is_null() && confirm_button_.keys_pressed())
+    {
+        mle_(f, nullptr, nullptr);
     }
     LOG_FUNCTION("ParameterSetterLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
