@@ -60,7 +60,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Abs_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Avatar_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Avatar_Controller_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Camera_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Car_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Driver_Key_Binding.hpp>
@@ -71,7 +70,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Rel_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Rel_Key_Binding_Tripod.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Weapon_Cycle_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Load_Key_Configurations.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_Only_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_With_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_Without_Shadow.hpp>
@@ -141,9 +139,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Clear_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Controls.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Countdown.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Create_Parameter_Setter_Logic.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Create_Scene_Selector_Logic.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Create_Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Ui_Background.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Ui_Exhibit.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_To_Inventory.hpp>
@@ -277,7 +272,6 @@ LoadScene::LoadScene() {
             register_json_user_function(CreateAbsKeyBinding::key, CreateAbsKeyBinding::json_user_function);
             register_json_user_function(CreateAvatarControllerIdleBinding::key, CreateAvatarControllerIdleBinding::json_user_function);
             register_json_user_function(CreateAvatarControllerKeyBinding::key, CreateAvatarControllerKeyBinding::json_user_function);
-            register_json_user_function(CreateCameraKeyBinding::key, CreateCameraKeyBinding::json_user_function);
             register_json_user_function(CreateCarControllerIdleBinding::key, CreateCarControllerIdleBinding::json_user_function);
             register_json_user_function(CreateCarControllerKeyBinding::key, CreateCarControllerKeyBinding::json_user_function);
             register_json_user_function(CreateCarController::key, CreateCarController::json_user_function);
@@ -307,7 +301,6 @@ LoadScene::LoadScene() {
             register_json_user_function(CreateLightWithoutShadow::key, CreateLightWithoutShadow::json_user_function);
             register_json_user_function(CreateLightWithShadow::key, CreateLightWithShadow::json_user_function);
             register_json_user_function(CreateMissileController::key, CreateMissileController::json_user_function);
-            register_json_user_function(CreateParameterSetterLogic::key, CreateParameterSetterLogic::json_user_function);
             register_json_user_function(CreatePlaneAsCarController::key, CreatePlaneAsCarController::json_user_function);
             register_json_user_function(CreatePlaneControllerIdleBinding::key, CreatePlaneControllerIdleBinding::json_user_function);
             register_json_user_function(CreatePlaneControllerKeyBinding::key, CreatePlaneControllerKeyBinding::json_user_function);
@@ -319,9 +312,7 @@ LoadScene::LoadScene() {
             register_json_user_function(CreateRelKeyBinding::key, CreateRelKeyBinding::json_user_function);
             register_json_user_function(CreateRelKeyBindingTripod::key, CreateRelKeyBindingTripod::json_user_function);
             register_json_user_function(CreateRotor::key, CreateRotor::json_user_function);
-            register_json_user_function(CreateSceneSelectorLogic::key, CreateSceneSelectorLogic::json_user_function);
             register_json_user_function(CreateSpawner::key, CreateSpawner::json_user_function);
-            register_json_user_function(CreateTabMenuLogic::key, CreateTabMenuLogic::json_user_function);
             register_json_user_function(CreateTankController::key, CreateTankController::json_user_function);
             register_json_user_function(CreateTrailerNode::key, CreateTrailerNode::json_user_function);
             register_json_user_function(CreateVisualGlobalLog::key, CreateVisualGlobalLog::json_user_function);
@@ -427,7 +418,6 @@ LoadScene::LoadScene() {
             register_json_user_function(UiExhibit::key, UiExhibit::json_user_function);
             register_json_user_function(VisualNodeStatus3rd::key, VisualNodeStatus3rd::json_user_function);
             register_json_user_function(YplnUpdateBulletProperties::key, YplnUpdateBulletProperties::json_user_function);
-            register_json_user_function(LoadKeyConfigurations::key, LoadKeyConfigurations::json_user_function);
 
             // Resources
             register_json_user_function(AddCubemap::key, AddCubemap::json_user_function);
@@ -515,6 +505,8 @@ void LoadScene::operator()(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     ButtonPress& confirm_button_press,
+    KeyConfigurations& key_configurations,
+    KeyDescriptions& key_descriptions,
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     RenderLogicGallery& gallery,
@@ -547,6 +539,8 @@ void LoadScene::operator()(
             .cursor_states = cursor_states,
             .scroll_wheel_states = scroll_wheel_states,
             .confirm_button_press = confirm_button_press,
+            .key_configurations = key_configurations,
+            .key_descriptions = key_descriptions,
             .ui_focus = ui_focus,
             .layout_constraints = layout_constraints,
             .num_renderings = num_renderings,

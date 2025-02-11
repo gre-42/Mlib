@@ -6,9 +6,6 @@ namespace Mlib {
 
 class CreateSceneSelectorLogic: public LoadSceneInstanceFunction {
 public:
-    static LoadSceneJsonUserFunction json_user_function;
-    static const std::string key;
-private:
     explicit CreateSceneSelectorLogic(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };

@@ -20,8 +20,8 @@ public:
     void insert(ReplacementParameterAndFilename&& rp);
     void merge_into_database(const std::string& id, const JsonMacroArguments& params);
     const ReplacementParameterAndFilename& at(const std::string& id) const;
-    std::map<std::string, ReplacementParameterAndFilename>::iterator begin();
-    std::map<std::string, ReplacementParameterAndFilename>::iterator end();
+    std::map<std::string, ReplacementParameterAndFilename>::const_iterator begin() const;
+    std::map<std::string, ReplacementParameterAndFilename>::const_iterator end() const;
     void add_asset_loader(std::unique_ptr<IAssetLoader>&& loader);
     const std::list<std::unique_ptr<IAssetLoader>>& loaders() const;
 private:

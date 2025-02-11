@@ -12,6 +12,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -57,16 +58,8 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string CreateParameterSetterLogic::key = "parameter_setter";
-
-LoadSceneJsonUserFunction CreateParameterSetterLogic::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateParameterSetterLogic(args.renderable_scene()).execute(args);
-};
-
 CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -77,7 +70,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         rps = args.arguments.at<std::list<ReplacementParameter>>(KnownArgs::parameters);
     }
     if (args.arguments.contains(KnownArgs::assets)) {
-        auto& assets = args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)];
+        const auto& assets = args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)];
         for (const auto& [_, a] : assets) {
             rps.push_back(a.rp);
         }
@@ -88,8 +81,8 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         std::set<std::string> ents;
         for (const auto& [_, a] : assets) {
             try {
-                for (const auto& v : a.rp.database.at<std::vector<std::string>>(f.variable)) {
-                    ents.insert(v);
+                for (auto&& v : a.rp.database.at<std::vector<std::string>>(f.variable)) {
+                    ents.insert(std::move(v));
                 }
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Error processing asset \"" + a.rp.id + "\": " + e.what());
@@ -148,4 +141,20 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         { parameter_setter_logic, CURRENT_SOURCE_LOCATION },
         1 /* z_order */,
         CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "parameter_setter",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateParameterSetterLogic(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

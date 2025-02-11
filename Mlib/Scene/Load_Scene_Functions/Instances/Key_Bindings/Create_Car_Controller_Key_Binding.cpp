@@ -58,12 +58,12 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
             : std::optional<float>(),
         .button_press{
             args.button_states,
-            key_configurations,
+            args.key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role) },
         .gamepad_analog_axes_position{
             args.button_states,
-            key_configurations,
+            args.key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role) },
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION }},

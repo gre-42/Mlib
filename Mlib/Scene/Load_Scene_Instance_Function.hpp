@@ -39,7 +39,6 @@ class PostProcessingLogic;
 class Imposters;
 class SupplyDepots;
 class RenderingResources;
-class KeyConfigurations;
 
 class LoadSceneInstanceFunction {
 public:
@@ -63,7 +62,6 @@ protected:
     PhysicsEngine& physics_engine;
     Imposters& imposters;
     SupplyDepots& supply_depots;
-    KeyConfigurations& key_configurations;
     KeyBindings& key_bindings;
     SelectedCameras& selected_cameras;
     const SceneConfig& scene_config;

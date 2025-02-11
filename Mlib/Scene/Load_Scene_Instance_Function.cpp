@@ -20,7 +20,6 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
     , physics_engine{ renderable_scene.physics_engine_ }
     , imposters{ renderable_scene.imposters_ }
     , supply_depots{ renderable_scene.supply_depots_ }
-    , key_configurations{ renderable_scene.key_configurations_ }
     , key_bindings{ *renderable_scene.key_bindings_ }
     , selected_cameras{ renderable_scene.selected_cameras_ }
     , scene_config{ renderable_scene.scene_config_ }

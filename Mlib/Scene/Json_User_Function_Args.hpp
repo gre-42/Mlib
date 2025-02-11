@@ -21,6 +21,8 @@ struct SceneConfig;
 class ButtonStates;
 class CursorStates;
 class ButtonPress;
+class KeyConfigurations;
+class KeyDescriptions;
 struct UiFocus;
 class LayoutConstraints;
 class AssetReferences;
@@ -41,6 +43,8 @@ struct LoadSceneJsonUserFunctionArgs {
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
     ButtonPress& confirm_button_press;
+    KeyConfigurations& key_configurations;
+    KeyDescriptions& key_descriptions;
     UiFocus& ui_focus;
     LayoutConstraints& layout_constraints;
     std::atomic_size_t& num_renderings;

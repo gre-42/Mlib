@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-class CreateTabMenuLogic: public LoadSceneInstanceFunction {
+class CreateKeyBindingsLogic: public LoadSceneInstanceFunction {
 public:
-    explicit CreateTabMenuLogic(RenderableScene& renderable_scene);
+    explicit CreateKeyBindingsLogic(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

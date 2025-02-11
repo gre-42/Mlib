@@ -17,14 +17,15 @@ enum class Focus {
     MAIN_MENU = 1 << 1,
     NEW_GAME_MENU = 1 << 2,
     SETTINGS_MENU = 1 << 3,
-    LOADING = 1 << 4,
-    COUNTDOWN_PENDING = 1 << 5,
-    COUNTDOWN_COUNTING = 1 << 6,
-    GAME_OVER_COUNTDOWN_PENDING = 1 << 7,
-    GAME_OVER_COUNTDOWN_COUNTING = 1 << 8,
-    SCENE = 1 << 9,
-    GAME_OVER = 1 << 10,  // currently not in use, countdown is used instead.
-    MENU_ANY = MAIN_MENU | NEW_GAME_MENU | SETTINGS_MENU,
+    CONTROLS_MENU = 1 << 4,
+    LOADING = 1 << 5,
+    COUNTDOWN_PENDING = 1 << 6,
+    COUNTDOWN_COUNTING = 1 << 7,
+    GAME_OVER_COUNTDOWN_PENDING = 1 << 8,
+    GAME_OVER_COUNTDOWN_COUNTING = 1 << 9,
+    SCENE = 1 << 10,
+    GAME_OVER = 1 << 11,  // currently not in use, countdown is used instead.
+    MENU_ANY = MAIN_MENU | NEW_GAME_MENU | SETTINGS_MENU | CONTROLS_MENU,
     COUNTDOWN_ANY = COUNTDOWN_PENDING | COUNTDOWN_COUNTING,
     GAME_OVER_COUNTDOWN_ANY = GAME_OVER_COUNTDOWN_PENDING | GAME_OVER_COUNTDOWN_COUNTING,
     ALWAYS =
@@ -32,6 +33,7 @@ enum class Focus {
         MAIN_MENU |
         NEW_GAME_MENU |
         SETTINGS_MENU |
+        CONTROLS_MENU |
         LOADING |
         COUNTDOWN_PENDING |
         COUNTDOWN_COUNTING |

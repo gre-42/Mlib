@@ -14,6 +14,8 @@ struct RenderConfig;
 class ButtonStates;
 class CursorStates;
 class ButtonPress;
+class KeyConfigurations;
+class KeyDescriptions;
 struct UiFocus;
 class RenderLogics;
 class ThreadSafeString;
@@ -43,6 +45,8 @@ public:
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         ButtonPress& confirm_button_press,
+        KeyConfigurations& key_configurations,
+        KeyDescriptions& key_descriptions,
         UiFocus& ui_focus,
         LayoutConstraints& layout_constraints,
         RenderLogicGallery& gallery,

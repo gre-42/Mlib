@@ -142,8 +142,9 @@ void UiFocus::clear() {
 Focus Mlib::single_focus_from_string(const std::string& str) {
     static const std::map<std::string, Focus> m{
         {"main_menu", Focus::MAIN_MENU},
-        {"settings_menu", Focus::SETTINGS_MENU},
         {"new_game_menu", Focus::NEW_GAME_MENU},
+        {"settings_menu", Focus::SETTINGS_MENU},
+        {"controls_menu", Focus::CONTROLS_MENU},
         {"menu_any", Focus::MENU_ANY},
         {"loading", Focus::LOADING},
         {"countdown_pending", Focus::COUNTDOWN_PENDING},
@@ -178,12 +179,13 @@ std::string Mlib::focus_to_string(Focus focus) {
     if (any(focus & Focus::MAIN_MENU)) result += "m";
     if (any(focus & Focus::NEW_GAME_MENU)) result += "n";
     if (any(focus & Focus::SETTINGS_MENU)) result += "s";
+    if (any(focus & Focus::CONTROLS_MENU)) result += "o";
     if (any(focus & Focus::LOADING)) result += "l";
     if (any(focus & Focus::COUNTDOWN_PENDING)) result += "p";
     if (any(focus & Focus::COUNTDOWN_COUNTING)) result += "c";
     if (any(focus & Focus::GAME_OVER_COUNTDOWN_PENDING)) result += "P";
     if (any(focus & Focus::GAME_OVER_COUNTDOWN_COUNTING)) result += "C";
     if (any(focus & Focus::SCENE)) result += "S";
-    if (any(focus & Focus::GAME_OVER)) result += "o";
+    if (any(focus & Focus::GAME_OVER)) result += "O";
     return '(' + result + ')';
 }

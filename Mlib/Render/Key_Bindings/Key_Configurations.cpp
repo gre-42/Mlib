@@ -178,12 +178,12 @@ void KeyConfigurations::load(
     }
 }
 
-void KeyConfigurations::insert(std::string id, const KeyConfiguration& key_configuration) {
-    if (!key_configurations_.try_emplace(std::move(id), key_configuration).second) {
+void KeyConfigurations::insert(std::string id, KeyConfiguration key_configuration) {
+    if (!key_configurations_.try_emplace(std::move(id), std::move(key_configuration)).second) {
         THROW_OR_ABORT("Key configuration with ID \"" + id + "\" already exists");
     }
 }
 
-const KeyConfiguration& KeyConfigurations::get(const std::string& name) const {
-    return key_configurations_.get(name);
+const KeyConfiguration& KeyConfigurations::get(const std::string& id) const {
+    return key_configurations_.get(id);
 }

@@ -43,7 +43,7 @@ public:
     explicit TextResource(
         std::string ttf_filename,
         const FixedArray<float, 3>& color,
-        size_t max_nchars = 1000);
+        size_t max_nchars = 3000);
     void set_contents(
         float font_height,
         const FixedArray<float, 2>& canvas_size,

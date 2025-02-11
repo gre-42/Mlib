@@ -31,6 +31,7 @@
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Descriptions.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Render/Ui/Static_Renderable_Hider.hpp>
@@ -181,6 +182,8 @@ JThread loader_thread(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     ButtonPress& confirm_button_press,
+    KeyConfigurations& key_configurations,
+    KeyDescriptions& key_descriptions,
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
@@ -219,6 +222,8 @@ JThread loader_thread(
                     cursor_states,
                     scroll_wheel_states,
                     confirm_button_press,
+                    key_configurations,
+                    key_descriptions,
                     ui_focus,
                     layout_constraints,
                     gallery,
@@ -534,9 +539,11 @@ int main(int argc, char** argv) {
                 .key = "ENTER",
                 .gamepad_button = "A",
                 .tap_button = "START"}}}};
+        KeyConfigurations confirm_key_configurations;
+        confirm_key_configurations.insert("confirm", { std::move(confirm_key_combination) });
+        ButtonPress confirm_button_press{ button_states, confirm_key_configurations, "confirm", "" };
         KeyConfigurations key_configurations;
-        key_configurations.insert("confirm", { std::move(confirm_key_combination) });
-        ButtonPress confirm_button_press{ button_states, key_configurations, "confirm", "" };
+        KeyDescriptions key_descriptions;
         UiFocus ui_focus;
         NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
@@ -707,6 +714,8 @@ int main(int argc, char** argv) {
                     cursor_states,
                     scroll_wheel_states,
                     confirm_button_press,
+                    key_configurations,
+                    key_descriptions,
                     ui_focus,
                     layout_constraints,
                     load_scene,

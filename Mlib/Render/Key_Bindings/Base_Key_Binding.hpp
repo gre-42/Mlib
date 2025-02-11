@@ -9,11 +9,13 @@ namespace Mlib {
 struct AnalogDigitalAxis {
     std::string axis;
     float sign_and_threshold;
+    std::string to_string() const;
 };
 
 struct AnalogDigitalAxes {
     std::optional<AnalogDigitalAxis> joystick;
     std::optional<AnalogDigitalAxis> tap;
+    std::string to_string() const;
 };
 
 struct BaseKeyBinding {
@@ -31,6 +33,7 @@ struct BaseKeyBinding {
         }
         return nullptr;
     }
+    std::string to_string() const;
 };
 
 std::ostream& operator << (std::ostream& ostr, const BaseKeyBinding& base_key_binding);

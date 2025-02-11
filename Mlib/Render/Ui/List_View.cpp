@@ -53,7 +53,7 @@ ListView::ListView(
     key_configurations_.insert("page_down", { {.key_bindings = {{.key = "PAGE_DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
     key_configurations_.insert("home", { { {{.key = "HOME"}} } });
     key_configurations_.insert("end", { { {{.key = "END"}} } });
-    if (has_selected_element()) {
+    if (on_change_ && has_selected_element()) {
         on_change_();
     } else {
         notify_change_visibility();
@@ -257,7 +257,9 @@ void ListView::notify_change_visibility() {
         for (size_t i = 0; i < contents_.num_entries(); ++i) {
             if (contents_.is_visible(i)) {
                 selection_index_ = i;
-                on_change_();
+                if (on_change_) {
+                    on_change_();
+                }
                 break;
             }
         }

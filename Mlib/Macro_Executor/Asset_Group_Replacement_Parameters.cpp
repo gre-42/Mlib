@@ -53,11 +53,11 @@ const ReplacementParameterAndFilename& AssetGroupReplacementParameters::at(const
     return it->second;
 }
 
-std::map<std::string, ReplacementParameterAndFilename>::iterator AssetGroupReplacementParameters::begin() {
+std::map<std::string, ReplacementParameterAndFilename>::const_iterator AssetGroupReplacementParameters::begin() const {
     return replacement_parameters_.begin();
 }
 
-std::map<std::string, ReplacementParameterAndFilename>::iterator AssetGroupReplacementParameters::end() {
+std::map<std::string, ReplacementParameterAndFilename>::const_iterator AssetGroupReplacementParameters::end() const {
     return replacement_parameters_.end();
 }
 

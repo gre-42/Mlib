@@ -10,6 +10,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
 #include <Mlib/Scene/Render_Logics/Tab_Menu_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -21,6 +22,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(selection_marker);
+DECLARE_ARGUMENT(style);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(icon_left);
 DECLARE_ARGUMENT(icon_right);
@@ -38,14 +40,6 @@ DECLARE_ARGUMENT(on_execute);
 DECLARE_ARGUMENT(z_order);
 DECLARE_ARGUMENT(focus_mask);
 }
-
-const std::string CreateTabMenuLogic::key = "tab_menu";
-
-LoadSceneJsonUserFunction CreateTabMenuLogic::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateTabMenuLogic(args.renderable_scene()).execute(args);
-};
 
 CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
@@ -74,7 +68,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
         args.confirm_button_press,
         args.gallery,
-        ListViewStyle::ICON,
+        list_view_style_from_string(args.arguments.at<std::string>(KnownArgs::style)),
         args.arguments.at<std::string>(KnownArgs::selection_marker),
         args.arguments.path(KnownArgs::ttf_file),
         std::move(icon_widget),
@@ -100,4 +94,21 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         { tab_menu_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order, 0),
         CURRENT_SOURCE_LOCATION);
+}
+
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "tab_menu",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateTabMenuLogic(args.renderable_scene()).execute(args);            
+            });
+    }
+} obj;
+
 }

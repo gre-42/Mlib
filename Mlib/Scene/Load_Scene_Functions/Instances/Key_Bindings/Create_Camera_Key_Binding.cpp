@@ -4,6 +4,7 @@
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 
 using namespace Mlib;
@@ -13,14 +14,6 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(tpe);
 }
-
-const std::string CreateCameraKeyBinding::key = "camera_key_binding";
-
-LoadSceneJsonUserFunction CreateCameraKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateCameraKeyBinding(args.renderable_scene()).execute(args);
-};
 
 CreateCameraKeyBinding::CreateCameraKeyBinding(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
@@ -32,8 +25,24 @@ void CreateCameraKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .tpe = camera_cycle_type_from_string(args.arguments.at<std::string>(KnownArgs::tpe)),
         .button_press{
             args.button_states,
-            key_configurations,
+            args.key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             "" }
     }));
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "camera_key_binding",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateCameraKeyBinding(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

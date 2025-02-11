@@ -1,7 +1,52 @@
 #include "Base_Key_Binding.hpp"
+#include <Mlib/Strings/String.hpp>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 using namespace Mlib;
+
+std::string AnalogDigitalAxis::to_string() const {
+    std::stringstream sstr;
+    sstr << "(axis: " << axis << " (" << std::setprecision(2) << sign_and_threshold << "))";
+    return sstr.str();
+}
+
+
+std::string AnalogDigitalAxes::to_string() const {
+    std::string result;
+    if (joystick.has_value()) {
+        result = "(joystick: " + joystick->to_string() + ')';
+    }
+    if (!tap.has_value()) {
+        return result;
+    } else {
+        return '(' + result + ", tap: " + tap->to_string() + ')';
+    }
+}
+
+std::string BaseKeyBinding::to_string() const {
+    std::list<std::string> result;
+    if (!key.empty()) {
+        result.emplace_back("(key: " + key + ')');
+    }
+    if (!mouse_button.empty()) {
+        result.emplace_back("(mouse: " + mouse_button + ')');
+    }
+    if (!gamepad_button.empty()) {
+        result.emplace_back("(gamepad: " + gamepad_button + ')');
+    }
+    if (!joystick_axes.empty()) {
+        result.emplace_back("(joystick: (" + join(
+            ", ",
+            joystick_axes,
+            [](const auto& e){ return '(' + e.first + ": " + e.second.to_string() + ')'; }) + "))");
+    }
+    if (result.size() > 1) {
+        return '(' + join(" | ", result) + ')';
+    }
+    return result.empty() ? "" : result.front();
+}
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const BaseKeyBinding& base_key_binding) {
     ostr << "Base key binding\n";

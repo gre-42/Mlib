@@ -68,16 +68,16 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
             : std::nullopt,
         .button_press{
             args.button_states,
-            key_configurations,
+            args.key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
-            key_configurations,
+            args.key_configurations,
             args.arguments.at<std::string>(KnownArgs::id)),
         .gamepad_analog_axes_position{
             args.button_states,
-            key_configurations,
+            args.key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },
