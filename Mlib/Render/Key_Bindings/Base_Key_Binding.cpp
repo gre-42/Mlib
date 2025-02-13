@@ -8,10 +8,9 @@ using namespace Mlib;
 
 std::string AnalogDigitalAxis::to_string() const {
     std::stringstream sstr;
-    sstr << "(axis: " << axis << " (" << std::setprecision(2) << sign_and_threshold << "))";
+    sstr << "(axis: " << axis << ", threshold: " << std::setprecision(2) << sign_and_threshold << ")";
     return sstr.str();
 }
-
 
 std::string AnalogDigitalAxes::to_string() const {
     std::string result;

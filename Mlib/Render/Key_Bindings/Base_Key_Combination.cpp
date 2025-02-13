@@ -4,7 +4,7 @@
 using namespace Mlib;
 
 std::string BaseKeyCombination::to_string() const {
-    auto plus = join(", ", key_bindings, [](const auto& k){ return k.to_string(); });
+    auto plus = join(" & ", key_bindings, [](const auto& k){ return k.to_string(); });
     if (key_bindings.size() > 1) {
         plus = '(' + plus + ')';
     }

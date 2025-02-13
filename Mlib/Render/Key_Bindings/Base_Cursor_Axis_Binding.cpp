@@ -10,6 +10,6 @@ std::string BaseCursorAxisBinding::to_string() const {
         return "";
     }
     std::stringstream sstr;
-    sstr << "(axis: " << axis << " (" << std::setprecision(2) << sign_and_scale << "))";
+    sstr << "(axis: " << axis << ", scale: " << std::setprecision(2) << sign_and_scale << ")";
     return sstr.str();
 }

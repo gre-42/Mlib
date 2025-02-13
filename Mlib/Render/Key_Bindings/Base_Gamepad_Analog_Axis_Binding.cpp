@@ -9,7 +9,7 @@ using namespace Mlib;
 
 std::string BaseAnalogAxisBinding::to_string() const {
     std::stringstream sstr;
-    sstr << "axis: " << axis << " (" << std::setprecision(2) << sign_and_scale << ')';
+    sstr << "(axis: " << axis << ", scale: " << std::setprecision(2) << sign_and_scale << ')';
     return sstr.str();
 }
 
