@@ -109,7 +109,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         id,
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),
-            .icon = args.arguments.at<std::string>(KnownArgs::icon),
+            .icon = args.arguments.at_non_null<std::string>(KnownArgs::icon, ""),
             .requires_ = args.arguments.at<std::vector<std::string>>(KnownArgs::required, std::vector<std::string>{})
         },
         focus_filter.focus_mask,

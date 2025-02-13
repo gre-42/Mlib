@@ -1,4 +1,5 @@
 #include "Base_Key_Binding.hpp"
+#include <Mlib/Render/Key_Bindings/Input_Type.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <iomanip>
 #include <iostream>
@@ -12,34 +13,44 @@ std::string AnalogDigitalAxis::to_string() const {
     return sstr.str();
 }
 
-std::string AnalogDigitalAxes::to_string() const {
+std::string AnalogDigitalAxes::to_string(InputType filter) const {
     std::string result;
-    if (joystick.has_value()) {
+    if (joystick.has_value() && any(filter & InputType::JOYSTICK)) {
         result = "(joystick: " + joystick->to_string() + ')';
     }
-    if (!tap.has_value()) {
-        return result;
-    } else {
+    if (tap.has_value() && any(filter & InputType::TAP_BUTTON)) {
         return '(' + result + ", tap: " + tap->to_string() + ')';
+    } else {
+        return result;
     }
 }
 
-std::string BaseKeyBinding::to_string() const {
+const AnalogDigitalAxes* BaseKeyBinding::get_joystick_axis(const std::string& role) const {
+    if (auto it = joystick_axes.find(role); it != joystick_axes.end()) {
+        return &it->second;
+    }
+    if (auto it = joystick_axes.find("default"); it != joystick_axes.end()) {
+        return &it->second;
+    }
+    return nullptr;
+}
+
+std::string BaseKeyBinding::to_string(InputType filter) const {
     std::list<std::string> result;
-    if (!key.empty()) {
+    if (!key.empty() && any(filter & InputType::KEYBOARD)) {
         result.emplace_back("(key: " + key + ')');
     }
-    if (!mouse_button.empty()) {
+    if (!mouse_button.empty() && any(filter & InputType::MOUSE)) {
         result.emplace_back("(mouse: " + mouse_button + ')');
     }
-    if (!gamepad_button.empty()) {
+    if (!gamepad_button.empty() && any(filter & InputType::JOYSTICK)) {
         result.emplace_back("(gamepad: " + gamepad_button + ')');
     }
-    if (!joystick_axes.empty()) {
+    if (!joystick_axes.empty() && any(filter & InputType::JOYSTICK)) {
         result.emplace_back("(joystick: (" + join(
             ", ",
             joystick_axes,
-            [](const auto& e){ return '(' + e.first + ": " + e.second.to_string() + ')'; }) + "))");
+            [filter](const auto& e){ return '(' + e.first + ": " + e.second.to_string(filter) + ')'; }) + "))");
     }
     if (result.size() > 1) {
         return '(' + join(" | ", result) + ')';

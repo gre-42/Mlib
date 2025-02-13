@@ -5,10 +5,12 @@
 
 namespace Mlib {
 
+enum class InputType;
+
 struct BaseKeyCombination {
     std::list<BaseKeyBinding> key_bindings;
     BaseKeyBinding not_key_binding;
-    std::string to_string() const;
+    std::string to_string(InputType filter) const;
 };
 
 }

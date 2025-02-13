@@ -2,6 +2,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
+#include <Mlib/Render/Key_Bindings/Input_Type.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Description.hpp>
@@ -100,6 +101,11 @@ void KeyBindingsLogic::render_without_setup(
 {
     LOG_FUNCTION("KeyBindingsLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+    auto j = mle_.eval("%input_type");
+    if (j.type() != nlohmann::detail::value_t::string) {
+        THROW_OR_ABORT("input_type is not a string");
+    }
+    auto filter = input_type_from_string(j.get<std::string>());
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
         *renderable_text_,
@@ -107,12 +113,12 @@ void KeyBindingsLogic::render_without_setup(
         line_distance_,
         *ew,
         ly,
-        [this](size_t index)
+        [this, filter](size_t index)
         {
             const auto& d = key_descriptions_[index];
             const auto& k = key_configurations_.get(d.id);
             std::stringstream sstr;
-            sstr << std::left << std::setw(40) << d.title << ": " << k.to_string();
+            sstr << std::left << std::setw(40) << d.title << ": " << k.to_string(filter);
             return sstr.str();
         }};
     list_view_.render_and_handle_input(lx, ly, drawer);

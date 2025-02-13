@@ -6,6 +6,8 @@
 
 namespace Mlib {
 
+enum class InputType;
+
 struct AnalogDigitalAxis {
     std::string axis;
     float sign_and_threshold;
@@ -15,7 +17,7 @@ struct AnalogDigitalAxis {
 struct AnalogDigitalAxes {
     std::optional<AnalogDigitalAxis> joystick;
     std::optional<AnalogDigitalAxis> tap;
-    std::string to_string() const;
+    std::string to_string(InputType filter) const;
 };
 
 struct BaseKeyBinding {
@@ -24,16 +26,8 @@ struct BaseKeyBinding {
     std::string gamepad_button;
     std::map<std::string, AnalogDigitalAxes> joystick_axes;
     std::string tap_button;
-    inline const AnalogDigitalAxes* get_joystick_axis(const std::string& role) const {
-        if (auto it = joystick_axes.find(role); it != joystick_axes.end()) {
-            return &it->second;
-        }
-        if (auto it = joystick_axes.find("default"); it != joystick_axes.end()) {
-            return &it->second;
-        }
-        return nullptr;
-    }
-    std::string to_string() const;
+    const AnalogDigitalAxes* get_joystick_axis(const std::string& role) const;
+    std::string to_string(InputType filter) const;
 };
 
 std::ostream& operator << (std::ostream& ostr, const BaseKeyBinding& base_key_binding);

@@ -1,5 +1,5 @@
 #include "Base_Gamepad_Analog_Axis_Binding.hpp"
-#include <Mlib/Strings/String.hpp>
+#include <Mlib/Render/Key_Bindings/Input_Type.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iomanip>
@@ -13,12 +13,12 @@ std::string BaseAnalogAxisBinding::to_string() const {
     return sstr.str();
 }
 
-std::string BaseAnalogAxesBinding::to_string() const {
+std::string BaseAnalogAxesBinding::to_string(InputType filter) const {
     std::list<std::string> result;
-    if (joystick.has_value()) {
+    if (joystick.has_value() && any(filter & InputType::JOYSTICK)) {
         result.emplace_back("(joystick: " + joystick->to_string() + ')');
     }
-    if (tap.has_value()) {
+    if (tap.has_value() && any(filter & InputType::TAP_BUTTON)) {
         result.emplace_back("(tap: " + tap->to_string() + ')');
     }
     if (result.size() > 1) {
@@ -39,9 +39,13 @@ const BaseAnalogAxesBinding* BaseAnalogAxesListBinding::get_analog_axes(
     return nullptr;
 }
 
-std::string BaseAnalogAxesListBinding::to_string() const {
-    auto ts = [](const auto& e){
-        return '(' + e.first + ": " + e.second.to_string() + ')';
+std::string BaseAnalogAxesListBinding::to_string(InputType filter) const {
+    auto ts = [filter](const auto& e){
+        auto s = e.second.to_string(filter);
+        if (s.empty()) {
+            return std::string();
+        }
+        return '(' + e.first + ": " + s + ')';
     };
     if (analog_axes.size() > 1) {
         return '(' + join(" | ", analog_axes, ts) + ')';

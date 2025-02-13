@@ -3,12 +3,19 @@
 
 using namespace Mlib;
 
-std::string BaseKeyCombination::to_string() const {
-    auto plus = join(" & ", key_bindings, [](const auto& k){ return k.to_string(); });
-    if (key_bindings.size() > 1) {
+std::string BaseKeyCombination::to_string(InputType filter) const {
+    std::list<std::string> lst;
+    for (const auto& k : key_bindings) {
+        auto s = k.to_string(filter);
+        if (!s.empty()) {
+            lst.emplace_back(std::move(s));
+        }
+    }
+    auto plus = join(" & ", lst);
+    if (lst.size() > 1) {
         plus = '(' + plus + ')';
     }
-    auto minus = not_key_binding.to_string();
+    auto minus = not_key_binding.to_string(filter);
     if (!minus.empty()) {
         return '(' + plus + " without " + minus + ')';
     }

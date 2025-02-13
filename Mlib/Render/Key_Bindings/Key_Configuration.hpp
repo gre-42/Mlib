@@ -7,12 +7,14 @@
 
 namespace Mlib {
 
+enum class InputType;
+
 struct KeyConfiguration {
     BaseKeyCombination base_combo;
     BaseAnalogAxesListBinding base_gamepad_analog_axes;
     BaseCursorAxisBinding base_cursor_axis;
     BaseCursorAxisBinding base_scroll_wheel_axis;
-    std::string to_string() const;
+    std::string to_string(InputType filter) const;
 };
 
 }
