@@ -33,9 +33,10 @@ std::optional<nlohmann::json> JsonView::try_resolve(std::string_view key) const 
 }
 
 std::optional<nlohmann::json> JsonView::try_at(std::string_view name) const {
-    return j_.contains(name)
-        ? j_.at(name)
-        : std::optional<nlohmann::json>();
+    if (!j_.contains(name)) {
+        return std::nullopt;
+    }
+    return j_.at(name);
 }
 
 std::optional<nlohmann::json> JsonView::try_at_non_null(std::string_view name) const {
