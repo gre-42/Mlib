@@ -6,11 +6,11 @@
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
-#include <atomic>
 #include <vector>
 
 namespace Mlib {
 
+class UiFocus;
 class ButtonStates;
 class ThreadSafeString;
 class IWidget;
@@ -52,7 +52,7 @@ private:
 class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
-        std::string debug_hint,
+        std::string id,
         std::vector<SceneEntry> scene_files,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
@@ -63,7 +63,7 @@ public:
         MacroLineExecutor mle,
         ThreadSafeString& next_scene_filename,
         ButtonStates& button_states,
-        std::atomic_size_t& selection_index,
+        UiFocus& ui_focus,
         const std::function<void()>& on_change = [](){});
     ~SceneSelectorLogic();
 
@@ -93,6 +93,8 @@ private:
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
+    UiFocus& ui_focus_;
+    std::string id_;
     ThreadSafeString& next_scene_filename_;
     ListView list_view_;
 };

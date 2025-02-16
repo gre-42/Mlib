@@ -70,7 +70,7 @@ bool SceneEntryContents::is_visible(size_t index) const {
 }
 
 SceneSelectorLogic::SceneSelectorLogic(
-    std::string debug_hint,
+    std::string id,
     std::vector<SceneEntry> scene_files,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
@@ -81,7 +81,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     MacroLineExecutor mle,
     ThreadSafeString& next_scene_filename,
     ButtonStates& button_states,
-    std::atomic_size_t& selection_index,
+    UiFocus& ui_focus,
     const std::function<void()>& on_change)
     : mle_{ std::move(mle) }
     , renderable_text_{ std::make_unique<TextResource>(
@@ -93,11 +93,13 @@ SceneSelectorLogic::SceneSelectorLogic(
     , font_height_{ font_height }
     , line_distance_{ line_distance }
     , focus_filter_{ std::move(focus_filter) }
+    , ui_focus_{ ui_focus }
+    , id_{ std::move(id) }
     , next_scene_filename_{ next_scene_filename }
     , list_view_{
-        std::move(debug_hint),
+        "id = " + id_,
         button_states,
-        selection_index,
+        ui_focus.all_selection_ids.at(id_),
         contents_,
         ListViewOrientation::VERTICAL,
         [this, on_change]() {
@@ -150,6 +152,8 @@ FocusFilter SceneSelectorLogic::focus_filter() const {
 }
 
 void SceneSelectorLogic::merge_substitutions() const {
+    ui_focus_.all_selection_ids[id_] = list_view_.selected_element();
+
     const auto& element = scene_files_.at(list_view_.selected_element());
     const auto& on_before_select = element.on_before_select();
     if (!on_before_select.is_null()) {

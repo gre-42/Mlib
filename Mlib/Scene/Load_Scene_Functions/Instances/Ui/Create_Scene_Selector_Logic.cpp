@@ -65,7 +65,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         0);
     auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
-        "id = " + id,
+        std::move(id),
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
@@ -80,7 +80,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         args.macro_line_executor,
         args.next_scene_filename,
         args.button_states,
-        args.ui_focus.all_selection_ids.at(id),
+        args.ui_focus,
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]()
         {
             if (on_change.has_value()) {

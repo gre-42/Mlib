@@ -48,7 +48,7 @@ bool SubmenuHeaderContents::is_visible(size_t index) const {
 }
 
 TabMenuLogic::TabMenuLogic(
-    std::string debug_hint,
+    std::string id,
     Focus focus_mask,
     ButtonPress& confirm_button,
     RenderLogicGallery& gallery,
@@ -65,10 +65,10 @@ TabMenuLogic::TabMenuLogic(
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonStates& button_states,
-    std::atomic_size_t& selection_index,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
-    : focus_mask_{ focus_mask }
+    : id_{ id }
+    , focus_mask_{ focus_mask }
     , confirm_button_{ confirm_button }
     , renderable_text_{ std::make_unique<TextResource>(
         ttf_filename,
@@ -86,12 +86,15 @@ TabMenuLogic::TabMenuLogic(
     , num_renderings_{ num_renderings }
     , on_execute_{ std::move(reload_transient_objects) }
     , list_view_{
-        std::move(debug_hint),
+        "id = " + id_,
         button_states,
-        selection_index,
+        (size_t)ui_focus.menu_selection_ids[id_],
         contents_,
         ListViewOrientation::HORIZONTAL,
-        on_change }
+        [this, on_change](){
+            merge_substitutions();
+            on_change();
+        }}
 {}
 
 TabMenuLogic::~TabMenuLogic() {
@@ -115,7 +118,7 @@ void TabMenuLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("TabMenuLogic::render");
-    if (confirm_button_.keys_pressed()) {
+    if (on_execute_ && confirm_button_.keys_pressed()) {
         on_execute_();
     }
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
@@ -168,6 +171,10 @@ void TabMenuLogic::render_without_setup(
 
 FocusFilter TabMenuLogic::focus_filter() const {
     return { .focus_mask = focus_mask_ };
+}
+
+void TabMenuLogic::merge_substitutions() const {
+    ui_focus_.menu_selection_ids[id_] = list_view_.selected_element();
 }
 
 void TabMenuLogic::print(std::ostream& ostr, size_t depth) const {

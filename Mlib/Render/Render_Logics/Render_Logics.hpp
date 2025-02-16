@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-struct UiFocus;
+class UiFocus;
 template <class T>
 class DestructionFunctionsTokensObject;
 

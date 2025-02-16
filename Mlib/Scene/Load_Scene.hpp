@@ -16,7 +16,7 @@ class CursorStates;
 class ButtonPress;
 class KeyConfigurations;
 class KeyDescriptions;
-struct UiFocus;
+class UiFocus;
 class RenderLogics;
 class ThreadSafeString;
 class SurfaceContactDb;

@@ -232,7 +232,7 @@ void test_physics_engine(unsigned int seed) {
         .cull_faces = render_config.cull_faces,
         .delete_node_mutex = delete_node_mutex,
         .physics_set_fps = &physics_set_fps};
-    UiFocus ui_focus;
+    UiFocus ui_focus{""};
     RenderLogics render_logics{ui_focus};
     ObjectPool object_pool{ InObjectPoolDestructor::CLEAR };
     auto& flying_camera_logic = object_pool.create<FlyingCameraLogic>(

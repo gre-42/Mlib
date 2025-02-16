@@ -1,19 +1,30 @@
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
 
 namespace {
 
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(reason);
+}
+        
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "globals",
+            "set_requires_reload",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.external_json_macro_arguments.merge_and_notify(args.arguments);
+                args.arguments.validate(KnownArgs::options);
+                args.ui_focus.set_requires_reload(
+                    args.arguments.at<std::string>(KnownArgs::id),
+                    args.arguments.at<std::string>(KnownArgs::reason));
             });
     }
 } obj;

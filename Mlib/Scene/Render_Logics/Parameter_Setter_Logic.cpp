@@ -1,5 +1,6 @@
 #include "Parameter_Setter_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
@@ -11,6 +12,7 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
 
@@ -34,8 +36,17 @@ bool ReplacementParameterContents::is_visible(size_t index) const {
     return true;
 }
 
+size_t selected_id(const std::string& id, const std::vector<ReplacementParameter>& options) {
+    for (const auto& [i, o] : enumerate(options)) {
+        if (o.id == id) {
+            return i;
+        }
+    }
+    return 0;
+}
+
 ParameterSetterLogic::ParameterSetterLogic(
-    std::string debug_hint,
+    std::string id,
     std::vector<ReplacementParameter> options,
     ButtonPress& confirm_button,
     const std::string& ttf_filename,
@@ -45,9 +56,11 @@ ParameterSetterLogic::ParameterSetterLogic(
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
     MacroLineExecutor mle,
+    UiFocus& ui_focus,
+    std::string persisted,
     ButtonStates& button_states,
-    std::atomic_size_t& selection_index,
-    const std::function<void()>& on_change)
+    std::function<void()> on_change,
+    std::function<void()> on_execute)
     : mle_{ std::move(mle) }
     , options_{ std::move(options) }
     , contents_{options_, mle_}
@@ -59,10 +72,16 @@ ParameterSetterLogic::ParameterSetterLogic(
     , line_distance_{line_distance}
     , focus_filter_{ std::move(focus_filter) }
     , confirm_button_{ confirm_button }
+    , ui_focus_{ ui_focus }
+    , persisted_{ std::move(persisted) }
+    , id_{ std::move(id) }
+    , on_execute_{ std::move(on_execute) }
     , list_view_{
-        std::move(debug_hint),
+        "id = " + id_,
         button_states,
-        selection_index,
+        persisted_.empty()
+            ? (size_t)ui_focus.all_selection_ids.at(id_)
+            : selected_id(ui_focus.get_persisted_selection_id(persisted_), options_),
         contents_,
         ListViewOrientation::VERTICAL,
         [this, on_change](){
@@ -95,10 +114,18 @@ void ParameterSetterLogic::render_without_setup(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (const auto& f = options_.at(list_view_.selected_element()).on_execute;
-        !f.is_null() && confirm_button_.keys_pressed())
     {
-        mle_(f, nullptr, nullptr);
+        const auto& f = options_.at(list_view_.selected_element()).on_execute;
+        if (!f.is_null() || on_execute_) {
+            if (confirm_button_.keys_pressed()) {
+                if (!f.is_null()) {
+                    mle_(f, nullptr, nullptr);
+                }
+                if (on_execute_) {
+                    on_execute_();
+                }
+            }
+        }
     }
     LOG_FUNCTION("ParameterSetterLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
@@ -119,7 +146,16 @@ FocusFilter ParameterSetterLogic::focus_filter() const {
 }
 
 void ParameterSetterLogic::merge_substitutions() const {
-    const auto& f = options_.at(list_view_.selected_element()).on_before_select;
+    auto e = list_view_.selected_element();
+    const auto& element = options_.at(e);
+
+    if (persisted_.empty()) {
+        ui_focus_.all_selection_ids[id_] = e;
+    } else {
+        ui_focus_.set_persisted_selection_id(persisted_, element.id, PersistedValueType::CUSTOM);
+    }
+
+    const auto& f = element.on_before_select;
     if (!f.is_null()) {
         mle_(f, nullptr, nullptr);
     }

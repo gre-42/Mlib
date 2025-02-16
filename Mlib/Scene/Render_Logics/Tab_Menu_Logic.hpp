@@ -10,7 +10,7 @@
 namespace Mlib {
 
 enum class Focus;
-struct UiFocus;
+class UiFocus;
 struct SubmenuHeader;
 class ButtonPress;
 class ButtonStates;
@@ -62,7 +62,6 @@ public:
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
         ButtonStates& button_states,
-        std::atomic_size_t& selection_index,
         std::function<void()> on_execute,
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();
@@ -83,10 +82,12 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    void merge_substitutions() const;
+    std::string id_;
     Focus focus_mask_;
     ButtonPress& confirm_button_;
     std::unique_ptr<TextResource> renderable_text_;
-    const UiFocus& ui_focus_;
+    UiFocus& ui_focus_;
     SubmenuHeaderContents contents_;
     RenderLogicGallery& gallery_;
     ListViewStyle list_view_style_;

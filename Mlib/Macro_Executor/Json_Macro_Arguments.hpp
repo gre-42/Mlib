@@ -73,6 +73,9 @@ public:
     inline nlohmann::json&& move_json() {
         return std::move(j_);
     }
+    inline decltype(auto) items() const {
+        return j_.items();
+    }
 private:
     nlohmann::json j_;
     JsonMacroArguments as_child(const nlohmann::json& j) const;

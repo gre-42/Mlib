@@ -11,19 +11,19 @@ class MenuLogicKeys;
 
 class MenuUserClass {
 public:
-    ButtonStates &button_states;
-    Focuses &focuses;
+    ButtonStates& button_states;
+    Focuses& focuses;
 };
 
 class MenuLogic {
 public:
-    explicit MenuLogic(MenuUserClass &user_object);
+    explicit MenuLogic(MenuUserClass& user_object);
     ~MenuLogic();
 
     void handle_events();
 
 private:
-    MenuUserClass &user_object_;
+    MenuUserClass& user_object_;
     std::unique_ptr<MenuLogicKeys> keys_;
 };
 

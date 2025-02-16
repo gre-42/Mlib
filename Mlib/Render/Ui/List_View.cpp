@@ -14,7 +14,7 @@ namespace Mlib {
 ListView::ListView(
     std::string debug_hint,
     ButtonStates& button_states,
-    std::atomic_size_t& selection_index,
+    size_t selection_index,
     const IListViewContents& contents,
     ListViewOrientation orientation,
     std::function<void()> on_change)

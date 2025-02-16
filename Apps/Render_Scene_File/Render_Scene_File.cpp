@@ -187,7 +187,6 @@ JThread loader_thread(
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
-    const RenderingContext& primary_rendering_context,
     std::atomic_bool& load_scene_finished,
     const Render& render,
     std::chrono::steady_clock::duration render_delay,
@@ -542,9 +541,10 @@ int main(int argc, char** argv) {
         KeyConfigurations confirm_key_configurations;
         confirm_key_configurations.insert("confirm", { std::move(confirm_key_combination) });
         ButtonPress confirm_button_press{ button_states, confirm_key_configurations, "confirm", "" };
-        KeyConfigurations key_configurations;
-        KeyDescriptions key_descriptions;
-        UiFocus ui_focus;
+        UiFocus ui_focus{ get_path_in_appdata_directory({"focus.json"}) };
+        if (ui_focus.can_load()) {
+            ui_focus.load();
+        }
         NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 
@@ -622,6 +622,8 @@ int main(int argc, char** argv) {
             BulletPropertyDb bullet_property_db;
             DynamicLightDb dynamic_light_db;
             LayoutConstraints layout_constraints;
+            KeyConfigurations key_configurations;
+            KeyDescriptions key_descriptions;
             {
                 auto record_track_basename = args.try_named_value("--record_track_basename");
                 nlohmann::json j{
@@ -719,7 +721,6 @@ int main(int argc, char** argv) {
                     ui_focus,
                     layout_constraints,
                     load_scene,
-                    primary_rendering_context,
                     load_scene_finished,
                     render,
                     render_delay,
@@ -745,7 +746,13 @@ int main(int argc, char** argv) {
                 std::scoped_lock lock{ui_focus.focuses.mutex};
                 ui_focus.focuses.set_focuses({});
             }
-            main_scene_filename = (std::string)next_scene_filename;
+            if (auto s = (std::string)next_scene_filename; !s.empty()) {
+                main_scene_filename = s;
+            }
+        }
+
+        if (ui_focus.has_changes() && ui_focus.can_save()) {
+            ui_focus.save();
         }
 
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {

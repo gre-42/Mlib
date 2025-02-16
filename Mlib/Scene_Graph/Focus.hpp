@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Threads/Checked_Mutex.hpp>
+#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <atomic>
 #include <iosfwd>
 #include <list>
@@ -95,8 +96,14 @@ struct SubmenuHeader {
     std::vector<std::string> requires_;
 };
 
-struct UiFocus {
-    UiFocus();
+enum class PersistedValueType {
+    DEFAULT,
+    CUSTOM
+};
+
+class UiFocus {
+public:
+    explicit UiFocus(std::string filename);
     ~UiFocus();
     UiFocus(const UiFocus&) = delete;
     UiFocus& operator = (const UiFocus&) = delete;
@@ -106,6 +113,11 @@ struct UiFocus {
     std::vector<SubmenuHeader> submenu_headers;
     std::vector<Focus> focus_masks;
     std::map<std::string, std::atomic_size_t> all_selection_ids;
+    void set_persisted_selection_id(const std::string& submenu, const std::string& s, PersistedValueType cb);
+    std::string get_persisted_selection_id(const std::string& submenu) const;
+    void set_requires_reload(std::string submenu, std::string reason);
+    void clear_requires_reload(const std::string& submenu);
+    const std::map<std::string, std::string>& requires_reload() const;
     void insert_submenu(
         const std::string& id,
         const SubmenuHeader& header,
@@ -113,6 +125,18 @@ struct UiFocus {
         size_t default_selection);
     bool has_focus(const FocusFilter& focus_filter) const;
     void clear();
+    bool can_load() const;
+    bool can_save() const;
+    bool has_changes() const;
+    void load();
+    void save();
+private:
+    bool get_has_changes() const;
+    std::map<std::string, ThreadSafeString> loaded_persistent_selection_ids;
+    std::map<std::string, ThreadSafeString> current_persistent_selection_ids;
+    std::string filename_;
+    bool has_changes_;
+    std::map<std::string, std::string> requires_reload_;
 };
 
 Focus single_focus_from_string(const std::string& str);

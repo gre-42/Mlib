@@ -50,12 +50,14 @@ DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(deflt);
 DECLARE_ARGUMENT(on_change);
+DECLARE_ARGUMENT(on_execute);
 DECLARE_ARGUMENT(assets);
 DECLARE_ARGUMENT(database_filter);
 DECLARE_ARGUMENT(hide_if_trivial);
 DECLARE_ARGUMENT(parameters);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
+DECLARE_ARGUMENT(persistent);
 }
 
 CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderable_scene) 
@@ -114,9 +116,15 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         },
         focus_filter.focus_mask,
         args.arguments.at<size_t>(KnownArgs::deflt));
+    std::function<void()> on_execute;
+    if (auto ooe = args.arguments.try_at(KnownArgs::on_execute); ooe.has_value()) {
+        on_execute = [mle=args.macro_line_executor, oe=*ooe]() {
+            mle(oe, nullptr, nullptr);
+        };
+    }
     auto& parameter_setter_logic = object_pool.create<ParameterSetterLogic>(
         CURRENT_SOURCE_LOCATION,
-        "id = " + id,
+        std::move(id),
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
         args.confirm_button_press,
         args.arguments.path(KnownArgs::ttf_file),
@@ -130,13 +138,15 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         focus_filter,
         args.macro_line_executor,
+        args.ui_focus,
+        args.arguments.at<std::string>(KnownArgs::persistent, ""),
         args.button_states,
-        args.ui_focus.all_selection_ids.at(id),
-        [mle=args.macro_line_executor, on_change=args.arguments.try_at<nlohmann::json>(KnownArgs::on_change)]() {
+        [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]() {
             if (on_change.has_value() ) {
                 mle(*on_change, nullptr, nullptr);
             }
-        });
+        },
+        on_execute);
     render_logics.append(
         { parameter_setter_logic, CURRENT_SOURCE_LOCATION },
         1 /* z_order */,

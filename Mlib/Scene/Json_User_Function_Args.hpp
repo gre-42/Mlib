@@ -9,7 +9,7 @@ namespace Mlib {
 class JsonMacroArguments;
 class MacroLineExecutor;
 class NotifyingJsonMacroArguments;
-struct UiFocus;
+class UiFocus;
 class RenderLogicGallery;
 class RenderableScene;
 class RenderableScenes;
@@ -23,7 +23,6 @@ class CursorStates;
 class ButtonPress;
 class KeyConfigurations;
 class KeyDescriptions;
-struct UiFocus;
 class LayoutConstraints;
 class AssetReferences;
 struct RealtimeDependentFps;

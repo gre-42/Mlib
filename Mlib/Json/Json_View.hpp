@@ -39,11 +39,17 @@ public:
     std::optional<nlohmann::json> try_at_non_null(std::string_view name) const;
     template <class T>
     std::optional<T> try_at(std::string_view name) const {
-        return contains(name) ? at<T>(name) : std::optional<T>();
+        if (!contains(name)) {
+            return std::nullopt;
+        }
+        return at<T>(name);
     }
     template <class T>
     std::optional<T> try_at_non_null(std::string_view name) const {
-        return contains_non_null(name) ? at<T>(name) : std::optional<T>();
+        if (!contains_non_null(name)) {
+            return std::nullopt;
+        }
+        return at<T>(name);
     }
     bool contains(std::string_view name) const;
     bool contains_non_null(std::string_view name) const;

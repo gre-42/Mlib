@@ -1,7 +1,10 @@
 #include "Focus.hpp"
+#include <Mlib/Json/Base.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Threads/Containers/Thread_Safe_String_Json.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <iostream>
@@ -93,7 +96,10 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const Focuses& focuses) {
     return ostr;
 }
 
-UiFocus::UiFocus() = default;
+UiFocus::UiFocus(std::string filename)
+    : filename_{ std::move(filename) }
+    , has_changes_{ false }
+{}
 
 UiFocus::~UiFocus() = default;
 
@@ -137,6 +143,94 @@ void UiFocus::clear() {
     submenu_numbers.clear();
     submenu_headers.clear();
     focus_masks.clear();
+}
+
+void UiFocus::set_persisted_selection_id(
+    const std::string& submenu,
+    const std::string& s,
+    PersistedValueType cb)
+{
+    if (cb == PersistedValueType::CUSTOM) {
+        current_persistent_selection_ids[submenu] = s;
+        has_changes_ = get_has_changes();
+    } else if (!current_persistent_selection_ids.contains(submenu)) {
+        loaded_persistent_selection_ids[submenu] = s;
+        current_persistent_selection_ids[submenu] = s;
+    }
+}
+
+std::string UiFocus::get_persisted_selection_id(const std::string& submenu) const
+{
+    auto it = current_persistent_selection_ids.find(submenu);
+    if (it == current_persistent_selection_ids.end()) {
+        THROW_OR_ABORT("Could not find persisted submenu \"" + submenu + '"');
+    }
+    return (std::string)it->second;
+}
+
+void UiFocus::set_requires_reload(std::string submenu, std::string reason) {
+    requires_reload_.emplace(std::move(submenu), std::move(reason));
+}
+
+void UiFocus::clear_requires_reload(const std::string& submenu) {
+    requires_reload_.erase(submenu);
+}
+ const std::map<std::string, std::string>& UiFocus::requires_reload() const {
+    return requires_reload_;
+}
+
+bool UiFocus::has_changes() const {
+    return has_changes_;
+}
+
+bool UiFocus::can_load() const {
+    return !filename_.empty() && path_exists(filename_);
+}
+
+bool UiFocus::can_save() const {
+    return !filename_.empty();
+}
+
+bool UiFocus::get_has_changes() const {
+    for (const auto& [k, v] : current_persistent_selection_ids) {
+        auto it = loaded_persistent_selection_ids.find(k);
+        if (it == loaded_persistent_selection_ids.end()) {
+            return true;
+        }
+        if (it->second != v) {
+            return true;
+        }
+    }
+    for (const auto& [k, _] : loaded_persistent_selection_ids) {
+        if (!current_persistent_selection_ids.contains(k)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void UiFocus::load() {
+    auto f = create_ifstream(filename_);
+    if (f->fail()) {
+        THROW_OR_ABORT("Could not open file \"" + filename_ + "\" for read");
+    }
+    nlohmann::json j;
+    *f >> j;
+    loaded_persistent_selection_ids = j.get<std::map<std::string, ThreadSafeString>>();
+    current_persistent_selection_ids = loaded_persistent_selection_ids;
+}
+
+void UiFocus::save() {
+    auto f = create_ofstream(filename_);
+    if (f->fail()) {
+        THROW_OR_ABORT("Could not open file \"" + filename_ + "\" for write");
+    }
+    nlohmann::json j = current_persistent_selection_ids;
+    *f << j;
+    if (f->fail()) {
+        THROW_OR_ABORT("Could not write to file \"" + filename_ + '"');
+    }
+    loaded_persistent_selection_ids = current_persistent_selection_ids;
 }
 
 Focus Mlib::single_focus_from_string(const std::string& str) {

@@ -272,6 +272,8 @@ nlohmann::json Mlib::eval(
         AssetReferences{});
 }
 
+// bool
+
 template <>
 bool Mlib::eval<bool>(
     std::string_view expression,
@@ -305,6 +307,47 @@ bool Mlib::eval<bool>(
     const JsonView& variables)
 {
     return eval<bool>(
+        expression,
+        variables,
+        AssetReferences{});
+
+}
+
+// string
+
+template <>
+std::string Mlib::eval<std::string>(
+    std::string_view expression,
+    const JsonView& globals,
+    const JsonView& locals,
+    const AssetReferences& asset_references)
+{
+    auto result = eval(expression, globals, locals, asset_references);
+    if (result.type() != nlohmann::detail::value_t::string) {
+        THROW_OR_ABORT("Expression is not of type string: \"" + std::string{ expression } + '"');
+    }
+    return result;
+}
+
+template <>
+std::string Mlib::eval<std::string>(
+    std::string_view expression,
+    const JsonView& variables,
+    const AssetReferences& asset_references)
+{
+    return eval<std::string>(
+        expression,
+        variables,
+        JsonView{ nlohmann::json::object() },
+        asset_references);
+}
+
+template <>
+std::string Mlib::eval<std::string>(
+    std::string_view expression,
+    const JsonView& variables)
+{
+    return eval<std::string>(
         expression,
         variables,
         AssetReferences{});

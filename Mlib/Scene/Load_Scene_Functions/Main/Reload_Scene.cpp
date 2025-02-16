@@ -8,6 +8,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(change_scene);
 }
 
 const std::string ReloadScene::key = "reload_scene";
@@ -20,5 +21,8 @@ LoadSceneJsonUserFunction ReloadScene::json_user_function = [](const LoadSceneJs
 
 void ReloadScene::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    if (!args.arguments.at<bool>(KnownArgs::change_scene)) {
+        args.next_scene_filename = "";
+    }
     args.num_renderings = 0;
 }

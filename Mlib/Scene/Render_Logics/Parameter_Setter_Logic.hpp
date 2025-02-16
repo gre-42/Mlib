@@ -13,6 +13,7 @@
 
 namespace Mlib {
 
+class UiFocus;
 class ButtonStates;
 class IWidget;
 class ILayoutPixels;
@@ -37,7 +38,7 @@ private:
 class ParameterSetterLogic: public RenderLogic {
 public:
     ParameterSetterLogic(
-        std::string debug_hint,
+        std::string id,
         std::vector<ReplacementParameter> options,
         ButtonPress& confirm_button,
         const std::string& ttf_filename,
@@ -47,9 +48,11 @@ public:
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
         MacroLineExecutor mle,
+        UiFocus& ui_focus,
+        std::string persisted,
         ButtonStates& button_states,
-        std::atomic_size_t& selection_index,
-        const std::function<void()>& on_change = [](){});
+        const std::function<void()> on_change = [](){},
+        const std::function<void()> on_execute = [](){});
     ~ParameterSetterLogic();
 
     // RenderLogic
@@ -78,6 +81,10 @@ private:
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
     ButtonPress& confirm_button_;
+    UiFocus& ui_focus_;
+    std::string persisted_;
+    std::string id_;
+    std::function<void()> on_execute_;
     ListView list_view_;
 };
 

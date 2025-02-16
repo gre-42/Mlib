@@ -101,11 +101,8 @@ void KeyBindingsLogic::render_without_setup(
 {
     LOG_FUNCTION("KeyBindingsLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
-    auto j = mle_.eval("%input_type");
-    if (j.type() != nlohmann::detail::value_t::string) {
-        THROW_OR_ABORT("input_type is not a string");
-    }
-    auto filter = input_type_from_string(j.get<std::string>());
+    auto s = mle_.eval<std::string>("%input_type");
+    auto filter = input_type_from_string(s);
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
         *renderable_text_,

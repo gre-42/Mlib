@@ -1089,7 +1089,7 @@ int main(int argc, char** argv) {
             .button_states = button_states,
             .exit_on_escape = true};
         WindowLogic window_logic{render.glfw_window(), window_user_object};
-        UiFocus ui_focus;
+        UiFocus ui_focus{""};
         RenderLogics render_logics{ui_focus};
         FlyingCameraUserClass flying_camera_user_object{
             .button_states = button_states,

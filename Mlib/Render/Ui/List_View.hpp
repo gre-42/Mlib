@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
-#include <atomic>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -19,7 +18,7 @@ public:
     ListView(
         std::string debug_hint,
         ButtonStates& button_states,
-        std::atomic_size_t& selection_index,
+        size_t selection_index,
         const IListViewContents& contents,
         ListViewOrientation orientation,
         std::function<void()> on_change = std::function<void()>());
@@ -39,7 +38,7 @@ private:
         IListViewDrawer& drawer);
     void handle_input(size_t left, size_t right);
     std::string debug_hint_;
-    std::atomic_size_t& selection_index_;
+    size_t selection_index_;
     const IListViewContents& contents_;
     const std::function<void()> on_change_;
     ButtonPress previous_;

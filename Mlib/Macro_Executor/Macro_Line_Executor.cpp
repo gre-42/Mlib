@@ -434,3 +434,5 @@ JsonView MacroLineExecutor::block_arguments() const {
 
 template bool MacroLineExecutor::eval<bool>(const std::string& expression, const JsonView& variables) const;
 template bool MacroLineExecutor::eval<bool>(const std::string& expression) const;
+template std::string MacroLineExecutor::eval<std::string>(const std::string& expression, const JsonView& variables) const;
+template std::string MacroLineExecutor::eval<std::string>(const std::string& expression) const;

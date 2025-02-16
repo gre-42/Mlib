@@ -64,7 +64,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
     args.ui_focus.all_selection_ids.try_emplace(id, deflt);
     auto& tab_menu_logic = object_pool.create<TabMenuLogic>(
         CURRENT_SOURCE_LOCATION,
-        "id = " + id,
+        std::move(id),
         focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
         args.confirm_button_press,
         args.gallery,
@@ -81,7 +81,6 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.ui_focus,
         args.num_renderings,
         args.button_states,
-        args.ui_focus.menu_selection_ids[id],
         [macro_line_executor = args.macro_line_executor, on_execute]() {
             if (on_execute.has_value()) {
                 macro_line_executor(*on_execute, nullptr, nullptr);
