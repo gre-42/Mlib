@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class UiFocus;
 class IWidget;
 template <typename TData, size_t... tshape>
@@ -17,6 +19,7 @@ class ReloadRequired:
 public:
     ReloadRequired(
         std::string title,
+        VariableAndHash<std::string> charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,

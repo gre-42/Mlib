@@ -72,7 +72,8 @@ bool SceneEntryContents::is_visible(size_t index) const {
 SceneSelectorLogic::SceneSelectorLogic(
     std::string id,
     std::vector<SceneEntry> scene_files,
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
@@ -85,7 +86,8 @@ SceneSelectorLogic::SceneSelectorLogic(
     const std::function<void()>& on_change)
     : mle_{ std::move(mle) }
     , renderable_text_{ std::make_unique<TextResource>(
-        ttf_filename,
+        std::move(charset),
+        std::move(ttf_filename),
         font_color) }
     , scene_files_{ std::move(scene_files) }
     , contents_{ scene_files_, mle_ }

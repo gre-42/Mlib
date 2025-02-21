@@ -184,7 +184,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Blend_Map_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Bvh_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Companion_Renderable.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Cubemap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Foliage_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Sphere_Swept_Aapp.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Atlas.hpp>
@@ -419,7 +418,6 @@ LoadScene::LoadScene() {
             register_json_user_function(YplnUpdateBulletProperties::key, YplnUpdateBulletProperties::json_user_function);
 
             // Resources
-            register_json_user_function(AddCubemap::key, AddCubemap::json_user_function);
             register_json_user_function(AddAudio::key, AddAudio::json_user_function);
             register_json_user_function(AddAudioSequence::key, AddAudioSequence::json_user_function);
             register_json_user_function(AddBlendMapTexture::key, AddBlendMapTexture::json_user_function);

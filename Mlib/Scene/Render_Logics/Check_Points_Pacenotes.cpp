@@ -21,7 +21,8 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     std::unique_ptr<IWidget>&& text_widget,
     std::unique_ptr<IWidget>&& picture_widget,
     const ILayoutPixels& font_height,
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     const FixedArray<float, 3>& font_color,
     const std::string& pacenotes_filename,
     const DanglingBaseClassRef<const CheckPoints>& check_points,
@@ -36,7 +37,7 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     , font_height_{ font_height }
     , check_points_{ check_points.ptr() }
     , pacenote_reader_{ pacenotes_filename, nlaps, pacenotes_meters_read_ahead, pacenotes_minimum_covered_meters }
-    , text_{ ttf_filename, font_color }
+    , text_{ std::move(charset), std::move(ttf_filename), font_color }
     , display_{ gallery, text_, pictures_left, pictures_right }
     , focus_filter_{ std::move(focus_filter) }
     , on_destroy_check_points_{ check_points->on_destroy, CURRENT_SOURCE_LOCATION }

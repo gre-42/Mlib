@@ -1,20 +1,24 @@
+#include "stb_truetype_aligned.hpp"
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <cassert>
 #include <stb/stb_truetype.h>
 
+using namespace Mlib;
+
 // Copy&paste from stbtt_BakeFontBitmap_internal,
 // but returns the distance of the lowest character
 // to the baseline.
 float stbtt_BakeFontBitmap_get_y0(
-    unsigned char *data, int offset,        // font location (use offset=0 for plain .ttf)
-    float pixel_height,                     // height of font in pixels
-    unsigned char *pixels, int pw, int ph,  // bitmap to be filled in
-    int first_char, int num_chars,          // characters to bake
+    unsigned char *data, int offset,                        // font location (use offset=0 for plain .ttf)
+    float pixel_height,                                     // height of font in pixels
+    unsigned char *pixels, int pw, int ph,                  // bitmap to be filled in
+    const std::unordered_map<wchar_t, uint32_t>& chars,    // characters to bake
     stbtt_bakedchar *chardata)
 {
     float scale;
-    int x, y, bottom_y, i;
+    int x, y, bottom_y;
     stbtt_fontinfo f;
     f.userdata = nullptr;
     if (!stbtt_InitFont(&f, data, offset)) {
@@ -27,9 +31,9 @@ float stbtt_BakeFontBitmap_get_y0(
 
     scale = stbtt_ScaleForPixelHeight(&f, pixel_height);
 
-    for (i=0; i < num_chars; ++i) {
+    for (auto [c, i] : chars) {
         int advance, lsb, x0, y0, x1, y1, gw, gh;
-        int g = stbtt_FindGlyphIndex(&f, first_char + i);
+        int g = stbtt_FindGlyphIndex(&f, integral_cast<int>(c));
         stbtt_GetGlyphHMetrics(&f, g, &advance, &lsb);
         stbtt_GetGlyphBitmapBox(&f, g, scale, scale, &x0, &y0, &x1, &y1);
         gw = x1-x0;

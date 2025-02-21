@@ -9,6 +9,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 enum class StatusComponents;
 class StatusWriter;
 class IWidget;
@@ -20,7 +22,8 @@ public:
     VisualMovableCircularLogger(
         StatusWriter& status_writer,
         StatusComponents log_components,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         const ColormapWithModifiers& pointer_texture_name,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,

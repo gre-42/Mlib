@@ -11,6 +11,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Bullet_Count.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -18,12 +19,14 @@
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
@@ -57,6 +60,7 @@ void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs&
         physics_engine.advance_times_,
         render_logics,
         player,
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

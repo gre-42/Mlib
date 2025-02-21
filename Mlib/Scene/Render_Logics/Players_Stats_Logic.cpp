@@ -15,7 +15,8 @@ using namespace Mlib;
 
 PlayersStatsLogic::PlayersStatsLogic(
     const Players& players,
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
@@ -23,7 +24,8 @@ PlayersStatsLogic::PlayersStatsLogic(
     ScoreBoardConfiguration score_board_configuration,
     FocusFilter focus_filter)
     : RenderTextLogic{
-        ttf_filename,
+        std::move(charset),
+        std::move(ttf_filename),
         font_color,
         font_height,
         line_distance }

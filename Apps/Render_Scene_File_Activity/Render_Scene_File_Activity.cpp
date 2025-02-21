@@ -40,6 +40,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -640,6 +641,7 @@ void android_main(android_app* app) {
                     "primary_rendering_resources",
                     render_config.anisotropic_filtering_level
                 };
+                rendering_resources.add_charset(ascii, ascii_chars());
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .particle_resources = particle_resources,

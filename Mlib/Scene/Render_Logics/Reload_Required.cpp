@@ -12,6 +12,7 @@ using namespace Mlib;
 
 ReloadRequired::ReloadRequired(
     std::string title,
+    VariableAndHash<std::string> charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -20,6 +21,7 @@ ReloadRequired::ReloadRequired(
     FocusFilter focus_filter,
     UiFocus& ui_focus)
     : RenderTextLogic{
+        std::move(charset),
         std::move(ttf_filename),
         font_color,
         font_height,

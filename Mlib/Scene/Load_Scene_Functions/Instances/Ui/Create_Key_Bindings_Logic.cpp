@@ -7,6 +7,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings_Logic.hpp>
@@ -23,6 +24,7 @@ DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(title);
 DECLARE_ARGUMENT(section);
 DECLARE_ARGUMENT(required);
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
@@ -60,6 +62,7 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::section),
         args.key_descriptions,
         args.key_configurations,
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

@@ -17,7 +17,8 @@ using namespace Mlib;
 
 VisualGlobalLog::VisualGlobalLog(
     BaseLog& base_log,
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
@@ -25,7 +26,8 @@ VisualGlobalLog::VisualGlobalLog(
     size_t nentries,
     LogEntrySeverity severity)
     : RenderTextLogic{
-        ttf_filename,
+        std::move(charset),
+        std::move(ttf_filename),
         font_color,
         font_height,
         line_distance }

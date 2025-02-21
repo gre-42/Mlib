@@ -19,6 +19,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(format);
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(offset);
 DECLARE_ARGUMENT(font_color);
@@ -51,6 +52,7 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.advance_times_,
         lo,
         log_components,
+        VariableAndHash{args.arguments.path(KnownArgs::charset)},
         args.arguments.path(KnownArgs::ttf_file),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::offset),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),

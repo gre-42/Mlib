@@ -7,12 +7,15 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 enum class Focus;
 
 class ThreadTopLogic: public RenderLogic, public RenderTextLogic {
 public:
     ThreadTopLogic(
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         const FixedArray<float, 3>& color,
         const FixedArray<float, 2>& position,
         const ILayoutPixels& font_height,

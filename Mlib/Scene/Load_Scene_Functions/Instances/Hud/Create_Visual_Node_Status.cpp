@@ -8,6 +8,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Circular_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
@@ -28,6 +29,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(child);
 DECLARE_ARGUMENT(format);
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
@@ -87,6 +89,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
         logger.add_logger(std::make_unique<VisualMovableCircularLogger>(
             *lo,
             log_components,
+            args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
             args.arguments.path(KnownArgs::ttf_file),
             ColormapWithModifiers{
                 .filename = VariableAndHash{args.arguments.path(KnownArgs::pointer)},
@@ -107,6 +110,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
         logger.add_logger(std::make_unique<VisualMovableTextLogger>(
             *lo,
             log_components,
+            args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
             args.arguments.path(KnownArgs::ttf_file),
             std::move(widget),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),

@@ -23,6 +23,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 template <class TData>
@@ -228,6 +229,8 @@ public:
         FlipMode flip_mode,
         CopyBehavior copy_behavior = CopyBehavior::RAISE) const;
 
+    void add_charset(VariableAndHash<std::string> name, const std::wstring& charset);
+    const std::unordered_map<wchar_t, uint32_t>& get_charset(const VariableAndHash<std::string>& name) const;
     const LoadedFont& get_font_texture(const FontNameAndHeight& font_descriptor) const;
 
     void save_to_file(const std::string& filename, const ColormapWithModifiers& color, TextureRole role) const;
@@ -263,6 +266,7 @@ private:
     mutable ThreadsafeStringWithHashUnorderedMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable ThreadsafeStringWithHashUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
+    mutable ThreadsafeStringWithHashUnorderedMap<std::unordered_map<wchar_t, uint32_t>> charsets_;
     mutable VerboseUnorderedMap<FontNameAndHeight, LoadedFont> font_textures_;
     ThreadsafeStringWithHashUnorderedMap<VariableAndHash<std::string>> aliases_;
     ThreadsafeStringWithHashUnorderedMap<FixedArray<ScenePos, 4, 4>> vps_;

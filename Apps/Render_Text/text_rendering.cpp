@@ -14,6 +14,7 @@
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Render/Window.hpp>
@@ -85,9 +86,10 @@ int main(int argc, char** argv)
             .dpi = 96.f,
             .min_pixel = 0.f,
             .end_pixel = 800.f};
-        TextResource renderable_text{argv[1], {1.f, 0.5f, 0.5f}};
+        rendering_resources.add_charset(ascii, ascii_chars());
+        TextResource renderable_text{ascii, argv[1], {1.f, 0.5f, 0.5f}};
 
-        TextResource circular_renderable_text{argv[1], {0.5f, 1.f, 0.5f}};
+        TextResource circular_renderable_text{ascii, argv[1], {0.5f, 1.f, 0.5f}};
         std::vector<DisplayTick> ticks;
         for (int f = 0; f <= 100; f += 10) {
             ticks.push_back(DisplayTick{

@@ -19,6 +19,7 @@
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/linmath.hpp>
+#include <Mlib/Strings/Encoding.hpp>
 #include <stb/stb_truetype.h>
 
 using namespace Mlib;
@@ -52,12 +53,14 @@ SHADER_VER FRAGMENT_PRECISION
 "}";
 
 TextResource::TextResource(
+    VariableAndHash<std::string> charset,
     std::string ttf_filename,
     const FixedArray<float, 3>& color,
     size_t max_nchars)
     : loaded_font_{ nullptr }
+    , loaded_charset_{ nullptr }
     , canvas_size_{ uninitialized }
-    , font_descriptor_{ .ttf_filename = std::move(ttf_filename), .height_pixels = NAN }
+    , font_descriptor_{ .charset = std::move(charset), .ttf_filename = std::move(ttf_filename), .height_pixels = NAN }
     , color_{ color }
     , max_nchars_{ max_nchars }
     , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
@@ -67,6 +70,7 @@ TextResource::TextResource(
 
 void TextResource::deallocate() {
     loaded_font_ = nullptr;
+    loaded_charset_ = nullptr;
     font_descriptor_.hash.reset();
 }
 
@@ -82,6 +86,7 @@ void TextResource::ensure_initialized(float font_height) const
         THROW_OR_ABORT("loaded_font is not null");
     }
     loaded_font_ = &RenderingContextStack::primary_rendering_resources().get_font_texture(font_descriptor_);
+    loaded_charset_ = &RenderingContextStack::primary_rendering_resources().get_charset(font_descriptor_.charset);
     rp_.allocate(vertex_shader_text, fragment_shader_text);
     rp_.color_location = rp_.get_uniform_location("color3");
     rp_.texture_location = rp_.get_uniform_location("texture1");
@@ -115,14 +120,14 @@ void TextResource::set_contents(
         float x = center(0) ? 0.f : tp.position(0);
         float y = center(1) ? 0.f : tp.position(1) + font_height * float(tp.align == AlignText::TOP);
         size_t line_number = 0;
-        for (char cs : tp.text) {
+        for (char cs : utf8_to_wstring(tp.text)) {
             auto c = (unsigned char)cs;
             if (vdata_.size() == vdata_.capacity()) {
                 break;
             }
-            if (c >= 32 && c < 128) {
+            if (auto cit = loaded_charset_->find(c); cit != loaded_charset_->end()) {
                 stbtt_aligned_quad q;
-                stbtt_GetBakedQuad(loaded_font_->cdata.data(), TEXTURE_SIZE, TEXTURE_SIZE, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+                stbtt_GetBakedQuad(loaded_font_->cdata.data(), TEXTURE_SIZE, TEXTURE_SIZE, cit->second, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
                 // update VBO for each character
                 vdata_.push_back(Letter{
                     FixedArray<VData, 3>{

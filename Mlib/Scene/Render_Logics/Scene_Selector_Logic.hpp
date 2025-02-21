@@ -10,6 +10,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class UiFocus;
 class ButtonStates;
 class ThreadSafeString;
@@ -54,7 +56,8 @@ public:
     SceneSelectorLogic(
         std::string id,
         std::vector<SceneEntry> scene_files,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,

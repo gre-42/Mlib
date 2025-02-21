@@ -21,7 +21,8 @@ class PlayersStatsLogic: public RenderLogic, public RenderTextLogic {
 public:
     PlayersStatsLogic(
         const Players& players,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,

@@ -17,7 +17,8 @@ using namespace Mlib;
 VisualMovableCircularLogger::VisualMovableCircularLogger(
     StatusWriter& status_writer,
     StatusComponents log_components,
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     const ColormapWithModifiers& pointer_texture_name,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -31,7 +32,7 @@ VisualMovableCircularLogger::VisualMovableCircularLogger(
     const std::vector<DisplayTick>& ticks)
     : status_writer_{ status_writer }
     , log_components_{ log_components }
-    , tick_text_{ ttf_filename, font_color }
+    , tick_text_{ std::move(charset), std::move(ttf_filename), font_color }
     , pointer_image_logic_{ RenderingContextStack::primary_rendering_resources().get_texture_lazy(pointer_texture_name) }
     , display_{ tick_text_, pointer_image_logic_, minimum_value, maximum_value, blank_angle, ticks }
     , font_height_{ font_height }

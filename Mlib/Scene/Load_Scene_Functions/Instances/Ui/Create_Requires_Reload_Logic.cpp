@@ -8,11 +8,13 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Reload_Required.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -20,6 +22,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(title);
 DECLARE_ARGUMENT(style);
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
@@ -46,6 +49,7 @@ void CreateRequiresReloadLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
     auto& requires_reload_logic = object_pool.create<ReloadRequired>(
         CURRENT_SOURCE_LOCATION,
         args.arguments.at<std::string>(KnownArgs::title),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::move(widget),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),

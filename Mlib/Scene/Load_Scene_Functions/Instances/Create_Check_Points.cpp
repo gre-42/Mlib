@@ -17,6 +17,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -49,6 +50,7 @@ DECLARE_ARGUMENT(pacenotes_minimum_covered_meters);
 DECLARE_ARGUMENT(pacenotes_maximum_number);
 DECLARE_ARGUMENT(pacenotes_pictures_left);
 DECLARE_ARGUMENT(pacenotes_pictures_right);
+DECLARE_ARGUMENT(pacenotes_charset);
 DECLARE_ARGUMENT(pacenotes_ttf);
 DECLARE_ARGUMENT(pacenotes_font_color);
 DECLARE_ARGUMENT(pacenotes_font_height);
@@ -160,6 +162,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             std::move(text_widget),
             std::move(picture_widget),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_font_height)),
+            args.arguments.at<VariableAndHash<std::string>>(KnownArgs::pacenotes_charset, ascii),
             args.arguments.path(KnownArgs::pacenotes_ttf),
             args.arguments.at<UFixedArray<float, 3>>(KnownArgs::pacenotes_font_color),
             args.arguments.path(KnownArgs::pacenotes_filename),

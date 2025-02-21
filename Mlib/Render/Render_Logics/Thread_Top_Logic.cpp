@@ -15,7 +15,8 @@
 using namespace Mlib;
 
 ThreadTopLogic::ThreadTopLogic(
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     const FixedArray<float, 3>& color,
     const FixedArray<float, 2>& position,
     const ILayoutPixels& font_height,
@@ -23,7 +24,8 @@ ThreadTopLogic::ThreadTopLogic(
     std::chrono::milliseconds update_interval,
     Focus focus_mask)
     : RenderTextLogic{
-        ttf_filename,
+        std::move(charset),
+        std::move(ttf_filename),
         color,
         font_height,
         line_distance }

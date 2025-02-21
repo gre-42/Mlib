@@ -47,7 +47,8 @@ KeyBindingsLogic::KeyBindingsLogic(
     std::string section,
     const KeyDescriptions& key_descriptions,
     KeyConfigurations& key_configurations,
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
@@ -61,7 +62,8 @@ KeyBindingsLogic::KeyBindingsLogic(
     , key_configurations_{ key_configurations }
     , contents_{ std::move(section), key_descriptions_, mle_ }
     , renderable_text_{std::make_unique<TextResource>(
-        ttf_filename,
+        std::move(charset),
+        std::move(ttf_filename),
         font_color)}
     , widget_{std::move(widget)}
     , font_height_{font_height}

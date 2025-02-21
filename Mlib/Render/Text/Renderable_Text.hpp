@@ -5,7 +5,9 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Resource_Managers/Font_Name_And_Height.hpp>
+#include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Mlib {
@@ -41,6 +43,7 @@ struct LoadedFont;
 class TextResource {
 public:
     explicit TextResource(
+        VariableAndHash<std::string> charset,
         std::string ttf_filename,
         const FixedArray<float, 3>& color,
         size_t max_nchars = 3000);
@@ -71,6 +74,7 @@ private:
     mutable BufferBackgroundCopy vertices_;
     mutable VertexArray va_;
     mutable const LoadedFont* loaded_font_;
+    mutable const std::unordered_map<wchar_t, uint32_t>* loaded_charset_;
     mutable FixedArray<float, 2> canvas_size_;
     mutable TextInterpolationMode interpolation_mode_;
 

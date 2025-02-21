@@ -18,7 +18,8 @@ using namespace Mlib;
 
 CountDownLogic::CountDownLogic(
     DanglingRef<SceneNode> node,
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     const FixedArray<float, 3>& color,
     const FixedArray<float, 2>& position,
     const ILayoutPixels& font_height,
@@ -29,7 +30,8 @@ CountDownLogic::CountDownLogic(
     std::string text,
     Focuses& focuses)
     : RenderTextLogic{
-        ttf_filename,
+        std::move(charset),
+        std::move(ttf_filename),
         color,
         font_height,
         line_distance }

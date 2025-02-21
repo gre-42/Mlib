@@ -6,6 +6,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 enum class StatusComponents;
 class TextResource;
 class StatusWriter;
@@ -16,7 +18,8 @@ public:
     VisualMovableTextLogger(
         StatusWriter& status_writer,
         StatusComponents log_components,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance);

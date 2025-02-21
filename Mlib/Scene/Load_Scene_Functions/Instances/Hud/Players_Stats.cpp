@@ -7,17 +7,20 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(z_order);
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
@@ -48,6 +51,7 @@ void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& players_stats_logic = object_pool.create<PlayersStatsLogic>(
         CURRENT_SOURCE_LOCATION,
         players,
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

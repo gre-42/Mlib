@@ -4,6 +4,7 @@
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Strings/Encoding.hpp>
 
 using namespace Mlib;
 
@@ -11,20 +12,20 @@ namespace {
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(alias);
-DECLARE_ARGUMENT(filenames);
+DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(chars);
 }
         
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "add_cubemap",
+            "add_charset",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                RenderingContextStack::primary_rendering_resources().add_cubemap(
-                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::alias),
-                    args.arguments.pathes_or_variables(KnownArgs::filenames, [](const FPath& p) { return VariableAndHash{ p.path }; }));
+                RenderingContextStack::primary_rendering_resources().add_charset(
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
+                    utf8_to_wstring(args.arguments.at<std::string>(KnownArgs::chars)));
             });
     }
 } obj;

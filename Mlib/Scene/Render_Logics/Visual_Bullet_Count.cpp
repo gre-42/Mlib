@@ -19,14 +19,16 @@ VisualBulletCount::VisualBulletCount(
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
     const DanglingBaseClassRef<Player>& player,
-    const std::string& ttf_filename,
+    VariableAndHash<std::string> charset,
+    std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter)
     : RenderTextLogic{
-        ttf_filename,
+        std::move(charset),
+        std::move(ttf_filename),
         font_color,
         font_height,
         line_distance }

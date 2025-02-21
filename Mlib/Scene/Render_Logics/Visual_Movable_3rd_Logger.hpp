@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
 #include <memory>
 
@@ -32,6 +33,7 @@ public:
         AdvanceTimes& advance_times,
         StatusWriter& status_writer,
         StatusComponents log_components,
+        VariableAndHash<std::string> charset,
         std::string ttf_filename,
         const FixedArray<float, 2>& offset,
         const FixedArray<float, 3>& font_color,
@@ -69,6 +71,7 @@ private:
     FixedArray<float, 2> offset_;
     FixedArray<float, 3> font_color_;
     const ILayoutPixels& line_distance_;
+    VariableAndHash<std::string> charset_;
     std::string ttf_filename_;
     const ILayoutPixels& font_height_;
 };

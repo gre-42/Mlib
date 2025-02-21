@@ -25,6 +25,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     AdvanceTimes& advance_times,
     StatusWriter& status_writer,
     StatusComponents log_components,
+    VariableAndHash<std::string> charset,
     std::string ttf_filename,
     const FixedArray<float, 2>& offset,
     const FixedArray<float, 3>& font_color,
@@ -38,6 +39,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     , offset_{ offset }
     , font_color_{ font_color }
     , line_distance_{ line_distance }
+    , charset_{ std::move(charset) }
     , ttf_filename_{ std::move(ttf_filename) }
     , font_height_{ font_height }
 {
@@ -89,6 +91,7 @@ void VisualMovable3rdLogger::render_with_setup(
     }
     if (renderable_text_ == nullptr) {
         renderable_text_ = std::make_unique<TextResource>(
+            charset_,
             ttf_filename_,
             font_color_);
     }

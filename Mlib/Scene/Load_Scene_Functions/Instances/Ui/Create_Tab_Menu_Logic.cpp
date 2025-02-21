@@ -9,12 +9,14 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
 #include <Mlib/Scene/Render_Logics/Tab_Menu_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -23,6 +25,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(selection_marker);
 DECLARE_ARGUMENT(style);
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(icon_left);
 DECLARE_ARGUMENT(icon_right);
@@ -70,6 +73,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.gallery,
         list_view_style_from_string(args.arguments.at<std::string>(KnownArgs::style)),
         args.arguments.at<std::string>(KnownArgs::selection_marker),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::move(icon_widget),
         std::move(widget),

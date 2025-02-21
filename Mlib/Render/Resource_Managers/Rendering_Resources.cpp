@@ -630,6 +630,7 @@ RenderingResources::RenderingResources(
         "Auto atlas tile descriptor",
         [](const ColormapWithModifiers& e) { return *e.filename; } }
     , cubemap_descriptors_{ "Cubemap descriptor" }
+    , charsets_{ "Charset" }
     , font_textures_{ "Font", [](const auto& e) { return e.ttf_filename; } }
     , aliases_{ "Alias" }
     , vps_{ "VP" }
@@ -1570,6 +1571,18 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const RenderingResources& r
     return ostr;
 }
 
+void RenderingResources::add_charset(VariableAndHash<std::string> name, const std::wstring& charset) {
+    UnorderedMap<wchar_t, uint32_t> charset_map;
+    for (const auto& [i, c] : enumerate(charset)) {
+        charset_map.add(c, i);
+    }
+    charsets_.add(std::move(name), std::move(charset_map));
+}
+
+const std::unordered_map<wchar_t, uint32_t>& RenderingResources::get_charset(const VariableAndHash<std::string>& name) const {
+    return charsets_.get(name);
+}
+
 const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& font_descriptor) const
 {
     {
@@ -1582,22 +1595,20 @@ const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& 
     if (auto it = font_textures_.try_get(font_descriptor); it != nullptr) {
         return *it;
     }
+    const auto& charset = charsets_.get(font_descriptor.charset);
     LoadedFont font;
     {
         const size_t TEXTURE_SIZE = 1024;
         std::vector<unsigned char> temp_bitmap(TEXTURE_SIZE * TEXTURE_SIZE);
         {
             std::vector<uint8_t> ttf_buffer = read_file_bytes(font_descriptor.ttf_filename);
-            // ASCII 32..126 is 95 glyphs
-            font.cdata.resize(96);
-            font.bottom_y = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_descriptor.height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, font.cdata.data()); // no guarantee this fits!
-            // can free ttf_buffer at this point
+            font.cdata.resize(charset.size());
+            font.bottom_y = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_descriptor.height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, charset, font.cdata.data()); // no guarantee this fits!
         }
         CHK(glGenTextures(1, &font.texture_handle));
         CHK(glBindTexture(GL_TEXTURE_2D, font.texture_handle));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
-        // can free temp_bitmap at this point
     }
     return font_textures_.add(font_descriptor, std::move(font));
 }

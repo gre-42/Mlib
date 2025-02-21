@@ -12,6 +12,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class ButtonStates;
 class IWidget;
 class ILayoutPixels;
@@ -44,7 +46,8 @@ public:
         std::string section,
         const KeyDescriptions& key_descriptions,
         KeyConfigurations& key_configurations,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,

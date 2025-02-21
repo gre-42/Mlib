@@ -4,21 +4,23 @@
 using namespace Mlib;
 
 RenderTextLogic::RenderTextLogic(
+    VariableAndHash<std::string> charset,
     std::string ttf_filename,
     const FixedArray<float, 3>& color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
-: line_distance_{line_distance},
-  font_height_{font_height},
-  ttf_filename_{std::move(ttf_filename)},
-  color_{color}
+    : line_distance_{line_distance}
+    , font_height_{font_height}
+    , charset_{std::move(charset)}
+    , ttf_filename_{std::move(ttf_filename)}
+    , color_{color}
 {}
 
 RenderTextLogic::~RenderTextLogic() = default;
 
 TextResource& RenderTextLogic::renderable_text() const {
     if (renderable_text_ == nullptr) {
-        renderable_text_ = std::make_unique<TextResource>(ttf_filename_, color_);
+        renderable_text_ = std::make_unique<TextResource>(charset_, ttf_filename_, color_);
     }
     return *renderable_text_;
 }

@@ -10,6 +10,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class AdvanceTimes;
 class TextResource;
 class Player;
@@ -30,7 +32,8 @@ public:
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
         const DanglingBaseClassRef<Player>& player,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,

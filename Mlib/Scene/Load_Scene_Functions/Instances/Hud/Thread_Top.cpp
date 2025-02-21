@@ -6,13 +6,16 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Thread_Top_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(font_color);
@@ -38,6 +41,7 @@ void ThreadTop::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& loading_logic = object_pool.create<ThreadTopLogic>(
         CURRENT_SOURCE_LOCATION,
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
         args.arguments.path(KnownArgs::ttf_file),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::position),

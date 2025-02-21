@@ -32,6 +32,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Descriptions.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Render/Ui/Static_Renderable_Hider.hpp>
@@ -667,6 +668,7 @@ int main(int argc, char** argv) {
                     "primary_rendering_resources",
                     render_config.anisotropic_filtering_level
                 };
+                rendering_resources.add_charset(ascii, ascii_chars());
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .particle_resources = particle_resources,

@@ -13,6 +13,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class SceneNode;
 class CheckPoints;
 class RenderLogicGallery;
@@ -30,7 +32,8 @@ public:
         std::unique_ptr<IWidget>&& text_widget,
         std::unique_ptr<IWidget>&& picture_widget,
         const ILayoutPixels& font_height,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         const FixedArray<float, 3>& font_color,
         const std::string& pacenotes_filename,
         const DanglingBaseClassRef<const CheckPoints>& check_points,

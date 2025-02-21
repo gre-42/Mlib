@@ -9,6 +9,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 enum class Focus;
 class UiFocus;
 struct SubmenuHeader;
@@ -51,7 +53,8 @@ public:
         RenderLogicGallery& gallery,
         ListViewStyle list_view_style,
         const std::string& selection_marker,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         std::unique_ptr<IWidget>&& icon_widget,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,

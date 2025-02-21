@@ -8,6 +8,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Data_Display/Visual_Global_Log.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -16,6 +17,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
@@ -45,6 +47,7 @@ void CreateVisualGlobalLog::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& logger = object_pool.create<VisualGlobalLog>(
         CURRENT_SOURCE_LOCATION,
         base_log,
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

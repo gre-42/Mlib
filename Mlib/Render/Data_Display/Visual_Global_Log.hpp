@@ -6,6 +6,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class TextResource;
 class BaseLog;
 enum class LogEntrySeverity;
@@ -17,7 +19,8 @@ class VisualGlobalLog: public RenderLogic, public RenderTextLogic {
 public:
     VisualGlobalLog(
         BaseLog& base_log,
-        const std::string& ttf_filename,
+        VariableAndHash<std::string> charset,
+        std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
