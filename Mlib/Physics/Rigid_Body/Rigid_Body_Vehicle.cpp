@@ -870,7 +870,7 @@ void RigidBodyVehicle::write_status(
     }
     if (log_components & StatusComponents::DRIVER_NAME) {
         if (auto driver = drivers_.try_get("driver"); driver != nullptr) {
-            ostr << "Driver: " << driver->name() << std::endl;
+            ostr << "Driver: " << driver->title() << std::endl;
         }
     }
     for (const auto& o : collision_observers_) {

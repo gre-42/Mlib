@@ -14,6 +14,7 @@ BEGIN_MATCH_COUNTER;
 DECLARE_MATCH_COUNTER(group);
 DECLARE_MATCH_COUNTER(asset_id);
 DECLARE_MATCH_COUNTER(value);
+DECLARE_MATCH_COUNTER(key);
 };
 
 namespace DictQueryGroups {
@@ -83,16 +84,32 @@ static nlohmann::json eval_recursion(
             THROW_OR_ABORT("Received empty substitution variable");
         }
         if (s[0] == '$') {
-            static const auto query_re = seq(adot, NSL, sl, NSL, sl, W, eof);
-            SMatch<4> match;
+            static const auto query_re = seq(adot, NSL, sl, NSL, sl, W, opt(seq(sl, NSL)), eof);
+            SMatch<5> match;
             if (!regex_match(s, match, query_re)) {
                 THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ s } + '"');
             }
-            return asset_references[subst(match[DbQueryGroups::group].str())]
+            const auto& db = asset_references[subst(match[DbQueryGroups::group].str())]
                 .at(subst(match[DbQueryGroups::asset_id].str()))
                 .rp
-                .database
-                .at<std::string>(match[DbQueryGroups::value].str());
+                .database;
+            if (match[DbQueryGroups::key].matched) {
+                auto res = db.at(match[DbQueryGroups::value].str());
+                if (res.type() != nlohmann::detail::value_t::object) {
+                    THROW_OR_ABORT("Database value is not of type object: \"" + std::string{ s } + '"');
+                }
+                auto key = subst(match[DbQueryGroups::key].str());
+                auto it = res.find(key);
+                if (it == res.end()) {
+                    THROW_OR_ABORT("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ s } + '"');
+                }
+                if (it->type() != nlohmann::detail::value_t::string) {
+                    THROW_OR_ABORT("Database value is not of type string: \"" + std::string{ s } + '"');
+                }
+                return it->get<std::string>();
+            } else {
+                return db.at<std::string>(match[DbQueryGroups::value].str());
+            }
         }
         const auto& v = at(s, globals.json(), locals.json());
         if (v.type() != nlohmann::detail::value_t::string) {
@@ -202,16 +219,29 @@ static nlohmann::json eval_recursion(
         nlohmann::json var;
         if ((expression.length() > 1) && (expression[1] == '%')) {
             // static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)/(\\w+)$");
-            static const auto query_re = seq(adot, adot, NSL, sl, NSL, sl, W, eof);
-            SMatch<4> match;
+            static const auto query_re = seq(adot, adot, NSL, sl, NSL, sl, W, opt(seq(sl, NSL)), eof);
+            SMatch<5> match;
             if (!regex_match(expression, match, query_re)) {
                 THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ expression } + '"');
             }
-            var = asset_references[subst(match[DbQueryGroups::group].str())]
+            const auto& db = asset_references[subst(match[DbQueryGroups::group].str())]
                 .at(subst(match[DbQueryGroups::asset_id].str()))
                 .rp
-                .database
-                .at(match[DbQueryGroups::value].str());
+                .database;
+            if (match[DbQueryGroups::key].matched) {
+                auto res = db.at(match[DbQueryGroups::value].str());
+                if (res.type() != nlohmann::detail::value_t::object) {
+                    THROW_OR_ABORT("Database value is not of type object: \"" + std::string{ expression } + '"');
+                }
+                auto key = subst(match[DbQueryGroups::key].str());
+                auto it = res.find(key);
+                if (it == res.end()) {
+                    THROW_OR_ABORT("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ expression } + '"');
+                }
+                var = *it;
+            } else {
+                var = db.at(match[DbQueryGroups::value].str());
+            }
         } else if ((expression.length() > 1) && (expression[1] == '/')) {
             // static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)$");
             static const auto query_re = seq(adot, adot, NSL, sl, NSL, eof);

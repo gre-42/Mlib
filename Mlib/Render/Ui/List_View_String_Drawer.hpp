@@ -21,7 +21,7 @@ public:
         const ILayoutPixels& line_distance,
         const IPixelRegion& ew,
         const LayoutConstraintParameters& ly,
-        const std::function<std::string(size_t)>& transformation);
+        std::function<std::string(size_t)> transformation);
     // IListViewDrawer
     virtual size_t max_entries_visible() const override;
     virtual void draw_left_dots() override;

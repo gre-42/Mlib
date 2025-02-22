@@ -16,8 +16,9 @@ class DestructionFunctions;
 
 class IPlayer {
 public:
-    virtual const std::string& name() const = 0;
-    virtual std::optional<std::string> target_name() const = 0;
+    virtual std::string id() const = 0;
+    virtual std::string title() const = 0;
+    virtual std::optional<std::string> target_id() const = 0;
     virtual void notify_race_started() = 0;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,

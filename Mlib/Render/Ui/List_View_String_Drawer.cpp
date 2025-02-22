@@ -16,9 +16,9 @@ ListViewStringDrawer::ListViewStringDrawer(
     const ILayoutPixels& line_distance,
     const IPixelRegion& ew,
     const LayoutConstraintParameters& ly,
-    const std::function<std::string(size_t)>& transformation)
+    std::function<std::string(size_t)> transformation)
 : orientation_{orientation},
-  transformation_{transformation},
+  transformation_{std::move(transformation)},
   font_height_{font_height},
   line_distance_{line_distance},
   renderable_text_{renderable_text},

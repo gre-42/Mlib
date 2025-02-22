@@ -89,7 +89,7 @@ Player::Player(
     CollisionQuery& collision_query,
     VehicleSpawners& vehicle_spawners,
     Players& players,
-    std::string name,
+    std::string id,
     std::string team,
     GameMode game_mode,
     UnstuckMode unstuck_mode,
@@ -103,7 +103,7 @@ Player::Player(
     , collision_query_{ collision_query }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
-    , name_{ std::move(name) }
+    , id_{ std::move(id) }
     , team_{ std::move(team) }
     , vehicle_{ nullptr }
     , controlled_{ .gun_node = nullptr }
@@ -183,7 +183,7 @@ void Player::reset_node() {
         }
         if (target_scene_node_ != nullptr) {
             target_scene_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-            target_name_.reset();
+            target_id_.reset();
             target_scene_node_ = nullptr;
             target_rb_ = nullptr;
         }
@@ -281,9 +281,13 @@ void Player::change_gun_node(DanglingPtr<SceneNode> gun_node) {
     }
 }
 
-const std::string& Player::name() const {
+std::string Player::id() const {
     std::shared_lock lock{ mutex_ };
-    return name_;
+    return id_;
+}
+
+std::string Player::title() const {
+    return id();
 }
 
 const std::string& Player::team_name() const {
@@ -406,7 +410,7 @@ void Player::notify_destroyed(SceneNode& destroyed_object) {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (&destroyed_object == &target_scene_node_.obj()) {
-        target_name_.reset();
+        target_id_.reset();
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
@@ -545,7 +549,7 @@ bool Player::unstuck() {
 FixedArray<float, 3> Player::gun_direction() const {
     std::shared_lock lock{ mutex_ };
     if (controlled_.gun_node == nullptr) {
-        THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + name() + '"');
+        THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + id() + '"');
     }
     return -z3_from_3x3(gun().absolute_model_matrix().R);
 }
@@ -553,7 +557,7 @@ FixedArray<float, 3> Player::gun_direction() const {
 FixedArray<float, 3> Player::punch_angle() const {
     std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node == nullptr) {
-        THROW_OR_ABORT("punch_angle despite gun nullptr in player \"" + name() + '"');
+        THROW_OR_ABORT("punch_angle despite gun nullptr in player \"" + id() + '"');
     }
     return gun().punch_angle();
 }
@@ -681,7 +685,7 @@ void Player::aim_and_shoot() {
         return;
     }
     assert_true((target_scene_node_ == nullptr) == (target_rb_ == nullptr));
-    assert_true((target_scene_node_ != nullptr) == (target_name_.has_value()));
+    assert_true((target_scene_node_ != nullptr) == (target_id_.has_value()));
     if (skills_.skills(ControlSource::AI).can_select_opponent) {
         select_opponent(OpponentSelectionStrategy::BEST);
     } else {
@@ -720,7 +724,7 @@ void Player::select_best_weapon_in_inventory() {
     if (!best_weapon.has_value()) {
         return;
     }
-    weapon_cycle().set_desired_weapon(name_, *best_weapon);
+    weapon_cycle().set_desired_weapon(id_, *best_weapon);
 }
 
 bool Player::ramming() const {
@@ -728,9 +732,9 @@ bool Player::ramming() const {
     return (game_mode_ == GameMode::RAMMING) && (target_rb_ != nullptr);
 }
 
-std::optional<std::string> Player::target_name() const {
+std::optional<std::string> Player::target_id() const {
     std::shared_lock lock{ mutex_ };
-    return target_name_;
+    return target_id_;
 }
 
 DanglingPtr<SceneNode> Player::target_scene_node() const {
@@ -855,7 +859,7 @@ void Player::clear_opponent() {
         THROW_OR_ABORT("Player has no opponent");
     }
     target_scene_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-    target_name_.reset();
+    target_id_.reset();
     target_scene_node_ = nullptr;
     target_rb_ = nullptr;
 }
@@ -868,7 +872,7 @@ void Player::set_opponent(const Player& opponent) {
     if (opponent.vehicle_ == nullptr) {
         THROW_OR_ABORT("Opponent has no avatar or vehicle");
     }
-    target_name_ = opponent.vehicle_->scene_node_name();
+    target_id_ = opponent.vehicle_->scene_node_name();
     target_scene_node_ = opponent.vehicle_->scene_node().ptr();
     target_rb_ = &opponent.vehicle_->rb();
     target_scene_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
@@ -970,7 +974,7 @@ void Player::create_vehicle_externals(ExternalsMode externals_mode) {
         delete_vehicle_internals.print_source_locations();
         THROW_OR_ABORT("Vehicle internals not empty while adding externals");
     }
-    vehicle_->create_vehicle_externals(name(), externals_mode, behavior_);
+    vehicle_->create_vehicle_externals(id(), externals_mode, behavior_);
     std::scoped_lock lock{ mutex_ };
     externals_mode_ = externals_mode;
 }
@@ -990,7 +994,7 @@ void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
         delete_vehicle_internals.print_source_locations();
         THROW_OR_ABORT("Create internals set after deleters were added");
     }
-    vehicle_->create_vehicle_internals(name(), externals_mode_, skills_, behavior_, internals_mode);
+    vehicle_->create_vehicle_internals(id(), externals_mode_, skills_, behavior_, internals_mode);
     std::scoped_lock lock{ mutex_ };
     internals_mode_ = internals_mode;
 }
@@ -1077,7 +1081,7 @@ void Player::append_dependent_node(std::string node_name) {
     std::scoped_lock lock{ mutex_ };
     auto node = scene_.get_node(node_name, DP_LOC);
     if (!dependent_nodes_.try_emplace(node.ptr(), std::move(node_name)).second) {
-        THROW_OR_ABORT("Node \"" + node_name + "\" already is a dependent node of player \"" + name() + '"');
+        THROW_OR_ABORT("Node \"" + node_name + "\" already is a dependent node of player \"" + id() + '"');
     }
     node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION }, ObserverAlreadyExistsBehavior::IGNORE);
 }
@@ -1144,7 +1148,7 @@ bool Player::has_way_points() const {
 void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
     std::scoped_lock lock{ mutex_ };
     if (!navigate_.has_way_points()) {
-        THROW_OR_ABORT("Player \"" + name_ + "\" has no waypoints");
+        THROW_OR_ABORT("Player \"" + id_ + "\" has no waypoints");
     }
     auto final_filter = joined_way_point_sandbox_ & filter;
     size_t nfound = 0;
@@ -1154,7 +1158,7 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
         }
         if (nfound != 0) {
             THROW_OR_ABORT(
-                "Player \"" + name_ + "\": Found multiple waypoints for final filter \"" +
+                "Player \"" + id_ + "\": Found multiple waypoints for final filter \"" +
                 joined_way_point_sandbox_to_string(final_filter) + '"');
         }
         pathfinding_waypoints_.set_waypoints(wp);
@@ -1163,7 +1167,7 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
     }
     if (nfound == 0) {
         THROW_OR_ABORT(
-            "Player \"" + name_ + "\": Could not find waypoints for final filter \"" +
+            "Player \"" + id_ + "\": Could not find waypoints for final filter \"" +
             joined_way_point_sandbox_to_string(final_filter) + '"');
     }
 }

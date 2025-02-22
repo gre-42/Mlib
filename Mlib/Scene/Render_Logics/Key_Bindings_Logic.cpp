@@ -11,6 +11,7 @@
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
+#include <Mlib/Strings/Encoding.hpp>
 #include <iomanip>
 #include <sstream>
 
@@ -116,9 +117,9 @@ void KeyBindingsLogic::render_without_setup(
         {
             const auto& d = key_descriptions_[index];
             const auto& k = key_configurations_.get(d.id);
-            std::stringstream sstr;
-            sstr << std::left << std::setw(40) << d.title << ": " << k.to_string(filter);
-            return sstr.str();
+            std::wstringstream sstr;
+            sstr << std::left << std::setw(40) << utf8_to_wstring(d.title);
+            return wstring_to_utf8(sstr.str()) + ": " + k.to_string(filter);
         }};
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();

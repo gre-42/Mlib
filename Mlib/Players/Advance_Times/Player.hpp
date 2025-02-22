@@ -115,7 +115,7 @@ public:
         CollisionQuery& collision_query,
         VehicleSpawners& vehicle_spawners,
         Players& players,
-        std::string name,
+        std::string id,
         std::string team,
         GameMode game_mode,
         UnstuckMode unstuck_mode,
@@ -213,8 +213,9 @@ public:
     PlaybackWaypoints& playback_waypoints();
 
     // IPlayer
-    virtual const std::string& name() const override;
-    virtual std::optional<std::string> target_name() const override;
+    virtual std::string id() const override;
+    virtual std::string title() const override;
+    virtual std::optional<std::string> target_id() const override;
     virtual void notify_race_started() override;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
@@ -256,11 +257,11 @@ private:
     CollisionQuery& collision_query_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
-    std::string name_;
+    std::string id_;
     std::string team_;
     SceneVehicle* vehicle_;
     PlayerControlled controlled_;
-    std::optional<std::string> target_name_;
+    std::optional<std::string> target_id_;
     DanglingPtr<SceneNode> target_scene_node_;
     RigidBodyVehicle* target_rb_;
     PlayerStats stats_;

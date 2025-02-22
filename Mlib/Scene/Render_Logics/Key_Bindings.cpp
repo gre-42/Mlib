@@ -599,9 +599,9 @@ void KeyBindings::increment_external_forces(
         if (enable_controls && !std::isnan(alpha)) {
             auto& wc = k->player->weapon_cycle();
             if (k->direction == 1) {
-                wc.equip_next_weapon(k->player->name());
+                wc.equip_next_weapon(k->player->id());
             } else if (k->direction == -1) {
-                wc.equip_previous_weapon(k->player->name());
+                wc.equip_previous_weapon(k->player->id());
             } else {
                 THROW_OR_ABORT("Weapon cycle direction not -1 or 1");
             }

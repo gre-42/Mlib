@@ -134,7 +134,7 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
     }
     if (generate_smart_bullet_ &&
         (player_ != nullptr) &&
-        !player_->target_name().has_value())
+        !player_->target_id().has_value())
     {
         return false;
     }
@@ -165,9 +165,9 @@ void Gun::generate_bullet(const StaticWorld& world) {
             RenderingDynamics::MOVING,
             RenderingStrategies::OBJECT);
         generate_smart_bullet_(
-            player_ == nullptr ? std::nullopt : std::optional{ player_->name() },
+            player_ == nullptr ? std::nullopt : std::optional{ player_->id() },
             suffix,
-            player_ == nullptr ? std::nullopt : std::optional{ player_->target_name() },
+            player_ == nullptr ? std::nullopt : std::optional{ player_->target_id() },
             bullet_velocity,
             parent_rb_.rbp_.w_);
         auto& rc = get_rigid_body_vehicle(np);

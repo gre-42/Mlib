@@ -57,10 +57,10 @@ void Crash::notify_impact(
                 auto driver1 = rigid_body.drivers_.try_get("driver");
                 if ((driver0 != nullptr) && (driver1 != nullptr)) {
                     if (damage0 != 0) {
-                        sstr << driver1->name() << " -> " << driver0->name() << ": " << std::round(damage0) << " HP";
+                        sstr << driver1->title() << " -> " << driver0->title() << ": " << std::round(damage0) << " HP";
                     }
                     if (damage1 != 0) {
-                        sstr << driver0->name() << " -> " << driver1->name() << ": " << std::round(damage1) << " HP";
+                        sstr << driver0->title() << " -> " << driver1->title() << ": " << std::round(damage1) << " HP";
                     }
                 }
                 if (damage0 < 1 && damage1 < 1) {

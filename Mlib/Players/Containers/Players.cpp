@@ -38,13 +38,13 @@ Players::~Players() {
 }
 
 void Players::add_player(const DanglingBaseClassRef<Player>& player) {
-    std::string player_name = player->name();
+    std::string player_id = player->id();
     {
-        auto pit = players_.try_emplace(player->name(), player, CURRENT_SOURCE_LOCATION);
+        auto pit = players_.try_emplace(player_id, player, CURRENT_SOURCE_LOCATION);
         if (!pit.second) {
-            THROW_OR_ABORT("Player with name \"" + player_name + "\" already exists");
+            THROW_OR_ABORT("Player with id \"" + player_id + "\" already exists");
         }
-        pit.first->second.on_destroy([this, player]() { remove_player(player->name()); }, CURRENT_SOURCE_LOCATION);
+        pit.first->second.on_destroy([this, player_id]() { remove_player(player_id); }, CURRENT_SOURCE_LOCATION);
     }
 
     if (!teams_.contains(player->team_name())) {
@@ -55,7 +55,7 @@ void Players::add_player(const DanglingBaseClassRef<Player>& player) {
         }
         tit.first->second.on_destroy([this, team]() { remove_team(team->name()); }, CURRENT_SOURCE_LOCATION);
     }
-    teams_.at(player->team_name())->add_player(player->name());
+    teams_.at(player->team_name())->add_player(player_id);
 }
 
 void Players::remove_player(const std::string& name) {
@@ -125,7 +125,7 @@ RaceState Players::notify_lap_finished(
     return race_history_->notify_lap_finished(
         {
             .race_time_seconds = race_time_seconds,
-            .player_name = player->name(),
+            .player_name = player->title(),
             .vehicle = asset_id,
             .vehicle_colors = vehicle_colors
         },
@@ -233,7 +233,7 @@ size_t Players::nactive() const {
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Players& players) {
     for (const auto& p : players.players_) {
-        ostr << p.second->name() << '\n';
+        ostr << p.second->title() << '\n';
     }
     return ostr;
 }
