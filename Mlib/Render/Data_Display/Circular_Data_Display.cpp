@@ -87,7 +87,7 @@ void CircularDataDisplay::ensure_initialized(
             .position = canvas_size / 2.f + tick_radius * FixedArray<float, 2>{
                 std::cos(angle),
                 -std::sin(angle)},
-            .align = AlignText::TOP,
+            .align = VerticalTextAlignment::TOP,
             .line_distance = 0.f});
     }
     tick_text_.set_contents(font_height, canvas_size, text_interpolation_mode, contents);

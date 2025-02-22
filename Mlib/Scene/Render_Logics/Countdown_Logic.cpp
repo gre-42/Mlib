@@ -86,7 +86,7 @@ void CountDownLogic::render_without_setup(
             text_.empty()
                 ? std::to_string((unsigned int)std::ceil((duration_ - elapsed) / seconds))
                 : text_,
-            AlignText::BOTTOM,
+            VerticalTextAlignment::BOTTOM,
             TextInterpolationMode::NEAREST_NEIGHBOR,
             line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
     }

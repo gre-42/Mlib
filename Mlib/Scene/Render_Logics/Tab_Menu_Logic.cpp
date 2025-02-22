@@ -1,14 +1,20 @@
 #include "Tab_Menu_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Text/Text_And_Position.hpp>
+#include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
@@ -56,7 +62,9 @@ TabMenuLogic::TabMenuLogic(
     const std::string& selection_marker,
     VariableAndHash<std::string> charset,
     std::string ttf_filename,
+    std::unique_ptr<IWidget>&& reference_widget,
     std::unique_ptr<IWidget>&& icon_widget,
+    std::unique_ptr<IWidget>&& title_widget,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
@@ -68,19 +76,24 @@ TabMenuLogic::TabMenuLogic(
     ButtonStates& button_states,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
-    : id_{ id }
+    : charset_{ std::move(charset) }
+    , ttf_filename_{ std::move(ttf_filename) }
+    , font_color_{ font_color }
+    , id_{ id }
     , focus_mask_{ focus_mask }
     , confirm_button_{ confirm_button }
     , renderable_text_{ std::make_unique<TextResource>(
-        std::move(charset),
-        std::move(ttf_filename),
+        charset_,
+        ttf_filename_,
         font_color) }
     , ui_focus_{ ui_focus }
     , contents_{ substitutions, asset_references, focus_mask, ui_focus }
     , gallery_{ gallery }
     , list_view_style_{ list_view_style }
     , selection_marker_{ selection_marker }
+    , reference_widget_{ std::move(reference_widget) }
     , icon_widget_{ std::move(icon_widget) }
+    , title_widget_{ std::move(title_widget) }
     , widget_{ std::move(widget) }
     , font_height_{ font_height }
     , line_distance_{ line_distance }
@@ -97,7 +110,11 @@ TabMenuLogic::TabMenuLogic(
             merge_substitutions();
             on_change();
         }}
-{}
+{
+    if ((icon_widget_ == nullptr) != (title_widget_ == nullptr)) {
+        THROW_OR_ABORT("Inconsistent icon / title widget definition");
+    }
+}
 
 TabMenuLogic::~TabMenuLogic() {
     on_destroy.clear();
@@ -136,10 +153,12 @@ void TabMenuLogic::render_without_setup(
         list_view_.render_and_handle_input(lx, ly, drawer);
         drawer.render();
     } else if (list_view_style_ == ListViewStyle::ICON) {
-        if (icon_widget_ == nullptr) {
-            THROW_OR_ABORT("Listview style is \"icon\", but icon widget is null");
+        if (reference_widget_ == nullptr) {
+            THROW_OR_ABORT("Listview style is \"icon\", but reference widget is null");
         }
-        auto iw = icon_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+        auto r_ref = reference_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+        auto r_icon = (icon_widget_ == nullptr) ? nullptr : icon_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+        auto r_title = (title_widget_ == nullptr) ? nullptr : title_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
         ListViewWidgetDrawer drawer{
             [&](const IPixelRegion& ew){
                 gallery_["dots_icon"]->render(
@@ -151,10 +170,38 @@ void TabMenuLogic::render_without_setup(
                     LayoutConstraintParameters::child_x(lx, ew),
                     LayoutConstraintParameters::child_y(ly, ew));
             },
-            [&](const IPixelRegion& ew, size_t index, bool is_selected){
-                gallery_[ui_focus_.submenu_headers.at(index).icon]->render(
-                    LayoutConstraintParameters::child_x(lx, ew),
-                    LayoutConstraintParameters::child_y(ly, ew));
+            [&](float dx, float dy, size_t index, bool is_selected){
+                auto ew = PixelRegion::transformed(*r_ref, dx, dy);
+                assert_true((r_icon == nullptr) == (r_title == nullptr));
+                if (r_icon == nullptr) {
+                    gallery_[ui_focus_.submenu_headers.at(index).icon]->render(
+                        LayoutConstraintParameters::child_x(lx, ew),
+                        LayoutConstraintParameters::child_y(ly, ew));
+                } else {
+                    {
+                        auto ei = PixelRegion::transformed(*r_icon, dx, dy);
+                        gallery_[ui_focus_.submenu_headers.at(index).icon]->render(
+                            LayoutConstraintParameters::child_x(lx, ei),
+                            LayoutConstraintParameters::child_y(ly, ei));
+                    }
+                    {
+                        auto et = PixelRegion::transformed(*r_title, dx, dy);
+                        auto it = titles_.find(index);
+                        if (it == titles_.end()) {
+                            titles_[index] = std::make_unique<TextResource>(charset_, ttf_filename_, font_color_);
+                            titles_[index]->set_contents(
+                                font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+                                {r_title->width(), r_title->height()},
+                                TextInterpolationMode::NEAREST_NEIGHBOR,
+                                {TextAndPosition{
+                                .text = ui_focus_.submenu_headers.at(index).title,
+                                .position = {NAN, 0.f},
+                                .align = VerticalTextAlignment::TOP,
+                                .line_distance = line_distance_.to_pixels(ly, PixelsRoundMode::NONE)}});
+                        }
+                        titles_.at(index)->render(et);
+                    }
+                }
                 if (is_selected) {
                     gallery_[selection_marker_]->render(
                         LayoutConstraintParameters::child_x(lx, ew),
@@ -164,7 +211,7 @@ void TabMenuLogic::render_without_setup(
             ListViewOrientation::HORIZONTAL,
             ew->width(),
             0.f, // margin
-            *iw};
+            *r_ref};
         list_view_.render_and_handle_input(lx, ly, drawer);
     } else {
         THROW_OR_ABORT("Unknown listview style");

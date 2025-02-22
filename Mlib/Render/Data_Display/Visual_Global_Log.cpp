@@ -6,6 +6,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -65,7 +66,9 @@ void VisualGlobalLog::render_without_setup(
         *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         sstr.str(),
         line_distance_.to_pixels(ly, PixelsRoundMode::NONE),
-        TextInterpolationMode::NEAREST_NEIGHBOR);
+        TextInterpolationMode::NEAREST_NEIGHBOR,
+        GenericTextAlignment::DEFAULT,
+        GenericTextAlignment::DEFAULT);
 }
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {

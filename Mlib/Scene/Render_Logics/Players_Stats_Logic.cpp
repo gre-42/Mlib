@@ -5,6 +5,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <filesystem>
@@ -61,7 +62,9 @@ void PlayersStatsLogic::render_without_setup(
         *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         players_.get_score_board(score_board_configuration_),
         line_distance_.to_pixels(ly, PixelsRoundMode::NONE),
-        TextInterpolationMode::NEAREST_NEIGHBOR);
+        TextInterpolationMode::NEAREST_NEIGHBOR,
+        GenericTextAlignment::DEFAULT,
+        GenericTextAlignment::DEFAULT);
 }
 
 FocusFilter PlayersStatsLogic::focus_filter() const {

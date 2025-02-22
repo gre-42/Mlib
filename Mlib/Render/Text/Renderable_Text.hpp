@@ -12,7 +12,8 @@
 
 namespace Mlib {
 
-enum class AlignText;
+enum class VerticalTextAlignment;
+enum class GenericTextAlignment;
 enum class TextInterpolationMode;
 
 struct TextRenderProgram: public RenderProgram {
@@ -58,7 +59,7 @@ public:
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& canvas_size,
         const std::string& text,
-        AlignText align,
+        VerticalTextAlignment align,
         TextInterpolationMode interpolation_mode,
         float line_distance);
     void render(
@@ -66,7 +67,10 @@ public:
         const IPixelRegion& evaluated_widget,
         const std::string& text,
         float line_distance,
-        TextInterpolationMode interpolation_mode);
+        TextInterpolationMode interpolation_mode,
+        GenericTextAlignment horizontal_alignment,
+        GenericTextAlignment vertical_alignment);
+    void render(const IPixelRegion& evaluated_widget);
 private:
     void ensure_initialized(float font_height) const;
     void deallocate();

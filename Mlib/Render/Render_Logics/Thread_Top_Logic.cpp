@@ -69,7 +69,7 @@ void ThreadTopLogic::render_without_setup(
         position_,
         { lx.flength(), ly.flength() },
         text_,
-        AlignText::TOP,
+        VerticalTextAlignment::TOP,
         TextInterpolationMode::NEAREST_NEIGHBOR,
         line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }

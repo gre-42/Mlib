@@ -12,9 +12,9 @@ enum class ListViewOrientation;
 class ListViewWidgetDrawer: public IListViewDrawer {
 public:
     explicit ListViewWidgetDrawer(
-        const std::function<void(const IPixelRegion& ew)>& draw_left_dots,
-        const std::function<void(const IPixelRegion& ew)>& draw_right_dots,
-        const std::function<void(const IPixelRegion& ew, size_t index, bool is_selected)>& draw,
+        std::function<void(const IPixelRegion& ew)> draw_left_dots,
+        std::function<void(const IPixelRegion& ew)> draw_right_dots,
+        std::function<void(float dx, float dy, size_t index, bool is_selected)> draw,
         ListViewOrientation orientation,
         float total_length,
         float margin,
@@ -32,7 +32,7 @@ public:
 private:
     std::function<void(const IPixelRegion& ew)> draw_left_dots_;
     std::function<void(const IPixelRegion& ew)> draw_right_dots_;
-    std::function<void(const IPixelRegion& ew, size_t index, bool is_selected)> draw_;
+    std::function<void(float dx, float dy, size_t index, bool is_selected)> draw_;
     ListViewOrientation orientation_;
     float total_length_;
     float margin_;

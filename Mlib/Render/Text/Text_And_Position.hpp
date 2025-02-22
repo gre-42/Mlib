@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-enum class AlignText;
+enum class VerticalTextAlignment;
 
 struct TextAndPosition {
     std::string text;
     FixedArray<float, 2> position;
-    AlignText align;
+    VerticalTextAlignment align;
     float line_distance;
 };
 

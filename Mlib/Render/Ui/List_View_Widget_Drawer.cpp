@@ -10,20 +10,20 @@
 using namespace Mlib;
 
 ListViewWidgetDrawer::ListViewWidgetDrawer(
-    const std::function<void(const IPixelRegion& ew)>& draw_left_dots,
-    const std::function<void(const IPixelRegion& ew)>& draw_right_dots,
-    const std::function<void(const IPixelRegion& ew, size_t index, bool is_selected)>& draw,
+    std::function<void(const IPixelRegion& ew)> draw_left_dots,
+    std::function<void(const IPixelRegion& ew)> draw_right_dots,
+    std::function<void(float dx, float dy, size_t index, bool is_selected)> draw,
     ListViewOrientation orientation,
     float total_length,
     float margin,
     const IPixelRegion& ew_ref)
-: draw_left_dots_{draw_left_dots},
-  draw_right_dots_{draw_right_dots},
-  draw_{draw},
-  orientation_{orientation},
-  total_length_{total_length},
-  margin_{margin},
-  ew_ref_{ew_ref}
+    : draw_left_dots_{ std::move(draw_left_dots) }
+    , draw_right_dots_{ std::move(draw_right_dots) }
+    , draw_{ std::move(draw) }
+    , orientation_{ orientation }
+    , total_length_{ total_length }
+    , margin_{ margin }
+    , ew_ref_{ ew_ref }
 {}
 
 size_t ListViewWidgetDrawer::max_entries_visible() const {
@@ -60,11 +60,9 @@ void ListViewWidgetDrawer::draw_entry(
     bool is_first)
 {
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
-        auto ew = PixelRegion::transformed(ew_ref_, (ew_ref_.width() + margin_) * float(filtered_index), 0.f);
-        draw_(ew, index, is_selected);
+        draw_((ew_ref_.width() + margin_) * float(filtered_index), 0.f, index, is_selected);
     } else if (orientation_ == ListViewOrientation::VERTICAL) {
-        auto ew = PixelRegion::transformed(ew_ref_, 0.f, (ew_ref_.height() + margin_) * float(filtered_index));
-        draw_(ew, index, is_selected);
+        draw_(0.f, (ew_ref_.height() + margin_) * float(filtered_index), index, is_selected);
     } else {
         THROW_OR_ABORT("Unknown layout orientation");
     }

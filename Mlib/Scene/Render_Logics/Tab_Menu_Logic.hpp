@@ -1,16 +1,17 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <atomic>
 #include <cstddef>
 #include <functional>
+#include <unordered_map>
 #include <vector>
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 enum class Focus;
 class UiFocus;
 struct SubmenuHeader;
@@ -23,8 +24,6 @@ class IWidget;
 class ILayoutPixels;
 class RenderLogicGallery;
 enum class ListViewStyle;
-template <typename TData, size_t... tshape>
-class FixedArray;
 
 class SubmenuHeaderContents: public IListViewContents {
 public:
@@ -55,7 +54,9 @@ public:
         const std::string& selection_marker,
         VariableAndHash<std::string> charset,
         std::string ttf_filename,
+        std::unique_ptr<IWidget>&& reference_widget,
         std::unique_ptr<IWidget>&& icon_widget,
+        std::unique_ptr<IWidget>&& title_widget,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
@@ -86,6 +87,9 @@ public:
 
 private:
     void merge_substitutions() const;
+    VariableAndHash<std::string> charset_;
+    std::string ttf_filename_;
+    FixedArray<float, 3> font_color_;
     std::string id_;
     Focus focus_mask_;
     ButtonPress& confirm_button_;
@@ -95,8 +99,11 @@ private:
     RenderLogicGallery& gallery_;
     ListViewStyle list_view_style_;
     std::string selection_marker_;
+    std::unique_ptr<IWidget> reference_widget_;
     std::unique_ptr<IWidget> icon_widget_;
+    std::unique_ptr<IWidget> title_widget_;
     std::unique_ptr<IWidget> widget_;
+    std::unordered_map<size_t, std::unique_ptr<TextResource>> titles_;
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     const NotifyingJsonMacroArguments& substitutions_;

@@ -107,7 +107,7 @@ void VisualMovable3rdLogger::render_with_setup(
             p2,
             size,
             (std::string)text_,
-            AlignText::BOTTOM,
+            VerticalTextAlignment::BOTTOM,
             TextInterpolationMode::NEAREST_NEIGHBOR,
             line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
     }

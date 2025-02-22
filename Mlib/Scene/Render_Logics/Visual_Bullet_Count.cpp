@@ -9,6 +9,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 
@@ -81,7 +82,9 @@ void VisualBulletCount::render_without_setup(
             *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
             text_,
             line_distance_.to_pixels(ly, PixelsRoundMode::NONE),
-            TextInterpolationMode::NEAREST_NEIGHBOR);
+            TextInterpolationMode::NEAREST_NEIGHBOR,
+            GenericTextAlignment::DEFAULT,
+            GenericTextAlignment::DEFAULT);
     }
 }
 

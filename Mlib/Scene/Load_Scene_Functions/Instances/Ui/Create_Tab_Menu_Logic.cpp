@@ -1,6 +1,7 @@
 #include "Create_Tab_Menu_Logic.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
+#include <Mlib/Layout/Constraint_Window.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -27,14 +28,10 @@ DECLARE_ARGUMENT(selection_marker);
 DECLARE_ARGUMENT(style);
 DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
-DECLARE_ARGUMENT(icon_left);
-DECLARE_ARGUMENT(icon_right);
-DECLARE_ARGUMENT(icon_bottom);
-DECLARE_ARGUMENT(icon_top);
-DECLARE_ARGUMENT(left);
-DECLARE_ARGUMENT(right);
-DECLARE_ARGUMENT(bottom);
-DECLARE_ARGUMENT(top);
+DECLARE_ARGUMENT(reference_widget);
+DECLARE_ARGUMENT(icon_widget);
+DECLARE_ARGUMENT(title_widget);
+DECLARE_ARGUMENT(widget);
 DECLARE_ARGUMENT(font_color);
 DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
@@ -51,16 +48,16 @@ CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene)
 void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::string id = args.arguments.at<std::string>(KnownArgs::id);
-    auto icon_widget = std::make_unique<Widget>(
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::icon_left)),
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::icon_right)),
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::icon_bottom)),
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::icon_top)));
-    auto widget = std::make_unique<Widget>(
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
-        args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
+    auto reference_widget = args.layout_constraints.get_widget(
+        args.arguments.at<ConstraintWindow>(KnownArgs::reference_widget));
+    auto icon_widget = args.arguments.contains(KnownArgs::icon_widget)
+        ? args.layout_constraints.get_widget(args.arguments.at<ConstraintWindow>(KnownArgs::icon_widget))
+        : nullptr;
+    auto title_widget = args.arguments.contains(KnownArgs::title_widget)
+        ? args.layout_constraints.get_widget(args.arguments.at<ConstraintWindow>(KnownArgs::title_widget))
+        : nullptr;
+    auto widget = args.layout_constraints.get_widget(
+        args.arguments.at<ConstraintWindow>(KnownArgs::widget));
     size_t deflt = args.arguments.at<size_t>(KnownArgs::deflt);
     auto on_execute = args.arguments.try_at(KnownArgs::on_execute);
     // If the selection_ids array is not yet initialized, apply the default value.
@@ -75,7 +72,9 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::selection_marker),
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
         args.arguments.path(KnownArgs::ttf_file),
+        std::move(reference_widget),
         std::move(icon_widget),
+        std::move(title_widget),
         std::move(widget),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),

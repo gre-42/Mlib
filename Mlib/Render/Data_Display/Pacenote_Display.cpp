@@ -60,7 +60,7 @@ void PacenoteDisplay::render(
                     // 
                     // + " (" + std::to_string((int)std::round(value.distance_in_meters)) + ')',
                 .position = {0.f, 0.f},
-                .align = AlignText::TOP,
+                .align = VerticalTextAlignment::TOP,
                 .line_distance = 0.f}});
         text_.render();
     }

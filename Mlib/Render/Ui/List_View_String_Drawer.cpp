@@ -2,6 +2,7 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
+#include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
@@ -96,5 +97,7 @@ void ListViewStringDrawer::render() {
         ew_,
         sstr_.str(),
         line_distance_.to_pixels(ly_, PixelsRoundMode::NONE),
-        TextInterpolationMode::NEAREST_NEIGHBOR);
+        TextInterpolationMode::NEAREST_NEIGHBOR,
+        GenericTextAlignment::DEFAULT,
+        GenericTextAlignment::DEFAULT);
 }

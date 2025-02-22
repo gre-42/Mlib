@@ -14,6 +14,7 @@
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
@@ -133,7 +134,9 @@ int main(int argc, char** argv)
                     ew,
                     "12345\n54321\nThis is\nsample\ntext",
                     line_distance.to_pixels(ly, PixelsRoundMode::NONE),
-                    TextInterpolationMode::NEAREST_NEIGHBOR);
+                    TextInterpolationMode::NEAREST_NEIGHBOR,
+                    GenericTextAlignment::DEFAULT,
+                    GenericTextAlignment::DEFAULT);
             }
             {
                 PixelRegion ew{ 10.f, 400, 120.f, 500.f, RegionRoundMode::ENABLED };

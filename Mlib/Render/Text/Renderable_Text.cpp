@@ -118,7 +118,7 @@ void TextResource::set_contents(
     for (const auto& tp : contents) {
         FixedArray<bool, 2> center = Mlib::isnan(tp.position);
         float x = center(0) ? 0.f : tp.position(0);
-        float y = center(1) ? 0.f : tp.position(1) + font_height * float(tp.align == AlignText::TOP);
+        float y = center(1) ? 0.f : tp.position(1) + font_height * float(tp.align == VerticalTextAlignment::TOP);
         size_t line_number = 0;
         for (char cs : utf8_to_wstring(tp.text)) {
             auto c = (unsigned char)cs;
@@ -142,7 +142,7 @@ void TextResource::set_contents(
                     }});
             } else if (c == '\n') {
                 x = center(0) ? 0.f : tp.position(0);
-                y = center(1) ? 0.f : tp.position(1) + float(++line_number) * tp.line_distance + font_height * float(tp.align == AlignText::TOP);
+                y = center(1) ? 0.f : tp.position(1) + float(++line_number) * tp.line_distance + font_height * float(tp.align == VerticalTextAlignment::TOP);
             }
         }
         for (size_t dim = 0; dim < 2; ++dim) {
@@ -218,7 +218,7 @@ void TextResource::render(
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& canvas_size,
     const std::string& text,
-    AlignText align,
+    VerticalTextAlignment align,
     TextInterpolationMode interpolation_mode,
     float line_distance)
 {
@@ -239,7 +239,9 @@ void TextResource::render(
     const IPixelRegion& evaluated_widget,
     const std::string& text,
     float line_distance,
-    TextInterpolationMode interpolation_mode)
+    TextInterpolationMode interpolation_mode,
+    GenericTextAlignment horizontal_alignment,
+    GenericTextAlignment vertical_alignment)
 {
     auto vg = ViewportGuard::from_widget(evaluated_widget);
     if (vg.has_value()) {
@@ -249,9 +251,19 @@ void TextResource::render(
             interpolation_mode,
             {TextAndPosition{
             .text = text,
-            .position = {0.f, 0.f},
-            .align = AlignText::TOP,
+            .position = {
+                horizontal_alignment == GenericTextAlignment::CENTER ? NAN : 0.f,
+                vertical_alignment == GenericTextAlignment::CENTER ? NAN : 0.f
+            },
+            .align = VerticalTextAlignment::TOP,
             .line_distance = line_distance}});
+        render();
+    }
+}
+
+void TextResource::render(const IPixelRegion& evaluated_widget) {
+    auto vg = ViewportGuard::from_widget(evaluated_widget);
+    if (vg.has_value()) {
         render();
     }
 }
