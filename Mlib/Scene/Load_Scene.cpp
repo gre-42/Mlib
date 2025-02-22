@@ -5,7 +5,6 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_Ac_Loader.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Asset_Manifests.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Replacement_Parameters.hpp>
@@ -243,7 +242,6 @@ LoadScene::LoadScene() {
         RegisterJsonUserFunctions() {
             // Containers
             register_json_user_function(AddAcLoader::key, AddAcLoader::json_user_function);
-            register_json_user_function(AddToGallery::key, AddToGallery::json_user_function);
             register_json_user_function(CreateScene::key, CreateScene::json_user_function);
             register_json_user_function(LoadAssetManifests::key, LoadAssetManifests::json_user_function);
             register_json_user_function(LoadReplacementParameters::key, LoadReplacementParameters::json_user_function);
