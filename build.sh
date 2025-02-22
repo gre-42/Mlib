@@ -32,33 +32,26 @@ fi
 
 for d in $SOURCE_DIRS; do
     echo "Project: $d"
-    if [ "$OSTYPE" == "msys" ] ; then
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] ; then
         DIR=$d/${BUILD_PREFIX-}M$CMAKE_BUILD_TYPE
-    elif [ "$OSTYPE" == "cygwin" ] ; then
-        DIR=$d/${BUILD_PREFIX-}$CMAKE_BUILD_TYPE
     else
         DIR=$d/${BUILD_PREFIX-}U$CMAKE_BUILD_TYPE
     fi
-    if [ "$TARGET" == distclean ]; then
+    if [[ "$TARGET" == distclean ]]; then
         (
             set -x
             rm -rf $DIR
         )
-    elif [ "$TARGET" == "test" ]; then
+    elif [[ "$TARGET" == "test" ]]; then
         cd $DIR
         ctest -VV
         cd -
-    elif [ "$TARGET" == "" ]; then
+    elif [[ "$TARGET" == "" ]]; then
         mkdir -p $DIR
         cd $DIR
-        if [ "$OSTYPE" == "cygwin" ] ; then
-            /cygdrive/d/Programs/cmake/bin/cmake.exe ../
-            echo "Use BuildDebug.bat for building"
-        else
-            cmake -G Ninja ${CMAKE_OPTIONS-} -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../
-            cmake --build . --verbose
-            # ninja -v
-        fi
+        cmake -G Ninja ${CMAKE_OPTIONS-} -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../
+        cmake --build . --verbose
+        # ninja -v
         cd -
     else
         exit_error
