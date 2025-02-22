@@ -1596,18 +1596,28 @@ const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& 
         return *it;
     }
     const auto& charset = charsets_.get(font_descriptor.charset);
-    LoadedFont font;
+    LoadedFont font{
+        .cdata = std::vector<stbtt_bakedchar>(charset.size()),
+        .texture_width = 1024,
+        .texture_height = 1024
+    };
     {
-        const size_t TEXTURE_SIZE = 1024;
-        std::vector<unsigned char> temp_bitmap(TEXTURE_SIZE * TEXTURE_SIZE);
+        std::vector<unsigned char> temp_bitmap(font.texture_width * font.texture_height);
         {
             std::vector<uint8_t> ttf_buffer = read_file_bytes(font_descriptor.ttf_filename);
-            font.cdata.resize(charset.size());
-            font.bottom_y = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_descriptor.height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, charset, font.cdata.data()); // no guarantee this fits!
+            font.bottom_y = stbtt_BakeFontBitmap_get_y0(
+                ttf_buffer.data(),
+                0,  // font location (use offset=0 for plain .ttf)
+                font_descriptor.height_pixels,
+                temp_bitmap.data(),
+                font.texture_width,
+                font.texture_height,
+                charset,
+                font.cdata.data()); // no guarantee this fits!
         }
         CHK(glGenTextures(1, &font.texture_handle));
         CHK(glBindTexture(GL_TEXTURE_2D, font.texture_handle));
-        CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
+        CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, font.texture_width, font.texture_height, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
     }
     return font_textures_.add(font_descriptor, std::move(font));

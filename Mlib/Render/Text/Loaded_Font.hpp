@@ -9,6 +9,8 @@ struct LoadedFont {
     GLuint texture_handle;
     float bottom_y;
     std::vector<stbtt_bakedchar> cdata;
+    size_t texture_width;
+    size_t texture_height;
 };
 
 }

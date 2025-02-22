@@ -24,8 +24,6 @@
 
 using namespace Mlib;
 
-static const size_t TEXTURE_SIZE = 1024;
-
 static const char* vertex_shader_text =
 SHADER_VER
 "layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>\n"
@@ -127,7 +125,15 @@ void TextResource::set_contents(
             }
             if (auto cit = loaded_charset_->find(c); cit != loaded_charset_->end()) {
                 stbtt_aligned_quad q;
-                stbtt_GetBakedQuad(loaded_font_->cdata.data(), TEXTURE_SIZE, TEXTURE_SIZE, cit->second, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+                stbtt_GetBakedQuad(
+                    loaded_font_->cdata.data(),
+                    loaded_font_->texture_width,
+                    loaded_font_->texture_height,
+                    cit->second,
+                    &x,
+                    &y,
+                    &q,
+                    1);//1=opengl & d3d10+,0=d3d9
                 // update VBO for each character
                 vdata_.push_back(Letter{
                     FixedArray<VData, 3>{
