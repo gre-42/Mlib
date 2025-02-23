@@ -50,7 +50,7 @@ private:
     std::string charset_;
     std::string cached_title_;
     MacroLineExecutor mle_;
-    bool globals_changed_;
+    std::atomic_bool globals_changed_;
     UiFocus& ui_focus_;
     std::unique_ptr<IWidget> widget_;
     FocusFilter focus_filter_;

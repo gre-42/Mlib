@@ -1,5 +1,6 @@
 #include "Scene_Selector_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
@@ -7,6 +8,7 @@
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
@@ -72,7 +74,7 @@ bool SceneEntryContents::is_visible(size_t index) const {
 SceneSelectorLogic::SceneSelectorLogic(
     std::string id,
     std::vector<SceneEntry> scene_files,
-    VariableAndHash<std::string> charset,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -84,9 +86,11 @@ SceneSelectorLogic::SceneSelectorLogic(
     ButtonStates& button_states,
     UiFocus& ui_focus,
     const std::function<void()>& on_change)
-    : mle_{ std::move(mle) }
+    : globals_changed_{ true }
+    , mle_{ std::move(mle) }
+    , charset_{ std::move(charset) }
     , renderable_text_{ std::make_unique<TextResource>(
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         font_color) }
     , scene_files_{ std::move(scene_files) }
@@ -112,7 +116,9 @@ SceneSelectorLogic::SceneSelectorLogic(
 {
     mle_.add_observer([this]() {
         list_view_.notify_change_visibility();
+        globals_changed_ = true;
         });
+    scene_titles_.resize(scene_files_.size());
 }
 
 SceneSelectorLogic::~SceneSelectorLogic() {
@@ -137,6 +143,12 @@ void SceneSelectorLogic::render_without_setup(
 {
     LOG_FUNCTION("SceneSelectorLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+    if (globals_changed_) {
+        for (const auto& [i, s] : enumerate(scene_files_)) {
+            scene_titles_.at(i) = mle_.eval<std::string>(s.name());
+        }
+        renderable_text_->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+    }
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
         *renderable_text_,
@@ -144,9 +156,10 @@ void SceneSelectorLogic::render_without_setup(
         line_distance_,
         *ew,
         ly,
-        [this](size_t index) {return scene_files_.at(index).name();}};
+        [this](size_t index) {return scene_titles_.at(index);}};
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
+    globals_changed_ = false;
 }
 
 FocusFilter SceneSelectorLogic::focus_filter() const {

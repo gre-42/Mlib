@@ -17,7 +17,6 @@
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <list>
 
 using namespace Mlib;
@@ -70,7 +69,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         CURRENT_SOURCE_LOCATION,
         std::move(id),
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
+        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

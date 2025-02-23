@@ -91,7 +91,7 @@ private:
     MacroLineExecutor mle_;
     std::string charset_;
     std::string ttf_filename_;
-    bool globals_changed_;
+    std::atomic_bool globals_changed_;
     FixedArray<float, 3> font_color_;
     std::string id_;
     Focus focus_mask_;

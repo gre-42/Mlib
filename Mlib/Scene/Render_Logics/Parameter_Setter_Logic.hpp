@@ -87,7 +87,7 @@ private:
     std::string persisted_;
     std::string id_;
     std::function<void()> on_execute_;
-    bool globals_changed_;
+    std::atomic_bool globals_changed_;
     std::string charset_;
     ListView list_view_;
 };

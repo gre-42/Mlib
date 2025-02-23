@@ -72,7 +72,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    bool globals_changed_;
+    std::atomic_bool globals_changed_;
     std::string charset_;
     MacroLineExecutor mle_;
     const KeyDescriptions& key_descriptions_;

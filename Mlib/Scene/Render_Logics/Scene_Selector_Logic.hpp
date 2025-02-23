@@ -6,6 +6,7 @@
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <atomic>
 #include <vector>
 
 namespace Mlib {
@@ -56,7 +57,7 @@ public:
     SceneSelectorLogic(
         std::string id,
         std::vector<SceneEntry> scene_files,
-        VariableAndHash<std::string> charset,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
@@ -87,10 +88,13 @@ public:
 
 private:
     void merge_substitutions() const;
+    std::atomic_bool globals_changed_;
     MacroLineExecutor mle_;
+    std::string charset_;
     std::string globals_prefix_;
     std::unique_ptr<TextResource> renderable_text_;
     std::vector<SceneEntry> scene_files_;
+    std::vector<std::string> scene_titles_;
     SceneEntryContents contents_;
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& font_height_;
