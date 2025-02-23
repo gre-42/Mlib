@@ -214,6 +214,11 @@ void TabMenuLogic::render_without_setup(
                         LayoutConstraintParameters::child_x(lx, ew),
                         LayoutConstraintParameters::child_y(ly, ew));
                 } else {
+                    if (is_selected) {
+                        gallery_[selection_marker_]->render(
+                            LayoutConstraintParameters::child_x(lx, ew),
+                            LayoutConstraintParameters::child_y(ly, ew));
+                    }
                     {
                         auto ei = PixelRegion::transformed(*r_icon, dx, dy);
                         gallery_[ui_focus_.submenu_headers.at(index).icon]->render(
@@ -224,11 +229,6 @@ void TabMenuLogic::render_without_setup(
                         auto et = PixelRegion::transformed(*r_title, dx, dy);
                         title_resources_.at(index)->render(et);
                     }
-                }
-                if (is_selected) {
-                    gallery_[selection_marker_]->render(
-                        LayoutConstraintParameters::child_x(lx, ew),
-                        LayoutConstraintParameters::child_y(ly, ew));
                 }
             },
             ListViewOrientation::HORIZONTAL,
