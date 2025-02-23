@@ -6,8 +6,8 @@
 using namespace Mlib;
 
 LaunchAsync::LaunchAsync(const std::string& thread_name)
-    : thread_ { [&](){
-        ThreadInitializer init{ thread_name, ThreadAffinity::POOL };
+    : thread_ { [this, tn=thread_name](){
+        ThreadInitializer init{ tn, ThreadAffinity::POOL };
         for (size_t i = 0; i < 2; ++i) {
             do {
                 std::list<std::pair<std::promise<void>, std::function<void()>>> tasks;

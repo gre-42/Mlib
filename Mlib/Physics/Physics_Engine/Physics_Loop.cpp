@@ -19,15 +19,15 @@ PhysicsLoop::PhysicsLoop(
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background)
 : set_fps_{set_fps},
   physics_iteration_{physics_iteration},
-  physics_thread_{run_in_background([&, thread_name, thread_affinity, nframes](){
+  physics_thread_{run_in_background([this, tn=thread_name, thread_affinity, nframes](){
     try {
-        ThreadInitializer ti{ thread_name, thread_affinity };
-        SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration.delete_node_mutex_ };
+        ThreadInitializer ti{ tn, thread_affinity };
+        SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration_.delete_node_mutex_ };
         size_t nframes2 = nframes;
         // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
         while (!physics_thread_.get_stop_token().stop_requested()) {
             std::chrono::steady_clock::time_point simulated_time;
-            if (!set_fps.paused()) {
+            if (!set_fps_.paused()) {
                 // lag_finder.start();
                 // TimeGuard::initialize(5 * 60);
                 if (nframes2 != SIZE_MAX) {
@@ -35,12 +35,12 @@ PhysicsLoop::PhysicsLoop(
                         break;
                     }
                 }
-                simulated_time = set_fps.simulated_time();
-                physics_iteration(simulated_time);
+                simulated_time = set_fps_.simulated_time();
+                physics_iteration_(simulated_time);
                 // lerr() << rb0->get_new_absolute_model_matrix();
                 // TimeGuard tg2{"physics tick"};
             }
-            set_fps.tick(simulated_time);
+            set_fps_.tick(simulated_time);
             // TimeGuard::print_groups(lraw());
             // lag_finder.stop();
         }
