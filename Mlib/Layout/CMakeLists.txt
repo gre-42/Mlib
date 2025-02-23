@@ -6,4 +6,4 @@ my_add_library(MlibLayout "1" "" "${mlib_excluded_files}")
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibLayout MlibOs MlibThreads)
+target_link_libraries(MlibLayout MlibOs MlibThreads MlibJson)

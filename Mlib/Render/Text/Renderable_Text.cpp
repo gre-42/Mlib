@@ -118,8 +118,7 @@ void TextResource::set_contents(
         float x = center(0) ? 0.f : tp.position(0);
         float y = center(1) ? 0.f : tp.position(1) + font_height * float(tp.align == VerticalTextAlignment::TOP);
         size_t line_number = 0;
-        for (char cs : utf8_to_wstring(tp.text)) {
-            auto c = (unsigned char)cs;
+        for (char32_t c : u8_to_u32_generator(tp.text)) {
             if (vdata_.size() == vdata_.capacity()) {
                 break;
             }

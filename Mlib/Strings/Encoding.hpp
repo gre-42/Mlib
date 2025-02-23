@@ -1,12 +1,16 @@
 #pragma once
+#include <generator>
 #include <string>
 
 namespace Mlib {
 
-std::wstring utf8_to_wstring(const std::string& utf8);
-std::string wstring_to_utf8(const std::wstring& wstr);
+std::generator<char32_t> u8_to_u32_generator(const std::string& utf8);
+std::generator<char> u32_to_u8_generator(const std::u32string& utf32);
 
-std::wstring ascii_to_wstring(const std::string& ascii);
-std::string wstring_to_ascii(const std::wstring& wstr);
+std::u32string u8_to_u32_string(const std::string& utf8);
+std::string u32_to_u8_string(const std::u32string& wstr);
+
+std::u32string ascii_to_u32_string(const std::string& ascii);
+std::string u32_to_ascii_string(const std::u32string& wstr);
 
 }

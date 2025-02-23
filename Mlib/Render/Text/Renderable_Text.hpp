@@ -78,7 +78,7 @@ private:
     mutable BufferBackgroundCopy vertices_;
     mutable VertexArray va_;
     mutable const LoadedFont* loaded_font_;
-    mutable const std::unordered_map<wchar_t, uint32_t>* loaded_charset_;
+    mutable const std::unordered_map<char32_t, uint32_t>* loaded_charset_;
     mutable FixedArray<float, 2> canvas_size_;
     mutable TextInterpolationMode interpolation_mode_;
 

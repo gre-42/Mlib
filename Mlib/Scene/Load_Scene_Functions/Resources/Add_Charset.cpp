@@ -25,7 +25,7 @@ static struct RegisterJsonUserFunction {
                 args.arguments.validate(KnownArgs::options);
                 RenderingContextStack::primary_rendering_resources().add_charset(
                     args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
-                    utf8_to_wstring(args.arguments.at<std::string>(KnownArgs::chars)));
+                    u8_to_u32_string(args.arguments.at<std::string>(KnownArgs::chars)));
             });
     }
 } obj;

@@ -3,8 +3,8 @@
 
 using namespace Mlib;
 
-std::wstring Mlib::ascii_chars() {
-    std::wstring result(95, '?');
+std::u32string Mlib::ascii_chars() {
+    std::u32string result(95, '?');
     for (auto&& [i, r] : enumerate(result)) {
         r = i + 32;
     }

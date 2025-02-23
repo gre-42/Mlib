@@ -12,6 +12,7 @@ namespace {
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(indicator);
 }
         
 static struct RegisterJsonUserFunction {
@@ -21,6 +22,9 @@ static struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.ui_focus.clear_requires_reload(args.arguments.at<std::string>(KnownArgs::id));
+                args.external_json_macro_arguments.set_and_notify(
+                    args.arguments.at<std::string>(KnownArgs::indicator),
+                    !args.ui_focus.requires_reload().empty());
             });
     }
 } obj;

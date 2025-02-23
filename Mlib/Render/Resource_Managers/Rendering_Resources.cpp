@@ -1571,15 +1571,15 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const RenderingResources& r
     return ostr;
 }
 
-void RenderingResources::add_charset(VariableAndHash<std::string> name, const std::wstring& charset) {
-    UnorderedMap<wchar_t, uint32_t> charset_map;
+void RenderingResources::add_charset(VariableAndHash<std::string> name, const std::u32string& charset) {
+    UnorderedMap<char32_t, uint32_t> charset_map;
     for (const auto& [i, c] : enumerate(charset)) {
         charset_map.add(c, i);
     }
     charsets_.add(std::move(name), std::move(charset_map));
 }
 
-const std::unordered_map<wchar_t, uint32_t>& RenderingResources::get_charset(const VariableAndHash<std::string>& name) const {
+const std::unordered_map<char32_t, uint32_t>& RenderingResources::get_charset(const VariableAndHash<std::string>& name) const {
     return charsets_.get(name);
 }
 
