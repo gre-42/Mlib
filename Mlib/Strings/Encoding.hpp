@@ -1,5 +1,9 @@
 #pragma once
+#ifdef _MSC_VER
+#include <experimental/generator>
+#else
 #include <generator>
+#endif
 #include <string>
 
 namespace Mlib {
