@@ -8,8 +8,13 @@
 
 namespace Mlib {
 
+#ifdef _MSC_VER
+std::experimental::generator<char32_t> u8_to_u32_generator(const std::string& utf8);
+std::experimental::generator<char> u32_to_u8_generator(const std::u32string& utf32);
+#else
 std::generator<char32_t> u8_to_u32_generator(const std::string& utf8);
 std::generator<char> u32_to_u8_generator(const std::u32string& utf32);
+#endif
 
 std::u32string u8_to_u32_string(const std::string& utf8);
 std::string u32_to_u8_string(const std::u32string& wstr);
