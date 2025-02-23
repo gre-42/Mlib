@@ -2,6 +2,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
+#include <Mlib/Math/Sub_Sat.hpp>
 #include <Mlib/Render/Key_Bindings/Input_Type.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
@@ -124,9 +125,10 @@ void KeyBindingsLogic::render_without_setup(
         {
             const auto& d = key_descriptions_[index];
             const auto& k = key_configurations_.get(d.id);
-            std::basic_stringstream<char32_t> sstr;
-            sstr << std::left << std::setw(40) << u8_to_u32_string(d.title);
-            return u32_to_u8_string(sstr.str()) + ": " + k.to_string(filter);
+            return d.title + std::string(sub_sat<size_t>(40, nchars32(d.title)), ' ') + ": " + k.to_string(filter);
+            // std::basic_stringstream<char32_t> sstr;
+            // sstr << std::left << std::setw(40) << u8_to_u32_string(d.title);
+            // return u32_to_u8_string(sstr.str()) + ": " + k.to_string(filter);
         }};
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();

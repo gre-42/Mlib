@@ -31,11 +31,10 @@ std::u32string Mlib::u8_to_u32_string(const std::string& utf8) {
     // std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> wconv;
     // return wconv.from_bytes(utf8);
     std::u32string result;
-    result.reserve(utf8.size());
+    result.reserve(nchars32(utf8));
     for (auto c : u8_to_u32_generator(utf8)) {
         result += c;
     }
-    result.shrink_to_fit();
     return result;
 }
 
@@ -52,6 +51,14 @@ std::string Mlib::u32_to_u8_string(const std::u32string& wstr) {
         result += c;
     }
     return result;
+}
+
+size_t Mlib::nchars32(const std::string& utf8) {
+    size_t n = 0;
+    for ([[maybe_unused]] auto c : u8_to_u32_generator(utf8)) {
+        ++n;
+    }
+    return n;
 }
 
 std::u32string Mlib::ascii_to_u32_string(const std::string& ascii) {
