@@ -129,7 +129,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         std::move(id),
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
         args.confirm_button_press,
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
+        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

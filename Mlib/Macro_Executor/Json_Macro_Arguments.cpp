@@ -71,7 +71,9 @@ static nlohmann::json subst_and_replace(
     if (j.type() == nlohmann::detail::value_t::object) {
         auto result = nlohmann::json::object();
         for (const auto& [key, value] : j.items()) {
-            if ((key == MacroKeys::required) ||
+            if ((key == UserKeys::title) ||
+                (key == UserKeys::charset) ||
+                (key == MacroKeys::required) ||
                 (key == MacroKeys::exclude) ||
                 (key == MacroKeys::arguments) ||
                 (key == MacroKeys::content) ||

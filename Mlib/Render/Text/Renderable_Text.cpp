@@ -66,6 +66,13 @@ TextResource::TextResource(
     va_.add_array_buffer(vertices_);
 }
 
+void TextResource::set_charset(const VariableAndHash<std::string>& charset) {
+    if (font_descriptor_.charset != charset) {
+        deallocate();
+        font_descriptor_.charset = charset;
+    }
+}
+
 void TextResource::deallocate() {
     loaded_font_ = nullptr;
     loaded_charset_ = nullptr;
@@ -74,30 +81,32 @@ void TextResource::deallocate() {
 
 void TextResource::ensure_initialized(float font_height) const
 {
-    if (rp_.allocated()) {
-        return;
+    if (!font_descriptor_.hash.has_value()) {
+        font_descriptor_.height_pixels = font_height;
+        font_descriptor_.compute_hash();
     }
-    font_descriptor_.height_pixels = font_height;
-    font_descriptor_.compute_hash();
-    vdata_.reserve(max_nchars_);
-    if (loaded_font_ != nullptr) {
-        THROW_OR_ABORT("loaded_font is not null");
+    if (loaded_font_ == nullptr) {
+        loaded_font_ = &RenderingContextStack::primary_rendering_resources().get_font_texture(font_descriptor_);
     }
-    loaded_font_ = &RenderingContextStack::primary_rendering_resources().get_font_texture(font_descriptor_);
-    loaded_charset_ = &RenderingContextStack::primary_rendering_resources().get_charset(font_descriptor_.charset);
-    rp_.allocate(vertex_shader_text, fragment_shader_text);
-    rp_.color_location = rp_.get_uniform_location("color3");
-    rp_.texture_location = rp_.get_uniform_location("texture1");
-    rp_.projection_location = rp_.get_uniform_location("projection");
-    {
-        // configure VAO/VBO for texture quads
-        // -----------------------------------
-        va_.initialize();
-        vertices_.reserve<Letter>(vdata_.capacity());
-        CHK(glEnableVertexAttribArray(0));
-        CHK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
-        CHK(glBindVertexArray(0));
+    if (loaded_charset_ == nullptr) {
+        loaded_charset_ = &RenderingContextStack::primary_rendering_resources().get_charset(font_descriptor_.charset);
+    }
+    if (!rp_.allocated()) {
+        vdata_.reserve(max_nchars_);
+        rp_.allocate(vertex_shader_text, fragment_shader_text);
+        rp_.color_location = rp_.get_uniform_location("color3");
+        rp_.texture_location = rp_.get_uniform_location("texture1");
+        rp_.projection_location = rp_.get_uniform_location("projection");
+        {
+            // configure VAO/VBO for texture quads
+            // -----------------------------------
+            va_.initialize();
+            vertices_.reserve<Letter>(vdata_.capacity());
+            CHK(glEnableVertexAttribArray(0));
+            CHK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr));
+            CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+            CHK(glBindVertexArray(0));
+        }
     }
 }
 
@@ -183,7 +192,7 @@ void TextResource::set_contents(
 
 void TextResource::render() const
 {
-    if (!rp_.allocated()) {
+    if (!rp_.allocated() || (loaded_font_ == nullptr) || (loaded_charset_ == nullptr)) {
         return;
     }
     notify_rendering(CURRENT_SOURCE_LOCATION);

@@ -49,13 +49,14 @@ void CreateRequiresReloadLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
     auto& requires_reload_logic = object_pool.create<ReloadRequired>(
         CURRENT_SOURCE_LOCATION,
         args.arguments.at<std::string>(KnownArgs::title),
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
+        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::move(widget),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         FocusFilter{focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask))},
+        args.macro_line_executor,
         args.ui_focus);
     render_logics.append(
         { requires_reload_logic, CURRENT_SOURCE_LOCATION },

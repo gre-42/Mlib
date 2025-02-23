@@ -12,8 +12,6 @@
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 class ButtonStates;
 class IWidget;
 class ILayoutPixels;
@@ -46,7 +44,7 @@ public:
         std::string section,
         const KeyDescriptions& key_descriptions,
         KeyConfigurations& key_configurations,
-        VariableAndHash<std::string> charset,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
@@ -74,6 +72,8 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    bool globals_changed_;
+    std::string charset_;
     MacroLineExecutor mle_;
     const KeyDescriptions& key_descriptions_;
     KeyConfigurations& key_configurations_;

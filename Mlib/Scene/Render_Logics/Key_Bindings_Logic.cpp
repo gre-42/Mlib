@@ -8,6 +8,7 @@
 #include <Mlib/Render/Key_Bindings/Key_Description.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Descriptions.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
@@ -48,7 +49,7 @@ KeyBindingsLogic::KeyBindingsLogic(
     std::string section,
     const KeyDescriptions& key_descriptions,
     KeyConfigurations& key_configurations,
-    VariableAndHash<std::string> charset,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -58,12 +59,14 @@ KeyBindingsLogic::KeyBindingsLogic(
     MacroLineExecutor mle,
     ButtonStates& button_states,
     std::atomic_size_t& selection_index)
-    : mle_{ std::move(mle) }
+    : globals_changed_{ true }
+    , charset_{ std::move(charset) }
+    , mle_{ std::move(mle) }
     , key_descriptions_{ key_descriptions }
     , key_configurations_{ key_configurations }
     , contents_{ std::move(section), key_descriptions_, mle_ }
     , renderable_text_{std::make_unique<TextResource>(
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         font_color)}
     , widget_{std::move(widget)}
@@ -79,6 +82,7 @@ KeyBindingsLogic::KeyBindingsLogic(
 {
     mle_.add_observer([this](){
         list_view_.notify_change_visibility();
+        globals_changed_ = true;
     });
 }
 
@@ -106,6 +110,9 @@ void KeyBindingsLogic::render_without_setup(
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     auto s = mle_.eval<std::string>("%input_type");
     auto filter = input_type_from_string(s);
+    if (globals_changed_) {
+        renderable_text_->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+    }
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
         *renderable_text_,
@@ -123,6 +130,7 @@ void KeyBindingsLogic::render_without_setup(
         }};
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
+    globals_changed_ = false;
 }
 
 FocusFilter KeyBindingsLogic::focus_filter() const {

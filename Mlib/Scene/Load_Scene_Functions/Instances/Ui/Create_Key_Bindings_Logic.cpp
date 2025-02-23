@@ -62,7 +62,7 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::section),
         args.key_descriptions,
         args.key_configurations,
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
+        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

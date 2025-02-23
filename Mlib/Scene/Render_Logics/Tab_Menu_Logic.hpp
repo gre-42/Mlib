@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <atomic>
 #include <cstddef>
 #include <functional>
@@ -52,7 +52,7 @@ public:
         RenderLogicGallery& gallery,
         ListViewStyle list_view_style,
         const std::string& selection_marker,
-        VariableAndHash<std::string> charset,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& reference_widget,
         std::unique_ptr<IWidget>&& icon_widget,
@@ -63,6 +63,7 @@ public:
         const ILayoutPixels& line_distance,
         NotifyingJsonMacroArguments& substitutions,
         const AssetReferences& asset_references,
+        MacroLineExecutor mle,
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
         ButtonStates& button_states,
@@ -87,8 +88,10 @@ public:
 
 private:
     void merge_substitutions() const;
-    VariableAndHash<std::string> charset_;
+    MacroLineExecutor mle_;
+    std::string charset_;
     std::string ttf_filename_;
+    bool globals_changed_;
     FixedArray<float, 3> font_color_;
     std::string id_;
     Focus focus_mask_;
@@ -103,7 +106,8 @@ private:
     std::unique_ptr<IWidget> icon_widget_;
     std::unique_ptr<IWidget> title_widget_;
     std::unique_ptr<IWidget> widget_;
-    std::unordered_map<size_t, std::unique_ptr<TextResource>> titles_;
+    std::unordered_map<size_t, std::string> titles_;
+    std::unordered_map<size_t, std::unique_ptr<TextResource>> title_resources_;
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     const NotifyingJsonMacroArguments& substitutions_;

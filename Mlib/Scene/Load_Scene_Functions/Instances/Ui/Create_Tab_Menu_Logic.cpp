@@ -17,7 +17,6 @@
 #include <Mlib/Scene/Render_Logics/Tab_Menu_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -70,7 +69,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.gallery,
         list_view_style_from_string(args.arguments.at<std::string>(KnownArgs::style)),
         args.arguments.at<std::string>(KnownArgs::selection_marker),
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
+        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
         args.arguments.path(KnownArgs::ttf_file),
         std::move(reference_widget),
         std::move(icon_widget),
@@ -81,6 +80,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         args.external_json_macro_arguments,
         args.asset_references,
+        args.macro_line_executor,
         args.ui_focus,
         args.num_renderings,
         args.button_states,

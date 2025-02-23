@@ -12,6 +12,7 @@
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_And_Position.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
@@ -60,7 +61,7 @@ TabMenuLogic::TabMenuLogic(
     RenderLogicGallery& gallery,
     ListViewStyle list_view_style,
     const std::string& selection_marker,
-    VariableAndHash<std::string> charset,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& reference_widget,
     std::unique_ptr<IWidget>&& icon_widget,
@@ -71,19 +72,22 @@ TabMenuLogic::TabMenuLogic(
     const ILayoutPixels& line_distance,
     NotifyingJsonMacroArguments& substitutions,
     const AssetReferences& asset_references,
+    MacroLineExecutor mle,
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonStates& button_states,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
-    : charset_{ std::move(charset) }
+    : mle_{ std::move(mle) }
+    , charset_{ std::move(charset) }
     , ttf_filename_{ std::move(ttf_filename) }
+    , globals_changed_{ true }
     , font_color_{ font_color }
     , id_{ id }
     , focus_mask_{ focus_mask }
     , confirm_button_{ confirm_button }
     , renderable_text_{ std::make_unique<TextResource>(
-        charset_,
+        ascii,
         ttf_filename_,
         font_color) }
     , ui_focus_{ ui_focus }
@@ -114,6 +118,9 @@ TabMenuLogic::TabMenuLogic(
     if ((icon_widget_ == nullptr) != (title_widget_ == nullptr)) {
         THROW_OR_ABORT("Inconsistent icon / title widget definition");
     }
+    mle_.add_observer([this](){
+        globals_changed_ = true;
+    });
 }
 
 TabMenuLogic::~TabMenuLogic() {
@@ -142,6 +149,9 @@ void TabMenuLogic::render_without_setup(
     }
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     if (list_view_style_ == ListViewStyle::TEXT) {
+        if (globals_changed_) {
+            renderable_text_->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+        }
         ListViewStringDrawer drawer{
             ListViewOrientation::HORIZONTAL,
             *renderable_text_,
@@ -149,7 +159,12 @@ void TabMenuLogic::render_without_setup(
             line_distance_,
             *ew,
             ly,
-            [this](size_t index) {return ui_focus_.submenu_headers.at(index).title;}};
+            [this](size_t index) {
+                if (globals_changed_) {
+                    titles_[index] = mle_.eval<std::string>(ui_focus_.submenu_headers.at(index).title);
+                }
+                return titles_.at(index);
+            }};
         list_view_.render_and_handle_input(lx, ly, drawer);
         drawer.render();
     } else if (list_view_style_ == ListViewStyle::ICON) {
@@ -159,6 +174,27 @@ void TabMenuLogic::render_without_setup(
         auto r_ref = reference_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
         auto r_icon = (icon_widget_ == nullptr) ? nullptr : icon_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
         auto r_title = (title_widget_ == nullptr) ? nullptr : title_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+        if (globals_changed_) {
+            for (size_t i = 0; i < contents_.num_entries(); ++i) {
+                titles_[i] = mle_.eval<std::string>(ui_focus_.submenu_headers.at(i).title);
+                if (r_title != nullptr) {
+                    auto it = title_resources_.find(i);
+                    if (it == title_resources_.end()) {
+                        title_resources_[i] = std::make_unique<TextResource>(ascii, ttf_filename_, font_color_);
+                    }
+                    title_resources_.at(i)->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+                    title_resources_.at(i)->set_contents(
+                        font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+                        {r_title->width(), r_title->height()},
+                        TextInterpolationMode::NEAREST_NEIGHBOR,
+                        {TextAndPosition{
+                        .text = titles_.at(i),
+                        .position = {NAN, 0.f},
+                        .align = VerticalTextAlignment::TOP,
+                        .line_distance = line_distance_.to_pixels(ly, PixelsRoundMode::NONE)}});
+                }
+            }
+        }
         ListViewWidgetDrawer drawer{
             [&](const IPixelRegion& ew){
                 gallery_["dots_icon"]->render(
@@ -186,20 +222,7 @@ void TabMenuLogic::render_without_setup(
                     }
                     {
                         auto et = PixelRegion::transformed(*r_title, dx, dy);
-                        auto it = titles_.find(index);
-                        if (it == titles_.end()) {
-                            titles_[index] = std::make_unique<TextResource>(charset_, ttf_filename_, font_color_);
-                            titles_[index]->set_contents(
-                                font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
-                                {r_title->width(), r_title->height()},
-                                TextInterpolationMode::NEAREST_NEIGHBOR,
-                                {TextAndPosition{
-                                .text = ui_focus_.submenu_headers.at(index).title,
-                                .position = {NAN, 0.f},
-                                .align = VerticalTextAlignment::TOP,
-                                .line_distance = line_distance_.to_pixels(ly, PixelsRoundMode::NONE)}});
-                        }
-                        titles_.at(index)->render(et);
+                        title_resources_.at(index)->render(et);
                     }
                 }
                 if (is_selected) {
@@ -216,6 +239,7 @@ void TabMenuLogic::render_without_setup(
     } else {
         THROW_OR_ABORT("Unknown listview style");
     }
+    globals_changed_ = false;
 }
 
 FocusFilter TabMenuLogic::focus_filter() const {

@@ -13,8 +13,6 @@
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 class UiFocus;
 class ButtonStates;
 class IWidget;
@@ -43,7 +41,7 @@ public:
         std::string id,
         std::vector<ReplacementParameter> options,
         ButtonPress& confirm_button,
-        VariableAndHash<std::string> charset,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
@@ -77,6 +75,7 @@ private:
     void merge_substitutions() const;
     MacroLineExecutor mle_;
     std::vector<ReplacementParameter> options_;
+    std::vector<std::string> cached_titles_;
     ReplacementParameterContents contents_;
     std::unique_ptr<TextResource> renderable_text_;
     std::unique_ptr<IWidget> widget_;
@@ -88,6 +87,8 @@ private:
     std::string persisted_;
     std::string id_;
     std::function<void()> on_execute_;
+    bool globals_changed_;
+    std::string charset_;
     ListView list_view_;
 };
 

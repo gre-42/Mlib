@@ -8,11 +8,13 @@
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -49,7 +51,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     std::string id,
     std::vector<ReplacementParameter> options,
     ButtonPress& confirm_button,
-    VariableAndHash<std::string> charset,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -66,7 +68,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     , options_{ std::move(options) }
     , contents_{options_, mle_}
     , renderable_text_{std::make_unique<TextResource>(
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         font_color)}
     , widget_{std::move(widget)}
@@ -78,6 +80,8 @@ ParameterSetterLogic::ParameterSetterLogic(
     , persisted_{ std::move(persisted) }
     , id_{ std::move(id) }
     , on_execute_{ std::move(on_execute) }
+    , globals_changed_{ true }
+    , charset_{ std::move(charset) }
     , list_view_{
         "id = " + id_,
         button_states,
@@ -93,7 +97,9 @@ ParameterSetterLogic::ParameterSetterLogic(
 {
     mle_.add_observer([this](){
         list_view_.notify_change_visibility();
+        globals_changed_ = true;
     });
+    cached_titles_.resize(options_.size());
 }
 
 ParameterSetterLogic::~ParameterSetterLogic() {
@@ -129,18 +135,27 @@ void ParameterSetterLogic::render_without_setup(
             }
         }
     }
+    if (globals_changed_) {
+        renderable_text_->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+        for (const auto& [i, o] : enumerate(options_)) {
+            cached_titles_.at(i) = mle_.eval<std::string>(o.title);
+        }
+    }
     LOG_FUNCTION("ParameterSetterLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     ListViewStringDrawer drawer{
-          ListViewOrientation::VERTICAL,
-          *renderable_text_,
-          font_height_,
-          line_distance_,
-          *ew,
-          ly,
-          [this](size_t index) {return options_.at(index).title;}};
+        ListViewOrientation::VERTICAL,
+        *renderable_text_,
+        font_height_,
+        line_distance_,
+        *ew,
+        ly,
+        [this](size_t index) {
+            return cached_titles_.at(index);
+        }};
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
+    globals_changed_ = false;
 }
 
 FocusFilter ParameterSetterLogic::focus_filter() const {

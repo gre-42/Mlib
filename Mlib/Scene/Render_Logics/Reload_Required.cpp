@@ -5,6 +5,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -13,25 +14,33 @@ using namespace Mlib;
 
 ReloadRequired::ReloadRequired(
     std::string title,
-    VariableAndHash<std::string> charset,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
+    MacroLineExecutor mle,
     UiFocus& ui_focus)
     : RenderTextLogic{
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         font_color,
         font_height,
         line_distance }
     , title_{ std::move(title) }
+    , charset_{ std::move(charset) }
+    , mle_{ std::move(mle) }
+    , globals_changed_{ false }
     , ui_focus_{ ui_focus }
     , widget_{ std::move(widget) }
     , focus_filter_{ std::move(focus_filter) }
-{}
+{
+    mle_.add_observer([this](){
+        globals_changed_ = true;
+    });
+}
 
 ReloadRequired::~ReloadRequired() {
     on_destroy.clear();
@@ -58,8 +67,12 @@ void ReloadRequired::render_without_setup(
     if (r.empty()) {
         return;
     }
+    if (globals_changed_) {
+        cached_title_ = mle_.eval<std::string>(title_);
+        renderable_text().set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+    }
     std::stringstream sstr;
-    sstr << title_ << '\n';
+    sstr << cached_title_ << '\n';
     for (const auto& [_, v] : r) {
         sstr << "  - " << v << '\n';
     }
@@ -71,6 +84,7 @@ void ReloadRequired::render_without_setup(
         TextInterpolationMode::NEAREST_NEIGHBOR,
         GenericTextAlignment::DEFAULT,
         GenericTextAlignment::DEFAULT);
+    globals_changed_ = false;
 }
 
 FocusFilter ReloadRequired::focus_filter() const {

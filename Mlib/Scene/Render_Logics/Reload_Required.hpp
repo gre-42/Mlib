@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -19,13 +20,14 @@ class ReloadRequired:
 public:
     ReloadRequired(
         std::string title,
-        VariableAndHash<std::string> charset,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
+        MacroLineExecutor mle,
         UiFocus& ui_focus);
     virtual ~ReloadRequired();
 
@@ -45,6 +47,10 @@ public:
 
 private:
     std::string title_;
+    std::string charset_;
+    std::string cached_title_;
+    MacroLineExecutor mle_;
+    bool globals_changed_;
     UiFocus& ui_focus_;
     std::unique_ptr<IWidget> widget_;
     FocusFilter focus_filter_;

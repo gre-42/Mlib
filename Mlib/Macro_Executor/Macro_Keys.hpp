@@ -22,4 +22,10 @@ DECLARE_ARGUMENT(arguments);
 DECLARE_ARGUMENT(let);
 }
 
+namespace UserKeys {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(title);
+DECLARE_ARGUMENT(charset);
+}
+
 }
