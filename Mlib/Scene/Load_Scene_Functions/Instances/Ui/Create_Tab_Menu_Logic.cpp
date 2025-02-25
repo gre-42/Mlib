@@ -58,7 +58,15 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto widget = args.layout_constraints.get_widget(
         args.arguments.at<ConstraintWindow>(KnownArgs::widget));
     size_t deflt = args.arguments.at<size_t>(KnownArgs::deflt);
-    auto on_execute = args.arguments.try_at(KnownArgs::on_execute);
+    std::function<void()> on_execute;
+    if (auto ooe = args.arguments.try_at(KnownArgs::on_execute); ooe.has_value()) {
+        on_execute = [macro_line_executor = args.macro_line_executor, oe=*ooe]() {
+            macro_line_executor(oe, nullptr, nullptr);
+            // This results in a deadlock because both "delete_node_mutex" and "delete_rigid_body_mutex" are acquired.
+            // std::scoped_lock rb_lock{ delete_rigid_body_mutex };
+            // macro_line_executor(reload_transient_objects, nullptr);
+        };
+    }
     // If the selection_ids array is not yet initialized, apply the default value.
     args.ui_focus.all_selection_ids.try_emplace(id, deflt);
     auto& tab_menu_logic = object_pool.create<TabMenuLogic>(
@@ -84,14 +92,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.ui_focus,
         args.num_renderings,
         args.button_states,
-        [macro_line_executor = args.macro_line_executor, on_execute]() {
-            if (on_execute.has_value()) {
-                macro_line_executor(*on_execute, nullptr, nullptr);
-                // This results in a deadlock because both "delete_node_mutex" and "delete_rigid_body_mutex" are acquired.
-                // std::scoped_lock rb_lock{ delete_rigid_body_mutex };
-                // macro_line_executor(reload_transient_objects, nullptr);
-            }
-        });
+        on_execute);
     render_logics.append(
         { tab_menu_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order, 0),
