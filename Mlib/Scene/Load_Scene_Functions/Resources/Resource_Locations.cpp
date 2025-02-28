@@ -1,4 +1,3 @@
-#include "Resource_Locations.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
@@ -20,6 +19,7 @@
 #include <Mlib/Render/Resources/Dff_File_Resource.hpp>
 #include <Mlib/Render/Resources/Pssg_File_Resource.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/Filesystem_Path.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
@@ -37,14 +37,6 @@ DECLARE_ARGUMENT(resource_variable);
 DECLARE_ARGUMENT(instantiables_variable);
 DECLARE_ARGUMENT(texture);
 }
-
-const std::string ResourceLocations::key = "resource_locations";
-
-LoadSceneJsonUserFunction ResourceLocations::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
 
 template <class TPosition>
 static void add_rw_resource(
@@ -173,15 +165,26 @@ static void exec(
     }
 }
 
-void ResourceLocations::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    auto dddb = std::make_shared<DrawDistanceDb>();
-    for (const auto& f : args.arguments.pathes_or_variables(KnownArgs::rw_ide_files)) {
-        dddb->add_ide(f.path);
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "resource_locations",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                auto dddb = std::make_shared<DrawDistanceDb>();
+                for (const auto& f : args.arguments.pathes_or_variables(KnownArgs::rw_ide_files)) {
+                    dddb->add_ide(f.path);
+                }
+                if (args.arguments.at<bool>(KnownArgs::double_precision)) {
+                    exec<CompressedScenePos>(args, dddb);
+                } else {
+                    exec<float>(args, dddb);
+                }
+            });
     }
-    if (args.arguments.at<bool>(KnownArgs::double_precision)) {
-        exec<CompressedScenePos>(args, dddb);
-    } else {
-        exec<float>(args, dddb);
-    }
+} obj;
+
 }

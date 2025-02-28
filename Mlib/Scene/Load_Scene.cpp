@@ -174,8 +174,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Additive_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Constant_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Fractional_Screen_Constraint.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Main/Clear_Selection_Ids.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Main/Reload_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Render_Fps.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Textures_Lazy.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio.hpp>
@@ -216,7 +214,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Print_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Replace_Terrain_Material.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Resource_Locations.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Array_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Animated_Dynamic_Light_Properties.hpp>
@@ -227,7 +224,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Shade_Auto.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Sleep.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Geographic_Mapping.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Gravity.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Wind.hpp>
@@ -447,7 +443,6 @@ LoadScene::LoadScene() {
             register_json_user_function(ObjResource::key, ObjResource::json_user_function);
             register_json_user_function(Repeat::key, Repeat::json_user_function);
             register_json_user_function(ReplaceTerrainMaterial::key, ReplaceTerrainMaterial::json_user_function);
-            register_json_user_function(ResourceLocations::key, ResourceLocations::json_user_function);
             register_json_user_function(SaveTextureArrayPng::key, SaveTextureArrayPng::json_user_function);
             register_json_user_function(SaveTexturePng::key, SaveTexturePng::json_user_function);
             register_json_user_function(SetFocuses::key, SetFocuses::json_user_function);
@@ -470,13 +465,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
             register_json_user_function(SmoothenEdges::key, SmoothenEdges::json_user_function);
             register_json_user_function(ShadeAuto::key, ShadeAuto::json_user_function);
-
-            // Main
-            register_json_user_function(ReloadScene::key, ReloadScene::json_user_function);
-            register_json_user_function(ClearSelectionIds::key, ClearSelectionIds::json_user_function);
-
-            // Misc
-            register_json_user_function(Sleep::key, Sleep::json_user_function);
         }
     } add_funcs;
 }
