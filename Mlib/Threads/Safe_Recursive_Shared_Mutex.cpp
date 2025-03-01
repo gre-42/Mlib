@@ -1,5 +1,6 @@
 #include "Safe_Recursive_Shared_Mutex.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -57,7 +58,20 @@ void SafeRecursiveSharedMutex::unlock_shared() {
     mutex_.unlock_shared();
 }
 
-void SafeRecursiveSharedMutex::throw_if_mutex_upgrade() {
+void SafeRecursiveSharedMutex::assert_locked() const {
+    if (!mutex_.is_owner()) {
+        THROW_OR_ABORT("Mutex not locked");
+    }
+}
+
+void SafeRecursiveSharedMutex::assert_locked_or_shared() const {
+    std::scoped_lock lock{ shared_owners_mutex_ };
+    if (!mutex_.is_owner() && !shared_owners_.contains(std::this_thread::get_id())) {
+        THROW_OR_ABORT("Mutex not locked or shared");
+    }
+}
+
+void SafeRecursiveSharedMutex::throw_if_mutex_upgrade() const {
     std::scoped_lock lock{ shared_owners_mutex_ };
     auto it = shared_owners_.find(std::this_thread::get_id());
     if ((it != shared_owners_.end()) && (it->second != 0)) {

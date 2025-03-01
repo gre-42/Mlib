@@ -6,6 +6,8 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
@@ -21,8 +23,6 @@
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
 #include <Mlib/Render/Ui/List_View_Widget_Drawer.hpp>
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 using namespace Mlib;
 

@@ -1,11 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <atomic>
 #include <cstddef>
 #include <memory>
@@ -25,7 +25,8 @@ class ReplacementParameterContents: public IListViewContents {
 public:
     explicit ReplacementParameterContents(
         const std::vector<ReplacementParameter>& options,
-        const MacroLineExecutor& mle);
+        const MacroLineExecutor& mle,
+        const UiFocus& ui_focus);
 
     // IListViewContents
     virtual size_t num_entries() const override;
@@ -33,6 +34,7 @@ public:
 private:
     const std::vector<ReplacementParameter>& options_;
     const MacroLineExecutor& mle_;
+    const UiFocus& ui_focus_;
 };
 
 class ParameterSetterLogic: public RenderLogic {

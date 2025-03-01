@@ -6,7 +6,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <list>
 #include <unordered_map>

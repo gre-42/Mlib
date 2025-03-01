@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
@@ -15,7 +16,6 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/Trim.hpp>

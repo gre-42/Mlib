@@ -105,6 +105,14 @@ public:
         return Mlib::get_vector<TData>(val, op);
     }
     template <class TData, class TOperation>
+    auto try_at_vector(std::string_view name, const TOperation& op) const {
+        if (!j_.contains(name)) {
+            using TRet = decltype(at_vector<TData>(name, op));
+            return std::optional<TRet>();
+        }
+        return std::optional{ at_vector<TData>(name, op) };
+    }
+    template <class TData, class TOperation>
     auto at_vector_non_null(std::string_view name, const TOperation& op) const {
         const auto& val = j_.at(name);
         if ((val.type() != nlohmann::detail::value_t::array) &&

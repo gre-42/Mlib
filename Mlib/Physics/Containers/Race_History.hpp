@@ -2,7 +2,7 @@
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <iosfwd>
 #include <list>
 #include <optional>

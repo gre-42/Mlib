@@ -5,6 +5,8 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
@@ -22,8 +24,6 @@
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 

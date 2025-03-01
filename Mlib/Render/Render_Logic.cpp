@@ -1,8 +1,8 @@
 #include "Render_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 using namespace Mlib;
 

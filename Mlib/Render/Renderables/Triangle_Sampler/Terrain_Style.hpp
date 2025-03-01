@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <vector>
 
 namespace Mlib {

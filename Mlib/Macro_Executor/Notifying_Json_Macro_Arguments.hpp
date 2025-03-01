@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 
 namespace Mlib {
 

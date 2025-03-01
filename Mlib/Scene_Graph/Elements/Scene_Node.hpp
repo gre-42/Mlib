@@ -13,7 +13,7 @@
 #include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <cstdint>
 #include <iosfwd>

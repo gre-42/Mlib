@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -11,7 +12,6 @@
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -72,7 +72,7 @@ void CountDownLogic::render_without_setup(
     float elapsed;
     {
         std::shared_lock lock{focuses_.mutex};
-        counting = focuses_.contains(counting_focus_);
+        counting = focuses_.has_focus(Focus::QUERY_CONTAINS | counting_focus_);
         elapsed = elapsed_time_;
     }
     if (counting) {
@@ -94,19 +94,19 @@ void CountDownLogic::render_without_setup(
 
 void CountDownLogic::advance_time(float dt, const StaticWorld& world) {
     std::scoped_lock lock{focuses_.mutex};
-    if (auto it = focuses_.find(pending_focus_); it != focuses_.end()) {
+    if (focuses_.has_focus(Focus::QUERY_CONTAINS | pending_focus_)) {
         elapsed_time_ = 0.f;
-        *it = counting_focus_;
+        focuses_.replace(pending_focus_, counting_focus_);
     }
-    if (auto it = focuses_.find(counting_focus_); it != focuses_.end()) {
+    if (focuses_.has_focus(Focus::QUERY_CONTAINS | counting_focus_)) {
         if (std::isnan(elapsed_time_)) {
             THROW_OR_ABORT("Countdown elapsed time is NAN (1)");
         }
-        if (focuses_.focus() == counting_focus_) {
+        if (focuses_.has_focus(counting_focus_)) {
             elapsed_time_ += dt;
         }
         if (elapsed_time_ >= duration_) {
-            focuses_.erase(it);
+            focuses_.remove(counting_focus_);
             elapsed_time_ = NAN;
         }
     }

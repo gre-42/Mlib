@@ -3,6 +3,7 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
@@ -13,16 +14,17 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
 #include <Mlib/Render/Ui/List_View_String_Drawer.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
 ReplacementParameterContents::ReplacementParameterContents(
     const std::vector<ReplacementParameter>& options,
-    const MacroLineExecutor& mle)
+    const MacroLineExecutor& mle,
+    const UiFocus& ui_focus)
     : options_{ options }
     , mle_{ mle }
+    , ui_focus_{ ui_focus }
 {}
 
 size_t ReplacementParameterContents::num_entries() const {
@@ -30,7 +32,14 @@ size_t ReplacementParameterContents::num_entries() const {
 }
 
 bool ReplacementParameterContents::is_visible(size_t index) const {
-    for (const auto& r : options_[index].required.dynamic) {
+    const auto& o = options_.at(index);
+    {
+        std::scoped_lock lock{ ui_focus_.focuses.mutex };
+        if (!ui_focus_.has_focus(FocusFilter{ o.required.focus_mask })) {
+            return false;
+        }
+    }
+    for (const auto& r : o.required.dynamic) {
         if (!mle_.eval<bool>(r)) {
             return false;
         }
@@ -66,7 +75,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     std::function<void()> on_execute)
     : mle_{ std::move(mle) }
     , options_{ std::move(options) }
-    , contents_{options_, mle_}
+    , contents_{options_, mle_, ui_focus}
     , renderable_text_{std::make_unique<TextResource>(
         ascii,
         std::move(ttf_filename),

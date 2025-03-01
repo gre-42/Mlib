@@ -1,5 +1,7 @@
 #include "Scene_To_Texture.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -9,8 +11,6 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 

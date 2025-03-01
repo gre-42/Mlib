@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <memory>
 
 namespace Mlib {

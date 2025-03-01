@@ -189,7 +189,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Trails.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animated_Billboards.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animated_Trails.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Append_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Cleanup_Mesh.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Convex_Decompose_Terrain.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Binary_X_Resource.hpp>
@@ -220,7 +219,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Bounds.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Bullet_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Constant_Dynamic_Light_Properties.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Shade_Auto.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
@@ -421,7 +419,6 @@ LoadScene::LoadScene() {
             register_json_user_function(AddSweptSphereAabb::key, AddSweptSphereAabb::json_user_function);
             register_json_user_function(AddTextureAtlas::key, AddTextureAtlas::json_user_function);
             register_json_user_function(AddTextureDescriptor::key, AddTextureDescriptor::json_user_function);
-            register_json_user_function(AppendFocuses::key, AppendFocuses::json_user_function);
             register_json_user_function(AnimatableBillboards::key, AnimatableBillboards::json_user_function);
             register_json_user_function(AnimatedBillboards::key, AnimatedBillboards::json_user_function);
             register_json_user_function(AnimatableTrails::key, AnimatableTrails::json_user_function);
@@ -445,7 +442,6 @@ LoadScene::LoadScene() {
             register_json_user_function(ReplaceTerrainMaterial::key, ReplaceTerrainMaterial::json_user_function);
             register_json_user_function(SaveTextureArrayPng::key, SaveTextureArrayPng::json_user_function);
             register_json_user_function(SaveTexturePng::key, SaveTexturePng::json_user_function);
-            register_json_user_function(SetFocuses::key, SetFocuses::json_user_function);
             register_json_user_function(CreateSquareResource::key, CreateSquareResource::json_user_function);
             register_json_user_function(CreateGridResource::key, CreateGridResource::json_user_function);
             register_json_user_function(MergeBlendedMaterials::key, MergeBlendedMaterials::json_user_function);

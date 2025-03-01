@@ -14,6 +14,7 @@ namespace KnownRequired {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(fixed);
 DECLARE_ARGUMENT(dynamic);
+DECLARE_ARGUMENT(focus_mask);
 }
 
 namespace KnownArgs {
@@ -51,6 +52,9 @@ void Mlib::from_json(const nlohmann::json& j, ReplacementParameterRequired& rp) 
     validate(j, KnownRequired::options);
     j.at(KnownRequired::fixed).get_to(rp.fixed);
     j.at(KnownRequired::dynamic).get_to(rp.dynamic);
+    rp.focus_mask = j.contains(KnownRequired::focus_mask)
+        ? focus_from_string(j.at(KnownRequired::focus_mask).get<std::string>())
+        : Focus::ALWAYS;
 }
 
 

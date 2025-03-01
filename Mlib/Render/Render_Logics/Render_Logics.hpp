@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <compare>
 #include <map>
 

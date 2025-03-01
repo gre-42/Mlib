@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <functional>
 #include <mutex>

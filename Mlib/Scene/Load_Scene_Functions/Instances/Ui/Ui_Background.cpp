@@ -4,6 +4,8 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -15,8 +17,6 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;

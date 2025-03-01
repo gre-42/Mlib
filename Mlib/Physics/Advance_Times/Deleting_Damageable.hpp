@@ -7,7 +7,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <mutex>
 #include <string>

@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
@@ -54,7 +55,6 @@
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>

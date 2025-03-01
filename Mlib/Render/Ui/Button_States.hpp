@@ -9,7 +9,7 @@
 #endif
 
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <unordered_set>
 
 namespace Mlib {

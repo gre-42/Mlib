@@ -1,8 +1,8 @@
-#include "Set_Focuses.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
@@ -13,11 +13,19 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(focuses);
 }
 
-const std::string SetFocuses::key = "set_focuses";
+namespace {
 
-LoadSceneJsonUserFunction SetFocuses::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    std::scoped_lock lock{args.ui_focus.focuses.mutex};
-    args.ui_focus.focuses.set_focuses(args.arguments.at_vector_non_null<std::string>(KnownArgs::focuses, single_focus_from_string));
-};
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_focuses",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                std::scoped_lock lock{args.ui_focus.focuses.mutex};
+                args.ui_focus.focuses.set_focuses(args.arguments.at_vector<std::string>(KnownArgs::focuses, single_focus_from_string));
+            });
+    }
+} obj;
+
+}

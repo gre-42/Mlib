@@ -3,7 +3,7 @@
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>

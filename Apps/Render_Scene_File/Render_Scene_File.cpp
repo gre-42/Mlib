@@ -9,6 +9,7 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
@@ -39,7 +40,6 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>

@@ -1,6 +1,7 @@
 #include "Thread_Top.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -8,7 +9,6 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;

@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <map>
 #include <optional>
 #include <string>

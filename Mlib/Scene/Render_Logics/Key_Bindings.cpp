@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
@@ -49,7 +50,6 @@
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 
@@ -258,7 +258,7 @@ void KeyBindings::increment_external_forces(
         }
         {
             std::shared_lock lock{ focuses_.mutex };
-            if (focuses_.focus() != Focus::SCENE) {
+            if (!focuses_.has_focus(Focus::SCENE)) {
                 return false;
             }
         }

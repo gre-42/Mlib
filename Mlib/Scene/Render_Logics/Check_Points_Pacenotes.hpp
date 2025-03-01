@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
@@ -6,8 +7,7 @@
 #include <Mlib/Render/Data_Display/Pacenote_Display.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <optional>
 #include <vector>
 

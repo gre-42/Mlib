@@ -8,4 +8,4 @@ if (NOT ANDROID)
     target_precompile_headers(MlibSceneGraph PRIVATE ../Precompiled_Header.hpp)
 endif()
 
-target_link_libraries(MlibSceneGraph Mlib MlibMemory MlibGeometry MlibThreads)
+target_link_libraries(MlibSceneGraph Mlib MlibMemory MlibGeometry MlibThreads MlibMacroExecutor)

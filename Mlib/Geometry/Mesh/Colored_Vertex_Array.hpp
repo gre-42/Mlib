@@ -8,7 +8,7 @@
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Primitive_Dimensions.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/To_Underlying.hpp>
 #include <atomic>
 #include <cereal/access.hpp>

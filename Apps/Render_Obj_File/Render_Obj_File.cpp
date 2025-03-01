@@ -20,6 +20,7 @@
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
@@ -70,7 +71,6 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Modifiers/Add_Cleanup_Mesh_Modifier.hpp>
 #include <Mlib/Scene_Graph/Resources/Compound_Resource.hpp>

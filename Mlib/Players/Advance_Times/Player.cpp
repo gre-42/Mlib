@@ -5,6 +5,7 @@
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Images/Svg.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
@@ -34,7 +35,6 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>

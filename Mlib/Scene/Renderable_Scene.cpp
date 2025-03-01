@@ -1,6 +1,8 @@
 #include "Renderable_Scene.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
@@ -20,8 +22,6 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 

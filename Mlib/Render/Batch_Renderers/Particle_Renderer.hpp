@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Map/Threadsafe_Default_Map.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <memory>
 
 namespace Mlib {

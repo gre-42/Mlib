@@ -1,8 +1,9 @@
 #include "Focus.hpp"
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Base.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String_Json.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -11,86 +12,126 @@
 
 using namespace Mlib;
 
-Focuses::Focuses() = default;
+Focuses::Focuses()
+    : focus_merge_{Focus::NONE}
+{}
 
 Focuses::~Focuses() = default;
 
 Focuses::Focuses(const std::initializer_list<Focus>& focuses)
-    : focuses_{focuses}
-{}
+    : focus_stack_{focuses}
+{
+    compute_focus_merge();
+}
+
+void Focuses::compute_focus_merge() {
+    mutex.assert_locked_by_caller();
+    focus_merge_ = Focus::NONE;
+    for (const auto f : focus_stack_) {
+        focus_merge_ |= f;
+    }
+}
 
 void Focuses::set_focuses(const std::initializer_list<Focus>& focuses) {
     mutex.assert_locked_by_caller();
-    focuses_ = std::list(focuses.begin(), focuses.end());
+    focus_stack_ = std::list(focuses.begin(), focuses.end());
+    compute_focus_merge();
 }
 
 void Focuses::set_focuses(const std::vector<Focus>& focuses)
 {
     mutex.assert_locked_by_caller();
-    focuses_ = std::list(focuses.begin(), focuses.end());
+    focus_stack_ = std::list(focuses.begin(), focuses.end());
+    compute_focus_merge();
 }
 
-Focus Focuses::focus() const {
-    return focuses_.empty()
-        ? Focus::BASE
-        : focuses_.back();
+bool Focuses::operator == (const std::vector<Focus>& focuses) const {
+    if (focus_stack_.size() != focuses.size()) {
+        return false;
+    }
+    for (const auto& [i, e] : enumerate(focus_stack_)) {
+        if (e != focuses[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
-std::list<Focus>::const_iterator Focuses::find(Focus focus) const {
-    return std::find(focuses_.begin(), focuses_.end(), focus);
+bool Focuses::operator != (const std::vector<Focus>& focuses) const {
+    return !(*this == focuses);
 }
 
-std::list<Focus>::iterator Focuses::find(Focus focus) {
-    return std::find(focuses_.begin(), focuses_.end(), focus);
-}
-
-std::list<Focus>::const_iterator Focuses::end() const {
-    return focuses_.end();
-}
-
-std::list<Focus>::iterator Focuses::end() {
-    return focuses_.end();
-}
-
-void Focuses::erase(const std::list<Focus>::iterator& it) {
+void Focuses::replace(Focus old, Focus new_) {
     mutex.assert_locked_by_caller();
-    focuses_.erase(it);
+    auto it = std::find(focus_stack_.begin(), focus_stack_.end(), old);
+    if (it == focus_stack_.end()) {
+        THROW_OR_ABORT("Could not find focus with value \"" + focus_to_string(old) + '"');
+    }
+    *it = new_;
+    compute_focus_merge();
+}
+
+Focus Focuses::back_or_none() const {
+    return focus_stack_.empty()
+        ? Focus::NONE
+        : focus_stack_.back();
+}
+
+void Focuses::remove(Focus focus) {
+    mutex.assert_locked_by_caller();
+    auto it = std::find(focus_stack_.begin(), focus_stack_.end(), focus);
+    if (it == focus_stack_.end()) {
+        THROW_OR_ABORT("Could not find focus with value \"" + focus_to_string(focus) + '"');
+    }
+    focus_stack_.erase(it);
+    compute_focus_merge();
 }
 
 void Focuses::pop_back() {
     mutex.assert_locked_by_caller();
-    if (focuses_.empty()) {
+    if (focus_stack_.empty()) {
         THROW_OR_ABORT("pop_back called on empty focuses");
     }
-    focuses_.pop_back();
+    focus_stack_.pop_back();
+    compute_focus_merge();
 }
 
 void Focuses::push_back(Focus focus) {
     mutex.assert_locked_by_caller();
-    if (this->focus() == focus) {
+    if (any(focus_merge_ & focus)) {
         THROW_OR_ABORT("Duplicate focus: " + focus_to_string(focus));
     }
-    focuses_.push_back(focus);
+    focus_stack_.push_back(focus);
+    compute_focus_merge();
 }
 
-bool Focuses::contains(Focus focus) const {
-    return find(focus) != end();
+bool Focuses::has_focus(Focus focus) const {
+    auto f = any(focus & Focus::QUERY_CONTAINS)
+        ? focus_merge_
+        : back_or_none();
+    return any(focus & Focus::QUERY_ALL)
+        ? all(f, focus & ~Focus::ANY_QUERY)
+        : any(f & focus);
 }
 
 bool Focuses::countdown_active() const {
-    return contains(Focus::COUNTDOWN_PENDING) || contains(Focus::COUNTDOWN_COUNTING);
+    return has_focus(Focus::QUERY_CONTAINS | Focus::COUNTDOWN_PENDING | Focus::COUNTDOWN_COUNTING);
 }
 
 bool Focuses::game_over_countdown_active() const {
-    return contains(Focus::GAME_OVER_COUNTDOWN_PENDING) || contains(Focus::GAME_OVER_COUNTDOWN_COUNTING);
+    return has_focus(Focus::QUERY_CONTAINS | Focus::GAME_OVER_COUNTDOWN_PENDING | Focus::GAME_OVER_COUNTDOWN_COUNTING);
+}
+
+bool Focuses::empty() const {
+    return focus_stack_.empty();
 }
 
 size_t Focuses::size() const {
-    return focuses_.size();
+    return focus_stack_.size();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Focuses& focuses) {
-    for (const auto& f : focuses.focuses_) {
+    for (const auto& f : focuses.focus_stack_) {
         ostr << focus_to_string(f) << " ";
     }
     return ostr;
@@ -119,10 +160,10 @@ void UiFocus::insert_submenu(
 }
 
 bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
-    if (!any(focuses.focus() & focus_filter.focus_mask)) {
+    if (!focuses.has_focus(focus_filter.focus_mask)) {
         return false;
     }
-    if (!focus_filter.submenu_ids.empty() && any(focuses.focus() & Focus::MENU_ANY)) {
+    if (!focus_filter.submenu_ids.empty() && focuses.has_focus(Focus::MENU_ANY)) {
         for (const std::string& submenu_id : focus_filter.submenu_ids) {
             auto it = submenu_numbers.find(submenu_id);
             if (it == submenu_numbers.end()) {
@@ -249,6 +290,8 @@ Focus Mlib::single_focus_from_string(const std::string& str) {
         {"game_over_countdown_any", Focus::GAME_OVER_COUNTDOWN_ANY},
         {"scene", Focus::SCENE},
         {"game_over", Focus::GAME_OVER},
+        {"query_contains", Focus::QUERY_CONTAINS},
+        {"query_all", Focus::QUERY_ALL},
         {"always", Focus::ALWAYS}
     };
     auto it = m.find(str);
@@ -269,7 +312,6 @@ Focus Mlib::focus_from_string(const std::string& s) {
 
 std::string Mlib::focus_to_string(Focus focus) {
     std::string result;
-    if (any(focus & Focus::BASE)) result += "b";
     if (any(focus & Focus::MAIN_MENU)) result += "m";
     if (any(focus & Focus::NEW_GAME_MENU)) result += "n";
     if (any(focus & Focus::SETTINGS_MENU)) result += "s";

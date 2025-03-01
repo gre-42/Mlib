@@ -8,7 +8,7 @@
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
-#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <functional>
 #include <iosfwd>

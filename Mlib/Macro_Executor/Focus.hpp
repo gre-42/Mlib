@@ -13,43 +13,35 @@ namespace Mlib {
 struct FocusFilter;
 
 enum class Focus {
+    // Focuses
     NONE = 0,
-    BASE = 1 << 0,
-    MAIN_MENU = 1 << 1,
-    NEW_GAME_MENU = 1 << 2,
-    SETTINGS_MENU = 1 << 3,
-    CONTROLS_MENU = 1 << 4,
-    LOADING = 1 << 5,
-    COUNTDOWN_PENDING = 1 << 6,
-    COUNTDOWN_COUNTING = 1 << 7,
-    GAME_OVER_COUNTDOWN_PENDING = 1 << 8,
-    GAME_OVER_COUNTDOWN_COUNTING = 1 << 9,
-    SCENE = 1 << 10,
-    GAME_OVER = 1 << 11,  // currently not in use, countdown is used instead.
+    MAIN_MENU = 1 << 0,
+    NEW_GAME_MENU = 1 << 1,
+    SETTINGS_MENU = 1 << 2,
+    CONTROLS_MENU = 1 << 3,
+    LOADING = 1 << 4,
+    COUNTDOWN_PENDING = 1 << 5,
+    COUNTDOWN_COUNTING = 1 << 6,
+    GAME_OVER_COUNTDOWN_PENDING = 1 << 7,
+    GAME_OVER_COUNTDOWN_COUNTING = 1 << 8,
+    SCENE = 1 << 9,
+    GAME_OVER = 1 << 10,  // currently not in use, countdown is used instead.
     MENU_ANY = MAIN_MENU | NEW_GAME_MENU | SETTINGS_MENU | CONTROLS_MENU,
     COUNTDOWN_ANY = COUNTDOWN_PENDING | COUNTDOWN_COUNTING,
     GAME_OVER_COUNTDOWN_ANY = GAME_OVER_COUNTDOWN_PENDING | GAME_OVER_COUNTDOWN_COUNTING,
-    ALWAYS =
-        BASE |
-        MAIN_MENU |
-        NEW_GAME_MENU |
-        SETTINGS_MENU |
-        CONTROLS_MENU |
-        LOADING |
-        COUNTDOWN_PENDING |
-        COUNTDOWN_COUNTING |
-        GAME_OVER_COUNTDOWN_PENDING |
-        GAME_OVER_COUNTDOWN_COUNTING |
-        SCENE |
-        GAME_OVER
+    // Queries
+    QUERY_CONTAINS = 1 << 16,
+    QUERY_ALL = 1 << 17,
+    ANY_QUERY = QUERY_CONTAINS | QUERY_ALL,
+    ALWAYS = QUERY_CONTAINS | QUERY_ALL | NONE
 };
 
 inline Focus operator | (Focus a, Focus b) {
-    return Focus((unsigned int)a | (unsigned int)b);
+    return Focus((int)a | (int)b);
 }
 
 inline Focus operator & (Focus a, Focus b) {
-    return Focus((unsigned int)a & (unsigned int)b);
+    return Focus((int)a & (int)b);
 }
 
 inline Focus& operator |= (Focus& a, Focus b) {
@@ -57,8 +49,16 @@ inline Focus& operator |= (Focus& a, Focus b) {
     return a;
 }
 
+inline Focus operator ~ (Focus a) {
+    return Focus(~(int)a);
+}
+
 inline bool any(Focus f) {
     return f != Focus::NONE;
+}
+
+inline bool all(Focus f, Focus required) {
+    return !any(~f & required);
 }
 
 class Focuses {
@@ -71,21 +71,23 @@ public:
     Focuses& operator = (const Focuses&) = delete;
     void set_focuses(const std::initializer_list<Focus>& focuses);
     void set_focuses(const std::vector<Focus>& focuses);
-    Focus focus() const;
-    std::list<Focus>::const_iterator find(Focus focus) const;
-    std::list<Focus>::iterator find(Focus focus);
-    std::list<Focus>::const_iterator end() const;
-    std::list<Focus>::iterator end();
-    void erase(const std::list<Focus>::iterator& it);
+    bool operator == (const std::vector<Focus>& focuses) const;
+    bool operator != (const std::vector<Focus>& focuses) const;
+    void replace(Focus old, Focus new_);
+    void remove(Focus focus);
     void pop_back();
     void push_back(Focus focus);
-    bool contains(Focus focus) const;
+    bool has_focus(Focus focus) const;
     bool countdown_active() const;
     bool game_over_countdown_active() const;
+    bool empty() const;
     size_t size() const;
     mutable CheckedMutex mutex;
 private:
-    std::list<Focus> focuses_;
+    void compute_focus_merge();
+    Focus back_or_none() const;
+    std::list<Focus> focus_stack_;
+    Focus focus_merge_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);

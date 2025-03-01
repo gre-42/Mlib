@@ -10,7 +10,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(content);
+DECLARE_ARGUMENT(expected);
 }
 
 namespace {
@@ -18,14 +18,17 @@ namespace {
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "append_focuses",
+            "pop_focus",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
                 std::scoped_lock lock{args.ui_focus.focuses.mutex};
-                for (Focus focus : args.arguments.at_vector<std::string>(KnownArgs::content, focus_from_string)) {
-                    args.ui_focus.focuses.push_back(focus);
+                if (auto e = args.arguments.try_at<std::string>(KnownArgs::expected); e.has_value()) {
+                    if (!args.ui_focus.focuses.has_focus(single_focus_from_string(*e))) {
+                        return;
+                    }
                 }
+                args.ui_focus.focuses.pop_back();
             });
     }
 } obj;
