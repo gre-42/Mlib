@@ -1063,7 +1063,6 @@ int main(int argc, char** argv) {
         }
         
         // scene.print();
-        Focuses focuses = { Focus::SCENE };
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
