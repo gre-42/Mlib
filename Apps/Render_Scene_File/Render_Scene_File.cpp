@@ -333,6 +333,7 @@ int main(int argc, char** argv) {
         "    [--far_plane <value>]\n"
         "    [--record_track_basename <value>]\n"
         "    [--devel_mode]\n"
+        "    [--enable_ridge_map]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
         "    [--max_extra_friction <x>]\n"
@@ -355,7 +356,7 @@ int main(int argc, char** argv) {
         "    [--optimize_search_time]\n"
         "    [--plot_triangle_bvh]\n"
         "    [--show_mouse_cursor]\n"
-        "    [--nsubsteps]\n"
+        "    [--nsubsteps <n>]\n"
         "    [--bvh_max_size <r>]\n"
         "    [--static_radius <r>]\n"
         "    [--print_search_time]\n"
@@ -395,6 +396,7 @@ int main(int argc, char** argv) {
          "--plot_triangle_bvh",
          "--devel_mode",
          "--show_mouse_cursor",
+         "--enable_ridge_map",
          "--no_slip",
          "--no_avoid_burnout",
          "--print_search_time",
@@ -609,7 +611,7 @@ int main(int argc, char** argv) {
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "4")),
-                .enable_ridge_map = false};
+                .enable_ridge_map = args.has_named("--enable_ridge_map")};
 
             SceneConfig scene_config{
                 .render_config = render_config,
