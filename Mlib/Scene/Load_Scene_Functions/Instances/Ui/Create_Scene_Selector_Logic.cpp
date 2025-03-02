@@ -11,7 +11,6 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
@@ -69,7 +68,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         CURRENT_SOURCE_LOCATION,
         std::move(id),
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
-        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
+        args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

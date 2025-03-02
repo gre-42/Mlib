@@ -9,7 +9,6 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Reload_Required.hpp>
@@ -49,7 +48,7 @@ void CreateRequiresReloadLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
     auto& requires_reload_logic = object_pool.create<ReloadRequired>(
         CURRENT_SOURCE_LOCATION,
         args.arguments.at<std::string>(KnownArgs::title),
-        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
+        args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         std::move(widget),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),

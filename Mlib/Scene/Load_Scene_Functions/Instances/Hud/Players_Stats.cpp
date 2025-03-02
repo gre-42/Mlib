@@ -10,7 +10,6 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -53,7 +52,7 @@ void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION,
         players,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
-        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
+        args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

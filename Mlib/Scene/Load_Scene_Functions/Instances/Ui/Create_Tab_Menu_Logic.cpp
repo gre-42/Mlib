@@ -11,7 +11,6 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
@@ -77,7 +76,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.gallery,
         list_view_style_from_string(args.arguments.at<std::string>(KnownArgs::style)),
         args.arguments.at<std::string>(KnownArgs::selection_marker),
-        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
+        args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         std::move(reference_widget),
         std::move(icon_widget),

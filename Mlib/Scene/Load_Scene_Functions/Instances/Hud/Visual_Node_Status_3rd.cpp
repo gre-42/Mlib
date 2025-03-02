@@ -6,7 +6,6 @@
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -54,7 +53,7 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         lo,
         log_components,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
-        args.arguments.at<std::string>(KnownArgs::charset, *ascii),
+        args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::offset),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
