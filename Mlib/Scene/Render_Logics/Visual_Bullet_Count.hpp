@@ -10,8 +10,6 @@
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 class AdvanceTimes;
 class TextResource;
 class Player;
@@ -20,6 +18,7 @@ class IWidget;
 class ObjectPool;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ExpressionWatcher;
 
 class VisualBulletCount:
     public RenderLogic,
@@ -32,7 +31,8 @@ public:
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
         const DanglingBaseClassRef<Player>& player,
-        VariableAndHash<std::string> charset,
+        std::unique_ptr<ExpressionWatcher>&& ew,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
@@ -59,6 +59,8 @@ public:
 
 private:
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
+    std::unique_ptr<ExpressionWatcher> ew_;
+    std::string charset_;
     AdvanceTimes& advance_times_;
     RenderLogics& render_logics_;
     DanglingBaseClassRef<Player> player_;

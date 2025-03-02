@@ -3,23 +3,24 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <cstddef>
+#include <memory>
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 class TextResource;
 class BaseLog;
 enum class LogEntrySeverity;
 class IWidget;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ExpressionWatcher;
 
 class VisualGlobalLog: public RenderLogic, public RenderTextLogic {
 public:
     VisualGlobalLog(
         BaseLog& base_log,
-        VariableAndHash<std::string> charset,
+        std::unique_ptr<ExpressionWatcher>&& ew,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
@@ -44,6 +45,8 @@ public:
 
 private:
     BaseLog& base_log_;
+    std::unique_ptr<ExpressionWatcher> ew_;
+    std::string charset_;
     size_t nentries_;
     LogEntrySeverity severity_;
     std::unique_ptr<IWidget> widget_;

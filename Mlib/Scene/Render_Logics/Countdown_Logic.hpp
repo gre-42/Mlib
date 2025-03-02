@@ -9,11 +9,10 @@
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 enum class Focus;
 class Focuses;
 class AdvanceTimes;
+class ExpressionWatcher;
 
 class CountDownLogic:
     public RenderLogic,
@@ -22,7 +21,8 @@ class CountDownLogic:
 public:
     CountDownLogic(
         DanglingRef<SceneNode> node,
-        VariableAndHash<std::string> charset,
+        std::unique_ptr<ExpressionWatcher>&& ew,
+        std::string charset,
         std::string ttf_filename,
         const FixedArray<float, 3>& color,
         const FixedArray<float, 2>& position,
@@ -55,6 +55,8 @@ public:
     DestructionFunctionsRemovalTokens on_node_clear;
 private:
     DanglingPtr<SceneNode> node_;
+    std::unique_ptr<ExpressionWatcher> ew_;
+    std::string charset_;
     float elapsed_time_;
     float duration_;
     Focus pending_focus_;

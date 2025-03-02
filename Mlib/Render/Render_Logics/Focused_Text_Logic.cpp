@@ -4,17 +4,20 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 
 using namespace Mlib;
 
 FocusedTextLogic::FocusedTextLogic(
-    VariableAndHash<std::string> charset,
+    std::unique_ptr<ExpressionWatcher>&& ew,
+    std::string charset,
     std::string ttf_filename,
     const FixedArray<float, 3>& color,
     const FixedArray<float, 2>& position,
@@ -23,11 +26,13 @@ FocusedTextLogic::FocusedTextLogic(
     Focus focus_mask,
     std::string text)
     : RenderTextLogic{
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         color,
         font_height,
         line_distance }
+    , ew_{ std::move(ew) }
+    , charset_{ std::move(charset) }
     , position_{ position }
     , text_{ std::move(text) }
     , focus_mask_{ focus_mask }
@@ -54,6 +59,9 @@ void FocusedTextLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("FocusedTextLogic::render");
+    if (ew_->result_may_have_changed()) {
+        renderable_text().set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
+    }
     renderable_text().render(
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
         position_,

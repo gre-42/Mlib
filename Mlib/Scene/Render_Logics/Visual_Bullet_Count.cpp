@@ -4,14 +4,17 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -20,7 +23,8 @@ VisualBulletCount::VisualBulletCount(
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
     const DanglingBaseClassRef<Player>& player,
-    VariableAndHash<std::string> charset,
+    std::unique_ptr<ExpressionWatcher>&& ew,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -28,12 +32,14 @@ VisualBulletCount::VisualBulletCount(
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter)
     : RenderTextLogic{
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         font_color,
         font_height,
         line_distance }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
+    , ew_{ std::move(ew) }
+    , charset_{ std::move(charset) }
     , advance_times_{ advance_times }
     , render_logics_{ render_logics }
     , player_{ player }
@@ -77,6 +83,9 @@ void VisualBulletCount::render_without_setup(
     LOG_FUNCTION("VisualBulletCount::render");
     std::scoped_lock lock{mutex_};
     if (!text_.empty()) {
+        if (ew_->result_may_have_changed()) {
+            renderable_text().set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
+        }
         renderable_text().render(
             font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
             *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),

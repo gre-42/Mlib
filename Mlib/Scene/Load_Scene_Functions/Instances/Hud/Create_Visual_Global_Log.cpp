@@ -3,6 +3,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -47,7 +48,8 @@ void CreateVisualGlobalLog::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& logger = object_pool.create<VisualGlobalLog>(
         CURRENT_SOURCE_LOCATION,
         base_log,
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
+        std::make_unique<ExpressionWatcher>(args.macro_line_executor),        
+        args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

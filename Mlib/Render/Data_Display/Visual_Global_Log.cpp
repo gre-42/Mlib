@@ -4,21 +4,25 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <sstream>
 
 using namespace Mlib;
 
 VisualGlobalLog::VisualGlobalLog(
     BaseLog& base_log,
-    VariableAndHash<std::string> charset,
+    std::unique_ptr<ExpressionWatcher>&& ew,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -27,12 +31,14 @@ VisualGlobalLog::VisualGlobalLog(
     size_t nentries,
     LogEntrySeverity severity)
     : RenderTextLogic{
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         font_color,
         font_height,
         line_distance }
     , base_log_{ base_log }
+    , ew_{ std::move(ew) }
+    , charset_{ std::move(charset) }
     , nentries_{ nentries }
     , severity_{ severity }
     , widget_{ std::move(widget) }
@@ -61,6 +67,9 @@ void VisualGlobalLog::render_without_setup(
     LOG_FUNCTION("VisualGlobalLog::render");
     std::stringstream sstr;
     base_log_.get_messages(sstr, nentries_, severity_);
+    if (ew_->result_may_have_changed()) {
+        renderable_text().set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
+    }
     renderable_text().render(
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
         *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),

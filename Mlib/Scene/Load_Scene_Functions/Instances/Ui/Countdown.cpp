@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -54,7 +55,8 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& countdown_logic = global_object_pool.create<CountDownLogic>(
         CURRENT_SOURCE_LOCATION,
         node.ref(CURRENT_SOURCE_LOCATION),
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::charset, ascii),
+        std::make_unique<ExpressionWatcher>(args.macro_line_executor),        
+        args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::position),

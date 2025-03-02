@@ -13,14 +13,13 @@
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 class SceneNode;
 class CheckPoints;
 class RenderLogicGallery;
 class IWidget;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ExpressionWatcher;
 
 class CheckPointsPacenotes: public IAdvanceTime, public RenderLogic {
 public:
@@ -32,7 +31,8 @@ public:
         std::unique_ptr<IWidget>&& text_widget,
         std::unique_ptr<IWidget>&& picture_widget,
         const ILayoutPixels& font_height,
-        VariableAndHash<std::string> charset,
+        std::unique_ptr<ExpressionWatcher>&& ew,
+        std::string charset,
         std::string ttf_filename,
         const FixedArray<float, 3>& font_color,
         const std::string& pacenotes_filename,
@@ -64,6 +64,8 @@ public:
     void preload() const;
 
 private:
+    std::unique_ptr<ExpressionWatcher> ew_;
+    std::string charset_;
     const ILayoutPixels& widget_distance_;
     std::unique_ptr<IWidget> text_widget_;
     std::unique_ptr<IWidget> picture_widget_;

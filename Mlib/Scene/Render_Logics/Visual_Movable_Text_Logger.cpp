@@ -4,8 +4,10 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
@@ -16,18 +18,21 @@ using namespace Mlib;
 VisualMovableTextLogger::VisualMovableTextLogger(
     StatusWriter& status_writer,
     StatusComponents log_components,
-    VariableAndHash<std::string> charset,
+    std::unique_ptr<ExpressionWatcher>&& ew,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
     : RenderTextLogic{
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         {1.f, 1.f, 1.f},
         font_height,
         line_distance }
-        , status_writer_{ status_writer }
+    , ew_{ std::move(ew) }
+    , charset_{ std::move(charset) }
+    , status_writer_{ status_writer }
     , log_components_{ log_components }
     , widget_{ std::move(widget) }
 {}

@@ -6,14 +6,14 @@
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 enum class Focus;
+class ExpressionWatcher;
 
 class FocusedTextLogic: public RenderLogic, public RenderTextLogic {
 public:
     FocusedTextLogic(
-        VariableAndHash<std::string> charset,
+        std::unique_ptr<ExpressionWatcher>&& ew,
+        std::string charset,
         std::string ttf_filename,
         const FixedArray<float, 3>& color,
         const FixedArray<float, 2>& position,
@@ -38,6 +38,8 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    std::unique_ptr<ExpressionWatcher> ew_;
+    std::string charset_;
     const FixedArray<float, 2> position_;
     const std::string text_;
     Focus focus_mask_;

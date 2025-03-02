@@ -4,11 +4,14 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -21,7 +24,8 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     std::unique_ptr<IWidget>&& text_widget,
     std::unique_ptr<IWidget>&& picture_widget,
     const ILayoutPixels& font_height,
-    VariableAndHash<std::string> charset,
+    std::unique_ptr<ExpressionWatcher>&& ew,
+    std::string charset,
     std::string ttf_filename,
     const FixedArray<float, 3>& font_color,
     const std::string& pacenotes_filename,
@@ -31,13 +35,15 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     double pacenotes_minimum_covered_meters,
     size_t pacenotes_maximum_number,
     FocusFilter focus_filter)
-    : widget_distance_{ widget_distance }
+    : ew_{ std::move(ew) }
+    , charset_{ std::move(charset) }
+    , widget_distance_{ widget_distance }
     , text_widget_{ std::move(text_widget) }
     , picture_widget_{ std::move(picture_widget) }
     , font_height_{ font_height }
     , check_points_{ check_points.ptr() }
     , pacenote_reader_{ pacenotes_filename, nlaps, pacenotes_meters_read_ahead, pacenotes_minimum_covered_meters }
-    , text_{ std::move(charset), std::move(ttf_filename), font_color }
+    , text_{ ascii, std::move(ttf_filename), font_color }
     , display_{ gallery, text_, pictures_left, pictures_right }
     , focus_filter_{ std::move(focus_filter) }
     , on_destroy_check_points_{ check_points->on_destroy, CURRENT_SOURCE_LOCATION }
@@ -86,19 +92,24 @@ void CheckPointsPacenotes::render_without_setup(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    std::shared_lock lock{ mutex_ };
     auto text_region = text_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     auto picture_region = picture_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     auto dx1 = widget_distance_.to_pixels(lx, PixelsRoundMode::ROUND);
     float dx = 0.f;
-    for (const auto& pacenote : pacenotes_) {
-        display_.render(
-            *pacenote,
-            font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
-            TextInterpolationMode::NEAREST_NEIGHBOR,
-            PixelRegion::transformed(*text_region, dx, 0.f),
-            PixelRegion::transformed(*picture_region, dx, 0.f));
-        dx += dx1;
+    if (ew_->result_may_have_changed()) {
+        text_.set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
+    }
+    {
+        std::shared_lock lock{ mutex_ };
+        for (const auto& pacenote : pacenotes_) {
+            display_.render(
+                *pacenote,
+                font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
+                TextInterpolationMode::NEAREST_NEIGHBOR,
+                PixelRegion::transformed(*text_region, dx, 0.f),
+                PixelRegion::transformed(*picture_region, dx, 0.f));
+            dx += dx1;
+        }
     }
 }
 

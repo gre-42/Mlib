@@ -9,20 +9,20 @@
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 enum class StatusComponents;
 class StatusWriter;
 class IWidget;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ExpressionWatcher;
 
 class VisualMovableCircularLogger: public VisualMovableLoggerView {
 public:
     VisualMovableCircularLogger(
         StatusWriter& status_writer,
         StatusComponents log_components,
-        VariableAndHash<std::string> charset,
+        std::unique_ptr<ExpressionWatcher>&& ew,
+        std::string charset,
         std::string ttf_filename,
         const ColormapWithModifiers& pointer_texture_name,
         std::unique_ptr<IWidget>&& widget,
@@ -48,6 +48,8 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
 
 private:
+    std::unique_ptr<ExpressionWatcher> ew_;
+    std::string charset_;
     StatusWriter& status_writer_;
     StatusComponents log_components_;
     TextResource tick_text_;

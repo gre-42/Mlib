@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -19,7 +20,6 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -162,7 +162,8 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             std::move(text_widget),
             std::move(picture_widget),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_font_height)),
-            args.arguments.at<VariableAndHash<std::string>>(KnownArgs::pacenotes_charset, ascii),
+            std::make_unique<ExpressionWatcher>(args.macro_line_executor),
+            args.arguments.at<std::string>(KnownArgs::pacenotes_charset),
             args.arguments.path(KnownArgs::pacenotes_ttf),
             args.arguments.at<UFixedArray<float, 3>>(KnownArgs::pacenotes_font_color),
             args.arguments.path(KnownArgs::pacenotes_filename),

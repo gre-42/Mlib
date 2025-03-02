@@ -6,19 +6,19 @@
 
 namespace Mlib {
 
-template <class T>
-class VariableAndHash;
 enum class StatusComponents;
 class TextResource;
 class StatusWriter;
 class IWidget;
+class ExpressionWatcher;
 
 class VisualMovableTextLogger: public VisualMovableLoggerView, private RenderTextLogic, public virtual DanglingBaseClass {
 public:
     VisualMovableTextLogger(
         StatusWriter& status_writer,
         StatusComponents log_components,
-        VariableAndHash<std::string> charset,
+        std::unique_ptr<ExpressionWatcher>&& ew,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,
@@ -36,6 +36,8 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
 
 private:
+    std::unique_ptr<ExpressionWatcher> ew_;
+    std::string charset_;
     StatusWriter& status_writer_;
     StatusComponents log_components_;
     ThreadSafeString text_;

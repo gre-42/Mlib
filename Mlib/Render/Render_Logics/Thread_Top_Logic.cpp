@@ -4,18 +4,22 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
 ThreadTopLogic::ThreadTopLogic(
-    VariableAndHash<std::string> charset,
+    std::unique_ptr<ExpressionWatcher>&& ew,
+    std::string charset,
     std::string ttf_filename,
     const FixedArray<float, 3>& color,
     const FixedArray<float, 2>& position,
@@ -24,11 +28,13 @@ ThreadTopLogic::ThreadTopLogic(
     std::chrono::milliseconds update_interval,
     Focus focus_mask)
     : RenderTextLogic{
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         color,
         font_height,
         line_distance }
+    , ew_{ std::move(ew) }
+    , charset_{ std::move(charset) }
     , position_{ position }
     , last_update_{ std::chrono::steady_clock::time_point() }
     , update_interval_{ update_interval }
@@ -64,6 +70,9 @@ void ThreadTopLogic::render_without_setup(
         last_update_ = now;
     }
     LOG_FUNCTION("FocusedTextLogic::render");
+    if (ew_->result_may_have_changed()) {
+        renderable_text().set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
+    }
     renderable_text().render(
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
         position_,
