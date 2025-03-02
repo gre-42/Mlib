@@ -1,4 +1,5 @@
 #include "Players.hpp"
+#include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
@@ -10,6 +11,7 @@
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Format.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -20,12 +22,15 @@ Players::Players(
     size_t max_tracks,
     bool save_playback,
     const SceneNodeResources& scene_node_resources,
-    const RaceIdentifier& race_identifier)
+    const RaceIdentifier& race_identifier,
+    std::shared_ptr<Translator> translator)
     : race_history_{std::make_unique<RaceHistory>(
         max_tracks,
         save_playback,
         scene_node_resources,
-        race_identifier)}
+        race_identifier,
+        translator)}
+    , translator_{ std::move(translator) }
 {}
 
 Players::~Players() {
@@ -160,38 +165,46 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
                 if (p->game_mode() == GameMode::BYSTANDER) {
                     continue;
                 }
-                sstr << "Player: " << pname;
+                static const VariableAndHash<std::string> Player{ "Player" };
+                static const VariableAndHash<std::string> best_lap_time{ "best_lap_time" };
+                static const VariableAndHash<std::string> race_time{ "race_time" };
+                static const VariableAndHash<std::string> lap{ "lap" };
+                static const VariableAndHash<std::string> rank{ "rank" };
+                static const VariableAndHash<std::string> car_HP{ "car_HP" };
+                static const VariableAndHash<std::string> wins{ "wins" };
+                static const VariableAndHash<std::string> kills{ "kills" };
+                sstr << translator_->translate(Player) << ": " << pname;
                 if (any(config & ScoreBoardConfiguration::TEAM)) {
                     sstr << ", team: " << p->team_name();
                 }
                 if (any(config & ScoreBoardConfiguration::BEST_LAP_TIME)) {
-                    sstr << ", best lap time: " << format_minutes_seconds(p->stats().best_lap_time);
+                    sstr << ", " << translator_->translate(best_lap_time) << ": " << format_minutes_seconds(p->stats().best_lap_time);
                 }
                 if (any(config & ScoreBoardConfiguration::RACE_TIME)) {
                     if (p->stats().race_time != INFINITY) {
-                        sstr << ", race time: " << format_minutes_seconds(p->stats().race_time);
+                        sstr << ", " << translator_->translate(race_time) << ": " << format_minutes_seconds(p->stats().race_time);
                     }
                 }
                 if (any(config & ScoreBoardConfiguration::LAPS)) {
                     if ((race_history_->race_identifier().laps != 1) &&
                         (p->stats().nlaps != race_history_->race_identifier().laps)) {
-                        sstr << ", lap " << (p->stats().nlaps + 1) << "/"
+                        sstr << ", " << translator_->translate(lap) << ' ' << (p->stats().nlaps + 1) << "/"
                              << race_history_->race_identifier().laps;
                     }
                 }
                 if (any(config & ScoreBoardConfiguration::RANK)) {
                     if (p->stats().rank != UINT32_MAX) {
-                        sstr << ", rank " << (p->stats().rank + 1);
+                        sstr << ", " << translator_->translate(rank) << ' ' << (p->stats().rank + 1);
                     }
                 }
                 if (any(config & ScoreBoardConfiguration::CAR_HP)) {
-                    sstr << ", car HP: " << p->car_health();
+                    sstr << ", " << translator_->translate(car_HP) << ": " << p->car_health();
                 }
                 if (any(config & ScoreBoardConfiguration::NWINS)) {
-                    sstr << ", wins: " << p->stats().nwins;
+                    sstr << ", " << translator_->translate(wins) << ": " << p->stats().nwins;
                 }
                 if (any(config & ScoreBoardConfiguration::NKILLS)) {
-                    sstr << ", kills: " << p->stats().nkills;
+                    sstr << ", " << translator_->translate(kills) << ": " << p->stats().nkills;
                 }
                 sstr << std::endl;
             }
@@ -199,8 +212,9 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     }
     if (any(config & ScoreBoardConfiguration::HISTORY)) {
         if (sstr.tellp() != 0) {
+            static const VariableAndHash<std::string> History{ "History" };
             sstr << std::endl;
-            sstr << "History" << std::endl;
+            sstr << translator_->translate(History) << std::endl;
         }
         sstr << race_history_->get_level_history(config) << std::endl;
     }

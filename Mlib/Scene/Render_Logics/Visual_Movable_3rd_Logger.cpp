@@ -5,12 +5,14 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -25,7 +27,8 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     AdvanceTimes& advance_times,
     StatusWriter& status_writer,
     StatusComponents log_components,
-    VariableAndHash<std::string> charset,
+    std::unique_ptr<ExpressionWatcher>&& ew,
+    std::string charset,
     std::string ttf_filename,
     const FixedArray<float, 2>& offset,
     const FixedArray<float, 3>& font_color,
@@ -39,6 +42,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     , offset_{ offset }
     , font_color_{ font_color }
     , line_distance_{ line_distance }
+    , ew_{ std::move(ew) }
     , charset_{ std::move(charset) }
     , ttf_filename_{ std::move(ttf_filename) }
     , font_height_{ font_height }
@@ -91,9 +95,12 @@ void VisualMovable3rdLogger::render_with_setup(
     }
     if (renderable_text_ == nullptr) {
         renderable_text_ = std::make_unique<TextResource>(
-            charset_,
+            ascii,
             ttf_filename_,
             font_color_);
+    }
+    if (ew_->result_may_have_changed()) {
+        renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }
     auto position4 = dot1d(setup.vp, homogenized_4(node_pos));
     if (position4(2) > setup.camera->get_near_plane()) {

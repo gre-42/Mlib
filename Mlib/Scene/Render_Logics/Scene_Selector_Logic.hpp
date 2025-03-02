@@ -1,12 +1,10 @@
 #pragma once
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
-#include <atomic>
 #include <vector>
 
 namespace Mlib {
@@ -22,6 +20,8 @@ struct ReplacementParameterAndFilename;
 struct ReplacementParameterRequired;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ExpressionWatcher;
+class JsonView;
 
 class SceneEntry {
 public:
@@ -42,14 +42,14 @@ class SceneEntryContents: public IListViewContents {
 public:
     explicit SceneEntryContents(
         const std::vector<SceneEntry>& scene_entries,
-        const MacroLineExecutor& mle);
+        const ExpressionWatcher& ew);
 
     // IListViewContents
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
     const std::vector<SceneEntry>& scene_entries_;
-    const MacroLineExecutor& mle_;
+    const ExpressionWatcher& ew_;
 };
 
 class SceneSelectorLogic: public RenderLogic {
@@ -64,7 +64,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        MacroLineExecutor mle,
+        std::unique_ptr<ExpressionWatcher>&& ew,
         ThreadSafeString& next_scene_filename,
         ButtonStates& button_states,
         UiFocus& ui_focus,
@@ -88,8 +88,7 @@ public:
 
 private:
     void merge_substitutions() const;
-    std::atomic_bool globals_changed_;
-    MacroLineExecutor mle_;
+    std::unique_ptr<ExpressionWatcher> ew_;
     std::string charset_;
     std::string globals_prefix_;
     std::unique_ptr<TextResource> renderable_text_;

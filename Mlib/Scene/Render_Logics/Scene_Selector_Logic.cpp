@@ -3,8 +3,8 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -52,9 +52,9 @@ bool SceneEntry::operator < (const SceneEntry& other) const {
 
 SceneEntryContents::SceneEntryContents(
     const std::vector<SceneEntry>& scene_entries,
-    const MacroLineExecutor& mle)
+    const ExpressionWatcher& ew)
     : scene_entries_{scene_entries}
-    , mle_{mle}
+    , ew_{ew}
 {}
 
 size_t SceneEntryContents::num_entries() const {
@@ -64,7 +64,7 @@ size_t SceneEntryContents::num_entries() const {
 bool SceneEntryContents::is_visible(size_t index) const {
     const auto& entry = scene_entries_[index];
     for (const auto& r : entry.required().dynamic) {
-        if (!mle_.eval<bool>(r, entry.locals())) {
+        if (!ew_.eval<bool>(r, entry.locals())) {
             return false;
         }
     }
@@ -81,20 +81,19 @@ SceneSelectorLogic::SceneSelectorLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    MacroLineExecutor mle,
+    std::unique_ptr<ExpressionWatcher>&& ew,
     ThreadSafeString& next_scene_filename,
     ButtonStates& button_states,
     UiFocus& ui_focus,
     const std::function<void()>& on_change)
-    : globals_changed_{ true }
-    , mle_{ std::move(mle) }
+    : ew_{ std::move(ew) }
     , charset_{ std::move(charset) }
     , renderable_text_{ std::make_unique<TextResource>(
         ascii,
         std::move(ttf_filename),
         font_color) }
     , scene_files_{ std::move(scene_files) }
-    , contents_{ scene_files_, mle_ }
+    , contents_{ scene_files_, *ew_ }
     , widget_{ std::move(widget) }
     , font_height_{ font_height }
     , line_distance_{ line_distance }
@@ -114,9 +113,8 @@ SceneSelectorLogic::SceneSelectorLogic(
             on_change();
         } }
 {
-    mle_.add_observer([this]() {
+    ew_->add_observer([this]() {
         list_view_.notify_change_visibility();
-        globals_changed_ = true;
         });
     scene_titles_.resize(scene_files_.size());
 }
@@ -143,11 +141,11 @@ void SceneSelectorLogic::render_without_setup(
 {
     LOG_FUNCTION("SceneSelectorLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
-    if (globals_changed_) {
+    if (ew_->result_may_have_changed()) {
         for (const auto& [i, s] : enumerate(scene_files_)) {
-            scene_titles_.at(i) = mle_.eval<std::string>(s.name());
+            scene_titles_.at(i) = ew_->eval<std::string>(s.name());
         }
-        renderable_text_->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+        renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
@@ -159,7 +157,6 @@ void SceneSelectorLogic::render_without_setup(
         [this](size_t index) {return scene_titles_.at(index);}};
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
-    globals_changed_ = false;
 }
 
 FocusFilter SceneSelectorLogic::focus_filter() const {
@@ -172,7 +169,7 @@ void SceneSelectorLogic::merge_substitutions() const {
     const auto& element = scene_files_.at(list_view_.selected_element());
     const auto& on_before_select = element.on_before_select();
     if (!on_before_select.is_null()) {
-        mle_(on_before_select, nullptr, nullptr);
+        ew_->execute(on_before_select, nullptr, nullptr);
     }
 }
 

@@ -3,6 +3,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
@@ -21,7 +22,7 @@ ReloadRequired::ReloadRequired(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    MacroLineExecutor mle,
+    std::unique_ptr<ExpressionWatcher>&& ew,
     UiFocus& ui_focus)
     : RenderTextLogic{
         ascii,
@@ -31,16 +32,11 @@ ReloadRequired::ReloadRequired(
         line_distance }
     , title_{ std::move(title) }
     , charset_{ std::move(charset) }
-    , mle_{ std::move(mle) }
-    , globals_changed_{ false }
+    , ew_{ std::move(ew) }
     , ui_focus_{ ui_focus }
     , widget_{ std::move(widget) }
     , focus_filter_{ std::move(focus_filter) }
-{
-    mle_.add_observer([this](){
-        globals_changed_ = true;
-    });
-}
+{}
 
 ReloadRequired::~ReloadRequired() {
     on_destroy.clear();
@@ -67,9 +63,9 @@ void ReloadRequired::render_without_setup(
     if (r.empty()) {
         return;
     }
-    if (globals_changed_) {
-        cached_title_ = mle_.eval<std::string>(title_);
-        renderable_text().set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+    if (ew_->result_may_have_changed()) {
+        cached_title_ = ew_->eval<std::string>(title_);
+        renderable_text().set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }
     std::stringstream sstr;
     sstr << cached_title_ << '\n';
@@ -84,7 +80,6 @@ void ReloadRequired::render_without_setup(
         TextInterpolationMode::NEAREST_NEIGHBOR,
         GenericTextAlignment::DEFAULT,
         GenericTextAlignment::DEFAULT);
-    globals_changed_ = false;
 }
 
 FocusFilter ReloadRequired::focus_filter() const {

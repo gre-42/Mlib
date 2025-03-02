@@ -1,12 +1,12 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <atomic>
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -24,6 +24,7 @@ class IWidget;
 class ILayoutPixels;
 class RenderLogicGallery;
 enum class ListViewStyle;
+class ExpressionWatcher;
 
 class SubmenuHeaderContents: public IListViewContents {
 public:
@@ -63,7 +64,7 @@ public:
         const ILayoutPixels& line_distance,
         NotifyingJsonMacroArguments& substitutions,
         const AssetReferences& asset_references,
-        MacroLineExecutor mle,
+        std::unique_ptr<ExpressionWatcher>&& ew,
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
         ButtonStates& button_states,
@@ -88,10 +89,9 @@ public:
 
 private:
     void merge_substitutions() const;
-    MacroLineExecutor mle_;
+    std::unique_ptr<ExpressionWatcher> ew_;
     std::string charset_;
     std::string ttf_filename_;
-    std::atomic_bool globals_changed_;
     FixedArray<float, 3> font_color_;
     std::string id_;
     Focus focus_mask_;

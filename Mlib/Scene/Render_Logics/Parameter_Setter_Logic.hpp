@@ -1,12 +1,10 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
-#include <atomic>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -20,12 +18,13 @@ class ILayoutPixels;
 struct ReplacementParameter;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ExpressionWatcher;
 
 class ReplacementParameterContents: public IListViewContents {
 public:
     explicit ReplacementParameterContents(
         const std::vector<ReplacementParameter>& options,
-        const MacroLineExecutor& mle,
+        const ExpressionWatcher& ew,
         const UiFocus& ui_focus);
 
     // IListViewContents
@@ -33,7 +32,7 @@ public:
     virtual bool is_visible(size_t index) const override;
 private:
     const std::vector<ReplacementParameter>& options_;
-    const MacroLineExecutor& mle_;
+    const ExpressionWatcher& ew_;
     const UiFocus& ui_focus_;
 };
 
@@ -50,7 +49,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        MacroLineExecutor mle,
+        std::unique_ptr<ExpressionWatcher>&& ew,
         UiFocus& ui_focus,
         std::string persisted,
         ButtonStates& button_states,
@@ -75,7 +74,7 @@ public:
 
 private:
     void merge_substitutions() const;
-    MacroLineExecutor mle_;
+    std::unique_ptr<ExpressionWatcher> ew_;
     std::vector<ReplacementParameter> options_;
     std::vector<std::string> cached_titles_;
     ReplacementParameterContents contents_;
@@ -89,7 +88,6 @@ private:
     std::string persisted_;
     std::string id_;
     std::function<void()> on_execute_;
-    std::atomic_bool globals_changed_;
     std::string charset_;
     ListView list_view_;
 };

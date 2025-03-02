@@ -38,7 +38,9 @@ void MenuLogic::handle_events() {
     if (keys_->start.keys_pressed()) {
         std::scoped_lock lock{user_object_.focuses.mutex};
         if (user_object_.focuses.has_focus(Focus::MENU_ANY)) {
-            user_object_.focuses.pop_back();
+            if (user_object_.focuses.size() > 1) {
+                user_object_.focuses.pop_back();
+            }
         } else if (user_object_.focuses.countdown_active() || user_object_.focuses.has_focus(Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) {
             user_object_.focuses.push_back(Focus::MAIN_MENU);
         } else if (user_object_.focuses.game_over_countdown_active()) {

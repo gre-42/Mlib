@@ -18,6 +18,7 @@ class AdvanceTimes;
 class RigidBodyVehicle;
 class SceneNode;
 class Scene;
+class Translator;
 
 class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter, public virtual DanglingBaseClass {
     DeletingDamageable(const DeletingDamageable&) = delete;
@@ -28,7 +29,8 @@ public:
         AdvanceTimes& advance_times,
         std::string root_node_name,
         float health,
-        bool delete_node_when_health_leq_zero);
+        bool delete_node_when_health_leq_zero,
+        std::shared_ptr<Translator> translator);
     virtual ~DeletingDamageable() override;
     // IAdvanceTime
     virtual void advance_time(float dt, const StaticWorld& world) override;
@@ -47,6 +49,7 @@ protected:
     mutable SafeAtomicRecursiveSharedMutex health_mutex_;
     bool delete_node_when_health_leq_zero_;
     RigidBodyVehicle* rb_;
+    std::shared_ptr<Translator> translator_;
     DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     DestructionFunctionsRemovalTokens rb_on_destroy_;

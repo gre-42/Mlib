@@ -1,5 +1,6 @@
 #include "Deleting_Damageable.hpp"
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -13,13 +14,15 @@ DeletingDamageable::DeletingDamageable(
     AdvanceTimes& advance_times,
     std::string root_node_name,
     float health,
-    bool delete_node_when_health_leq_zero)
+    bool delete_node_when_health_leq_zero,
+    std::shared_ptr<Translator> translator)
     : scene_{ scene }
     , advance_times_{ advance_times }
     , root_node_name_{ std::move(root_node_name) }
     , health_{ health }
     , delete_node_when_health_leq_zero_{ delete_node_when_health_leq_zero }
     , rb_{ &get_rigid_body_vehicle(scene.get_node(root_node_name_, DP_LOC)) }
+    , translator_{ std::move(translator) }
     , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear, CURRENT_SOURCE_LOCATION }
     , rb_on_destroy_{ rb_->on_destroy, CURRENT_SOURCE_LOCATION }
 {
@@ -43,9 +46,14 @@ void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
     }
 }
 
-void DeletingDamageable::write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const {
+void DeletingDamageable::write_status(
+    std::ostream& ostr,
+    StatusComponents log_components,
+    const StaticWorld& world) const
+{
+    static const VariableAndHash<std::string> HP{ "HP" };
     if (log_components & StatusComponents::HEALTH) {
-        ostr << "HP: " << health() << std::endl;
+        ostr << translator_->translate(HP) << ": " << health() << std::endl;
     }
 }
 

@@ -1,6 +1,8 @@
 #include "Create_Damageable.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Asset_Group_And_Id.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Deleting_Damageable.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -16,6 +18,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(health);
 DECLARE_ARGUMENT(delete_node_when_health_leq_zero);
+DECLARE_ARGUMENT(gid);
 }
 
 const std::string CreateDamageable::key = "damageable";
@@ -38,5 +41,8 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.advance_times_,
         args.arguments.at<std::string>(KnownArgs::node),
         args.arguments.at<float>(KnownArgs::health),
-        args.arguments.at<bool>(KnownArgs::delete_node_when_health_leq_zero));
+        args.arguments.at<bool>(KnownArgs::delete_node_when_health_leq_zero),
+        std::make_unique<Translator>(
+            args.translators,
+            VariableAndHash{args.arguments.at<AssetGroupAndId>(KnownArgs::gid)}));
 }

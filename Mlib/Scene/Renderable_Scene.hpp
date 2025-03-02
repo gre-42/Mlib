@@ -30,6 +30,7 @@
 #include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
+#include <memory>
 #include <vector>
 
 namespace Mlib {
@@ -57,6 +58,8 @@ class AudioListenerUpdater;
 class PhysicsLoop;
 class ButtonStates;
 class CursorStates;
+
+class Translator;
 
 enum class ThreadAffinity;
 enum class ClearMode;
@@ -99,7 +102,8 @@ public:
         bool save_playback,
         const RaceIdentifier& race_identfier,
         const FocusFilter& focus_filter,
-        DependentSleeper& dependent_sleeper);
+        DependentSleeper& dependent_sleeper,
+        std::shared_ptr<Translator> translator);
     ~RenderableScene();
     RenderableScene(const RenderableScene&) = delete;
     RenderableScene& operator = (const RenderableScene&) = delete;

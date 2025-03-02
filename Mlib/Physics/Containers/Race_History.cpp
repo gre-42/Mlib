@@ -3,6 +3,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Misc.hpp>
+#include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Physics/Containers/Race_Configuration.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
@@ -80,10 +81,12 @@ RaceHistory::RaceHistory(
     size_t max_tracks,
     bool save_playback,
     const SceneNodeResources& scene_node_resources,
-    const RaceIdentifier& race_identifier)
-: max_tracks_{ max_tracks },
-  save_playback_{ save_playback },
-  scene_node_resources_{ scene_node_resources }
+    const RaceIdentifier& race_identifier,
+    std::shared_ptr<Translator> translator)
+    : max_tracks_{ max_tracks }
+    , save_playback_{ save_playback }
+    , scene_node_resources_{ scene_node_resources }
+    , translator_{ std::move(translator) }
 {
     if (!race_identifier.session.empty()) {
         set_race_identifier_and_reload(race_identifier);
@@ -269,12 +272,14 @@ uint32_t RaceHistory::rank(float race_time_seconds) const {
 std::string RaceHistory::get_level_history(ScoreBoardConfiguration score_board_config) const {
     std::stringstream sstr;
     {
+        static const VariableAndHash<std::string> race_time{ "race_time" };
+        static const VariableAndHash<std::string> Race_time{ "Race_time" };
         std::shared_lock guard{ mutex_ };
         for (const auto& [rank, l] : enumerate(lap_time_events_)) {
             if (any(score_board_config & ScoreBoardConfiguration::PLAYER)) {
-                sstr << (rank + 1) << ": " << l.event.player_name << ", race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
+                sstr << (rank + 1) << ": " << l.event.player_name << ", " << translator_->translate(race_time) << ": " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
             } else {
-                sstr << (rank + 1) << ": " << "Race time: " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
+                sstr << (rank + 1) << ": " << translator_->translate(Race_time) << ": " << format_minutes_seconds(l.event.race_time_seconds) << std::endl;
             }
         }
     }

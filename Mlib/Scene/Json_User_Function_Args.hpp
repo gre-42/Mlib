@@ -25,6 +25,7 @@ class KeyConfigurations;
 class KeyDescriptions;
 class LayoutConstraints;
 class AssetReferences;
+class Translators;
 struct RealtimeDependentFps;
 
 struct LoadSceneJsonUserFunctionArgs {
@@ -52,6 +53,7 @@ struct LoadSceneJsonUserFunctionArgs {
     ThreadSafeString& next_scene_filename;
     RenderLogicGallery& gallery;
     AssetReferences& asset_references;
+    Translators& translators;
     RenderableScenes& renderable_scenes;
     const std::function<void()>& exit;
 };

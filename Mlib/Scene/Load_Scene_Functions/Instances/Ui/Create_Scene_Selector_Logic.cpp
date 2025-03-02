@@ -4,8 +4,8 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -80,7 +80,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         focus_filter,
-        args.macro_line_executor,
+        std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.next_scene_filename,
         args.button_states,
         args.ui_focus,

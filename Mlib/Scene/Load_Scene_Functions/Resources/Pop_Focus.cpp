@@ -11,6 +11,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(expected);
+DECLARE_ARGUMENT(preserve_last);
 }
 
 namespace {
@@ -27,6 +28,11 @@ static struct RegisterJsonUserFunction {
                     if (!args.ui_focus.focuses.has_focus(single_focus_from_string(*e))) {
                         return;
                     }
+                }
+                if (args.arguments.at<bool>(KnownArgs::preserve_last) &&
+                    (args.ui_focus.focuses.size() == 1))
+                {
+                    return;
                 }
                 args.ui_focus.focuses.pop_back();
             });

@@ -47,7 +47,8 @@ RenderableScene::RenderableScene(
     bool save_playback,
     const RaceIdentifier& race_identfier,
     const FocusFilter& focus_filter,
-    DependentSleeper& dependent_sleeper)
+    DependentSleeper& dependent_sleeper,
+    std::shared_ptr<Translator> translator)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
     , name_{ std::move(name) }
     , dynamic_world_{ scene_node_resources, std::move(world) }
@@ -153,7 +154,7 @@ RenderableScene::RenderableScene(
         config.bloom_iterations) }
     , imposter_render_logics_{ std::make_unique<RenderLogics>(ui_focus) }
     , imposters_{ rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_ }
-    , players_{ max_tracks, save_playback, scene_node_resources, race_identfier }
+    , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, std::move(translator) }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
 #ifndef WITHOUT_ALUT
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}

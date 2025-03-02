@@ -1,6 +1,7 @@
 #include "Key_Bindings_Logic.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Math/Sub_Sat.hpp>
 #include <Mlib/Render/Key_Bindings/Input_Type.hpp>
@@ -22,10 +23,10 @@ using namespace Mlib;
 KeyBindingsContents::KeyBindingsContents(
     std::string section,
     const KeyDescriptions& key_descriptions,
-    const MacroLineExecutor& mle)
+    const ExpressionWatcher& ew)
     : section_{ std::move(section) }
     , key_descriptions_{ key_descriptions }
-    , mle_{ mle }
+    , ew_{ ew }
 {}
 
 size_t KeyBindingsContents::num_entries() const {
@@ -38,7 +39,7 @@ bool KeyBindingsContents::is_visible(size_t index) const {
         return false;
     }
     for (const auto& r : k.required) {
-        if (!mle_.eval<bool>(r)) {
+        if (!ew_.eval<bool>(r)) {
             return false;
         }
     }
@@ -57,15 +58,14 @@ KeyBindingsLogic::KeyBindingsLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    MacroLineExecutor mle,
+    std::unique_ptr<ExpressionWatcher>&& ew,
     ButtonStates& button_states,
     std::atomic_size_t& selection_index)
-    : globals_changed_{ true }
-    , charset_{ std::move(charset) }
-    , mle_{ std::move(mle) }
+    : charset_{ std::move(charset) }
+    , ew_{ std::move(ew) }
     , key_descriptions_{ key_descriptions }
     , key_configurations_{ key_configurations }
-    , contents_{ std::move(section), key_descriptions_, mle_ }
+    , contents_{ std::move(section), key_descriptions_, *ew_ }
     , renderable_text_{std::make_unique<TextResource>(
         ascii,
         std::move(ttf_filename),
@@ -81,9 +81,8 @@ KeyBindingsLogic::KeyBindingsLogic(
         contents_,
         ListViewOrientation::VERTICAL}
 {
-    mle_.add_observer([this](){
+    ew_->add_observer([this](){
         list_view_.notify_change_visibility();
-        globals_changed_ = true;
     });
 }
 
@@ -109,10 +108,10 @@ void KeyBindingsLogic::render_without_setup(
 {
     LOG_FUNCTION("KeyBindingsLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
-    auto s = mle_.eval<std::string>("%input_type");
+    auto s = ew_->eval<std::string>("%input_type");
     auto filter = input_type_from_string(s);
-    if (globals_changed_) {
-        renderable_text_->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+    if (ew_->result_may_have_changed()) {
+        renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
@@ -132,7 +131,6 @@ void KeyBindingsLogic::render_without_setup(
         }};
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
-    globals_changed_ = false;
 }
 
 FocusFilter KeyBindingsLogic::focus_filter() const {

@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -20,13 +19,14 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class KeyDescriptions;
 class KeyConfigurations;
+class ExpressionWatcher;
 
 class KeyBindingsContents: public IListViewContents {
 public:
     explicit KeyBindingsContents(
         std::string section,
         const KeyDescriptions& key_descriptions,
-        const MacroLineExecutor& mle);
+        const ExpressionWatcher& mle);
 
     // IListViewContents
     virtual size_t num_entries() const override;
@@ -34,7 +34,7 @@ public:
 private:
     std::string section_;
     const KeyDescriptions& key_descriptions_;
-    const MacroLineExecutor& mle_;
+    const ExpressionWatcher& ew_;
 };
 
 class KeyBindingsLogic: public RenderLogic {
@@ -51,7 +51,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        MacroLineExecutor mle,
+        std::unique_ptr<ExpressionWatcher>&& ew,
         ButtonStates& button_states,
         std::atomic_size_t& selection_index);
     ~KeyBindingsLogic();
@@ -72,9 +72,8 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    std::atomic_bool globals_changed_;
     std::string charset_;
-    MacroLineExecutor mle_;
+    std::unique_ptr<ExpressionWatcher> ew_;
     const KeyDescriptions& key_descriptions_;
     KeyConfigurations& key_configurations_;
     KeyBindingsContents contents_;

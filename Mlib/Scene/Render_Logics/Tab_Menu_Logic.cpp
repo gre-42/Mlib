@@ -6,10 +6,10 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
-#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -72,16 +72,15 @@ TabMenuLogic::TabMenuLogic(
     const ILayoutPixels& line_distance,
     NotifyingJsonMacroArguments& substitutions,
     const AssetReferences& asset_references,
-    MacroLineExecutor mle,
+    std::unique_ptr<ExpressionWatcher>&& ew,
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonStates& button_states,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
-    : mle_{ std::move(mle) }
+    : ew_{ std::move(ew) }
     , charset_{ std::move(charset) }
     , ttf_filename_{ std::move(ttf_filename) }
-    , globals_changed_{ true }
     , font_color_{ font_color }
     , id_{ id }
     , focus_mask_{ focus_mask }
@@ -118,9 +117,6 @@ TabMenuLogic::TabMenuLogic(
     if ((icon_widget_ == nullptr) != (title_widget_ == nullptr)) {
         THROW_OR_ABORT("Inconsistent icon / title widget definition");
     }
-    mle_.add_observer([this](){
-        globals_changed_ = true;
-    });
 }
 
 TabMenuLogic::~TabMenuLogic() {
@@ -148,9 +144,10 @@ void TabMenuLogic::render_without_setup(
         on_execute_();
     }
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
+    auto dirty = ew_->result_may_have_changed();
     if (list_view_style_ == ListViewStyle::TEXT) {
-        if (globals_changed_) {
-            renderable_text_->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+        if (dirty) {
+            renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
         }
         ListViewStringDrawer drawer{
             ListViewOrientation::HORIZONTAL,
@@ -159,9 +156,9 @@ void TabMenuLogic::render_without_setup(
             line_distance_,
             *ew,
             ly,
-            [this](size_t index) {
-                if (globals_changed_) {
-                    titles_[index] = mle_.eval<std::string>(ui_focus_.submenu_headers.at(index).title);
+            [this, dirty](size_t index) {
+                if (dirty) {
+                    titles_[index] = ew_->eval<std::string>(ui_focus_.submenu_headers.at(index).title);
                 }
                 return titles_.at(index);
             }};
@@ -174,15 +171,15 @@ void TabMenuLogic::render_without_setup(
         auto r_ref = reference_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
         auto r_icon = (icon_widget_ == nullptr) ? nullptr : icon_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
         auto r_title = (title_widget_ == nullptr) ? nullptr : title_widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
-        if (globals_changed_) {
+        if (dirty) {
             for (size_t i = 0; i < contents_.num_entries(); ++i) {
-                titles_[i] = mle_.eval<std::string>(ui_focus_.submenu_headers.at(i).title);
+                titles_[i] = ew_->eval<std::string>(ui_focus_.submenu_headers.at(i).title);
                 if (r_title != nullptr) {
                     auto it = title_resources_.find(i);
                     if (it == title_resources_.end()) {
                         title_resources_[i] = std::make_unique<TextResource>(ascii, ttf_filename_, font_color_);
                     }
-                    title_resources_.at(i)->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+                    title_resources_.at(i)->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
                     title_resources_.at(i)->set_contents(
                         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
                         {r_title->width(), r_title->height()},
@@ -239,7 +236,6 @@ void TabMenuLogic::render_without_setup(
     } else {
         THROW_OR_ABORT("Unknown listview style");
     }
-    globals_changed_ = false;
 }
 
 FocusFilter TabMenuLogic::focus_filter() const {

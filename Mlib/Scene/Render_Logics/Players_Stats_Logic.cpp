@@ -3,9 +3,11 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
+#include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
 #include <filesystem>
@@ -16,7 +18,8 @@ using namespace Mlib;
 
 PlayersStatsLogic::PlayersStatsLogic(
     const Players& players,
-    VariableAndHash<std::string> charset,
+    std::unique_ptr<ExpressionWatcher>&& ew,
+    std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& font_color,
@@ -25,12 +28,14 @@ PlayersStatsLogic::PlayersStatsLogic(
     ScoreBoardConfiguration score_board_configuration,
     FocusFilter focus_filter)
     : RenderTextLogic{
-        std::move(charset),
+        ascii,
         std::move(ttf_filename),
         font_color,
         font_height,
         line_distance }
     , players_{ players }
+    , ew_{ std::move(ew) }
+    , charset_{ std::move(charset) }
     , score_board_configuration_{ score_board_configuration }
     , widget_{ std::move(widget) }
     , focus_filter_{ std::move(focus_filter) }
@@ -57,6 +62,9 @@ void PlayersStatsLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("PlayersStatsLogic::render");
+    if (ew_->result_may_have_changed()) {
+        renderable_text().set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
+    }
     renderable_text().render(
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
         *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),

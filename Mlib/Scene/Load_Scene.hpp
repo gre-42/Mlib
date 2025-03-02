@@ -7,6 +7,7 @@ namespace Mlib {
 
 class RenderLogicGallery;
 class AssetReferences;
+class Translators;
 class RenderableScenes;
 class NotifyingJsonMacroArguments;
 struct SceneConfig;
@@ -51,6 +52,7 @@ public:
         LayoutConstraints& layout_constraints,
         RenderLogicGallery& gallery,
         AssetReferences& asset_references,
+        Translators& translators,
         RenderableScenes& renderable_scenes,
         const std::function<void()>& exit);
 private:

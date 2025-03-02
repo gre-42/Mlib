@@ -11,6 +11,7 @@
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Translators.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
@@ -168,6 +169,7 @@ JThread loader_thread(
     const ParsedArgs& args,
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
+    Translators& translators,
     RenderableScenes& renderable_scenes,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
@@ -228,6 +230,7 @@ JThread loader_thread(
                     layout_constraints,
                     gallery,
                     asset_references,
+                    translators,
                     renderable_scenes,
                     exit);
                 if (!args.has_named("--no_physics")) {
@@ -682,6 +685,7 @@ int main(int argc, char** argv) {
 
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
+                Translators translators{ asset_references, external_json_macro_arguments };
                 RenderableScenes renderable_scenes;
 
                 std::atomic_bool load_scene_finished = false;
@@ -705,6 +709,7 @@ int main(int argc, char** argv) {
                     args,
                     gallery,
                     asset_references,
+                    translators,
                     renderable_scenes,
                     search_path,
                     main_scene_filename,

@@ -3,6 +3,7 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
@@ -20,10 +21,10 @@ using namespace Mlib;
 
 ReplacementParameterContents::ReplacementParameterContents(
     const std::vector<ReplacementParameter>& options,
-    const MacroLineExecutor& mle,
+    const ExpressionWatcher& ew,
     const UiFocus& ui_focus)
     : options_{ options }
-    , mle_{ mle }
+    , ew_{ ew }
     , ui_focus_{ ui_focus }
 {}
 
@@ -40,7 +41,7 @@ bool ReplacementParameterContents::is_visible(size_t index) const {
         }
     }
     for (const auto& r : o.required.dynamic) {
-        if (!mle_.eval<bool>(r)) {
+        if (!ew_.eval<bool>(r)) {
             return false;
         }
     }
@@ -67,15 +68,15 @@ ParameterSetterLogic::ParameterSetterLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    MacroLineExecutor mle,
+    std::unique_ptr<ExpressionWatcher>&& ew,
     UiFocus& ui_focus,
     std::string persisted,
     ButtonStates& button_states,
     std::function<void()> on_change,
     std::function<void()> on_execute)
-    : mle_{ std::move(mle) }
+    : ew_{ std::move(ew) }
     , options_{ std::move(options) }
-    , contents_{options_, mle_, ui_focus}
+    , contents_{options_, *ew_, ui_focus}
     , renderable_text_{std::make_unique<TextResource>(
         ascii,
         std::move(ttf_filename),
@@ -89,7 +90,6 @@ ParameterSetterLogic::ParameterSetterLogic(
     , persisted_{ std::move(persisted) }
     , id_{ std::move(id) }
     , on_execute_{ std::move(on_execute) }
-    , globals_changed_{ true }
     , charset_{ std::move(charset) }
     , list_view_{
         "id = " + id_,
@@ -104,9 +104,8 @@ ParameterSetterLogic::ParameterSetterLogic(
             on_change();
         }}
 {
-    mle_.add_observer([this](){
+    ew_->add_observer([this](){
         list_view_.notify_change_visibility();
-        globals_changed_ = true;
     });
     cached_titles_.resize(options_.size());
 }
@@ -136,7 +135,7 @@ void ParameterSetterLogic::render_without_setup(
         if (!f.is_null() || on_execute_) {
             if (confirm_button_.keys_pressed()) {
                 if (!f.is_null()) {
-                    mle_(f, nullptr, nullptr);
+                    ew_->execute(f, nullptr, nullptr);
                 }
                 if (on_execute_) {
                     on_execute_();
@@ -144,10 +143,10 @@ void ParameterSetterLogic::render_without_setup(
             }
         }
     }
-    if (globals_changed_) {
-        renderable_text_->set_charset(VariableAndHash{mle_.eval<std::string>(charset_)});
+    if (ew_->result_may_have_changed()) {
+        renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
         for (const auto& [i, o] : enumerate(options_)) {
-            cached_titles_.at(i) = mle_.eval<std::string>(o.title);
+            cached_titles_.at(i) = ew_->eval<std::string>(o.title);
         }
     }
     LOG_FUNCTION("ParameterSetterLogic::render");
@@ -164,7 +163,6 @@ void ParameterSetterLogic::render_without_setup(
         }};
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
-    globals_changed_ = false;
 }
 
 FocusFilter ParameterSetterLogic::focus_filter() const {
@@ -183,7 +181,7 @@ void ParameterSetterLogic::merge_substitutions() const {
 
     const auto& f = element.on_before_select;
     if (!f.is_null()) {
-        mle_(f, nullptr, nullptr);
+        ew_->execute(f, nullptr, nullptr);
     }
 }
 

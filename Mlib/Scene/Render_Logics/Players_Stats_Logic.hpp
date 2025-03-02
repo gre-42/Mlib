@@ -16,12 +16,14 @@ enum class ScoreBoardConfiguration;
 class IWidget;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ExpressionWatcher;
 
 class PlayersStatsLogic: public RenderLogic, public RenderTextLogic {
 public:
     PlayersStatsLogic(
         const Players& players,
-        VariableAndHash<std::string> charset,
+        std::unique_ptr<ExpressionWatcher>&& ew,
+        std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const FixedArray<float, 3>& font_color,
@@ -48,6 +50,8 @@ public:
 
 private:
     const Players& players_;
+    std::unique_ptr<ExpressionWatcher> ew_;
+    std::string charset_;
     ScoreBoardConfiguration score_board_configuration_;
     std::unique_ptr<IWidget> widget_;
     FocusFilter focus_filter_;

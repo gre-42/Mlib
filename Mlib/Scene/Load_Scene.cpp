@@ -10,7 +10,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Replacement_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Destination_Reached_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Drive_Or_Walk_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Missile_Ai.hpp>
@@ -449,7 +448,6 @@ LoadScene::LoadScene() {
             register_json_user_function(ModifyPhysicsMaterialTags::key, ModifyPhysicsMaterialTags::json_user_function);
             register_json_user_function(ModifyRenderingMaterial::key, ModifyRenderingMaterial::json_user_function);
             register_json_user_function(PrintResource::key, PrintResource::json_user_function);
-            register_json_user_function(Echo::key, Echo::json_user_function);
             register_json_user_function(CreateTapButton::key, CreateTapButton::json_user_function);
             register_json_user_function(CreateAdditiveScreenConstraint::key, CreateAdditiveScreenConstraint::json_user_function);
             register_json_user_function(CreateConstantScreenConstraint::key, CreateConstantScreenConstraint::json_user_function);
@@ -489,6 +487,7 @@ void LoadScene::operator()(
     LayoutConstraints& layout_constraints,
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
+    Translators& translators,
     RenderableScenes& renderable_scenes,
     const std::function<void()>& exit)
 {
@@ -527,6 +526,7 @@ void LoadScene::operator()(
             .next_scene_filename = next_scene_filename,
             .gallery = gallery,
             .asset_references = asset_references,
+            .translators = translators,
             .renderable_scenes = renderable_scenes,
             .exit = exit};
         auto& funcs = json_user_functions();

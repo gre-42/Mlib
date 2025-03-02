@@ -13,6 +13,7 @@
 
 namespace Mlib {
 
+class Translator;
 struct TrackElement;
 struct LapTimeEventAndIdAndMfilename;
 class Player;
@@ -41,7 +42,8 @@ public:
         size_t max_tracks,
         bool save_playback,
         const SceneNodeResources& scene_node_resources,
-        const RaceIdentifier& race_identifier);
+        const RaceIdentifier& race_identifier,
+        std::shared_ptr<Translator> translator);
     ~Players();
     void add_player(const DanglingBaseClassRef<Player>& player);
     void remove_player(const std::string& name);
@@ -73,6 +75,7 @@ private:
     std::map<std::string, DestructionFunctionsTokensObject<Player>> players_;
     std::map<std::string, DestructionFunctionsTokensObject<Team>> teams_;
     std::unique_ptr<RaceHistory> race_history_;
+    std::shared_ptr<Translator> translator_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Players& players);

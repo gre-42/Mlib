@@ -13,6 +13,7 @@ namespace Mlib {
 struct TrackElement;
 class SceneNodeResources;
 enum class RaceState;
+class Translator;
 
 struct LapTimeEvent {
     float race_time_seconds;
@@ -43,7 +44,8 @@ public:
         size_t max_tracks,
         bool save_playback,
         const SceneNodeResources& scene_node_resources,
-        const RaceIdentifier& race_identifier);
+        const RaceIdentifier& race_identifier,
+        std::shared_ptr<Translator> translator);
     ~RaceHistory();
     RaceState notify_lap_finished(
         const LapTimeEvent& lap_time_event,
@@ -66,6 +68,7 @@ private:
     std::list<LapTimeEventAndId> lap_time_events_;
     const SceneNodeResources& scene_node_resources_;
     RaceIdentifier race_identifier_;
+    std::shared_ptr<Translator> translator_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 

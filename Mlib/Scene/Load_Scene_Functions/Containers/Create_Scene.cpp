@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -36,6 +37,7 @@ DECLARE_ARGUMENT(with_flying_logic);
 DECLARE_ARGUMENT(clear_mode);
 DECLARE_ARGUMENT(max_tracks);
 DECLARE_ARGUMENT(save_playback);
+DECLARE_ARGUMENT(gid);
 }
 
 const std::string CreateScene::key = "create_scene";
@@ -83,7 +85,8 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})},
-        args.render_set_fps.ds);
+        args.render_set_fps.ds,
+        std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }));
     if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
         THROW_OR_ABORT("Scene with name \"" + name + "\" already exists");
     }

@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
+#include <memory>
 
 namespace Mlib {
 
@@ -12,6 +12,7 @@ class UiFocus;
 class IWidget;
 template <typename TData, size_t... tshape>
 class FixedArray;
+class ExpressionWatcher;
 
 class ReloadRequired:
     public RenderLogic,
@@ -27,7 +28,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        MacroLineExecutor mle,
+        std::unique_ptr<ExpressionWatcher>&& ew,
         UiFocus& ui_focus);
     virtual ~ReloadRequired();
 
@@ -49,8 +50,7 @@ private:
     std::string title_;
     std::string charset_;
     std::string cached_title_;
-    MacroLineExecutor mle_;
-    std::atomic_bool globals_changed_;
+    std::unique_ptr<ExpressionWatcher> ew_;
     UiFocus& ui_focus_;
     std::unique_ptr<IWidget> widget_;
     FocusFilter focus_filter_;

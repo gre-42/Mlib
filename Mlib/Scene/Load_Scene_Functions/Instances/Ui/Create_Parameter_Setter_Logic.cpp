@@ -4,9 +4,9 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -94,6 +94,14 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         }
         rps.remove_if([&ents](const ReplacementParameter& rp) { return (!ents.contains(rp.id)); });
     }
+    rps.remove_if([&](const ReplacementParameter& rp){
+        for (const auto& e : rp.required.fixed) {
+            if (!args.macro_line_executor.eval<bool>(e)) {
+                return true;
+            }
+        }
+        return false;
+    });
     if (args.arguments.at<bool>(KnownArgs::hide_if_trivial, false)) {
         if (rps.empty()) {
             return;
@@ -140,7 +148,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         focus_filter,
-        args.macro_line_executor,
+        std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.ui_focus,
         args.arguments.at<std::string>(KnownArgs::persistent, ""),
         args.button_states,
