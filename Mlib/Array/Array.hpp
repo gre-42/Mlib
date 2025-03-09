@@ -956,7 +956,7 @@ public:
             for (size_t c = 0; c < shape(1); ++c) {
                 ofs << WriteNum((*this)(r, c)) << ((c != shape(1) - 1) ? " " : "");
             }
-            ofs << "\n";
+            ofs << '\n';
         }
         ofs.flush();
         if (ofs.fail()) {
