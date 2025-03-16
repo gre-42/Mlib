@@ -129,11 +129,11 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 const FixedArray<float, 3>& angular_velocity)
             {
                 nlohmann::json let{
-                    {"BULLET_PLAYER_NAME", player.has_value() ? nlohmann::json(*player) : nlohmann::json()},
-                    {"BULLET_TARGET", target.has_value() ? nlohmann::json(*target) : nlohmann::json()},
-                    {"BULLET_SUFFIX", bullet_suffix},
-                    {"BULLET_VELOCITY", velocity / kph},
-                    {"BULLET_ANGULAR_VELOCITY", angular_velocity / rpm},
+                    {"bullet_player_name", player.has_value() ? nlohmann::json(*player) : nlohmann::json()},
+                    {"bullet_target", target.has_value() ? nlohmann::json(*target) : nlohmann::json()},
+                    {"bullet_suffix", bullet_suffix},
+                    {"bullet_velocity", velocity / kph},
+                    {"bullet_angular_velocity", angular_velocity / rpm},
                 };
                 mle.inserted_block_arguments(let)(l, nullptr, nullptr);
             };
