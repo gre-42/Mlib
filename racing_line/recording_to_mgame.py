@@ -77,7 +77,7 @@ def run(args):
     np.savetxt(args.racing_line_mgame, np.column_stack([
         recording[:, 1],
         recording[:, 2],
-        np.fmod(angle_y_nz + np.pi / 2, 2 * np.pi),
+        np.fmod(angle_y_nz + 1.5 * np.pi, 2 * np.pi),
         recording[:, 0],
         args.mass * np.maximum(accel, 0.0),
         args.mass * np.minimum(accel, 0.0)])[::args.down_sampling])
