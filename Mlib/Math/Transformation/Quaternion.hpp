@@ -270,8 +270,8 @@ public:
         const OffsetAndTaitBryanAngles<TDir, TPos, 3>& a)
     {
         return OffsetAndQuaternion<TDir, TPos>{
-            a.position(),
-            Quaternion<TDir>::from_tait_bryan_angles(a.rotation())};
+            a.position,
+            Quaternion<TDir>::from_tait_bryan_angles(a.rotation)};
     }
     OffsetAndQuaternion(Uninitialized)
         : t{ uninitialized }

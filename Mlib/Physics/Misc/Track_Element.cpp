@@ -19,8 +19,8 @@ void TrackElement::write_to_stream(
     ostr << elapsed_seconds;
     for (const auto& t : transformations) {
         ostr << ' ' <<
-            geographic_mapping.transform(t.position()) << ' ' <<
-            t.rotation();
+            geographic_mapping.transform(t.position) << ' ' <<
+            t.rotation;
     }
 }
 
@@ -30,7 +30,7 @@ std::vector<double> TrackElement::to_vector(
     std::vector<double> result(1 + 6 * transformations.size());
     result[0] = elapsed_seconds;
     for (size_t i = 0; i < transformations.size(); ++i) {
-        auto pos = geographic_mapping.transform(transformations[i].position());
+        auto pos = geographic_mapping.transform(transformations[i].position);
         result[1 + i * 6] = pos(0);
         result[2 + i * 6] = pos(1);
         result[3 + i * 6] = pos(2);
@@ -58,7 +58,7 @@ TrackElement TrackElement::from_stream(
             t.rotation(0) >>
             t.rotation(1) >>
             t.rotation(2);
-        t.position() = inverse_geographic_mapping.transform(pos);
+        t.position = inverse_geographic_mapping.transform(pos);
     }
     return result;
 }
@@ -79,11 +79,11 @@ TrackElement TrackElement::from_vector(
             data[1 + i * 6],
             data[2 + i * 6],
             data[3 + i * 6]};
-        trafo.rotation() = {
+        trafo.rotation = {
             (float)data[4 + i * 6],
             (float)data[5 + i * 6],
             (float)data[6 + i * 6]};
-        trafo.position() = inverse_geographic_mapping.transform(pos);
+        trafo.position = inverse_geographic_mapping.transform(pos);
     }
     return result;
 }
@@ -106,8 +106,8 @@ TrackElement Mlib::interpolated(const TrackElement& a, const TrackElement& b, fl
         auto qa = OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles(a.transformations[i]);
         auto qb = OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles(b.transformations[i]);
         auto qi = qa.slerp(qb, alpha);
-        result.transformations[i].position() = qi.t;
-        result.transformations[i].rotation() = qi.q.to_tait_bryan_angles();
+        result.transformations[i].position = qi.t;
+        result.transformations[i].rotation = qi.q.to_tait_bryan_angles();
     }
     return result;
 }
@@ -117,8 +117,8 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const TrackElement& element
         "elapsed [s]: " << element.elapsed_seconds;
     for (const auto& t : element.transformations) {
         ostr <<
-            " pos [m]: " << t.position() <<
-            " rot [deg]: " << t.rotation() / degrees;
+            " pos [m]: " << t.position <<
+            " rot [deg]: " << t.rotation / degrees;
     }
     return ostr;
 }

@@ -230,8 +230,8 @@ void test_track_element() {
     te.write_to_stream(sstr, TransformationMatrix<double, double, 3>::identity());
     TrackElement te2 = TrackElement::from_stream(sstr, TransformationMatrix<double, double, 3>::identity(), te.transformations.size());
     assert_isequal(te.elapsed_seconds, te2.elapsed_seconds);
-    assert_allequal(te.transformation().position(), te2.transformation().position());
-    assert_allequal(te.transformation().rotation(), te2.transformation().rotation());
+    assert_allequal(te.transformation().position, te2.transformation().position);
+    assert_allequal(te.transformation().rotation, te2.transformation().rotation);
 }
 
 void test_pid() {

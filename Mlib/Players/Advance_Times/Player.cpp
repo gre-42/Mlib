@@ -1022,8 +1022,8 @@ void Player::reset_vehicle(
         SpawnPoint{
             .type = SpawnPointType::ROAD,
             .location = WayPointLocation::STREET,
-            .position = location.position().casted<CompressedScenePos>(),
-            .rotation = location.rotation(),
+            .position = location.position.casted<CompressedScenePos>(),
+            .rotation = location.rotation,
             .team = team_name()
         });
     if (vehicle_spawner_ == nullptr) {

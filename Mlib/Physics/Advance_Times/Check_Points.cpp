@@ -182,8 +182,8 @@ void CheckPoints::advance_time(float dt) {
         beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
         const auto& t = track_reader_.track_element().transformation();
         beacon_nodes_[i01_].beacon_node->set_relative_pose(
-            t.position(),
-            t.rotation(),
+            t.position,
+            t.rotation,
             1,
             INITIAL_POSE);
         i01_ = (i01_ + 1) % nbeacons_;
@@ -202,7 +202,7 @@ void CheckPoints::advance_time(float dt) {
     }
 
     if (!checkpoints_ahead_.empty()) {
-        if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position())) < squared(radius_)) {
+        if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position)) < squared(radius_)) {
             last_reached_checkpoint_ = checkpoints_ahead_.front().track_element.transformation();
             lap_index_ = checkpoints_ahead_.front().lap_index;
             if (checkpoints_ahead_.front().beacon_node != nullptr) {

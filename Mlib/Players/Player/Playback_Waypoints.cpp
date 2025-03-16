@@ -38,14 +38,14 @@ void PlaybackWaypoints::select_next_waypoint() {
             current_track_element_ = track_.begin();
         } else {
             float ds = (float)std::sqrt(sum(squared(
-                current_track_element_->transformation().position() -
-                old_element->transformation().position()))) * meters;
+                current_track_element_->transformation().position -
+                old_element->transformation().position))) * meters;
             float dt = (current_track_element_->elapsed_seconds - old_element->elapsed_seconds) * seconds;
             player_.single_waypoint().set_target_velocity(speedup_ * ds / dt);
         }
     }
     player_.single_waypoint().set_waypoint({
-        current_track_element_->transformation().position().casted<CompressedScenePos>(),
+        current_track_element_->transformation().position.casted<CompressedScenePos>(),
         WayPointLocation::UNKNOWN });
 }
 
