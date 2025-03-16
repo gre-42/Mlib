@@ -1,4 +1,5 @@
 #include "Draw_Boundary_Barriers.hpp"
+#include <Mlib/Geometry/Curvature.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -10,27 +11,6 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
-
-static double curvature(const FixedArray<double, 3, 2>& points) {
-    // From: https://en.wikipedia.org/wiki/Curvature#In_terms_of_a_general_parametrization
-    auto d1 = 0.5 * (points[2] - points[0]);
-    auto d2 = points[2] - 2. * points[1] + points[0];
-    auto x1 = d1(0);
-    auto x2 = d2(0);
-    auto y1 = d1(1);
-    auto y2 = d2(1);
-    return (x1 * y2 - y1 * x2) / std::pow(squared(x1) + squared(y1), 3. / 2.);
-}
-
-// static double curvature_x(const FixedArray<FixedArray<double, 2>, 3>& points) {
-//     auto v = points(2) - points(0);
-//     FixedArray<double, 2> n{v(1), -v(0)};
-//     double len2 = sum(squared(n));
-//     double len = std::sqrt(len2);
-//     n /= len;
-//     auto diff = dot0d(n, 0.5 * (points(0) + points(2)) - points(1));
-//     return -8. * diff / len2;
-// }
 
 static unsigned int curvature_to_gear(double k) {
     auto v_kph = 5 / std::sqrt(std::abs(k));
@@ -105,8 +85,8 @@ void Mlib::draw_boundary_barriers(
             FixedArray<CompressedScenePos, 3, 2> n2_0{n2[0], n2[1], n2[2]};
             FixedArray<CompressedScenePos, 3, 2> n2_1{n2[1], n2[2], n2[3]};
             double k = 0.5 * (
-                curvature(n2_0.casted<double>() / fixed_full<double, 3, 2>(scale)) +
-                curvature(n2_1.casted<double>() / fixed_full<double, 3, 2>(scale)));
+                curvature(n2_0.casted<double>() / (double)scale) +
+                curvature(n2_1.casted<double>() / (double)scale));
             // Each way segment has (at least) two boundary edges.
             // The barrier is drawn on the side with positive curvature.
             // Note that the contours have the same {counter-}clockwise
