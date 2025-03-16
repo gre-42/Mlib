@@ -14,17 +14,25 @@ namespace Mlib {
 
 class Scene;
 struct SpawnPoint;
+struct SpawnArguments;
 class SceneVehicle;
 class RigidBodyVehicle;
 class Player;
+
+enum class SpawnVehicleAlreadySetBehavior {
+    THROW,
+    UPDATE
+};
+
+SpawnVehicleAlreadySetBehavior spawn_vehicle_already_set_behavior_from_string(const std::string& s);
 
 class VehicleSpawner final : public ISpawner, public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:
-    using SpawnVehicle = std::function<void(const SpawnPoint& spawn_point)>;
+    using SpawnVehicle = std::function<void(const SpawnPoint& spawn_point, const SpawnArguments& spawn_args)>;
 
-    VehicleSpawner(Scene& scene, std::string team_name);
+    VehicleSpawner(Scene& scene, std::string suffix, std::string team_name);
     ~VehicleSpawner();
 
     // DestructionObserver
@@ -49,11 +57,15 @@ public:
     
     bool has_scene_vehicle() const;
     SceneVehicle& get_primary_scene_vehicle();
-    const std::list<std::unique_ptr<SceneVehicle>>& get_scene_vehicles();
+    const SceneVehicle& get_primary_scene_vehicle() const;
+    const std::list<std::unique_ptr<SceneVehicle>>& get_scene_vehicles() const;
     void set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>&& scene_vehicle);
     
-    void set_spawn_vehicle(SpawnVehicle spawn_vehicle);
-    void spawn(const SpawnPoint& spawn_point, ScenePos spawn_y_offset);
+    void set_spawn_vehicle(
+        SpawnVehicle spawn_vehicle,
+        SpawnVehicleAlreadySetBehavior vehicle_spawner_already_set_behavior);
+    void spawn(const SpawnPoint& spawn_point, CompressedScenePos spawn_y_offset);
+    void delete_vehicle();
 
     float get_time_since_spawn() const;
     bool get_spotted_by_vip() const;
@@ -68,6 +80,7 @@ private:
     DanglingBaseClassPtr<Player> player_;
     std::string role_;
     DestructionFunctionsRemovalTokens on_player_destroy_;
+    std::string suffix_;
     std::string team_name_;
     float time_since_spawn_;
     float time_since_deletion_;

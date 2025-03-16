@@ -112,10 +112,10 @@ SceneSelectorLogic::SceneSelectorLogic(
             merge_substitutions();
             on_change();
         } }
-{
-    ew_->add_observer([this]() {
+    , ot_{ ew_->add_observer([this]() {
         list_view_.notify_change_visibility();
-        });
+        }) }
+{
     scene_titles_.resize(scene_files_.size());
 }
 

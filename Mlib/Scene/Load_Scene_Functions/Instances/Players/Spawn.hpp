@@ -5,9 +5,9 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class CreateDriverKeyBinding: public LoadSceneInstanceFunction {
+class Spawn: public LoadSceneInstanceFunction {
 public:
-    explicit CreateDriverKeyBinding(RenderableScene& renderable_scene);
+    explicit Spawn(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

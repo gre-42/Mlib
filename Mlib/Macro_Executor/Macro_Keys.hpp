@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Argument_List.hpp>
+#include <set>
 
 namespace Mlib {
 
@@ -20,6 +21,7 @@ DECLARE_ARGUMENT(exclude);
 DECLARE_ARGUMENT(context);
 DECLARE_ARGUMENT(arguments);
 DECLARE_ARGUMENT(let);
+DECLARE_ARGUMENT(without);
 }
 
 namespace UserKeys {
@@ -27,5 +29,16 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(title);
 DECLARE_ARGUMENT(charset);
 }
+
+static std::set<std::string_view> unexpanded_keys =
+{
+    UserKeys::title,
+    UserKeys::charset,
+    MacroKeys::required,
+    MacroKeys::exclude,
+    MacroKeys::arguments,
+    MacroKeys::content,
+    MacroKeys::comment
+};
 
 }

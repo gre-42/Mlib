@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Players/Game_Logic/Bystanders.hpp>
 #include <Mlib/Players/Game_Logic/Navigate.hpp>
-#include <Mlib/Players/Game_Logic/Spawn.hpp>
+#include <Mlib/Players/Game_Logic/Spawner.hpp>
 #include <Mlib/Players/Game_Logic/Team_Deathmatch.hpp>
 #include <Mlib/Players/Game_Logic/Vehicle_Changer.hpp>
 #include <functional>
@@ -34,7 +34,7 @@ public:
     ~GameLogic();
     virtual void advance_time(float dt, const StaticWorld& world) override;
     Navigate navigate;
-    Spawn spawn;
+    Spawner spawner;
     Bystanders bystanders;
     TeamDeathmatch team_deathmatch;
 private:

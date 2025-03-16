@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -83,6 +84,7 @@ private:
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
     ListView list_view_;
+    JsonMacroArgumentsObserverToken ot_;
 };
 
 }

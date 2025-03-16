@@ -46,6 +46,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene,
         supply_depots,
         game_logic->navigate,
+        game_logic->spawner,
         scene_config.physics_engine_config,
         physics_engine.collision_query_,
         vehicle_spawners,

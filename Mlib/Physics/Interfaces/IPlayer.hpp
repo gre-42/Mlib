@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <optional>
 #include <string>
@@ -7,18 +8,27 @@
 
 namespace Mlib {
 
+template <class T>
+class DanglingPtr;
+class SceneNode;
 struct TrackElement;
 class RigidBodyVehicle;
 enum class RaceState;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class DestructionFunctions;
+template <class TRotation, class TPos, size_t tsize>
+class OffsetAndTaitBryanAngles;
 
 class IPlayer {
 public:
     virtual std::string id() const = 0;
     virtual std::string title() const = 0;
     virtual std::optional<std::string> target_id() const = 0;
+    virtual bool reset_vehicle_requested() = 0;
+    virtual void reset_vehicle(
+        const OffsetAndTaitBryanAngles<float, ScenePos, 3>& location) = 0;
+    virtual std::vector<DanglingPtr<SceneNode>> moving_nodes() const = 0;
     virtual void notify_race_started() = 0;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,

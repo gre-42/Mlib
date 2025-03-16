@@ -74,7 +74,8 @@ public:
     PlayerKeyBinding& add_player_key_binding(std::unique_ptr<PlayerKeyBinding>&& b);
     PrintNodeInfoKeyBinding& add_print_node_info_key_binding(std::unique_ptr<PrintNodeInfoKeyBinding>&& b);
 
-    void delete_camera_key_binding(const CameraKeyBinding& deleted_key_binding);
+    // Not yet used.
+    // void delete_camera_key_binding(const CameraKeyBinding& deleted_key_binding);
     void delete_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& deleted_key_binding);
     void delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding);
     void delete_relative_movable_key_binding(const RelativeMovableKeyBinding& deleted_key_binding);

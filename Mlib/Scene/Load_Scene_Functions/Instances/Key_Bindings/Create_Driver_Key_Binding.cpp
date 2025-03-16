@@ -5,6 +5,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -20,18 +21,11 @@ DECLARE_ARGUMENT(player);
 
 DECLARE_ARGUMENT(select_next_opponent);
 DECLARE_ARGUMENT(select_next_vehicle);
+DECLARE_ARGUMENT(reset_vehicle);
 }
 
-const std::string CreateDriverKeyBinding::key = "player_key_binding";
-
-LoadSceneJsonUserFunction CreateDriverKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateDriverKeyBinding(args.renderable_scene()).execute(args);
-};
-
 CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -41,6 +35,7 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .player = player,
         .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent, false),
         .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle, false),
+        .reset_vehicle = args.arguments.at<bool>(KnownArgs::reset_vehicle, false),
         .button_press{
             args.button_states,
             args.key_configurations,
@@ -52,4 +47,20 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             kbs.delete_player_key_binding(kb);
         }, CURRENT_SOURCE_LOCATION
     );
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "player_key_binding",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateDriverKeyBinding(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

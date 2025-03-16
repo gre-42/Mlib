@@ -628,6 +628,9 @@ void KeyBindings::increment_external_forces(
             if (k->select_next_vehicle) {
                 k->player->select_next_vehicle();
             }
+            if (k->reset_vehicle) {
+                k->player->request_reset_vehicle_to_last_checkpoint();
+            }
         }
     }
 }

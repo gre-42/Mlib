@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
@@ -42,7 +43,6 @@ public:
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         std::string asset_id,
-        std::vector<DanglingPtr<SceneNode>> moving_nodes,
         const std::string& resource_name,
         const DanglingBaseClassRef<IPlayer>& player,
         size_t nbeacons,
@@ -66,6 +66,7 @@ public:
     size_t lap_index() const;
 private:
     void advance_time(float dt);
+    void reset_player();
     TrackReader track_reader_;
     size_t nlaps_;
     std::string asset_id_;
@@ -92,6 +93,7 @@ private:
     RaceState race_state_;
     std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
+    std::optional<OffsetAndTaitBryanAngles<float, ScenePos, 3>> last_reached_checkpoint_;
     bool enable_height_changed_mode_;
     FixedArray<float, 3> selection_emissive_;
     FixedArray<float, 3> deselection_emissive_;

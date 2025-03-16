@@ -12,6 +12,7 @@ namespace Mlib {
 class MacroRecorder;
 class SubstitutionMap;
 class NotifyingJsonMacroArguments;
+class JsonMacroArgumentsObserverToken;
 class AssetReferences;
 struct FPath;
 class JsonView;
@@ -56,7 +57,7 @@ public:
     T eval(const std::string& expression) const;
     template <class T>
     T eval(const std::string& expression, const JsonView& variables) const;
-    void add_observer(std::function<void()> func);
+    JsonMacroArgumentsObserverToken add_observer(std::function<void()> func);
     JsonView block_arguments() const;
 private:
     MacroRecorder& macro_recorder_;

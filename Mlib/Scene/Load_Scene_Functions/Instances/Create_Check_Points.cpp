@@ -21,6 +21,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -70,37 +71,13 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string CreateCheckPoints::key = "check_points";
-
-LoadSceneJsonUserFunction CreateCheckPoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateCheckPoints(args.renderable_scene()).execute(args);
-};
-
 CreateCheckPoints::CreateCheckPoints(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto moving_asset_id = args.arguments.at<std::string>(KnownArgs::moving_asset_id);
-    const auto& vars = args
-        .asset_references["vehicles"]
-        .at(moving_asset_id)
-        .rp;
-    auto prefixes = vars.database.at<std::vector<std::string>>("NODE_PREFIXES");
-    auto suffix = args.arguments.at<std::string>(KnownArgs::moving_suffix);
-
-    if (prefixes.empty()) {
-        THROW_OR_ABORT("Prefixes cannot be empty");
-    }
-
-    std::vector<DanglingPtr<SceneNode>> moving_nodes;
-    moving_nodes.reserve(prefixes.size());
-    for (const auto& p : prefixes) {
-        moving_nodes.push_back(scene.get_node(p + suffix, DP_LOC).ptr());
-    }
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
     size_t nframes = args.arguments.at<bool>(KnownArgs::circular) ? 1 : 0;
     size_t nlaps = args.arguments.at<size_t>(KnownArgs::laps);
@@ -123,7 +100,6 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         nlaps,
         scene_node_resources.get_geographic_mapping("world.inverse"),
         moving_asset_id,
-        moving_nodes,
         args.arguments.at<std::string>(KnownArgs::resource),
         players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION),
         args.arguments.at<size_t>(KnownArgs::nbeacons),
@@ -180,4 +156,20 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         renderable_pace_notes.preload();
     }
     physics_engine.advance_times_.add_advance_time({ check_points, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "check_points",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateCheckPoints(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

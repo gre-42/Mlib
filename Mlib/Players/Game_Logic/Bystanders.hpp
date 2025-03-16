@@ -11,7 +11,7 @@ class Players;
 class Player;
 class GameLogic;
 class Scene;
-class Spawn;
+class Spawner;
 struct GameLogicConfig;
 template <typename TData, size_t... tshape>
 class FixedArray;
@@ -23,7 +23,7 @@ public:
         VehicleSpawners& vehicle_spawners,
         Players& players,
         Scene& scene,
-        Spawn& spawn,
+        Spawner& spawner,
         GameLogicConfig& cfg);
     ~Bystanders();
     void set_vip(const DanglingBaseClassPtr<Player>& vip);
@@ -44,7 +44,7 @@ private:
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     Scene& scene_;
-    Spawn& spawn_;
+    Spawner& spawner_;
     GameLogicConfig& cfg_;
 };
 

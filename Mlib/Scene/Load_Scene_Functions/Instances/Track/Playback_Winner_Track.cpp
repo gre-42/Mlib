@@ -53,7 +53,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         .asset_references["vehicles"]
         .at(asset_id)
         .rp;
-    auto node_prefixes = vars.database.at<std::vector<std::string>>("NODE_PREFIXES");
+    auto node_prefixes = vars.database.at<std::vector<std::string>>("node_prefixes");
     auto filename = wt->m_filename;
     auto playback = std::make_shared<RigidBodyPlayback>(
         std::make_unique<TrackElementFile>(create_ifstream(filename), filename),

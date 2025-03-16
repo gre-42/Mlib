@@ -36,5 +36,5 @@ void SetSpawnPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto location = transformation_matrix_from_json<float, ScenePos, 3>(
         args.arguments.at(KnownArgs::location));
     auto spawn_points = scene_node_resources.get_spawn_points(args.arguments.at<std::string>(KnownArgs::resource));
-    game_logic->spawn.set_spawn_points(location, std::move(spawn_points));
+    game_logic->spawner.set_spawn_points(location, std::move(spawn_points));
 }

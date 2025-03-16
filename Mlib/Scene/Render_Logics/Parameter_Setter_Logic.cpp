@@ -103,10 +103,10 @@ ParameterSetterLogic::ParameterSetterLogic(
             merge_substitutions();
             on_change();
         }}
-{
-    ew_->add_observer([this](){
+    , ot_{ ew_->add_observer([this](){
         list_view_.notify_change_visibility();
-    });
+    }) }
+{
     cached_titles_.resize(options_.size());
 }
 

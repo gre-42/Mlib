@@ -35,10 +35,10 @@ void VehicleChanger::change_vehicles() {
         if (!p->has_scene_vehicle()) {
             continue;
         }
-        if (next_vehicle->scene_node().ptr() == p->scene_node().ptr()) {
+        if (next_vehicle->get_primary_scene_vehicle().scene_node().ptr() == p->scene_node().ptr()) {
             THROW_OR_ABORT("Next scene node equals current node");
         }
-        auto& next_rb = get_rigid_body_vehicle(next_vehicle->scene_node());
+        auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle().scene_node());
         auto* other_player = next_rb.drivers_.try_get(p->next_role()).get();
         if (other_player == nullptr) {
             enter_vehicle(*s, *next_vehicle);
@@ -58,14 +58,14 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     InternalsMode b_role_old = b.internals_mode();
     InternalsMode a_role_old = a.internals_mode();
 
-    SceneVehicle& b_vehicle = b.vehicle();
-    SceneVehicle& a_vehicle = a.vehicle();
+    VehicleSpawner& b_spawner = b.vehicle_spawner();
+    VehicleSpawner& a_spawner = a.vehicle_spawner();
 
     b.reset_node();
     a.reset_node();
 
-    b.set_scene_vehicle(a_vehicle, b.next_role());
-    a.set_scene_vehicle(b_vehicle, a.next_role());
+    b.set_vehicle_spawner(a_spawner, b.next_role());
+    a.set_vehicle_spawner(b_spawner, a.next_role());
 
     if (a_ec_old != ExternalsMode::NONE) {
         a.create_vehicle_externals(a_ec_old);
@@ -82,16 +82,16 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     }
 }
 
-void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
+void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
     if (!a.has_player()) {
         THROW_OR_ABORT("Vehicle spawner has no player");
     }
-    auto& b_rb = b.rb();
-    if (b_rb.is_avatar() && (&a.get_primary_scene_vehicle() != &b)) {
+    auto& b_rb = b.get_primary_scene_vehicle().rb();
+    if (b_rb.is_avatar() && (&a.get_primary_scene_vehicle() != &b.get_primary_scene_vehicle())) {
         THROW_OR_ABORT("Can only enter the initial avatar");
     }
     auto ap = a.get_player();
-    if (&ap->vehicle() == &b) {
+    if (&ap->vehicle() == &b.get_primary_scene_vehicle()) {
         THROW_OR_ABORT("Entering the same vehicle");
     }
     auto& a_rb_old = ap->rigid_body();
@@ -121,13 +121,13 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
             a_trafo.t + (a_rb_old.door_distance_ * a_dir).casted<ScenePos>());
         b_rb.rbp_.v_ = 0.f;
         b_rb.rbp_.w_ = 0.f;
-        b.scene_node()->invalidate_transformation_history();
+        b.get_primary_scene_vehicle().scene_node()->invalidate_transformation_history();
         b_rb.activate_avatar();
     }
     ExternalsMode a_ec_old = ap->externals_mode();
     auto a_role_old = ap->internals_mode();
     ap->reset_node();
-    ap->set_scene_vehicle(b, ap->next_role());
+    ap->set_vehicle_spawner(b, ap->next_role());
     ap->create_vehicle_externals(a_ec_old);
     if (!a_role_old.role.empty()) {
         ap->create_vehicle_internals(a_role_old);

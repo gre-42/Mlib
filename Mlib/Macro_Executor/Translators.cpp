@@ -12,8 +12,7 @@ Translators::Translators(
     const AssetReferences& asset_references,
     NotifyingJsonMacroArguments& globals)
     : asset_references_{ asset_references }
-{
-    globals.add_observer([this, &globals](){
+    , ot_{ globals.add_observer([this, &globals](){
         if (language_variable_->empty()) {
             return;
         }
@@ -29,8 +28,8 @@ Translators::Translators(
             language_ = lang;
             cached_dictionary_.clear();
         }
-    });
-}
+    }) }
+{}
 
 void Translators::set_language_variable(VariableAndHash<std::string> var) {
     std::scoped_lock lock{ mutex_ };

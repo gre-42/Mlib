@@ -1,4 +1,4 @@
-#include "Spawn.hpp"
+#include "Spawner.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -24,7 +24,7 @@
 
 using namespace Mlib;
 
-Spawn::Spawn(
+Spawner::Spawner(
     VehicleSpawners& vehicle_spawners,
     Players& players,
     GameLogicConfig& cfg,
@@ -37,9 +37,9 @@ Spawn::Spawn(
     , scene_{ scene }
 {}
 
-Spawn::~Spawn() = default;
+Spawner::~Spawner() = default;
 
-void Spawn::set_spawn_points(
+void Spawner::set_spawn_points(
     const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
     const std::list<SpawnPoint>& spawn_points)
 {
@@ -66,7 +66,7 @@ void Spawn::set_spawn_points(
     }
 }
 
-void Spawn::spawn_at_spawn_point(
+void Spawner::spawn_at_spawn_point(
     VehicleSpawner& spawner,
     const SpawnPoint& sp)
 {
@@ -74,8 +74,8 @@ void Spawn::spawn_at_spawn_point(
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
-    spawner.spawn(sp, funpack(cfg_.spawn_y_offset));
-    // lerr() << "Spawn time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<ScenePos>(std::chrono::steady_clock::now() - start)).count();
+    spawner.spawn(sp, cfg_.spawn_y_offset);
+    // lerr() << "Spawner time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<ScenePos>(std::chrono::steady_clock::now() - start)).count();
     ++nspawns_;
     // while (true) {
     //     std::scoped_lock lock{ delete_node_mutex_ };
@@ -87,7 +87,7 @@ void Spawn::spawn_at_spawn_point(
     // }
 }
 
-void Spawn::respawn_all_players() {
+void Spawner::respawn_all_players() {
     for (auto& [_, p] : vehicle_spawners_.spawners()) {
         if (!p->has_scene_vehicle()) {
             continue;
@@ -134,7 +134,7 @@ void Spawn::respawn_all_players() {
     }
 }
 
-void Spawn::spawn_player_during_match(VehicleSpawner& spawner) {
+void Spawner::spawn_player_during_match(VehicleSpawner& spawner) {
     std::set<const SpawnPoint*> occupied_spawn_points;
     for (auto& [_, p] : vehicle_spawners_.spawners()) {
         if (p->has_scene_vehicle()) {
@@ -169,7 +169,7 @@ void Spawn::spawn_player_during_match(VehicleSpawner& spawner) {
     }
 }
 
-std::vector<SpawnPoint*> Spawn::shuffled_spawn_points() {
+std::vector<SpawnPoint*> Spawner::shuffled_spawn_points() {
 #ifdef __clang__
     std::vector<SpawnPoint*> result;
     result.reserve(spawn_points_.size());

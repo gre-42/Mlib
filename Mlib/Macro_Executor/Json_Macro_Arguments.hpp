@@ -24,10 +24,11 @@ public:
     JsonMacroArguments(const JsonMacroArguments& other);
     JsonMacroArguments(JsonMacroArguments&& other) noexcept;
     explicit JsonMacroArguments(nlohmann::json j);
+    JsonMacroArguments(const nlohmann::json& j, const std::set<std::string>& except);
     ~JsonMacroArguments();
     void set(std::string_view key, nlohmann::json value);
     void merge(const JsonMacroArguments& other, std::string_view prefix="");
-    void insert_json(const nlohmann::json& j);
+    void insert_json(const nlohmann::json& j, const std::set<std::string>& except = {});
     void insert_json(std::string_view key, nlohmann::json j);
     void set_fpathes(const std::function<std::list<std::string>(const std::filesystem::path& f)>& fpathes);
     void set_fpath(const std::function<FPath(const std::filesystem::path& f)>& fpath);

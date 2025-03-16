@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
@@ -90,6 +91,7 @@ private:
     std::function<void()> on_execute_;
     std::string charset_;
     ListView list_view_;
+    JsonMacroArgumentsObserverToken ot_;
 };
 
 }

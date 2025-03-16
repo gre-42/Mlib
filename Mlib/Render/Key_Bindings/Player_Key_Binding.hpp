@@ -12,6 +12,7 @@ struct PlayerKeyBinding {
     DanglingBaseClassRef<Player> player;
     bool select_next_opponent;
     bool select_next_vehicle;
+    bool reset_vehicle;
     ButtonPress button_press;
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 };

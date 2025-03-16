@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
@@ -103,6 +104,7 @@ private:
     std::string id_;
     ThreadSafeString& next_scene_filename_;
     ListView list_view_;
+    JsonMacroArgumentsObserverToken ot_;
 };
 
 }

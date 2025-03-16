@@ -8,7 +8,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Game_Logic_Config.hpp>
-#include <Mlib/Players/Game_Logic/Spawn.hpp>
+#include <Mlib/Players/Game_Logic/Spawner.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -22,7 +22,7 @@ Bystanders::Bystanders(
     VehicleSpawners& vehicle_spawners,
     Players& players,
     Scene& scene,
-    Spawn& spawn,
+    Spawner& spawner,
     GameLogicConfig& cfg)
 : current_bystander_rng_{ 0 },
   current_bvh_rng_{ 0 },
@@ -31,7 +31,7 @@ Bystanders::Bystanders(
   vehicle_spawners_{ vehicle_spawners },
   players_{ players },
   scene_{ scene },
-  spawn_{ spawn },
+  spawner_{ spawner },
   cfg_{ cfg }
 {}
 
@@ -50,7 +50,7 @@ bool Bystanders::spawn_for_vip(
         THROW_OR_ABORT("Spawner already has a vehicle");
     }
     bool success = false;
-    spawn_.spawn_points_bvh_split_.at(current_bvh_)->visit(
+    spawner_.spawn_points_bvh_split_.at(current_bvh_)->visit(
         AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
             vip_pos.casted<CompressedScenePos>(),
             cfg_.r_spawn_far),
@@ -114,7 +114,7 @@ bool Bystanders::spawn_for_vip(
                 return true;
             }
         }
-        spawn_.spawn_at_spawn_point(spawner, *sp);
+        spawner_.spawn_at_spawn_point(spawner, *sp);
         if (spotted) {
             spawner.set_spotted_by_vip();
         }
@@ -122,7 +122,7 @@ bool Bystanders::spawn_for_vip(
         return false;
     });
     // current_bvh_ = (current_bvh_ + 1) % spawn_.spawn_points_bvhs_split_.size();
-    current_bvh_ = current_bvh_rng_() % spawn_.spawn_points_bvh_split_.size();
+    current_bvh_ = current_bvh_rng_() % spawner_.spawn_points_bvh_split_.size();
     return success;
 }
 
@@ -176,7 +176,7 @@ bool Bystanders::delete_for_vip(
         for (const auto& v : spawner.get_scene_vehicles()) {
             scene_.schedule_delete_root_node(v->scene_node_name());
         }
-        ++spawn_.ndelete_;
+        ++spawner_.ndelete_;
         return true;
     } else {
         return false;

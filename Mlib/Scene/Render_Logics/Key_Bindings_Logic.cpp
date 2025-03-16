@@ -80,11 +80,10 @@ KeyBindingsLogic::KeyBindingsLogic(
         selection_index,
         contents_,
         ListViewOrientation::VERTICAL}
-{
-    ew_->add_observer([this](){
+    , ot_{ ew_->add_observer([this](){
         list_view_.notify_change_visibility();
-    });
-}
+    }) }
+{}
 
 KeyBindingsLogic::~KeyBindingsLogic() {
     on_destroy.clear();

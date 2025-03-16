@@ -30,7 +30,6 @@ CheckPoints::CheckPoints(
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     std::string asset_id,
-    std::vector<DanglingPtr<SceneNode>> moving_nodes,
     const std::string& resource_name,
     const DanglingBaseClassRef<IPlayer>& player,
     size_t nbeacons,
@@ -56,7 +55,6 @@ CheckPoints::CheckPoints(
         1 }
     , nlaps_{ nlaps }
     , asset_id_{ std::move(asset_id) }
-    , moving_nodes_{ std::move(moving_nodes) }
     , resource_name_{ resource_name }
     , player_{ player }
     , radius_{ radius }
@@ -85,6 +83,7 @@ CheckPoints::CheckPoints(
     if (distance_ <= 1e-12) {
         THROW_OR_ABORT("Checkpoint distance too small");
     }
+    moving_nodes_ = player_->moving_nodes();
     movings_.reserve(moving_nodes_.size());
     for (auto& n : moving_nodes_) {
         movings_.push_back(&n->get_absolute_movable());
@@ -105,6 +104,7 @@ CheckPoints::~CheckPoints() {
 
 void CheckPoints::advance_time(float dt, const StaticWorld& world) {
     advance_time(dt);
+    reset_player();
 }
 
 void CheckPoints::advance_time(float dt) {
@@ -203,6 +203,7 @@ void CheckPoints::advance_time(float dt) {
 
     if (!checkpoints_ahead_.empty()) {
         if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position())) < squared(radius_)) {
+            last_reached_checkpoint_ = checkpoints_ahead_.front().track_element.transformation();
             lap_index_ = checkpoints_ahead_.front().lap_index;
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
                 auto& style = checkpoints_ahead_.front().beacon_node->beacon_node->color_style(VariableAndHash<std::string>{""});
@@ -241,6 +242,7 @@ void CheckPoints::advance_time(float dt) {
             if (race_state_ == RaceState::ONGOING) {
                 lap_elapsed_seconds_ = 0.f;
             } else if (race_state_ == RaceState::FINISHED) {
+                last_reached_checkpoint_.reset();
                 on_finish_();
             } else {
                 THROW_OR_ABORT("Unknown race state");
@@ -249,6 +251,27 @@ void CheckPoints::advance_time(float dt) {
                    (lap_index_ != lap_times_seconds_.size() - 1))
         {
             THROW_OR_ABORT("Unexpected lap index");
+        }
+    }
+}
+
+void CheckPoints::reset_player() {
+    if (player_->reset_vehicle_requested() &&
+        last_reached_checkpoint_.has_value())
+    {
+        for (auto& n : moving_nodes_) {
+            n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+        }
+        moving_nodes_.clear();
+        movings_.clear();
+    
+        player_->reset_vehicle(*last_reached_checkpoint_);
+
+        moving_nodes_ = player_->moving_nodes();
+        movings_.reserve(moving_nodes_.size());
+        for (auto& n : moving_nodes_) {
+            movings_.push_back(&n->get_absolute_movable());
+            n->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
         }
     }
 }

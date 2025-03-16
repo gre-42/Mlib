@@ -4,7 +4,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Objective.hpp>
-#include <Mlib/Players/Game_Logic/Spawn.hpp>
+#include <Mlib/Players/Game_Logic/Spawner.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -17,11 +17,11 @@ using namespace Mlib;
 TeamDeathmatch::TeamDeathmatch(
     VehicleSpawners& spawners,
     Players& players,
-    Spawn& spawn,
+    Spawner& spawner,
     std::function<void()> setup_new_round)
     : spawners_{ spawners }
     , players_{ players }
-    , spawn_{ spawn }
+    , spawner_{ spawner }
     , setup_new_round_{ std::move(setup_new_round) }
     , objective_{ Objective::NONE }
 {}
@@ -61,7 +61,7 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
     if ((winner_teams.empty() ||
          ((winner_teams.size() == 1) &&
           (all_teams.size() > 1))) &&
-         (spawn_.spawn_points_.size() > 1))
+         (spawner_.spawn_points_.size() > 1))
     {
         if (!winner_teams.empty()) {
             for (const auto& [_, p] : players_.players()) {
@@ -82,7 +82,7 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
         if (setup_new_round_) {
             setup_new_round_();
         } else {
-            spawn_.respawn_all_players();
+            spawner_.respawn_all_players();
         }
     }
 }
@@ -90,7 +90,7 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
 void TeamDeathmatch::handle_kill_count_objective() {
     for (auto& [_, p] : spawners_.spawners()) {
         if (!p->has_scene_vehicle() && (p->get_time_since_deletion() >= p->get_respawn_cooldown_time())) {
-            spawn_.spawn_player_during_match(*p);
+            spawner_.spawn_player_during_match(*p);
         }
     }
 }

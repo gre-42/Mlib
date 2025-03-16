@@ -571,7 +571,6 @@ int main(int argc, char** argv) {
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render.window_should_close() && !unhandled_exceptions_occured()) {
-            JsonMacroArgumentsObserverGuard smog{ external_json_macro_arguments };
             num_renderings = args_num_renderings;
             ui_focus.clear();
 

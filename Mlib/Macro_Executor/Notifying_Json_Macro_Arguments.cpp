@@ -3,7 +3,24 @@
 
 using namespace Mlib;
 
+JsonMacroArgumentsObserverToken::JsonMacroArgumentsObserverToken(
+    NotifyingJsonMacroArguments& args,
+    std::list<std::function<void()>>::iterator it)
+    : args_{ args }
+    , it_{ std::move(it) }
+{}
+
+JsonMacroArgumentsObserverToken::~JsonMacroArgumentsObserverToken() {
+    args_.remove_observer(it_);
+}
+
 NotifyingJsonMacroArguments::NotifyingJsonMacroArguments() = default;
+
+NotifyingJsonMacroArguments::~NotifyingJsonMacroArguments() {
+    if (!observers_.empty()) {
+        verbose_abort("NotifyingJsonMacroArguments: Observers remain in dtor");
+    }
+}
 
 void NotifyingJsonMacroArguments::set_and_notify(const std::string& key, const nlohmann::json& value) {
     std::scoped_lock lock{ mutex_ };
@@ -25,14 +42,18 @@ JsonMacroArgumentsAndLock NotifyingJsonMacroArguments::json_macro_arguments() co
     return JsonMacroArgumentsAndLock{*this};
 }
 
-void NotifyingJsonMacroArguments::add_observer(std::function<void()> func) {
+JsonMacroArgumentsObserverToken NotifyingJsonMacroArguments::add_observer(
+    std::function<void()> func)
+{
     std::scoped_lock lock{ mutex_ };
-    observers_.emplace_back(std::move(func));
+    return { *this, observers_.emplace(observers_.end(), std::move(func)) };
 }
 
-void NotifyingJsonMacroArguments::clear_observers() {
+void NotifyingJsonMacroArguments::remove_observer(
+    const std::list<std::function<void()>>::iterator& it)
+{
     std::scoped_lock lock{ mutex_ };
-    observers_.clear();
+    observers_.erase(it);
 }
 
 JsonMacroArgumentsAndLock::JsonMacroArgumentsAndLock(const NotifyingJsonMacroArguments& args)
@@ -56,12 +77,4 @@ JsonMacroArgumentsAndLock::operator const nlohmann::json&() const {
 
 void JsonMacroArgumentsAndLock::unlock() {
     lock_.unlock();
-}
-
-JsonMacroArgumentsObserverGuard::JsonMacroArgumentsObserverGuard(NotifyingJsonMacroArguments& nma)
-: nma_{nma}
-{}
-
-JsonMacroArgumentsObserverGuard::~JsonMacroArgumentsObserverGuard() {
-    nma_.clear_observers();
 }

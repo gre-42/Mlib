@@ -10,20 +10,20 @@ public:
     inline ExpressionWatcher(MacroLineExecutor mle)
         : mle_{ std::move(mle) }
         , result_may_have_changed_{ true }
-    {
-        mle_.add_observer([this](){
+        , ot_{ mle_.add_observer([this](){
             std::scoped_lock lock{ mutex_ };
             result_may_have_changed_ = true;
-        });
-    }
+            }) }
+    {}
+    ~ExpressionWatcher() = default;
     inline bool result_may_have_changed() const {
         std::scoped_lock lock{ mutex_ };
         auto res = result_may_have_changed_;
         result_may_have_changed_ = false;
         return res;
     }
-    inline void add_observer(std::function<void()> func) {
-        mle_.add_observer(std::move(func));
+    inline JsonMacroArgumentsObserverToken add_observer(std::function<void()> func) {
+        return mle_.add_observer(std::move(func));
     }
     inline nlohmann::json eval(const std::string& expression) const {
         return mle_.eval(expression);
@@ -49,6 +49,7 @@ public:
 private:
     MacroLineExecutor mle_;
     mutable bool result_may_have_changed_;
+    JsonMacroArgumentsObserverToken ot_;
     mutable FastMutex mutex_;
 };
 

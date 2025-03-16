@@ -34,6 +34,7 @@
 
 namespace Mlib {
 
+class Spawner;
 class RigidBodyVehicle;
 class Players;
 class Team;
@@ -111,6 +112,7 @@ public:
         Scene& scene,
         SupplyDepots& supply_depots,
         const Navigate& navigate,
+        Spawner& spawner,
         const PhysicsEngineConfig& cfg,
         CollisionQuery& collision_query,
         VehicleSpawners& vehicle_spawners,
@@ -131,17 +133,19 @@ public:
     void set_can_select_opponent(ControlSource control_source, bool value);
     void set_select_opponent_hysteresis_factor(ScenePos factor);
     void reset_node();
-    void set_scene_vehicle(SceneVehicle& pv, const std::string& desired_role);
+    void set_vehicle_spawner(VehicleSpawner& spawner, const std::string& desired_role);
     RigidBodyVehicle& rigid_body();
     const RigidBodyVehicle& rigid_body() const;
     DanglingRef<SceneNode> scene_node();
     DanglingRef<const SceneNode> scene_node() const;
     bool scene_node_scheduled_for_deletion() const;
-    SceneVehicle* next_scene_vehicle();
+    VehicleSpawner* next_scene_vehicle();
     const std::string& next_role() const;
     const std::string& scene_node_name() const;
     SceneVehicle& vehicle();
     const SceneVehicle& vehicle() const;
+    VehicleSpawner& vehicle_spawner();
+    const VehicleSpawner& vehicle_spawner() const;
     void set_gun_node(DanglingRef<SceneNode> gun_node);
     void change_gun_node(DanglingPtr<SceneNode> gun_node);
     bool has_way_points() const;
@@ -190,6 +194,7 @@ public:
     std::optional<std::string> best_weapon_in_inventory() const;
     void select_opponent(OpponentSelectionStrategy strategy);
     void select_next_vehicle();
+    void request_reset_vehicle_to_last_checkpoint();
     void append_dependent_node(std::string node_name);
     void create_vehicle_externals(ExternalsMode externals_mode);
     void create_vehicle_internals(const InternalsMode& internals_mode);
@@ -216,6 +221,10 @@ public:
     virtual std::string id() const override;
     virtual std::string title() const override;
     virtual std::optional<std::string> target_id() const override;
+    virtual bool reset_vehicle_requested() override;
+    virtual void reset_vehicle(
+        const OffsetAndTaitBryanAngles<float, ScenePos, 3>& location) override;
+    virtual std::vector<DanglingPtr<SceneNode>> moving_nodes() const override;
     virtual void notify_race_started() override;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
@@ -246,7 +255,7 @@ public:
     AvatarMovement avatar_movement;
 private:
     void clear_opponent();
-    void set_opponent(const Player& opponent);
+    void set_opponent(Player& opponent);
     void aim_and_shoot();
     void select_best_weapon_in_inventory();
     bool unstuck();
@@ -260,6 +269,7 @@ private:
     std::string id_;
     std::string team_;
     SceneVehicle* vehicle_;
+    VehicleSpawner* vehicle_spawner_;
     PlayerControlled controlled_;
     std::optional<std::string> target_id_;
     DanglingPtr<SceneNode> target_scene_node_;
@@ -278,7 +288,8 @@ private:
     size_t nunstucked_;
     SkillMap skills_;
     DeleteNodeMutex& delete_node_mutex_;
-    SceneVehicle* next_scene_vehicle_;
+    VehicleSpawner* next_scene_vehicle_;
+    bool reset_vehicle_to_last_checkpoint_requested_;
     std::string next_role_;
     std::map<DanglingPtr<const SceneNode>, std::string> dependent_nodes_;
     ExternalsMode externals_mode_;
@@ -291,6 +302,7 @@ private:
     ScenePos select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
     const Navigate& navigate_;
+    Spawner& spawner_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 

@@ -27,7 +27,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Plane_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Plane_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Tank_Controller.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Check_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Skidmark.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Define_Winner_Conditionals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Execute_In_Physics_Thread.hpp>
@@ -59,7 +58,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Car_Controller_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Driver_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Gun_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Plane_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Plane_Controller_Key_Binding.hpp>
@@ -108,7 +106,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Vehicle_Control_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Respawn_All_Players.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Identifier_And_Reload_History.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Spawn_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Vip.hpp>
@@ -264,14 +261,12 @@ LoadScene::LoadScene() {
             register_json_user_function(CreateCarControllerIdleBinding::key, CreateCarControllerIdleBinding::json_user_function);
             register_json_user_function(CreateCarControllerKeyBinding::key, CreateCarControllerKeyBinding::json_user_function);
             register_json_user_function(CreateCarController::key, CreateCarController::json_user_function);
-            register_json_user_function(CreateCheckPoints::key, CreateCheckPoints::json_user_function);
             register_json_user_function(CreateSkidmark::key, CreateSkidmark::json_user_function);
             register_json_user_function(CreateAimAt::key, CreateAimAt::json_user_function);
             register_json_user_function(CreateCrash::key, CreateCrash::json_user_function);
             register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);
             register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
             register_json_user_function(CreateDestinationReachedAi::key, CreateDestinationReachedAi::json_user_function);
-            register_json_user_function(CreateDriverKeyBinding::key, CreateDriverKeyBinding::json_user_function);
             register_json_user_function(CreateEngine::key, CreateEngine::json_user_function);
             register_json_user_function(CreateExternals::key, CreateExternals::json_user_function);
             register_json_user_function(CreateGunKeyBinding::key, CreateGunKeyBinding::json_user_function);
@@ -381,7 +376,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
             register_json_user_function(SetNodeHider::key, SetNodeHider::json_user_function);
             register_json_user_function(SetNodeRotation::key, SetNodeRotation::json_user_function);
-            register_json_user_function(SetPreferredCarSpawner::key, SetPreferredCarSpawner::json_user_function);
             register_json_user_function(SetRaceIdentifierAndReloadHistory::key, SetRaceIdentifierAndReloadHistory::json_user_function);
             register_json_user_function(SetRigidBodyAlignToSurfaceRelaxation::key, SetRigidBodyAlignToSurfaceRelaxation::json_user_function);
             register_json_user_function(SetRigidBodyDoorDistance::key, SetRigidBodyDoorDistance::json_user_function);

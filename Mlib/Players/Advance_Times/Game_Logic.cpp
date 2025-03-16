@@ -19,9 +19,9 @@ GameLogic::GameLogic(
     SupplyDepots& supply_depots,
     DeleteNodeMutex& delete_node_mutex,
     std::function<void()> setup_new_round)
-    : spawn{ vehicle_spawners, players, cfg, delete_node_mutex, scene }
-    , bystanders{ vehicle_spawners, players, scene, spawn, cfg }
-    , team_deathmatch{ vehicle_spawners, players, spawn, std::move(setup_new_round) }
+    : spawner{ vehicle_spawners, players, cfg, delete_node_mutex, scene }
+    , bystanders{ vehicle_spawners, players, scene, spawner, cfg }
+    , team_deathmatch{ vehicle_spawners, players, spawner, std::move(setup_new_round) }
     , vehicle_changer_{ vehicle_spawners, delete_node_mutex }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
@@ -36,8 +36,8 @@ GameLogic::~GameLogic() {
 
 void GameLogic::advance_time(float dt, const StaticWorld& world) {
     // TimeGuard tg{"GameLogic::advance_time"};
-    spawn.nspawns_ = 0;
-    spawn.ndelete_ = 0;
+    spawner.nspawns_ = 0;
+    spawner.ndelete_ = 0;
     vehicle_spawners_.advance_time(dt);
     team_deathmatch.handle_respawn();
     bystanders.handle_bystanders();
@@ -45,6 +45,6 @@ void GameLogic::advance_time(float dt, const StaticWorld& world) {
     supply_depots_.handle_supply_depots(dt);
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
         lerr() << "nactive " << players_.nactive();
-        lerr() << "nspawns " << spawn.nspawns_ << " , ndelete " << spawn.ndelete_;
+        lerr() << "nspawns " << spawner.nspawns_ << " , ndelete " << spawner.ndelete_;
     }
 }

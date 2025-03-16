@@ -32,7 +32,7 @@ LoadSceneJsonUserFunction SpawnerSetNodes::json_user_function = [](const LoadSce
 };
 
 SpawnerSetNodes::SpawnerSetNodes(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -42,7 +42,7 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
         .asset_references["vehicles"]
         .at(asset_id)
         .rp;
-    auto prefixes = vars.database.at<std::vector<std::string>>("NODE_PREFIXES");
+    auto prefixes = vars.database.at<std::vector<std::string>>("node_prefixes");
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     std::list<std::unique_ptr<SceneVehicle>> vehicles;
     for (const auto& prefix : prefixes) {

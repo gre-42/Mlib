@@ -43,6 +43,22 @@ JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
     }
 }
 
+JsonMacroArguments::JsonMacroArguments(
+    const nlohmann::json& j,
+    const std::set<std::string>& except)
+    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
+    , j_(nlohmann::json::object())
+{
+    if (j.type() != nlohmann::detail::value_t::object) {
+        THROW_OR_ABORT("JSON is not of type object");
+    }
+    for (const auto& [k, v] : j.items()) {
+        if (!except.contains(k)) {
+            j_[k] = v;
+        }
+    }
+}
+
 JsonMacroArguments::~JsonMacroArguments() = default;
 
 void JsonMacroArguments::set(std::string_view key, nlohmann::json value) {
@@ -71,14 +87,8 @@ static nlohmann::json subst_and_replace(
     if (j.type() == nlohmann::detail::value_t::object) {
         auto result = nlohmann::json::object();
         for (const auto& [key, value] : j.items()) {
-            if ((key == UserKeys::title) ||
-                (key == UserKeys::charset) ||
-                (key == MacroKeys::required) ||
-                (key == MacroKeys::exclude) ||
-                (key == MacroKeys::arguments) ||
-                (key == MacroKeys::content) ||
-                (key == MacroKeys::comment) ||
-                key.starts_with('#'))
+            if (key.starts_with('#') ||
+                unexpanded_keys.contains(key))
             {
                 result[key] = value;
             } else {
@@ -109,12 +119,17 @@ nlohmann::json JsonMacroArguments::subst_and_replace(
     return ::subst_and_replace(j, globals, j_, asset_references);
 }
 
-void JsonMacroArguments::insert_json(const nlohmann::json& j) {
+void JsonMacroArguments::insert_json(
+    const nlohmann::json& j,
+    const std::set<std::string>& except)
+{
     if (j.type() != nlohmann::detail::value_t::object) {
         THROW_OR_ABORT("Cannot insert non-object type");
     }
     for (const auto& [key, value] : j.items()) {
-        insert_json(key, value);
+        if (!except.contains(key)) {
+            insert_json(key, value);
+        }
     }
 }
 

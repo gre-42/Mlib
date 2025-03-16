@@ -14,7 +14,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(indicator);
 }
-        
+
 static struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(

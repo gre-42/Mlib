@@ -6,7 +6,7 @@ namespace Mlib {
 class GameLogic;
 class VehicleSpawners;
 class Players;
-class Spawn;
+class Spawner;
 enum class Objective;
 
 class TeamDeathmatch {
@@ -15,7 +15,7 @@ public:
     TeamDeathmatch(
         VehicleSpawners& spawners,
         Players& players,
-        Spawn& spawn,
+        Spawner& spawner,
         std::function<void()> setup_new_round);
     ~TeamDeathmatch();
     void set_objective(Objective);
@@ -25,7 +25,7 @@ private:
     void handle_kill_count_objective();
     VehicleSpawners& spawners_;
     Players& players_;
-    Spawn& spawn_;
+    Spawner& spawner_;
     std::function<void()> setup_new_round_;
     Objective objective_;
 };

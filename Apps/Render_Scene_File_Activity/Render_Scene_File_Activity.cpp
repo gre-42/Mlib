@@ -562,7 +562,6 @@ void android_main(android_app* app) {
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
-            JsonMacroArgumentsObserverGuard smog{ external_json_macro_arguments };
             num_renderings = args_num_renderings;
             ui_focus.clear();
             button_states.tap_buttons_.clear();

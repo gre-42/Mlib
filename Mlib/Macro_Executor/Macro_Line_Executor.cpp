@@ -276,7 +276,8 @@ void MacroLineExecutor::operator () (
             args.set_fpathes([path_resolver](const std::filesystem::path& path){return path_resolver.fpathes(path);});
             args.set_fpath([path_resolver](const std::filesystem::path& path){return path_resolver.fpath(path);});
             args.set_spath([path_resolver](const std::filesystem::path& path){return path_resolver.spath(path);});
-            JsonMacroArguments let{ block_arguments_ };
+            auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
+            JsonMacroArguments let{ block_arguments_, without };
             try {
                 if (jv.contains(MacroKeys::arguments)) {
                     args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::arguments), global_args, asset_references_));
@@ -303,7 +304,7 @@ void MacroLineExecutor::operator () (
                 if (macro_it == macro_recorder_.json_macros_.end()) {
                     THROW_OR_ABORT("No JSON macro with name " + name + " exists");
                 }
-                let.insert_json(macro_it->second.block_arguments);
+                let.insert_json(macro_it->second.block_arguments, without);
                 auto mle2 = changed_script_filename_and_context(
                     macro_it->second.filename,
                     context,
@@ -424,8 +425,8 @@ T MacroLineExecutor::eval(const std::string& expression) const {
     return Mlib::eval<T>(expression, global_args, asset_references_);
 }
 
-void MacroLineExecutor::add_observer(std::function<void()> func) {
-    global_json_macro_arguments_.add_observer(std::move(func));
+JsonMacroArgumentsObserverToken MacroLineExecutor::add_observer(std::function<void()> func) {
+    return global_json_macro_arguments_.add_observer(std::move(func));
 }
 
 JsonView MacroLineExecutor::block_arguments() const {
