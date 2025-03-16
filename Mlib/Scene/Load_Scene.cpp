@@ -84,7 +84,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Move_Node_To_Bvh.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Animation_State.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Avatar_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Bone.hpp>
@@ -352,7 +351,6 @@ LoadScene::LoadScene() {
             register_json_user_function(RegisterWind::key, RegisterWind::json_user_function);
             register_json_user_function(RootRenderableInstances::key, RootRenderableInstances::json_user_function);
             register_json_user_function(RespawnAllPlayers::key, RespawnAllPlayers::json_user_function);
-            register_json_user_function(RootNodeInstance::key, RootNodeInstance::json_user_function);
             register_json_user_function(SaveToObjFile::key, SaveToObjFile::json_user_function);
             register_json_user_function(SceneToPixelRegion::key, SceneToPixelRegion::json_user_function);
             register_json_user_function(SceneToTexture::key, SceneToTexture::json_user_function);

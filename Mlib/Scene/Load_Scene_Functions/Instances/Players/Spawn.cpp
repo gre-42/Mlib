@@ -11,6 +11,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Parse_Position.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
@@ -37,7 +38,7 @@ void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
         SpawnPoint{
             .type = SpawnPointType::ROAD,
             .location = WayPointLocation::NONE,
-            .position = args.arguments.at<UFixedArray<CompressedScenePos, 3>>(KnownArgs::position) * meters,
+            .position = parse_position(args.arguments.at(KnownArgs::position), scene_node_resources),
             .rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
             .team = args.arguments.at<std::string>(KnownArgs::team)
         });
