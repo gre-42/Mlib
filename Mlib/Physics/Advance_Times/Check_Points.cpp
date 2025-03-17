@@ -44,6 +44,7 @@ CheckPoints::CheckPoints(
     bool enable_height_changed_mode,
     const FixedArray<float, 3>& selection_emissive,
     const FixedArray<float, 3>& deselection_emissive,
+    const RespawnConfig& respawn_config,
     const std::function<void()>& on_finish)
     : track_reader_{
         std::move(sequence),
@@ -52,7 +53,7 @@ CheckPoints::CheckPoints(
         inverse_geographic_mapping,
         TrackElementInterpolationKey::METERS_TO_START,
         TrackReaderInterpolationMode::NEAREST_NEIGHBOR,
-        1 }
+        1 } // ntransformations
     , nlaps_{ nlaps }
     , asset_id_{ std::move(asset_id) }
     , resource_name_{ resource_name }
@@ -64,6 +65,7 @@ CheckPoints::CheckPoints(
     , i01_{ 0 }
     , lap_index_{ 0 }
     , progress_{ 0. }
+    , straight_progress_{ 0 }
     , rendering_resources_{ rendering_resources }
     , scene_node_resources_{ scene_node_resources }
     , scene_{ scene }
@@ -75,6 +77,7 @@ CheckPoints::CheckPoints(
     , enable_height_changed_mode_{ enable_height_changed_mode }
     , selection_emissive_{ selection_emissive }
     , deselection_emissive_{ deselection_emissive }
+    , respawn_config_{ respawn_config }
     , on_finish_{ on_finish }
 {
     if (nbeacons == 0) {
@@ -137,14 +140,14 @@ void CheckPoints::advance_time(float dt) {
     te.transformations.reserve(movings_.size());
     for (const auto& m : movings_) {
         auto am = m->get_new_absolute_model_matrix();
-        te.transformations.push_back(OffsetAndTaitBryanAngles<float, ScenePos, 3>{am.R, am.t});;
+        te.transformations.push_back(OffsetAndTaitBryanAngles<float, ScenePos, 3>{am.R, am.t});
     }
     movable_track_.push_back(te);
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.finished())) {
         auto old_progress = track_reader_.has_value()
             ? track_reader_.progress()
             : NAN;
-        if (!track_reader_.read(progress_)) {
+        if (!track_reader_.read(progress_, &history_)) {
             break;
         }
         progress_ += distance_ / meters;
@@ -202,8 +205,39 @@ void CheckPoints::advance_time(float dt) {
     }
 
     if (!checkpoints_ahead_.empty()) {
-        if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position)) < squared(radius_)) {
-            last_reached_checkpoint_ = checkpoints_ahead_.front().track_element.transformation();
+        const auto& new_element = checkpoints_ahead_.front().track_element;
+        const auto& new_location = new_element.transformation();
+        if (sum(squared((*moving_nodes_.begin())->position() - new_location.position)) < squared(radius_)) {
+            {
+                auto pr = new_element.progress(TrackElementInterpolationKey::METERS_TO_START);
+                history_.remove_if([&](const TrackElementExtended& p){
+                    return pr - p.progress(TrackElementInterpolationKey::METERS_TO_START) > respawn_config_.vehicle_length;
+                });
+            }
+            if (last_reached_checkpoint_.has_value()) {
+                auto dpos = new_location.position - *last_reached_checkpoint_;
+                auto dpos_l2 = sum(squared(dpos));
+                if (dpos_l2 > 1e-12) {
+                    auto new_direction = dpos / std::sqrt(dpos_l2);
+                    if (last_direction_.has_value()) {
+                        assert_true(last_reached_checkpoint_.has_value());
+                        if ((dot0d(new_direction, *last_direction_) < std::cos(respawn_config_.max_horizontal_angle)) ||
+                            std::abs(new_direction(1)) > std::sin(respawn_config_.max_vertical_angle))
+                        {
+                            straight_progress_ = progress_;
+                        } else if (progress_ - straight_progress_ > respawn_config_.vehicle_length) {
+                            last_straight_checkpoint_ = new_location;
+                            for (const auto& e : history_) {
+                                last_straight_checkpoint_->position(1) = std::max(
+                                    last_straight_checkpoint_->position(1),
+                                    e.element.transformation().position(1));
+                            }
+                        }
+                    }
+                    last_direction_ = new_direction;
+                }
+            }
+            last_reached_checkpoint_ = new_location.position;
             lap_index_ = checkpoints_ahead_.front().lap_index;
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
                 auto& style = checkpoints_ahead_.front().beacon_node->beacon_node->color_style(VariableAndHash<std::string>{""});
@@ -257,7 +291,7 @@ void CheckPoints::advance_time(float dt) {
 
 void CheckPoints::reset_player() {
     if (player_->reset_vehicle_requested() &&
-        last_reached_checkpoint_.has_value())
+        last_straight_checkpoint_.has_value())
     {
         for (auto& n : moving_nodes_) {
             n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
@@ -265,7 +299,7 @@ void CheckPoints::reset_player() {
         moving_nodes_.clear();
         movings_.clear();
     
-        player_->reset_vehicle(*last_reached_checkpoint_);
+        player_->reset_vehicle(*last_straight_checkpoint_);
 
         moving_nodes_ = player_->moving_nodes();
         movings_.reserve(moving_nodes_.size());

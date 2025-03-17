@@ -25,7 +25,7 @@ public:
         TrackReaderInterpolationMode interpolation_mode,
         size_t ntransformations);
     ~TrackReader();
-    bool read(double& progress);
+    bool read(double& progress, std::list<TrackElementExtended>* history = nullptr);
     bool finished() const;
     inline const TrackElementExtended& track_element() const {
         return track_element_;

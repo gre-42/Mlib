@@ -66,6 +66,7 @@ DECLARE_ARGUMENT(pacenotes_picture_bottom);
 DECLARE_ARGUMENT(pacenotes_picture_top);
 DECLARE_ARGUMENT(selection_emissivity);
 DECLARE_ARGUMENT(deselection_emissivity);
+DECLARE_ARGUMENT(respawn_config);
 DECLARE_ARGUMENT(on_finish);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
@@ -114,6 +115,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<bool>(KnownArgs::height_changed),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::selection_emissivity, fixed_full<float, 3>(-1.f)),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::deselection_emissivity, fixed_full<float, 3>(-1.f)),
+        args.arguments.at<RespawnConfig>(KnownArgs::respawn_config),
         [on_finish, mle = args.macro_line_executor]() {
             mle(on_finish, nullptr, nullptr);
         });

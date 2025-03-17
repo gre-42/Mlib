@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Physics/Advance_Times/Respawn_Config.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
 #include <fstream>
@@ -57,6 +58,7 @@ public:
         bool enable_height_changed_mode = false,
         const FixedArray<float, 3>& selection_emissive = { -1.f, -1.f, -1.f },
         const FixedArray<float, 3>& deselection_emissive = { -1.f, -1.f, -1.f },
+        const RespawnConfig& respawn_config = RespawnConfig{},
         const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
     virtual void advance_time(float dt, const StaticWorld& world) override;
@@ -82,6 +84,7 @@ private:
     size_t i01_;
     size_t lap_index_;
     double progress_;
+    double straight_progress_;
     RenderingResources* rendering_resources_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
@@ -93,10 +96,14 @@ private:
     RaceState race_state_;
     std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
-    std::optional<OffsetAndTaitBryanAngles<float, ScenePos, 3>> last_reached_checkpoint_;
+    std::optional<FixedArray<ScenePos, 3>> last_direction_;
+    std::optional<FixedArray<ScenePos, 3>> last_reached_checkpoint_;
+    std::optional<OffsetAndTaitBryanAngles<float, ScenePos, 3>> last_straight_checkpoint_;
+    std::list<TrackElementExtended> history_;
     bool enable_height_changed_mode_;
     FixedArray<float, 3> selection_emissive_;
     FixedArray<float, 3> deselection_emissive_;
+    RespawnConfig respawn_config_;
     std::function<void()> on_finish_;
 };
 

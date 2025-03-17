@@ -34,7 +34,10 @@ TrackReader::TrackReader(
 
 TrackReader::~TrackReader() = default;
 
-bool TrackReader::read(double& progress) {
+bool TrackReader::read(
+    double& progress,
+    std::list<TrackElementExtended>* history)
+{
     if (inverse_geographic_mapping_ == nullptr) {
         THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
@@ -74,6 +77,9 @@ bool TrackReader::read(double& progress) {
                 }
             } else {
                 ++frame_id_;
+                if (history != nullptr) {
+                    history->push_back(*track_element1_);
+                }
             }
             if (!track_element0_.has_value()) {
                 track_element0_ = track_element1_;
