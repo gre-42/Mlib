@@ -660,7 +660,7 @@ OsmMapResource::OsmMapResource(
         fg.update("Draw building walls (facade)");
         draw_building_walls(
             tls_buildings,
-            nullptr,            // Steiner points not required due to existance of ground triangles.
+            nullptr,            // Steiner points not required due to existence of ground triangles.
             displacements,
             Material{
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
