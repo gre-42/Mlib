@@ -449,7 +449,7 @@ void OsmRectangle2D::draw_z(
 }
 
 WarpedSegment2D::WarpedSegment2D(const OsmRectangle2D& r)
-: r_{r}
+    : r_{r}
 {}
 
 FixedArray<CompressedScenePos, 2> WarpedSegment2D::warp_0(double x) const
