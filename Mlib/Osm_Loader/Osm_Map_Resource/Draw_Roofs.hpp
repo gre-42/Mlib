@@ -17,11 +17,15 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 struct Building;
 struct Node;
+class SceneNodeResources;
 
 void draw_roofs(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
+    const SceneNodeResources& scene_node_resources,
+    const std::string& model_name,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
-    const Material& material,
+    const Material& roof_material,
+    const Material& rail_material,
     const Morphology& morphology,
     const FixedArray<float, 3>& color,
     const std::list<Building>& buildings,

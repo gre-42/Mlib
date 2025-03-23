@@ -125,6 +125,7 @@ public:
     FixedArray<CompressedScenePos, 2> warp_1(double x) const;
     FixedArray<CompressedScenePos, 3> warp_0(const FixedArray<double, 3>& p, double scale, double width, CompressedScenePos height) const;
     FixedArray<CompressedScenePos, 3> warp_1(const FixedArray<double, 3>& p, double scale, double width, CompressedScenePos height) const;
+    FixedArray<CompressedScenePos, 3> warp(const FixedArray<double, 3>& p, double scale, double width, CompressedScenePos height) const;
 private:
     const OsmRectangle2D& r_;
 };

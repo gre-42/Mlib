@@ -1,13 +1,17 @@
 #include "Draw_Roofs.hpp"
 #include <Mlib/Geometry/Base_Materials.hpp>
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Visit_Line_Segments.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
@@ -15,8 +19,11 @@ using namespace Mlib;
 
 void Mlib::draw_roofs(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
+    const SceneNodeResources& scene_node_resources,
+    const std::string& model_name,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
-    const Material& material,
+    const Material& roof_material,
+    const Material& rail_material,
     const Morphology& morphology,
     const FixedArray<float, 3>& color,
     const std::list<Building>& buildings,
@@ -25,6 +32,10 @@ void Mlib::draw_roofs(
     float uv_scale,
     float max_length)
 {
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>> *model_triangles = nullptr;
+    if (!model_name.empty()) {
+        model_triangles = &scene_node_resources.get_physics_arrays(model_name)->scvas;
+    }
     for (auto&& [number, bu] : enumerate(buildings)) {
         if (!bu.roof_9_2.has_value()) {
             continue;
@@ -36,10 +47,26 @@ void Mlib::draw_roofs(
         if (bu.way.nd.front() != bu.way.nd.back()) {
             THROW_OR_ABORT("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
-        auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
-            "roof_" + std::to_string(number),
-            material,
-            morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
+        std::shared_ptr<TriangleList<CompressedScenePos>> tl_roof_var = nullptr;
+        auto get_tl_roof = [&](){
+            if (tl_roof_var == nullptr) {
+                tl_roof_var = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
+                    "roof_" + std::to_string(number),
+                    roof_material,
+                    morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
+            }
+            return tl_roof_var;
+        };
+        std::shared_ptr<TriangleList<CompressedScenePos>> tl_rail_var = nullptr;
+        auto get_tl_rail = [&](){
+            if (tl_rail_var == nullptr) {
+                tl_rail_var = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
+                    "roof_rail_" + std::to_string(number),
+                    rail_material,
+                    morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
+            }
+            return tl_rail_var;
+        };
         auto nd = bu.way.nd;
         if (bu.area < 0) {
             nd.reverse();
@@ -68,6 +95,8 @@ void Mlib::draw_roofs(
         float zz0 = bu.levels.back().top;
         float zz1 = bu.levels.back().top + bu.roof_9_2->height;
         float width = bu.roof_9_2->width;
+        float uheight = bu.roof_9_2->height;
+        float uwidth = std::sqrt(squared(width) + squared(uheight));
         visit_line_segments(sw, [&](
             const FixedArray<CompressedScenePos, 2>& aL,
             const FixedArray<CompressedScenePos, 2>& aR,
@@ -95,23 +124,78 @@ void Mlib::draw_roofs(
                 {
                     lerr() << "Error triangulating roof " + bu.id;
                 } else {
-                    rect.p00_ = b;
-                    rect.p10_ = c;
-                    float uheight = bu.roof_9_2->height;
-                    float uwidth = std::sqrt(squared(width) + squared(uheight));
-                    tl->draw_rectangle_wo_normals(
-                        FixedArray<CompressedScenePos, 3>{rect.p00_(0), rect.p00_(1), max_height + (CompressedScenePos)(zz0 * scale)},
-                        FixedArray<CompressedScenePos, 3>{rect.p01_(0), rect.p01_(1), max_height + (CompressedScenePos)(zz1 * scale)},
-                        FixedArray<CompressedScenePos, 3>{rect.p11_(0), rect.p11_(1), max_height + (CompressedScenePos)(zz1 * scale)},
-                        FixedArray<CompressedScenePos, 3>{rect.p10_(0), rect.p10_(1), max_height + (CompressedScenePos)(zz0 * scale)},
-                        Colors::from_rgb(color),
-                        Colors::from_rgb(color),
-                        Colors::from_rgb(color),
-                        Colors::from_rgb(color),
-                        { 0.f, 0.f },
-                        { uwidth / scale * uv_scale, 0.f },
-                        { uwidth / scale * uv_scale, uheight / scale * uv_scale },
-                        { 0.f, uheight / scale * uv_scale });
+                    if (model_triangles == nullptr) {
+                        rect.p00_ = b;
+                        rect.p10_ = c;
+                        FixedArray<CompressedScenePos, 2, 2, 3> rect3{
+                            FixedArray<CompressedScenePos, 2, 3>{
+                                FixedArray<CompressedScenePos, 3>{rect.p00_(0), rect.p00_(1), max_height + (CompressedScenePos)(zz0 * scale)},
+                                FixedArray<CompressedScenePos, 3>{rect.p01_(0), rect.p01_(1), max_height + (CompressedScenePos)(zz1 * scale)}},
+                            FixedArray<CompressedScenePos, 2, 3>{
+                                FixedArray<CompressedScenePos, 3>{rect.p10_(0), rect.p10_(1), max_height + (CompressedScenePos)(zz0 * scale)},
+                                FixedArray<CompressedScenePos, 3>{rect.p11_(0), rect.p11_(1), max_height + (CompressedScenePos)(zz1 * scale)}}};    
+                        get_tl_roof()->draw_rectangle_wo_normals(
+                            rect3[0][0],
+                            rect3[0][1],
+                            rect3[1][1],
+                            rect3[1][0],
+                            Colors::from_rgb(color),
+                            Colors::from_rgb(color),
+                            Colors::from_rgb(color),
+                            Colors::from_rgb(color),
+                            { 0.f, 0.f },
+                            { uwidth / scale * uv_scale, 0.f },
+                            { uwidth / scale * uv_scale, uheight / scale * uv_scale },
+                            { 0.f, uheight / scale * uv_scale });
+                    } else {
+                        WarpedSegment2D ws{rect};
+                        for (const auto& cva : *model_triangles) {
+                            for (const auto& t : cva->triangles) {
+                                FixedArray<CompressedScenePos, 3, 3> tt = uninitialized;
+                                for (size_t i = 0; i < 3; ++i) {
+                                    if (all(t(i).position == FixedArray<float, 3>{0.f, -1.f, 1.f})) {
+                                        tt[i] = FixedArray<CompressedScenePos, 3>{
+                                            rect.p01_(0),
+                                            rect.p01_(1),
+                                            max_height + (CompressedScenePos)(zz1 * scale)};
+                                    } else if (all(t(i).position == FixedArray<float, 3>{0.f, 1.f, 1.f})) {
+                                        tt[i] = FixedArray<CompressedScenePos, 3>{
+                                            rect.p11_(0),
+                                            rect.p11_(1),
+                                            max_height + (CompressedScenePos)(zz1 * scale)};
+                                    } else {
+                                        tt[i] = ws.warp(t(i).position.casted<double>(), scale, 1, (CompressedScenePos)uheight);
+                                        tt(i, 2) += max_height + CompressedScenePos(zz0 * scale);
+                                    }
+                                }
+                                if (cva->name == "roof") {
+                                    get_tl_roof()->draw_triangle_wo_normals(
+                                        tt[0],
+                                        tt[1],
+                                        tt[2],
+                                        t(0).color,
+                                        t(1).color,
+                                        t(2).color,
+                                        { 0.f, 0.f },
+                                        { uwidth / scale * uv_scale, 0.f },
+                                        { 0.f, uheight / scale * uv_scale });
+                                } else if (cva->name == "rail") {
+                                    get_tl_rail()->draw_triangle_wo_normals(
+                                        tt[0],
+                                        tt[1],
+                                        tt[2],
+                                        t(0).color,
+                                        t(1).color,
+                                        t(2).color,
+                                        t(0).uv,
+                                        t(1).uv,
+                                        t(2).uv);
+                                } else {
+                                    THROW_OR_ABORT("Unknown mesh name: \"" + cva->name + '"');
+                                }
+                            }
+                        }
+                    }
                 }
                 // draw_node(triangles, nodes.at(aL));
             });

@@ -107,7 +107,9 @@ DECLARE_ARGUMENT(entrance_textures);
 DECLARE_ARGUMENT(facade_textures);
 DECLARE_ARGUMENT(ceiling_texture);
 DECLARE_ARGUMENT(barrier_styles);
+DECLARE_ARGUMENT(roof_model);
 DECLARE_ARGUMENT(roof_texture);
+DECLARE_ARGUMENT(roof_rail_texture);
 DECLARE_ARGUMENT(tunnel_pipe_texture);
 DECLARE_ARGUMENT(tunnel_pipe_resource_name);
 DECLARE_ARGUMENT(tunnel_bdry_resource_name);
@@ -607,8 +609,14 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains_non_null(KnownArgs::barrier_styles)) {
             add_styles(config.barrier_styles, args.arguments.children(KnownArgs::barrier_styles));
         }
+        if (args.arguments.contains(KnownArgs::roof_model)) {
+            config.roof_model = args.arguments.at<std::string>(KnownArgs::roof_model);
+        }
         if (args.arguments.contains(KnownArgs::roof_texture)) {
             config.roof_texture = args.arguments.path_or_variable(KnownArgs::roof_texture).path;
+        }
+        if (args.arguments.contains(KnownArgs::roof_rail_texture)) {
+            config.roof_rail_texture = args.arguments.path_or_variable(KnownArgs::roof_rail_texture).path;
         }
         if (args.arguments.contains(KnownArgs::tunnel_pipe_texture)) {
             config.tunnel_pipe_texture = args.arguments.path_or_variable(KnownArgs::tunnel_pipe_texture).path;
@@ -1133,7 +1141,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
         }
         config.use_terrain_holes = args.arguments.at<bool>(KnownArgs::use_terrain_holes, false);
-    };
+    }
     if (resource_name.empty()) {
         THROW_OR_ABORT("Osm resource name not set");
     }

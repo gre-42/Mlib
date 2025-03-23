@@ -109,6 +109,7 @@ struct OsmResourceConfig {
     VariableAndHash<std::string> water_texture;
     CompressedScenePos water_height = (CompressedScenePos)0.f;
     VariableAndHash<std::string> roof_texture;
+    VariableAndHash<std::string> roof_rail_texture;
     std::vector<ParsedResourceName> road_bollard_resource_names;
     std::vector<ParsedResourceName> trashcan_resource_names;
     WaysideDistances road_bollard_distances{
@@ -217,6 +218,7 @@ struct OsmResourceConfig {
     std::string navmesh_resource;
     bool refine_explicit_waypoints = true;
     float agent_radius = 0.6f;
+    std::string roof_model;
 };
 
 }

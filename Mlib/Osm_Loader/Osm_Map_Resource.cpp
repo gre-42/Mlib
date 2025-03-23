@@ -682,9 +682,17 @@ OsmMapResource::OsmMapResource(
         auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
         draw_roofs(
             tls_buildings,
+            scene_node_resources,
+            config.roof_model,
             displacements,
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
+                .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
+                .aggregate_mode = AggregateMode::ONCE,
+                .shading = ROOF_REFLECTANCE,
+                .draw_distance_noperations = 1000}.compute_color_mode(),
+            Material{
+                .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = ROOF_REFLECTANCE,

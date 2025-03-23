@@ -1,6 +1,7 @@
 #include "Osm_Map_Resource_Rectangle_2D.hpp"
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
@@ -295,14 +296,7 @@ void OsmRectangle2D::draw(
         FixedArray<CompressedScenePos, 3, 3> p = uninitialized;
         for (size_t i = 0; i < 3; ++i) {
             float x = t(i).position(1);
-            if (std::abs(x) > 1) {
-                std::stringstream sstr;
-                sstr << "Position.y not between -1 and +1: " << x;
-                THROW_OR_ABORT(sstr.str());
-            }
-            auto a0 = ws.warp_0(t(i).position.casted<double>(), scale, width, height);
-            auto a1 = ws.warp_1(t(i).position.casted<double>(), scale, width, height);
-            p[i] = (((1. - x) / 2.) * funpack(a0) + ((x + 1.) / 2.) * funpack(a1)).casted<CompressedScenePos>();
+            p[i] = ws.warp(t(i).position.casted<double>(), scale, width, height);
             if (x < 0) {
                 node_height_bindings[OrderableFixedArray<CompressedScenePos, 2>{p(i, 0), p(i, 1)}] = b;
             } else {
@@ -472,6 +466,19 @@ FixedArray<CompressedScenePos, 3> WarpedSegment2D::warp_1(const FixedArray<doubl
 {
     auto w = warp_1(width * p(0));
     return FixedArray<CompressedScenePos, 3>(w(0), w(1), height * scale * p(2));
+}
+
+FixedArray<CompressedScenePos, 3> WarpedSegment2D::warp(const FixedArray<double, 3>& p, double scale, double width, CompressedScenePos height) const
+{
+    auto x = p(1);
+    if (std::abs(x) > 1) {
+        std::stringstream sstr;
+        sstr << "Position.y not between -1 and +1: " << x;
+        THROW_OR_ABORT(sstr.str());
+    }
+    auto a0 = warp_0(p, scale, width, height);
+    auto a1 = warp_1(p, scale, width, height);
+    return lerp11(a0, a1, x).casted<CompressedScenePos>();
 }
 
 CurbedStreet::CurbedStreet(const OsmRectangle2D& r, ScenePos start, ScenePos stop)
