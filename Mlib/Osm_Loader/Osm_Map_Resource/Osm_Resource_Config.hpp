@@ -7,6 +7,7 @@
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
@@ -108,8 +109,6 @@ struct OsmResourceConfig {
     Map<RoadType, std::string> street_bumps_endpoint1_resource_names;
     VariableAndHash<std::string> water_texture;
     CompressedScenePos water_height = (CompressedScenePos)0.f;
-    VariableAndHash<std::string> roof_texture;
-    VariableAndHash<std::string> roof_rail_texture;
     std::vector<ParsedResourceName> road_bollard_resource_names;
     std::vector<ParsedResourceName> trashcan_resource_names;
     WaysideDistances road_bollard_distances{
@@ -148,6 +147,11 @@ struct OsmResourceConfig {
     float uv_scale_ceiling = 1;
     float uv_scale_barrier_wall = 1;
     float uv_scale_highway_wall = 1;
+    VariableAndHash<std::string> roof_texture;
+    VariableAndHash<std::string> roof_rail_texture;
+    float default_roof_9_2_max_building_height = INFINITY * meters;
+    std::optional<Roof9_2> default_roof_9_2;
+    std::string roof_model;
     bool with_roofs = true;
     bool with_ceilings = false;
     float building_bottom = -3;
@@ -219,7 +223,6 @@ struct OsmResourceConfig {
     std::string navmesh_resource;
     bool refine_explicit_waypoints = true;
     float agent_radius = 0.6f;
-    std::string roof_model;
 };
 
 }

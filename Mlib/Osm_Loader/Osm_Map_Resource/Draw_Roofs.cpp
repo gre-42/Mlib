@@ -184,7 +184,12 @@ void Mlib::draw_roofs(
                                         t(2).color,
                                         t(0).uv * sc,
                                         t(1).uv * sc,
-                                        t(2).uv * sc);
+                                        t(2).uv * sc,
+                                        {},
+                                        {},
+                                        {},
+                                        NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP,
+                                        TriangleTangentErrorBehavior::WARN);
                                 } else if (cva->name == "rail") {
                                     get_tl_rail()->draw_triangle_wo_normals(
                                         tt[0],
@@ -195,7 +200,12 @@ void Mlib::draw_roofs(
                                         t(2).color,
                                         t(0).uv,
                                         t(1).uv,
-                                        t(2).uv);
+                                        t(2).uv,
+                                        {},
+                                        {},
+                                        {},
+                                        NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP,
+                                        TriangleTangentErrorBehavior::WARN);
                                 } else {
                                     THROW_OR_ABORT("Unknown mesh name: \"" + cva->name + '"');
                                 }

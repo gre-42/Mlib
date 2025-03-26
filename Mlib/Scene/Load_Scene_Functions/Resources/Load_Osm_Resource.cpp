@@ -111,6 +111,8 @@ DECLARE_ARGUMENT(barrier_styles);
 DECLARE_ARGUMENT(roof_model);
 DECLARE_ARGUMENT(roof_texture);
 DECLARE_ARGUMENT(roof_rail_texture);
+DECLARE_ARGUMENT(default_roof_9_2_max_building_height);
+DECLARE_ARGUMENT(default_roof_9_2);
 DECLARE_ARGUMENT(tunnel_pipe_texture);
 DECLARE_ARGUMENT(tunnel_pipe_resource_name);
 DECLARE_ARGUMENT(tunnel_bdry_resource_name);
@@ -621,6 +623,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::roof_rail_texture)) {
             config.roof_rail_texture = args.arguments.path_or_variable(KnownArgs::roof_rail_texture).path;
+        }
+        if (args.arguments.contains(KnownArgs::default_roof_9_2)) {
+            config.default_roof_9_2 = args.arguments.at<Roof9_2>(KnownArgs::default_roof_9_2);
+        }
+        if (args.arguments.contains(KnownArgs::default_roof_9_2_max_building_height)) {
+            config.default_roof_9_2_max_building_height = args.arguments.at<float>(KnownArgs::default_roof_9_2_max_building_height);
         }
         if (args.arguments.contains(KnownArgs::tunnel_pipe_texture)) {
             config.tunnel_pipe_texture = args.arguments.path_or_variable(KnownArgs::tunnel_pipe_texture).path;

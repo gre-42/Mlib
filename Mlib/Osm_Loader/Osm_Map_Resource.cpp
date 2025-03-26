@@ -281,6 +281,10 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_facade,
             config.socle_height,
             config.socle_textures,
+            config.default_roof_9_2_max_building_height,
+            config.default_roof_9_2.has_value()
+                ? &*config.default_roof_9_2
+                : nullptr,
             entrance_ftc,
             middle_ftc,
             config.default_building_vertical_subdivision);
@@ -299,8 +303,10 @@ OsmMapResource::OsmMapResource(
             config.default_barrier_top,
             config.default_snap_barrier_height,
             config.uv_scale_barrier_wall,
-            NAN,    // socle_height
+            NAN,        // socle_height
             {},
+            INFINITY,   // default_roof_9_2_max_building_height
+            nullptr,
             ftc,
             ftc,
             VerticalSubdivision::NONE);
@@ -1376,14 +1382,16 @@ OsmMapResource::OsmMapResource(
         std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
             BuildingType::SPAWN_LINE,
             ways,
-            0,      // building_bottom
-            0,      // default_building_top
-            false,  // default_snap_height
-            NAN,    // socle_height
-            NAN,    // uv_scale_facade
-            {},     // socle_textures
-            ftc,    // entrance_ftc
-            ftc,    // middle_ftc
+            0,          // building_bottom
+            0,          // default_building_top
+            false,      // default_snap_height
+            NAN,        // socle_height
+            NAN,        // uv_scale_facade
+            {},         // socle_textures
+            INFINITY,   // default_roof_9_2_max_building_height
+            nullptr,    // default_roof_9_2
+            ftc,        // entrance_ftc
+            ftc,        // middle_ftc
             VerticalSubdivision::NONE);
         try {
             for (const Building& bu : spawn_lines) {

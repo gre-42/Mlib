@@ -116,7 +116,10 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     auto t = FixedArray<TPos, 3, 3>{ p00, p10, p01 };
     auto n_o = try_triangle_normal(t.template casted<I>());
     if (!n_o.has_value()) {
-        if (normal_error_behavior == NormalVectorErrorBehavior::SKIP) {
+        if (any(normal_error_behavior & NormalVectorErrorBehavior::SKIP)) {
+            if (any(normal_error_behavior & NormalVectorErrorBehavior::WARN)) {
+                lwarn() << "Cannot calculate triangle normal";
+            }
             if (pp00 != nullptr) {
                 *pp00 = nullptr;
             }

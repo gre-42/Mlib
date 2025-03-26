@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
 #include <list>
+#include <nlohmann/json_fwd.hpp>
 #include <optional>
 #include <string>
 
@@ -37,5 +38,7 @@ struct Building {
     float area = 0;
     std::string style;
 };
+
+void from_json(const nlohmann::json& j, Roof9_2& roof9_2);
 
 }
