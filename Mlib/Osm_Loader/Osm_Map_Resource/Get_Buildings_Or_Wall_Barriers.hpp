@@ -25,6 +25,7 @@ std::list<Building> get_buildings_or_wall_barriers(
     float default_building_top,
     bool default_snap_height,
     float uv_scale_facade,
+    float socle_height,
     const std::vector<SocleTexture>& socle_textures,
     FacadeTextureCycle& entrance_ftc,
     FacadeTextureCycle& middle_ftc,

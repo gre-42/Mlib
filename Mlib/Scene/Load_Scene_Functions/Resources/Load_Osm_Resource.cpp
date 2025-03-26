@@ -102,6 +102,7 @@ DECLARE_ARGUMENT(air_support_texture);
 DECLARE_ARGUMENT(racing_line_texture);
 DECLARE_ARGUMENT(racing_line_track);
 DECLARE_ARGUMENT(racing_line_playback);
+DECLARE_ARGUMENT(socle_height);
 DECLARE_ARGUMENT(socle_textures);
 DECLARE_ARGUMENT(entrance_textures);
 DECLARE_ARGUMENT(facade_textures);
@@ -593,6 +594,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::racing_line_playback)) {
             config.racing_line_playback = args.arguments.path_or_variable(KnownArgs::racing_line_playback).path;
+        }
+        if (args.arguments.contains(KnownArgs::socle_height)) {
+            config.socle_height = args.arguments.at<float>(KnownArgs::socle_height);
         }
         if (args.arguments.contains(KnownArgs::socle_textures)) {
             config.socle_textures = args.arguments.children(KnownArgs::socle_textures, parse_socle_texture);

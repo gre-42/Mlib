@@ -279,6 +279,7 @@ OsmMapResource::OsmMapResource(
             config.default_building_top,
             config.default_snap_building_height,
             config.uv_scale_facade,
+            config.socle_height,
             config.socle_textures,
             entrance_ftc,
             middle_ftc,
@@ -298,10 +299,11 @@ OsmMapResource::OsmMapResource(
             config.default_barrier_top,
             config.default_snap_barrier_height,
             config.uv_scale_barrier_wall,
+            NAN,    // socle_height
             {},
             ftc,
             ftc,
-            VerticalSubdivision::NO);
+            VerticalSubdivision::NONE);
     }
 
     fg.update("Determine terrain region contours");
@@ -1377,11 +1379,12 @@ OsmMapResource::OsmMapResource(
             0,      // building_bottom
             0,      // default_building_top
             false,  // default_snap_height
+            NAN,    // socle_height
             NAN,    // uv_scale_facade
             {},     // socle_textures
             ftc,    // entrance_ftc
             ftc,    // middle_ftc
-            VerticalSubdivision::NO);
+            VerticalSubdivision::NONE);
         try {
             for (const Building& bu : spawn_lines) {
                 auto iteam = bu.way.tags.find("team");

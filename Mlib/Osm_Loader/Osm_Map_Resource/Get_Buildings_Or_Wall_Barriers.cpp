@@ -9,7 +9,6 @@
 
 using namespace Mlib;
 
-static const float SOCLE_HEIGHT = 1.2f;
 static const float MINIMUM_HEIGHT = 0.1f;
 
 std::list<Building> Mlib::get_buildings_or_wall_barriers(
@@ -19,6 +18,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     float default_building_top,
     bool default_snap_height,
     float uv_scale_facade,
+    float socle_height,
     const std::vector<SocleTexture>& socle_textures,
     FacadeTextureCycle& entrance_ftc,
     FacadeTextureCycle& middle_ftc,
@@ -78,11 +78,16 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             }
             middle_ftd = middle_ftc(middle_style, building_top).descriptor;
         }
-        float socle_height = SOCLE_HEIGHT * any(vertical_subdivision & VerticalSubdivision::ANY_SOCLE);
         float entrances_height =
-            (entrance_ftd.interior_textures.interior_size(1) + 2.f * entrance_ftd.interior_textures.facade_edge_size(1))
-            * any(vertical_subdivision & VerticalSubdivision::ANY_ENTRANCES);
-        float base_height = socle_height + entrances_height;
+            entrance_ftd.interior_textures.interior_size(1) +
+            2.f * entrance_ftd.interior_textures.facade_edge_size(1);
+        float base_height = building_bottom;
+        if (any(vertical_subdivision & VerticalSubdivision::ANY_SOCLE)) {
+            base_height += socle_height;
+        }
+        if (any(vertical_subdivision & VerticalSubdivision::ANY_ENTRANCES)) {
+            base_height += entrances_height;
+        }
         float delta_height = 0.f;
         if (w.tags.contains("snap_height", "yes", default_snap_height)) {
             if (!middle_ftd.interior_textures.empty()) {
@@ -116,7 +121,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 ") too small for delta height (" << delta_height <<
                 ") and base height (" << base_height <<
                 "). ID=" << id;
-            vertical_subdivision = VerticalSubdivision::NO;
+            vertical_subdivision = VerticalSubdivision::NONE;
         } else {
             building_top += delta_height;
         }
@@ -136,64 +141,47 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     : roof_height / std::tan(roof_angle),
                 .height = roof_height};
         }
-        if (vertical_subdivision == VerticalSubdivision::SOCLE) {
+        std::list<BuildingLevel> levels;
+        float previous_height = building_bottom;
+        auto add_level = [&](BuildingLevel&& level){
+            levels.push_back(std::move(level));
+            previous_height = level.top;
+        };
+        if (any(vertical_subdivision & VerticalSubdivision::ANY_SOCLE)) {
             if (socle_textures.empty()) {
                 THROW_OR_ABORT("Socle textures empty");
             }
-            result.push_back(Building{
-                .id = id,
-                .way = w,
-                .levels = {
-                    BuildingLevel{
-                        .top = socle_height,
-                        .bottom = building_bottom,
-                        .extra_width = 0.f,
-                        .type = BuildingLevelType::SOCLE,
-                        .facade_texture_descriptor = FacadeTextureDescriptor{
-                            .names = socle_textures.at(bid % socle_textures.size()).textures
-                        }},
-                    BuildingLevel{
-                        .top = building_top,
-                        .bottom = socle_height,
-                        .type = BuildingLevelType::MIDDLE,
-                        .facade_texture_descriptor = middle_ftd}
-                },
-                .roof_9_2 = roof_9_2,
-                .style = middle_style });
-        } else if (vertical_subdivision == VerticalSubdivision::ENTRANCES) {
-            result.push_back(Building{
-                .id = id,
-                .way = w,
-                .levels = {
-                    BuildingLevel{
-                        .top = entrances_height,
-                        .bottom = building_bottom,
-                        .extra_width = 0.f,
-                        .type = BuildingLevelType::ENTRANCES,
-                        .facade_texture_descriptor = entrance_ftd},
-                    BuildingLevel{
-                        .top = building_top,
-                        .bottom = entrances_height,
-                        .type = BuildingLevelType::MIDDLE,
-                        .facade_texture_descriptor = middle_ftd}
-                    },
-                    .roof_9_2 = roof_9_2,
-                    .style = entrance_style});
-        } else if (vertical_subdivision == VerticalSubdivision::NO) {
-            result.push_back(Building{
-                .id = id,
-                .way = w,
-                .levels = {BuildingLevel{
-                    .top = building_top,
-                    .bottom = building_bottom,
-                    .type = BuildingLevelType::MIDDLE,
-                    .facade_texture_descriptor = middle_ftd
-                }},
-                .roof_9_2 = roof_9_2,
-                .style = middle_style});
-        } else {
-            verbose_abort("Internal error: Unknown vertical_subdivision: " + std::to_string((int)vertical_subdivision));
+            add_level(
+                BuildingLevel{
+                    .top = previous_height + socle_height,
+                    .bottom = previous_height,
+                    .extra_width = 0.f,
+                    .type = BuildingLevelType::SOCLE,
+                    .facade_texture_descriptor = FacadeTextureDescriptor{
+                        .names = socle_textures.at(bid % socle_textures.size()).textures
+                    }});
         }
+        if (any(vertical_subdivision & VerticalSubdivision::ANY_ENTRANCES)) {
+            add_level(
+                BuildingLevel{
+                    .top = previous_height + entrances_height,
+                    .bottom = previous_height,
+                    .extra_width = 0.f,
+                    .type = BuildingLevelType::ENTRANCES,
+                    .facade_texture_descriptor = entrance_ftd});
+        }
+        add_level(
+            BuildingLevel{
+                .top = building_top,
+                .bottom = previous_height,
+                .type = BuildingLevelType::MIDDLE,
+                .facade_texture_descriptor = middle_ftd});
+        result.push_back(Building{
+            .id = id,
+            .way = w,
+            .levels = std::move(levels),
+            .roof_9_2 = roof_9_2,
+            .style = middle_style});
         ++bid;
     }
     return result;
