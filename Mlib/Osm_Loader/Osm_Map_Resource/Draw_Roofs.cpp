@@ -97,6 +97,7 @@ void Mlib::draw_roofs(
         float width = bu.roof_9_2->width;
         float uheight = bu.roof_9_2->height;
         float uwidth = std::sqrt(squared(width) + squared(uheight));
+        float length_mod1 = 0.f;
         visit_line_segments(sw, [&](
             const FixedArray<CompressedScenePos, 2>& aL,
             const FixedArray<CompressedScenePos, 2>& aR,
@@ -124,6 +125,7 @@ void Mlib::draw_roofs(
                 {
                     lerr() << "Error triangulating roof " + bu.id;
                 } else {
+                    float width = (float)std::sqrt(sum(squared(b - c)));
                     if (model_triangles == nullptr) {
                         rect.p00_ = b;
                         rect.p10_ = c;
@@ -169,6 +171,10 @@ void Mlib::draw_roofs(
                                     }
                                 }
                                 if (cva->name == "roof") {
+                                    auto sc = FixedArray<float, 2>{
+                                        width / scale * uv_scale,
+                                        uwidth / scale * uv_scale
+                                    };
                                     get_tl_roof()->draw_triangle_wo_normals(
                                         tt[0],
                                         tt[1],
@@ -176,9 +182,9 @@ void Mlib::draw_roofs(
                                         t(0).color,
                                         t(1).color,
                                         t(2).color,
-                                        { 0.f, 0.f },
-                                        { uwidth / scale * uv_scale, 0.f },
-                                        { 0.f, uheight / scale * uv_scale });
+                                        t(0).uv * sc,
+                                        t(1).uv * sc,
+                                        t(2).uv * sc);
                                 } else if (cva->name == "rail") {
                                     get_tl_rail()->draw_triangle_wo_normals(
                                         tt[0],
@@ -198,6 +204,7 @@ void Mlib::draw_roofs(
                     }
                 }
                 // draw_node(triangles, nodes.at(aL));
+                length_mod1 = std::fmod(length_mod1 + width, scale / uv_scale);
             });
     }
 }
