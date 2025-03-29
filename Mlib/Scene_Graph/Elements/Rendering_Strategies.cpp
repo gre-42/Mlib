@@ -29,9 +29,9 @@ std::string Mlib::rendering_strategies_to_string(RenderingStrategies rendering_s
         auto candidate = (RenderingStrategies)ucandidate;
         if (any(rendering_strategies & candidate)) {
             if (result.empty()) {
-                result += '|' + rendering_strategy_to_string(candidate);
-            } else {
                 result = rendering_strategy_to_string(candidate);
+            } else {
+                result += '|' + rendering_strategy_to_string(candidate);
             }
         }
     }
