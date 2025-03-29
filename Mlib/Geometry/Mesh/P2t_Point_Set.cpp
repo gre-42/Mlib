@@ -57,8 +57,8 @@ p2t::Point* P2tPointSet::operator () (const FixedArray<CompressedScenePos, 2>& c
 std::vector<p2t::Point*> P2tPointSet::remaining_steiner_points() const {
     std::vector<p2t::Point*> result;
     result.reserve(steiner_pts_.size());
-    for (auto& p : steiner_pts_) {
-        result.push_back(p.second.get());
+    for (auto& [_, p] : steiner_pts_) {
+        result.push_back(p.get());
     }
     return result;
 }
