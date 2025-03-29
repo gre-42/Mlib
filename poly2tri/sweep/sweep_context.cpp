@@ -48,6 +48,9 @@ SweepContext::SweepContext(std::vector<Point*> polyline) :
 
   points_ = polyline;
   point_set_ = std::unordered_set(polyline.begin(), polyline.end());
+  if (point_set_.size() != points_.size()) {
+    throw std::runtime_error("Triangulation outline contains duplicate points");
+  }
 
   InitEdges(points_);
 }
