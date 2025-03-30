@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -14,6 +15,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
+#include <poly2tri/point_exception.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -77,27 +79,37 @@ void Mlib::draw_buildings_ceiling_or_ground(
             }
             gz = max_height;
         }
-        UUVector<FixedArray<CompressedScenePos, 2>> outline;
+        std::vector<FixedArray<CompressedScenePos, 2>> outline;
         outline.reserve(sw.outline.size());
         for (const auto& v : sw.outline) {
             outline.emplace_back(v.indented);
         }
         outline = removed_duplicates(outline);
-        tls.push_back(std::make_shared<TriangleList<CompressedScenePos>>(
+        auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
             "ceilings_" + std::to_string(mid++),
             material,
             morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
+        auto tl_undefined = std::make_shared<TriangleList<CompressedScenePos>>(
+            "undefined",
+            material,
+            morphology + BASE_VISIBLE_TERRAIN_MATERIAL);
         TerrainTypeTriangleList tl_terrain;
-        tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
-        BoundingInfo bounding_info{ outline, {}, (CompressedScenePos)100.f };
+        tl_terrain.insert(TerrainType::UNDEFINED, tl_undefined);
+        tl_terrain.insert(TerrainType::FLOWERS, tl);
+        BoundingInfo bounding_info{ outline, {}, (CompressedScenePos)5.f, (CompressedScenePos)2.f };
+        auto loutline = std::list<FixedArray<CompressedScenePos, 2>>(
+            outline.begin(), outline.end());
+        if (compute_area_ccw(loutline, scale) < 0.f) {
+            loutline.reverse();
+        }
         try {
             triangulate_terrain_or_ceilings(
                 tl_terrain,                                                      // tl_terrain
                 bounding_info,                                                   // bounding_info
                 {},                                                              // steiner_points
-                outline,                                                         // bounding_contour
+                {},                                                              // bounding_contour
                 {},                                                              // hole_triangles
-                {},                                                              // region_contours
+                {{TerrainType::FLOWERS, loutline}},                              // region_contours
                 scale,                                                           // scale
                 triangulation_scale,                                             // triangulation_scale
                 uv_scale,                                                        // uv_scale
@@ -111,8 +123,19 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 TerrainType::UNDEFINED,                                          // default_terrain_type
                 {},                                                              // excluded_terrain_types
                 contour_detection_strategy);
+        } catch (const p2t::PointException& e) {
+            throw p2t::PointException{ e.point, "Could not triangulate building \"" + bu.id + "\": " + e.what() };
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Could not triangulate building " + bu.id + ": " + e.what());
+            throw std::runtime_error{ "Could not triangulate building \"" + bu.id + "\": " + e.what() };
+        }
+        if (tl->triangles.empty()) {
+            std::stringstream sstr;
+            sstr <<
+                "Could not triangulate building \"" <<
+                bu.id << "\". " <<
+                "#nodes = " << bu.way.nd.size() <<
+                ", #outline = " << sw.outline.size();
+            THROW_OR_ABORT(sstr.str());
         }
     }
 }

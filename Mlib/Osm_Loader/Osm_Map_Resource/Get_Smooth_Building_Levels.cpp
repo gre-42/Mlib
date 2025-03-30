@@ -29,6 +29,9 @@ std::list<BuildingSegment> Mlib::smooth_building_level(
         scale,
         max_length);
     sw.erase(sw.begin());
+    if (std::isnan(bu.area)) {
+        THROW_OR_ABORT("Building area is NAN");
+    }
     if (bu.area < 0) {
         sw.reverse();
     }
@@ -97,10 +100,10 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
             bu,
             nodes,
             max_length,
-            bu.roof_9_2.value().width,
-            bu.roof_9_2.value().width,
+            bu.roof_9_2->width,
+            bu.roof_9_2->width,
             scale);
-        result.z = (CompressedScenePos)(bl.top + bu.roof_9_2.value().height);
+        result.z = (CompressedScenePos)(bl.top + bu.roof_9_2->height);
     } else {
         segments = smooth_building_level(
             bu,

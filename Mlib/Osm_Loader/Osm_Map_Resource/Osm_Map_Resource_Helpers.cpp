@@ -451,11 +451,11 @@ void to_orderable_fixed_array(
     }
 }
 
-UUVector<FixedArray<CompressedScenePos, 2>> Mlib::removed_duplicates(
-    const UUVector<FixedArray<CompressedScenePos, 2>>& nodes,
+std::vector<FixedArray<CompressedScenePos, 2>> Mlib::removed_duplicates(
+    const std::vector<FixedArray<CompressedScenePos, 2>>& nodes,
     bool verbose)
 {
-    UUVector<FixedArray<CompressedScenePos, 2>> result;
+    std::vector<FixedArray<CompressedScenePos, 2>> result;
     result.reserve(nodes.size());
     to_orderable_fixed_array(
         result,

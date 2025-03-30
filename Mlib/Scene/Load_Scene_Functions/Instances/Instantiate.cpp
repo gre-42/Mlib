@@ -6,10 +6,8 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Physics/Collision/Collidable_Mode.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Instantiate_Frames.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Read_Ipl.hpp>
@@ -27,17 +25,8 @@ DECLARE_ARGUMENT(instantiables);
 DECLARE_ARGUMENT(required_prefixes);
 DECLARE_ARGUMENT(except);
 DECLARE_ARGUMENT(dynamics);
-DECLARE_ARGUMENT(min_vertex_distance);
 DECLARE_ARGUMENT(instantiated_resources);
 }
-
-const std::string Instantiate::key = "instantiate";
-
-LoadSceneJsonUserFunction Instantiate::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    Instantiate(args.renderable_scene()).execute(args);
-};
 
 Instantiate::Instantiate(RenderableScene& renderable_scene) 
     : LoadSceneInstanceFunction{ renderable_scene }
@@ -81,48 +70,20 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
         }
         args.local_json_macro_arguments->set(*ir, instantiated);
     }
-    {
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>> double_queue;
-        {
-            static ColoredVertexArrayFilter filter{
-                .included_tags = PhysicsMaterial::ATTR_COLLIDE
-            };
-            scene.append_static_filtered_to_queue(float_queue, double_queue, filter);
-        }
-        auto add_rigid_cuboid = [&](const auto& cva, const std::string& name){
-            auto rb = rigid_cuboid(
-                object_pool,
-                name,                       // name
-                "none",                     // asset_id
-                INFINITY,                   // mass
-                fixed_ones<float, 3>(),     // size
-                fixed_ones<float, 3>());    // com
-            rb->set_absolute_model_matrix(TransformationMatrix<float, ScenePos, 3>::identity());
-            physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, { cva }, {}, CollidableMode::STATIC);
-            rb.release();
-            };
-        {
-            auto filter = PhysicsMaterial::NONE;
-            auto min_vertex_distance = args.arguments.at<CompressedScenePos>(KnownArgs::min_vertex_distance);
-            auto modulo_uv = false;
-            CleanupMesh<CompressedScenePos> cleanup;
-            for (const auto& [t, q] : float_queue) {
-                FunctionGuard fg{ "Instantiate \"" + q->name + '"' };
-                auto cva = q->transformed<CompressedScenePos>(t, "_ipl_float");
-                cleanup(*cva, filter, min_vertex_distance, modulo_uv);
-                if (!cva->empty()) {
-                    add_rigid_cuboid(cva, "ipl_static_float");
-                }
-            }
-            for (const auto& [t, q] : double_queue) {
-                FunctionGuard fg{ "Instantiate \"" + q->name + '"' };
-                auto cva = q->transformed<CompressedScenePos>(t, "_ipl_double");
-                cleanup(*cva, filter, min_vertex_distance, modulo_uv);
-                if (!cva->empty()) {
-                    add_rigid_cuboid(cva, "ipl_static_double");
-                }
-            }
-        }
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "instantiate",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                Instantiate(args.renderable_scene()).execute(args);
+            });
     }
+} obj;
+
 }

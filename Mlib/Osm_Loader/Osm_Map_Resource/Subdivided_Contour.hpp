@@ -8,11 +8,13 @@ namespace Mlib {
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-UUInterp<double, FixedArray<double, 3>> interpolated_contour(
-    const std::list<FixedArray<CompressedScenePos, 3>>& contour);
+template <size_t tndim>
+UUInterp<double, FixedArray<double, tndim>> interpolated_contour(
+    const std::list<FixedArray<CompressedScenePos, tndim>>& contour);
 
-std::list<FixedArray<CompressedScenePos, 3>> subdivided_contour(
-    const std::list<FixedArray<CompressedScenePos, 3>>& contour,
+template <size_t tndim>
+std::list<FixedArray<CompressedScenePos, tndim>> subdivided_contour(
+    const std::list<FixedArray<CompressedScenePos, tndim>>& contour,
     double scale,
     CompressedScenePos distance);
 

@@ -99,6 +99,7 @@ public:
     template <class Archive>
     void serialize(Archive& archive) {
         archive(hri_);
+        archive(buildings_);
         archive(scale_);
         archive(spawn_points_);
         archive(way_points_);
@@ -129,6 +130,7 @@ private:
     std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> no_grass() const;
 
     HeterogeneousResource hri_;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> buildings_;
     SceneNodeResources& scene_node_resources_;
     double scale_;
     std::list<SpawnPoint> spawn_points_;

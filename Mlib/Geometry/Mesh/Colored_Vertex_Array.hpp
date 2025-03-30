@@ -106,6 +106,10 @@ public:
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const TransformationMatrix<float, TPosTransform, 3>& tm,
         const std::string& suffix) const;
+    template <class TPosResult, class TPosTranslation>
+    std::shared_ptr<ColoredVertexArray<TPosResult>> translated(
+        const FixedArray<TPosTranslation, 3>& t,
+        const std::string& suffix) const;
     template <size_t tnvertices>
     void polygon_sphere(
         std::vector<CollisionPolygonSphere<CompressedScenePos, tnvertices>>& collision_polygons) const;

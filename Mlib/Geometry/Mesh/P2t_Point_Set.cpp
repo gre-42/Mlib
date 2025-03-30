@@ -70,3 +70,24 @@ FixedArray<CompressedScenePos, 2> P2tPointSet::compute_coords(const p2t::Point* 
 const FixedArray<CompressedScenePos, 2>* P2tPointSet::try_get_coords(const p2t::Point* p) const {
     return coords_.try_get(p);
 }
+
+void P2tPointSet::print(std::ostream& ostr) const {
+    ostr << "P2tPointSet\n";
+    ostr << "  Points\n";
+    for (const auto& [c, p] : pts_) {
+        ostr << "    " << c << " " << p.get() << '\n';
+    }
+    ostr << "  Steiner\n";
+    for (const auto& [c, p] : steiner_pts_) {
+        ostr << "    " << c << " " << p.get() << '\n';
+    }
+    ostr << "  Coordinates\n";
+    for (const auto& [p, c] : coords_) {
+        ostr << "    " << c << " " << p << '\n';
+    }
+}
+
+std::ostream& operator << (std::ostream& ostr, const P2tPointSet& p) {
+    p.print(ostr);
+    return ostr;
+}

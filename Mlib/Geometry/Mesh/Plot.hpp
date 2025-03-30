@@ -103,6 +103,7 @@ void plot_mesh_svg(
     double width,
     double height,
     const std::list<FixedArray<CompressedScenePos, 3, 2>>& triangles,
+    const std::list<FixedArray<CompressedScenePos, 2, 2>>& edges,
     const std::list<std::vector<FixedArray<CompressedScenePos, 2>>>& contours,
     const std::list<FixedArray<CompressedScenePos, 2>>& highlighted_nodes,
     CompressedScenePos line_width = (CompressedScenePos)0.5f);
@@ -112,6 +113,7 @@ void plot_mesh_svg(
     double width,
     double height,
     const std::list<PTri>& triangles,
+    const std::list<FixedArray<double, 2, 2>>& edges,
     const std::list<std::vector<p2t::Point*>>& contours,
     const std::list<p2t::Point*>& highlighted_nodes,
     double line_width = 0.05f);

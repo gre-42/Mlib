@@ -208,7 +208,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     UUVector<FixedArray<ColoredVertex<TPosResult>, 4>> transformed_quads;
     UUVector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
     UUVector<FixedArray<ColoredVertex<TPosResult>, 2>> transformed_lines;
-    transformed_quads.reserve(triangles.size());
+    transformed_quads.reserve(quads.size());
     for (const auto& quad : quads) {
         transformed_quads.emplace_back(
             (quad(0).template casted<TPosTransform>()).transformed(tm, r).template casted<TPosResult>(),
@@ -228,6 +228,52 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         transformed_lines.emplace_back(
             (li(0).template casted<TPosTransform>()).transformed(tm, r).template casted<TPosResult>(),
             (li(1).template casted<TPosTransform>()).transformed(tm, r).template casted<TPosResult>());
+    }
+    return std::make_shared<ColoredVertexArray<TPosResult>>(
+        name + suffix,
+        material,
+        morphology,
+        modifier_backlog,
+        std::move(transformed_quads),
+        std::move(transformed_triangles),
+        std::move(transformed_lines),
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        UUVector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
+        UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
+        std::vector(uv1),
+        std::vector(cweight),
+        UUVector<FixedArray<float, 3>>(alpha));
+}
+
+template <class TPos>
+template <class TPosResult, class TPosTranslation>
+std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::translated(
+    const FixedArray<TPosTranslation, 3>& t,
+    const std::string& suffix) const
+{
+    UUVector<FixedArray<ColoredVertex<TPosResult>, 4>> transformed_quads;
+    UUVector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
+    UUVector<FixedArray<ColoredVertex<TPosResult>, 2>> transformed_lines;
+    transformed_quads.reserve(quads.size());
+    for (const auto& quad : quads) {
+        transformed_quads.emplace_back(
+            (quad(0).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>(),
+            (quad(1).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>(),
+            (quad(2).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>(),
+            (quad(3).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>());
+    }
+    transformed_triangles.reserve(triangles.size());
+    for (const auto& tri : triangles) {
+        transformed_triangles.emplace_back(
+            (tri(0).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>(),
+            (tri(1).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>(),
+            (tri(2).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>());
+    }
+    transformed_lines.reserve(lines.size());
+    for (const auto& li : lines) {
+        transformed_lines.emplace_back(
+            (li(0).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>(),
+            (li(1).template casted<TPosTranslation>()).translated(t).template casted<TPosResult>());
     }
     return std::make_shared<ColoredVertexArray<TPosResult>>(
         name + suffix,
@@ -660,6 +706,10 @@ template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::t
     const UUVector<OffsetAndQuaternion<float, float>>& qs,
     const std::string& suffix) const;
 
+template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<CompressedScenePos>::translated(
+    const FixedArray<CompressedScenePos, 3>& tm,
+    const std::string& suffix) const;
+    
 template std::vector<CollisionPolygonAabb<CompressedScenePos, 4>> ColoredVertexArray<CompressedScenePos>::transformed_quads_bbox(
     const TransformationMatrix<float, ScenePos, 3>& tm) const;
 template std::vector<CollisionPolygonAabb<CompressedScenePos, 3>> ColoredVertexArray<CompressedScenePos>::transformed_triangles_bbox(

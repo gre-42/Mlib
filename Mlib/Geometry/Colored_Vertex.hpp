@@ -142,7 +142,7 @@ struct ColoredVertex {
             color,
             uv,
             normal,
-            normal};
+            tangent};
     }
     ColoredVertex rotated(const FixedArray<float, 3, 3>& m) const {
         return ColoredVertex{

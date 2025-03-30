@@ -1,20 +1,11 @@
 #pragma once
-#ifdef _MSC_VER
-#include <experimental/generator>
-#else
-#include <generator>
-#endif
+#include <Mlib/Iterator/Generator.hpp>
 #include <string>
 
 namespace Mlib {
 
-#ifdef _MSC_VER
-std::experimental::generator<char32_t> u8_to_u32_generator(const std::string& utf8);
-std::experimental::generator<char> u32_to_u8_generator(const std::u32string& utf32);
-#else
-std::generator<char32_t> u8_to_u32_generator(const std::string& utf8);
-std::generator<char> u32_to_u8_generator(const std::u32string& utf32);
-#endif
+Generator<char32_t> u8_to_u32_generator(const std::string& utf8);
+Generator<char> u32_to_u8_generator(const std::u32string& utf32);
 
 size_t nchars32(const std::string& utf8);
 

@@ -50,9 +50,9 @@ struct ConvOrderable {
         const std::list<std::vector<FixedArray<TPos, 2>>>& contours,
         const std::list<FixedArray<TPos, 2>>& highlighted_nodes,
         const std::list<FixedArray<TPos, 2>>& crossed_nodes)
-    : triangles_2d{reinterpret_cast<const std::list<FixedArray<TPos, 3, 2>>&>(triangles)},
-      highlighted_nodes_2d{reinterpret_cast<const std::list<FixedArray<TPos, 2>>&>(highlighted_nodes)},
-      crossed_nodes_2d{reinterpret_cast<const std::list<FixedArray<TPos, 2>>&>(crossed_nodes)}
+    : triangles_2d{ triangles },
+      highlighted_nodes_2d{ highlighted_nodes },
+      crossed_nodes_2d{ crossed_nodes }
     {
         for (const auto& c : contours) {
             contours_2d.emplace_back();
@@ -363,6 +363,7 @@ void Mlib::plot_mesh_svg(
     double width,
     double height,
     const std::list<FixedArray<CompressedScenePos, 3, 2>>& triangles,
+    const std::list<FixedArray<CompressedScenePos, 2, 2>>& edges,
     const std::list<std::vector<FixedArray<CompressedScenePos, 2>>>& contours,
     const std::list<FixedArray<CompressedScenePos, 2>>& highlighted_nodes,
     CompressedScenePos line_width)
@@ -381,7 +382,7 @@ void Mlib::plot_mesh_svg(
     plot_mesh(
         svg,
         c.triangles_2d,
-        {},
+        edges,
         c.contours_2d,
         c.highlighted_nodes_2d,
         line_width);
@@ -397,6 +398,7 @@ void Mlib::plot_mesh_svg(
     double width,
     double height,
     const std::list<PTri>& triangles,
+    const std::list<FixedArray<double, 2, 2>>& edges,
     const std::list<std::vector<p2t::Point*>>& contours,
     const std::list<p2t::Point*>& highlighted_nodes,
     double line_width)
@@ -415,7 +417,7 @@ void Mlib::plot_mesh_svg(
     plot_mesh(
         svg,
         c.triangles_2d,
-        {},
+        edges,
         c.contours_2d,
         c.highlighted_nodes_2d,
         line_width);

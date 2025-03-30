@@ -3,11 +3,7 @@
 
 using namespace Mlib;
 
-#ifdef _MSC_VER
-std::experimental::generator<char32_t> Mlib::u8_to_u32_generator(const std::string& utf8) {
-#else
-std::generator<char32_t> Mlib::u8_to_u32_generator(const std::string& utf8) {
-#endif
+Generator<char32_t> Mlib::u8_to_u32_generator(const std::string& utf8) {
     boost::u8_to_u32_iterator it(utf8.begin());
     boost::u8_to_u32_iterator tend(utf8.end());
     for (; it != tend; ++it) {
@@ -15,11 +11,7 @@ std::generator<char32_t> Mlib::u8_to_u32_generator(const std::string& utf8) {
     }
 }
 
-#ifdef _MSC_VER
-std::experimental::generator<char> Mlib::u32_to_u8_generator(const std::u32string& utf32) {
-#else
-std::generator<char> Mlib::u32_to_u8_generator(const std::u32string& utf32) {
-#endif
+Generator<char> Mlib::u32_to_u8_generator(const std::u32string& utf32) {
     boost::u32_to_u8_iterator it(utf32.begin());
     boost::u32_to_u8_iterator tend(utf32.end());
     for (; it != tend; ++it) {

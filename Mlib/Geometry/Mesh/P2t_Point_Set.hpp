@@ -2,6 +2,7 @@
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>
@@ -28,6 +29,7 @@ public:
     std::vector<p2t::Point*> remaining_steiner_points() const;
     FixedArray<CompressedScenePos, 2> compute_coords(const p2t::Point* p) const;
     const FixedArray<CompressedScenePos, 2>* try_get_coords(const p2t::Point* p) const;
+    void print(std::ostream& ostr) const;
 private:
     std::unique_ptr<p2t::Point> gen_point(const FixedArray<CompressedScenePos, 2>& c) const;
     double scale_;
@@ -35,5 +37,7 @@ private:
     Map<OrderableFixedArray<CompressedScenePos, 2>, std::unique_ptr<p2t::Point>> steiner_pts_;
     VerboseUnorderedMap<const p2t::Point*, FixedArray<CompressedScenePos, 2>> coords_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const P2tPointSet& p);
 
 }

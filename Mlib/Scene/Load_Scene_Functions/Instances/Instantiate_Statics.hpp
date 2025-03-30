@@ -5,9 +5,9 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class Instantiate: public LoadSceneInstanceFunction {
+class InstantiateStatics: public LoadSceneInstanceFunction {
 public:
-    explicit Instantiate(RenderableScene& renderable_scene);
+    explicit InstantiateStatics(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

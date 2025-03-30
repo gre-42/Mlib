@@ -22,9 +22,11 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Navigation/NavigationMeshBuilder.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
@@ -39,7 +41,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Building_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Boundary_Barriers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
@@ -274,7 +275,10 @@ OsmMapResource::OsmMapResource(
         fg.update("Get buildings");
         buildings = get_buildings_or_wall_barriers(
             BuildingType::BUILDING,
+            nodes,
             ways,
+            config.scale,
+            config.max_wall_width,
             config.building_bottom,
             config.default_building_top,
             config.default_snap_building_height,
@@ -288,17 +292,16 @@ OsmMapResource::OsmMapResource(
             entrance_ftc,
             middle_ftc,
             config.default_building_vertical_subdivision);
-        compute_building_area(
-            buildings,
-            nodes,
-            config.scale);
     }
     {
         FacadeTextureCycle ftc({});
         fg.update("Get wall barriers");
         wall_barriers = get_buildings_or_wall_barriers(
             BuildingType::WALL_BARRIER,
+            {},         // nodes
             ways,
+            NAN,        // scale
+            NAN,        // max_wall_width,
             config.building_bottom,
             config.default_barrier_top,
             config.default_snap_barrier_height,
@@ -433,10 +436,10 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    UUVector<FixedArray<CompressedScenePos, 2>> map_outer_contour = get_map_outer_contour(
+    std::vector<FixedArray<CompressedScenePos, 2>> map_outer_contour = get_map_outer_contour(
         nodes,
         ways);
-    BoundingInfo bounding_info{ map_outer_contour, nodes, (CompressedScenePos)100.f };
+    BoundingInfo bounding_info{ map_outer_contour, nodes, (CompressedScenePos)100.f, (CompressedScenePos)50.f };
 
     auto draw_terrain_triangles = [&config](TriangleList<CompressedScenePos>& dest, const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& source){
         for (const auto& t : source) {
@@ -664,6 +667,11 @@ OsmMapResource::OsmMapResource(
         }
     }
 
+    auto building_detail_morphology = Morphology{
+        .physics_material = PhysicsMaterial::NONE,
+        .center_distances = { 0.f, 500.f }
+    };
+
     if (config.with_buildings) {
         fg.update("Draw building walls (facade)");
         draw_building_walls(
@@ -672,9 +680,10 @@ OsmMapResource::OsmMapResource(
             displacements,
             Material{
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NONE,
                 .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                 .draw_distance_noperations = 1000},
+            building_detail_morphology,
             Morphology{ .physics_material = PhysicsMaterial::NONE },
             buildings,
             nodes,
@@ -696,16 +705,16 @@ OsmMapResource::OsmMapResource(
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NONE,
                 .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NONE,
                 .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = PhysicsMaterial::NONE },
+            building_detail_morphology,
             roof_color,
             buildings,
             nodes,
@@ -1363,12 +1372,17 @@ OsmMapResource::OsmMapResource(
     } else {
         tls_all = osm_triangle_lists.tls_wo_subtraction_and_water();
     }
-    for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>*>{
+    for (const auto& l : tls_buildings) {
+        if (l->triangles.empty()) {
+            THROW_OR_ABORT("Building \"" + l->name + "\" has no triangles");
+        }
+        buildings_.emplace_back(l->triangle_array());
+    }
+    for (const auto& l : std::list<const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>*>{
             &tls_all,
-            &tls_buildings,
             &tls_wall_barriers })
     {
-        for (auto& l2 : *l) {
+        for (const auto& l2 : *l) {
             if (!l2->triangles.empty()) {
                 auto cva = l2->triangle_array();
                 modulo_uv(*cva);
@@ -1381,7 +1395,10 @@ OsmMapResource::OsmMapResource(
         FacadeTextureCycle ftc({});
         std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
             BuildingType::SPAWN_LINE,
-            ways,
+            {},         // nodes
+            ways,       // ways
+            NAN,        // scale,
+            NAN,        // max_wall_width,
             0,          // building_bottom
             0,          // default_building_top
             false,      // default_snap_height
@@ -1803,6 +1820,20 @@ std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> OsmMa
 void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
 {
     hri_.instantiate_root_renderables(options);
+    for (const auto& [i, b] : enumerate(buildings_)) {
+        auto center = b->aabb().data().center();
+        auto tm = TranslationMatrix{ center.casted<ScenePos>() };
+        auto trafo = options.absolute_model_matrix * tm;
+        auto rcva = std::make_shared<ColoredVertexArrayResource>(b->translated<float>(-center, "_centered"));
+        rcva->instantiate_root_renderables(
+            RootInstantiationOptions{
+                .rendering_resources = options.rendering_resources,
+                .instance_name = VariableAndHash<std::string>{ "building_" + std::to_string(i) },
+                .absolute_model_matrix = trafo,
+                .scene = options.scene,
+                .renderable_resource_filter = options.renderable_resource_filter
+            });
+    }
     if (terrain_styles_.requires_renderer()) {
         auto node = make_unique_scene_node(
             options.absolute_model_matrix.t,

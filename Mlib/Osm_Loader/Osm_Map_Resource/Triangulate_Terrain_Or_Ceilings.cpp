@@ -1,7 +1,7 @@
 #include "Triangulate_Terrain_Or_Ceilings.hpp"
-#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Contour_Intersections.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Close_Neighbor_Detector.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
@@ -13,13 +13,16 @@
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/PTri.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <poly2tri/point_exception.hpp>
+#include <vector>
 
 using namespace Mlib;
 
@@ -70,87 +73,49 @@ void plot_tris(
 }
 
 static void plot_contours(const std::string& filename, const std::vector<std::vector<p2t::Point*>>& p2t_hole_contours, double scale) {
-    std::list<std::list<FixedArray<CompressedScenePos, 3>>> contours;
-    std::list<FixedArray<CompressedScenePos, 3>> highlighted_nodes;
+    std::list<std::list<FixedArray<CompressedScenePos, 2>>> contours;
+    std::list<FixedArray<CompressedScenePos, 2>> highlighted_nodes;
     for (const auto& c : p2t_hole_contours) {
         auto& cs = contours.emplace_back();
         for (const auto& p : c) {
             cs.emplace_back(
                 (CompressedScenePos)(p->x / scale),
-                (CompressedScenePos)(-p->y / scale),
-                (CompressedScenePos)0.);
+                (CompressedScenePos)(-p->y / scale));
         }
         cs.emplace_back(
             (CompressedScenePos)(c.front()->x / scale),
-            (CompressedScenePos)(-c.front()->y / scale),
-            (CompressedScenePos)0.);
+            (CompressedScenePos)(-c.front()->y / scale));
     }
-    typedef FixedArray<CompressedScenePos, 2> P2;
-    typedef FixedArray<CompressedScenePos, 2, 2> Edge;
-    Bvh<CompressedScenePos, 2, Edge> bvh{{(CompressedScenePos)100., (CompressedScenePos)100.}, 10};
-    for (const auto& c : p2t_hole_contours) {
-        for (auto it = c.begin(); it != c.end(); ++it) {
-            auto s = it;
-            ++s;
-            auto edge = Edge{
-                P2{(CompressedScenePos)((*it)->x / scale), (CompressedScenePos)(-(*it)->y / scale)},
-                (s == c.end())
-                    ? P2{(CompressedScenePos)(c.front()->x / scale), (CompressedScenePos)(-c.front()->y / scale)}
-                    : P2{(CompressedScenePos)((*s)->x / scale), (CompressedScenePos)(-(*s)->y / scale)}};
-            auto aabb = AxisAlignedBoundingBox<CompressedScenePos, 2>::from_points(edge);
-            bvh.visit(
-                aabb,
-                [&edge, &highlighted_nodes](const Edge& data)
+    {
+        std::vector<std::vector<FixedArray<CompressedScenePos, 2>>> contours2;
+        contours2.reserve(p2t_hole_contours.size());
+        for (const auto& c : p2t_hole_contours) {
+            auto& cs = contours2.emplace_back();
+            cs.reserve(c.size());
+            for (const auto& p : c) {
+                cs.emplace_back(
+                    (CompressedScenePos)(p->x / scale),
+                    (CompressedScenePos)(-p->y / scale));
+            }
+        }
+        visit_contour_intersections(
+            contours2,
+            [&highlighted_nodes](const FixedArray<ScenePos, 2>& intersection)
             {
-                FixedArray<double, 2> intersection = uninitialized;
-                if (intersect_lines(intersection, funpack(edge), funpack(data), 0., 0., false, true)) {
-                    highlighted_nodes.emplace_back((CompressedScenePos)intersection(0), (CompressedScenePos)intersection(1), (CompressedScenePos)0.f);
-                }
+                highlighted_nodes.emplace_back(
+                    intersection.casted<CompressedScenePos>());
                 return true;
             });
-            bvh.insert(aabb, edge);
-        }
     }
     plot_mesh_svg(
         filename,
         600.,
         500.,
         {},
+        {},
         contours,
         highlighted_nodes,
         (CompressedScenePos)0.1f); // line_width
-}
-
-double compute_area_ccw(
-    const std::vector<p2t::Point*>& polygon,
-    double scale)
-{
-    // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
-    double area2 = 0;
-    for (auto it = polygon.begin(); it != polygon.end(); ++it) {
-        auto s = it;
-        ++s;
-        const p2t::Point& a = **it;
-        const p2t::Point& b = (s != polygon.end()) ? **s : *polygon.front();
-        area2 += (a.x - b.x) * (b.y + a.y);
-    }
-    return area2 / 2. / squared(scale);
-}
-
-double compute_area_ccw(
-    const std::list<FixedArray<CompressedScenePos, 2>>& polygon,
-    double scale)
-{
-    // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
-    double area2 = 0;
-    for (auto it = polygon.begin(); it != polygon.end(); ++it) {
-        auto s = it;
-        ++s;
-        const auto& a = *it;
-        const auto& b = (s != polygon.end()) ? **s : *polygon.front();
-        area2 += funpack(a(0) - b(0)) * funpack(b(1) + a(1));
-    }
-    return area2 / 2. / squared(scale);
 }
 
 void check_contour(const std::vector<p2t::Point*>& contour) {
@@ -188,7 +153,7 @@ void triangulate_entity_list(
     EntityTypeTriangleList<EntityType>& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const UUVector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
+    const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
     const std::map<EntityType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>& hole_triangles,
     const std::list<std::pair<EntityType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,
@@ -211,17 +176,22 @@ void triangulate_entity_list(
     }
     P2tPointSet points{ steiner_point_positions, triangulation_scale };
     std::vector<p2t::Point*> final_bounding_contour;
-    if (bounding_contour.empty()) {
-        final_bounding_contour = {
-            points({bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width}),
-            points({bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width}),
-            points({bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width}),
-            points({bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width}) };
-    } else {
-        final_bounding_contour.reserve(bounding_contour.size());
-        for (const auto& p : bounding_contour) {
+    auto compute_final_bounding_contour = [&](const auto& bc){
+        final_bounding_contour.reserve(bc.size());
+        for (const auto& p : bc) {
             final_bounding_contour.push_back(points(p));
         }
+    };
+    if (bounding_contour.empty()) {
+        std::list<FixedArray<CompressedScenePos, 2>> bc0 = {
+            {bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width},
+            {bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width},
+            {bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width},
+            {bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width}};
+        auto bc1 = subdivided_contour(bc0, 1.f, bounding_info.segment_length);
+        compute_final_bounding_contour(bc1);
+    } else {
+        compute_final_bounding_contour(bounding_contour);
     }
     if (compute_area_ccw(final_bounding_contour, scale) < 0.f) {
         std::reverse(final_bounding_contour.begin(), final_bounding_contour.end());
@@ -296,9 +266,8 @@ void triangulate_entity_list(
 
     p2t::CDT cdt{final_bounding_contour};
     auto add_contour = [&](EntityType region_type, const std::list<FixedArray<CompressedScenePos, 2>>& contour){
-        p2t_hole_contours.emplace_back();
         p2t_region_types.push_back(region_type);
-        auto& cnt = p2t_hole_contours.back();
+        auto& cnt = p2t_hole_contours.emplace_back();
         cnt.reserve(contour.size());
         // size_t i = 0;
         for (const auto& p : contour) {
@@ -333,7 +302,7 @@ void triangulate_entity_list(
             throw std::runtime_error("Could not add region contour: " + std::string(e.what()));
         }
     }
-    for (const auto& p : points.remaining_steiner_points()) {
+    for (auto* p : points.remaining_steiner_points()) {
         cdt.AddPoint(p);
     }
     auto all_contours = p2t_hole_contours;
@@ -423,7 +392,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const UUVector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
+    const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
     const std::map<TerrainType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>& hole_triangles,
     const std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,
@@ -466,7 +435,7 @@ void Mlib::triangulate_water(
     WaterTypeTriangleList& tl_water,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const UUVector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
+    const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
     const std::map<WaterType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>& hole_triangles,
     const std::list<std::pair<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,

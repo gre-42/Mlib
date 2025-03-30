@@ -1,6 +1,10 @@
 #include "Get_Buildings_Or_Wall_Barriers.hpp"
+#include <Mlib/Geometry/Intersection/Contour_Intersections.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
@@ -13,7 +17,10 @@ static const float MINIMUM_HEIGHT = 0.1f;
 
 std::list<Building> Mlib::get_buildings_or_wall_barriers(
     BuildingType building_type,
+    const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
+    double scale,
+    double max_length,
     float building_bottom,
     float default_building_top,
     bool default_snap_height,
@@ -177,18 +184,53 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     .type = BuildingLevelType::ENTRANCES,
                     .facade_texture_descriptor = entrance_ftd});
         }
-        add_level(
-            BuildingLevel{
-                .top = building_top,
-                .bottom = previous_height,
-                .type = BuildingLevelType::MIDDLE,
-                .facade_texture_descriptor = middle_ftd});
-        result.push_back(Building{
+        if (building_type != BuildingType::SPAWN_LINE) {
+            add_level(
+                BuildingLevel{
+                    .top = building_top,
+                    .bottom = previous_height,
+                    .type = BuildingLevelType::MIDDLE,
+                    .facade_texture_descriptor = middle_ftd});
+        }
+        {
+            float last_height = -INFINITY;
+            for (const auto& l : levels) {
+                if (l.bottom < last_height) {
+                    THROW_OR_ABORT("Inconsistent building height. ID: \"" + id + '"');
+                }
+                if (l.top <= l.bottom) {
+                    THROW_OR_ABORT("Building level has no positive height. ID: \"" + id + '"');
+                }
+                last_height = l.top;
+            }
+        }
+        auto& bu = result.emplace_back(Building{
             .id = id,
             .way = w,
             .levels = std::move(levels),
             .roof_9_2 = roof_9_2,
+            .area = (building_type == BuildingType::BUILDING)
+                ? (float)compute_area_clockwise(w.nd, nodes, scale)
+                : NAN,
+            .detail_type = roof_9_2.has_value()
+                ? BuildingDetailType::HIGH
+                : BuildingDetailType::LOW,
             .style = middle_style});
+        if (bu.roof_9_2.has_value()) {
+            auto sw = smooth_building_level_outline(bu, nodes, scale, max_length, DrawBuildingPartType::CEILING);
+            std::vector<FixedArray<CompressedScenePos, 2>> outline;
+            outline.reserve(sw.outline.size());
+            for (const auto& v : sw.outline) {
+                outline.emplace_back(v.indented);
+            }
+            if (!visit_contour_intersections({ outline }, [](const FixedArray<ScenePos, 2>&){
+                return false;
+            }))
+            {
+                lwarn() << "Building \"" << id << "\" has intersecting roof segments";
+                bu.roof_9_2.reset();
+            }
+        }
         ++bid;
     }
     return result;

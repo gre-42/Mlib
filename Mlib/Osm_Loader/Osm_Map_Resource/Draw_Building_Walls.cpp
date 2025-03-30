@@ -20,7 +20,8 @@ void Mlib::draw_building_walls(
     std::list<SteinerPointInfo>* steiner_points,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
     const Material& material,
-    const Morphology& morphology,
+    const Morphology& high_detail_morphology,
+    const Morphology& low_detail_morphology,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
@@ -50,7 +51,9 @@ void Mlib::draw_building_walls(
             const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
-                morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
+                (bu.detail_type == BuildingDetailType::HIGH)
+                    ? high_detail_morphology + BASE_VISIBLE_TERRAIN_MATERIAL
+                    : low_detail_morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
             FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
             FixedArray<float, 3> top_height_color = height_colors(bl.top);
             float bottom_ambient_occlusion;

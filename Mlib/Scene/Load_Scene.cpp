@@ -46,7 +46,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Thread_Top.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Visual_Node_Status_3rd.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate_Game_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate_Grass.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Invalidate_Aggregate_Renderers.hpp>
@@ -319,7 +318,6 @@ LoadScene::LoadScene() {
             register_json_user_function(FocusedText::key, FocusedText::json_user_function);
             register_json_user_function(FollowNode::key, FollowNode::json_user_function);
             register_json_user_function(Minimap::key, Minimap::json_user_function);
-            register_json_user_function(Instantiate::key, Instantiate::json_user_function);
             register_json_user_function(InstantiateGameLogic::key, InstantiateGameLogic::json_user_function);
             register_json_user_function(InstantiateGrass::key, InstantiateGrass::json_user_function);
             register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);

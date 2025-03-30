@@ -7,12 +7,14 @@
 using namespace Mlib;
 
 BoundingInfo::BoundingInfo(
-    const UUVector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
+    const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
     const std::map<std::string, Node>& nodes,
-    CompressedScenePos border_width)
+    CompressedScenePos border_width,
+    CompressedScenePos segment_length)
     : boundary_min{ fixed_full<CompressedScenePos, 2>(std::numeric_limits<CompressedScenePos>::max()) }
     , boundary_max{ fixed_full<CompressedScenePos, 2>(std::numeric_limits<CompressedScenePos>::lowest()) }
     , border_width{ border_width }
+    , segment_length{ segment_length }
 {
     if (bounding_contour.empty()) {
         for (const auto& [_, node] : nodes) {

@@ -185,7 +185,7 @@ private:
 
 void colorize_height_map(std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles);
 
-UUVector<FixedArray<CompressedScenePos, 2>> removed_duplicates(const UUVector<FixedArray<CompressedScenePos, 2>>& nodes, bool verbose = true);
+std::vector<FixedArray<CompressedScenePos, 2>> removed_duplicates(const std::vector<FixedArray<CompressedScenePos, 2>>& nodes, bool verbose = true);
 std::list<FixedArray<CompressedScenePos, 2>> removed_duplicates(const std::list<FixedArray<CompressedScenePos, 2>>& nodes, bool verbose = true);
 std::list<SteinerPointInfo> removed_duplicates(const std::list<SteinerPointInfo>& nodes, bool verbose = true);
 

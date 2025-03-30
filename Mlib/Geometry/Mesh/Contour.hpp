@@ -133,6 +133,7 @@ void extract_triangles_inside_contours(
                                             600.,
                                             600.,
                                             triangles,
+                                            {},
                                             { contours[contour_id], contours[it->second] },
                                             { O{a}, O{b}, O{c} });
                                     } else {
