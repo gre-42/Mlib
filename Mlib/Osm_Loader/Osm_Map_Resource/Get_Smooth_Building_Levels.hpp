@@ -11,6 +11,7 @@ struct OsmRectangle2D;
 struct Building;
 struct Node;
 enum class DrawBuildingPartType;
+enum class BuildingDetailType;
 
 struct BuildingVertex {
     FixedArray<CompressedScenePos, 2> orig;
@@ -40,6 +41,7 @@ BuildingLevelOutline smooth_building_level_outline(
     const std::map<std::string, Node>& nodes,
     double scale,
     double max_length,
-    DrawBuildingPartType tpe);
+    DrawBuildingPartType tpe,
+    BuildingDetailType detail);
 
 }

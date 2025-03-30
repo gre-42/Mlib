@@ -88,14 +88,18 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
     const std::map<std::string, Node>& nodes,
     double scale,
     double max_length,
-    DrawBuildingPartType tpe)
+    DrawBuildingPartType tpe,
+    BuildingDetailType detail)
 {
     const BuildingLevel& bl = (tpe == DrawBuildingPartType::CEILING)
         ? bu.levels.back()
         : bu.levels.front();
     BuildingLevelOutline result;
     std::list<BuildingSegment> segments;
-    if ((tpe == DrawBuildingPartType::CEILING) && bu.roof_9_2.has_value()) {
+    if ((tpe == DrawBuildingPartType::CEILING) &&
+        (detail == BuildingDetailType::HIGH) &&
+        bu.roof_9_2.has_value())
+    {
         segments = smooth_building_level(
             bu,
             nodes,

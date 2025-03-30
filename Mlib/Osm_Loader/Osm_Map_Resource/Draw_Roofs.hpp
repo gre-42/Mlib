@@ -18,6 +18,7 @@ class FixedArray;
 struct Building;
 struct Node;
 class SceneNodeResources;
+class GetMorphology;
 
 void draw_roofs(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
@@ -26,7 +27,7 @@ void draw_roofs(
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
     const Material& roof_material,
     const Material& rail_material,
-    const Morphology& morphology,
+    const GetMorphology& get_morphology,
     const FixedArray<float, 3>& color,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,

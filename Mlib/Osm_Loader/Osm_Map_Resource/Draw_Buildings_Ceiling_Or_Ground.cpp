@@ -53,7 +53,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
         {
             continue;
         }
-        auto sw = smooth_building_level_outline(bu, nodes, scale, max_width, tpe);
+        auto sw = smooth_building_level_outline(bu, nodes, scale, max_width, tpe, BuildingDetailType::COMBINED);
         if (sw.outline.empty()) {
             THROW_OR_ABORT("Smoothed outline is empty");
         }

@@ -212,12 +212,15 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             .area = (building_type == BuildingType::BUILDING)
                 ? (float)compute_area_clockwise(w.nd, nodes, scale)
                 : NAN,
-            .detail_type = roof_9_2.has_value()
-                ? BuildingDetailType::HIGH
-                : BuildingDetailType::LOW,
             .style = middle_style});
         if (bu.roof_9_2.has_value()) {
-            auto sw = smooth_building_level_outline(bu, nodes, scale, max_length, DrawBuildingPartType::CEILING);
+            auto sw = smooth_building_level_outline(
+                bu,
+                nodes,
+                scale,
+                max_length,
+                DrawBuildingPartType::CEILING,
+                BuildingDetailType::HIGH);
             std::vector<FixedArray<CompressedScenePos, 2>> outline;
             outline.reserve(sw.outline.size());
             for (const auto& v : sw.outline) {

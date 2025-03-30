@@ -17,12 +17,14 @@ template <class TData, size_t... tshape>
 class OrderableFixedArray;
 template <typename TData, size_t... tshape>
 class FixedArray;
+struct Morphology;
 
 void draw_ceilings(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_buildings,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
     const OsmResourceConfig& config,
     const std::list<Building>& buildings,
+    const Morphology& morphology,
     const std::map<std::string, Node>& nodes,
     const std::string& contour_triangles_filename,
     const std::string& contour_filename,

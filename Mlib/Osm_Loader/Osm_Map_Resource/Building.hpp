@@ -19,6 +19,7 @@ enum class BuildingLevelType {
 enum class BuildingDetailType {
     HIGH,
     LOW,
+    COMBINED,
     UNDEFINED
 };
 
@@ -42,7 +43,6 @@ struct Building {
     std::list<BuildingLevel> levels;
     std::optional<Roof9_2> roof_9_2;
     float area;
-    BuildingDetailType detail_type = BuildingDetailType::UNDEFINED;
     std::string style;
 };
 

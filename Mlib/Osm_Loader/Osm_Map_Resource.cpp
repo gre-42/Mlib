@@ -56,6 +56,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Generate_Racing_Line_Playback.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Morphology.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Terrain_Way_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
@@ -323,6 +324,20 @@ OsmMapResource::OsmMapResource(
         terrain_region_contours_bvh.add_path(contour);
     }
 
+    GetMorphology get_building_morphology{
+        Morphology{
+            .physics_material = PhysicsMaterial::NONE,
+            .center_distances = { 0.f, 300.f }
+        },
+        Morphology{
+            .physics_material = PhysicsMaterial::NONE,
+            .center_distances = { 300.f, INFINITY }
+        },
+        Morphology{
+            .physics_material = PhysicsMaterial::NONE,
+            .center_distances = { 0.f, INFINITY }
+        }};
+
     if (config.with_buildings) {
         for (const auto& bu : buildings) {
             if (bu.way.nd.empty()) {
@@ -337,7 +352,7 @@ OsmMapResource::OsmMapResource(
                 osm_triangle_lists.tls_buildings_ground,
                 nullptr,
                 Material{},
-                Morphology{ .physics_material = PhysicsMaterial::NONE },
+                get_building_morphology[BuildingDetailType::COMBINED],
                 buildings,
                 nodes,
                 config.scale,
@@ -667,11 +682,6 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    auto building_detail_morphology = Morphology{
-        .physics_material = PhysicsMaterial::NONE,
-        .center_distances = { 0.f, 500.f }
-    };
-
     if (config.with_buildings) {
         fg.update("Draw building walls (facade)");
         draw_building_walls(
@@ -683,8 +693,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::NONE,
                 .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                 .draw_distance_noperations = 1000},
-            building_detail_morphology,
-            Morphology{ .physics_material = PhysicsMaterial::NONE },
+            get_building_morphology[BuildingDetailType::COMBINED],
             buildings,
             nodes,
             config.scale,
@@ -714,7 +723,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::NONE,
                 .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            building_detail_morphology,
+            get_building_morphology,
             roof_color,
             buildings,
             nodes,
@@ -730,6 +739,7 @@ OsmMapResource::OsmMapResource(
                 displacements,
                 config,
                 buildings,
+                get_building_morphology[BuildingDetailType::COMBINED],
                 nodes,
                 getenv_default("CEILING_CONTOUR_TRIANGLES_FILENAME", ""),
                 getenv_default("CEILING_CONTOUR_FILENAME", ""),
