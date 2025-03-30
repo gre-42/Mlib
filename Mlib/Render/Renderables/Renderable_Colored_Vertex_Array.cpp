@@ -1374,6 +1374,16 @@ void RenderableColoredVertexArray::append_filtered_to_queue(
             float_queue.push_back(e);
         }
     }
+    for (const auto& e : aggregate_once_) {
+        if (filter.matches(*e)) {
+            double_queue.push_back(e);
+        }
+    }
+    for (const auto& e : aggregate_sorted_continuously_) {
+        if (filter.matches(*e)) {
+            double_queue.push_back(e);
+        }
+    }
 }
 
 void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(

@@ -709,7 +709,10 @@ template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::t
 template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<CompressedScenePos>::translated(
     const FixedArray<CompressedScenePos, 3>& tm,
     const std::string& suffix) const;
-    
+template std::shared_ptr<ColoredVertexArray<CompressedScenePos>> ColoredVertexArray<CompressedScenePos>::translated(
+    const FixedArray<CompressedScenePos, 3>& tm,
+    const std::string& suffix) const;
+
 template std::vector<CollisionPolygonAabb<CompressedScenePos, 4>> ColoredVertexArray<CompressedScenePos>::transformed_quads_bbox(
     const TransformationMatrix<float, ScenePos, 3>& tm) const;
 template std::vector<CollisionPolygonAabb<CompressedScenePos, 3>> ColoredVertexArray<CompressedScenePos>::transformed_triangles_bbox(

@@ -828,6 +828,22 @@ void Scene::append_static_filtered_to_queue(
             filter);
         return true;
         });
+    root_aggregate_once_nodes_.visit_all([&](const auto& node) {
+        node->append_static_filtered_to_queue(
+            TransformationMatrix<float, ScenePos, 3>::identity(),
+            float_queue,
+            double_queue,
+            filter);
+        return true;
+        });
+    root_aggregate_always_nodes_.visit_all([&](const auto& node) {
+        node->append_static_filtered_to_queue(
+            TransformationMatrix<float, ScenePos, 3>::identity(),
+            float_queue,
+            double_queue,
+            filter);
+        return true;
+        });
 }
 
 size_t Scene::get_uuid() {

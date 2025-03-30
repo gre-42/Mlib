@@ -690,7 +690,7 @@ OsmMapResource::OsmMapResource(
             displacements,
             Material{
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::NONE,
+                .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                 .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                 .draw_distance_noperations = 1000},
             get_building_morphology[BuildingDetailType::COMBINED],
@@ -714,13 +714,13 @@ OsmMapResource::OsmMapResource(
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::NONE,
+                .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                 .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::NONE,
+                .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                 .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             get_building_morphology,
@@ -1834,7 +1834,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
         auto center = b->aabb().data().center();
         auto tm = TranslationMatrix{ center.casted<ScenePos>() };
         auto trafo = options.absolute_model_matrix * tm;
-        auto rcva = std::make_shared<ColoredVertexArrayResource>(b->translated<float>(-center, "_centered"));
+        auto rcva = std::make_shared<ColoredVertexArrayResource>(b->translated<CompressedScenePos>(-center, "_centered"));
         rcva->instantiate_root_renderables(
             RootInstantiationOptions{
                 .rendering_resources = options.rendering_resources,

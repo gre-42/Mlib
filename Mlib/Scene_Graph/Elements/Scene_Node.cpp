@@ -1180,6 +1180,9 @@ void SceneNode::append_static_filtered_to_queue(
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
         c.scene_node->append_static_filtered_to_queue(m, float_queue, double_queue, filter);
     }
+    for (const auto& [_, c] : un_guarded_iterator(aggregate_children_, lock)) {
+        c.scene_node->append_static_filtered_to_queue(m, float_queue, double_queue, filter);
+    }
 }
 
 void SceneNode::append_lights_to_queue(
