@@ -44,7 +44,7 @@ ScenePos TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_no
         auto add_cvas = [&add_distance](const auto& cvas, const std::string& name, BillboardId billboard_id){
             for (const auto& cva : cvas) {
                 if (billboard_id != BILLBOARD_ID_NONE) {
-                    add_distance(name, cva->material.billboard_atlas_instance(billboard_id).max_center_distance);
+                    add_distance(name, cva->material.billboard_atlas_instance(billboard_id, name).max_center_distance);
                 } else {
                     add_distance(name, cva->morphology.center_distances(1));
                 }

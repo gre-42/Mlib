@@ -9,7 +9,7 @@ using namespace Mlib;
 template <class TPos>
 void Mlib::merge_meshes(
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
-    const std::string& name,
+    const GroupAndName& name,
     const Material& material,
     const Morphology& morphology)
 {
@@ -41,11 +41,11 @@ void Mlib::merge_meshes(
 
 template void Mlib::merge_meshes<float>(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas,
-    const std::string& name,
+    const GroupAndName& name,
     const Material& material,
     const Morphology& morphology);
 template void Mlib::merge_meshes<CompressedScenePos>(
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
-    const std::string& name,
+    const GroupAndName& name,
     const Material& material,
     const Morphology& morphology);

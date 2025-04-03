@@ -31,7 +31,7 @@ bool Mlib::is_visible(
     if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
         any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
     {
-        ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id);
+        ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id, object_name);
         return (occluder_pass & external_render_pass) == external_render_pass;
     }
     if (material.blend_mode == BlendMode::INVISIBLE) {
@@ -41,7 +41,7 @@ bool Mlib::is_visible(
         if (vc.orthographic()) {
             return true;
         }
-        TData max_center_distance = (TData)material.max_center_distance(billboard_id, morphology);
+        TData max_center_distance = (TData)material.max_center_distance(billboard_id, morphology, object_name);
         TData dist2 = vc.distance_squared();
         if (!((dist2 >= squared(morphology.center_distances(0))) && (dist2 <= squared(max_center_distance)))) {
             return false;

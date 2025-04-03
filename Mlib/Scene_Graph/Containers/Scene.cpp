@@ -813,35 +813,51 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     try_empty_the_trash_can();
 }
 
-void Scene::append_static_filtered_to_queue(
+void Scene::append_physics_to_queue(
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue,
-    const ColoredVertexArrayFilter& filter) const
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue) const
 {
-    LOG_FUNCTION("Scene::append_static_filtered_to_queue");
+    LOG_FUNCTION("Scene::append_physics_to_queue");
     std::shared_lock lock{ mutex_ };
+    auto zero = PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f};
     static_root_nodes_.visit_all([&](const auto& node) {
-        node->append_static_filtered_to_queue(
+        node->append_physics_to_queue(
             TransformationMatrix<float, ScenePos, 3>::identity(),
+            zero,
             float_queue,
-            double_queue,
-            filter);
+            double_queue);
         return true;
         });
     root_aggregate_once_nodes_.visit_all([&](const auto& node) {
-        node->append_static_filtered_to_queue(
+        node->append_physics_to_queue(
             TransformationMatrix<float, ScenePos, 3>::identity(),
+            zero,
             float_queue,
-            double_queue,
-            filter);
+            double_queue);
         return true;
         });
     root_aggregate_always_nodes_.visit_all([&](const auto& node) {
-        node->append_static_filtered_to_queue(
+        node->append_physics_to_queue(
             TransformationMatrix<float, ScenePos, 3>::identity(),
+            zero,
             float_queue,
-            double_queue,
-            filter);
+            double_queue);
+        return true;
+        });
+    root_instances_once_nodes_.visit_all([&](const auto& node) {
+        node->append_physics_to_queue(
+            TransformationMatrix<float, ScenePos, 3>::identity(),
+            zero,
+            float_queue,
+            double_queue);
+        return true;
+        });
+    root_instances_always_nodes_.visit_all([&](const auto& node) {
+        node->append_physics_to_queue(
+            TransformationMatrix<float, ScenePos, 3>::identity(),
+            zero,
+            float_queue,
+            double_queue);
         return true;
         });
 }

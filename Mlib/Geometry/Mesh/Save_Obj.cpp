@@ -27,15 +27,15 @@ void Mlib::save_obj(
                 THROW_OR_ABORT("Empty name, no material color texture");
             }
         }
-        if (!names.insert(cva->name).second) {
-            THROW_OR_ABORT("Duplicate name: \"" + cva->name + '"');
+        if (!names.insert(cva->name.full_name()).second) {
+            THROW_OR_ABORT("Duplicate name: \"" + cva->name.full_name() + '"');
         }
         std::string mname;
         if (material_name) {
             mname = material_name(*cva);
         } else {
             material_indices.insert({ cva->material, material_indices.size() });
-            mname = cva->name + "_material_" + std::to_string(material_indices.at(cva->material));
+            mname = cva->name.full_name() + "_material_" + std::to_string(material_indices.at(cva->material));
         }
         ObjMaterial obj_material;
         if (convert_material) {
@@ -47,7 +47,7 @@ void Mlib::save_obj(
                 .specular = cva->material.shading.specular
             };
         }
-        ipolys.push_back({ cva->name, mname, cva->triangles, cva->quads });
+        ipolys.push_back({ cva->name.full_name(), mname, cva->triangles, cva->quads });
         obj_materials.insert({ mname, obj_material });
     }
     save_obj(filename, IndexedFaceSet<float, TPos, size_t>{ ipolys }, &obj_materials);

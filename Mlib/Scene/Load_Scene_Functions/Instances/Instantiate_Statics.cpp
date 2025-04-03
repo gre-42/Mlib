@@ -28,12 +28,7 @@ InstantiateStatics::InstantiateStatics(RenderableScene& renderable_scene)
 void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>> double_queue;
-    {
-        static ColoredVertexArrayFilter filter{
-            .included_tags = PhysicsMaterial::ATTR_COLLIDE
-        };
-        scene.append_static_filtered_to_queue(float_queue, double_queue, filter);
-    }
+    scene.append_physics_to_queue(float_queue, double_queue);
     auto add_rigid_cuboid = [&](const auto& cva, const std::string& name){
         auto rb = rigid_cuboid(
             object_pool,
@@ -52,7 +47,7 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
         auto modulo_uv = false;
         CleanupMesh<CompressedScenePos> cleanup;
         for (const auto& [t, q] : float_queue) {
-            FunctionGuard fg{ "Instantiate \"" + q->name + '"' };
+            FunctionGuard fg{ "Instantiate \"" + q->name.full_name() + '"' };
             auto cva = q->transformed<CompressedScenePos>(t, "_ipl_float");
             cleanup(*cva, filter, min_vertex_distance, modulo_uv);
             if (!cva->empty()) {
@@ -60,7 +55,7 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
             }
         }
         for (const auto& [t, q] : double_queue) {
-            FunctionGuard fg{ "Instantiate \"" + q->name + '"' };
+            FunctionGuard fg{ "Instantiate \"" + q->name.full_name() + '"' };
             auto cva = q->transformed<CompressedScenePos>(t, "_ipl_double");
             cleanup(*cva, filter, min_vertex_distance, modulo_uv);
             if (!cva->empty()) {

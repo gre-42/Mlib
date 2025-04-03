@@ -29,7 +29,6 @@ class ExtremalAxisAlignedBoundingBox;
 template <class TPos, size_t tndim>
 class ExtremalBoundingSphere;
 
-struct ColoredVertexArrayFilter;
 struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
@@ -105,6 +104,7 @@ enum class LockingStrategy {
     ACQUIRE_LOCK
 };
 
+enum class PhysicsMaterial: uint32_t;
 enum class RenderingStrategies;
 
 class RenderableWithStyle;
@@ -208,6 +208,7 @@ public:
         std::chrono::steady_clock::time_point time,
         SceneNodeResources* scene_node_resources,
         const AnimationState* animation_state);
+    PhysicsMaterial physics_attributes() const;
     RenderingStrategies rendering_strategies() const;
     bool requires_render_pass(ExternalRenderPassType render_pass) const;
     void render(
@@ -258,11 +259,11 @@ public:
     void append_skidmarks_to_queue(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks) const;
-    void append_static_filtered_to_queue(
+    void append_physics_to_queue(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue,
-        const ColoredVertexArrayFilter& filter) const;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue) const;
     const FixedArray<ScenePos, 3>& position() const;
     FixedArray<float, 3> rotation() const;
     float scale() const;
@@ -346,6 +347,7 @@ private:
     std::map<std::string, SceneNodeChild> children_;
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;
+    std::map<std::string, SceneNodeInstances> collide_only_instances_children_;
     std::list<std::shared_ptr<Light>> lights_;
     std::list<std::shared_ptr<Skidmark>> skidmarks_;
     OffsetAndQuaternion<float, ScenePos> trafo_;

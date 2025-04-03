@@ -181,9 +181,9 @@ void HeterogeneousResource::generate_instances() {
     static const DECLARE_REGEX(re, "^(\\w+)(?:\\.(\\d+))?\\.billboard(?:\\b|_)");
     acvas->scvas.remove_if([this](const std::shared_ptr<ColoredVertexArray<float>>& cva){
         Mlib::re::smatch match;
-        if (Mlib::re::regex_search(cva->name, match, re)) {
+        if (Mlib::re::regex_search(cva->name.full_name(), match, re)) {
             if (cva->triangles.empty()) {
-                THROW_OR_ABORT("Mesh \"" + cva->name + "\" is empty");
+                THROW_OR_ABORT("Mesh \"" + cva->name.full_name() + "\" is empty");
             }
             const auto& tri = *cva->triangles.begin();
             bri->add_parsed_resource_name(
@@ -199,7 +199,7 @@ void HeterogeneousResource::generate_instances() {
                     .aggregate_mode = scene_node_resources_.aggregate_mode(match[1].str()),
                     .create_imposter = false,
                     .max_imposter_texture_size = 0,
-                    .hitbox = "",
+                    .hitbox = VariableAndHash<std::string>{},
                     .supplies = {},
                     .supplies_cooldown = NAN},
                 0.f,   // yangle
@@ -210,7 +210,7 @@ void HeterogeneousResource::generate_instances() {
         }
     });
     for (const auto& cva : acvas->dcvas) {
-        if (Mlib::re::regex_search(cva->name, re)) {
+        if (Mlib::re::regex_search(cva->name.full_name(), re)) {
             THROW_OR_ABORT("Instances require single precision meshes");
         }
     }

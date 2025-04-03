@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Primitive_Dimensions.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Strings/Group_And_Name.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/To_Underlying.hpp>
 #include <atomic>
@@ -44,7 +45,7 @@ class ColoredVertexArray {
     ColoredVertexArray& operator = (const ColoredVertexArray&) = delete;
 public:
     ColoredVertexArray(
-        std::string name,
+        GroupAndName name,
         const Material& material,
         const Morphology& morphology,
         ModifierBacklog modifier_backlog,
@@ -60,7 +61,7 @@ public:
         const ExtremalAxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
         const ExtremalBoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
-    std::string name;
+    GroupAndName name;
     Material material;
     Morphology morphology;
     ModifierBacklog modifier_backlog;

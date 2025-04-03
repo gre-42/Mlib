@@ -74,30 +74,30 @@ public:
         const ExternalRenderPass& external_render_pass) override
     {
         if (a.triangles.empty()) {
-            THROW_OR_ABORT("Detected empty triangles in array \"" + a.name + '"');
+            THROW_OR_ABORT("Detected empty triangles in array \"" + a.name.full_name() + '"');
         }
         if constexpr (ttexture_layer_type == TextureLayerType::NONE) {
             if (!a.continuous_triangle_texture_layers.empty()) {
-                THROW_OR_ABORT("Unexpected continuous texture layers in array \"" + a.name + '"');
+                THROW_OR_ABORT("Unexpected continuous texture layers in array \"" + a.name.full_name() + '"');
             }
             if (!a.discrete_triangle_texture_layers.empty()) {
-                THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name + '"');
+                THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name.full_name() + '"');
             }
         }
         if constexpr (ttexture_layer_type == TextureLayerType::CONTINUOUS) {
             if (a.continuous_triangle_texture_layers.size() != a.triangles.size()) {
-                THROW_OR_ABORT("Conflicting number of continuous texture layers in array \"" + a.name + '"');
+                THROW_OR_ABORT("Conflicting number of continuous texture layers in array \"" + a.name.full_name() + '"');
             }
             if (!a.discrete_triangle_texture_layers.empty()) {
-                THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name + '"');
+                THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name.full_name() + '"');
             }
         }
         if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
             if (!a.continuous_triangle_texture_layers.empty()) {
-                THROW_OR_ABORT("Unexpected continuous texture layers in array \"" + a.name + '"');
+                THROW_OR_ABORT("Unexpected continuous texture layers in array \"" + a.name.full_name() + '"');
             }
             if (a.discrete_triangle_texture_layers.size() != a.triangles.size()) {
-                THROW_OR_ABORT("Conflicting number of texture layers in array \"" + a.name + '"');
+                THROW_OR_ABORT("Conflicting number of texture layers in array \"" + a.name.full_name() + '"');
             }
         }
         auto camera_sphere = BoundingSphere<float, 3>{ fixed_zeros<float, 3>(), a.morphology.max_triangle_distance };
@@ -235,9 +235,9 @@ void AggregateArrayRenderer::update_aggregates(
     auto rng = welzl_rng();
     for (const auto& a : aggregate_queue) {
         if (a->triangles.empty()) {
-            THROW_OR_ABORT("Aggregate triangle list is empty: \"" + a->name + '"');
+            THROW_OR_ABORT("Aggregate triangle list is empty: \"" + a->name.full_name() + '"');
         }
-        if (nhd.is_hidden(a->name)) {
+        if (nhd.is_hidden(a->name.full_name())) {
             continue;
         }
         auto mat = a->material;

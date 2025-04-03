@@ -22,11 +22,17 @@ template <class TPos>
 class ColoredVertexArray;
 struct RootInstantiationOptions;
 
+enum class HitboxContainer {
+    TEMPORARY,
+    INSTANCES
+};
+
 class BatchResourceInstantiator {
 public:
     BatchResourceInstantiator(
         const FixedArray<float, 3>& rotation = fixed_zeros<float, 3>(),
-        float scale = 1.f);
+        float scale = 1.f,
+        HitboxContainer hitbox_container = HitboxContainer::INSTANCES);
     ~BatchResourceInstantiator();
 
     void add_parsed_resource_name(
@@ -43,7 +49,7 @@ public:
         float scale);
 
     void add_hitbox(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         const ResourceInstanceDescriptor& rid);
     
     void preload(
@@ -76,7 +82,8 @@ private:
     float scale_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
     std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
-    std::map<std::string, std::list<ResourceInstanceDescriptor>> hitboxes_;
+    std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>> hitboxes_;
+    HitboxContainer hitbox_container_;
 };
 
 }

@@ -24,6 +24,7 @@ public:
         const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
         const RenderableResourceFilter& renderable_resource_filter);
     ~RenderableColoredVertexArray();
+    virtual PhysicsMaterial physics_attributes() const override;
     virtual RenderingStrategies rendering_strategies() const override;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
@@ -40,10 +41,9 @@ public:
         const RenderPass& render_pass,
         const AnimationState* animation_state,
         const ColorStyle* color_style) const override;
-    virtual void append_filtered_to_queue(
+    virtual void append_physics_to_queue(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
-        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue,
-        const ColoredVertexArrayFilter& filter) const override;
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue) const override;
     virtual void append_sorted_aggregates_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
         const TransformationMatrix<float, ScenePos, 3>& m,
@@ -102,6 +102,8 @@ private:
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> aggregate_sorted_continuously_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> instances_once_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> instances_sorted_continuously_;
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> sphysics_;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dphysics_;
     std::unordered_set<ExternalRenderPassType> required_occluder_passes_;
     bool requires_blending_pass_;
     int continuous_blending_z_order_;

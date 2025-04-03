@@ -36,20 +36,20 @@ void LargeInstancesQueue::insert(
     TransformationMatrix<float, float, 3> mo{m.R, (m.t - offset).casted<float>()};
     for (const auto& scva : scvas) {
         if (render_pass_ == ExternalRenderPassType::STANDARD) {
-            if (!VisibilityCheck{mvp}.is_visible(scva->name, scva->material, scva->morphology, billboard_id, scene_graph_config, render_pass_)) {
+            if (!VisibilityCheck{mvp}.is_visible(scva->name.full_name(), scva->material, scva->morphology, billboard_id, scene_graph_config, render_pass_)) {
                 continue;
             }
         } else if (render_pass_ == ExternalRenderPassType::DIRTMAP) {
             continue;
         } else if (any(render_pass_ & ExternalRenderPassType::IS_GLOBAL_MASK)) {
             ExternalRenderPassType occluder_pass = (billboard_id != BILLBOARD_ID_NONE)
-                ? scva->material.billboard_atlas_instance(billboard_id).occluder_pass
+                ? scva->material.billboard_atlas_instance(billboard_id, scva->name.full_name()).occluder_pass
                 : scva->material.occluder_pass;
             if (!any(occluder_pass & ExternalRenderPassType::IS_GLOBAL_MASK)) {
                 if (invisibility_handling == InvisibilityHandling::SKIP) {
                     continue;
                 } else {
-                    THROW_OR_ABORT("Static instance has no occluder pass: \"" + scva->name + '"');
+                    THROW_OR_ABORT("Static instance has no occluder pass: \"" + scva->name.full_name() + '"');
                 }
             }
             if ((occluder_pass & render_pass_) != render_pass_) {

@@ -43,7 +43,7 @@ void Mlib::draw_into_street_rectangles(
             .p11_ = funpack(r.rectangle[1][1])};
         const auto& cvas = scene_node_resources.get_physics_arrays(r.bumps_model)->scvas;
         for (const auto& cva : cvas) {
-            if (cva->name != "street") {
+            if (cva->name.name() != "street") {
                 THROW_OR_ABORT("Material name is not \"street\" in resource \"" + r.bumps_model + '"');
             }
             rect.draw(*tl_str.triangle_list, cva->triangles, scale, 1.f, height, 0.f, 1.f);

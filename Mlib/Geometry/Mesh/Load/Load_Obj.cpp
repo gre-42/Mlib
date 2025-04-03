@@ -45,6 +45,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
 {
     using Triangle = FixedArray<TPos, 3, 3>;
 
+    std::string prefix = std::filesystem::path{ filename }.stem().string() + "/";
     std::map<std::string, ObjMaterial> mtllib;
     std::vector<ColoredVertexX<TPos>> obj_vertices;
     UUVector<FixedArray<float, 2>> obj_uvs;
@@ -331,7 +332,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     result.push_back(tl.triangle_array());
                     tl.triangles.clear();
                 }
-                tl.name = match[1].str();
+                tl.name = { prefix, std::string{ match[1].str() } };
             } else if (SMatch<2> match; regex_match(line, match, mtllib_reg)) {
                 std::string p = fs::path(filename).parent_path().string();
                 mtllib = load_mtllib(p == "" ? std::string{match[1].str()} : p + "/" + std::string{match[1].str()}, cfg.werror);

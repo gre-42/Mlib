@@ -178,7 +178,7 @@ void Mlib::draw_roofs(
                                             tt(i, 2) += max_height + CompressedScenePos(zz0 * scale);
                                         }
                                     }
-                                    if (cva->name == "roof") {
+                                    if (cva->name.name() == "roof") {
                                         auto sc = FixedArray<float, 2>{
                                             width / scale * uv_scale,
                                             uwidth / scale * uv_scale
@@ -198,7 +198,7 @@ void Mlib::draw_roofs(
                                             {},
                                             NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP,
                                             TriangleTangentErrorBehavior::WARN);
-                                    } else if (cva->name == "rail") {
+                                    } else if (cva->name.name() == "rail") {
                                         get_tl_rail()->draw_triangle_wo_normals(
                                             tt[0],
                                             tt[1],
@@ -215,7 +215,7 @@ void Mlib::draw_roofs(
                                             NormalVectorErrorBehavior::WARN | NormalVectorErrorBehavior::SKIP,
                                             TriangleTangentErrorBehavior::WARN);
                                     } else {
-                                        THROW_OR_ABORT("Unknown mesh name: \"" + cva->name + '"');
+                                        THROW_OR_ABORT("Unknown mesh name: \"" + cva->name.full_name() + '"');
                                     }
                                 }
                             }

@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Iterator/Un_Guarded_Iterator.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -437,6 +438,20 @@ void SceneNode::clear_unsafe() {
             scene_->add_to_trash_can(std::move(child.mapped().scene_node));
         }
         });
+    clear_map_recursively(collide_only_instances_children_, [this](const auto& child) {
+        if (child.mapped().scene_node->shutting_down()) {
+            verbose_abort("Child node \"" + child.key() + "\" already shutting down (2)");
+        }
+        child.mapped().scene_node->shutdown();
+        if (scene_ != nullptr) {
+            if (child.mapped().is_registered) {
+                // scene_ is non-null, checked in "add_child".
+                scene_->unregister_node(child.key());
+            }
+            // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
+            scene_->add_to_trash_can(std::move(child.mapped().scene_node));
+        }
+        });
     lights_.clear();
     skidmarks_.clear();
     animation_state_ = nullptr;
@@ -452,8 +467,8 @@ void SceneNode::add_child(
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
+    auto nref = node.ref(DP_LOC);
     std::scoped_lock lock{ mutex_ };
-    setup_child_unsafe(name, node.ref(DP_LOC), child_registration_state, child_parent_state);
     if (!children_.try_emplace(
         name,
         (child_registration_state == ChildRegistrationState::REGISTERED),
@@ -461,6 +476,7 @@ void SceneNode::add_child(
     {
         THROW_OR_ABORT("Child node with name " + name + " already exists");
     }
+    setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
 }
 
 DanglingRef<SceneNode> SceneNode::get_child(const std::string& name) {
@@ -512,14 +528,15 @@ void SceneNode::add_aggregate_child(
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
+    auto nref = node.ref(DP_LOC);
     std::scoped_lock lock{ mutex_ };
-    setup_child_unsafe(name, node.ref(DP_LOC), child_registration_state, child_parent_state);
     if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node)})).second)
     {
         THROW_OR_ABORT("Aggregate node with name " + name + " already exists");
     }
+    setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
 }
 
 void SceneNode::add_instances_child(
@@ -529,17 +546,40 @@ void SceneNode::add_instances_child(
     ChildParentState child_parent_state)
 {
     std::scoped_lock lock{ mutex_ };
-    setup_child_unsafe(name, node.ref(DP_LOC), child_registration_state, child_parent_state);
-    if (!instances_children_.try_emplace(
-        name,
-        (child_registration_state == ChildRegistrationState::REGISTERED),
-        std::move(node),
-        (CompressedScenePos)0.f,                                                                                // max_center_distance
-        SceneNodeInstances::SmallInstances(fixed_full<CompressedScenePos, 3>(CompressedScenePos(15.f)), 12),    // small_instances
-        std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>>()).second)                               // large_instances 
+    if (collide_only_instances_children_.contains(name) ||
+        instances_children_.contains(name))
     {
         THROW_OR_ABORT("Instances node with name " + name + " already exists");
     }
+    auto emplace_instances_child = [&](std::map<std::string, SceneNodeInstances>& ic)
+    {
+        if (!ic.try_emplace(
+            name,
+            (child_registration_state == ChildRegistrationState::REGISTERED),
+            std::move(node),
+            (CompressedScenePos)0.f,                                                                                // max_center_distance
+            SceneNodeInstances::SmallInstances(fixed_full<CompressedScenePos, 3>(CompressedScenePos(15.f)), 12),    // small_instances
+            std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>>()).second)                               // large_instances 
+        {
+            verbose_abort("Internal error: Instances node with name " + name + " already exists");
+        }
+    };
+    auto nref = node.ref(DP_LOC);
+    auto pm = node->physics_attributes();
+    if (any(pm & PhysicsMaterial::ATTR_COLLIDE) &&
+        !any(pm & PhysicsMaterial::ATTR_VISIBLE))
+    {
+        emplace_instances_child(collide_only_instances_children_);
+    } else {
+        if (!any(pm & PhysicsMaterial::ATTR_VISIBLE)) {
+            THROW_OR_ABORT(
+                "Node \"" + name +
+                "\" is neither collidable nor visible. Physics material: \"" +
+                physics_material_to_string(pm) + '"');
+        }
+        emplace_instances_child(instances_children_);
+    }
+    setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
 }
 
 void SceneNode::add_instances_position(
@@ -549,6 +589,20 @@ void SceneNode::add_instances_position(
     BillboardId billboard_id)
 {
     std::scoped_lock lock{ mutex_ };
+    {
+        auto cit = collide_only_instances_children_.find(name);
+        if (cit != collide_only_instances_children_.end()) {
+            if (billboard_id != BILLBOARD_ID_NONE) {
+                THROW_OR_ABORT("Billboard ID set in collide-only node \"" + name + '"');
+            }
+            cit->second.large_instances.push_back(
+                PositionAndYAngleAndBillboardId{
+                    .position = position,
+                    .billboard_id = billboard_id,
+                    .yangle = yangle});
+            return;
+        }
+    }
     auto cit = instances_children_.find(name);
     if (cit == instances_children_.end()) {
         THROW_OR_ABORT("Could not find instance node with name \"" + name + '"');
@@ -878,6 +932,27 @@ bool SceneNode::visit_all(
     return true;
 }
 
+PhysicsMaterial SceneNode::physics_attributes() const {
+    PhysicsMaterial result = PhysicsMaterial::NONE;
+    std::shared_lock lock{ mutex_ };
+    for (const auto& [_, r] : renderables_) {
+        result |= (*r)->physics_attributes();
+    }
+    for (const auto& [_, n] : children_) {
+        result |= n.scene_node->physics_attributes();
+    }
+    for (const auto& [_, n] : aggregate_children_) {
+        result |= n.scene_node->physics_attributes();
+    }
+    for (const auto& [_, n] : instances_children_) {
+        result |= n.scene_node->physics_attributes();
+    }
+    for (const auto& [_, n] : collide_only_instances_children_) {
+        result |= n.scene_node->physics_attributes();
+    }
+    return result;
+}
+
 RenderingStrategies SceneNode::rendering_strategies() const {
     RenderingStrategies result = RenderingStrategies::NONE;
     std::shared_lock lock{ mutex_ };
@@ -1155,21 +1230,26 @@ void SceneNode::append_large_instances_to_queue(
     }
 }
 
-void SceneNode::append_static_filtered_to_queue(
+void SceneNode::append_physics_to_queue(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    const PositionAndYAngleAndBillboardId<CompressedScenePos>& delta_pose,
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue,
-    const ColoredVertexArrayFilter& filter) const
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>>& double_queue) const
 {
-    TransformationMatrix<float, ScenePos, 3> m = parent_m * relative_model_matrix();
+    TransformationMatrix<float, ScenePos, 3> rel = relative_model_matrix();
     std::shared_lock lock{ mutex_ };
     if (state_ != SceneNodeState::STATIC) {
-        THROW_OR_ABORT("Cannot append static filtered to queue for a non-static node");
+        THROW_OR_ABORT("Cannot append physics to queue for a non-static node");
     }
+    rel.t += delta_pose.position.casted<ScenePos>();
+    if (delta_pose.yangle != 0) {
+        rel.R = dot2d(rel.R, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
+    }
+    TransformationMatrix<float, ScenePos, 3> m = parent_m * rel;
     for (const auto& [_, r] : un_guarded_iterator(renderables_, lock)) {
         std::list<std::shared_ptr<ColoredVertexArray<float>>> float_q;
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> double_q;
-        (*r)->append_filtered_to_queue(float_q, double_q, filter);
+        (*r)->append_physics_to_queue(float_q, double_q);
         for (const auto& cva : float_q) {
             float_queue.emplace_back(m, cva);
         }
@@ -1177,12 +1257,40 @@ void SceneNode::append_static_filtered_to_queue(
             double_queue.emplace_back(m, cva);
         }
     }
+    auto zero = PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f};
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
-        c.scene_node->append_static_filtered_to_queue(m, float_queue, double_queue, filter);
+        c.scene_node->append_physics_to_queue(m, zero, float_queue, double_queue);
     }
     for (const auto& [_, c] : un_guarded_iterator(aggregate_children_, lock)) {
-        c.scene_node->append_static_filtered_to_queue(m, float_queue, double_queue, filter);
+        c.scene_node->append_physics_to_queue(m, zero, float_queue, double_queue);
     }
+    auto append_instances_children = [&](
+        const std::map<std::string, SceneNodeInstances>& instances_children)
+    {
+        for (const auto& [_, i] : un_guarded_iterator(instances_children, lock)) {
+            std::shared_lock ilock{ i.mutex };
+            // The transformation is swapped, meaning
+            // y = P * V * M * INSTANCE * NODE * x.
+            for (const auto& j : un_guarded_iterator(i.large_instances, ilock)) {
+                i.scene_node->append_physics_to_queue(m, j, float_queue, double_queue);
+            }
+            if (!i.small_instances.empty()) {
+                i.small_instances.visit_all(
+                    [&, &i = i](const PositionAndYAngleAndBillboardId<CompressedScenePos>& j) {
+                        UnlockGuard ulock{ ilock };
+                        i.scene_node->append_physics_to_queue(m, j, float_queue, double_queue);
+                        return true;
+                    },
+                    [&, &i = i](const PositionAndBillboardId<CompressedScenePos>& j) {
+                        UnlockGuard ulock{ ilock };
+                        i.scene_node->append_physics_to_queue(m, {j.position, j.billboard_id, 0.f}, float_queue, double_queue);
+                        return true;
+                    });
+            }
+        }
+    };
+    append_instances_children(instances_children_);
+    append_instances_children(collide_only_instances_children_);
 }
 
 void SceneNode::append_lights_to_queue(
@@ -1539,6 +1647,15 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
             c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
+    if (!collide_only_instances_children_.empty()) {
+        ostr << " " << ind1 << " Collide-only instances (" << collide_only_instances_children_.size() << ")\n";
+        for (const auto& [n, c] : collide_only_instances_children_) {
+            ostr << " " << ind2 << " " << n << " #" << c.scene_node.nreferences() <<
+                " #small=" << c.small_instances.size() <<
+                " #large=" << c.large_instances.size() << '\n';
+            c.scene_node->print(ostr, recursion_depth + 1);
+        }
+    }
     ostr << " " << ind0 << " End\n";
 }
 
@@ -1571,6 +1688,9 @@ void SceneNode::set_scene_and_state_unsafe(Scene& scene, SceneNodeState state) {
         c.scene_node->set_scene_and_state(scene, state);
     }
     for (auto& [_, c] : instances_children_) {
+        c.scene_node->set_scene_and_state(scene, state);
+    }
+    for (auto& [_, c] : collide_only_instances_children_) {
         c.scene_node->set_scene_and_state(scene, state);
     }
     scene_ = &scene;

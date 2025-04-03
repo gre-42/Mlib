@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
@@ -42,6 +43,10 @@ RenderableTriangleSampler::RenderableTriangleSampler(
 
 RenderableTriangleSampler::~RenderableTriangleSampler()
 {}
+
+PhysicsMaterial RenderableTriangleSampler::physics_attributes() const {
+    return PhysicsMaterial::ATTR_VISIBLE;
+}
 
 RenderingStrategies RenderableTriangleSampler::rendering_strategies() const {
     return RenderingStrategies::INSTANCES_SORTED_CONTINUOUSLY;

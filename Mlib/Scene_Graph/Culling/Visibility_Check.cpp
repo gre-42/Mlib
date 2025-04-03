@@ -40,6 +40,7 @@ bool VisibilityCheck<TData>::is_visible(TData max_center_distance) const
 
 template <class TData>
 bool VisibilityCheck<TData>::black_is_visible(
+    const std::string& object_name,
     const Material& material,
     BillboardId billboard_id,
     const SceneGraphConfig& scene_graph_config,
@@ -58,7 +59,7 @@ bool VisibilityCheck<TData>::black_is_visible(
         THROW_OR_ABORT("VisibilityCheck::black_is_visible: unsupported render pass: " + external_render_pass_type_to_string(external_render_pass));
     }
     ExternalRenderPassType occluder_pass = (billboard_id != BILLBOARD_ID_NONE)
-        ? material.billboard_atlas_instance(billboard_id).occluder_pass
+        ? material.billboard_atlas_instance(billboard_id, object_name).occluder_pass
         : material.occluder_pass;
     if ((occluder_pass & external_render_pass) != external_render_pass) {
         return false;

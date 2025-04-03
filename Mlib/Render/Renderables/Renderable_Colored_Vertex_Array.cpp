@@ -156,64 +156,92 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     {
         for (const auto& [i, t] : enumerate(cvas)) {
             if (renderable_resource_filter.matches(i, *t)) {
-                if ((t->material.aggregate_mode == AggregateMode::NONE) ||
-                    (rcva->instances_ != nullptr))
-                {
-                    if constexpr (std::is_same_v<TPos, float>) {
-                        aggregate_off_.push_back(t);
-                        required_occluder_passes_.insert(t->material.occluder_pass);
-                    } else {
-                        THROW_OR_ABORT("Instances and aggregate=off require single precision (material: " + t->material.identifier() + ')');
-                    }
-                } else if (t->material.aggregate_mode == AggregateMode::ONCE) {
-                    if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
-                        aggregate_once_.push_back(t);
-                    } else {
-                        THROW_OR_ABORT("Aggregate=once requires double precision (material: " + t->material.identifier() + ')');
-                    }
-                } else if (t->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
-                    if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
-                        aggregate_sorted_continuously_.push_back(t);
-                    } else {
-                        THROW_OR_ABORT("Aggregate=sorted_continuously requires double precision (material: " + t->material.identifier() + ')');
-                    }
-                } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
-                    if constexpr (std::is_same_v<TPos, float>) {
-                        instances_once_.push_back(t);
-                    } else {
-                        THROW_OR_ABORT("Aggregate=instances_once requires single precision (material: " + t->material.identifier() + ')');
-                    }
-                } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
-                    if constexpr (std::is_same_v<TPos, float>) {
-                        instances_sorted_continuously_.push_back(t);
-                    } else {
-                        THROW_OR_ABORT("Aggregate=instances_sorted_continuously requires single precision (material: " + t->material.identifier() + ')');
-                    }
-                } else {
-                    THROW_OR_ABORT("Unknown aggregate mode");
-                }
-                if ((t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) ||
-                    (t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING))
-                {
-                    THROW_OR_ABORT("Unsupported \"continuous_blending_z_order\" value");
-                }
-                if (continuous_blending_z_order_ != CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
-                    if (any(t->material.blend_mode & BlendMode::ANY_CONTINUOUS) &&
-                        (t->material.aggregate_mode == AggregateMode::NONE))
+                if (any(t->morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE)) {
+                    if ((t->material.aggregate_mode == AggregateMode::NONE) ||
+                        (rcva->instances_ != nullptr))
                     {
-                        requires_blending_pass_ = true;
-                        if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
-                            continuous_blending_z_order_ = t->material.continuous_blending_z_order;
-                        } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
-                            continuous_blending_z_order_ = CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING;
+                        if constexpr (std::is_same_v<TPos, float>) {
+                            aggregate_off_.push_back(t);
+                            required_occluder_passes_.insert(t->material.occluder_pass);
+                        } else {
+                            THROW_OR_ABORT("Instances and aggregate=off require single precision (material: " + t->material.identifier() + ')');
                         }
+                    } else if (t->material.aggregate_mode == AggregateMode::ONCE) {
+                        if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
+                            aggregate_once_.push_back(t);
+                        } else {
+                            THROW_OR_ABORT("Aggregate=once requires double precision (material: " + t->material.identifier() + ')');
+                        }
+                    } else if (t->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
+                        if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
+                            aggregate_sorted_continuously_.push_back(t);
+                        } else {
+                            THROW_OR_ABORT("Aggregate=sorted_continuously requires double precision (material: " + t->material.identifier() + ')');
+                        }
+                    } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
+                        if constexpr (std::is_same_v<TPos, float>) {
+                            instances_once_.push_back(t);
+                        } else {
+                            THROW_OR_ABORT("Aggregate=instances_once requires single precision (material: " + t->material.identifier() + ')');
+                        }
+                    } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
+                        if constexpr (std::is_same_v<TPos, float>) {
+                            instances_sorted_continuously_.push_back(t);
+                        } else {
+                            THROW_OR_ABORT("Aggregate=instances_sorted_continuously requires single precision (material: " + t->material.identifier() + ')');
+                        }
+                    } else {
+                        THROW_OR_ABORT("Unknown aggregate mode");
+                    }
+                    if ((t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) ||
+                        (t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING))
+                    {
+                        THROW_OR_ABORT("Unsupported \"continuous_blending_z_order\" value");
+                    }
+                    if (continuous_blending_z_order_ != CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
+                        if (any(t->material.blend_mode & BlendMode::ANY_CONTINUOUS) &&
+                            (t->material.aggregate_mode == AggregateMode::NONE))
+                        {
+                            requires_blending_pass_ = true;
+                            if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
+                                continuous_blending_z_order_ = t->material.continuous_blending_z_order;
+                            } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
+                                continuous_blending_z_order_ = CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING;
+                            }
+                        }
+                    }
+                }
+                if (any(t->morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+                    if constexpr (std::is_same_v<TPos, float>) {
+                        sphysics_.push_back(t);
+                    } else if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
+                        dphysics_.push_back(t);
+                    } else {
+                        THROW_OR_ABORT("Unknown physics precision");
                     }
                 }
             }
         }
     };
+    if (rcva->triangles_res_->scvas.empty() &&
+        rcva->triangles_res_->dcvas.empty())
+    {
+        THROW_OR_ABORT("RenderableColoredVertexArray received no arrays");
+    }
     add_cvas(rcva->triangles_res_->scvas);
     add_cvas(rcva->triangles_res_->dcvas);
+    if (aggregate_off_.empty() &&
+        aggregate_once_.empty() &&
+        aggregate_sorted_continuously_.empty() &&
+        instances_once_.empty() &&
+        instances_sorted_continuously_.empty() &&
+        sphysics_.empty() &&
+        dphysics_.empty())
+    {
+        THROW_OR_ABORT(
+            "Filter did not match a single array.\n" +
+            (std::stringstream() << renderable_resource_filter).str());
+    }
 
     for (auto& cva : aggregate_off_) {
         aabb_.extend(cva->aabb().casted<CompressedScenePos>());
@@ -319,7 +347,7 @@ void RenderableColoredVertexArray::render_cva(
     VisibilityCheck vc{ mvp_f };
     if (rcva_->instances_ == nullptr) {
         FrustumVisibilityCheck fvc{vc};
-        if (!fvc.is_visible(cva->name, cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, render_pass.external.pass, cva->aabb()))
+        if (!fvc.is_visible(cva->name.full_name(), cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, render_pass.external.pass, cva->aabb()))
         {
             // lerr() << ", skipped (2)";
             return;
@@ -484,7 +512,7 @@ void RenderableColoredVertexArray::render_cva(
     auto check_sanity_common = [&cva](const std::vector<BlendMapTexture>& textures){
         for (const auto& t : textures) {
             if (t.texture_descriptor.color.filename->empty()) {
-                THROW_OR_ABORT("Empty color or alpha texture not supported, cva: " + cva->name);
+                THROW_OR_ABORT("Empty color or alpha texture not supported, cva: " + cva->name.full_name());
             }
             if (t.texture_descriptor.color.color_mode == ColorMode::UNDEFINED) {
                 THROW_OR_ABORT("Material's color or alpha texture \"" + *t.texture_descriptor.color.filename + "\" has undefined color mode");
@@ -506,7 +534,7 @@ void RenderableColoredVertexArray::render_cva(
     } else {
         check_sanity_common(cva->material.textures_alpha);
         if (cva->material.blend_mode == BlendMode::OFF) {
-            THROW_OR_ABORT("Blend-mode is off despite alpha texture, cva: " + cva->name);
+            THROW_OR_ABORT("Blend-mode is off despite alpha texture, cva: " + cva->name.full_name());
         }
         for (const auto& t : cva->material.textures_color) {
             if (t.texture_descriptor.color.color_mode != ColorMode::RGB) {
@@ -593,12 +621,12 @@ void RenderableColoredVertexArray::render_cva(
         !cva->material.shading.reflectance.all_equal(0.f))
     {
         if (color_style == nullptr) {
-            THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + *cva->material.reflection_map + "\" has no style");
+            THROW_OR_ABORT("cva \"" + cva->name.full_name() + "\": Material with reflection map \"" + *cva->material.reflection_map + "\" has no style");
         }
         auto it = color_style->reflection_maps.find(cva->material.reflection_map);
         if (it == color_style->reflection_maps.end()) {
             THROW_OR_ABORT(
-                "cva " + cva->name + ": Could not find reflection map \""
+                "cva \"" + cva->name.full_name() + "\": Could not find reflection map \""
                 + *cva->material.reflection_map
                 + "\" in style with keys:"
                 + join(", ", color_style->reflection_maps, [](const auto& s){return *s.first;}));
@@ -1228,14 +1256,14 @@ void RenderableColoredVertexArray::render_cva(
             if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
                 instances->copy_in_progress())
             {
-                verbose_abort("Preloaded render pass has incomplete instances (" + cva->name + ')');
+                verbose_abort("Preloaded render pass has incomplete instances: \"" + cva->name.full_name() + '"');
             }
             instances->wait();
         }
         if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
             si.copy_in_progress())
         {
-            verbose_abort("Preloaded render pass has incomplete triangles (" + cva->name + ')');
+            verbose_abort("Preloaded render pass has incomplete triangles: \"" + cva->name.full_name() + '"');
         }
         si.update_legacy();
         si.bind();
@@ -1317,6 +1345,32 @@ void RenderableColoredVertexArray::render(
     }
 }
 
+PhysicsMaterial RenderableColoredVertexArray::physics_attributes() const {
+    auto result = PhysicsMaterial::NONE;
+    for (const auto& m : aggregate_off_) {
+        result |= m->morphology.physics_material;
+    }
+    for (const auto& m : aggregate_once_) {
+        result |= m->morphology.physics_material;
+    }
+    for (const auto& m : aggregate_sorted_continuously_) {
+        result |= m->morphology.physics_material;
+    }
+    for (const auto& m : instances_once_) {
+        result |= m->morphology.physics_material;
+    }
+    for (const auto& m : instances_sorted_continuously_) {
+        result |= m->morphology.physics_material;
+    }
+    for (const auto& m : sphysics_) {
+        result |= m->morphology.physics_material;
+    }
+    for (const auto& m : dphysics_) {
+        result |= m->morphology.physics_material;
+    }
+    return result;
+}
+
 RenderingStrategies RenderableColoredVertexArray::rendering_strategies() const {
     auto result = RenderingStrategies::NONE;
     if (!aggregate_off_.empty()) {
@@ -1339,6 +1393,9 @@ RenderingStrategies RenderableColoredVertexArray::rendering_strategies() const {
 
 bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType render_pass) const {
     if (aggregate_off_.empty()) {
+        return false;
+    }
+    if (!any(physics_attributes() & PhysicsMaterial::ATTR_VISIBLE)) {
         return false;
     }
     if (any(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
@@ -1364,25 +1421,15 @@ int RenderableColoredVertexArray::continuous_blending_z_order() const {
     return continuous_blending_z_order_;
 }
 
-void RenderableColoredVertexArray::append_filtered_to_queue(
+void RenderableColoredVertexArray::append_physics_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
-    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue,
-    const ColoredVertexArrayFilter& filter) const
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue) const
 {
-    for (const auto& e : aggregate_off_) {
-        if (filter.matches(*e)) {
-            float_queue.push_back(e);
-        }
+    for (const auto& e : sphysics_) {
+        float_queue.push_back(e);
     }
-    for (const auto& e : aggregate_once_) {
-        if (filter.matches(*e)) {
-            double_queue.push_back(e);
-        }
-    }
-    for (const auto& e : aggregate_sorted_continuously_) {
-        if (filter.matches(*e)) {
-            double_queue.push_back(e);
-        }
+    for (const auto& e : dphysics_) {
+        double_queue.push_back(e);
     }
 }
 
@@ -1396,7 +1443,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
-        if (vc.is_visible(cva->name, cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, external_render_pass.pass))
+        if (vc.is_visible(cva->name.full_name(), cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, external_render_pass.pass))
         {
             TransformationMatrix<float, ScenePos, 3> mo{m.R, m.t - offset};
             aggregate_queue.push_back({ (float)vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });

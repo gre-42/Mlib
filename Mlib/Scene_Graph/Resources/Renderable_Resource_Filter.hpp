@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <iosfwd>
 
 namespace Mlib {
 
@@ -14,5 +15,7 @@ struct RenderableResourceFilter {
     size_t max_num = SIZE_MAX;
     ColoredVertexArrayFilter cva_filter;
 };
+
+std::ostream& operator << (std::ostream& ostr, const RenderableResourceFilter& filter);
 
 }

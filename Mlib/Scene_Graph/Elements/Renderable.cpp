@@ -39,10 +39,9 @@ void Renderable::append_large_aggregates_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const
 {}
 
-void Renderable::append_filtered_to_queue(
+void Renderable::append_physics_to_queue(
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
-    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue,
-    const ColoredVertexArrayFilter& filter) const
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue) const
 {}
 
 void Renderable::append_sorted_instances_to_queue(

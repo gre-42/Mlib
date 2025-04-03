@@ -51,7 +51,7 @@ ParsedResourceName Mlib::parse_resource_name(
         .aggregate_mode = resources.aggregate_mode(match[NAME].str()),
         .create_imposter = false,
         .max_imposter_texture_size = 0,
-        .hitbox = match[HITBOX].str(),
+        .hitbox = VariableAndHash<std::string>{ match[HITBOX].str() },
         .supplies_cooldown = NAN};
     if (result.probability < 1e-7) {
         THROW_OR_ABORT("ResourceNameCycle: threshold too small");

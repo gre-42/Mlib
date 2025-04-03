@@ -27,6 +27,7 @@ public:
         ExternalRenderPassType external_render_pass) const;
     bool is_visible(TData max_center_distance) const;
     bool black_is_visible(
+        const std::string& object_name,
         const Material& material,
         BillboardId billboard_id,
         const SceneGraphConfig& scene_graph_config,

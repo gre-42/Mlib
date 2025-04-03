@@ -1384,7 +1384,7 @@ OsmMapResource::OsmMapResource(
     }
     for (const auto& l : tls_buildings) {
         if (l->triangles.empty()) {
-            THROW_OR_ABORT("Building \"" + l->name + "\" has no triangles");
+            THROW_OR_ABORT("Building \"" + l->name.full_name() + "\" has no triangles");
         }
         buildings_.emplace_back(l->triangle_array());
     }

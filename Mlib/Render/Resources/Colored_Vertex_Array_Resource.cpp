@@ -2378,7 +2378,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
     TaskLocation task_location) const
 {
     if (requires_aggregation(*cva)) {
-        THROW_OR_ABORT("get_vertex_array called on aggregated object \"" + cva->name + '"');
+        THROW_OR_ABORT("get_vertex_array called on aggregated object \"" + cva->name.full_name() + '"');
     }
     {
         std::shared_lock lock{ mutex_ };
@@ -2397,7 +2397,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
     auto& va = [&]() -> IVertexData& {
         if (pva == nullptr) {
             if (cva->triangles.empty()) {
-                THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
+                THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name.full_name() + '"');
             }
             std::shared_ptr<IArrayBuffer> inherited_vertices;
             if (auto p = vertex_data_.lock(); p != nullptr) {

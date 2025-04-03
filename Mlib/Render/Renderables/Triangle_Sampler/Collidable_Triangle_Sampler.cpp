@@ -64,7 +64,7 @@ void CollidableTriangleSampler::add_near_hitboxes(
                     const FixedArray<CompressedScenePos, 3>& p,
                     const ParsedResourceName& prn)
                 {
-                    if (!prn.hitbox.empty()) {
+                    if (!prn.hitbox->empty()) {
                         hri.bri->add_hitbox(
                             prn.hitbox,
                             ResourceInstanceDescriptor{
@@ -134,7 +134,7 @@ void CollidableTriangleSampler::add_far_hitboxes(
                     const FixedArray<CompressedScenePos, 3>& p,
                     const ParsedResourceName& prn)
                 {
-                    if (!prn.hitbox.empty()) {
+                    if (!prn.hitbox->empty()) {
                         hri.bri->add_hitbox(
                             prn.hitbox,
                             ResourceInstanceDescriptor{

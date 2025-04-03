@@ -23,9 +23,11 @@ using namespace Mlib;
 
 BatchResourceInstantiator::BatchResourceInstantiator(
     const FixedArray<float, 3>& rotation,
-    float scale)
-: rotation_{rotation},
-  scale_{scale}
+    float scale,
+    HitboxContainer hitbox_container)
+    : rotation_{ rotation }
+    , scale_{ scale }
+    , hitbox_container_{ hitbox_container }
 {}
 
 BatchResourceInstantiator::~BatchResourceInstantiator()
@@ -38,12 +40,12 @@ void BatchResourceInstantiator::add_parsed_resource_name(
     float scale)
 {
     float yangle = prn.yangle + dyangle;
-    ResourceInstanceDescriptor rid{
-        .position = p,
-        .yangle = yangle,
-        .scale = scale,
-        .billboard_id = prn.billboard_id};
     if (any(prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY))) {
+        ResourceInstanceDescriptor rid{
+            .position = p,
+            .yangle = yangle,
+            .scale = scale,
+            .billboard_id = prn.billboard_id};
         resource_instance_positions_[prn.name].push_back(rid);
     } else {
         object_resource_descriptors_.push_back(ObjectResourceDescriptor{
@@ -57,7 +59,12 @@ void BatchResourceInstantiator::add_parsed_resource_name(
             .supplies = prn.supplies,
             .supplies_cooldown = prn.supplies_cooldown});
     }
-    if (!prn.hitbox.empty()) {
+    if (!prn.hitbox->empty()) {
+        ResourceInstanceDescriptor rid{
+            .position = p,
+            .yangle = yangle,
+            .scale = scale,
+            .billboard_id = BILLBOARD_ID_NONE};
         add_hitbox(prn.hitbox, rid);
     }
 }
@@ -77,10 +84,16 @@ void BatchResourceInstantiator::add_parsed_resource_name(
 }
 
 void BatchResourceInstantiator::add_hitbox(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     const ResourceInstanceDescriptor& rid)
 {
-    hitboxes_[name].push_back(rid);
+    if (hitbox_container_ == HitboxContainer::TEMPORARY) {
+        hitboxes_[name].push_back(rid);
+    } else if (hitbox_container_ == HitboxContainer::INSTANCES) {
+        resource_instance_positions_[name].push_back(rid);
+    } else {
+        THROW_OR_ABORT("Unknown hitbox container");
+    }
 }
 
 void BatchResourceInstantiator::preload(
@@ -214,11 +227,11 @@ void BatchResourceInstantiator::instantiate_hitboxes(
                                     rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
                                     rx),
                                 funpack(y.position)},
-                        '_' + name + "_transformed_tm_" + std::to_string(i++)));
+                        '_' + *name + "_transformed_tm_" + std::to_string(i++)));
                 }
             }
         };
-        auto acva = scene_node_resources.get_physics_arrays(name);
+        auto acva = scene_node_resources.get_physics_arrays(*name);
         add_hitbox(acva->scvas);
         if constexpr (std::is_same_v<ScenePos, double>) {
             add_hitbox(acva->dcvas);

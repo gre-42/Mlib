@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
+#include <Mlib/Strings/Group_And_Name.hpp>
 #include <cereal/access.hpp>
 #include <cstdint>
 #include <list>
@@ -33,7 +34,7 @@ class TriangleList {
     TriangleList& operator = (const TriangleList&) = delete;
 public:
     TriangleList(
-        std::string name,
+        GroupAndName name,
         const Material& material,
         const Morphology& morphology,
         UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
@@ -183,7 +184,7 @@ public:
         Archive& archive,
         cereal::construct<TriangleList>& construct)
     {
-        std::string name;
+        GroupAndName name;
         Material material;
         Morphology morphology;
         UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
@@ -205,7 +206,7 @@ public:
             std::move(triangles),
             std::move(triangle_bone_weights));
     }
-    std::string name;
+    GroupAndName name;
     Material material;
     Morphology morphology;
     ModifierBacklog modifier_backlog;

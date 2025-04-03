@@ -55,7 +55,7 @@ void ArrayInstancesRenderer::update_instances(
             a->material.transformation_mode,
             std::vector(ts.begin(), ts.end()),
             integral_cast<BillboardId>(a->material.billboard_atlas_instances.size()),
-            a->name)});
+            a->name.full_name())});
     }
     std::shared_ptr<ColoredVertexArrayResource> rcva;
     {
@@ -67,7 +67,9 @@ void ArrayInstancesRenderer::update_instances(
             std::move(cva_instances),
             rcva_);
     }
-    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
+    auto rcvai = mat_vectors.empty()
+        ? nullptr
+        : std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
     if (task_location == TaskLocation::FOREGROUND) {
         rcva->wait();
     }

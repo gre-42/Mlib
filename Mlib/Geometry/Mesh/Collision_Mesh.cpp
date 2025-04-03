@@ -9,7 +9,7 @@ using namespace Mlib;
 
 template <class TData>
 CollisionMesh::CollisionMesh(const ColoredVertexArray<TData>& mesh)
-    : name{ mesh.name }
+    : name{ mesh.name.full_name() }
 {
     quads.reserve(mesh.quads.size());
     mesh.quads_sphere(quads);
@@ -23,7 +23,7 @@ CollisionMesh::CollisionMesh(const ColoredVertexArray<TData>& mesh)
 CollisionMesh::CollisionMesh(
     std::string name,
     TypedMesh<std::shared_ptr<IIntersectable>> intersectable)
-    : name{ name }
+    : name{ std::move(name) }
     , intersectable{ std::move(intersectable) }
 {}
 

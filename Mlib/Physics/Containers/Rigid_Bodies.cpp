@@ -97,7 +97,7 @@ void RigidBodies::add_rigid_body(
                     if (is_convex == is_concave) {
                         THROW_OR_ABORT(
                             "Physics material is neither obj_grind_line, nor convex xor concave. Object: \"" + rb.name() +
-                            "\", mesh \"" + m->name +
+                            "\", mesh \"" + m->name.full_name() +
                             " convex: " + std::to_string(int(is_convex)) +
                             ", concave: " + std::to_string(int(is_concave)));
                     }
@@ -155,7 +155,7 @@ void RigidBodies::add_rigid_body(
                                 .mesh = {
                                     .physics_material = m->morphology.physics_material,
                                     .mesh = std::make_shared<StaticTransformedMesh>(
-                                        m->name,
+                                        m->name.full_name(),
                                         aabb,
                                         bounding_sphere,
                                         std::move(quads),
@@ -236,7 +236,7 @@ void RigidBodies::add_rigid_body(
                 {
                     THROW_OR_ABORT(
                         "Physics material is not convex xor concave for movable object \"" +
-                        rb.name() + "\" and mesh \"" + cva->name +
+                        rb.name() + "\" and mesh \"" + cva->name.full_name() +
                         "\" (neither obj_grind_line nor convex or concave)");
                 }
                 auto vertices = cva->vertices();

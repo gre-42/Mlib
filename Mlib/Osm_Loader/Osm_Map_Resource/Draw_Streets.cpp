@@ -1095,20 +1095,23 @@ void DrawStreets::draw_streets_draw_ways(
             TriangleList<CompressedScenePos>* destination_triangles;
             float uv_sx;
             float uv_sy;
-            if (cva->name == "street") {
+            if (cva->name.name() == "street") {
                 destination_triangles = street_lst.triangle_list.get();
                 uv_sx = street_lst.uvx;
                 uv_sy = 1.f;
-            } else if (cva->name == "curb") {
+            } else if (cva->name.name() == "curb") {
                 destination_triangles = tlists.tl_street_curb[angle_way.road_type].get();
                 uv_sx = curb_uv(0);
                 uv_sy = curb_uv(1);
-            } else if (cva->name == "ditch") {
+            } else if (cva->name.name() == "ditch") {
                 destination_triangles = tlists.tl_ditch.get();
                 uv_sx = 1.f;
                 uv_sy = 1.f;
             } else {
-                THROW_OR_ABORT("Unknown street name \"" + cva->name + "\", must be \"street\", \"curb\" or \"ditch\"");
+                THROW_OR_ABORT(std::format(
+                    "Unknown street name \"{}\" (full name is \"{}\"), must be \"street\", \"curb\" or \"ditch\"",
+                    cva->name.name(),
+                    cva->name.full_name()));
             }
             assert_true(angle_way.neighbor_is_second);
             try {
@@ -1116,7 +1119,7 @@ void DrawStreets::draw_streets_draw_ways(
                 double racing_line_uv_len_central = std::floor(racing_line_scale_y * (uv_len0 + uv_len1) / 2.);
                 rect.draw(
                     *destination_triangles,
-                    !std::isnan(racing_line_dx0) && (cva->name == "street")
+                    !std::isnan(racing_line_dx0) && (cva->name.name() == "street")
                         ? tlists.tl_racing_line.get()
                         : nullptr,
                     racing_line_segment_scale_x0,

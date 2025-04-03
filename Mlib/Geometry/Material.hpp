@@ -75,9 +75,16 @@ struct Material {
     size_t draw_distance_noperations = 0;
     bool dynamically_lighted = false;
     Material& compute_color_mode();
-    const BillboardAtlasInstance& billboard_atlas_instance(BillboardId billboard_id) const;
-    ScenePos max_center_distance(BillboardId billboard_id, const Morphology& morphology) const;
-    ExternalRenderPassType get_occluder_pass(BillboardId billboard_id) const;
+    const BillboardAtlasInstance& billboard_atlas_instance(
+        BillboardId billboard_id,
+        const std::string& name) const;
+    ScenePos max_center_distance(
+        BillboardId billboard_id,
+        const Morphology& morphology,
+        const std::string& name) const;
+    ExternalRenderPassType get_occluder_pass(
+        BillboardId billboard_id,
+        const std::string& name) const;
     std::string identifier() const;
     inline auto rendering_sorting_key() const {
         return std::make_tuple(blend_mode, continuous_blending_z_order, depth_func);

@@ -21,7 +21,7 @@ using namespace Mlib;
 
 template <class TPos>
 ColoredVertexArray<TPos>::ColoredVertexArray(
-    std::string name,
+    GroupAndName name,
     const Material& material,
     const Morphology& morphology,
     ModifierBacklog modifier_backlog,
@@ -602,9 +602,9 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
 template <class TPos>
 std::string ColoredVertexArray<TPos>::identifier() const {
     if (material.textures_color.size() > 0) {
-        return name + ", " + material.identifier() + ", #tris: " + std::to_string(triangles.size());
+        return name.full_name() + ", " + material.identifier() + ", #tris: " + std::to_string(triangles.size());
     } else {
-        return name + ", #tris: " + std::to_string(triangles.size());
+        return name.full_name() + ", #tris: " + std::to_string(triangles.size());
     }
 }
 
@@ -630,7 +630,7 @@ const ExtremalAxisAlignedBoundingBox<TPos, 3>& ColoredVertexArray<TPos>::aabb() 
     }
     auto vs = vertices();
     if (vs.empty()) {
-        THROW_OR_ABORT("Cannot compute AABB of \"" + name + "\" because it has no vertices");
+        THROW_OR_ABORT("Cannot compute AABB of \"" + name.full_name() + "\" because it has no vertices");
     }
     aabb_.emplace(AxisAlignedBoundingBox<TPos, 3>::from_iterator(vs.begin(), vs.end()));
     aabb_has_value_ = true;
@@ -648,7 +648,7 @@ const ExtremalBoundingSphere<TPos, 3>& ColoredVertexArray<TPos>::bounding_sphere
     }
     auto vs = vertices();
     if (vs.empty()) {
-        THROW_OR_ABORT("Cannot compute bounding sphere of \"" + name + "\" because it has no vertices");
+        THROW_OR_ABORT("Cannot compute bounding sphere of \"" + name.full_name() + "\" because it has no vertices");
     }
     bounding_sphere_.emplace(BoundingSphere<TPos, 3>::from_iterator(vs.begin(), vs.end()));
     bounding_sphere_has_value_ = true;
@@ -680,7 +680,7 @@ void ColoredVertexArray<TPos>::set_bounds(
 
 template <class TPos>
 ScenePos ColoredVertexArray<TPos>::max_center_distance(BillboardId billboard_id) const {
-    return material.max_center_distance(billboard_id, morphology);
+    return material.max_center_distance(billboard_id, morphology, name.full_name());
 }
 
 #ifdef __GNUC__

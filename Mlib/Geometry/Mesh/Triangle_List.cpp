@@ -21,7 +21,7 @@ using namespace Mlib;
 
 template <class TPos>
 TriangleList<TPos>::TriangleList(
-    std::string name,
+    GroupAndName name,
     const Material& material,
     const Morphology& morphology,
     UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads,

@@ -30,6 +30,7 @@ struct SceneGraphConfig;
 struct AnimationState;
 struct ColorStyle;
 struct ExternalRenderPass;
+enum class PhysicsMaterial: uint32_t;
 enum class ExternalRenderPassType;
 enum class RenderingStrategies;
 class SceneNode;
@@ -38,7 +39,8 @@ class LargeInstancesQueue;
 
 class Renderable {
 public:
-    virtual RenderingStrategies rendering_strategies() const = 0;
+virtual PhysicsMaterial physics_attributes() const = 0;
+virtual RenderingStrategies rendering_strategies() const = 0;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const = 0;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const = 0;
     virtual int continuous_blending_z_order() const;
@@ -66,10 +68,9 @@ public:
         const FixedArray<ScenePos, 3>& offset,
         const SceneGraphConfig& scene_graph_config,
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const;
-    virtual void append_filtered_to_queue(
+    virtual void append_physics_to_queue(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
-        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue,
-        const ColoredVertexArrayFilter& filter) const;
+        std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& double_queue) const;
     virtual void append_sorted_instances_to_queue(
         const FixedArray<ScenePos, 4, 4>& mvp,
         const TransformationMatrix<float, ScenePos, 3>& m,

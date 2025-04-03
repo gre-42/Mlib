@@ -26,7 +26,7 @@ struct ParsedResourceName {
     AggregateMode aggregate_mode;
     bool create_imposter;
     uint32_t max_imposter_texture_size;
-    std::string hitbox;
+    VariableAndHash<std::string> hitbox;
     std::map<std::string, uint32_t> supplies;
     float supplies_cooldown;
     template <class Archive>
