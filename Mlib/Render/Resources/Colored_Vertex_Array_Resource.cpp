@@ -447,7 +447,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_uv0 || reorient_normals || has_depth_fog || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "out highp vec3 FragPos;" << std::endl;
     }
-    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_interiormap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         sstr << "out vec3 Normal;" << std::endl;
     }
     if (has_lookat) {
@@ -475,12 +475,12 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    interior_uvmap_fs = interior_uvmap;" << std::endl;
     }
     sstr << "    vec3 vPosInstance;" << std::endl;
-    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_interiormap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         sstr << "    vec3 vNormalInstance;" << std::endl;
     }
     if (nbones != 0) {
         sstr << "    vPosInstance = vec3(0.0, 0.0, 0.0);" << std::endl;
-        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
+        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_interiormap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
         for (size_t k = 0; k < ANIMATION_NINTERPOLATED; ++k) {
@@ -500,7 +500,7 @@ static GenShaderText vertex_shader_text_gen{[](
         }
     } else {
         sstr << "    vPosInstance = vPos;" << std::endl;
-        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
+        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_interiormap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
     }
@@ -865,6 +865,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         (!specular.all_equal(0) && specular_exponent != 0.f) ||
         (fresnel.exponent != 0.f) ||
         (!reflectance.all_equal(0.f) && !reflect_only_y) ||
+        has_interiormap ||
         fragments_depend_on_normal)
     {
         sstr << "in vec3 Normal;" << std::endl;
@@ -1005,6 +1006,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!diffuse.all_equal(0) ||
             (!specular.all_equal(0) && (specular_exponent != 0.f)) ||
             (fresnel.exponent != 0.f) ||
+            has_interiormap ||
             fragments_depend_on_normal ||
             (!reflectance.all_equal(0.f) && !reflect_only_y))
         {
