@@ -166,7 +166,8 @@ void Mlib::merge_textures(
                     UUVector<FixedArray<uint8_t, 3>>(merged_discrete_triangle_texture_layers.begin(), merged_discrete_triangle_texture_layers.end()),
                     std::vector<UUVector<FixedArray<float, 3, 2>>>{},
                     std::vector<UUVector<FixedArray<float, 3>>>{},
-                    UUVector<FixedArray<float, 3>>{})));
+                    UUVector<FixedArray<float, 3>>{},
+                    UUVector<FixedArray<float, 4>>{})));
             scene_node_resources.add_companion(
                 mesh_resource_name,
                 merged_materials_config.resource_name,

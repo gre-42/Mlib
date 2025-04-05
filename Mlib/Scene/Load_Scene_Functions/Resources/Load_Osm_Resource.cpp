@@ -192,6 +192,8 @@ DECLARE_ARGUMENT(with_ceilings);
 DECLARE_ARGUMENT(building_bottom);
 DECLARE_ARGUMENT(default_building_top);
 DECLARE_ARGUMENT(default_barrier_top);
+DECLARE_ARGUMENT(snap_building_length_ratio);
+DECLARE_ARGUMENT(snap_building_length_angle);
 DECLARE_ARGUMENT(default_snap_building_height);
 DECLARE_ARGUMENT(default_snap_barrier_height);
 DECLARE_ARGUMENT(default_building_vertical_subdivision);
@@ -873,6 +875,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::default_barrier_top)) {
             config.default_barrier_top = args.arguments.at<float>(KnownArgs::default_barrier_top) * meters;
+        }
+        if (args.arguments.contains(KnownArgs::snap_building_length_ratio)) {
+            config.snap_building_length_ratio = args.arguments.at<float>(KnownArgs::snap_building_length_ratio);
+        }
+        if (args.arguments.contains(KnownArgs::snap_building_length_angle)) {
+            config.snap_building_length_angle = args.arguments.at<float>(KnownArgs::snap_building_length_angle);
         }
         if (args.arguments.contains(KnownArgs::default_snap_building_height)) {
             config.default_snap_building_height = args.arguments.at<bool>(KnownArgs::default_snap_building_height);

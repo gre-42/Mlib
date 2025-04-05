@@ -130,6 +130,7 @@ void OsmRectangle2D::draw_z0(
             swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x, uv1_y} : V2{uv1_x, uv0_y}),
             swp(orientation > RectangleOrientation::CENTER ? V2{uv0_x, uv0_y} : V2{uv1_x, uv1_y}),
             swp(orientation > RectangleOrientation::CENTER ? V2{uv1_x, uv0_y} : V2{uv0_x, uv1_y}),
+            std::nullopt,
             {},  // Bone weights
             {},  // Bone weights
             {},  // Bone weights
@@ -160,6 +161,7 @@ void OsmRectangle2D::draw_z0(
             swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv0_dx, racing_line_uv0_y}),
             swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv1_dx, racing_line_uv1_y}),
             swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv1_dx, racing_line_uv1_y}),
+            std::nullopt,
             {},  // bone weights
             {},  // bone weights
             {},  // bone weights
@@ -188,6 +190,7 @@ void OsmRectangle2D::draw_z0(
                 {1.f, 0.f},     // u10
                 {1.f, 1.f},     // u11
                 {0.f, 1.f},     // u01
+                std::nullopt,   // interiormap_uvmap
                 {},             // b00
                 {},             // b10
                 {},             // b11
@@ -221,6 +224,7 @@ void OsmRectangle2D::draw_z0(
                     {1.f, 0.f},     // u10
                     {1.f, 1.f},     // u11
                     {0.f, 1.f},     // u01
+                    std::nullopt,
                     {},             // b00
                     {},             // b10
                     {},             // b11
@@ -255,6 +259,7 @@ void OsmRectangle2D::draw_z0(
                     {1.f, 0.f},     // u10
                     {1.f, 1.f},     // u11
                     {0.f, 1.f},     // u01
+                    std::nullopt,   // interiormap_uvmap
                     {},             // b00
                     {},             // b10
                     {},             // b11

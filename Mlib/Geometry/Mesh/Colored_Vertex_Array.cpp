@@ -34,6 +34,7 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     std::vector<UUVector<FixedArray<float, 3, 2>>>&& uv1,
     std::vector<UUVector<FixedArray<float, 3>>>&& cweight,
     UUVector<FixedArray<float, 3>>&& alpha,
+    UUVector<FixedArray<float, 4>>&& interiormap_uvmaps,
     const ExtremalAxisAlignedBoundingBox<TPos, 3>* aabb,
     const ExtremalBoundingSphere<TPos, 3>* bounding_sphere)
     : name{ std::move(name) }
@@ -49,6 +50,7 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     , uv1{ std::move(uv1) }
     , cweight{ std::move(cweight) }
     , alpha{ std::move(alpha) }
+    , interiormap_uvmaps{ std::move(interiormap_uvmaps) }
     , aabb_has_value_{ false }
     , bounding_sphere_has_value_{ false }
 {
@@ -195,7 +197,8 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector(uv1),
         std::vector(cweight),
-        UUVector<FixedArray<float, 3>>(alpha));
+        UUVector<FixedArray<float, 3>>(alpha),
+        std::vector(interiormap_uvmaps));
 }
 
 template <class TPos>
@@ -242,7 +245,8 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector(uv1),
         std::vector(cweight),
-        UUVector<FixedArray<float, 3>>(alpha));
+        UUVector<FixedArray<float, 3>>(alpha),
+        std::vector(interiormap_uvmaps));
 }
 
 template <class TPos>
@@ -288,7 +292,8 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transl
         UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector(uv1),
         std::vector(cweight),
-        UUVector<FixedArray<float, 3>>(alpha));
+        UUVector<FixedArray<float, 3>>(alpha),
+        std::vector(interiormap_uvmaps));
 }
 
 template <class TPos>
@@ -496,7 +501,8 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_gri
         UUVector<FixedArray<uint8_t, 3>>{},
         std::vector<UUVector<FixedArray<float, 3, 2>>>{},
         std::vector<UUVector<FixedArray<float, 3>>>{},
-        UUVector<FixedArray<float, 3>>{});
+        UUVector<FixedArray<float, 3>>{},
+        UUVector<FixedArray<float, 4>>{});
 }
 
 template <class TPos>
@@ -533,7 +539,8 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_con
         UUVector<FixedArray<uint8_t, 3>>{},
         std::vector<UUVector<FixedArray<float, 3, 2>>>{},
         std::vector<UUVector<FixedArray<float, 3>>>{},
-        UUVector<FixedArray<float, 3>>{});
+        UUVector<FixedArray<float, 3>>{},
+        UUVector<FixedArray<float, 4>>{});
 }
 
 template <class TPos>
@@ -564,7 +571,8 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             UUVector<FixedArray<uint8_t, 3>>{},
             std::vector<UUVector<FixedArray<float, 3, 2>>>{},
             std::vector<UUVector<FixedArray<float, 3>>>{},
-            UUVector<FixedArray<float, 3>>{}));
+            UUVector<FixedArray<float, 3>>{},
+            UUVector<FixedArray<float, 4>>{}));
     for (const auto& tri : triangles) {
         UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangle_as_list;
     
@@ -594,7 +602,8 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
                 UUVector<FixedArray<uint8_t, 3>>{},
                 std::vector<UUVector<FixedArray<float, 3, 2>>>{},
                 std::vector<UUVector<FixedArray<float, 3>>>{},
-                UUVector<FixedArray<float, 3>>{}));
+                UUVector<FixedArray<float, 3>>{},
+                UUVector<FixedArray<float, 4>>{}));
     }
     return result;
 }
@@ -616,6 +625,7 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
     ostr << "  #lines = " << lines.size() << ' ';
     ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << ' ';
     ostr << "  #continuous_triangle_texture_layers = " << continuous_triangle_texture_layers.size() << ' ';
+    ostr << "  #interiormap_uvmaps = " << interiormap_uvmaps.size() << ' ';
     ostr << "  #discrete_triangle_texture_layers = " << discrete_triangle_texture_layers.size() << '\n';
 }
 

@@ -153,7 +153,7 @@ struct ShaderBoneWeight {
 
 struct ShaderInteriorMappedFacade {
     FixedArray<float, 3> bottom_left;
-    FixedArray<float, 2> multiplier;
+    FixedArray<float, 4> uvmap;
 };
 
 enum class ReductionTarget {
@@ -175,7 +175,7 @@ struct AttributeIndices {
     GLuint idx_bone_weights;
     GLuint idx_texture_layer;
     GLuint idx_interior_mapping_bottom_left;
-    GLuint idx_interior_mapping_multiplier;
+    GLuint idx_interior_mapping_uvmap;
     GLuint idx_uv_0;
     GLuint idx_uv_1;
     GLuint uv_count;
@@ -214,8 +214,8 @@ struct AttributeIndexCalculator {
         result.idx_bone_weights = result.idx_bone_indices + has_bone_indices;
         result.idx_texture_layer = result.idx_bone_weights + has_bone_weights;
         result.idx_interior_mapping_bottom_left = result.idx_texture_layer + has_texture_layer;
-        result.idx_interior_mapping_multiplier = result.idx_interior_mapping_bottom_left + has_interior_mapping_bottom_left;
-        result.idx_uv_0 = result.idx_interior_mapping_multiplier + has_interior_mapping_multiplier;
+        result.idx_interior_mapping_uvmap = result.idx_interior_mapping_bottom_left + has_interior_mapping_bottom_left;
+        result.idx_uv_0 = result.idx_interior_mapping_uvmap + has_interior_mapping_multiplier;
         result.idx_uv_1 = result.idx_uv_0 + 1;
         result.uv_count = integral_cast<GLuint>(nuvs);
         result.idx_cweight_0 = result.idx_uv_0 + result.uv_count;
@@ -440,9 +440,9 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_interiormap) {
         sstr << "layout (location=" << attr_ids->idx_interior_mapping_bottom_left << ") in vec3 interior_bottom_left;" << std::endl;
-        sstr << "layout (location=" << attr_ids->idx_interior_mapping_multiplier << ") in vec2 interior_multiplier;" << std::endl;
+        sstr << "layout (location=" << attr_ids->idx_interior_mapping_uvmap << ") in vec4 interior_uvmap;" << std::endl;
         sstr << "out vec3 interior_bottom_left_fs;" << std::endl;
-        sstr << "out vec2 interior_multiplier_fs;" << std::endl;
+        sstr << "out vec4 interior_uvmap_fs;" << std::endl;
     }
     if (reorient_uv0 || reorient_normals || has_depth_fog || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "out highp vec3 FragPos;" << std::endl;
@@ -472,7 +472,7 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_interiormap) {
         sstr << "    interior_bottom_left_fs = interior_bottom_left;" << std::endl;
-        sstr << "    interior_multiplier_fs = interior_multiplier;" << std::endl;
+        sstr << "    interior_uvmap_fs = interior_uvmap;" << std::endl;
     }
     sstr << "    vec3 vPosInstance;" << std::endl;
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
@@ -715,7 +715,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_continuous_texture_layer_color,
     bool has_discrete_texture_layer_color,
     bool has_interiormap,
-    const OrderableFixedArray<float, 2>& facade_edge_size,
     const OrderableFixedArray<float, 2>& facade_inner_size,
     const OrderableFixedArray<float, 3>& interior_size,
     bool has_horizontal_detailmap,
@@ -856,7 +855,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_interiormap) {
         sstr << "in vec3 interior_bottom_left_fs;" << std::endl;
-        sstr << "in vec2 interior_multiplier_fs;" << std::endl;
+        sstr << "in vec4 interior_uvmap_fs;" << std::endl;
         sstr << "uniform sampler2D texture_interior[" << INTERIOR_COUNT << "];" << std::endl;
     }
     if (has_specularmap) {
@@ -927,18 +926,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_interiormap) {
         sstr << "bool is_in_interior(mat3 TBN, float alpha_fac) {" << std::endl;
+        sstr << "    if ((interior_uvmap_fs.y == 0.0) || (interior_uvmap_fs.w == 0.0)) {" << std::endl;
+        sstr << "        return false;" << std::endl;
+        sstr << "    }" << std::endl;
         sstr << "    vec3 rel_view_pos = transpose(TBN) * (viewPos - interior_bottom_left_fs);" << std::endl;
         sstr << "    vec2 rel_frag_pos = (transpose(TBN) * (FragPos - interior_bottom_left_fs)).xy;" << std::endl;
-        sstr << "    rel_view_pos.xy *= interior_multiplier_fs;" << std::endl;
-        sstr << "    rel_frag_pos *= interior_multiplier_fs;" << std::endl;
+        sstr << "    rel_view_pos.x = interior_uvmap_fs.x + interior_uvmap_fs.y * rel_view_pos.x;" << std::endl;
+        sstr << "    rel_frag_pos.x = interior_uvmap_fs.x + interior_uvmap_fs.y * rel_frag_pos.x;" << std::endl;
+        sstr << "    rel_view_pos.y = interior_uvmap_fs.z + interior_uvmap_fs.w * rel_view_pos.y;" << std::endl;
+        sstr << "    rel_frag_pos.y = interior_uvmap_fs.z + interior_uvmap_fs.w * rel_frag_pos.y;" << std::endl;
         sstr << "    vec3 rel_view_dir = vec3(rel_frag_pos, 0) - rel_view_pos;" << std::endl;
         sstr << "    float best_alpha = 1.0 / 0.0;" << std::endl;
         sstr << "    int best_axis;" << std::endl;
         sstr << "    bool best_sign;" << std::endl;
         sstr << "    vec2 best_uv;" << std::endl;
-        sstr << "    vec2 facade_edge_size = vec2(" <<
-            facade_edge_size(0) << ", " <<
-            facade_edge_size(1) << ");" << std::endl;
         sstr << "    vec2 facade_inner_size = vec2(" <<
             facade_inner_size(0) << ", " <<
             facade_inner_size(1) << ");" << std::endl;
@@ -947,7 +948,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             interior_size(1) << ", " <<
             interior_size(2) << ");" << std::endl;
         sstr << "    vec2 w = interior_size.xy + facade_inner_size;" << std::endl;
-        sstr << "    vec2 bottom = floor((rel_frag_pos - facade_edge_size) / w) * w + facade_edge_size;" << std::endl;
+        sstr << "    vec2 bottom = floor(rel_frag_pos / w) * w;" << std::endl;
         sstr << "    if (any(lessThan(rel_frag_pos, bottom))) {" << std::endl;
         sstr << "        return false;" << std::endl;
         sstr << "    };" << std::endl;
@@ -2143,7 +2144,6 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_continuous_texture_layer,
         id.has_discrete_atlas_texture_layer || id.has_discrete_vertex_texture_layer,
         id.ntextures_interior != 0,
-        id.facade_edge_size,
         id.facade_inner_size,
         id.interior_size,
         id.has_horizontal_detailmap,
@@ -2586,13 +2586,18 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
         if (va.interior_mapping_buffer().is_awaited()) {
             va.interior_mapping_buffer().bind();
         } else {
+            if (cva->triangles.size() != cva->interiormap_uvmaps.size()) {
+                THROW_OR_ABORT(
+                    (std::stringstream() << "#triangles: " << cva->triangles.size() <<
+                    ", #interiormap_uvmap: " << cva->interiormap_uvmaps.size()).str());
+            }
             std::vector<ShaderInteriorMappedFacade> shader_interior_mapped_facade;
             shader_interior_mapped_facade.reserve(3 * cva->triangles.size());
-            for (const auto& t : cva->triangles) {
-                for (size_t i = 0; i < 3; ++i) {
+            for (const auto& [i, t] : enumerate(cva->triangles)) {
+                for (size_t j = 0; j < 3; ++j) {
                     shader_interior_mapped_facade.push_back(ShaderInteriorMappedFacade{
                         .bottom_left = t(0).position,
-                        .multiplier = FixedArray<float, 2>{1.f, 1.f}
+                        .uvmap = cva->interiormap_uvmaps[i]
                         });
                 }
             }
@@ -2603,8 +2608,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
         ShaderInteriorMappedFacade* im = nullptr;
         CHK(glEnableVertexAttribArray(attr_ids.idx_interior_mapping_bottom_left));
         CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_bottom_left, 3, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->bottom_left));
-        CHK(glEnableVertexAttribArray(attr_ids.idx_interior_mapping_multiplier));
-        CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_multiplier, 2, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->multiplier));
+        CHK(glEnableVertexAttribArray(attr_ids.idx_interior_mapping_uvmap));
+        CHK(glVertexAttribPointer(attr_ids.idx_interior_mapping_uvmap, 4, GL_FLOAT, GL_FALSE, sizeof(ShaderInteriorMappedFacade), &im->uvmap));
     }
 
     CHK(glBindVertexArray(0));

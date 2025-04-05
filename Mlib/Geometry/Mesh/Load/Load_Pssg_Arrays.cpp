@@ -947,7 +947,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 UUVector<FixedArray<uint8_t, 3>>(),
                 std::move(uv1),
                 std::move(cweight),
-                std::move(alpha)));
+                std::move(alpha),
+                UUVector<FixedArray<float, 4>>()));
             if (!any(dbm.features & ColoredVertexFeatures::POSITION)) {
                 THROW_OR_ABORT("Vertices have no position in node \"" + node_id + '"');
             }

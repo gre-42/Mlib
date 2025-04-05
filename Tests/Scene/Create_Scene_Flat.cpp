@@ -77,7 +77,8 @@ void Mlib::create_scene_flat(
         UUVector<FixedArray<uint8_t, 3>>(),
         std::vector<UUVector<FixedArray<float, 3, 2>>>(),
         std::vector<UUVector<FixedArray<float, 3>>>(),
-        UUVector<FixedArray<float, 3>>());
+        UUVector<FixedArray<float, 3>>(),
+        UUVector<FixedArray<float, 4>>());
 
     /*UUVector<FixedArray<ColoredVertex, 3>> triangles1{
         FixedArray<ColoredVertex, 3>{

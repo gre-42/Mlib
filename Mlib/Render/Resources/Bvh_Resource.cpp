@@ -72,7 +72,8 @@ static void instantiate_bvh(
                 UUVector<FixedArray<uint8_t, 3>>{},                         // discrete_triangle_texture_layers
                 std::vector<UUVector<FixedArray<float, 3, 2>>>(),           // uv1
                 std::vector<UUVector<FixedArray<float, 3>>>(),              // cweight
-                UUVector<FixedArray<float, 3>>()));                         // alpha
+                UUVector<FixedArray<float, 3>>(),                           // alpha
+                UUVector<FixedArray<float, 4>>()));                         // interiormap_uvmap
             // lcvas.back()->material.is_small = true;
             // lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }

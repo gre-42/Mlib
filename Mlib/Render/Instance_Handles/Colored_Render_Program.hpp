@@ -68,7 +68,6 @@ struct RenderProgramIdentifier {
     size_t ntextures_reflection;
     size_t ntextures_dirt;
     size_t ntextures_interior;
-    OrderableFixedArray<float, 2> facade_edge_size;
     OrderableFixedArray<float, 2> facade_inner_size;
     OrderableFixedArray<float, 3> interior_size;
     size_t nuv_indices;

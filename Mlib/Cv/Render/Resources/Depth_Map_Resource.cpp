@@ -107,7 +107,8 @@ DepthMapResource::DepthMapResource(
             UUVector<FixedArray<uint8_t, 3>>(),
             std::vector<UUVector<FixedArray<float, 3, 2>>>(),
             std::vector<UUVector<FixedArray<float, 3>>>(),
-            UUVector<FixedArray<float, 3>>()));
+            UUVector<FixedArray<float, 3>>(),
+            UUVector<FixedArray<float, 4>>()));
 }
 
 void DepthMapResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const

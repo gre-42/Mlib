@@ -16,8 +16,8 @@ std::list<FixedArray<CompressedScenePos, 2>> Mlib::subdivided_way(
         auto s = it;
         ++s;
         if (s != nd.end()) {
-            auto p0 = nodes.at(*it).position;
-            auto p1 = nodes.at(*s).position;
+            const auto& p0 = nodes.at(*it).position;
+            const auto& p1 = nodes.at(*s).position;
             double width = std::sqrt(sum(squared(p0 - p1)));
             auto refined = linspace_multipliers<double>(std::max<size_t>(2, size_t(width / scale / max_length))).flat_iterable();
             for (auto a = refined.begin(); a != refined.end(); ++a) {

@@ -699,6 +699,8 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_facade,
             config.max_wall_width,
+            config.snap_building_length_ratio,
+            config.snap_building_length_angle,
             config.extrusion_ambient_occlusion,
             config.height_colors);
     }

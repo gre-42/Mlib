@@ -24,7 +24,8 @@ using namespace Mlib;
 enum class TextureLayerType {
     NONE,
     CONTINUOUS,
-    DISCRETE
+    DISCRETE,
+    INTERIORMAP
 };
 
 template <TextureLayerType ttexture_layer_type>
@@ -50,6 +51,13 @@ struct AggregateTriangle<TextureLayerType::DISCRETE> {
     float distance_to_origin2;
 };
 
+template <>
+struct AggregateTriangle<TextureLayerType::INTERIORMAP> {
+    FixedArray<ColoredVertex<float>, 3> triangle;
+    FixedArray<float, 4> interiormap_uvmap;
+    float distance_to_origin2;
+};
+
 class IAggregateTriangles {
 public:
     virtual ~IAggregateTriangles() = default;
@@ -60,7 +68,8 @@ public:
     virtual void build(
         UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
         UUVector<FixedArray<float, 3>>& continuous_triangle_texture_layers,
-        UUVector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers) = 0;
+        UUVector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers,
+        UUVector<FixedArray<float, 4>>& interiormap_uvmaps) = 0;
     virtual void sort() = 0;
     virtual bool empty() const = 0;
 };
@@ -83,6 +92,9 @@ public:
             if (!a.discrete_triangle_texture_layers.empty()) {
                 THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name.full_name() + '"');
             }
+            if (!a.interiormap_uvmaps.empty()) {
+                THROW_OR_ABORT("Unexpected interiormap uscale in array \"" + a.name.full_name() + '"');
+            }
         }
         if constexpr (ttexture_layer_type == TextureLayerType::CONTINUOUS) {
             if (a.continuous_triangle_texture_layers.size() != a.triangles.size()) {
@@ -91,6 +103,9 @@ public:
             if (!a.discrete_triangle_texture_layers.empty()) {
                 THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name.full_name() + '"');
             }
+            if (!a.interiormap_uvmaps.empty()) {
+                THROW_OR_ABORT("Unexpected interiormap uscale in array \"" + a.name.full_name() + '"');
+            }
         }
         if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
             if (!a.continuous_triangle_texture_layers.empty()) {
@@ -98,6 +113,20 @@ public:
             }
             if (a.discrete_triangle_texture_layers.size() != a.triangles.size()) {
                 THROW_OR_ABORT("Conflicting number of texture layers in array \"" + a.name.full_name() + '"');
+            }
+            if (!a.interiormap_uvmaps.empty()) {
+                THROW_OR_ABORT("Unexpected interiormap uscale in array \"" + a.name.full_name() + '"');
+            }
+        }
+        if constexpr (ttexture_layer_type == TextureLayerType::INTERIORMAP) {
+            if (!a.continuous_triangle_texture_layers.empty()) {
+                THROW_OR_ABORT("Unexpected continuous texture layers in array \"" + a.name.full_name() + '"');
+            }
+            if (!a.discrete_triangle_texture_layers.empty()) {
+                THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name.full_name() + '"');
+            }
+            if (a.interiormap_uvmaps.size() != a.triangles.size()) {
+                THROW_OR_ABORT("Conflicting number of interiormap uscale in array \"" + a.name.full_name() + '"');
             }
         }
         auto camera_sphere = BoundingSphere<float, 3>{ fixed_zeros<float, 3>(), a.morphology.max_triangle_distance };
@@ -124,22 +153,30 @@ public:
             if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
                 atriangles_.push_back({ c, a.discrete_triangle_texture_layers[i], distance_to_origin2 });
             }
+            if constexpr (ttexture_layer_type == TextureLayerType::INTERIORMAP) {
+                atriangles_.push_back({ c, a.interiormap_uvmaps[i], distance_to_origin2 });
+            }
         }
     }
     virtual void build(
         UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
         UUVector<FixedArray<float, 3>>& continuous_triangle_texture_layers,
-        UUVector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers) override
+        UUVector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers,
+        UUVector<FixedArray<float, 4>>& interiormap_uvmaps) override
     {
         assert_true(triangles.empty());
         assert_true(continuous_triangle_texture_layers.empty());
         assert_true(discrete_triangle_texture_layers.empty());
+        assert_true(interiormap_uvmaps.empty());
         triangles.reserve(atriangles_.size());
         if constexpr (ttexture_layer_type == TextureLayerType::CONTINUOUS) {
             continuous_triangle_texture_layers.reserve(atriangles_.size());
         }
         if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
             discrete_triangle_texture_layers.reserve(atriangles_.size());
+        }
+        if constexpr (ttexture_layer_type == TextureLayerType::INTERIORMAP) {
+            interiormap_uvmaps.reserve(atriangles_.size());
         }
         for (const auto& a : atriangles_) {
             triangles.push_back(a.triangle);
@@ -148,6 +185,9 @@ public:
             }
             if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
                 discrete_triangle_texture_layers.push_back(a.discrete_layer);
+            }
+            if constexpr (ttexture_layer_type == TextureLayerType::INTERIORMAP) {
+                interiormap_uvmaps.push_back(a.interiormap_uvmap);
             }
         }
     }
@@ -181,6 +221,8 @@ static std::unique_ptr<IAggregateTriangles> construct_aggregate_triangles(
         result = std::make_unique<AggregateTriangles<TextureLayerType::CONTINUOUS>>();
     } else if (!a.discrete_triangle_texture_layers.empty()) {
         result = std::make_unique<AggregateTriangles<TextureLayerType::DISCRETE>>();
+    } else if (!a.interiormap_uvmaps.empty()) {
+        result = std::make_unique<AggregateTriangles<TextureLayerType::INTERIORMAP>>();
     } else {
         result = std::make_unique<AggregateTriangles<TextureLayerType::NONE>>();
     }
@@ -264,7 +306,8 @@ void AggregateArrayRenderer::update_aggregates(
         UUVector<FixedArray<ColoredVertex<float>, 3>> triangles;
         UUVector<FixedArray<float, 3>> continuous_texture_layers;
         UUVector<FixedArray<uint8_t, 3>> discrete_texture_layers;
-        list->build(triangles, continuous_texture_layers, discrete_texture_layers);
+        UUVector<FixedArray<float, 4>> interiormap_uvmaps;
+        list->build(triangles, continuous_texture_layers, discrete_texture_layers, interiormap_uvmaps);
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
             *AAR_NAME,
             mat,
@@ -278,7 +321,8 @@ void AggregateArrayRenderer::update_aggregates(
             std::move(discrete_texture_layers),
             std::vector<UUVector<FixedArray<float, 3, 2>>>(),
             std::vector<UUVector<FixedArray<float, 3>>>(),
-            UUVector<FixedArray<float, 3>>()));
+            UUVector<FixedArray<float, 3>>(),
+            std::move(interiormap_uvmaps)));
     }
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,

@@ -116,7 +116,8 @@ void AnimatedColoredVertexArrays::smoothen_edges(
                 UUVector<FixedArray<uint8_t, 3>>{},
                 std::vector<UUVector<FixedArray<float, 3, 2>>>{},
                 std::vector<UUVector<FixedArray<float, 3>>>{},
-                UUVector<FixedArray<float, 3>>{}));
+                UUVector<FixedArray<float, 3>>{},
+                UUVector<FixedArray<float, 4>>{}));
             l->morphology.physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
         }
         Mlib::smoothen_edges(new_dvcas, {}, smoothness, niterations, decay);

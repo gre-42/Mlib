@@ -58,6 +58,7 @@ public:
         std::vector<UUVector<FixedArray<float, 3, 2>>>&& uv1,
         std::vector<UUVector<FixedArray<float, 3>>>&& cweight,
         UUVector<FixedArray<float, 3>>&& alpha,
+        UUVector<FixedArray<float, 4>>&& interiormap_uvmaps,
         const ExtremalAxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
         const ExtremalBoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
@@ -74,6 +75,7 @@ public:
     std::vector<UUVector<FixedArray<float, 3, 2>>> uv1;
     std::vector<UUVector<FixedArray<float, 3>>> cweight;
     UUVector<FixedArray<float, 3>> alpha;
+    UUVector<FixedArray<float, 4>> interiormap_uvmaps;
     
     template <PrimitiveDimensions tdims>
     UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() {
@@ -152,6 +154,7 @@ public:
         archive(uv1);
         archive(cweight);
         archive(alpha);
+        archive(interiormap_uvmaps);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
@@ -172,6 +175,7 @@ public:
         std::vector<UUVector<FixedArray<float, 3, 2>>> uv1;
         std::vector<UUVector<FixedArray<float, 3>>> cweight;
         UUVector<FixedArray<float, 3>> alpha;
+        UUVector<FixedArray<float, 4>> interiormap_uvmaps;
 
         archive(name);
         archive(material);
@@ -186,6 +190,7 @@ public:
         archive(uv1);
         archive(cweight);
         archive(alpha);
+        archive(interiormap_uvmaps);
 
         construct(
             name,
@@ -200,7 +205,8 @@ public:
             std::move(discrete_triangle_texture_layers),
             std::move(uv1),
             std::move(cweight),
-            std::move(alpha));
+            std::move(alpha),
+            std::move(interiormap_uvmaps));
     }
 private:
     template <PrimitiveDimensions tfirst_dim>

@@ -157,6 +157,8 @@ struct OsmResourceConfig {
     float building_bottom = -3;
     float default_building_top = 6;
     float default_barrier_top = 3;
+    float snap_building_length_ratio = 1.0f;
+    float snap_building_length_angle = 10.f * degrees;
     bool default_snap_building_height = false;
     bool default_snap_barrier_height = false;
     float socle_height = 1.2f * meters;

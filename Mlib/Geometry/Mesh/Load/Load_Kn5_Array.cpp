@@ -694,6 +694,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     node.uv(tri(0)),
                     node.uv(tri(1)),
                     node.uv(tri(2)),
+                    std::nullopt,                               // interiormap_uvmap
                     {},                                         // b00
                     {},                                         // b10
                     {},                                         // b01

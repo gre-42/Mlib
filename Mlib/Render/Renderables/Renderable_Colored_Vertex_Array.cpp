@@ -774,7 +774,6 @@ void RenderableColoredVertexArray::render_cva(
             .ntextures_reflection = tic.ntextures_reflection,
             .ntextures_dirt = tic.ntextures_dirt,
             .ntextures_interior = tic.ntextures_interior,
-            .facade_edge_size = cva->material.interior_textures.facade_edge_size,
             .facade_inner_size = cva->material.interior_textures.facade_inner_size,
             .interior_size = cva->material.interior_textures.interior_size,
             .nuv_indices = is_lightmap ? 1 : (cva->uv1.size() + 1),

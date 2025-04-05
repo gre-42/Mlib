@@ -26,13 +26,15 @@ TriangleList<TPos>::TriangleList(
     const Morphology& morphology,
     UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
-    UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
+    UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
+    UUVector<FixedArray<float, 4>>&& interiormap_uvmaps)
     : name{ std::move(name) }
     , material{ material }
     , morphology{ morphology }
     , quads{ std::move(quads) }
     , triangles{ std::move(triangles) }
     , triangle_bone_weights{ std::move(triangle_bone_weights) }
+    , interiormap_uvmaps{ std::move(interiormap_uvmaps) }
 {}
 
 template <class TPos>
@@ -49,6 +51,7 @@ void TriangleList<TPos>::draw_triangle_with_normals(
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u01,
+    const std::optional<FixedArray<float, 4>>& interiormap_uvmap,
     const std::vector<BoneWeight>& b00,
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b01,
@@ -81,6 +84,12 @@ void TriangleList<TPos>::draw_triangle_with_normals(
             THROW_OR_ABORT("Triangle bone size mismatch");
         }
     }
+    if (interiormap_uvmap.has_value()) {
+        interiormap_uvmaps.emplace_back(*interiormap_uvmap);
+        if (triangles.size() != interiormap_uvmaps.size()) {
+            THROW_OR_ABORT("Interiormap uscale size mismatch");
+        }
+    }
     if (pp00 != nullptr) {
         *pp00 = &triangle(0);
     }
@@ -103,6 +112,7 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u01,
+    const std::optional<FixedArray<float, 4>>& interiormap_uvmap,
     const std::vector<BoneWeight>& b00,
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b01,
@@ -134,7 +144,9 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
         n_o = get_alternative_or_throw<I>(t, normal_error_behavior);
     }
     auto n = n_o->template casted<float>();
-    draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior, pp00, pp10, pp01);
+    draw_triangle_with_normals(
+        p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, interiormap_uvmap,
+        b00, b10, b01, tangent_error_behavior, pp00, pp10, pp01);
 }
 
 template <class TPos>
@@ -155,6 +167,7 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u11,
     const FixedArray<float, 2>& u01,
+    const std::optional<FixedArray<float, 4>>& interiormap_uvmap,
     const std::vector<BoneWeight>& b00,
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b11,
@@ -176,14 +189,14 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
                 funpack(FixedArray<TPos, 2>{p11(0), p11(1)}),
                 funpack(FixedArray<TPos, 2>{p01(0), p01(1)}))))
     {
-        draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
-        draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
+        draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, interiormap_uvmap, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
+        draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, interiormap_uvmap, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
     } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
             THROW_OR_ABORT("Triangle positions not supported for Delaunay flipping");
         }
-        draw_triangle_with_normals(p01, p10, p11, n01, n10, n11, c01, c10, c11, u01, u10, u11, b01, b10, b11, tangent_error_behavior);
-        draw_triangle_with_normals(p00, p10, p01, n00, n10, n01, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior);
+        draw_triangle_with_normals(p01, p10, p11, n01, n10, n11, c01, c10, c11, u01, u10, u11, interiormap_uvmap, b01, b10, b11, tangent_error_behavior);
+        draw_triangle_with_normals(p00, p10, p01, n00, n10, n01, c00, c10, c01, u00, u10, u01, interiormap_uvmap, b00, b10, b01, tangent_error_behavior);
     } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DISABLED) {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
             THROW_OR_ABORT("Triangle positions not supported for quads");
@@ -229,6 +242,7 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u11,
     const FixedArray<float, 2>& u01,
+    const std::optional<FixedArray<float, 4>>& interiormap_uvmap,
     const std::vector<BoneWeight>& b00,
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b11,
@@ -251,14 +265,14 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
                 funpack(FixedArray<TPos, 2>{p11(0), p11(1)}),
                 funpack(FixedArray<TPos, 2>{p01(0), p01(1)}))))
     {
-        draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
-        draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
+        draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, interiormap_uvmap, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
+        draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, interiormap_uvmap, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
     } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
             THROW_OR_ABORT("Triangle positions not supported for Delaunay flipping");
         }
-        draw_triangle_wo_normals(p01, p10, p11, c01, c10, c11, u01, u10, u11, b01, b10, b11, normal_error_behavior, tangent_error_behavior);
-        draw_triangle_wo_normals(p00, p10, p01, c00, c10, c01, u00, u10, u01, b00, b10, b01, normal_error_behavior, tangent_error_behavior);
+        draw_triangle_wo_normals(p01, p10, p11, c01, c10, c11, u01, u10, u11, interiormap_uvmap, b01, b10, b11, normal_error_behavior, tangent_error_behavior);
+        draw_triangle_wo_normals(p00, p10, p01, c00, c10, c01, u00, u10, u01, interiormap_uvmap, b00, b10, b01, normal_error_behavior, tangent_error_behavior);
     } else {
         THROW_OR_ABORT("Unsupported triangulation mode (1)");
     }
@@ -696,7 +710,8 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         UUVector<FixedArray<uint8_t, 3>>{},
         std::vector<UUVector<FixedArray<float, 3, 2>>>{},
         std::vector<UUVector<FixedArray<float, 3>>>{},
-        UUVector<FixedArray<float, 3>>{});
+        UUVector<FixedArray<float, 3>>{},
+        std::vector(interiormap_uvmaps));
 }
 
 namespace Mlib {

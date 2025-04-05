@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <list>
 #include <memory>
+#include <optional>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -39,7 +40,8 @@ public:
         const Morphology& morphology,
         UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
         UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
-        UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {});
+        UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {},
+        UUVector<FixedArray<float, 4>>&& interiormap_uvmaps = {});
     void draw_triangle_with_normals(
         const FixedArray<TPos, 3>& p00,
         const FixedArray<TPos, 3>& p10,
@@ -53,6 +55,7 @@ public:
         const FixedArray<float, 2>& u00 = {0.f, 0.f},
         const FixedArray<float, 2>& u10 = {1.f, 0.f},
         const FixedArray<float, 2>& u01 = {0.f, 1.f},
+        const std::optional<FixedArray<float, 4>>& interiormap_uvmap = std::nullopt,
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b01 = {},
@@ -70,6 +73,7 @@ public:
         const FixedArray<float, 2>& u00 = {0.f, 0.f},
         const FixedArray<float, 2>& u10 = {1.f, 0.f},
         const FixedArray<float, 2>& u01 = {0.f, 1.f},
+        const std::optional<FixedArray<float, 4>>& interiormap_uvmap = std::nullopt,
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b01 = {},
@@ -95,6 +99,7 @@ public:
         const FixedArray<float, 2>& u10 = {1.f, 0.f},
         const FixedArray<float, 2>& u11 = {1.f, 1.f},
         const FixedArray<float, 2>& u01 = {0.f, 1.f},
+        const std::optional<FixedArray<float, 4>>& interiormap_uvmap = std::nullopt,
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b11 = {},
@@ -120,6 +125,7 @@ public:
         const FixedArray<float, 2>& u10 = {1.f, 0.f},
         const FixedArray<float, 2>& u11 = {1.f, 1.f},
         const FixedArray<float, 2>& u01 = {0.f, 1.f},
+        const std::optional<FixedArray<float, 4>>& interiormap_uvmap = std::nullopt,
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b11 = {},
@@ -177,6 +183,7 @@ public:
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
+        archive(interiormap_uvmaps);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
@@ -190,6 +197,7 @@ public:
         UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+        UUVector<FixedArray<float, 4>> interiormap_uvmaps;
 
         archive(name);
         archive(material);
@@ -197,6 +205,7 @@ public:
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
+        archive(interiormap_uvmaps);
 
         construct(
             name,
@@ -204,7 +213,8 @@ public:
             morphology,
             std::move(quads),
             std::move(triangles),
-            std::move(triangle_bone_weights));
+            std::move(triangle_bone_weights),
+            std::move(interiormap_uvmaps));
     }
     GroupAndName name;
     Material material;
@@ -213,6 +223,7 @@ public:
     UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
     UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+    UUVector<FixedArray<float, 4>> interiormap_uvmaps;
 };
 
 }

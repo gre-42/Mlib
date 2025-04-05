@@ -44,4 +44,8 @@ BuildingLevelOutline smooth_building_level_outline(
     DrawBuildingPartType tpe,
     BuildingDetailType detail);
 
+std::list<std::list<BuildingSegment>> straight_building_level(
+    const std::list<BuildingSegment>& level,
+    float snap_length_angle);
+
 }
