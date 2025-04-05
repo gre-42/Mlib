@@ -1,6 +1,7 @@
 #include "Spawner.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
@@ -52,17 +53,13 @@ void Spawner::set_spawn_points(
         spawn_points_bvh_split_[i].reset(new Bvh<CompressedScenePos, 3, const SpawnPoint*>(fixed_full<CompressedScenePos, 3>((CompressedScenePos)10.f), 10));
     }
     spawn_points_bvh_singular_.reset(new Bvh<CompressedScenePos, 3, const SpawnPoint*>(fixed_full<CompressedScenePos, 3>((CompressedScenePos)10.f), 10));
-    {
-        size_t i = 0;
-        for (const auto& sp : spawn_points) {
-            SpawnPoint sp2 = sp;
-            sp2.position = absolute_model_matrix.transform(funpack(sp.position)).casted<CompressedScenePos>();
-            sp2.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(sp.rotation)), R.T()));
-            const auto* spb = &spawn_points_.emplace_back(sp2);
-            spawn_points_bvh_split_[i]->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.position), spb);
-            spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.position), spb);
-            i = (i + 1) % nsubs;
-        }
+    for (const auto& [i, sp] : enumerate(spawn_points)) {
+        SpawnPoint sp2 = sp;
+        sp2.position = absolute_model_matrix.transform(funpack(sp.position)).casted<CompressedScenePos>();
+        sp2.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(sp.rotation)), R.T()));
+        const auto* spb = &spawn_points_.emplace_back(sp2);
+        spawn_points_bvh_split_[i % nsubs]->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.position), spb);
+        spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.position), spb);
     }
 }
 

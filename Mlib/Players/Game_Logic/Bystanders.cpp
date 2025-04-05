@@ -56,11 +56,13 @@ bool Bystanders::spawn_for_vip(
             cfg_.r_spawn_far),
         [&](const SpawnPoint* sp)
     {
-        if ((sp->type == SpawnPointType::PARKING) == (spawner.has_player() && spawner.get_player()->has_way_points())) {
-            return true;
-        }
-        if ((sp->location == WayPointLocation::SIDEWALK) != (spawner.has_player() && spawner.get_player()->is_pedestrian())) {
-            return true;
+        if (spawner.has_player()) {
+            if ((sp->type == SpawnPointType::PARKING) != spawner.get_player()->is_parking()) {
+                return true;
+            }
+            if ((sp->location == WayPointLocation::SIDEWALK) != spawner.get_player()->is_pedestrian()) {
+                return true;
+            }
         }
         ScenePos dist2 = sum(squared(funpack(sp->position) - vip_pos));
         // Abort if too far away.

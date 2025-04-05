@@ -177,6 +177,7 @@ public:
         ScenePos height_offset = 0,
         float time_offset = 0) const;
     bool is_pedestrian() const;
+    bool is_parking() const;
     bool has_scene_vehicle() const;
     bool has_vehicle_controller() const;
     std::string vehicle_name() const;

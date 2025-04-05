@@ -116,7 +116,7 @@ Player::Player(
     , target_rb_{ nullptr }
     , game_mode_{ game_mode }
     , unstuck_mode_{ unstuck_mode }
-    , behavior_{ behavior }
+    , behavior_{ std::move(behavior) }
     , stuck_velocity_{ NAN }
     , stuck_duration_{ NAN }
     , unstuck_duration_{ NAN }
@@ -692,6 +692,11 @@ Gun& Player::gun() {
 bool Player::is_pedestrian() const {
     std::shared_lock lock{ mutex_ };
     return joined_way_point_sandbox_ == JoinedWayPointSandbox::SIDEWALK;
+}
+
+bool Player::is_parking() const {
+    std::shared_lock lock{ mutex_ };
+    return behavior_ == "none";
 }
 
 void Player::aim_and_shoot() {
