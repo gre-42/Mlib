@@ -157,6 +157,7 @@ void CheckPoints::advance_time(float dt) {
         checkpoints_ahead_.push_back(CheckPointPose{
             .track_element = track_reader_.track_element(),
             .history = std::move(track_reader_.history()),
+            .progress = track_reader_.progress(),
             .lap_index = track_reader_.lap_id()});
         if (i01_ == beacon_nodes_.size()) {
             auto node = make_unique_scene_node();
@@ -207,6 +208,7 @@ void CheckPoints::advance_time(float dt) {
 
     if (!checkpoints_ahead_.empty()) {
         auto& history = checkpoints_ahead_.front().history;
+        double progress = checkpoints_ahead_.front().progress;
         const auto& new_element = checkpoints_ahead_.front().track_element;
         const auto& new_location = new_element.transformation();
         if (sum(squared((*moving_nodes_.begin())->position() - new_location.position)) < squared(radius_)) {
@@ -227,8 +229,8 @@ void CheckPoints::advance_time(float dt) {
                         if ((dot0d(new_direction, *last_direction_) < std::cos(respawn_config_.max_horizontal_angle)) ||
                             std::abs(new_direction(1)) > std::sin(respawn_config_.max_vertical_angle))
                         {
-                            straight_progress_ = track_reader_.progress();
-                        } else if (track_reader_.progress() - straight_progress_ > respawn_config_.vehicle_length) {
+                            straight_progress_ = progress;
+                        } else if (progress - straight_progress_ > respawn_config_.vehicle_length) {
                             last_straight_checkpoint_ = new_location;
                             for (const auto& e : history_) {
                                 last_straight_checkpoint_->position(1) = std::max(
