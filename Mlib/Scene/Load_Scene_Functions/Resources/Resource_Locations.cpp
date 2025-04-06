@@ -1,5 +1,6 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
 #include <Mlib/Geometry/Mesh/Load/Img_Reader.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
@@ -28,6 +29,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(filters);
 DECLARE_ARGUMENT(rw_resource_files);
 DECLARE_ARGUMENT(rw_ide_files);
 DECLARE_ARGUMENT(pssg_files);
@@ -126,6 +128,7 @@ static void exec(
     std::list<std::string> added_instantiables;
     auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
     *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
+    auto filters = args.arguments.at<ColoredVertexArrayFilters>(KnownArgs::filters, ColoredVertexArrayFilters{});
     if (auto c = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::texture)) {
         auto& rr = RenderingContextStack::primary_rendering_resources();
         cfg->textures = { rr.get_blend_map_texture(*c) };
@@ -146,7 +149,7 @@ static void exec(
                 &rr,
                 std::filesystem::path{ s.path }.filename().string() + '#',
                 IoVerbosity::SILENT);
-            load_renderable_pssg(arrays, sr, added_scene_node_resources, added_instantiables);
+            load_renderable_pssg(arrays, filters, sr, added_scene_node_resources, added_instantiables);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Error interpreting file \"" + s.path + "\": " + e.what());
         }
