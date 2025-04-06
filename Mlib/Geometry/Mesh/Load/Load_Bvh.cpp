@@ -308,7 +308,7 @@ void BvhLoader::smoothen() {
     auto N = integral_cast<int>(transformed_frames_.size() - 1);
     auto r = integral_cast<int>(cfg_.smooth_radius);
     const auto& get_cyclic_frame = [&](int i) {
-        return transformed_frames_.at((size_t)mod(i, N));
+        return transformed_frames_.at(integral_cast<size_t>(mod(i, N)));
     };
     for (int t = 0; t < N; ++t) {
         auto fn = get_cyclic_frame(t - r);
@@ -324,7 +324,7 @@ void BvhLoader::smoothen() {
             }
         }
         for (const auto& [joint_name, transformation] : fn) {
-            smoothed_transformed_frames.at((size_t)t).add(joint_name, transformation.slerp(fp.get(joint_name), 0.5));
+            smoothed_transformed_frames.at(integral_cast<size_t>(t)).add(joint_name, transformation.slerp(fp.get(joint_name), 0.5));
         }
     }
     transformed_frames_ = std::move(smoothed_transformed_frames);
