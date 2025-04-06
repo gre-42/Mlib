@@ -199,10 +199,14 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 world_node->add_instances_position(*name, r.position, r.yangle, r.billboard_id);
             }
         }
-        options.scene.auto_add_root_node(
-            *options.instance_name + "_inst_world",
-            std::move(world_node),
-            RenderingDynamics::STATIC);
+        try {
+            options.scene.auto_add_root_node(
+                *options.instance_name + "_inst_world",
+                std::move(world_node),
+                RenderingDynamics::STATIC);
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error((std::stringstream() << "Could not add root node: " << e.what() << '\n' << world_node.get(DP_LOC)).str());
+        }
     }
     // if (!resource_instance_positions_.empty()) {
     //     options.scene_node.optimize_instances_search_time(lraw());
