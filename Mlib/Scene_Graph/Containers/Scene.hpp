@@ -85,6 +85,9 @@ public:
     void add_root_instances_always_node(
         const std::string& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
+    void add_static_root_physics_node(
+        const std::string& name,
+        DanglingUniquePtr<SceneNode>&& scene_node);
     void auto_add_root_node(
         const std::string& name,
         DanglingUniquePtr<SceneNode>&& scene_node,
@@ -164,6 +167,7 @@ private:
     RootNodes& root_aggregate_always_nodes_;
     RootNodes& root_instances_once_nodes_;
     RootNodes& root_instances_always_nodes_;
+    RootNodes& static_root_physics_nodes_;
     std::set<DanglingPtr<SceneNode>> root_imposter_nodes_;
     std::string name_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;

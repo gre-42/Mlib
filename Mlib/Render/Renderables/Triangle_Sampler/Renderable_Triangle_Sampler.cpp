@@ -32,13 +32,13 @@ RenderableTriangleSampler::RenderableTriangleSampler(
     const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>* street_bvh,
     ScenePos scale,
     UpAxis up_axis)
-: scene_node_resources_{scene_node_resources},
-  terrain_styles_{terrain_styles},
-  terrain_triangles_{terrain_triangles},
-  no_grass_{no_grass},
-  street_bvh_{street_bvh},
-  scale_{scale},
-  up_axis_{up_axis}
+    : scene_node_resources_{scene_node_resources}
+    , terrain_styles_{terrain_styles}
+    , terrain_triangles_{terrain_triangles}
+    , no_grass_{no_grass}
+    , street_bvh_{street_bvh}
+    , scale_{scale}
+    , up_axis_{up_axis}
 {}
 
 RenderableTriangleSampler::~RenderableTriangleSampler()

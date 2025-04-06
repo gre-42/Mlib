@@ -54,6 +54,7 @@ Scene::Scene(
     , root_aggregate_always_nodes_{ morn_.create("root_aggregate_always_nodes") }
     , root_instances_once_nodes_{ morn_.create("root_instances_once_nodes") }
     , root_instances_always_nodes_{ morn_.create("root_instances_always_nodes") }
+    , static_root_physics_nodes_{ morn_.create("static_root_physics_nodes") }
     , name_{ std::move(name) }
     , large_aggregate_bg_worker_{ "Large_agg_BG" }
     , large_instances_bg_worker_{ "Large_inst_BG" }
@@ -117,6 +118,14 @@ void Scene::add_root_instances_always_node(
     root_instances_always_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
 }
 
+void Scene::add_static_root_physics_node(
+    const std::string& name,
+    DanglingUniquePtr<SceneNode>&& scene_node)
+{
+    std::scoped_lock lock{ mutex_ };
+    static_root_physics_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
+}
+
 void Scene::auto_add_root_node(
     const std::string& name,
     DanglingUniquePtr<SceneNode>&& scene_node,
@@ -137,7 +146,11 @@ void Scene::add_root_node(
 {
     switch (rendering_strategy) {
     case RenderingStrategies::NONE:
-        THROW_OR_ABORT("Rendering strategy of node \"" + name + "\" is \"none\"");
+        if (rendering_dynamics != RenderingDynamics::STATIC) {
+            THROW_OR_ABORT("Physics root node must be static");
+        }
+        add_static_root_physics_node(name, std::move(scene_node));
+        return;
     case RenderingStrategies::OBJECT:
         switch (rendering_dynamics) {
         case RenderingDynamics::STATIC:
@@ -457,7 +470,10 @@ bool Scene::visit_all(const std::function<bool(
             return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             }) &&
         root_instances_always_nodes_.visit_all([&func](const auto& node){
-        return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
+            return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
+            }) &&
+        static_root_physics_nodes_.visit_all([&func](const auto& node){
+            return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             });
 }
 
@@ -853,6 +869,14 @@ void Scene::append_physics_to_queue(
         return true;
         });
     root_instances_always_nodes_.visit_all([&](const auto& node) {
+        node->append_physics_to_queue(
+            TransformationMatrix<float, ScenePos, 3>::identity(),
+            zero,
+            float_queue,
+            double_queue);
+        return true;
+        });
+    static_root_physics_nodes_.visit_all([&](const auto& node) {
         node->append_physics_to_queue(
             TransformationMatrix<float, ScenePos, 3>::identity(),
             zero,

@@ -43,6 +43,11 @@ bool RootNodes::visit_all(const std::function<bool(const DanglingRef<const Scene
             return false;
         }
     }
+    for (const auto& [_, node] : invisible_static_nodes_) {
+        if (!op(node)) {
+            return false;
+        }
+    }
     return small_static_nodes_bvh_.visit_all([&op](const auto& d) { return op(d.payload()); });
 }
 
@@ -63,7 +68,7 @@ bool RootNodes::visit(
 void RootNodes::clear() {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     small_static_nodes_bvh_.clear();
-    nodes_under_construction_.clear();
+    invisible_static_nodes_.clear();
     default_nodes_map_.clear();
     clear_map_recursively(
         node_container_,
@@ -119,7 +124,7 @@ void RootNodes::add_root_node(
             small_static_nodes_bvh_.insert(
                 AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(ref->position(), md),
                 ref);
-        } else if (!nodes_under_construction_.try_emplace(name, ref).second) {
+        } else if (!invisible_static_nodes_.try_emplace(name, ref).second) {
             verbose_abort("add_root_node could not insert node \"" + name + '"');
         }
     } else if (!default_nodes_map_.try_emplace(name, ref).second) {
@@ -128,17 +133,17 @@ void RootNodes::add_root_node(
 }
 
 void RootNodes::move_node_to_bvh(const std::string& name) {
-    auto m = nodes_under_construction_.extract(name);
+    auto m = invisible_static_nodes_.extract(name);
     if (m.empty()) {
         THROW_OR_ABORT("Could not find non-BVH node with name \"" + name + '"');
     }
     if (m.mapped()->state() != SceneNodeState::STATIC) {
-        nodes_under_construction_.insert(std::move(m));
+        invisible_static_nodes_.insert(std::move(m));
         THROW_OR_ABORT("Node \"" + name + "\" is not static");
     }
     auto md = m.mapped()->max_center_distance(BILLBOARD_ID_NONE);
     if (md == 0.f) {
-        nodes_under_construction_.insert(std::move(m));
+        invisible_static_nodes_.insert(std::move(m));
         THROW_OR_ABORT("Node \"" + name + "\" has radius=0");
     }
     small_static_nodes_bvh_.insert(
@@ -267,6 +272,10 @@ void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
 }
 
 void RootNodes::print(std::ostream& ostr) const {
+    ostr << " Invisible nodes: " << invisible_static_nodes_.size() << '\n';
+    ostr << " Default nodes: " << default_nodes_map_.size() << '\n';
+    ostr << " Small static nodes: " << small_static_nodes_bvh_.size() << '\n';
+    ostr << " Node container\n";
     for (const auto& [k, v] : node_container_) {
         ostr << " " << k << " #" << v.ptr.nreferences() << '\n';
         v.ptr->print(ostr, 2);

@@ -53,7 +53,7 @@ public:
     void print(std::ostream& ostr) const;
 private:
     Scene& scene_;
-    DefaultNodesMap nodes_under_construction_;
+    DefaultNodesMap invisible_static_nodes_;
     DefaultNodesMap default_nodes_map_;             // Contains nodes that are large or moving
     SmallStaticNodesBvh small_static_nodes_bvh_;    // Contains nodes that are small and static
     NodeContainer node_container_;
