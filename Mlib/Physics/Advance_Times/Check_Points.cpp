@@ -147,7 +147,7 @@ void CheckPoints::advance_time(float dt) {
         auto old_progress = track_reader_.has_value()
             ? track_reader_.progress()
             : NAN;
-        if (!track_reader_.read(progress_, &history_)) {
+        if (!track_reader_.read(progress_)) {
             break;
         }
         progress_ += distance_ / meters;
@@ -156,6 +156,7 @@ void CheckPoints::advance_time(float dt) {
         }
         checkpoints_ahead_.push_back(CheckPointPose{
             .track_element = track_reader_.track_element(),
+            .history = std::move(track_reader_.history()),
             .lap_index = track_reader_.lap_id()});
         if (i01_ == beacon_nodes_.size()) {
             auto node = make_unique_scene_node();
@@ -199,15 +200,17 @@ void CheckPoints::advance_time(float dt) {
             pos(1) = y;
             b.beacon_node->set_position(pos, INITIAL_POSE);
         }
-        if (checkpoints_ahead_.empty()) {
+        if (!checkpoints_ahead_.empty()) {
             checkpoints_ahead_.front().track_element.set_y_position(y);
         }
     }
 
     if (!checkpoints_ahead_.empty()) {
+        auto& history = checkpoints_ahead_.front().history;
         const auto& new_element = checkpoints_ahead_.front().track_element;
         const auto& new_location = new_element.transformation();
         if (sum(squared((*moving_nodes_.begin())->position() - new_location.position)) < squared(radius_)) {
+            history_.splice(history_.end(), history);
             {
                 auto pr = new_element.progress(TrackElementInterpolationKey::METERS_TO_START);
                 history_.remove_if([&](const TrackElementExtended& p){
@@ -224,8 +227,8 @@ void CheckPoints::advance_time(float dt) {
                         if ((dot0d(new_direction, *last_direction_) < std::cos(respawn_config_.max_horizontal_angle)) ||
                             std::abs(new_direction(1)) > std::sin(respawn_config_.max_vertical_angle))
                         {
-                            straight_progress_ = progress_;
-                        } else if (progress_ - straight_progress_ > respawn_config_.vehicle_length) {
+                            straight_progress_ = track_reader_.progress();
+                        } else if (track_reader_.progress() - straight_progress_ > respawn_config_.vehicle_length) {
                             last_straight_checkpoint_ = new_location;
                             for (const auto& e : history_) {
                                 last_straight_checkpoint_->position(1) = std::max(

@@ -15,17 +15,17 @@ TrackReader::TrackReader(
     TrackElementInterpolationKey interpolation_key,
     TrackReaderInterpolationMode interpolation_mode,
     size_t ntransformations)
-: sequence_{std::move(sequence)},
-  frame_id_{0},
-  lap_id_{0},
-  nframes_remaining_{nframes},
-  nlaps_remaining_{nlaps},
-  inverse_geographic_mapping_{inverse_geographic_mapping},
-  interpolation_key_{interpolation_key},
-  interpolation_mode_{interpolation_mode},
-  ntransformations_{ntransformations},
-  track_element0_{std::nullopt},
-  track_element1_{std::nullopt}
+    : sequence_{std::move(sequence)}
+    , frame_id_{0}
+    , lap_id_{0}
+    , nframes_remaining_{nframes}
+    , nlaps_remaining_{nlaps}
+    , inverse_geographic_mapping_{inverse_geographic_mapping}
+    , interpolation_key_{interpolation_key}
+    , interpolation_mode_{interpolation_mode}
+    , ntransformations_{ntransformations}
+    , track_element0_{std::nullopt}
+    , track_element1_{std::nullopt}
 {
     if (finished()) {
         THROW_OR_ABORT("Number of frames or number of laps must be at least 1");
@@ -34,13 +34,11 @@ TrackReader::TrackReader(
 
 TrackReader::~TrackReader() = default;
 
-bool TrackReader::read(
-    double& progress,
-    std::list<TrackElementExtended>* history)
-{
+bool TrackReader::read(double& progress) {
     if (inverse_geographic_mapping_ == nullptr) {
         THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
+    history_.clear();
     if (!sequence_->eof()) {
         while (!finished() && (!track_element1_.has_value() || (track_element1_->progress(interpolation_key_) < progress)))
         {
@@ -77,9 +75,9 @@ bool TrackReader::read(
                 }
             } else {
                 ++frame_id_;
-                if (history != nullptr) {
-                    history->push_back(*track_element1_);
-                }
+            }
+            if (track_element1_.has_value()) {
+                history_.push_back(*track_element1_);
             }
             if (!track_element0_.has_value()) {
                 track_element0_ = track_element1_;

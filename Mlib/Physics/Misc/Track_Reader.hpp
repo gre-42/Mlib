@@ -25,10 +25,13 @@ public:
         TrackReaderInterpolationMode interpolation_mode,
         size_t ntransformations);
     ~TrackReader();
-    bool read(double& progress, std::list<TrackElementExtended>* history = nullptr);
+    bool read(double& progress);
     bool finished() const;
     inline const TrackElementExtended& track_element() const {
         return track_element_;
+    }
+    inline std::list<TrackElementExtended>& history() {
+        return history_;
     }
     inline size_t frame_id() const {
         return frame_id_;
@@ -48,6 +51,7 @@ public:
 private:
     std::unique_ptr<ITrackElementSequence> sequence_;
     TrackElementExtended track_element_;
+    std::list<TrackElementExtended> history_;
     size_t frame_id_;
     size_t lap_id_;
     size_t nframes_remaining_;

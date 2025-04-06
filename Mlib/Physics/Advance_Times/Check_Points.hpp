@@ -26,6 +26,7 @@ class RenderingResources;
 
 struct CheckPointPose {
     TrackElementExtended track_element;
+    std::list<TrackElementExtended> history;
     size_t lap_index;
     BeaconNode* beacon_node;
 };
