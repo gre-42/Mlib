@@ -45,7 +45,7 @@ DistantTriangleHider::DistantTriangleHider(
 }
 
 void DistantTriangleHider::update_legacy() {
-    return va_.update();
+    va_.update();
 }
 
 void DistantTriangleHider::bind() const {
