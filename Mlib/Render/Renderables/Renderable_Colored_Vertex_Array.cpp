@@ -1277,7 +1277,9 @@ void RenderableColoredVertexArray::render_cva(
                     "Could not render instanced triangles. "
                     "#triangles: " << si.ntriangles() <<
                     ", #instances: " << instances->num_instances() <<
+                    ", name: " << cva->name <<
                     ", material: " << cva->material.identifier() <<
+                    ", physics material: " << physics_material_to_string(cva->morphology.physics_material) <<
                     ", " << e.what()).str());
             }
         } else {
@@ -1288,7 +1290,9 @@ void RenderableColoredVertexArray::render_cva(
                     (std::stringstream() <<
                     "Could not render triangles. "
                     "#triangles: " << si.ntriangles() <<
+                    ", name: " << cva->name <<
                     ", material: " << cva->material.identifier() <<
+                    ", physics material: " << physics_material_to_string(cva->morphology.physics_material) <<
                     ", " << e.what()).str());
             }
         }
