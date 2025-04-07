@@ -17,6 +17,9 @@
 #include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Pssg_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
@@ -61,6 +64,7 @@
 #include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
+#include <Mlib/Render/Resources/Pssg_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
@@ -590,11 +594,14 @@ int main(int argc, char** argv) {
         };
         {
             auto filenames = args.unnamed_values();
-            std::vector<std::string> resource_names;
-            resource_names.reserve(filenames.size());
+            std::list<std::string> resource_names;
+            ColoredVertexArrayFilter cva_filer{
+                .included_names = Mlib::compile_regex(args.named_value("--include", "")),
+                .excluded_names = Mlib::compile_regex(args.named_value("--exclude", "$ ^"))};
+            ColoredVertexArrayFilters cva_filters{{ cva_filer }};
             for (const auto& [i, filename] : enumerate(filenames)) {
-                const auto& name = resource_names.emplace_back("obj-" + std::to_string(i));
                 if (filename.ends_with(".obj")) {
+                    const auto& name = resource_names.emplace_back("obj-" + std::to_string(i));
                     if (!args.has_named("--large_object_mode")) {
                         scene_node_resources.add_resource(name, load_renderable_obj(
                             filename,
@@ -607,6 +614,7 @@ int main(int argc, char** argv) {
                             scene_node_resources));
                     }
                 } else if (filename.ends_with(".kn5") || filename.ends_with(".ini")) {
+                    const auto& name = resource_names.emplace_back("kn5-" + std::to_string(i));
                     if (!args.has_named("--large_object_mode")) {
                         scene_node_resources.add_resource(name, load_renderable_kn5(
                             filename,
@@ -622,13 +630,31 @@ int main(int argc, char** argv) {
                             &RenderingContextStack::primary_rendering_resources(),
                             nullptr)); // race_logic
                     }
+                } else if (filename.ends_with(".pssg")) {
+                    auto& rr = RenderingContextStack::primary_rendering_resources();
+                    auto& sr = RenderingContextStack::primary_scene_node_resources();
+                    auto model = load_pssg(filename, IoVerbosity::SILENT);
+                    std::list<std::string> added_instantiables;
+                    try {
+                        auto arrays = load_pssg_arrays<float, ScenePos>(
+                            model,
+                            cfg<float>(args, light_configuration),
+                            &rr,
+                            std::filesystem::path{ filename }.filename().string() + '#',
+                            IoVerbosity::SILENT);
+                        load_renderable_pssg(arrays, cva_filters, sr, resource_names, added_instantiables);
+                    } catch (const std::runtime_error& e) {
+                        throw std::runtime_error("Error interpreting file \"" + filename + "\": " + e.what());
+                    }
                 } else if (filename.ends_with(".dff")) {
+                    const auto& name = resource_names.emplace_back("dff-" + std::to_string(i));
                     scene_node_resources.add_resource(name, load_renderable_dff(
                         filename,
                         cfg<float>(args, light_configuration),
                         scene_node_resources,
                         DrawDistanceDb{}));
                 } else if (filename.ends_with(".mhx2")) {
+                    const auto& name = resource_names.emplace_back("mhx2-" + std::to_string(i));
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(
                         filename,
                         cfg<float>(args, light_configuration));
@@ -699,7 +725,9 @@ int main(int argc, char** argv) {
                     throw std::runtime_error("File has unknown extension: " + filename);
                 }
             }
-            scene_node_resources.add_resource("objs", std::make_shared<CompoundResource>(scene_node_resources, resource_names));
+            scene_node_resources.add_resource("objs", std::make_shared<CompoundResource>(
+                scene_node_resources,
+                std::vector(resource_names.begin(), resource_names.end())));
             if (args.has_named("--cleanup_mesh")) {
                 add_cleanup_mesh_modifier(
                     "objs",
@@ -741,9 +769,7 @@ int main(int argc, char** argv) {
                                 : PoseInterpolationMode::ENABLED,
                             .renderable_resource_filter = RenderableResourceFilter{
                                 .min_num = safe_stoz(args.named_value("--min_num", "0")),
-                                .cva_filter = {
-                                    .included_names = Mlib::compile_regex(args.named_value("--include", "")),
-                                    .excluded_names = Mlib::compile_regex(args.named_value("--exclude", "$ ^"))}}},
+                                .cva_filter = cva_filer}},
                         PreloadBehavior::NO_PRELOAD);
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {

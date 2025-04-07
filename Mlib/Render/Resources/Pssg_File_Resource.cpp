@@ -17,11 +17,12 @@ void Mlib::load_renderable_pssg(
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables)
 {
-    for (auto&& [n, cva] : arrays.resources) {
+    for (const auto& [n, cva] : arrays.resources) {
         if (filters.matches(*cva)) {
             auto hr = std::make_shared<HeterogeneousResource>(scene_node_resources);
             hr->acvas->cvas<TResourcePos>() = { cva };
             scene_node_resources.add_resource(n, hr);
+            added_scene_node_resources.push_back(n);
         }
     }
     for (const auto& [i, ins] : enumerate(arrays.instances)) {

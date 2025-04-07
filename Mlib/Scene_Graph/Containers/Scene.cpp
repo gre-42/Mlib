@@ -147,7 +147,9 @@ void Scene::add_root_node(
     switch (rendering_strategy) {
     case RenderingStrategies::NONE:
         if (rendering_dynamics != RenderingDynamics::STATIC) {
-            THROW_OR_ABORT("Physics root node must be static");
+            THROW_OR_ABORT(
+                "Physics root node must be static, "
+                "or node accidentally has no renderables");
         }
         add_static_root_physics_node(name, std::move(scene_node));
         return;
