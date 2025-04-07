@@ -18,7 +18,9 @@ RigidBodyPulses::RigidBodyPulses(
     const FixedArray<float, 3>& w,    // angular velocity
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
-    bool I_is_diagonal)
+    bool I_is_diagonal,
+    float vmax,
+    float wmax)
     : mass_{ mass }
     , I_{ I }
     , com_{ com }
@@ -32,6 +34,8 @@ RigidBodyPulses::RigidBodyPulses(
 #ifndef NDEBUG
     , abs_I_rotation_{ fixed_nans<float, 3, 3>() }
 #endif
+    , vmax_{ vmax }
+    , wmax_{ wmax }
 {}
 
 void RigidBodyPulses::advance_time(float dt)
@@ -132,10 +136,22 @@ FixedArray<float, 3> RigidBodyPulses::dot1d_abs_I(const FixedArray<float, 3>& x)
 
 void RigidBodyPulses::integrate_delta_v(const FixedArray<float, 3>& dv) {
     v_ += dv;
+    if (vmax_ != INFINITY) {
+        auto l = std::sqrt(sum(squared(v_)));
+        if (l > vmax_) {
+            v_ *= vmax_ / l;
+        }
+    }
 }
 
 void RigidBodyPulses::integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w) {
     w_ += (1 + extra_w) * solve_abs_I(dL);
+    if (wmax_ != INFINITY) {
+        auto l = std::sqrt(sum(squared(w_)));
+        if (l > wmax_) {
+            w_ *= wmax_ / l;
+        }
+    }
 }
 
 void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w)

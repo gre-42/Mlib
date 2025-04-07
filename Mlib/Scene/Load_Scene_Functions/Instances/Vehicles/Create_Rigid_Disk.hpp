@@ -24,10 +24,11 @@ struct CreateRigidDiskArgs {
     const std::string& asset_id;
     float mass;
     float radius;
-    const FixedArray<float, 3> com;
-    const FixedArray<float, 3> v;
-    const FixedArray<float, 3> w;
-    const FixedArray<float, 3> I_rotation;
+    FixedArray<float, 3> com;
+    FixedArray<float, 3> v;
+    FixedArray<float, 3> w;
+    FixedArray<float, 3> I_rotation;
+    bool with_penetration_limits;
     const TransformationMatrix<double, double, 3>* geographic_coordinates;
     RigidBodyVehicleFlags flags = RigidBodyVehicleFlags::NONE;
     CompressedScenePos waypoint_dy = (CompressedScenePos)0.f;

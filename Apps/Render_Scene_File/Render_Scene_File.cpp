@@ -612,7 +612,7 @@ int main(int argc, char** argv) {
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "4")),
+                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "8")),
                 .enable_ridge_map = args.has_named("--enable_ridge_map")};
 
             SceneConfig scene_config{

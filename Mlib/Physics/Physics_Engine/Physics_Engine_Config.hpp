@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cmath>
@@ -11,6 +12,9 @@ struct PhysicsEngineConfig {
     }
     inline float ncached() const {
         return dt_io / dt_substeps();
+    }
+    inline PenetrationLimits penetration_limits() const {
+        return { dt_substeps(), max_penetration };
     }
 
     float dt = 0.01667f * seconds;
@@ -32,6 +36,7 @@ struct PhysicsEngineConfig {
     bool avoid_burnout = true;
     bool no_slip = false;
     float hand_brake_velocity = 2.f * kph;
+    float max_penetration = 40.f * cm;
 
     // Friction
     // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm

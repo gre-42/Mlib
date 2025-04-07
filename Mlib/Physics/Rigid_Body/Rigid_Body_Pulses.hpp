@@ -24,7 +24,9 @@ public:
         const FixedArray<float, 3>& w,      // angular velocity
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
-        bool I_is_diagonal);
+        bool I_is_diagonal,
+        float vmax,
+        float wmax);
 
     FixedArray<float, 3> abs_z() const;
     FixedArray<ScenePos, 3> abs_position() const;
@@ -61,6 +63,8 @@ private:
 #ifndef NDEBUG
     mutable FixedArray<float, 3, 3> abs_I_rotation_;
 #endif
+    float vmax_;
+    float wmax_;
 };
 
 }

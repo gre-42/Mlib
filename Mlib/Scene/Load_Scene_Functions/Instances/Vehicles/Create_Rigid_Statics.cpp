@@ -56,6 +56,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         fixed_zeros<float, 3>() * degrees,  // I_rotation
+        nullptr,                            // pl
         scene_node_resources.get_geographic_mapping("world"));
     rb->set_absolute_model_matrix(absolute_model_matrix);
 

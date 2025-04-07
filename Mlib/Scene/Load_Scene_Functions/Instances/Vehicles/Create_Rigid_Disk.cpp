@@ -33,6 +33,7 @@ DECLARE_ARGUMENT(com);
 DECLARE_ARGUMENT(v);
 DECLARE_ARGUMENT(w);
 DECLARE_ARGUMENT(I_rotation);
+DECLARE_ARGUMENT(with_penetration_limits);
 DECLARE_ARGUMENT(collidable_mode);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(asset_id);
@@ -59,6 +60,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args) const
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::I_rotation, fixed_zeros<float, 3>()) * degrees,
+        args.arguments.at<bool>(KnownArgs::with_penetration_limits, false),
         scene_node_resources.get_geographic_mapping("world"),
         rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags, "none")),
         CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::waypoint_dy, 0.f) * meters),
@@ -72,6 +74,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args) const
 
 RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args) const
 {
+    auto pl = physics_engine.config().penetration_limits();
     auto rb = rigid_disk(
         global_object_pool,
         args.name,
@@ -82,6 +85,7 @@ RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args)
         args.v,
         args.w,
         args.I_rotation,
+        args.with_penetration_limits ? &pl : nullptr,
         args.geographic_coordinates);
     rb->flags_ = args.flags;
     rb->set_waypoint_ofs(args.waypoint_dy);
