@@ -1,5 +1,6 @@
 #include "Renderable_Colored_Vertex_Array.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
@@ -1270,6 +1271,7 @@ void RenderableColoredVertexArray::render_cva(
         if (has_instances) {
             try {
                 notify_rendering(CURRENT_SOURCE_LOCATION);
+                TemporarilyIgnoreFloatingPointExeptions ignore_except;
                 CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles()), instances->num_instances()));
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error(
@@ -1284,6 +1286,8 @@ void RenderableColoredVertexArray::render_cva(
             }
         } else {
             try {
+                notify_rendering(CURRENT_SOURCE_LOCATION);
+                TemporarilyIgnoreFloatingPointExeptions ignore_except;
                 CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles())));
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error(
