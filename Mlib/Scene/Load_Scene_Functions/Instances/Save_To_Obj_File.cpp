@@ -1,6 +1,7 @@
 #include "Save_To_Obj_File.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -20,20 +21,27 @@ const std::string SaveToObjFile::key = "save_to_obj_file";
 LoadSceneJsonUserFunction SaveToObjFile::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SaveToObjFile(args.renderable_scene()).execute(args);
+    auto node = args.arguments.try_at<std::string>(KnownArgs::node);
+    if (node.has_value()) {
+        SaveToObjFile(args.renderable_scene()).execute(args);
+    } else {
+        auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
+        scene_node_resources.save_to_obj_file(
+            args.arguments.at<std::string>(KnownArgs::resource),
+            args.arguments.at<std::string>(KnownArgs::prefix),
+            nullptr);
+    }
 };
 
 SaveToObjFile::SaveToObjFile(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void SaveToObjFile::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node = args.arguments.try_at<std::string>(KnownArgs::node);
+    auto node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     scene_node_resources.save_to_obj_file(
         args.arguments.at<std::string>(KnownArgs::resource),
         args.arguments.at<std::string>(KnownArgs::prefix),
-        node.has_value()
-            ? rvalue_address(scene.get_node(*node, DP_LOC)->absolute_model_matrix())
-            : nullptr);
+        rvalue_address(node->absolute_model_matrix()));
 }
