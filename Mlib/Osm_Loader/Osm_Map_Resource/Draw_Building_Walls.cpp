@@ -8,6 +8,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Colors.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
@@ -60,7 +61,8 @@ void Mlib::draw_building_walls(
             const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
-                morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
+                morphology + bl.facade_texture_descriptor.material + BASE_VISIBLE_TERRAIN_MATERIAL));
+            tl->material.shading = material_shading(bl.facade_texture_descriptor.material);
             FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
             FixedArray<float, 3> top_height_color = height_colors(bl.top);
             float bottom_ambient_occlusion;

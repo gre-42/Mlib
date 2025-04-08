@@ -22,6 +22,7 @@ Shading Mlib::material_shading(PhysicsMaterial material) {
         {PhysicsMaterial::SURFACE_BASE_DIRT, { .specular = 0.f, .fresnel = f1 }},
         {PhysicsMaterial::SURFACE_BASE_STONE, { .specular = 0.f, .fresnel = f2 }},
         {PhysicsMaterial::SURFACE_BASE_FOLIAGE, { .specular = 0.f, .fresnel = f4 }},
+        {PhysicsMaterial::SURFACE_BASE_GLASS, { .specular = 0.f, .reflectance = 0.7f, .fresnel = f5 }},
 
         {PhysicsMaterial::SURFACE_BASE_TARMAC | PhysicsMaterial::SURFACE_WET, { .specular = 0.f, .reflectance = 1.f, .fresnel = f5 }},
         {PhysicsMaterial::SURFACE_BASE_DIRT | PhysicsMaterial::SURFACE_WET, { .specular = 0.f, .reflectance = 1.f, .fresnel = f5 }},

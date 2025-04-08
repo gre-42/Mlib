@@ -970,19 +970,17 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     {
-        bool pred0 = has_lookat || (any(specular != 0.f) && (specular_exponent != 0.f)) || any(reflectance != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
-        bool pred1 = (fresnel.exponent != 0.f);
-        bool pred2 = (fog_distances != default_step_distances);
-        bool pred3 = any(reflectance != 0.f);
-        if (pred0 || pred1 || pred2 || pred3 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
+        bool pred0 = has_lookat || (any(specular != 0.f) && (specular_exponent != 0.f)) || any(reflectance != 0.f) || (fragments_depend_on_distance && !vc.orthographic()) || (fresnel.exponent != 0.f);
+        bool pred1 = (fog_distances != default_step_distances);
+        if (pred0 || pred1 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;
-            if ((pred0 || pred1 || pred2 || reorient_uv0 || reorient_normals) && ortho) {
+            if ((pred0 || pred1 || reorient_uv0 || reorient_normals) && ortho) {
                 auto d = z3_from_3x3(miv.R);
                 d /= std::sqrt(sum(squared(d)));
                 CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
             }
-            if (((pred0 || pred1 || pred3) && !ortho) || (tic.ntextures_interior != 0) || pred2) {
+            if ((pred0 && !ortho) || (tic.ntextures_interior != 0) || pred1) {
                 CHK(glUniform3fv(rp.view_pos, 1, miv.t.casted<float>().flat_begin()));
             }
         }

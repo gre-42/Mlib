@@ -2329,8 +2329,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         }
         {
-            bool pred0 = id.has_lookat || (!id.specular.all_equal(0) && (id.specular_exponent != 0.f)) || (id.fragments_depend_on_distance && !id.orthographic);
-            bool pred1 = (id.fresnel.exponent != 0.f);
+            bool pred0 = id.has_lookat || (!id.specular.all_equal(0) && (id.specular_exponent != 0.f)) || !id.reflectance.all_equal(0.f) || (id.fragments_depend_on_distance && !id.orthographic) || (id.fresnel.exponent != 0.f);
+            bool pred1 = (id.fog_distances != default_step_distances);
             if (pred0 || pred1 || id.reorient_uv0 || id.reorient_normals || (id.ntextures_interior != 0)) {
                 if (((pred0 || pred1 || id.reorient_uv0 || id.reorient_normals) && id.orthographic)) {
                     rp->view_dir = rp->get_uniform_location("viewDir");
@@ -2338,7 +2338,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 } else {
                     rp->view_dir = 0;
                 }
-                if (((pred0 || pred1) && !id.orthographic) || (id.ntextures_interior != 0)) {
+                if ((pred0 && !id.orthographic) || (id.ntextures_interior != 0) || pred1) {
                     rp->view_pos = rp->get_uniform_location("viewPos");
                 } else {
                     rp->view_pos = 0;

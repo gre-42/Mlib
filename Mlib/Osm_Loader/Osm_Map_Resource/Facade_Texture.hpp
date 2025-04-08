@@ -1,15 +1,18 @@
 #pragma once
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <cmath>
+#include <cstdint>
 #include <string>
 #include <vector>
 
 namespace Mlib {
 
 class JsonMacroArguments;
+enum class PhysicsMaterial: uint32_t;
 
 struct FacadeTextureDescriptor {
     std::vector<VariableAndHash<std::string>> names;
+    PhysicsMaterial material;
     InteriorTextures interior_textures;
 };
 

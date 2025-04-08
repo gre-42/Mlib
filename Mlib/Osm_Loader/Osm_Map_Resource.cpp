@@ -689,9 +689,9 @@ OsmMapResource::OsmMapResource(
             nullptr,            // Steiner points not required due to existence of ground triangles.
             displacements,
             Material{
+                .reflection_map = config.window_reflection_map,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
-                .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                 .draw_distance_noperations = 1000},
             get_building_morphology[BuildingDetailType::COMBINED],
             buildings,

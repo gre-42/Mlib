@@ -70,6 +70,7 @@ struct OsmResourceConfig {
     std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_mud_textures;
     std::map<RoadType, VariableAndHash<std::string>> street_reflection_map;
     std::map<TerrainType, VariableAndHash<std::string>> terrain_reflection_map;
+    VariableAndHash<std::string> window_reflection_map;
     std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_alpha_textures;
     std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_mud_alpha_textures;
     std::map<RoadProperties, RoadStyle> street_texture;

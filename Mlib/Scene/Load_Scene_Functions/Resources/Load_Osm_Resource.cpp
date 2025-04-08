@@ -62,6 +62,7 @@ DECLARE_ARGUMENT(terrain_water_floor_textures);
 DECLARE_ARGUMENT(terrain_water_floor_base_textures);
 DECLARE_ARGUMENT(terrain_stone_reflection_map);
 DECLARE_ARGUMENT(terrain_asphalt_reflection_map);
+DECLARE_ARGUMENT(window_reflection_map);
 DECLARE_ARGUMENT(stone_dirt_texture);
 DECLARE_ARGUMENT(grass_dirt_texture);
 DECLARE_ARGUMENT(flowers_dirt_texture);
@@ -474,6 +475,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::terrain_asphalt_reflection_map)) {
             config.terrain_reflection_map[TerrainType::ASPHALT] = args.arguments.at<std::string>(KnownArgs::terrain_asphalt_reflection_map);
+        }
+        if (args.arguments.contains(KnownArgs::window_reflection_map)) {
+            config.window_reflection_map = args.arguments.at<std::string>(KnownArgs::window_reflection_map);
         }
         if (args.arguments.contains(KnownArgs::stone_dirt_texture)) {
             config.terrain_dirt_textures[TerrainType::STONE] = args.arguments.path_or_variable(KnownArgs::stone_dirt_texture).path;

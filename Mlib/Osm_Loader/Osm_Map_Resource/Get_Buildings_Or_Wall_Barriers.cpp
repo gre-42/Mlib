@@ -165,6 +165,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             if (socle_textures.empty()) {
                 THROW_OR_ABORT("Socle textures empty");
             }
+            const auto& st = socle_textures.at(bid % socle_textures.size());
             add_level(
                 BuildingLevel{
                     .top = previous_height + socle_height,
@@ -172,7 +173,8 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     .extra_width = 0.f,
                     .type = BuildingLevelType::SOCLE,
                     .facade_texture_descriptor = FacadeTextureDescriptor{
-                        .names = socle_textures.at(bid % socle_textures.size()).textures
+                        .names = st.textures,
+                        .material = st.material
                     }});
         }
         if (any(vertical_subdivision & VerticalSubdivision::ANY_ENTRANCES)) {

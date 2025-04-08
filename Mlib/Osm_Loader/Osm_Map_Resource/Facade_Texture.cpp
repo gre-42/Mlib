@@ -1,5 +1,6 @@
 #include "Facade_Texture.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -11,6 +12,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(selector);
 DECLARE_ARGUMENT(facade);
+DECLARE_ARGUMENT(material);
 DECLARE_ARGUMENT(min_height);
 DECLARE_ARGUMENT(max_height);
 DECLARE_ARGUMENT(interior);
@@ -51,5 +53,6 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
         .max_height = args.at<float>(KnownArgs::max_height, INFINITY),
         .descriptor = FacadeTextureDescriptor{
             .names = args.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::facade),
+            .material = physics_material_from_string(args.at<std::string>(KnownArgs::material)),
             .interior_textures = std::move(itx)}};
 }
