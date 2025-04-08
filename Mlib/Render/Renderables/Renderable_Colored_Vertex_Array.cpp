@@ -659,17 +659,15 @@ void RenderableColoredVertexArray::render_cva(
     tic.ntextures_filtered_skidmarks = filtered_skidmarks.size();
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
-    if (is_lightmap || cva->material.textures_color.empty() || filtered_lights.empty() || all(specular == 0.f)) {
+    if (is_lightmap || cva->material.textures_color.empty() || filtered_lights.empty() || (all(specular == 0.f) && all(reflectance == 0.f))) {
         tic.ntextures_specular = 0;
-    } else if (cva->material.textures_color.size() == 1) {
-        tic.ntextures_specular = !cva->material.textures_color[0].texture_descriptor.specular.filename->empty();
     } else {
-        for (const auto& t : cva->material.textures_color) {
-            if (!t.texture_descriptor.specular.filename->empty()) {
-                THROW_OR_ABORT("Specular maps not supported for blended textures");
+        for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
+            if ((i != 0) && !t.texture_descriptor.specular.filename->empty()) {
+                THROW_OR_ABORT("Only the first texture can have a specularmap");
             }
         }
-        tic.ntextures_specular = 0;
+        tic.ntextures_specular = !cva->material.textures_color[0].texture_descriptor.specular.filename->empty();
     }
     tic.ntextures_reflection = (size_t)(!is_lightmap && (reflection_map != nullptr) && !(*reflection_map)->empty());
     tic.ntextures_dirt = ((!cva->material.dirt_texture->empty()) && !is_lightmap && !filtered_lights.empty()) ? 2 : 0;
@@ -1211,7 +1209,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     if (tic.ntextures_specular != 0) {
         assert_true(tic.ntextures_specular == 1);
-        assert_true(cva->material.textures_color.size() == 1);
+        assert_true(!cva->material.textures_color.empty());
         const auto& desc = cva->material.textures_color[0].texture_descriptor;
         assert_true(!desc.specular.filename->empty());
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_specular())));
