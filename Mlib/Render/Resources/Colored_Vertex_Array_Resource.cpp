@@ -708,6 +708,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_lightmap_depth,
     bool has_specularmap,
     bool has_normalmap,
+    bool has_reflection_map,
     bool has_dynamic_emissive,
     size_t nbillboard_ids,
     const OrderableFixedArray<float, 3>& reflectance,
@@ -839,7 +840,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_normalmap) {
         sstr << "uniform sampler2D texture_normalmap[" << ntextures_normal << "];" << std::endl;
     }
-    if (!reflectance.all_equal(0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
+    if (has_reflection_map) {
         sstr << "uniform samplerCube texture_reflection;" << std::endl;
     }
     if (has_dirtmap) {
@@ -1003,6 +1004,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color = texture(texture_interior[2 * best_axis + int(best_sign)], best_uv);" << std::endl;
 #endif
         if (any(interior_texture_set & InteriorTextureSet::BACK_SPECULAR)) {
+            if (!has_reflection_map) {
+                THROW_OR_ABORT("Back specular texture requires reflection map");
+            }
             size_t i = index(interior_texture_set, InteriorTextureSet::BACK_SPECULAR);
             sstr << "    if (best_axis == 2) {" << std::endl;
             sstr << "        vec3 frag_specular = texture(texture_interior[" << i << "], best_uv).rgb;" << std::endl;
@@ -1012,6 +1016,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    }" << std::endl;
         }
         if (any(interior_texture_set & InteriorTextureSet::FRONT_SPECULAR)) {
+            if (!has_reflection_map) {
+                THROW_OR_ABORT("Front specular texture requires reflection map");
+            }
             size_t s = index(interior_texture_set, InteriorTextureSet::FRONT_SPECULAR);
             sstr << "    {" << std::endl;
             sstr << "        vec2 uv = (rel_frag_pos - bottom) / interior_size.xy;" << std::endl;
@@ -2161,6 +2168,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         !id.lightmap_indices_depth.empty(),
         id.has_specularmap,
         id.ntextures_normal != 0,
+        id.ntextures_reflection != 0,
         id.has_dynamic_emissive,
         id.nbillboard_ids,
         id.reflectance,

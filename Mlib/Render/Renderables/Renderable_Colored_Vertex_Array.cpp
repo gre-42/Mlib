@@ -63,7 +63,7 @@ static const auto dirtmap_name = VariableAndHash<std::string>{ "dirtmap" };
 struct TextureIndexCalculator {
     size_t ntextures_color;
     size_t ntextures_alpha;
-    size_t ntextures_filtered_lights;
+    size_t ntextures_lightmaps;
     size_t ntextures_filtered_skidmarks;
     size_t ntextures_normal;
     size_t ntextures_dirt;
@@ -80,7 +80,7 @@ struct TextureIndexCalculator {
         return id_alpha_(i);
     }
     size_t id_light(size_t i) const {
-        assert_true(i < ntextures_filtered_lights);
+        assert_true(i < ntextures_lightmaps);
         return id_light_(i);
     }
     size_t id_skidmark(size_t i) const {
@@ -118,7 +118,7 @@ struct TextureIndexCalculator {
         return id_alpha_(0) + ntextures_alpha + i;
     }
     size_t id_skidmark_(size_t i) const {
-        return id_light_(0) + ntextures_filtered_lights + i;
+        return id_light_(0) + ntextures_lightmaps + i;
     }
     size_t id_normal_(size_t i) const {
         return id_skidmark_(0) + ntextures_filtered_skidmarks + i;
@@ -136,6 +136,19 @@ struct TextureIndexCalculator {
         return id_interior_(0) + ntextures_interior;
     }
 };
+
+std::ostream& operator << (std::ostream& ostr, const TextureIndexCalculator& tic) {
+    ostr << "ntextures_color: " << tic.ntextures_color << '\n';
+    ostr << "ntextures_alpha: " << tic.ntextures_alpha << '\n';
+    ostr << "ntextures_lightmaps: " << tic.ntextures_lightmaps << '\n';
+    ostr << "ntextures_filtered_skidmarks: " << tic.ntextures_filtered_skidmarks << '\n';
+    ostr << "ntextures_normal: " << tic.ntextures_normal << '\n';
+    ostr << "ntextures_dirt: " << tic.ntextures_dirt << '\n';
+    ostr << "ntextures_interior: " << tic.ntextures_interior << '\n';
+    ostr << "ntextures_reflection: " << tic.ntextures_reflection << '\n';
+    ostr << "ntextures_specular: " << tic.ntextures_specular << '\n';
+    return ostr;
+}
 
 static const int CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED = INT_MAX;
 static const int CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING = INT_MIN;
@@ -657,10 +670,11 @@ void RenderableColoredVertexArray::render_cva(
     bool has_horizontal_detailmap = false;
     has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_color, texture_ids_color);
     has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_alpha, texture_ids_alpha);
-    tic.ntextures_filtered_lights = filtered_lights.size();
-    tic.ntextures_filtered_skidmarks = filtered_skidmarks.size();
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
+    assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
+    tic.ntextures_lightmaps = lightmap_indices_color.size() + lightmap_indices_depth.size();
+    tic.ntextures_filtered_skidmarks = filtered_skidmarks.size();
     if (is_lightmap || cva->material.textures_color.empty() || filtered_lights.empty() || (all(specular == 0.f) && all(reflectance == 0.f))) {
         tic.ntextures_specular = 0;
     } else {
@@ -905,13 +919,13 @@ void RenderableColoredVertexArray::render_cva(
     }
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
     if (!lightmap_indices_color.empty()) {
-        for (size_t i : lightmap_indices) {
-            CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), (GLint)tic.id_light(i)));
+        for (auto [i, l] : enumerate(lightmap_indices_color)) {
+            CHK(glUniform1i(rp.texture_lightmap_color_locations.at(l), (GLint)tic.id_light(i)));
         }
     }
     if (!lightmap_indices_depth.empty()) {
-        for (size_t i : lightmap_indices) {
-            CHK(glUniform1i(rp.texture_lightmap_depth_locations.at(i), (GLint)tic.id_light(i)));
+        for (auto [i, l] : enumerate(lightmap_indices_depth)) {
+            CHK(glUniform1i(rp.texture_lightmap_depth_locations.at(l), (GLint)tic.id_light(i)));
         }
     }
     for (size_t i = 0; i < tic.ntextures_normal; ++i) {
@@ -1079,8 +1093,8 @@ void RenderableColoredVertexArray::render_cva(
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light color textures");
     if (!lightmap_indices_color.empty()) {
-        for (size_t i : lightmap_indices) {
-            const auto& light = *filtered_lights.at(i).second;
+        for (auto [i, l] : enumerate(lightmap_indices)) {
+            const auto& light = *filtered_lights.at(l).second;
             if (!light.vp.has_value()) {
                 THROW_OR_ABORT("Lightmap has no VP");
             }
@@ -1088,7 +1102,7 @@ void RenderableColoredVertexArray::render_cva(
                 THROW_OR_ABORT("Lightmap has no color texture");
             }
             auto mvp_light = dot2d(*light.vp, m.affine());
-            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
+            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(l), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, light.lightmap_color->handle<GLuint>()));
@@ -1096,7 +1110,7 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-            auto border_brightness = (float)!any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
+            auto border_brightness = (float)!any(filtered_lights.at(l).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
             float border_color[] = { border_brightness, border_brightness, border_brightness, 1.f };
             CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color));
             CHK(glActiveTexture(GL_TEXTURE0));
@@ -1104,8 +1118,8 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light depth textures");
     if (!lightmap_indices_depth.empty()) {
-        for (size_t i : lightmap_indices) {
-            const auto& light = *filtered_lights.at(i).second;
+        for (auto [i, l] : enumerate(lightmap_indices)) {
+            const auto& light = *filtered_lights.at(l).second;
             if (!light.vp.has_value()) {
                 THROW_OR_ABORT("Lightmap has no VP");
             }
@@ -1113,7 +1127,7 @@ void RenderableColoredVertexArray::render_cva(
                 THROW_OR_ABORT("Lightmap has no depth texture");
             }
             auto mvp_light = dot2d(*light.vp, m.affine());
-            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
+            CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(l), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, light.lightmap_depth->handle<GLuint>()));
