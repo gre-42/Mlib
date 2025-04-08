@@ -680,6 +680,7 @@ void RenderableColoredVertexArray::render_cva(
     } else {
         tic.ntextures_interior = cva->material.interior_textures.size();
         interior_texture_set = cva->material.interior_textures.set;
+        assert_true(size(interior_texture_set) == tic.ntextures_interior);
     }
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
