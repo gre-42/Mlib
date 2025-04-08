@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
+#include <Mlib/Geometry/Material/Interior_Texture_Set.hpp>
 #include <Mlib/Geometry/Material_Features.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -619,7 +620,8 @@ void RenderableColoredVertexArray::render_cva(
     FixedArray<float, 3> reflectance{ 0.f };
     if (!is_lightmap &&
         !cva->material.reflection_map->empty() &&
-        !cva->material.shading.reflectance.all_equal(0.f))
+        (!cva->material.shading.reflectance.all_equal(0.f) ||
+            any(cva->material.interior_textures.set & InteriorTextureSet::ANY_SPECULAR)))
     {
         if (color_style == nullptr) {
             THROW_OR_ABORT("cva \"" + cva->name.full_name() + "\": Material with reflection map \"" + *cva->material.reflection_map + "\" has no style");
@@ -635,8 +637,8 @@ void RenderableColoredVertexArray::render_cva(
         if (!it->second->empty()) {
             reflection_map = &it->second;
             reflectance = cva->material.shading.reflectance * color_style->reflection_strength;
-            if (any(reflectance <= 0.f)) {
-                THROW_OR_ABORT("Reflectance must be positive");
+            if (any(reflectance <= 0.f) && !any(cva->material.interior_textures.set & InteriorTextureSet::ANY_SPECULAR)) {
+                THROW_OR_ABORT("Reflectance is not positive, and no specular interior textures were specified");
             }
         }
     }
@@ -671,7 +673,14 @@ void RenderableColoredVertexArray::render_cva(
     }
     tic.ntextures_reflection = (size_t)(!is_lightmap && (reflection_map != nullptr) && !(*reflection_map)->empty());
     tic.ntextures_dirt = ((!cva->material.dirt_texture->empty()) && !is_lightmap && !filtered_lights.empty()) ? 2 : 0;
-    tic.ntextures_interior = (!cva->material.interior_textures.empty()) && !is_lightmap ? INTERIOR_COUNT : 0;
+    InteriorTextureSet interior_texture_set;
+    if (is_lightmap) {
+        tic.ntextures_interior = 0;
+        interior_texture_set = InteriorTextureSet::NONE;
+    } else {
+        tic.ntextures_interior = cva->material.interior_textures.size();
+        interior_texture_set = cva->material.interior_textures.set;
+    }
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
@@ -772,7 +781,7 @@ void RenderableColoredVertexArray::render_cva(
             .reflect_only_y = cva->material.reflect_only_y,
             .ntextures_reflection = tic.ntextures_reflection,
             .ntextures_dirt = tic.ntextures_dirt,
-            .ntextures_interior = tic.ntextures_interior,
+            .interior_texture_set = interior_texture_set,
             .facade_inner_size = cva->material.interior_textures.facade_inner_size,
             .interior_size = cva->material.interior_textures.interior_size,
             .nuv_indices = is_lightmap ? 1 : (cva->uv1.size() + 1),
@@ -917,10 +926,8 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform1i(rp.texture_dirtmap_location, (GLint)tic.id_dirt(0)));
         CHK(glUniform1i(rp.texture_dirt_location, (GLint)tic.id_dirt(1)));
     }
-    if (tic.ntextures_interior != 0) {
-        for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
-            CHK(glUniform1i(rp.texture_interiormap_location(i), (GLint)tic.id_interior(i)));
-        }
+    for (size_t i = 0; i < tic.ntextures_interior; ++i) {
+        CHK(glUniform1i(rp.texture_interiormap_location(i), (GLint)tic.id_interior(i)));
     }
     if (tic.ntextures_specular != 0) {
         CHK(glUniform1i(rp.texture_specularmap_location, (GLint)tic.id_specular()));
@@ -968,7 +975,13 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     {
-        bool pred0 = has_lookat || (any(specular != 0.f) && (specular_exponent != 0.f)) || any(reflectance != 0.f) || (fragments_depend_on_distance && !vc.orthographic()) || (fresnel.exponent != 0.f);
+        bool pred0 =
+            has_lookat ||
+            (any(specular != 0.f) && (specular_exponent != 0.f)) ||
+            any(reflectance != 0.f) ||
+            any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR) ||
+            (fragments_depend_on_distance && !vc.orthographic()) ||
+            (fresnel.exponent != 0.f);
         bool pred1 = (fog_distances != default_step_distances);
         if (pred0 || pred1 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
@@ -983,7 +996,7 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
-    if (any(reflectance != 0.f)) {
+    if (any(reflectance != 0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
         CHK(glUniformMatrix3fv(rp.r_location, 1, GL_TRUE, m.R.T().flat_begin()));
     }
     if (!rcva_->triangles_res_->bone_indices.empty()) {
@@ -1192,20 +1205,18 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(WrapMode::REPEAT)));
         CHK(glActiveTexture(GL_TEXTURE0));
     }
-    if (tic.ntextures_interior != 0) {
-        for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
-            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_interior(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(ColormapWithModifiers{
-                    .filename = cva->material.interior_textures[i],
-                    .color_mode = ColorMode::RGB,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
-                TextureRole::COLOR_FROM_DB)->handle<GLuint>()));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-            CHK(glActiveTexture(GL_TEXTURE0));
-        }
+    for (size_t i = 0; i < tic.ntextures_interior; ++i) {
+        CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_interior(i))));
+        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(ColormapWithModifiers{
+                .filename = cva->material.interior_textures[i],
+                .color_mode = ColorMode::RGB,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
+            TextureRole::COLOR_FROM_DB)->handle<GLuint>()));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        CHK(glActiveTexture(GL_TEXTURE0));
     }
     if (tic.ntextures_specular != 0) {
         assert_true(tic.ntextures_specular == 1);

@@ -35,7 +35,7 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> texture_skidmark_locations;
     GLint texture_reflection_location;
     GLint texture_dirtmap_location;
-    FixedArray<GLint, INTERIOR_COUNT> texture_interiormap_location = uninitialized;
+    FixedArray<GLint, INTERIOR_COUNT_MAX> texture_interiormap_location = uninitialized;
     GLint texture_specularmap_location;
     GLint texture_dirt_location;
     GLint uv_offset_u_location;
@@ -67,7 +67,7 @@ struct RenderProgramIdentifier {
     bool reflect_only_y;
     size_t ntextures_reflection;
     size_t ntextures_dirt;
-    size_t ntextures_interior;
+    InteriorTextureSet interior_texture_set;
     OrderableFixedArray<float, 2> facade_inner_size;
     OrderableFixedArray<float, 3> interior_size;
     size_t nuv_indices;

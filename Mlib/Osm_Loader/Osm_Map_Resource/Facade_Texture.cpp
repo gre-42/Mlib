@@ -28,6 +28,10 @@ DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(floor);
 DECLARE_ARGUMENT(ceiling);
 DECLARE_ARGUMENT(back);
+DECLARE_ARGUMENT(back_specular);
+DECLARE_ARGUMENT(front_color);
+DECLARE_ARGUMENT(front_alpha);
+DECLARE_ARGUMENT(front_specular);
 }
 
 FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
@@ -41,11 +45,16 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
         itx.facade_edge_size = i.at<UOrderableFixedArray<float, 2>>(InteriorArgs::facade_edge_size);
         itx.facade_inner_size = i.at<UOrderableFixedArray<float, 2>>(InteriorArgs::facade_inner_size);
         itx.interior_size = i.at<UOrderableFixedArray<float, 3>>(InteriorArgs::interior_size);
-        itx.left = i.at<std::string>(InteriorArgs::left);
-        itx.right = i.at<std::string>(InteriorArgs::right);
-        itx.floor = i.at<std::string>(InteriorArgs::floor);
-        itx.ceiling = i.at<std::string>(InteriorArgs::ceiling);
-        itx.back = i.at<std::string>(InteriorArgs::back);
+        itx.assign(
+            i.at<VariableAndHash<std::string>>(InteriorArgs::left),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::right),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::floor),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::ceiling),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::back),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::back_specular, VariableAndHash<std::string>{}),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::front_color, VariableAndHash<std::string>{}),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::front_alpha, VariableAndHash<std::string>{}),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::front_specular, VariableAndHash<std::string>{}));
     }
     return FacadeTexture{
         .selector = args.at<std::string>(KnownArgs::selector, ""),

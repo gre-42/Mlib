@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
+#include <Mlib/Geometry/Material/Interior_Texture_Set.hpp>
 #include <Mlib/Geometry/Material_Features.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
@@ -714,7 +715,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_dirtmap,
     bool has_continuous_texture_layer_color,
     bool has_discrete_texture_layer_color,
-    bool has_interiormap,
+    InteriorTextureSet interior_texture_set,
     const OrderableFixedArray<float, 2>& facade_inner_size,
     const OrderableFixedArray<float, 3>& interior_size,
     bool has_horizontal_detailmap,
@@ -786,7 +787,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_alpha || ((nbillboard_ids != 0) && !orthographic)) {
         sstr << "in float alpha_fac_v;" << std::endl;
     }
-    if (!reflectance.all_equal(0.f)) {
+    if (!reflectance.all_equal(0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (ntextures_color != 0) {
@@ -831,14 +832,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!skidmarks.empty()) {
         sstr << "uniform sampler2D texture_skidmarks[" << skidmarks.size() << "];" << std::endl;
     }
-    if (has_normalmap || has_interiormap) {
+    if (has_normalmap || any(interior_texture_set)) {
         sstr << "in vec3 tangent;" << std::endl;
         sstr << "in vec3 bitangent;" << std::endl;
     }
     if (has_normalmap) {
         sstr << "uniform sampler2D texture_normalmap[" << ntextures_normal << "];" << std::endl;
     }
-    if (!reflectance.all_equal(0.f)) {
+    if (!reflectance.all_equal(0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
         sstr << "uniform samplerCube texture_reflection;" << std::endl;
     }
     if (has_dirtmap) {
@@ -853,10 +854,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_discrete_texture_layer_color) {
         sstr << "flat in lowp uint texture_layer_fs;" << std::endl;
     }
-    if (has_interiormap) {
+    if (any(interior_texture_set)) {
         sstr << "in vec3 interior_bottom_left_fs;" << std::endl;
         sstr << "in vec4 interior_uvmap_fs;" << std::endl;
-        sstr << "uniform sampler2D texture_interior[" << INTERIOR_COUNT << "];" << std::endl;
+        sstr << "uniform sampler2D texture_interior[" << size(interior_texture_set) << "];" << std::endl;
     }
     if (has_specularmap) {
         sstr << "uniform sampler2D texture_specularmap;" << std::endl;
@@ -865,7 +866,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         (!specular.all_equal(0) && specular_exponent != 0.f) ||
         (fresnel.exponent != 0.f) ||
         (!reflectance.all_equal(0.f) && !reflect_only_y) ||
-        has_interiormap ||
+        any(interior_texture_set) ||
         fragments_depend_on_normal)
     {
         sstr << "in vec3 Normal;" << std::endl;
@@ -889,13 +890,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         bool pred0 = (!specular.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
         bool pred1 = (fresnel.exponent != 0.f);
         bool pred2 = (fog_distances != default_step_distances);
-        bool pred3 = !reflectance.all_equal(0.f);
-        if (pred0 || pred1 || pred2 || pred3 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
+        bool pred3 = !reflectance.all_equal(0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR);
+        if (pred0 || pred1 || pred2 || pred3 || reorient_uv0 || any(interior_texture_set) || has_horizontal_detailmap || reorient_normals) {
             sstr << "in highp vec3 FragPos;" << std::endl;
             if ((pred0 || pred1 || pred2 || reorient_uv0 || reorient_normals) && orthographic) {
                 sstr << "uniform vec3 viewDir;" << std::endl;
             }
-            if (((pred0 || pred1 || pred3) && !orthographic) || has_interiormap || pred2) {
+            if (((pred0 || pred1 || pred3) && !orthographic) || any(interior_texture_set) || pred2) {
                 sstr << "uniform highp vec3 viewPos;" << std::endl;
             }
         }
@@ -925,8 +926,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "}" << std::endl;
         }
     }
-    if (has_interiormap) {
+    if (any(interior_texture_set)) {
         sstr << "bool is_in_interior(mat3 TBN, float alpha_fac) {" << std::endl;
+        if (!orthographic) {
+            sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
+        }
         sstr << "    if ((interior_uvmap_fs.y == 0.0) || (interior_uvmap_fs.w == 0.0)) {" << std::endl;
         sstr << "        return false;" << std::endl;
         sstr << "    }" << std::endl;
@@ -992,12 +996,21 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    }" << std::endl;
 #ifdef __ANDROID__
         sstr << "    int idx = 2 * best_axis + int(best_sign);";
-        for (size_t i = 0; i < 5; ++i) {
+        for (size_t i = 0; i < INTERIOR_COUNT_COLORS; ++i) {
             sstr << "    if (idx == " << i << ") frag_color = texture(texture_interior[" << i << "], best_uv);" << std::endl;
         }
 #else
         sstr << "    frag_color = texture(texture_interior[2 * best_axis + int(best_sign)], best_uv);" << std::endl;
 #endif
+        if (any(interior_texture_set & InteriorTextureSet::BACK_SPECULAR)) {
+            size_t i = index(interior_texture_set, InteriorTextureSet::BACK_SPECULAR);
+            sstr << "    if (best_axis == 2) {" << std::endl;
+            sstr << "        vec3 frag_specular = texture(texture_interior[" << i << "], best_uv).rgb;" << std::endl;
+            sstr << "        vec3 reflectedDir = R * reflect(-viewDir, TBN[2]);" << std::endl;
+            sstr << "        vec3 reflectedColor = texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
+            sstr << "        frag_color.rgb = mix(frag_color.rgb, reflectedColor, frag_specular);" << std::endl;
+            sstr << "    }" << std::endl;
+        }
         sstr << "    frag_color.a *= alpha_fac;" << std::endl;
         sstr << "    return true;" << std::endl;
         sstr << "}" << std::endl;
@@ -1006,7 +1019,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!diffuse.all_equal(0) ||
             (!specular.all_equal(0) && (specular_exponent != 0.f)) ||
             (fresnel.exponent != 0.f) ||
-            has_interiormap ||
+            any(interior_texture_set) ||
             fragments_depend_on_normal ||
             (!reflectance.all_equal(0.f) && !reflect_only_y))
         {
@@ -1104,7 +1117,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (alpha != 1.f) {
         sstr << "    alpha_fac *= " << alpha << ';' << std::endl;
     }
-    if (has_interiormap) {
+    if (any(interior_texture_set)) {
         compute_normal_and_reorient_uv0();
         compute_TBN();
         if (!compute_interiormap_at_end) {
@@ -1113,7 +1126,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    }" << std::endl;
         }
     }
-    if (!has_interiormap) {
+    if (!any(interior_texture_set)) {
         compute_normal_and_reorient_uv0();
     }
     if (continuous_layer_x.size() != continuous_layer_y.size()) {
@@ -1383,7 +1396,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (ntextures_color == 1) {
             sstr << "    vec3 tnorm = " << normalmap_coords(textures_color[0]) << ';' << std::endl;
         }
-        if (!has_interiormap) {
+        if (!any(interior_texture_set)) {
             compute_TBN();
         }
         sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
@@ -1597,7 +1610,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        frag_color.rgb = mix(frag_color.rgb, fog_emissive, t);" << std::endl;
         sstr << "    }" << std::endl;
     }
-    if (has_interiormap && compute_interiormap_at_end) {
+    if (any(interior_texture_set) && compute_interiormap_at_end) {
         sstr << "    is_in_interior(TBN, alpha_fac);" << std::endl;
     }
     sstr << "}" << std::endl;
@@ -2090,7 +2103,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ntextures_normal != 0,
         id.ntextures_reflection != 0,
         id.ntextures_dirt != 0,
-        id.ntextures_interior != 0,
+        any(id.interior_texture_set),
         id.has_horizontal_detailmap,
         !id.diffuse.all_equal(0),
         !id.specular.all_equal(0) && (id.specular_exponent != 0.f),
@@ -2145,7 +2158,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ntextures_dirt != 0,
         id.has_continuous_texture_layer,
         id.has_discrete_atlas_texture_layer || id.has_discrete_vertex_texture_layer,
-        id.ntextures_interior != 0,
+        id.interior_texture_set,
         id.facade_inner_size,
         id.interior_size,
         id.has_horizontal_detailmap,
@@ -2273,8 +2286,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->texture_dirtmap_location = 0;
             rp->texture_dirt_location = 0;
         }
-        if (id.ntextures_interior != 0) {
-            for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
+        if (any(id.interior_texture_set)) {
+            auto n = size(id.interior_texture_set);
+            for (size_t i = 0; i < n; ++i) {
                 rp->texture_interiormap_location(i) = rp->get_uniform_location(("texture_interior[" + std::to_string(i) + "]").c_str());
             }
         } else {
@@ -2285,14 +2299,14 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         } else {
             rp->texture_specularmap_location = 0;
         }
-        if (!id.reflectance.all_equal(0.f)) {
+        if (!id.reflectance.all_equal(0.f) || any(id.interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
             rp->r_location = rp->get_uniform_location("R");
         } else {
             rp->r_location = 0;
         }
         {
             bool light_dir_required = !id.diffuse.all_equal(0) || !id.specular.all_equal(0);
-            if (id.reorient_uv0 || light_dir_required || (id.fragments_depend_on_distance && !id.orthographic) || id.fragments_depend_on_normal || (id.ntextures_interior != 0)) {
+            if (id.reorient_uv0 || light_dir_required || (id.fragments_depend_on_distance && !id.orthographic) || id.fragments_depend_on_normal || any(id.interior_texture_set)) {
                 if (light_dir_required) {
                     for (size_t i = 0; i < filtered_lights.size(); ++i) {
                         if (!any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
@@ -2329,16 +2343,22 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         }
         {
-            bool pred0 = id.has_lookat || (!id.specular.all_equal(0) && (id.specular_exponent != 0.f)) || !id.reflectance.all_equal(0.f) || (id.fragments_depend_on_distance && !id.orthographic) || (id.fresnel.exponent != 0.f);
+            bool pred0 =
+                id.has_lookat ||
+                (!id.specular.all_equal(0) && (id.specular_exponent != 0.f)) ||
+                !id.reflectance.all_equal(0.f) ||
+                any(id.interior_texture_set & InteriorTextureSet::ANY_SPECULAR) ||
+                (id.fragments_depend_on_distance && !id.orthographic) ||
+                (id.fresnel.exponent != 0.f);
             bool pred1 = (id.fog_distances != default_step_distances);
-            if (pred0 || pred1 || id.reorient_uv0 || id.reorient_normals || (id.ntextures_interior != 0)) {
+            if (pred0 || pred1 || id.reorient_uv0 || id.reorient_normals || any(id.interior_texture_set)) {
                 if (((pred0 || pred1 || id.reorient_uv0 || id.reorient_normals) && id.orthographic)) {
                     rp->view_dir = rp->get_uniform_location("viewDir");
                     rp->view_pos = 0;
                 } else {
                     rp->view_dir = 0;
                 }
-                if ((pred0 && !id.orthographic) || (id.ntextures_interior != 0) || pred1) {
+                if ((pred0 && !id.orthographic) || any(id.interior_texture_set) || pred1) {
                     rp->view_pos = rp->get_uniform_location("viewPos");
                 } else {
                     rp->view_pos = 0;
