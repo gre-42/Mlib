@@ -39,14 +39,14 @@ void InteriorTextures::assign(
     VariableAndHash<std::string> ceiling,
     VariableAndHash<std::string> back,
     VariableAndHash<std::string> back_specular,
-    VariableAndHash<std::string> front_color,
+    VariableAndHash<std::string> front,
     VariableAndHash<std::string> front_alpha,
     VariableAndHash<std::string> front_specular)
 {
-    if (left->empty() || right->empty() || floor->empty() || ceiling->empty() + back->empty()) {
+    if (left->empty() || right->empty() || floor->empty() || ceiling->empty() || back->empty()) {
         THROW_OR_ABORT("Interior color texture is empty");
     }
-    names.reserve(5 + !back_specular->empty() + !front_color->empty() + !front_alpha->empty() + !front_specular->empty());
+    names.reserve(5 + !back_specular->empty() + !front->empty() + !front_alpha->empty() + !front_specular->empty());
     names.emplace_back(std::move(left));
     names.emplace_back(std::move(right));
     names.emplace_back(std::move(floor));
@@ -57,9 +57,9 @@ void InteriorTextures::assign(
         set |= InteriorTextureSet::BACK_SPECULAR;
         names.emplace_back(std::move(back_specular));
     }
-    if (!front_color->empty()) {
+    if (!front->empty()) {
         set |= InteriorTextureSet::FRONT_COLOR;
-        names.emplace_back(std::move(front_color));
+        names.emplace_back(std::move(front));
     }
     if (!front_alpha->empty()) {
         set |= InteriorTextureSet::FRONT_ALPHA;

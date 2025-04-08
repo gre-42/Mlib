@@ -37,6 +37,7 @@ struct InteriorTextures {
         archive(facade_inner_size);
         archive(interior_size);
         archive(names);
+        archive(set);
     }
     OrderableFixedArray<float, 2> facade_edge_size{ 0.f, 0.f };
     OrderableFixedArray<float, 2> facade_inner_size{ 0.f, 0.f };
@@ -50,7 +51,7 @@ struct InteriorTextures {
         VariableAndHash<std::string> ceiling,
         VariableAndHash<std::string> back,
         VariableAndHash<std::string> back_specular,
-        VariableAndHash<std::string> front_color,
+        VariableAndHash<std::string> front,
         VariableAndHash<std::string> front_alpha,
         VariableAndHash<std::string> front_specular);
 };

@@ -29,7 +29,7 @@ DECLARE_ARGUMENT(floor);
 DECLARE_ARGUMENT(ceiling);
 DECLARE_ARGUMENT(back);
 DECLARE_ARGUMENT(back_specular);
-DECLARE_ARGUMENT(front_color);
+DECLARE_ARGUMENT(front);
 DECLARE_ARGUMENT(front_alpha);
 DECLARE_ARGUMENT(front_specular);
 }
@@ -52,7 +52,7 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
             i.at<VariableAndHash<std::string>>(InteriorArgs::ceiling),
             i.at<VariableAndHash<std::string>>(InteriorArgs::back),
             i.at<VariableAndHash<std::string>>(InteriorArgs::back_specular, VariableAndHash<std::string>{}),
-            i.at<VariableAndHash<std::string>>(InteriorArgs::front_color, VariableAndHash<std::string>{}),
+            i.at<VariableAndHash<std::string>>(InteriorArgs::front, VariableAndHash<std::string>{}),
             i.at<VariableAndHash<std::string>>(InteriorArgs::front_alpha, VariableAndHash<std::string>{}),
             i.at<VariableAndHash<std::string>>(InteriorArgs::front_specular, VariableAndHash<std::string>{}));
     }
