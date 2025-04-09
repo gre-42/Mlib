@@ -40,7 +40,12 @@ void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceL
         lerr() << loc.file_name() << ':' << loc.line();
         verbose_abort("Could not delete advance time (0)");
     } else {
-        if (advance_times_.remove_if([&advance_time](const auto& a){ return &a.first->object().get() == &advance_time; }) != 1) {
+        if (advance_times_.remove_if([&advance_time](const auto& a){
+            if (a.first == nullptr) {
+                return true;
+            }
+            return &a.first->object().get() == &advance_time;
+        }) != 1) {
             lerr() << loc.file_name() << ':' << loc.line();
             verbose_abort("Could not delete advance time (1)");
         }
