@@ -1012,7 +1012,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "        vec3 frag_specular = texture(texture_interior[" << i << "], best_uv).rgb;" << std::endl;
             sstr << "        vec3 reflectedDir = R * reflect(-viewDir, TBN[2]);" << std::endl;
             sstr << "        vec3 reflectedColor = texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
-            sstr << "        frag_color.rgb = mix(frag_color.rgb, reflectedColor, frag_specular);" << std::endl;
+            sstr << "        frag_color.rgb += reflectedColor * frag_specular;" << std::endl;
             sstr << "    }" << std::endl;
         }
         if (any(interior_texture_set & InteriorTextureSet::FRONT_SPECULAR)) {
@@ -1025,7 +1025,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "        vec3 frag_specular = texture(texture_interior[" << s << "], uv).rgb;" << std::endl;
             sstr << "        vec3 reflectedDir = R * reflect(-viewDir, TBN[2]);" << std::endl;
             sstr << "        vec3 reflectedColor = texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
-            sstr << "        frag_color.rgb = mix(frag_color.rgb, reflectedColor, frag_specular);" << std::endl;
+            sstr << "        frag_color.rgb += reflectedColor * frag_specular;" << std::endl;
             sstr << "    }" << std::endl;
         }
         sstr << "    frag_color.a *= alpha_fac;" << std::endl;
