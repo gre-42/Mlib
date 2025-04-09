@@ -98,7 +98,8 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
     BuildingLevelOutline result;
     std::list<BuildingSegment> segments;
     if ((tpe == DrawBuildingPartType::CEILING) &&
-        (detail == BuildingDetailType::HIGH) &&
+        ((detail == BuildingDetailType::HIGH) ||
+         (detail == BuildingDetailType::COMBINED)) &&
         bu.roof_9_2.has_value())
     {
         segments = smooth_building_level(

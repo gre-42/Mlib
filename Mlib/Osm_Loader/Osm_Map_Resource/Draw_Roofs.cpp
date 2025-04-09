@@ -128,7 +128,10 @@ void Mlib::draw_roofs(
                         lerr() << "Error triangulating roof " + bu.id;
                     } else {
                         float width = (float)std::sqrt(sum(squared(b - c)));
-                        if ((model_triangles == nullptr) || (tpe == BuildingDetailType::LOW)) {
+                        if ((model_triangles == nullptr) ||
+                            (tpe == BuildingDetailType::LOW) ||
+                            (tpe == BuildingDetailType::COMBINED))
+                        {
                             rect.p00_ = b;
                             rect.p10_ = c;
                             FixedArray<CompressedScenePos, 2, 2, 3> rect3{
