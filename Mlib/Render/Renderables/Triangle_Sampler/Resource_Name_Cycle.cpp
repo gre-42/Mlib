@@ -1,13 +1,10 @@
 #include "Resource_Name_Cycle.hpp"
-#include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
-ResourceNameCycle::ResourceNameCycle(const std::vector<ParsedResourceName>& names)
-: ResourceCycle{ names },
+ResourceNameCycle::ResourceNameCycle(std::vector<ParsedResourceName> names)
+: ResourceCycle{ std::move(names) },
   probability_{ 1234321 }
 {}
 

@@ -109,6 +109,7 @@ DECLARE_ARGUMENT(entrance_textures);
 DECLARE_ARGUMENT(facade_textures);
 DECLARE_ARGUMENT(ceiling_texture);
 DECLARE_ARGUMENT(barrier_styles);
+DECLARE_ARGUMENT(building_colors);
 DECLARE_ARGUMENT(roof_model);
 DECLARE_ARGUMENT(roof_texture);
 DECLARE_ARGUMENT(roof_rail_texture);
@@ -620,6 +621,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains_non_null(KnownArgs::barrier_styles)) {
             add_styles(config.barrier_styles, args.arguments.children(KnownArgs::barrier_styles));
+        }
+        if (args.arguments.contains(KnownArgs::building_colors)) {
+            config.building_colors = args.arguments.at<std::vector<ColorAndProbability>>(KnownArgs::building_colors);
         }
         if (args.arguments.contains(KnownArgs::roof_model)) {
             config.roof_model = args.arguments.at<std::string>(KnownArgs::roof_model);

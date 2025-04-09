@@ -13,6 +13,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
+#include <Mlib/Render/Renderables/Color_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 
@@ -32,7 +33,8 @@ void Mlib::draw_building_walls(
     float snap_length_ratio,
     float snap_length_angle,
     float socle_ambient_occlusion,
-    const UUInterp<float, FixedArray<float, 3>>& height_colors)
+    const UUInterp<float, FixedArray<float, 3>>& height_colors,
+    ColorCycle& color_cycle)
 {
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     size_t mid = 0;
@@ -77,7 +79,9 @@ void Mlib::draw_building_walls(
             }
             tl->material.interior_textures = bl.facade_texture_descriptor.interior_textures;
             tl->material.compute_color_mode();
-            FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
+            FixedArray<float, 3> color = color_cycle.empty() || bu.way.tags.contains("color")
+                ? parse_color(bu.way.tags, "color", building_color)
+                : color_cycle.try_multiple_times(100, BuildingInformation{}).color;
             auto get_uv_ratio = [&bl, &scale](const std::list<BuildingSegment>& sw){
                 double w = 0.f;
                 for (const auto& we : sw) {

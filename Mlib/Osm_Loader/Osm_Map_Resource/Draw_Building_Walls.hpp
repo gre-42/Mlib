@@ -22,6 +22,7 @@ struct Building;
 template <class TPos>
 class TriangleList;
 struct BarrierStyle;
+class ColorCycle;
 
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
@@ -37,6 +38,7 @@ void draw_building_walls(
     float snap_length_ratio,
     float snap_length_angle,
     float socle_ambient_occlusion,
-    const UUInterp<float, FixedArray<float, 3>>& height_colors);
+    const UUInterp<float, FixedArray<float, 3>>& height_colors,
+    ColorCycle& color_cycle);
 
 }

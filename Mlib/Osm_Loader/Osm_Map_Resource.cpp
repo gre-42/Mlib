@@ -86,6 +86,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Renderables/Color_Cycle.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
@@ -683,6 +684,7 @@ OsmMapResource::OsmMapResource(
     }
 
     if (config.with_buildings) {
+        ColorCycle cc{ config.building_colors };
         fg.update("Draw building walls (facade)");
         draw_building_walls(
             tls_buildings,
@@ -702,7 +704,8 @@ OsmMapResource::OsmMapResource(
             config.snap_building_length_ratio,
             config.snap_building_length_angle,
             config.extrusion_ambient_occlusion,
-            config.height_colors);
+            config.height_colors,
+            cc);
     }
 
     if (config.with_roofs) {

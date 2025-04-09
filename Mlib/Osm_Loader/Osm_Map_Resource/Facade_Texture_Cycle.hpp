@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Cycle.hpp>
+#include <Mlib/Render/Renderables/Resource_Cycle.hpp>
 #include <map>
 
 namespace Mlib {

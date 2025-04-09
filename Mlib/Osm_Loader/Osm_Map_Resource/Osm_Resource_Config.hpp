@@ -14,6 +14,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Distances.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Renderables/Color_And_Probability.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
@@ -148,6 +149,7 @@ struct OsmResourceConfig {
     float uv_scale_ceiling = 1;
     float uv_scale_barrier_wall = 1;
     float uv_scale_highway_wall = 1;
+    std::vector<ColorAndProbability> building_colors;
     VariableAndHash<std::string> roof_texture;
     VariableAndHash<std::string> roof_rail_texture;
     float default_roof_9_2_max_building_height = INFINITY * meters;

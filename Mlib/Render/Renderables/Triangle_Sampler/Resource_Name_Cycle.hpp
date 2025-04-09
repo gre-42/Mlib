@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Cycle.hpp>
+#include <Mlib/Render/Renderables/Resource_Cycle.hpp>
 #include <vector>
 
 namespace Mlib {
@@ -12,7 +12,7 @@ struct LocationInformation {
 
 class ResourceNameCycle: public ResourceCycle<ParsedResourceName> {
 public:
-    explicit ResourceNameCycle(const std::vector<ParsedResourceName>& names);
+    explicit ResourceNameCycle(std::vector<ParsedResourceName> names);
     ~ResourceNameCycle();
     const ParsedResourceName* try_once(const LocationInformation& location_info = LocationInformation{});
     const ParsedResourceName* try_multiple_times(size_t nattempts, const LocationInformation& location_info = LocationInformation{});
