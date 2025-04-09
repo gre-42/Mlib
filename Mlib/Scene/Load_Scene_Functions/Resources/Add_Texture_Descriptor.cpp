@@ -72,10 +72,22 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
         .mipmap_mode = mipmap_mode,
         .anisotropic_filtering_level = anisotropic_filtering_level,
         .wrap_modes = wrap_modes}.compute_hash();
+    auto specular = ColormapWithModifiers{
+        .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::specular).path},
+        .color_mode = ColorMode::RGB,
+        .mipmap_mode = mipmap_mode,
+        .anisotropic_filtering_level = anisotropic_filtering_level,
+        .wrap_modes = wrap_modes}.compute_hash();
     {
         auto filename = args.arguments.try_path_or_variable(KnownArgs::normal);
         if (filename.is_variable) {
             normal = RenderingContextStack::primary_rendering_resources().colormap(normal);
+        }
+    }
+    {
+        auto filename = args.arguments.try_path_or_variable(KnownArgs::specular);
+        if (filename.is_variable) {
+            specular = RenderingContextStack::primary_rendering_resources().colormap(specular);
         }
     }
     RenderingContextStack::primary_rendering_resources().add_texture_descriptor(
@@ -114,12 +126,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
                 .anisotropic_filtering_level = anisotropic_filtering_level,
                 .wrap_modes = wrap_modes}.compute_hash(),
-            .specular = ColormapWithModifiers{
-                .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::specular).path},
-                .color_mode = ColorMode::RGB,
-                .mipmap_mode = mipmap_mode,
-                .anisotropic_filtering_level = anisotropic_filtering_level,
-                .wrap_modes = wrap_modes}.compute_hash(),
+            .specular = specular,
             .normal = normal });
 
 }
