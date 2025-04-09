@@ -7,8 +7,8 @@ namespace Mlib {
 enum class Focus;
 
 struct ReplacementParameterRequired {
-    std::vector<std::string> fixed;
-    std::vector<std::string> dynamic;
+    std::vector<std::vector<std::string>> fixed;
+    std::vector<std::vector<std::string>> dynamic;
     Focus focus_mask = Focus::ALWAYS;
 };
 

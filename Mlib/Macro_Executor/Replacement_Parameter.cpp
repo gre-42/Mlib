@@ -48,15 +48,36 @@ ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const
     }
 }
 
+void expression_from_json(const nlohmann::json& j, std::vector<std::string>& expression) {
+    if (j.type() != nlohmann::detail::value_t::array) {
+        expression.resize(1);
+        j.get_to(expression[0]);
+    } else {
+        j.get_to(expression);
+    }
+}
+
+void expression_from_json(const nlohmann::json& j, std::vector<std::vector<std::string>>& expression) {
+    if (j.type() != nlohmann::detail::value_t::array) {
+        expression.resize(1);
+        expression_from_json({ j }, expression[0]);
+    } else {
+        auto v = j.get<std::vector<nlohmann::json>>();
+        expression.resize(v.size());
+        for (size_t i = 0; i < v.size(); ++i) {
+            expression_from_json(v[i], expression[i]);
+        }
+    }
+}
+
 void Mlib::from_json(const nlohmann::json& j, ReplacementParameterRequired& rp) {
     validate(j, KnownRequired::options);
-    j.at(KnownRequired::fixed).get_to(rp.fixed);
-    j.at(KnownRequired::dynamic).get_to(rp.dynamic);
+    expression_from_json(j.at(KnownRequired::fixed), rp.fixed);
+    expression_from_json(j.at(KnownRequired::dynamic), rp.dynamic);
     rp.focus_mask = j.contains(KnownRequired::focus_mask)
         ? focus_from_string(j.at(KnownRequired::focus_mask).get<std::string>())
         : Focus::ALWAYS;
 }
-
 
 void Mlib::from_json(const nlohmann::json& j, ReplacementParameter& rp) {
     validate(j, KnownArgs::options);

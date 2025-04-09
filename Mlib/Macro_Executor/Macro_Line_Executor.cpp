@@ -425,6 +425,43 @@ T MacroLineExecutor::eval(const std::string& expression) const {
     return Mlib::eval<T>(expression, global_args, asset_references_);
 }
 
+bool MacroLineExecutor::eval(
+    const std::vector<std::vector<std::string>>& expression) const
+{
+    for (const auto& rs : expression) {
+        bool ok = false;
+        for (const auto& r : rs) {
+            if (eval<bool>(r)) {
+                ok = true;
+                break;
+            }
+        }
+        if (!ok) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool MacroLineExecutor::eval(
+    const std::vector<std::vector<std::string>>& expression,
+    const JsonView& variables) const
+{
+    for (const auto& rs : expression) {
+        bool ok = false;
+        for (const auto& r : rs) {
+            if (eval<bool>(r, variables)) {
+                ok = true;
+                break;
+            }
+        }
+        if (!ok) {
+            return false;
+        }
+    }
+    return true;
+}
+
 JsonMacroArgumentsObserverToken MacroLineExecutor::add_observer(std::function<void()> func) {
     return global_json_macro_arguments_.add_observer(std::move(func));
 }

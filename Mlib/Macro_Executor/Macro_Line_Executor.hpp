@@ -57,6 +57,8 @@ public:
     T eval(const std::string& expression) const;
     template <class T>
     T eval(const std::string& expression, const JsonView& variables) const;
+    bool eval(const std::vector<std::vector<std::string>>& expression) const;
+    bool eval(const std::vector<std::vector<std::string>>& expression, const JsonView& variables) const;
     JsonMacroArgumentsObserverToken add_observer(std::function<void()> func);
     JsonView block_arguments() const;
 private:

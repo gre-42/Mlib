@@ -40,10 +40,8 @@ bool ReplacementParameterContents::is_visible(size_t index) const {
             return false;
         }
     }
-    for (const auto& r : o.required.dynamic) {
-        if (!ew_.eval<bool>(r)) {
-            return false;
-        }
+    if (!ew_.eval(o.required.dynamic)) {
+        return false;
     }
     return true;
 }

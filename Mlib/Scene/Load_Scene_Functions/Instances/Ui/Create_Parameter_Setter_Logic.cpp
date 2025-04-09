@@ -94,12 +94,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         rps.remove_if([&ents](const ReplacementParameter& rp) { return (!ents.contains(rp.id)); });
     }
     rps.remove_if([&](const ReplacementParameter& rp){
-        for (const auto& e : rp.required.fixed) {
-            if (!args.macro_line_executor.eval<bool>(e)) {
-                return true;
-            }
-        }
-        return false;
+        return !args.macro_line_executor.eval(rp.required.fixed);
     });
     if (args.arguments.at<bool>(KnownArgs::hide_if_trivial, false)) {
         if (rps.empty()) {

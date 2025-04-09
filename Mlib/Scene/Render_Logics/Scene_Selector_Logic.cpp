@@ -63,12 +63,7 @@ size_t SceneEntryContents::num_entries() const {
 
 bool SceneEntryContents::is_visible(size_t index) const {
     const auto& entry = scene_entries_[index];
-    for (const auto& r : entry.required().dynamic) {
-        if (!ew_.eval<bool>(r, entry.locals())) {
-            return false;
-        }
-    }
-    return true;
+    return ew_.eval(entry.required().dynamic, entry.locals());
 }
 
 SceneSelectorLogic::SceneSelectorLogic(

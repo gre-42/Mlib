@@ -39,6 +39,12 @@ public:
     T eval(const std::string& expression, const JsonView& variables) const {
         return mle_.eval<T>(expression, variables);
     }
+    bool eval(const std::vector<std::vector<std::string>>& expression) const {
+        return mle_.eval(expression);
+    }
+    bool eval(const std::vector<std::vector<std::string>>& expression, const JsonView& variables) const {
+        return mle_.eval(expression, variables);
+    }
     inline void execute(
         const nlohmann::json& j,
         const JsonMacroArguments* caller_args,
