@@ -60,7 +60,8 @@ void expression_from_json(const nlohmann::json& j, std::vector<std::string>& exp
 void expression_from_json(const nlohmann::json& j, std::vector<std::vector<std::string>>& expression) {
     if (j.type() != nlohmann::detail::value_t::array) {
         expression.resize(1);
-        expression_from_json({ j }, expression[0]);
+        expression[0].resize(1);
+        j.get_to(expression[0][0]);
     } else {
         auto v = j.get<std::vector<nlohmann::json>>();
         expression.resize(v.size());
