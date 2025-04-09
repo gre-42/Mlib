@@ -64,11 +64,16 @@ void Mlib::collide_triangle_and_intersectables(
             }
         }
     };
-    if (q0 != nullptr) {
-        collide(*q0);
-    }
-    if (t0 != nullptr) {
-        collide(*t0);
+    try
+    {
+        if (q0 != nullptr) {
+            collide(*q0);
+        }
+        if (t0 != nullptr) {
+            collide(*t0);
+        }
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("Error colliding objects \"" + o0.name() + "\" and \"" + o1.name() + "\": " + e.what());
     }
 }
 
