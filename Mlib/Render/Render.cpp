@@ -5,6 +5,8 @@
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -147,6 +149,8 @@ void Render::render_scene(
     const std::vector<TransformationMatrix<float, ScenePos, 3>>* beacon_locations) const
 {
     ButtonStates button_states;
+    KeyConfigurations key_configurations;
+    key_configurations.insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
     RotatingLogic rotating_logic{
         button_states,
         window_->glfw_window(),
@@ -159,6 +163,7 @@ void Render::render_scene(
     ReadPixelsLogic read_pixels_logic{
         rotating_logic,
         button_states,
+        key_configurations,
         ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT };
     render(read_pixels_logic, []() {}, scene_graph_config, &button_states);
 }

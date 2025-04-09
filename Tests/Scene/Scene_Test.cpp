@@ -30,6 +30,8 @@
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Input_Config.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -222,6 +224,8 @@ void test_physics_engine(unsigned int seed) {
     ButtonStates button_states;
     CursorStates cursor_states;
     CursorStates scroll_wheel_states;
+    KeyConfigurations key_configurations;
+    key_configurations.insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
     FlyingCameraUserClass user_object{
         .button_states = button_states,
         .cursor_states = cursor_states,
@@ -245,6 +249,7 @@ void test_physics_engine(unsigned int seed) {
         CURRENT_SOURCE_LOCATION,
         standard_render_logic,
         button_states,
+        key_configurations,
         ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT);
     auto append_lightmap_logic = [&](){
         DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);

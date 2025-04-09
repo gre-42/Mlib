@@ -58,6 +58,7 @@ class AudioListenerUpdater;
 class PhysicsLoop;
 class ButtonStates;
 class CursorStates;
+class KeyConfigurations;
 
 class Translator;
 
@@ -96,6 +97,7 @@ public:
         ButtonStates& button_states,
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
+        KeyConfigurations& key_configurations,
         UiFocus& ui_focus,
         const SceneConfigResource& config,
         size_t max_tracks,

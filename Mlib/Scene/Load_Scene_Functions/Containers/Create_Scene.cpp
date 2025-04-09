@@ -62,6 +62,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         args.button_states,
         args.cursor_states,
         args.scroll_wheel_states,
+        args.key_configurations,
         args.ui_focus,
         SceneConfigResource{
             .fly = args.arguments.at<bool>(KnownArgs::fly),

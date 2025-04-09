@@ -22,14 +22,12 @@
 namespace Mlib {
 class ReadPixelsLogicKeys {
 public:
-    explicit ReadPixelsLogicKeys(ButtonStates& button_states)
-        : ctrl_p{ button_states, key_configurations, "CTRL_P", "" }
-    {
-        key_configurations.insert("CTRL_P", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
-    }
+    explicit ReadPixelsLogicKeys(
+        const ButtonStates& button_states,
+        const KeyConfigurations& key_configurations)
+        : ctrl_p{ button_states, key_configurations, "take_screenshot", "" }
+    {}
     ButtonPress ctrl_p;
-private:
-    KeyConfigurations key_configurations;
 };
 }
 
@@ -37,10 +35,11 @@ using namespace Mlib;
 
 ReadPixelsLogic::ReadPixelsLogic(
     RenderLogic& child_logic,
-    ButtonStates& button_states,
+    const ButtonStates& button_states,
+    const KeyConfigurations& key_configurations,
     ReadPixelsRole role)
     : child_logic_{ child_logic }
-    , keys_{ std::make_unique<ReadPixelsLogicKeys>(button_states) }
+    , keys_{ std::make_unique<ReadPixelsLogicKeys>(button_states, key_configurations) }
     , role_{ role }
 {}
 

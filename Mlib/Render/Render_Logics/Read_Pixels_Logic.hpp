@@ -6,6 +6,7 @@ namespace Mlib {
 
 class ReadPixelsLogicKeys;
 class ButtonStates;
+class KeyConfigurations;
 
 enum class ReadPixelsRole {
     NONE = 0,
@@ -29,7 +30,8 @@ class ReadPixelsLogic: public RenderLogic {
 public:
     explicit ReadPixelsLogic(
         RenderLogic& child_logic,
-        ButtonStates& button_states,
+        const ButtonStates& button_states,
+        const KeyConfigurations& key_configurations,
         ReadPixelsRole role);
     ~ReadPixelsLogic();
 

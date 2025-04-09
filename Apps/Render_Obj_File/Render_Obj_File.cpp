@@ -38,6 +38,8 @@
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Input_Config.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Modifiers/Merge_Textures.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Render.hpp>
@@ -1092,6 +1094,8 @@ int main(int argc, char** argv) {
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
+        KeyConfigurations key_configurations;
+        key_configurations.insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
         StandardCameraLogic standard_camera_logic{
             scene,
             selected_cameras};
@@ -1136,6 +1140,7 @@ int main(int argc, char** argv) {
         ReadPixelsLogic read_pixels_logic{
             aggregate_render_logic,
             button_states,
+            key_configurations,
             ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT };
         std::list<LightmapLogic*> lightmap_logics;
         for (const auto& l : lights) {

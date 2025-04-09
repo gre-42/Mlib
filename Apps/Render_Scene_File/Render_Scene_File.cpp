@@ -60,6 +60,7 @@ using namespace Mlib;
 std::unique_ptr<JThread> render_thread(
     const ParsedArgs& args,
     ButtonStates& button_states,
+    KeyConfigurations& key_configurations,
     RenderableScenes& renderable_scenes,
     std::atomic_bool& load_scene_finished,
     Renderer& renderer,
@@ -128,7 +129,7 @@ std::unique_ptr<JThread> render_thread(
                         clear_color({0.2f, 0.2f, 0.2f, 1.f});
                     }
                 }};
-            ReadPixelsLogic rpl{ lrl, button_states, ReadPixelsRole::SCREENSHOT };
+            ReadPixelsLogic rpl{ lrl, button_states, key_configurations, ReadPixelsRole::SCREENSHOT };
             ClearWrapperGuard clear_wrapper_guard;
             renderer.render(rpl, scene_config.scene_graph_config);
         } catch (...) {
@@ -695,6 +696,7 @@ int main(int argc, char** argv) {
                     render_future = render_thread(
                         args,
                         button_states,
+                        key_configurations,
                         renderable_scenes,
                         load_scene_finished,
                         *renderer,

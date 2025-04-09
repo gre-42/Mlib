@@ -41,6 +41,7 @@ RenderableScene::RenderableScene(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
+    KeyConfigurations& key_configurations,
     UiFocus& ui_focus,
     const SceneConfigResource& config,
     size_t max_tracks,
@@ -138,7 +139,7 @@ RenderableScene::RenderableScene(
           selected_cameras_,
           ui_focus.focuses,
           players_)}
-    , read_pixels_logic_{ *aggregate_render_logic_, button_states, ReadPixelsRole::INTERMEDIATE }
+    , read_pixels_logic_{ *aggregate_render_logic_, button_states, key_configurations, ReadPixelsRole::INTERMEDIATE }
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(rendering_resources_, read_pixels_logic_) }
     , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW) }
     , post_processing_logic_{std::make_unique<PostProcessingLogic>(
