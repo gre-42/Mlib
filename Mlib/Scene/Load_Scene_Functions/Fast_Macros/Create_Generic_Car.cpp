@@ -34,7 +34,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(tesuffix);
-DECLARE_ARGUMENT(decimate);
+DECLARE_ARGUMENT(tedecimate);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
 DECLARE_ARGUMENT(hand_brake_pulled);
@@ -125,7 +125,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     auto name = args.arguments.at<std::string>(KnownArgs::name);
     auto tesuffix = args.arguments.at<std::string>(KnownArgs::tesuffix);
-    auto decimate = args.arguments.at<std::string>(KnownArgs::decimate);
+    auto tedecimate = args.arguments.at<std::string>(KnownArgs::tedecimate);
     auto if_with_graphics = args.arguments.at<bool>(KnownArgs::if_with_graphics);
     auto if_with_physics = args.arguments.at<bool>(KnownArgs::if_with_physics);
     const auto& vdb = args.asset_references["vehicles"].at(name).rp.database;
@@ -158,7 +158,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             child_renderable_instance("wheel" + suffix, "wheel_left_rear_node" + tesuffix, name + "/wheel_rear" + decimate);
             child_renderable_instance("wheel" + suffix, "wheel_right_rear_node_visual" + tesuffix, name + "/wheel_rear" + decimate);
             };
-        create_graphics(tesuffix, decimate);
+        create_graphics(tesuffix, tedecimate);
         create_graphics("_lowres" + tesuffix, "_lowres");
         auto create_lights = [&]() {
             if (auto p = vdb.try_at_non_null<UFixedArray<ScenePos, 3>>(KnownDb::light_left_front_position); p.has_value()) {
