@@ -14,11 +14,11 @@
 namespace Mlib {
 
 std::strong_ordering operator <=> (const std::string& a, const std::string& b);
-std::list<std::string> string_to_list(const std::string& str, const Mlib::regex& re, size_t expected_length = SIZE_MAX);
+std::list<std::string> string_to_list(const std::string& str, const Mlib::re::cregex& re, size_t expected_length = SIZE_MAX);
 std::list<std::string> string_to_list(const std::string& str, size_t expected_length = SIZE_MAX);
 std::vector<std::string> string_to_vector(const std::string& str);
 std::set<std::string> string_to_set(const std::string& str);
-std::set<std::string> string_to_set(const std::string& str, const Mlib::regex& re, size_t expected_length = SIZE_MAX);
+std::set<std::string> string_to_set(const std::string& str, const Mlib::re::cregex& re, size_t expected_length = SIZE_MAX);
 #ifdef __clang__
 inline const std::string& identity_(const std::string& v) {
     return v;
@@ -45,7 +45,7 @@ std::string join(const std::string& delimiter, const TContainer& lst, const TOpe
 }
 
 template <class TOperation>
-auto string_to_vector(const std::string& str, const Mlib::regex& re, const TOperation& op, size_t expected_length = SIZE_MAX) {
+auto string_to_vector(const std::string& str, const Mlib::re::cregex& re, const TOperation& op, size_t expected_length = SIZE_MAX) {
     std::list<std::string> sresult = string_to_list(str, re, expected_length);
     std::vector<decltype(op(""))> result;
     result.reserve(sresult.size());

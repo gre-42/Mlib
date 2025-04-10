@@ -8,8 +8,8 @@ struct MergedTextureName;
 
 struct MergedTextureFilter {
     ~MergedTextureFilter();
-    Mlib::regex included_names = ALWAYS;
-    Mlib::regex excluded_names = NEVER;
+    Mlib::re::cregex included_names = ALWAYS;
+    Mlib::re::cregex excluded_names = NEVER;
     bool matches(const MergedTextureName& merged_texture_name) const;
 };
 

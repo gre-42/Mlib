@@ -23,7 +23,7 @@ void save_obj(
 {
     namespace fs = std::filesystem;
     static const DECLARE_REGEX(filename_re, "^(.*)\\.obj$");
-    Mlib::re::smatch match;
+    Mlib::re::cmatch match;
     if (!Mlib::re::regex_match(filename, match, filename_re)) {
         THROW_OR_ABORT("OBJ filename does not have \".obj\" extension: " + filename);
     }

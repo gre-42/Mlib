@@ -355,7 +355,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");
             static const size_t NUMBER = 1;
             static const size_t NAME = 2;
-            Mlib::re::smatch match;
+            Mlib::re::cmatch match;
             if (Mlib::re::regex_search(node.name, match, name_reg)) {
                 static const DECLARE_REGEX(grass_reg, "^(?:grass|GR|GRASS)(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(road_reg, "^(?:road|ROAD)");

@@ -47,7 +47,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         if (line.length() == 0) {
             continue;
         }
-        Mlib::re::smatch match;
+        Mlib::re::cmatch match;
         if (Mlib::re::regex_match(line, match, newmtl_reg)) {
             mtl = match[1].str();
             if (!mtllib.try_emplace(mtl, ObjMaterial()).second) {

@@ -25,8 +25,8 @@ std::map<std::string, std::string> replacements_to_map(const std::string& replac
 
 void find_all(
     const std::string& str,
-    const Mlib::regex& pattern,
-    const std::function<void(const Mlib::re::smatch&)>& f);
+    const Mlib::re::cregex& pattern,
+    const std::function<void(const Mlib::re::cmatch&)>& f);
 
 template <class TRegex>
 void find_all_templated(

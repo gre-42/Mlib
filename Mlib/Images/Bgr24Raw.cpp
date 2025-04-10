@@ -8,7 +8,7 @@ using namespace Mlib;
 
 Bgr24Raw Bgr24Raw::load_from_file(const std::string& filename) {
     static const DECLARE_REGEX(re, "^.*-(\\d+)x(\\d+)x(\\d+)\\.bgr$");
-    Mlib::re::smatch match;
+    Mlib::re::cmatch match;
     if (Mlib::re::regex_match(filename, match, re)) {
         if (match[3] != "24") {
             THROW_OR_ABORT("Only 24-bit raw images are supported");

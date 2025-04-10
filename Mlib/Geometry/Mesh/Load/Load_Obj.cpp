@@ -31,7 +31,7 @@ struct ColoredVertexX {
 };
 
 bool contains_tag(const std::string& name, const std::string& tag) {
-    static std::map<std::string, Mlib::regex> regexes;
+    static std::map<std::string, Mlib::re::cregex> regexes;
     if (!regexes.contains(tag)) {
         regexes.insert({tag, Mlib::compile_regex("\\b" + tag + "(?:\\b|_)")});
     }

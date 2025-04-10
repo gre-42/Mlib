@@ -46,7 +46,7 @@ BvhLoader::BvhLoader(
             static const DECLARE_REGEX(offs_re, "^\\s*OFFSET\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
             static const DECLARE_REGEX(chan_re, "^\\s*CHANNELS\\s+(\\d+)\\s+(.+)\\s*$");
             static const DECLARE_REGEX(motion_re, "^\\s*MOTION\\s*$");
-            Mlib::re::smatch match;
+            Mlib::re::cmatch match;
             if (Mlib::re::regex_match(line, match, name_re)) {
                 joint_name = match[2].str();
                 if ((match[1].str() == "ROOT") != joint_stack.empty()) {

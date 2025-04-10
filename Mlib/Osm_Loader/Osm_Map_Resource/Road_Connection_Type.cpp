@@ -27,7 +27,7 @@ void Mlib::road_connection_types_from_model_name(
         rct1 = RoadConnectionType::ENDPOINT;
     } else {
         static const DECLARE_REGEX(re, "^[^.]+\\.(\\w+)-(\\w+)$");
-        Mlib::re::smatch match;
+        Mlib::re::cmatch match;
         if (!Mlib::re::regex_match(model_name, match, re)) {
             THROW_OR_ABORT("Could not parse model name: \"" + model_name + '"');
         }

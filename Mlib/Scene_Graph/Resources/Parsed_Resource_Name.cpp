@@ -36,7 +36,7 @@ ParsedResourceName Mlib::parse_resource_name(
         "(?:\\s*\\(min_bdry:([\\d+.e-]+)\\))?"
         "(?:\\s*\\(max_bdry:([\\d+.e-]+)\\))?"
         "(?:\\s*\\(hitbox:(\\w+)\\))?$");
-    Mlib::re::smatch match;
+    Mlib::re::cmatch match;
     if (!Mlib::re::regex_match(name, match, re)) {
         THROW_OR_ABORT("Could not parse: " + name);
     }

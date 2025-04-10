@@ -16,13 +16,13 @@ std::strong_ordering Mlib::operator <=> (const std::string& a, const std::string
     return std::strong_ordering::greater;
 }
 
-std::list<std::string> Mlib::string_to_list(const std::string& str, const Mlib::regex& re, size_t expected_length) {
+std::list<std::string> Mlib::string_to_list(const std::string& str, const Mlib::re::cregex& re, size_t expected_length) {
     std::list<std::string> res;
     if (str.empty()) {
         return res;
     }
-    for (auto it = Mlib::re::sregex_token_iterator(str.begin(), str.end(), re, -1, Mlib::re::regex_constants::match_not_null);
-        it != Mlib::re::sregex_token_iterator();
+    for (auto it = Mlib::re::cregex_token_iterator(str, re);
+        it != Mlib::re::cregex_token_iterator();
         ++it)
     {
         res.push_back(*it);
@@ -48,7 +48,7 @@ std::set<std::string> Mlib::string_to_set(const std::string& str) {
     return {l.begin(), l.end()};
 }
 
-std::set<std::string> Mlib::string_to_set(const std::string& str, const Mlib::regex& re, size_t expected_length) {
+std::set<std::string> Mlib::string_to_set(const std::string& str, const Mlib::re::cregex& re, size_t expected_length) {
     auto l = string_to_list(str, re, expected_length);
     return {l.begin(), l.end()};
 }

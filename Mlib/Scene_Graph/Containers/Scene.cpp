@@ -250,7 +250,7 @@ void Scene::delete_root_node(const std::string& name) {
     root_nodes_.delete_root_node(name);
 }
 
-void Scene::delete_root_nodes(const Mlib::regex& regex) {
+void Scene::delete_root_nodes(const Mlib::re::cregex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
     root_nodes_.delete_root_nodes(regex);
 }
@@ -277,7 +277,7 @@ void Scene::delete_node(const std::string& name) {
     }
 }
 
-void Scene::delete_nodes(const Mlib::regex& regex) {
+void Scene::delete_nodes(const Mlib::re::cregex& regex) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     std::unique_lock lock{ mutex_ };
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
@@ -392,7 +392,7 @@ void Scene::unregister_node(const std::string& name) {
     }
 }
 
-void Scene::unregister_nodes(const Mlib::regex& regex) {
+void Scene::unregister_nodes(const Mlib::re::cregex& regex) {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
@@ -427,7 +427,7 @@ DanglingPtr<SceneNode> Scene::try_get_node(const std::string& name, SOURCE_LOCAT
     return get_node(name, loc).ptr();
 }
 
-std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const Mlib::regex& regex) const {
+std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const Mlib::re::cregex& regex) const {
     std::shared_lock lock{ mutex_ };
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> result;
     for (const auto& [name, node] : nodes_) {

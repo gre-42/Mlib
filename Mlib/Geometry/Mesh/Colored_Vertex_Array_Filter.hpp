@@ -14,8 +14,8 @@ struct ColoredVertexArrayFilter {
     ~ColoredVertexArrayFilter();
     PhysicsMaterial included_tags = PhysicsMaterial::NONE;
     PhysicsMaterial excluded_tags = PhysicsMaterial::NONE;
-    Mlib::regex included_names = ALWAYS;
-    Mlib::regex excluded_names = NEVER;
+    Mlib::re::cregex included_names = ALWAYS;
+    Mlib::re::cregex excluded_names = NEVER;
     template <class TPos>
     bool matches(const ColoredVertexArray<TPos>& cva) const;
 };

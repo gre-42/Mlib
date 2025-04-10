@@ -62,7 +62,7 @@ void Mlib::parse_osm_xml(
         if (line.length() == 0) {
             continue;
         }
-        Mlib::re::smatch match;
+        Mlib::re::cmatch match;
         if (Mlib::re::regex_match(line, ignored_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, bounds_reg)) {

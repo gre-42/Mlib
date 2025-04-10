@@ -11,8 +11,8 @@ static void iterate_replacements(
     const std::function<void(const std::string& key, const std::string& value)>& op)
 {
     static const DECLARE_REGEX(re, "\\s+");
-    for (auto it = Mlib::re::sregex_token_iterator(replacements.begin(), replacements.end(), re, -1, Mlib::re::regex_constants::match_not_null);
-        it != Mlib::re::sregex_token_iterator();
+    for (auto it = Mlib::re::cregex_token_iterator(replacements, re);
+        it != Mlib::re::cregex_token_iterator();
         ++it)
     {
         std::string s = *it;
@@ -56,7 +56,7 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
     // 2. Substitute simple expressions.
     //                                  1      2      3        4         5           6      7       8          9
     static const DECLARE_REGEX(s0, "(?:(\\w+):(!)?(?:(\\w+)-)?(\\w*)(?:=(\\S*))?|(?:([-!]?)(\\w+))|([^-!\\w]+)|(.))");
-    find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
+    find_all(str, s0, [&new_line, &replacements](const Mlib::re::cmatch& v) {
         // if (v[1].str() == "-decimate") {
         //     lerr() << "x";
         // }
@@ -135,12 +135,13 @@ std::map<std::string, std::string> Mlib::replacements_to_map(const std::string& 
 
 void Mlib::find_all(
     const std::string& str,
-    const Mlib::regex& pattern,
-    const std::function<void(const Mlib::re::smatch&)>& f)
+    const Mlib::re::cregex& pattern,
+    const std::function<void(const Mlib::re::cmatch&)>& f)
 {
-    Mlib::re::smatch match;
-    std::string::const_iterator search_start( str.cbegin() );
-    while (Mlib::re::regex_search(search_start, str.cend(), match, pattern)) {
+    Mlib::re::cmatch match;
+    const char* search_start = str.data();
+    const char* search_end = str.data() + str.size();
+    while (Mlib::re::regex_search(search_start, search_end, match, pattern)) {
         f(match);
         search_start = match.suffix().first;
     }
@@ -153,7 +154,7 @@ std::list<std::pair<std::string, std::string>> Mlib::find_all_name_values(
 {
     std::list<std::pair<std::string, std::string>> res;
     DECLARE_REGEX(regex, "\\s*name=(" + name_pattern + ") value=(" + value_pattern + ")|(.+)");
-    find_all(str, regex, [&](const Mlib::re::smatch& m){
+    find_all(str, regex, [&](const Mlib::re::cmatch& m){
         if (!m[3].str().empty()) {
             THROW_OR_ABORT("Could not parse \"" + str + "\", unknown element: \"" + m[3].str() + '"');
         }

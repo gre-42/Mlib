@@ -84,7 +84,7 @@ void Mlib::initialize_uniform(GLuint shader_program, GLuint uniform_id) {
 
     std::string uniform_name_str{uniform_name};
     static const DECLARE_REGEX(regex, "^(\\w+)\\[0\\]$");
-    Mlib::re::smatch match;
+    Mlib::re::cmatch match;
     if (Mlib::re::regex_match(uniform_name_str, match, regex)) {
         for (GLint i = 0; i < uniform_size; ++i) {
             std::string uniform_name_str = (match[1].str() + '[' + std::to_string(i) + ']');

@@ -107,18 +107,18 @@ public:
     void try_delete_root_node(const std::string& name);
     void delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node);
     void delete_root_node(const std::string& name);
-    void delete_root_nodes(const Mlib::regex& regex);
+    void delete_root_nodes(const Mlib::re::cregex& regex);
     void try_delete_node(const std::string& name);
     void delete_node(const std::string& name);
-    void delete_nodes(const Mlib::regex& regex);
+    void delete_nodes(const Mlib::re::cregex& regex);
     void register_node(
         const std::string& name,
         const DanglingRef<SceneNode>& scene_node);
     void unregister_node(const std::string& name);
-    void unregister_nodes(const Mlib::regex& regex);
+    void unregister_nodes(const Mlib::re::cregex& regex);
     DanglingRef<SceneNode> get_node(const std::string& name, SOURCE_LOCATION loc) const;
     DanglingPtr<SceneNode> try_get_node(const std::string& name, SOURCE_LOCATION loc) const;
-    std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
+    std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::re::cregex& regex) const;
     bool visit_all(const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
         const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;

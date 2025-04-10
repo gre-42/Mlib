@@ -180,7 +180,7 @@ void HeterogeneousResource::import_bone_weights(
 void HeterogeneousResource::generate_instances() {
     static const DECLARE_REGEX(re, "^(\\w+)(?:\\.(\\d+))?\\.billboard(?:\\b|_)");
     acvas->scvas.remove_if([this](const std::shared_ptr<ColoredVertexArray<float>>& cva){
-        Mlib::re::smatch match;
+        Mlib::re::cmatch match;
         if (Mlib::re::regex_search(cva->name.full_name(), match, re)) {
             if (cva->triangles.empty()) {
                 THROW_OR_ABORT("Mesh \"" + cva->name.full_name() + "\" is empty");

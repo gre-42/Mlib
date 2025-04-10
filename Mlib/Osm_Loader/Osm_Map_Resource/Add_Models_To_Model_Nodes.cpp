@@ -50,7 +50,7 @@ void Mlib::add_models_to_model_nodes(
                 continue;
             }
             static const DECLARE_REGEX(model_re, "^([^.]+)(?:\\.(\\d+) \\((\\w+)\\))?$");
-            Mlib::re::smatch match;
+            Mlib::re::cmatch match;
             if (!Mlib::re::regex_match(mit->second, match, model_re)) {
                 THROW_OR_ABORT("Could not parse model name \"" + mit->second + '"');
             }
@@ -73,7 +73,7 @@ void Mlib::add_models_to_model_nodes(
                 // supplies:a                      4
                 // supplies:b                      2
                 static const DECLARE_REGEX(supplies_re, "^supplies:(.*)$");
-                Mlib::re::smatch supplies_match;
+                Mlib::re::cmatch supplies_match;
                 if (Mlib::re::regex_match(k, supplies_match, supplies_re)) {
                     if (supplies_match[1].str() == "meta:cooldown_seconds") {
                         prn.supplies_cooldown = safe_stof(v) * seconds;

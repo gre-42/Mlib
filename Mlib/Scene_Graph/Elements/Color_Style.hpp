@@ -15,7 +15,7 @@ namespace Mlib {
  * Don't forget to update the "insert" function when adding new fields.
  */
 struct ColorStyle {
-    std::optional<Mlib::regex> selector;
+    std::optional<Mlib::re::cregex> selector;
     OrderableFixedArray<float, 3> emissive{-1.f, -1.f, -1.f};
     OrderableFixedArray<float, 3> ambient{-1.f, -1.f, -1.f};
     OrderableFixedArray<float, 3> diffuse{-1.f, -1.f, -1.f};

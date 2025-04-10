@@ -248,7 +248,7 @@ void RootNodes::delete_root_node(const std::string& name) {
     }
 }
 
-void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
+void RootNodes::delete_root_nodes(const Mlib::re::cregex& regex) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (scene_.mutex_.is_owner()) {
         verbose_abort("Node deleter already owns the lock. The UnlockGuard will have no effect");;

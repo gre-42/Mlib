@@ -43,7 +43,7 @@ public:
         SceneNodeState scene_node_state);
     void move_node_to_bvh(const std::string& name);
     void delete_root_node(const std::string& name);
-    void delete_root_nodes(const Mlib::regex& regex);
+    void delete_root_nodes(const Mlib::re::cregex& regex);
     bool no_root_nodes_scheduled_for_deletion() const;
     bool root_node_scheduled_for_deletion(const std::string& name) const;
     void schedule_delete_root_node(const std::string& name);

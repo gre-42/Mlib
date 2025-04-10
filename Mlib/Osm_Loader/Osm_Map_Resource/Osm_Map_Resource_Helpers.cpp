@@ -149,7 +149,7 @@ T Mlib::parse_meters(
         return default_value;
     }
     static const DECLARE_REGEX(re, "^([\\d.-]+) *(m|'|ft)?");
-    Mlib::re::smatch match;
+    Mlib::re::cmatch match;
     if (!Mlib::re::regex_match(*value, match, re)) {
         THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + *value + '"');
     }
@@ -172,7 +172,7 @@ float Mlib::parse_radians(
         return default_value;
     }
     static const DECLARE_REGEX(re, "^([\\d.-]+) *(?:°)?");
-    Mlib::re::smatch match;
+    Mlib::re::cmatch match;
     if (!Mlib::re::regex_match(*value, match, re)) {
         THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + *value + '"');
     }

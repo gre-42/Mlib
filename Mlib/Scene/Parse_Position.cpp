@@ -13,8 +13,8 @@ static FixedArray<ScenePos, 3> parse_geographic_position(
     const std::string& z_str)
 {
     static const DECLARE_REGEX(re, "^([\\deE.+-]+)_deg");
-    Mlib::re::smatch match_x;
-    Mlib::re::smatch match_y;
+    Mlib::re::cmatch match_x;
+    Mlib::re::cmatch match_y;
     bool mx = Mlib::re::regex_match(x_str, match_x, re);
     bool my = Mlib::re::regex_match(y_str, match_y, re);
     if (mx != my) {
