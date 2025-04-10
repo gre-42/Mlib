@@ -22,8 +22,8 @@ bool ColoredVertexArrayFilter::matches(const ColoredVertexArray<TPos>& cva) cons
     return
         !any(~cva.morphology.physics_material & included_tags) &&
         !any(cva.morphology.physics_material & excluded_tags) &&
-        Mlib::re::regex_search(n.begin(), n.end(), included_names) &&
-        !Mlib::re::regex_search(n.begin(), n.end(), excluded_names);
+        Mlib::re::regex_search(n.data(), n.data() + n.size(), included_names) &&
+        !Mlib::re::regex_search(n.data(), n.data() + n.size(), excluded_names);
 }
 
 void Mlib::from_json(const nlohmann::json& j, ColoredVertexArrayFilter& filter) {
