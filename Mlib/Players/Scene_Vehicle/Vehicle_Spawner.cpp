@@ -165,7 +165,7 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
 
 void VehicleSpawner::spawn(const SpawnPoint& spawn_point, CompressedScenePos spawn_y_offset) {
     if (has_player() && player_->has_scene_vehicle()) {
-        THROW_OR_ABORT("Player \"" + player_->id() + "\"already has a vehicle before spawning");
+        THROW_OR_ABORT("Player \"" + player_->id() + "\" already has a vehicle before spawning");
     }
     if (!scene_vehicles_.empty()) {
         THROW_OR_ABORT("Scene vehicles already set before spawning");
