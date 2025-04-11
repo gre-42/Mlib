@@ -4,7 +4,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Stats/Fixed_Random_Arrays.hpp>
 #include <Mlib/Strings/To_Number.hpp>
-#include <print>
+#include <ostream>
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>

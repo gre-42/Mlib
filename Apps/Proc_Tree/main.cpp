@@ -25,7 +25,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <chrono>
-#include <print>
+#include <ostream>
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
