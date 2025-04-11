@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Threads/Fast_Mutex.hpp>
+#include <chrono>
 #include <cstdint>
 #include <mutex>
 
@@ -16,6 +17,18 @@ public:
     inline ~SafeAtomicSharedMutex() = default;
     inline void lock() {
         while (!try_lock());
+    }
+    template <class Rep, class Period>
+    bool try_lock_for(const std::chrono::duration<Rep, Period>& timeout_duration)
+    {
+        auto start = std::chrono::steady_clock::now();
+        while (!try_lock()) {
+            auto now = std::chrono::steady_clock::now();
+            if (now - start >= timeout_duration) {
+                return false;
+            }
+        }
+        return true;
     }
     inline bool try_lock() {
         if (!mutex_.try_lock()) {

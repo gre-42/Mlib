@@ -600,8 +600,8 @@ void android_main(android_app* app) {
             BulletPropertyDb bullet_property_db;
             DynamicLightDb dynamic_light_db;
             LayoutConstraints layout_constraints;
-            KeyConfigurations key_configurations;
-            KeyDescriptions key_descriptions;
+            LockableKeyConfigurations key_configurations;
+            LockableKeyDescriptions key_descriptions;
             {
                 auto record_track_basename = args.try_named_value("--record_track_basename");
                 nlohmann::json j{

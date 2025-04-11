@@ -5,6 +5,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>

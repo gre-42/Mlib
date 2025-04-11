@@ -1,6 +1,6 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
@@ -21,7 +21,14 @@ static struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                args.key_configurations.load(
+                auto lock = args.key_configurations.lock_exclusive_for(
+                    std::chrono::seconds(2),
+                    "Key configurations");
+                auto& cfg = *lock;
+                if (cfg.has_value()) {
+                    THROW_OR_ABORT("Key configurations already initialized");
+                }
+                cfg.emplace().load(
                     args.arguments.path(KnownArgs::filename),
                     args.arguments.path(KnownArgs::fallback_filename));
             });

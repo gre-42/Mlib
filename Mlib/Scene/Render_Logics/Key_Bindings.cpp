@@ -32,7 +32,7 @@
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>

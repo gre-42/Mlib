@@ -9,7 +9,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Input_Config.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
             {1.f, 0.f, 1.f},
             ClearMode::COLOR_AND_DEPTH};
         ButtonStates button_states;
-        KeyConfigurations key_configurations;
+        LockableKeyConfigurations key_configurations;
         ReadPixelsLogic read_pixels_logic{
             standard_render_logic,
             button_states,

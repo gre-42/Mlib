@@ -7,6 +7,8 @@ namespace Mlib {
 struct KeyConfiguration;
 
 class KeyConfigurations {
+    KeyConfigurations(const KeyConfigurations&) = delete;
+    KeyConfigurations& operator = (const KeyConfigurations&) = delete;
 public:
     KeyConfigurations();
     ~KeyConfigurations();

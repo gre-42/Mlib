@@ -1,13 +1,13 @@
 #include "Cursor_Movement.hpp"
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <cmath>
 
 using namespace Mlib;
 
 CursorMovement::CursorMovement(
     CursorStates& cursor_states,
-    const KeyConfigurations& key_configurations,
+    const LockableKeyConfigurations& key_configurations,
     std::string id)
     : incremental_movement_{ cursor_states }
     , key_configurations_{ key_configurations }
@@ -20,6 +20,11 @@ float CursorMovement::axis_alpha(float ncached) {
     if (id_.empty()) {
         return NAN;
     }
-    const auto& key_combination = key_configurations_.get(id_);
+    auto lock = key_configurations_.lock_shared();
+    auto& cfg = *lock;
+    if (!cfg.has_value()) {
+        return NAN;
+    }
+    const auto& key_combination = cfg->get(id_);
     return incremental_movement_.axis_alpha(key_combination.base_cursor_axis, ncached);
 }

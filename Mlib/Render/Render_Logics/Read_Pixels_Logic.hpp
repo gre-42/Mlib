@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <memory>
 
@@ -6,7 +7,6 @@ namespace Mlib {
 
 class ReadPixelsLogicKeys;
 class ButtonStates;
-class KeyConfigurations;
 
 enum class ReadPixelsRole {
     NONE = 0,
@@ -31,7 +31,7 @@ public:
     explicit ReadPixelsLogic(
         RenderLogic& child_logic,
         const ButtonStates& button_states,
-        const KeyConfigurations& key_configurations,
+        const LockableKeyConfigurations& key_configurations,
         ReadPixelsRole role);
     ~ReadPixelsLogic();
 

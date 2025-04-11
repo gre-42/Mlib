@@ -8,7 +8,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -24,7 +24,7 @@ class ReadPixelsLogicKeys {
 public:
     explicit ReadPixelsLogicKeys(
         const ButtonStates& button_states,
-        const KeyConfigurations& key_configurations)
+        const LockableKeyConfigurations& key_configurations)
         : ctrl_p{ button_states, key_configurations, "take_screenshot", "" }
     {}
     ButtonPress ctrl_p;
@@ -36,7 +36,7 @@ using namespace Mlib;
 ReadPixelsLogic::ReadPixelsLogic(
     RenderLogic& child_logic,
     const ButtonStates& button_states,
-    const KeyConfigurations& key_configurations,
+    const LockableKeyConfigurations& key_configurations,
     ReadPixelsRole role)
     : child_logic_{ child_logic }
     , keys_{ std::make_unique<ReadPixelsLogicKeys>(button_states, key_configurations) }

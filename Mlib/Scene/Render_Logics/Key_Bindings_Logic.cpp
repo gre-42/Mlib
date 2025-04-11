@@ -6,9 +6,9 @@
 #include <Mlib/Math/Sub_Sat.hpp>
 #include <Mlib/Render/Key_Bindings/Input_Type.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Description.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Descriptions.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -20,21 +20,68 @@
 
 using namespace Mlib;
 
+LockedKeyBindings::LockedKeyBindings(
+    const LockableKeyDescriptions& key_descriptions,
+    LockableKeyConfigurations& key_configurations)
+    : key_descriptions_{ key_descriptions }
+    , key_configurations_{ key_configurations }
+{}
+
+bool LockedKeyBindings::initialize() const {
+    if (!descriptions_lock_.has_value()) {
+        std::scoped_lock lock{ mutex_ };
+        descriptions_lock_.emplace(key_descriptions_.lock_shared());
+        if (!(*descriptions_lock_)->has_value()) {
+            descriptions_lock_.reset();
+            return false;
+        }
+    }
+    if (!configurations_lock_.has_value()) {
+        std::scoped_lock lock{ mutex_ };
+        configurations_lock_.emplace(key_configurations_.lock_shared());
+        if (!(*configurations_lock_)->has_value()) {
+            configurations_lock_.reset();
+            return false;
+        }
+    }
+    return true;
+}
+
+const KeyDescriptions* LockedKeyBindings::key_descriptions() const {
+    if (!initialize()) {
+        return nullptr;
+    }
+    return &(***descriptions_lock_);
+}
+
+KeyConfigurations* LockedKeyBindings::key_configurations() const {
+    if (!initialize()) {
+        return nullptr;
+    }
+    return &(***configurations_lock_);
+}
+
 KeyBindingsContents::KeyBindingsContents(
     std::string section,
-    const KeyDescriptions& key_descriptions,
+    const LockedKeyBindings& locked_key_bindings,
     const ExpressionWatcher& ew)
     : section_{ std::move(section) }
-    , key_descriptions_{ key_descriptions }
+    , locked_key_bindings_{ locked_key_bindings }
     , ew_{ ew }
 {}
 
 size_t KeyBindingsContents::num_entries() const {
-    return key_descriptions_.size();
+    const auto* desc = locked_key_bindings_.key_descriptions();
+    if (desc == nullptr) {
+        return 0;
+    }
+    return desc->size();
 }
 
 bool KeyBindingsContents::is_visible(size_t index) const {
-    const auto& k = key_descriptions_[index];
+    const auto* desc = locked_key_bindings_.key_descriptions();
+    assert_true(desc != nullptr);
+    const auto& k = (*desc)[index];
     if (k.section != section_) {
         return false;
     }
@@ -49,8 +96,8 @@ bool KeyBindingsContents::is_visible(size_t index) const {
 KeyBindingsLogic::KeyBindingsLogic(
     std::string debug_hint,
     std::string section,
-    const KeyDescriptions& key_descriptions,
-    KeyConfigurations& key_configurations,
+    const LockableKeyDescriptions& key_descriptions,
+    LockableKeyConfigurations& key_configurations,
     std::string charset,
     std::string ttf_filename,
     std::unique_ptr<IWidget>&& widget,
@@ -65,7 +112,8 @@ KeyBindingsLogic::KeyBindingsLogic(
     , ew_{ std::move(ew) }
     , key_descriptions_{ key_descriptions }
     , key_configurations_{ key_configurations }
-    , contents_{ std::move(section), key_descriptions_, *ew_ }
+    , locked_key_bindings_{ key_descriptions_, key_configurations_ }
+    , contents_{ std::move(section), locked_key_bindings_, *ew_ }
     , renderable_text_{std::make_unique<TextResource>(
         ascii,
         std::move(ttf_filename),
@@ -112,6 +160,8 @@ void KeyBindingsLogic::render_without_setup(
     if (ew_->result_may_have_changed()) {
         renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }
+    const auto* desc = locked_key_bindings_.key_descriptions();
+    const auto* conf = locked_key_bindings_.key_configurations();
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
         *renderable_text_,
@@ -119,10 +169,11 @@ void KeyBindingsLogic::render_without_setup(
         line_distance_,
         *ew,
         ly,
-        [this, filter](size_t index)
+        [this, filter, desc, conf](size_t index)
         {
-            const auto& d = key_descriptions_[index];
-            const auto& k = key_configurations_.get(d.id);
+            assert_true((desc != nullptr) && (conf != nullptr));
+            const auto& d = (*desc)[index];
+            const auto& k = conf->get(d.id);
             return d.title + std::string(sub_sat<size_t>(40, nchars32(d.title)), ' ') + ": " + k.to_string(filter);
             // std::basic_stringstream<char32_t> sstr;
             // sstr << std::left << std::setw(40) << u8_to_u32_string(d.title);

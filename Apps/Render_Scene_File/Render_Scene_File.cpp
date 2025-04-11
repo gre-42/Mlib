@@ -33,7 +33,7 @@
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Descriptions.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
@@ -60,7 +60,7 @@ using namespace Mlib;
 std::unique_ptr<JThread> render_thread(
     const ParsedArgs& args,
     ButtonStates& button_states,
-    KeyConfigurations& key_configurations,
+    LockableKeyConfigurations& key_configurations,
     RenderableScenes& renderable_scenes,
     std::atomic_bool& load_scene_finished,
     Renderer& renderer,
@@ -186,8 +186,8 @@ JThread loader_thread(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     ButtonPress& confirm_button_press,
-    KeyConfigurations& key_configurations,
-    KeyDescriptions& key_descriptions,
+    LockableKeyConfigurations& key_configurations,
+    LockableKeyDescriptions& key_descriptions,
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
@@ -545,8 +545,11 @@ int main(int argc, char** argv) {
                 .key = "ENTER",
                 .gamepad_button = "A",
                 .tap_button = "START"}}}};
-        KeyConfigurations confirm_key_configurations;
-        confirm_key_configurations.insert("confirm", { std::move(confirm_key_combination) });
+        LockableKeyConfigurations confirm_key_configurations;
+        confirm_key_configurations
+            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
+            ->emplace()
+            .insert("confirm", { std::move(confirm_key_combination) });
         ButtonPress confirm_button_press{ button_states, confirm_key_configurations, "confirm", "" };
         UiFocus ui_focus{ get_path_in_appdata_directory({"focus.json"}) };
         if (ui_focus.can_load()) {
@@ -628,8 +631,8 @@ int main(int argc, char** argv) {
             BulletPropertyDb bullet_property_db;
             DynamicLightDb dynamic_light_db;
             LayoutConstraints layout_constraints;
-            KeyConfigurations key_configurations;
-            KeyDescriptions key_descriptions;
+            LockableKeyConfigurations key_configurations;
+            LockableKeyDescriptions key_descriptions;
             {
                 auto record_track_basename = args.try_named_value("--record_track_basename");
                 nlohmann::json j{

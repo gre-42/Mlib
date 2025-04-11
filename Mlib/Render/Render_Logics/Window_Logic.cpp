@@ -8,7 +8,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -21,13 +21,15 @@ public:
         : esc{ button_states, key_configurations, "esc", "" }
         , F11{ button_states, key_configurations, "F11", "" }
     {
-        key_configurations.insert("esc", { {{{.key = "ESCAPE"}}} });
-        key_configurations.insert("F11", { {{{.key = "F11"}}} });
+        auto lock = key_configurations.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
+        auto& cfg = lock->emplace();
+        cfg.insert("esc", { {{{.key = "ESCAPE"}}} });
+        cfg.insert("F11", { {{{.key = "F11"}}} });
     }
     ButtonPress esc;
     ButtonPress F11;
 private:
-    KeyConfigurations key_configurations;
+    LockableKeyConfigurations key_configurations;
 };
 }
 

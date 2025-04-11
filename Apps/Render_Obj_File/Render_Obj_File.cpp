@@ -39,7 +39,7 @@
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Modifiers/Merge_Textures.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Render.hpp>
@@ -1094,8 +1094,11 @@ int main(int argc, char** argv) {
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
-        KeyConfigurations key_configurations;
-        key_configurations.insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+        LockableKeyConfigurations key_configurations;
+        key_configurations
+            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
+            ->emplace()
+            .insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
         StandardCameraLogic standard_camera_logic{
             scene,
             selected_cameras};

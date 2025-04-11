@@ -1,10 +1,10 @@
 #pragma once
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <string>
 
 namespace Mlib {
 
 struct BaseAnalogAxisBinding;
-class KeyConfigurations;
 class ButtonStates;
 
 class GamepadAnalogAxesPosition {
@@ -12,7 +12,7 @@ class GamepadAnalogAxesPosition {
 public:
     GamepadAnalogAxesPosition(
         const ButtonStates& button_states,
-        const KeyConfigurations& key_configurations,
+        const LockableKeyConfigurations& key_configurations,
         std::string id,
         std::string role);
     ~GamepadAnalogAxesPosition();
@@ -20,7 +20,7 @@ public:
     float axis_alpha();
 private:
     const ButtonStates& button_states_;
-    const KeyConfigurations& key_configurations_;
+    const LockableKeyConfigurations& key_configurations_;
     std::string id_;
     std::string role_;
 };

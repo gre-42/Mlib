@@ -3,7 +3,7 @@
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -15,11 +15,14 @@ public:
     explicit MenuLogicKeys(ButtonStates& button_states)
         : start{ button_states, key_configurations, "escape", "" }
     {
-        key_configurations.insert("escape", { {{{.key = "ESCAPE", .gamepad_button = "START", .tap_button = "ESCAPE"}}} });
+        key_configurations
+            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
+            ->emplace()
+            .insert("escape", { {{{.key = "ESCAPE", .gamepad_button = "START", .tap_button = "ESCAPE"}}} });
     }
     ButtonPress start;
 private:
-    KeyConfigurations key_configurations;
+    LockableKeyConfigurations key_configurations;
 };
 }
 

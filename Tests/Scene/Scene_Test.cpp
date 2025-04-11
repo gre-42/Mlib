@@ -31,7 +31,7 @@
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -224,8 +224,11 @@ void test_physics_engine(unsigned int seed) {
     ButtonStates button_states;
     CursorStates cursor_states;
     CursorStates scroll_wheel_states;
-    KeyConfigurations key_configurations;
-    key_configurations.insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+    LockableKeyConfigurations key_configurations;
+    key_configurations
+        .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
+        ->emplace()
+        .insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
     FlyingCameraUserClass user_object{
         .button_states = button_states,
         .cursor_states = cursor_states,

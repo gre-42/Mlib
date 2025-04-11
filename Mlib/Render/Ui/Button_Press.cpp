@@ -3,7 +3,7 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <cmath>
 
@@ -13,7 +13,7 @@ using namespace Mlib;
 
 ButtonPress::ButtonPress(
     const ButtonStates& button_states,
-    const KeyConfigurations& key_configurations,
+    const LockableKeyConfigurations& key_configurations,
     std::string id,
     std::string role)
     : button_states_{ button_states }
@@ -34,7 +34,12 @@ bool ButtonPress::keys_down() const {
     if (id_.empty()) {
         return false;
     }
-    const auto& key_combination = key_configurations_.get(id_);
+    auto lock = key_configurations_.lock_shared();
+    auto& cfg = *lock;
+    if (!cfg.has_value()) {
+        return false;
+    }
+    const auto& key_combination = cfg->get(id_);
     for (const auto& kk : key_combination.base_combo.key_bindings) {
         if (!button_states_.key_down(kk, role_)) {
             return false;

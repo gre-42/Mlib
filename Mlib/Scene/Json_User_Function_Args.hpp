@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
 #include <atomic>
 #include <functional>
 #include <list>
@@ -21,8 +23,6 @@ struct SceneConfig;
 class ButtonStates;
 class CursorStates;
 class ButtonPress;
-class KeyConfigurations;
-class KeyDescriptions;
 class LayoutConstraints;
 class AssetReferences;
 class Translators;
@@ -43,8 +43,8 @@ struct LoadSceneJsonUserFunctionArgs {
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
     ButtonPress& confirm_button_press;
-    KeyConfigurations& key_configurations;
-    KeyDescriptions& key_descriptions;
+    LockableKeyConfigurations& key_configurations;
+    LockableKeyDescriptions& key_descriptions;
     UiFocus& ui_focus;
     LayoutConstraints& layout_constraints;
     std::atomic_size_t& num_renderings;

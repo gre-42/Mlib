@@ -4,7 +4,7 @@
 #include <Mlib/Render/Input_Map/Tap_Analog_Axes_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Gamepad_Analog_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
@@ -13,7 +13,7 @@ using namespace Mlib;
 
 GamepadAnalogAxesPosition::GamepadAnalogAxesPosition(
     const ButtonStates& button_states,
-    const KeyConfigurations& key_configurations,
+    const LockableKeyConfigurations& key_configurations,
     std::string id,
     std::string role)
     : button_states_{ button_states }
@@ -50,7 +50,12 @@ float GamepadAnalogAxesPosition::axis_alpha()
     if (id_.empty()) {
         return NAN;
     }
-    const auto& key_combination = key_configurations_.get(id_);
+    auto lock = key_configurations_.lock_shared();
+    auto& cfg = *lock;
+    if (!cfg.has_value()) {
+        return NAN;
+    }
+    const auto& key_combination = cfg->get(id_);
 
     auto* axes = key_combination
         .base_gamepad_analog_axes

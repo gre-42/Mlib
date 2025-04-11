@@ -5,7 +5,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
@@ -30,17 +30,19 @@ public:
         , d{ button_states, key_configurations, "d", "" }
         , c{ button_states, key_configurations, "c", "" }
     {
-        key_configurations.insert("v", { {{{.key = "V"}}} });
-        key_configurations.insert("w", { {{{.key = "W"}}} });
-        key_configurations.insert("d", { {{{.key = "D"}}} });
-        key_configurations.insert("c", { {{{.key = "C"}}} });
+        auto lock = key_configurations.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
+        auto& cfg = lock->emplace();
+        cfg.insert("v", { {{{.key = "V"}}} });
+        cfg.insert("w", { {{{.key = "W"}}} });
+        cfg.insert("d", { {{{.key = "D"}}} });
+        cfg.insert("c", { {{{.key = "C"}}} });
     }
     ButtonPress v;
     ButtonPress w;
     ButtonPress d;
     ButtonPress c;
 private:
-    KeyConfigurations key_configurations;
+    LockableKeyConfigurations key_configurations;
 };
 }
 

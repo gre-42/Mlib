@@ -12,6 +12,7 @@
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Imposters.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -58,7 +59,6 @@ class AudioListenerUpdater;
 class PhysicsLoop;
 class ButtonStates;
 class CursorStates;
-class KeyConfigurations;
 
 class Translator;
 
@@ -97,7 +97,7 @@ public:
         ButtonStates& button_states,
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
-        KeyConfigurations& key_configurations,
+        LockableKeyConfigurations& key_configurations,
         UiFocus& ui_focus,
         const SceneConfigResource& config,
         size_t max_tracks,

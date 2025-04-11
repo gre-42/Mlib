@@ -45,14 +45,16 @@ ListView::ListView(
             .axis = "2",
             .sign_and_threshold = 0.5
     };
-    key_configurations_.insert("left", { { {{.key = "LEFT", .joystick_axes = {{"default", {.joystick=left, .tap = left}}}, .tap_button = "LEFT"}} } });
-    key_configurations_.insert("right", { { {{.key = "RIGHT", .joystick_axes = {{"default", {.joystick=right, .tap = right}}}, .tap_button = "RIGHT"}} } });
-    key_configurations_.insert("up", { {.key_bindings = {{.key = "UP", .joystick_axes = {{"default", {.joystick = up, .tap = up}}}, .tap_button = "UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    key_configurations_.insert("down", { {.key_bindings = {{.key = "DOWN", .joystick_axes = {{"default", {.joystick = down, .tap = down}}}, .tap_button = "DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    key_configurations_.insert("page_up", { {.key_bindings = {{.key = "PAGE_UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    key_configurations_.insert("page_down", { {.key_bindings = {{.key = "PAGE_DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    key_configurations_.insert("home", { { {{.key = "HOME"}} } });
-    key_configurations_.insert("end", { { {{.key = "END"}} } });
+    auto lock = key_configurations_.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
+    auto& cfg = lock->emplace();
+    cfg.insert("left", { { {{.key = "LEFT", .joystick_axes = {{"default", {.joystick=left, .tap = left}}}, .tap_button = "LEFT"}} } });
+    cfg.insert("right", { { {{.key = "RIGHT", .joystick_axes = {{"default", {.joystick=right, .tap = right}}}, .tap_button = "RIGHT"}} } });
+    cfg.insert("up", { {.key_bindings = {{.key = "UP", .joystick_axes = {{"default", {.joystick = up, .tap = up}}}, .tap_button = "UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    cfg.insert("down", { {.key_bindings = {{.key = "DOWN", .joystick_axes = {{"default", {.joystick = down, .tap = down}}}, .tap_button = "DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    cfg.insert("page_up", { {.key_bindings = {{.key = "PAGE_UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    cfg.insert("page_down", { {.key_bindings = {{.key = "PAGE_DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    cfg.insert("home", { { {{.key = "HOME"}} } });
+    cfg.insert("end", { { {{.key = "END"}} } });
     if (on_change_ && has_selected_element()) {
         on_change_();
     } else {

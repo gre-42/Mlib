@@ -2,6 +2,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -18,15 +20,29 @@ class ILayoutPixels;
 struct ReplacementParameter;
 template <typename TData, size_t... tshape>
 class FixedArray;
-class KeyDescriptions;
-class KeyConfigurations;
 class ExpressionWatcher;
+
+class LockedKeyBindings {
+public:
+    explicit LockedKeyBindings(
+        const LockableKeyDescriptions& key_descriptions,
+        LockableKeyConfigurations& key_configurations);
+    const KeyDescriptions* key_descriptions() const;
+    KeyConfigurations* key_configurations() const;
+private:
+    bool initialize() const;
+    const LockableKeyDescriptions& key_descriptions_;
+    LockableKeyConfigurations& key_configurations_;
+    mutable std::optional<LockableKeyDescriptions::ConstLockShared> descriptions_lock_;
+    mutable std::optional<LockableKeyConfigurations::LockShared> configurations_lock_;
+    mutable FastMutex mutex_;
+};
 
 class KeyBindingsContents: public IListViewContents {
 public:
     explicit KeyBindingsContents(
         std::string section,
-        const KeyDescriptions& key_descriptions,
+        const LockedKeyBindings& locked_key_bindings,
         const ExpressionWatcher& mle);
 
     // IListViewContents
@@ -34,7 +50,7 @@ public:
     virtual bool is_visible(size_t index) const override;
 private:
     std::string section_;
-    const KeyDescriptions& key_descriptions_;
+    const LockedKeyBindings& locked_key_bindings_;
     const ExpressionWatcher& ew_;
 };
 
@@ -43,8 +59,8 @@ public:
     KeyBindingsLogic(
         std::string debug_hint,
         std::string section,
-        const KeyDescriptions& key_descriptions,
-        KeyConfigurations& key_configurations,
+        const LockableKeyDescriptions& key_descriptions,
+        LockableKeyConfigurations& key_configurations,
         std::string charset,
         std::string ttf_filename,
         std::unique_ptr<IWidget>&& widget,
@@ -75,8 +91,9 @@ public:
 private:
     std::string charset_;
     std::unique_ptr<ExpressionWatcher> ew_;
-    const KeyDescriptions& key_descriptions_;
-    KeyConfigurations& key_configurations_;
+    const LockableKeyDescriptions& key_descriptions_;
+    LockableKeyConfigurations& key_configurations_;
+    LockedKeyBindings locked_key_bindings_;
     KeyBindingsContents contents_;
     std::unique_ptr<TextResource> renderable_text_;
     std::unique_ptr<IWidget> widget_;

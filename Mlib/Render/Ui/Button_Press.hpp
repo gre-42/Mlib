@@ -1,11 +1,11 @@
 #pragma once
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <chrono>
 #include <string>
 
 namespace Mlib {
 
 struct BaseKeyBinding;
-class KeyConfigurations;
 class ButtonStates;
 
 class ButtonPress {
@@ -13,7 +13,7 @@ class ButtonPress {
 public:
     ButtonPress(
         const ButtonStates& button_states,
-        const KeyConfigurations& key_configurations,
+        const LockableKeyConfigurations& key_configurations,
         std::string id,
         std::string role);
     ~ButtonPress();
@@ -30,7 +30,7 @@ private:
     bool key_was_up_;
     bool keys_down_;
 
-    const KeyConfigurations& key_configurations_;
+    const LockableKeyConfigurations& key_configurations_;
     std::string id_;
     std::string role_;
 };

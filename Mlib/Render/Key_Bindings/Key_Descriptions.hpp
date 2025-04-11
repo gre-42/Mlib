@@ -8,6 +8,8 @@ namespace Mlib {
 struct KeyDescription;
 
 class KeyDescriptions {
+    KeyDescriptions(const KeyDescriptions&) = delete;
+    KeyDescriptions& operator = (const KeyDescriptions&) = delete;
 public:
     KeyDescriptions();
     ~KeyDescriptions();

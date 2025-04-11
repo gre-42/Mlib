@@ -1,5 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
 #include <atomic>
 #include <functional>
 
@@ -15,8 +17,6 @@ struct RenderConfig;
 class ButtonStates;
 class CursorStates;
 class ButtonPress;
-class KeyConfigurations;
-class KeyDescriptions;
 class UiFocus;
 class RenderLogics;
 class ThreadSafeString;
@@ -46,8 +46,8 @@ public:
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         ButtonPress& confirm_button_press,
-        KeyConfigurations& key_configurations,
-        KeyDescriptions& key_descriptions,
+        LockableKeyConfigurations& key_configurations,
+        LockableKeyDescriptions& key_descriptions,
         UiFocus& ui_focus,
         LayoutConstraints& layout_constraints,
         RenderLogicGallery& gallery,

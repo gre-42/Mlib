@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <functional>
 #include <memory>
@@ -47,7 +47,7 @@ private:
     ButtonPress next_fast_;
     ButtonPress first_;
     ButtonPress last_;
-    KeyConfigurations key_configurations_;
+    LockableKeyConfigurations key_configurations_;
 };
 
 }
