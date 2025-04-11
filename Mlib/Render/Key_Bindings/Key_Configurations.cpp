@@ -172,7 +172,7 @@ void KeyConfigurations::load(
                 .joystick_axes = digital_axes(KeyConfigurationArgs::analog_digital_axes2),
                 .tap_button = str(KeyConfigurationArgs::tap_button2)});
         }
-        if (!key_configurations_.insert({id, std::move(key_config)}).second) {
+        if (!key_configurations_.try_emplace(std::move(id), std::move(key_config)).second) {
             THROW_OR_ABORT("Duplicate key config: \"" + id + '"');
         }
     }
