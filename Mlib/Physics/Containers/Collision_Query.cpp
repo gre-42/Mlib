@@ -8,7 +8,7 @@
 using namespace Mlib;
 
 CollisionQuery::CollisionQuery(PhysicsEngine& physics_engine)
-: physics_engine_{physics_engine}
+: physics_engine_{ physics_engine }
 {}
 
 bool CollisionQuery::can_see(
@@ -283,3 +283,52 @@ bool CollisionQuery::can_see(
             seen_mesh);
     }
 }
+
+// bool CollisionQuery::visit_intersection_partners(
+//     const RigidBodyVehicle& vehicle0,
+//     PhysicsMaterial collidable_mask0,
+//     PhysicsMaterial collidable_mask1,
+//     const std::function<bool(const RigidBodyVehicle& vehicle1)>& visit) const
+// {
+//     for (const auto& i : vehicle0.intersectables) {
+//         if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
+//             i.mesh->aabb(),
+//             [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0)
+//             {
+//                 auto ti = TransformedIntersectable{
+//                     i.mesh,
+//                     vehicle0.rbp_.abs_transformation()};
+//                 return std::visit(
+//                     [&](const auto& ctp)
+//                     {
+//                         ScenePos overlap;
+//                         FixedArray<ScenePos, 3> intersection_point = uninitialized;
+//                         FixedArray<SceneDir, 3> normal = uninitialized;
+//                         if (ti.intersects(ctp, overlap, intersection_point, normal)) {
+//                             if (!visit(t0.rb)) {
+//                                 return false;
+//                             }
+//                         }
+//                         return true;
+//                     }, t0.ctp);
+//             }))
+//         {
+//             return false;
+//         }
+//     }
+//     return true;
+// }
+
+// bool CollisionQuery::volume_is_empty(
+//     const RigidBodyVehicle& vehicle0,
+//     PhysicsMaterial collidable_mask0,
+//     PhysicsMaterial collidable_mask1) const
+// {
+//     return !visit_intersection_partners(
+//         vehicle0,
+//         collidable_mask0,
+//         collidable_mask1,
+//         [](const RigidBodyVehicle& vehicle1){
+//             return false;
+//         });
+// }

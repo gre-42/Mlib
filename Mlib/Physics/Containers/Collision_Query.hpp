@@ -14,7 +14,7 @@ struct CollisionPolygonSphere;
 
 class CollisionQuery {
 public:
-    CollisionQuery(PhysicsEngine& physics_engine);
+    explicit CollisionQuery(PhysicsEngine& physics_engine);
     bool can_see(
         const FixedArray<ScenePos, 3>& watcher,
         const FixedArray<ScenePos, 3>& watched,
@@ -48,6 +48,21 @@ public:
         std::variant<const CollisionPolygonSphere<CompressedScenePos, 3>*, const CollisionPolygonSphere<CompressedScenePos, 4>*>* intersection_polygon = nullptr,
         const RigidBodyVehicle** seen_object = nullptr,
         const IIntersectableMesh** seen_mesh = nullptr) const;
+    // bool visit_intersection_partners(
+    //     const RigidBodyVehicle& vehicle0,
+    //     PhysicsMaterial collidable_mask0,
+    //     PhysicsMaterial collidable_mask1,
+    //     const std::function<bool(const RigidBodyVehicle& vehicle1)>& visit) const;
+    // bool volume_is_empty(
+    //     const RigidBodyVehicle& vehicle0,
+    //     PhysicsMaterial collidable_mask0 =
+    //         PhysicsMaterial::OBJ_CHASSIS |
+    //         PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT |
+    //         PhysicsMaterial::OBJ_DISTANCEBOX,
+    //     PhysicsMaterial collidable_mask1 =
+    //         PhysicsMaterial::OBJ_CHASSIS |
+    //         PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT |
+    //         PhysicsMaterial::OBJ_DISTANCEBOX) const;
 private:
     const PhysicsEngine& physics_engine_;
 };
