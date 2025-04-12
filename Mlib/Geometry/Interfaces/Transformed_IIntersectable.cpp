@@ -27,44 +27,44 @@ AxisAlignedBoundingBox<CompressedScenePos, 3> TransformedIntersectable::aabb() c
     return child_->aabb().template casted<ScenePos>().transformed(trafo_).casted<CompressedScenePos>();
 }
 
-bool TransformedIntersectable::intersects(
+bool TransformedIntersectable::touches(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    return intersects_any_wo_ray_t(q, overlap, intersection_point, normal);
+    return touches_any_wo_ray_t(q, overlap, intersection_point, normal);
 }
 
-bool TransformedIntersectable::intersects(
+bool TransformedIntersectable::touches(
     const CollisionPolygonSphere<CompressedScenePos, 3>& t,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    return intersects_any_wo_ray_t(t, overlap, intersection_point, normal);
+    return touches_any_wo_ray_t(t, overlap, intersection_point, normal);
 }
 
-bool TransformedIntersectable::intersects(
+bool TransformedIntersectable::touches(
     const CollisionRidgeSphere<CompressedScenePos>& r1,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    return intersects_any_wo_ray_t(r1, overlap, intersection_point, normal);
+    return touches_any_wo_ray_t(r1, overlap, intersection_point, normal);
 }
 
-bool TransformedIntersectable::intersects(
+bool TransformedIntersectable::touches(
     const CollisionLineSphere<CompressedScenePos>& l1,
     ScenePos& overlap,
     ScenePos& ray_t,
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    return intersects_any_with_ray_t(l1, overlap, ray_t, intersection_point, normal);
+    return touches_any_with_ray_t(l1, overlap, ray_t, intersection_point, normal);
 }
 
-bool TransformedIntersectable::intersects(
+bool TransformedIntersectable::touches(
     const IIntersectable& intersectable,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
@@ -77,7 +77,7 @@ bool TransformedIntersectable::intersects(
     ScenePos c_overlap;
     FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
     FixedArray<SceneDir, 3> c_normal = uninitialized;
-    bool intersects = child_->intersects(
+    bool intersects = child_->touches(
         *o->child_,
         (trafo_.inverted() * o->trafo_).template casted<float, ScenePos>(),
         c_overlap,
@@ -92,7 +92,7 @@ bool TransformedIntersectable::intersects(
     return true;
 }
 
-bool TransformedIntersectable::intersects(
+bool TransformedIntersectable::touches(
     const IIntersectable& intersectable,
     const TransformationMatrix<float, ScenePos, 3>& trafo,
     ScenePos& overlap,
@@ -102,8 +102,20 @@ bool TransformedIntersectable::intersects(
     THROW_OR_ABORT("TransformedIIntersectable received additional transformation matrix");
 }
 
+bool TransformedIntersectable::can_spawn_at(
+    const CollisionPolygonSphere<CompressedScenePos, 3>& t) const
+{
+    return can_spawn_at_any(t);
+}
+
+bool TransformedIntersectable::can_spawn_at(
+    const CollisionPolygonSphere<CompressedScenePos, 4>& q) const
+{
+    return can_spawn_at_any(q);
+}
+
 template <class TOther>
-bool TransformedIntersectable::intersects_any_wo_ray_t(
+bool TransformedIntersectable::touches_any_wo_ray_t(
     const TOther& o,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
@@ -116,12 +128,12 @@ bool TransformedIntersectable::intersects_any_wo_ray_t(
     ScenePos c_overlap;
     FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
     FixedArray<SceneDir, 3> c_normal = uninitialized;
-    bool intersects = child_->intersects(
+    bool touches = child_->touches(
         o.transformed(trafo_.inverted()),
         c_overlap,
         c_intersection_point,
         c_normal);
-    if (!intersects) {
+    if (!touches) {
         return false;
     }
     overlap = (ScenePos)c_overlap;
@@ -131,7 +143,7 @@ bool TransformedIntersectable::intersects_any_wo_ray_t(
 }
 
 template <class TOther>
-bool TransformedIntersectable::intersects_any_with_ray_t(
+bool TransformedIntersectable::touches_any_with_ray_t(
     const TOther& o,
     ScenePos& overlap,
     ScenePos& ray_t,
@@ -146,13 +158,13 @@ bool TransformedIntersectable::intersects_any_with_ray_t(
     ScenePos c_ray_t;
     FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
     FixedArray<SceneDir, 3> c_normal = uninitialized;
-    bool intersects = child_->intersects(
+    bool touches = child_->touches(
         o.transformed(trafo_.inverted()),
         c_overlap,
         c_ray_t,
         c_intersection_point,
         c_normal);
-    if (!intersects) {
+    if (!touches) {
         return false;
     }
     overlap = (ScenePos)c_overlap;
@@ -160,6 +172,15 @@ bool TransformedIntersectable::intersects_any_with_ray_t(
     intersection_point = trafo_.transform(c_intersection_point);
     normal = trafo_.rotate(c_normal.template casted<float>());
     return true;
+}
+
+template <class TOther>
+bool TransformedIntersectable::can_spawn_at_any(const TOther& o) const {
+    auto tbs = o.bounding_sphere.itransformed(trafo_);
+    if (!aabb_intersects_sphere(child_->aabb().casted<ScenePos>(), tbs.template casted<ScenePos>())) {
+        return false;
+    }
+    return child_->can_spawn_at(o.transformed(trafo_.inverted()));
 }
 
 #ifdef __GNUC__

@@ -1022,7 +1022,7 @@ void Player::reset_vehicle(
     if (vehicle_spawner_ != nullptr) {
         verbose_abort("Vehicle spawner not null after deletion");
     }
-    spawner_.spawn_at_spawn_point(
+    if (!spawner_.try_spawn_at_spawn_point(
         *vs,
         SpawnPoint{
             .type = SpawnPointType::ROAD,
@@ -1030,9 +1030,15 @@ void Player::reset_vehicle(
             .position = location.position.casted<CompressedScenePos>(),
             .rotation = location.rotation,
             .team = team_name()
-        });
-    if (vehicle_spawner_ == nullptr) {
-        verbose_abort("Vehicle spawner is null after spawning");
+        }))
+    {
+        if (vehicle_spawner_ != nullptr) {
+            verbose_abort("Vehicle spawner not null after failed spawning");
+        }
+    } else {
+        if (vehicle_spawner_ == nullptr) {
+            verbose_abort("Vehicle spawner is null after spawning");
+        }
     }
 }
 

@@ -18,6 +18,8 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <class TDir, class TPos>
+class RaySegment3D;
 
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox {
@@ -216,6 +218,73 @@ public:
         };
         for (const auto& e : edges.row_iterable()) {
             if (!op(e)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    template <class TDir, class TOperation>
+    bool for_each_ray(const TOperation& op) const {
+        static_assert(tndim == 3);
+        const auto rays = FixedArray<RaySegment3D<TDir, TData>, 12>{
+            // 0, 0, 0
+            RaySegment3D<TDir, TData>{ min, FixedArray<TDir, 3>{0.f, 0.f, 1.f}, (TDir)(max(2) - min(2)) },
+            RaySegment3D<TDir, TData>{ min, FixedArray<TDir, 3>{0.f, 1.f, 0.f}, (TDir)(max(1) - min(1)) },
+            RaySegment3D<TDir, TData>{ min, FixedArray<TDir, 3>{1.f, 0.f, 0.f}, (TDir)(max(0) - min(0)) },
+            // 0, 0, 1
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{min(0), min(1), max(2)},
+                FixedArray<TDir, 3>{0.f, 1.f, 0.f},
+                (TDir)(max(1) - min(1))
+            },
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{min(0), min(1), max(2)},
+                FixedArray<TDir, 3>{1.f, 0.f, 0.f},
+                (TDir)(max(0) - min(0))
+            },
+            // 0, 1, 0
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{min(0), max(1), min(2)},
+                FixedArray<TDir, 3>{0.f, 0.f, 1.f},
+                (TDir)(max(2) - min(2))
+            },
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{min(0), max(1), min(2)},
+                FixedArray<TDir, 3>{1.f, 0.f, 0.f},
+                (TDir)(max(0) - min(0))
+            },
+            // 0, 1, 1
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{min(0), max(1), max(2)},
+                FixedArray<TDir, 3>{1.f, 0.f, 0.f},
+                (TDir)(max(0) - min(0))
+            },
+            // 1, 0, 0
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{max(0), min(1), min(2)},
+                FixedArray<TDir, 3>{0.f, 0.f, 1.f},
+                (TDir)(max(2) - min(2))
+            },
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{max(0), min(1), min(2)},
+                FixedArray<TDir, 3>{0.f, 1.f, 0.f},
+                (TDir)(max(1) - min(1))
+            },
+            // 1, 0, 1
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{max(0), min(1), max(2)},
+                FixedArray<TDir, 3>{0.f, 1.f, 0.f},
+                (TDir)(max(1) - min(1))
+            },
+            // 1, 1, 0
+            RaySegment3D<TDir, TData>{
+                FixedArray<TData, 3>{max(0), min(1), max(2)},
+                FixedArray<TDir, 3>{0.f, 1.f, 0.f},
+                (TDir)(max(1) - min(1))
+            }
+        };
+        for (const auto& ray : rays.flat_iterable()) {
+            if (!op(ray)) {
                 return false;
             }
         }

@@ -44,8 +44,8 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
         const std::list<SpawnPoint>& spawn_points);
     void respawn_all_players();
-    void spawn_player_during_match(VehicleSpawner& spawner);
-    void spawn_at_spawn_point(VehicleSpawner& spawner, const SpawnPoint& sp);
+    bool try_spawn_player_during_match(VehicleSpawner& spawner);
+    bool try_spawn_at_spawn_point(VehicleSpawner& spawner, const SpawnPoint& sp);
 private:
     std::vector<SpawnPoint*> shuffled_spawn_points();
     std::vector<SpawnPoint> spawn_points_;
@@ -56,7 +56,7 @@ private:
     GameLogicConfig& cfg_;
     DeleteNodeMutex& delete_node_mutex_;
     Scene& scene_;
-    size_t nspawns_;
+    size_t ntry_spawns_;
     size_t ndelete_;
 };
 

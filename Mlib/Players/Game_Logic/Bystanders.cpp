@@ -116,12 +116,15 @@ bool Bystanders::spawn_for_vip(
                 return true;
             }
         }
-        spawner_.spawn_at_spawn_point(spawner, *sp);
-        if (spotted) {
-            spawner.set_spotted_by_vip();
+        if (spawner_.try_spawn_at_spawn_point(spawner, *sp)) {
+            if (spotted) {
+                spawner.set_spotted_by_vip();
+            }
+            success = true;
+            return false;
+        } else {
+            return true;
         }
-        success = true;
-        return false;
     });
     // current_bvh_ = (current_bvh_ + 1) % spawn_.spawn_points_bvhs_split_.size();
     current_bvh_ = current_bvh_rng_() % spawner_.spawn_points_bvh_split_.size();

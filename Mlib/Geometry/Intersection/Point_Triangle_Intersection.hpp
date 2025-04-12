@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
+#include <Mlib/Geometry/Intersection/Distance/Distance_Point_Line.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

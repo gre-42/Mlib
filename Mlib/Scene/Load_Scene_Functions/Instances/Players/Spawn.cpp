@@ -33,7 +33,7 @@ Spawn::Spawn(RenderableScene& renderable_scene)
 void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
-    game_logic->spawner.spawn_at_spawn_point(
+    if (!game_logic->spawner.try_spawn_at_spawn_point(
         vehicle_spawners.get(spawner_name),
         SpawnPoint{
             .type = SpawnPointType::ROAD,
@@ -41,7 +41,10 @@ void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
             .position = parse_position(args.arguments.at(KnownArgs::position), scene_node_resources),
             .rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
             .team = args.arguments.at<std::string>(KnownArgs::team)
-        });
+        }))
+    {
+        THROW_OR_ABORT("Could not spawn \"" + spawner_name + '"');
+    }
 }
 
 namespace {

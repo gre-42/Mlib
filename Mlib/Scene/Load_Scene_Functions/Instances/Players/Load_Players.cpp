@@ -170,8 +170,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         {
                             {"spawner_name", player.at<std::string>(PlayerKeys::name)},
                             {"player_name", player.at<std::string>(PlayerKeys::name)},
-                            {"human_name", vehicle_name},
-                            {"car_name", vehicle_name},
+                            {"asset_id", vehicle_name},
                             {"team", team},
                             {"game_mode", get(PlayerKeys::game_mode).get<std::string>()},
                             {"initial_behavior", get(PlayerKeys::behavior).get<std::string>()},
@@ -209,8 +208,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         MacroKeys::let,
                         {
                             {"spawner_name", player.at<std::string>(PlayerKeys::name)},
-                            {"human_name", vehicle_name},
-                            {"car_name", vehicle_name},
+                            {"asset_id", vehicle_name},
                             {"team", team},
                             {"if_human_style", true},
                             {"if_car_body_renderable_style", true},

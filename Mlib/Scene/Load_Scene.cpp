@@ -190,7 +190,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Delete_Mesh.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Compound_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Contour_Edges.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Grind_Lines.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Instances.hpp>
@@ -421,7 +420,6 @@ LoadScene::LoadScene() {
             register_json_user_function(GenGrindLines::key, GenGrindLines::json_user_function);
             register_json_user_function(GenContourEdges::key, GenContourEdges::json_user_function);
             register_json_user_function(GenInstances::key, GenInstances::json_user_function);
-            register_json_user_function(GenCompoundResource::key, GenCompoundResource::json_user_function);
             register_json_user_function(ImportBoneWeights::key, ImportBoneWeights::json_user_function);
             register_json_user_function(LoadOsmResource::key, LoadOsmResource::json_user_function);
             register_json_user_function(ObjResource::key, ObjResource::json_user_function);

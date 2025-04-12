@@ -85,7 +85,7 @@ bool Mlib::intersect(
     FixedArray<SceneDir, 3> normal = uninitialized;
     ScenePos ray_t = NAN;
     ScenePos overlap;
-    if (!i1.intersects(q0, overlap, intersection_info.intersection_point, normal)) {
+    if (!i1.touches(q0, overlap, intersection_info.intersection_point, normal)) {
         return false;
     }
     intersection_info.normal0 = q0.polygon.plane.normal;
@@ -103,7 +103,7 @@ bool Mlib::intersect(
     FixedArray<SceneDir, 3> normal = uninitialized;
     ScenePos ray_t = NAN;
     ScenePos overlap;
-    if (!i1.intersects(t0, overlap, intersection_info.intersection_point, normal)) {
+    if (!i1.touches(t0, overlap, intersection_info.intersection_point, normal)) {
         return false;
     }
     intersection_info.normal0 = t0.polygon.plane.normal;
@@ -121,7 +121,7 @@ bool Mlib::intersect(
     FixedArray<ScenePos, 3> intersection_point = uninitialized;
     FixedArray<SceneDir, 3> normal = uninitialized;
     ScenePos overlap;
-    if (!i0.intersects(r1, overlap, intersection_point, normal)) {
+    if (!i0.touches(r1, overlap, intersection_point, normal)) {
         return false;
     }
     intersection_info.intersection_point = intersection_point;
@@ -140,7 +140,7 @@ bool Mlib::intersect(
     FixedArray<SceneDir, 3> normal = uninitialized;
     ScenePos ray_t;
     ScenePos overlap;
-    if (!i0.intersects(l1, overlap, ray_t, intersection_point, normal)) {
+    if (!i0.touches(l1, overlap, ray_t, intersection_point, normal)) {
         return false;
     }
     intersection_info.intersection_point = intersection_point;
@@ -158,7 +158,7 @@ bool Mlib::intersect(
     FixedArray<ScenePos, 3> intersection_point = uninitialized;
     FixedArray<SceneDir, 3> normal = uninitialized;
     ScenePos overlap;
-    if (!i0.intersects(i1, overlap, intersection_point, normal)) {
+    if (!i0.touches(i1, overlap, intersection_point, normal)) {
         return false;
     }
     intersection_info.intersection_point = intersection_point;

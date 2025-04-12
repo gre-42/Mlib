@@ -63,7 +63,7 @@ void Spawner::set_spawn_points(
     }
 }
 
-void Spawner::spawn_at_spawn_point(
+bool Spawner::try_spawn_at_spawn_point(
     VehicleSpawner& spawner,
     const SpawnPoint& sp)
 {
@@ -71,9 +71,10 @@ void Spawner::spawn_at_spawn_point(
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
-    spawner.spawn(sp, cfg_.spawn_y_offset);
+    bool success = spawner.try_spawn(sp, cfg_.spawn_y_offset);
     // lerr() << "Spawner time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<ScenePos>(std::chrono::steady_clock::now() - start)).count();
-    ++nspawns_;
+    ++ntry_spawns_;
+    return success;
     // while (true) {
     //     std::scoped_lock lock{ delete_node_mutex_ };
     //     spawn_macro->second(sp2);
@@ -122,8 +123,10 @@ void Spawner::respawn_all_players() {
                 ++sit;
                 continue;
             }
-            // lerr() << "Spawning " << pit->second->name() << " with team " << pit->second->team_name();
-            spawn_at_spawn_point(*pit->second, sp);
+            // lerr() << "Spawning \"" << pit->first << "\" with team \"" << pit->second->get_team_name() << '"'";
+            if (!try_spawn_at_spawn_point(*pit->second, sp)) {
+                THROW_OR_ABORT("Could not spawn \"" + pit->first + "\" with team \"" + pit->second->get_team_name() + '"');
+            }
             occupied_spawn_points.insert(&sp);
             ++sit;
             ++pit;
@@ -131,7 +134,7 @@ void Spawner::respawn_all_players() {
     }
 }
 
-void Spawner::spawn_player_during_match(VehicleSpawner& spawner) {
+bool Spawner::try_spawn_player_during_match(VehicleSpawner& spawner) {
     std::set<const SpawnPoint*> occupied_spawn_points;
     for (auto& [_, p] : vehicle_spawners_.spawners()) {
         if (p->has_scene_vehicle()) {
@@ -161,9 +164,11 @@ void Spawner::spawn_player_during_match(VehicleSpawner& spawner) {
         if (occupied_spawn_points.contains(sp)) {
             continue;
         }
-        spawn_at_spawn_point(spawner, *sp);
-        break;
+        if (try_spawn_at_spawn_point(spawner, *sp)) {
+            return true;
+        }
     }
+    return false;
 }
 
 std::vector<SpawnPoint*> Spawner::shuffled_spawn_points() {

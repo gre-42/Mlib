@@ -25,7 +25,10 @@ SpawnVehicleAlreadySetBehavior Mlib::spawn_vehicle_already_set_behavior_from_str
     return it->second;
 }
 
-VehicleSpawner::VehicleSpawner(Scene& scene, std::string suffix, std::string team_name)
+VehicleSpawner::VehicleSpawner(
+    Scene& scene,
+    std::string suffix,
+    std::string team_name)
     : scene_{ scene }
     , player_{ nullptr }
     , on_player_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
@@ -104,15 +107,15 @@ float VehicleSpawner::get_time_since_deletion() const {
 }
 
 void VehicleSpawner::set_spawn_vehicle(
-    SpawnVehicle spawn_vehicle,
+    TrySpawnVehicle try_spawn_vehicle,
     SpawnVehicleAlreadySetBehavior vehicle_spawner_already_set_behavior)
 {
-    if (spawn_vehicle_ &&
+    if (try_spawn_vehicle_ &&
         (vehicle_spawner_already_set_behavior == SpawnVehicleAlreadySetBehavior::THROW))
     {
         THROW_OR_ABORT("Spawn vehicle function already set");
     }
-    spawn_vehicle_ = std::move(spawn_vehicle);
+    try_spawn_vehicle_ = std::move(try_spawn_vehicle);
 }
 
 bool VehicleSpawner::has_scene_vehicle() const {
@@ -163,14 +166,14 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
     }
 }
 
-void VehicleSpawner::spawn(const SpawnPoint& spawn_point, CompressedScenePos spawn_y_offset) {
+bool VehicleSpawner::try_spawn(const SpawnPoint& spawn_point, CompressedScenePos spawn_y_offset) {
     if (has_player() && player_->has_scene_vehicle()) {
         THROW_OR_ABORT("Player \"" + player_->id() + "\" already has a vehicle before spawning");
     }
     if (!scene_vehicles_.empty()) {
         THROW_OR_ABORT("Scene vehicles already set before spawning");
     }
-    if (!spawn_vehicle_) {
+    if (!try_spawn_vehicle_) {
         THROW_OR_ABORT("Vehicle spawner not initialized");
     }
     auto spawn_args = SpawnArguments{
@@ -179,14 +182,24 @@ void VehicleSpawner::spawn(const SpawnPoint& spawn_point, CompressedScenePos spa
         .if_with_physics = true,
         .y_offset = spawn_y_offset
     };
-    spawn_vehicle_(spawn_point, spawn_args);
-    if (scene_vehicles_.empty()) {
-        THROW_OR_ABORT("Scene vehicles not set after spawning");
+    if (!try_spawn_vehicle_(spawn_point, spawn_args)) {
+        if (!scene_vehicles_.empty()) {
+            verbose_abort("Scene vehicles set after failed spawning");
+        }
+        if (has_player() && player_->has_scene_vehicle()) {
+            verbose_abort("Player \"" + player_->id() + "\" has a vehicle after failed spawning");
+        }
+        return false;
+    } else {
+        if (scene_vehicles_.empty()) {
+            verbose_abort("Scene vehicles not set after spawning");
+        }
+        if (has_player() && (&player_->vehicle() != &get_primary_scene_vehicle())) {
+            verbose_abort("Player vehicle not set correctly after spawning");
+        }
+        notify_spawn();
+        return true;
     }
-    if (has_player() && (&player_->vehicle() != &get_primary_scene_vehicle())) {
-        THROW_OR_ABORT("Player vehicle not set correctly after spawning");
-    }
-    notify_spawn();
 }
 
 void VehicleSpawner::delete_vehicle() {

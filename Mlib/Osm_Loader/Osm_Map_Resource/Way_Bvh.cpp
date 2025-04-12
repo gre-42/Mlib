@@ -1,17 +1,17 @@
 #include "Way_Bvh.hpp"
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
-#include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
+#include <Mlib/Geometry/Intersection/Distance/Distance_Point_Line.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 WayBvh::WayBvh()
-: bvh_{{(CompressedScenePos)100.f, (CompressedScenePos)100.f}, 10}
+    : bvh_{{(CompressedScenePos)100.f, (CompressedScenePos)100.f}, 10}
 {}
 
 WayBvh::WayBvh(const std::list<Line2d>& way_segments)
-: WayBvh{}
+    : WayBvh{}
 {
     for (const auto& s : way_segments) {
         bvh_.insert(AxisAlignedBoundingBox<CompressedScenePos, 2>::from_points(s), s);

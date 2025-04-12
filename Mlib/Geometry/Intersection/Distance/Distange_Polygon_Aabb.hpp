@@ -2,8 +2,8 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
-#include <Mlib/Geometry/Intersection/Distance_Line_Line.hpp>
-#include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
+#include <Mlib/Geometry/Intersection/Distance/Distance_Line_Line.hpp>
+#include <Mlib/Geometry/Intersection/Distance/Distance_Point_Line.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
 #ifdef __GNUC__

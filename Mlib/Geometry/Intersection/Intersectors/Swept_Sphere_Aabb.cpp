@@ -3,7 +3,8 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Intersection/Distange_Polygon_Aabb.hpp>
+#include <Mlib/Geometry/Intersection/Distance/Distange_Polygon_Aabb.hpp>
+#include <Mlib/Geometry/Intersection/Intersectors/Intersect_Polygon_Aabb.hpp>
 #include <Mlib/Math/Lerp.hpp>
 
 using namespace Mlib;
@@ -30,7 +31,7 @@ AxisAlignedBoundingBox<CompressedScenePos, 3> SweptSphereAabb::aabb() const {
     return aabb_large_;
 }
 
-bool SweptSphereAabb::intersects(
+bool SweptSphereAabb::touches(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
@@ -51,7 +52,7 @@ bool SweptSphereAabb::intersects(
     }
 }
 
-bool SweptSphereAabb::intersects(
+bool SweptSphereAabb::touches(
     const CollisionPolygonSphere<CompressedScenePos, 3>& t,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
@@ -72,7 +73,7 @@ bool SweptSphereAabb::intersects(
     }
 }
 
-bool SweptSphereAabb::intersects(
+bool SweptSphereAabb::touches(
     const CollisionRidgeSphere<CompressedScenePos>& r1,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
@@ -93,7 +94,7 @@ bool SweptSphereAabb::intersects(
     }
 }
 
-bool SweptSphereAabb::intersects(
+bool SweptSphereAabb::touches(
     const CollisionLineSphere<CompressedScenePos>& l1,
     ScenePos& overlap,
     ScenePos& ray_t,
@@ -116,7 +117,7 @@ bool SweptSphereAabb::intersects(
     }
 }
 
-bool SweptSphereAabb::intersects(
+bool SweptSphereAabb::touches(
     const IIntersectable& intersectable,
     ScenePos& overlap,
     FixedArray<ScenePos, 3>& intersection_point,
@@ -125,7 +126,7 @@ bool SweptSphereAabb::intersects(
     THROW_OR_ABORT("Sphere swept AABB called without transformation");
 }
 
-bool SweptSphereAabb::intersects(
+bool SweptSphereAabb::touches(
     const IIntersectable& intersectable,
     const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
     ScenePos& overlap,
@@ -150,4 +151,16 @@ bool SweptSphereAabb::intersects(
     } else {
         return false;
     }
+}
+
+bool SweptSphereAabb::can_spawn_at(
+    const CollisionPolygonSphere<CompressedScenePos, 3>& t) const
+{
+    return !intersect_polygon_aabb(t.casted<ScenePos>(), aabb_large_.casted<ScenePos>());
+}
+
+bool SweptSphereAabb::can_spawn_at(
+    const CollisionPolygonSphere<CompressedScenePos, 4>& q) const
+{
+    return !intersect_polygon_aabb(q.casted<ScenePos>(), aabb_large_.casted<ScenePos>());
 }

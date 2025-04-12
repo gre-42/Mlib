@@ -36,7 +36,7 @@ GameLogic::~GameLogic() {
 
 void GameLogic::advance_time(float dt, const StaticWorld& world) {
     // TimeGuard tg{"GameLogic::advance_time"};
-    spawner.nspawns_ = 0;
+    spawner.ntry_spawns_ = 0;
     spawner.ndelete_ = 0;
     vehicle_spawners_.advance_time(dt);
     team_deathmatch.handle_respawn();
@@ -45,6 +45,6 @@ void GameLogic::advance_time(float dt, const StaticWorld& world) {
     supply_depots_.handle_supply_depots(dt);
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
         lerr() << "nactive " << players_.nactive();
-        lerr() << "nspawns " << spawner.nspawns_ << " , ndelete " << spawner.ndelete_;
+        lerr() << "ntry_spawns " << spawner.ntry_spawns_ << " , ndelete " << spawner.ndelete_;
     }
 }

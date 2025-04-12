@@ -90,7 +90,7 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
 void TeamDeathmatch::handle_kill_count_objective() {
     for (auto& [_, p] : spawners_.spawners()) {
         if (!p->has_scene_vehicle() && (p->get_time_since_deletion() >= p->get_respawn_cooldown_time())) {
-            spawner_.spawn_player_during_match(*p);
+            spawner_.try_spawn_player_during_match(*p);
         }
     }
 }
