@@ -123,7 +123,7 @@ bool SweptSphereAabb::touches(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    THROW_OR_ABORT("Sphere swept AABB called without transformation");
+    THROW_OR_ABORT("Sphere swept AABB called without transformation (0)");
 }
 
 bool SweptSphereAabb::touches(
@@ -163,4 +163,21 @@ bool SweptSphereAabb::can_spawn_at(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q) const
 {
     return !intersect_polygon_aabb(q.casted<ScenePos>(), aabb_large_.casted<ScenePos>());
+}
+
+bool SweptSphereAabb::can_spawn_at(
+    const IIntersectable& intersectable) const
+{
+    THROW_OR_ABORT("Sphere swept AABB called without transformation (1)");
+}
+
+bool SweptSphereAabb::can_spawn_at(
+    const IIntersectable& intersectable,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const
+{
+    const auto* c = dynamic_cast<const SweptSphereAabb*>(&intersectable);
+    if (c == nullptr) {
+        THROW_OR_ABORT("SweptSphereAabb can only intersect objects of type SweptSphereAabb");
+    }
+    return intersect_aabb_aabb(aabb_small_.casted<ScenePos>(), c->aabb_small_.casted<ScenePos>(), trafo);
 }

@@ -41,7 +41,7 @@ public:
         FixedArray<SceneDir, 3>& normal) const override;
     virtual bool touches(
         const IIntersectable& intersectable,
-        const TransformationMatrix<float, ScenePos, 3>& trafo,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const override;
@@ -49,6 +49,11 @@ public:
         const CollisionPolygonSphere<CompressedScenePos, 3>& t) const override;
     virtual bool can_spawn_at(
         const CollisionPolygonSphere<CompressedScenePos, 4>& q) const override;
+    virtual bool can_spawn_at(
+        const IIntersectable& intersectable) const override;
+    virtual bool can_spawn_at(
+        const IIntersectable& intersectable,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const override;
 private:
     template <class TOther>
     bool touches_any_wo_ray_t(
@@ -66,7 +71,7 @@ private:
     template <class TOther>
     bool can_spawn_at_any(const TOther& o) const;
     std::shared_ptr<IIntersectable> child_;
-    TransformationMatrix<float, ScenePos, 3> trafo_;
+    TransformationMatrix<SceneDir, ScenePos, 3> trafo_;
 };
 
 }

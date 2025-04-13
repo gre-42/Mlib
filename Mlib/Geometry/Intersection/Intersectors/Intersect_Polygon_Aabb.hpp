@@ -46,6 +46,42 @@ bool intersect_polygon_aabb(
     return false;
 }
 
+template <class TDir, class TPos>
+bool intersect_aabb_aabb(
+    const AxisAlignedBoundingBox<TPos, 3>& aabb0,
+    const AxisAlignedBoundingBox<TPos, 3>& aabb1,
+    const TransformationMatrix<TDir, TPos, 3>& trafo1)
+{
+    auto itrafo1 = trafo1.inverted();
+    if (!aabb1.for_each_corner([&](const FixedArray<TPos, 3>& corner1){
+        return !aabb0.contains(trafo1.transform(corner1));
+    }))
+    {
+        return true;
+    }
+    if (!aabb0.for_each_corner([&](const FixedArray<TPos, 3>& corner0){
+        return !aabb1.contains(itrafo1.transform(corner0));
+    }))
+    {
+        return true;
+    }
+    if (!aabb1.template for_each_ray<TDir>([&](const auto& ray1){
+        auto transformed_ray1 = RaySegment3DForAabb{ray1.transformed(trafo1)};
+        return !transformed_ray1.intersects(aabb0);
+    }))
+    {
+        return true;
+    }
+    if (!aabb0.template for_each_ray<TDir>([&](const auto& ray0){
+        auto transformed_ray0 = RaySegment3DForAabb{ray0.transformed(itrafo1)};
+        return !transformed_ray0.intersects(aabb1);
+    }))
+    {
+        return true;
+    }
+    return false;
+}
+
 }
 
 #ifdef __GNUC__

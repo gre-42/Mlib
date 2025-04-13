@@ -52,7 +52,7 @@ public:
         FixedArray<SceneDir, 3>& normal) const = 0;
     virtual bool touches(
         const IIntersectable& intersectable,
-        const TransformationMatrix<float, ScenePos, 3>& trafo,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const = 0;
@@ -60,6 +60,11 @@ public:
         const CollisionPolygonSphere<CompressedScenePos, 3>& t) const = 0;
     virtual bool can_spawn_at(
         const CollisionPolygonSphere<CompressedScenePos, 4>& q) const = 0;
+    virtual bool can_spawn_at(
+        const IIntersectable& intersectable) const = 0;
+    virtual bool can_spawn_at(
+        const IIntersectable& intersectable,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const = 0;
 };
 
 }

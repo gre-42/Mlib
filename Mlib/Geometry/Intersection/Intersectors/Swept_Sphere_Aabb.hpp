@@ -41,7 +41,7 @@ public:
         FixedArray<SceneDir, 3>& normal) const;
     virtual bool touches(
         const IIntersectable& intersectable,
-        const TransformationMatrix<float, ScenePos, 3>& trafo,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
         ScenePos& overlap,
         FixedArray<ScenePos, 3>& intersection_point,
         FixedArray<SceneDir, 3>& normal) const;
@@ -49,6 +49,11 @@ public:
         const CollisionPolygonSphere<CompressedScenePos, 3>& t) const override;
     virtual bool can_spawn_at(
         const CollisionPolygonSphere<CompressedScenePos, 4>& q) const override;
+    virtual bool can_spawn_at(
+        const IIntersectable& intersectable) const override;
+    virtual bool can_spawn_at(
+        const IIntersectable& intersectable,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const override;
 private:
     AxisAlignedBoundingBox<CompressedScenePos, 3> aabb_small_;
     AxisAlignedBoundingBox<CompressedScenePos, 3> aabb_large_;

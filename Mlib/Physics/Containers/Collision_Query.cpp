@@ -300,6 +300,43 @@ bool CollisionQuery::visit_spawn_preventers(
         }
         auto ti1 = TransformedIntersectable{ i1.mesh, trafo1 };
         auto bs1 = ti1.bounding_sphere();
+        for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
+            for (const auto& msh0 : o0.meshes) {
+                if (!any(msh0.physics_material & collidable_mask0)) {
+                    continue;
+                }
+                if (!msh0.mesh->intersects(bs1)) {
+                    continue;
+                }
+                auto can_spawn_at_polygon = [&](const auto& polygon0){
+                    return
+                        !bs1.intersects(polygon0.bounding_sphere) ||
+                        !bs1.intersects(polygon0.polygon.plane) ||
+                        ti1.can_spawn_at(polygon0) ||
+                        visit(o0.rigid_body.get());
+                };
+                auto can_spawn_at_intersectable = [&](const IIntersectable& i0){
+                    return
+                        ti1.can_spawn_at(i0) ||
+                        visit(o0.rigid_body.get());
+                };
+                for (const auto& q0 : msh0.mesh->get_quads_sphere()) {
+                    if (!can_spawn_at_polygon(q0)) {
+                        return false;
+                    }
+                }
+                for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
+                    if (!can_spawn_at_polygon(t0)) {
+                        return false;
+                    }
+                }
+                for (const auto& i0 : msh0.mesh->get_intersectables()) {
+                    if (!can_spawn_at_intersectable(*i0.mesh)) {
+                        return false;
+                    }
+                }
+            }
+        }
         if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
             i1.mesh->aabb(),
             [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0)
@@ -324,7 +361,7 @@ bool CollisionQuery::visit_spawn_preventers(
                 if (!any(rm0.mesh.physics_material & collidable_mask0)) {
                     return true;
                 }
-                auto intersect = [&](const auto& polygon0){
+                auto can_spawn_at_polygon = [&](const auto& polygon0){
                     return
                         !bs1.intersects(polygon0.bounding_sphere) ||
                         !bs1.intersects(polygon0.polygon.plane) ||
@@ -332,12 +369,12 @@ bool CollisionQuery::visit_spawn_preventers(
                         visit(rm0.rb.get());
                 };
                 for (const auto& t0 : rm0.mesh.mesh->get_triangles_sphere()) {
-                    if (!intersect(t0)) {
+                    if (!can_spawn_at_polygon(t0)) {
                         return false;
                     }
                 }
                 for (const auto& t0 : rm0.mesh.mesh->get_quads_sphere()) {
-                    if (!intersect(t0)) {
+                    if (!can_spawn_at_polygon(t0)) {
                         return false;
                     }
                 }

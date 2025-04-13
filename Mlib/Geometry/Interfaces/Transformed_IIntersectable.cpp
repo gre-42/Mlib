@@ -72,7 +72,7 @@ bool TransformedIntersectable::touches(
 {
     auto* o = dynamic_cast<const TransformedIntersectable*>(&intersectable);
     if (o == nullptr) {
-        THROW_OR_ABORT("TransformedIntersectable can only intersect children of the same type");
+        THROW_OR_ABORT("TransformedIntersectable can only intersect children of the same type (0)");
     }
     ScenePos c_overlap;
     FixedArray<ScenePos, 3> c_intersection_point = uninitialized;
@@ -99,7 +99,7 @@ bool TransformedIntersectable::touches(
     FixedArray<ScenePos, 3>& intersection_point,
     FixedArray<SceneDir, 3>& normal) const
 {
-    THROW_OR_ABORT("TransformedIIntersectable received additional transformation matrix");
+    THROW_OR_ABORT("TransformedIIntersectable received additional transformation matrix (0)");
 }
 
 bool TransformedIntersectable::can_spawn_at(
@@ -112,6 +112,25 @@ bool TransformedIntersectable::can_spawn_at(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q) const
 {
     return can_spawn_at_any(q);
+}
+
+bool TransformedIntersectable::can_spawn_at(
+    const IIntersectable& intersectable) const
+{
+    THROW_OR_ABORT("TransformedIIntersectable received additional transformation matrix (1)");
+}
+
+bool TransformedIntersectable::can_spawn_at(
+    const IIntersectable& intersectable,
+    const TransformationMatrix<float, ScenePos, 3>& trafo) const
+{
+    auto* o = dynamic_cast<const TransformedIntersectable*>(&intersectable);
+    if (o == nullptr) {
+        THROW_OR_ABORT("TransformedIntersectable can only intersect children of the same type (1)");
+    }
+    return child_->can_spawn_at(
+        *o->child_,
+        (trafo_.inverted() * o->trafo_).template casted<float, ScenePos>());
 }
 
 template <class TOther>
