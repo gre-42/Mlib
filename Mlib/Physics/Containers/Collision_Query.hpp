@@ -55,14 +55,14 @@ public:
         const RigidBodyVehicle** seen_object = nullptr,
         const IIntersectableMesh** seen_mesh = nullptr) const;
     bool visit_spawn_preventers(
-        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
-        const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo1,
+        const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables1,
         PhysicsMaterial collidable_mask0,
         PhysicsMaterial collidable_mask1,
-        const std::function<bool(const RigidBodyVehicle& vehicle1)>& visit) const;
+        const std::function<bool(const RigidBodyVehicle& vehicle0)>& visit) const;
     bool can_spawn_at(
-        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
-        const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo1,
+        const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables1,
         PhysicsMaterial collidable_mask0 =
             PhysicsMaterial::OBJ_CHASSIS |
             PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT |

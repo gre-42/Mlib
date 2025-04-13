@@ -288,25 +288,60 @@ bool CollisionQuery::can_see(
 }
 
 bool CollisionQuery::visit_spawn_preventers(
-    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
-    const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo1,
+    const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables1,
     PhysicsMaterial collidable_mask0,
     PhysicsMaterial collidable_mask1,
-    const std::function<bool(const RigidBodyVehicle& vehicle1)>& visit) const
+    const std::function<bool(const RigidBodyVehicle& vehicle0)>& visit) const
 {
-    for (const auto& i : intersectables) {
+    for (const auto& i1 : intersectables1) {
+        if (!any(i1.physics_material & collidable_mask1)) {
+            continue;
+        }
+        auto ti1 = TransformedIntersectable{ i1.mesh, trafo1 };
+        auto bs1 = ti1.bounding_sphere();
         if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
-            i.mesh->aabb(),
+            i1.mesh->aabb(),
             [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0)
             {
-                auto ti = TransformedIntersectable{
-                    i.mesh,
-                    trafo};
                 return std::visit(
                     [&](const auto& ctp)
                     {
-                        return ti.can_spawn_at(ctp) || visit(t0.rb);
+                        return
+                            !any(ctp.physics_material & collidable_mask0) ||
+                            !bs1.intersects(ctp.bounding_sphere) ||
+                            !bs1.intersects(ctp.polygon.plane) ||    
+                            ti1.can_spawn_at(ctp) ||
+                            visit(t0.rb);
                     }, t0.ctp);
+            }))
+        {
+            return false;
+        }
+        if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().visit(
+            i1.mesh->aabb(),
+            [&](const RigidBodyAndIntersectableMesh& rm0){
+                if (!any(rm0.mesh.physics_material & collidable_mask0)) {
+                    return true;
+                }
+                auto intersect = [&](const auto& polygon0){
+                    return
+                        !bs1.intersects(polygon0.bounding_sphere) ||
+                        !bs1.intersects(polygon0.polygon.plane) ||
+                        ti1.can_spawn_at(polygon0) ||
+                        visit(rm0.rb.get());
+                };
+                for (const auto& t0 : rm0.mesh.mesh->get_triangles_sphere()) {
+                    if (!intersect(t0)) {
+                        return false;
+                    }
+                }
+                for (const auto& t0 : rm0.mesh.mesh->get_quads_sphere()) {
+                    if (!intersect(t0)) {
+                        return false;
+                    }
+                }
+                return true;
             }))
         {
             return false;
