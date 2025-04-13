@@ -108,7 +108,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     VehicleAiMoveToStatus result = VehicleAiMoveToStatus::NONE;
     FixedArray<ScenePos, 3> pos3 = player_rb.rbp_.abs_position();
     ScenePos distance_to_waypoint2 = sum(squared(pos3 - funpack(pod)));
-    float lookahead_fac2 = std::max(
+    SceneDir lookahead_fac2 = std::max(
         1.f,
         sum(squared(player_rb.rbp_.v_)) /
         squared(lookahead_velocity_));
@@ -209,51 +209,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     if (player_rb.avatar_controller_ != nullptr) {
         player_rb.avatar_controller_->reset();
     }
-    // Keep velocity within the specified range.
-    if (!any(result & VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION)) {
-        bool is_accelerating_on_runway =
-            player_rb.has_autopilot(ActorTask::RUNWAY_TAKEOFF) &&
-            any(waypoint_flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY)) &&
-            !any(waypoint_flags & WayPointLocation::TAXIWAY) &&
-            any(ai_waypoint.latest_history_flags() & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY));
-        float target_vel;
-        if (ai_waypoint.has_velocity_at_destination()) {
-            target_vel = std::sqrt(sum(squared(ai_waypoint.velocity_at_destination())));
-        } else if (is_accelerating_on_runway) {
-            target_vel = takeoff_velocity_;
-        } else {
-            target_vel = max_velocity_;
-        }
-        float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
-        if (is_accelerating_on_runway && (std::abs(dvel) < takeoff_velocity_delta_)) {
-            player_rb.actor_task_ = ActorTask::RUNWAY_TAKEOFF;
-        }
-        if (dvel < 0) {
-            if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->walk(player_->vehicle_movement.surface_power_forward(), 1.f);
-            } else {
-                player_->car_movement.drive_forward();
-            }
-        } else if (dvel < max_delta_velocity_brake_) {
-            if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->walk(0.f, 1.f);
-            } else {
-                player_->car_movement.roll_tires();
-            }
-        } else {
-            if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->stop();
-            } else {
-                player_->car_movement.step_on_brakes();
-            }
-        }
-    }
-    // Steer towards waypoint.
-    // FixedArray<float, 3> wp{destination_position(0), 0, destination_position(1)};
-    // auto m = vehicle_.rb->get_new_absolute_model_matrix();
-    // auto v = inverted_scaled_se3(m);
-    // auto wpt = dehomogenized_3(dot1d(v, homogenized_4(wp)));
-    float zl2 = sum(squared(z));
+    SceneDir zl2 = sum(squared(z));
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
         auto wpt = funpack(FixedArray<CompressedScenePos, 2>{ pod(0), pod(2) }) - FixedArray<ScenePos, 2>{ p3(0), p3(2) };
@@ -265,39 +221,94 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         if (wpt2 > 1e-12) {
             wpt += FixedArray<ScenePos, 2>(-wpt(1), wpt(0)) / std::sqrt(wpt2) * ScenePos(d_wpt);
             auto wpt2c = std::sqrt(sum(squared(wpt)));
-            if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->increment_legs_z((FixedArray<ScenePos, 3>{wpt(0), ScenePos(0), wpt(1)} / wpt2c).casted<float>());
-                // player_rb.avatar_controller_->increment_legs_z(FixedArray<float, 3>{0.f, 0.f, -1.f});
-                if (player_->target_rb() == nullptr) {
-                    // Rotate waypoint back to global coordinates.
-                    auto wpt0 = dot(wpt, m);
-                    player_rb.avatar_controller_->set_target_yaw((float)std::atan2(-wpt0(0), -wpt0(1)));
-                }
-                player_rb.avatar_controller_->apply();
-                return result;
-            } else {
-                if (wpt(1) > 0) {
-                    // The waypoint is behind us => full, inverted steering.
-                    if (wpt(0) < 0) {
-                        player_->car_movement.steer_left_full();
-                        player_rb.vehicle_controller().apply();
-                        return result;
+            if (wpt2c > 1e-12) {
+                // Rotate waypoint back to global coordinates.
+                auto wpt0_dir = (dot(wpt, m) / wpt2c).casted<float>();
+                auto wpt_dir = (wpt / wpt2c).casted<float>();
+
+                // Keep velocity within the specified range.
+                if (!any(result & VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION)) {
+                    bool is_accelerating_on_runway =
+                        player_rb.has_autopilot(ActorTask::RUNWAY_TAKEOFF) &&
+                        any(waypoint_flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY)) &&
+                        !any(waypoint_flags & WayPointLocation::TAXIWAY) &&
+                        any(ai_waypoint.latest_history_flags() & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY));
+                    float target_vel;
+                    if (ai_waypoint.has_velocity_at_destination()) {
+                        target_vel = std::sqrt(sum(squared(ai_waypoint.velocity_at_destination())));
+                    } else if (is_accelerating_on_runway) {
+                        target_vel = takeoff_velocity_;
                     } else {
-                        player_->car_movement.steer_right_full();
-                        player_rb.vehicle_controller().apply();
-                        return result;
+                        target_vel = max_velocity_;
                     }
-                } else {
-                    // The waypoint is in front of us => partial, inverted steering.
-                    auto angle = (float)std::atan(std::abs(wpt(0) / wpt(1)));
-                    if (wpt(0) < 0) {
-                        player_->car_movement.steer_left_partial(angle);
-                        player_rb.vehicle_controller().apply();
-                        return result;
+                    float dvel;
+                    if (player_rb.avatar_controller_ != nullptr) {
+                        // Avatars steer through "strafing" with "increment_legs_z".
+                        dvel = dot0d(FixedArray<SceneDir, 2>{player_rb.rbp_.v_(0), player_rb.rbp_.v_(2)}, wpt0_dir) - target_vel;
                     } else {
-                        player_->car_movement.steer_right_partial(angle);
-                        player_rb.vehicle_controller().apply();
-                        return result;
+                        dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
+                    }
+                    if (is_accelerating_on_runway && (std::abs(dvel) < takeoff_velocity_delta_)) {
+                        player_rb.actor_task_ = ActorTask::RUNWAY_TAKEOFF;
+                    }
+                    if (dvel < 0) {
+                        if (player_rb.avatar_controller_ != nullptr) {
+                            player_rb.avatar_controller_->walk(player_->vehicle_movement.surface_power_forward(), 1.f);
+                        } else {
+                            player_->car_movement.drive_forward();
+                        }
+                    } else if (dvel < max_delta_velocity_brake_) {
+                        if (player_rb.avatar_controller_ != nullptr) {
+                            player_rb.avatar_controller_->walk(0.f, 1.f);
+                        } else {
+                            player_->car_movement.roll_tires();
+                        }
+                    } else {
+                        if (player_rb.avatar_controller_ != nullptr) {
+                            player_rb.avatar_controller_->stop();
+                        } else {
+                            player_->car_movement.step_on_brakes();
+                        }
+                    }
+                }
+
+                // Steer towards waypoint.
+                // FixedArray<float, 3> wp{destination_position(0), 0, destination_position(1)};
+                // auto m = vehicle_.rb->get_new_absolute_model_matrix();
+                // auto v = inverted_scaled_se3(m);
+                // auto wpt = dehomogenized_3(dot1d(v, homogenized_4(wp)));
+                if (player_rb.avatar_controller_ != nullptr) {
+                    player_rb.avatar_controller_->increment_legs_z(FixedArray<SceneDir, 3>{wpt_dir(0), SceneDir(0), wpt_dir(1)});
+                    // player_rb.avatar_controller_->increment_legs_z(FixedArray<float, 3>{0.f, 0.f, -1.f});
+                    if (player_->target_rb() == nullptr) {
+                        player_rb.avatar_controller_->set_target_yaw(std::atan2(-wpt0_dir(0), -wpt0_dir(1)));
+                    }
+                    player_rb.avatar_controller_->apply();
+                    return result;
+                } else {
+                    if (wpt(1) > 0) {
+                        // The waypoint is behind us => full, inverted steering.
+                        if (wpt(0) < 0) {
+                            player_->car_movement.steer_left_full();
+                            player_rb.vehicle_controller().apply();
+                            return result;
+                        } else {
+                            player_->car_movement.steer_right_full();
+                            player_rb.vehicle_controller().apply();
+                            return result;
+                        }
+                    } else {
+                        // The waypoint is in front of us => partial, inverted steering.
+                        auto angle = (float)std::atan(std::abs(wpt(0) / wpt(1)));
+                        if (wpt(0) < 0) {
+                            player_->car_movement.steer_left_partial(angle);
+                            player_rb.vehicle_controller().apply();
+                            return result;
+                        } else {
+                            player_->car_movement.steer_right_partial(angle);
+                            player_rb.vehicle_controller().apply();
+                            return result;
+                        }
                     }
                 }
             }
