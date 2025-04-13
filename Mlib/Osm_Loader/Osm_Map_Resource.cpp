@@ -1974,7 +1974,7 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
     if (auto wf = try_getenv("OSM_WAYPOINT_PREFIX"); wf.has_value()) {
         auto rs = try_getenv("OSM_WAYPOINT_BBOX_RADIUS");
         if (!rs.has_value()) {
-            THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable (should be in the range 1 - 2)");
+            THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable (should be half the scaled map size)");
         }
         CompressedScenePos r = safe_stocs(*rs);
         // way_points_.at(WayPointLocation::STREET).plot(wf + debug_prefix + "street.svg", 600, 600, 0.1f);
