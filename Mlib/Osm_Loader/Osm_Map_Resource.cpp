@@ -1955,15 +1955,15 @@ static void plot_way_points_and_obstacles(
     for (size_t c = 0; c < pa.adjacency.shape(1); ++c) {
         for (const auto& [r, _] : pa.adjacency.column(c)) {
             if (r != c) {
-                edges.push_back(FixedArray<CompressedScenePos, 2, 2>{
+                edges.emplace_back(
                     FixedArray<CompressedScenePos, 2>{pa.points.at(c).position(0), pa.points.at(c).position(1)},
-                    FixedArray<CompressedScenePos, 2>{pa.points.at(r).position(0), pa.points.at(r).position(1)}});
+                    FixedArray<CompressedScenePos, 2>{pa.points.at(r).position(0), pa.points.at(r).position(1)});
             }
         }
     }
     contours.push_back(bounding_contour);
     for (const auto& p : hitbox_positions) {
-        highlighted_nodes.push_back(FixedArray<CompressedScenePos, 2>{p(0), p(1)});
+        highlighted_nodes.emplace_back(p(0), p(1));
     }
     if (!edges.empty() || !highlighted_nodes.empty()) {
         plot_mesh_svg(filename, 600., 600., triangles, edges, contours, highlighted_nodes);
