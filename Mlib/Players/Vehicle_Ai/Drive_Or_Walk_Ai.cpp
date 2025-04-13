@@ -86,9 +86,12 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     }
     auto& player_rb = player_->rigid_body();
     if (player_rb.actor_task_ == ActorTask::UNDEFINED) {
-        player_rb.actor_task_ = get_initial_actor_task(player_rb);
-    }
-    if (player_rb.actor_task_ == ActorTask::UNDEFINED) {
+        auto actor_task = get_initial_actor_task(player_rb);
+        if (player_rb.has_autopilot(actor_task)) {
+            player_rb.actor_task_ = actor_task;
+        }
+        // Return even if the "actor_task_" is not undefined, because
+        // the "DriveOrWalkAi" might not have a "SkillFactor" for the new "actor_task_".
         return VehicleAiMoveToStatus::SKILL_IS_MISSING;
     }
     // Disabled, using "steer" instead to enable the PID-controller.
