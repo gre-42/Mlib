@@ -162,45 +162,50 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             }
         }
     }
-    if (!resource_instance_positions_.empty()) {
-        auto world_node = make_unique_scene_node(
-            options.absolute_model_matrix.t,
-            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
-            1.f,
-            PoseInterpolationMode::DISABLED);
-        auto scale = options.absolute_model_matrix.get_scale();
-
-        for (const auto& [name, ps] : resource_instance_positions_) {
-            auto node = make_unique_scene_node(
-                fixed_zeros<ScenePos, 3>(),
-                rotation_,
-                scale,
+    auto instantiate = [&](const std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>>& positions)
+    {
+        if (!positions.empty()) {
+            auto world_node = make_unique_scene_node(
+                options.absolute_model_matrix.t,
+                matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
+                1.f,
                 PoseInterpolationMode::DISABLED);
-            scene_node_resources.instantiate_child_renderable(
-                *name,
-                ChildInstantiationOptions{
-                    .rendering_resources = options.rendering_resources,
-                    .instance_name = name,
-                    .scene_node = node.ref(DP_LOC),
-                    .interpolation_mode = PoseInterpolationMode::DISABLED,
-                    .renderable_resource_filter = options.renderable_resource_filter});
-            if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-                THROW_OR_ABORT("Object " + *name + " requires render pass");
+            auto scale = options.absolute_model_matrix.get_scale();
+
+            for (const auto& [name, ps] : positions) {
+                auto node = make_unique_scene_node(
+                    fixed_zeros<ScenePos, 3>(),
+                    rotation_,
+                    scale,
+                    PoseInterpolationMode::DISABLED);
+                scene_node_resources.instantiate_child_renderable(
+                    *name,
+                    ChildInstantiationOptions{
+                        .rendering_resources = options.rendering_resources,
+                        .instance_name = name,
+                        .scene_node = node.ref(DP_LOC),
+                        .interpolation_mode = PoseInterpolationMode::DISABLED,
+                        .renderable_resource_filter = options.renderable_resource_filter});
+                if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
+                    THROW_OR_ABORT("Object " + *name + " requires render pass");
+                }
+                world_node->add_instances_child(*name, std::move(node));
+                for (const auto& r : ps) {
+                    world_node->add_instances_position(*name, r.position, r.yangle, r.billboard_id);
+                }
             }
-            world_node->add_instances_child(*name, std::move(node));
-            for (const auto& r : ps) {
-                world_node->add_instances_position(*name, r.position, r.yangle, r.billboard_id);
+            try {
+                options.scene.auto_add_root_node(
+                    *options.instance_name + "_inst_world",
+                    std::move(world_node),
+                    RenderingDynamics::STATIC);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error((std::stringstream() << "Could not add root node: " << e.what() << '\n' << world_node.get(DP_LOC)).str());
             }
         }
-        try {
-            options.scene.auto_add_root_node(
-                *options.instance_name + "_inst_world",
-                std::move(world_node),
-                RenderingDynamics::STATIC);
-        } catch (const std::runtime_error& e) {
-            throw std::runtime_error((std::stringstream() << "Could not add root node: " << e.what() << '\n' << world_node.get(DP_LOC)).str());
-        }
-    }
+    };
+    instantiate(hitboxes_);
+    instantiate(resource_instance_positions_);
     // if (!resource_instance_positions_.empty()) {
     //     options.scene_node.optimize_instances_search_time(lraw());
     // }
