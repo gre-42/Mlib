@@ -73,7 +73,7 @@ public:
         const TransformationMatrix<float, double, 3>* tm) const override;
 
     // ISceneNodeResource, Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(const ColoredVertexArrayFilter& filter) const override;
 
     // ISceneNodeResource, Modifiers
     virtual void modify_physics_material_tags(

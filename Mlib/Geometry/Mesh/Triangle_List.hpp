@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Default_Uninitialized_List.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Delaunay_Error_Behavior.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
@@ -106,6 +107,7 @@ public:
         const std::vector<BoneWeight>& b01 = {},
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::THROW,
         RectangleTriangulationMode rectangle_triangulation_mode = RectangleTriangulationMode::FIRST,
+        DelaunayErrorBehavior delaunay_error_behavior = DelaunayErrorBehavior::THROW,
         ColoredVertex<TPos>** pp00a = nullptr,
         ColoredVertex<TPos>** pp11a = nullptr,
         ColoredVertex<TPos>** pp01a = nullptr,
@@ -133,6 +135,7 @@ public:
         NormalVectorErrorBehavior normal_error_behavior = NormalVectorErrorBehavior::THROW,
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::THROW,
         RectangleTriangulationMode rectangle_triangulation_mode = RectangleTriangulationMode::FIRST,
+        DelaunayErrorBehavior delaunay_error_behavior = DelaunayErrorBehavior::THROW,
         ColoredVertex<TPos>** pp00a = nullptr,
         ColoredVertex<TPos>** pp11a = nullptr,
         ColoredVertex<TPos>** pp01a = nullptr,

@@ -1,5 +1,5 @@
 #include "Triangle_List.hpp"
-#include <Mlib/Geometry/Intersection/Delaunay.hpp>
+#include <Mlib/Geometry/Delaunay.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -174,6 +174,7 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
     const std::vector<BoneWeight>& b01,
     TriangleTangentErrorBehavior tangent_error_behavior,
     RectangleTriangulationMode rectangle_triangulation_mode,
+    DelaunayErrorBehavior delaunay_error_behavior,
     ColoredVertex<TPos>** pp00a,
     ColoredVertex<TPos>** pp11a,
     ColoredVertex<TPos>** pp01a, 
@@ -181,13 +182,32 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
     ColoredVertex<TPos>** pp10b,
     ColoredVertex<TPos>** pp11b)
 {
+    DelaunayState delaunay_state;
+    if (rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) {
+        delaunay_state = is_delaunay(
+            funpack(p00),
+            funpack(p10),
+            funpack(p11),
+            funpack(p01));
+        if ((delaunay_state == DelaunayState::DELAUNAY) ||
+            (delaunay_state == DelaunayState::NOT_DELAUNAY))
+        {
+            // Do nothing
+        } else if (delaunay_state != DelaunayState::ERROR) {
+            THROW_OR_ABORT("Unknown Delaunay state: " + std::to_string((int)delaunay_state));
+        } else if (delaunay_error_behavior == DelaunayErrorBehavior::SKIP) {
+            return;
+        } else if (delaunay_error_behavior == DelaunayErrorBehavior::WARN) {
+            lwarn() << "Delaunay error";
+        } else if (delaunay_error_behavior == DelaunayErrorBehavior::THROW) {
+            THROW_OR_ABORT("Delaunay error");
+        } else {
+            THROW_OR_ABORT("Unknown Delaunay error behavior: " + std::to_string((int)delaunay_error_behavior));
+        }
+    }
     if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
         ((rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) &&
-            is_delaunay(
-                funpack(FixedArray<TPos, 2>{p00(0), p00(1)}),
-                funpack(FixedArray<TPos, 2>{p10(0), p10(1)}),
-                funpack(FixedArray<TPos, 2>{p11(0), p11(1)}),
-                funpack(FixedArray<TPos, 2>{p01(0), p01(1)}))))
+            (delaunay_state == DelaunayState::DELAUNAY)))
     {
         draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, interiormap_uvmap, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
         draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, interiormap_uvmap, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
@@ -250,6 +270,7 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     NormalVectorErrorBehavior normal_error_behavior,
     TriangleTangentErrorBehavior tangent_error_behavior,
     RectangleTriangulationMode rectangle_triangulation_mode,
+    DelaunayErrorBehavior delaunay_error_behavior,
     ColoredVertex<TPos>** pp00a,
     ColoredVertex<TPos>** pp11a,
     ColoredVertex<TPos>** pp01a,
@@ -257,13 +278,32 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     ColoredVertex<TPos>** pp10b,
     ColoredVertex<TPos>** pp11b)
 {
+    DelaunayState delaunay_state;
+    if (rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) {
+        delaunay_state = is_delaunay(
+            funpack(p00),
+            funpack(p10),
+            funpack(p11),
+            funpack(p01));
+        if ((delaunay_state == DelaunayState::DELAUNAY) ||
+            (delaunay_state == DelaunayState::NOT_DELAUNAY))
+        {
+            // Do nothing
+        } else if (delaunay_state != DelaunayState::ERROR) {
+            THROW_OR_ABORT("Unknown Delaunay state: " + std::to_string((int)delaunay_state));
+        } else if (delaunay_error_behavior == DelaunayErrorBehavior::SKIP) {
+            return;
+        } else if (delaunay_error_behavior == DelaunayErrorBehavior::WARN) {
+            lwarn() << "Delaunay error";
+        } else if (delaunay_error_behavior == DelaunayErrorBehavior::THROW) {
+            THROW_OR_ABORT("Delaunay error");
+        } else {
+            THROW_OR_ABORT("Unknown Delaunay error behavior: " + std::to_string((int)delaunay_error_behavior));
+        }
+    }
     if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
         ((rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) &&
-            is_delaunay(
-                funpack(FixedArray<TPos, 2>{p00(0), p00(1)}),
-                funpack(FixedArray<TPos, 2>{p10(0), p10(1)}),
-                funpack(FixedArray<TPos, 2>{p11(0), p11(1)}),
-                funpack(FixedArray<TPos, 2>{p01(0), p01(1)}))))
+            (delaunay_state == DelaunayState::DELAUNAY)))
     {
         draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, interiormap_uvmap, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
         draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, interiormap_uvmap, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);

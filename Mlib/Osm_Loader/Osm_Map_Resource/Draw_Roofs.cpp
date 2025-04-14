@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Base_Materials.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
@@ -33,9 +34,9 @@ void Mlib::draw_roofs(
     float uv_scale,
     float max_length)
 {
-    const std::list<std::shared_ptr<ColoredVertexArray<float>>> *model_triangles = nullptr;
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> model_triangles;
     if (!model_name.empty()) {
-        model_triangles = &scene_node_resources.get_physics_arrays(model_name)->scvas;
+        model_triangles = scene_node_resources.get_single_precision_arrays(model_name, ColoredVertexArrayFilter{});
     }
     for (auto&& [number, bu] : enumerate(buildings)) {
         if (!bu.roof_9_2.has_value()) {
@@ -128,7 +129,7 @@ void Mlib::draw_roofs(
                         lerr() << "Error triangulating roof " + bu.id;
                     } else {
                         float width = (float)std::sqrt(sum(squared(b - c)));
-                        if ((model_triangles == nullptr) ||
+                        if (model_triangles.empty() ||
                             (tpe == BuildingDetailType::LOW) ||
                             (tpe == BuildingDetailType::COMBINED))
                         {
@@ -163,7 +164,7 @@ void Mlib::draw_roofs(
                                 TriangleTangentErrorBehavior::WARN);
                         } else if (tpe == BuildingDetailType::HIGH) {
                             WarpedSegment2D ws{rect};
-                            for (const auto& cva : *model_triangles) {
+                            for (const auto& cva : model_triangles) {
                                 for (const auto& t : cva->triangles) {
                                     FixedArray<CompressedScenePos, 3, 3> tt = uninitialized;
                                     for (size_t i = 0; i < 3; ++i) {
@@ -232,7 +233,7 @@ void Mlib::draw_roofs(
                 });
         };
         try {
-            if (model_triangles == nullptr) {
+            if (model_triangles.empty()) {
                 draw(BuildingDetailType::COMBINED);
             } else {
                 draw(BuildingDetailType::HIGH);

@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
-#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <string>
 #include <vector>
 
@@ -29,7 +28,7 @@ public:
         const TransformationMatrix<float, ScenePos, 3>* model_matrix) const override;
 
     // Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(const ColoredVertexArrayFilter& filter) const override;
     virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const override;
     virtual std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables() const override;
 
@@ -50,9 +49,6 @@ public:
         float averaged_normal_angle,
         const ColoredVertexArrayFilter& filter) const override;
 private:
-    void compute_animated_arrays_unsafe();
-    mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
-    mutable SafeAtomicRecursiveSharedMutex acva_mutex_;
     SceneNodeResources& scene_node_resources_;
     std::vector<std::string> resource_names_;
 };

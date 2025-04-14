@@ -15,6 +15,24 @@ using namespace Mlib;
 AnimatedColoredVertexArrays::AnimatedColoredVertexArrays()
 {}
 
+AnimatedColoredVertexArrays::AnimatedColoredVertexArrays(
+    const AnimatedColoredVertexArrays& other,
+    const ColoredVertexArrayFilter& filter)
+    : skeleton{ other.skeleton }
+    , bone_indices{ other.bone_indices }
+{
+    for (const auto& cva : other.scvas) {
+        if (filter.matches(*cva)) {
+            scvas.push_back(cva);
+        }
+    }
+    for (const auto& cva : other.dcvas) {
+        if (filter.matches(*cva)) {
+            dcvas.push_back(cva);
+        }
+    }
+}
+
 AnimatedColoredVertexArrays::~AnimatedColoredVertexArrays() = default;
 
 UUVector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectorize_joint_poses(
@@ -125,6 +143,20 @@ void AnimatedColoredVertexArrays::smoothen_edges(
     } else {
         THROW_OR_ABORT("Only physics smoothness-target is implemented");
     }
+}
+
+std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::triangulate(
+    RectangleTriangulationMode mode,
+    DelaunayErrorBehavior error_behavior) const
+{
+    auto result = std::make_shared<AnimatedColoredVertexArrays>();
+    for (const auto& cva : scvas) {
+        result->scvas.push_back(cva->triangulate(mode, error_behavior));
+    }
+    for (const auto& cva : dcvas) {
+        result->dcvas.push_back(cva->triangulate(mode, error_behavior));
+    }
+    return result;
 }
 
 void AnimatedColoredVertexArrays::check_consistency() const {

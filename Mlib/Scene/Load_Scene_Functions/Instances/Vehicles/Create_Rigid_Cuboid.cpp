@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Save_Polygon_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
@@ -17,7 +18,6 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -65,10 +65,10 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args) const
         rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags, "none")),
         CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::waypoint_dy, 0.f) * meters),
         args.arguments.try_at_non_null(KnownArgs::hitboxes),
-        PhysicsResourceFilter{
-            .cva_filter = {
-                .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-                .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}},
+        ColoredVertexArrayFilter{
+            .included_tags = PhysicsMaterial::ATTR_COLLIDE,
+            .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+            .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))},
         collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode))});
 }
 
@@ -94,7 +94,9 @@ RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& a
     std::list<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables;
     if (args.hitboxes.has_value()) {
         {
-            auto acva = scene_node_resources.get_physics_arrays(*args.hitboxes);
+            auto acva = scene_node_resources.get_arrays(
+                *args.hitboxes,
+                ColoredVertexArrayFilter{.included_tags = PhysicsMaterial::ATTR_COLLIDE});
             auto insert = [&args](auto& hitboxes, const auto& cvas){
                 for (const auto& cva: cvas) {
                     if (args.hitbox_filter.matches(*cva)) {

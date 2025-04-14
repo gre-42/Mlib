@@ -1,5 +1,6 @@
 #include "Load_Mesh_Config_Json.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Delaunay_Error_Behavior.hpp>
 #include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
@@ -49,6 +50,7 @@ DECLARE_ARGUMENT(lighten);
 DECLARE_ARGUMENT(period_world);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
 DECLARE_ARGUMENT(rectangle_triangulation_mode);
+DECLARE_ARGUMENT(delaunay_error_behavior);
 DECLARE_ARGUMENT(dynamically_lighted);
 DECLARE_ARGUMENT(physics_material);
 DECLARE_ARGUMENT(werror);
@@ -110,6 +112,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .dynamically_lighted = j.at<bool>(KnownArgs::dynamically_lighted, false),
         .physics_material = physics_material_from_string(j.at<std::string>(KnownArgs::physics_material, "attr_visible|attr_collide")),
         .rectangle_triangulation_mode = rectangle_triangulation_mode_from_string(j.at<std::string>(KnownArgs::rectangle_triangulation_mode, "delaunay")),
+        .delaunay_error_behavior = delaunay_error_behavior_from_string(j.at<std::string>(KnownArgs::delaunay_error_behavior, "throw")),
         .werror = j.at<bool>(KnownArgs::werror, true)};
 }
 

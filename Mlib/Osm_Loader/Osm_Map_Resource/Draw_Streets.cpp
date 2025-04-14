@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
@@ -1217,14 +1218,14 @@ void DrawStreets::draw_streets_draw_ways(
             street_surface_endpoint0_resource_names,
             street_surface_endpoint1_resource_names);
         if (!model_name.empty()) {
-            draw_street_with_ditch(scene_node_resources.get_physics_arrays(model_name)->scvas, model_name);
+            draw_street_with_ditch(scene_node_resources.get_arrays(model_name, ColoredVertexArrayFilter{})->scvas, model_name);
         } else {
             draw_procedural_street();
         }
     } else if (wi.model == "endpoint") {
         draw_procedural_street();
     } else {
-        draw_street_with_ditch(scene_node_resources.get_physics_arrays(wi.model)->scvas, wi.model);
+        draw_street_with_ditch(scene_node_resources.get_arrays(wi.model, ColoredVertexArrayFilter{})->scvas, wi.model);
     }
     if (angle_way.layer > 0) {
         double uv_len_central = std::round(uv_scale * (uv_len0 + uv_len1) / 2.);

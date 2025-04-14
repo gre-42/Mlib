@@ -10,7 +10,9 @@ IntersectableResource::IntersectableResource(
     : intersectables_{ std::move(intersectables) }
 {}
 
-std::shared_ptr<AnimatedColoredVertexArrays> IntersectableResource::get_physics_arrays() const {
+std::shared_ptr<AnimatedColoredVertexArrays> IntersectableResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
+{
     return std::make_shared<AnimatedColoredVertexArrays>();
 }
 

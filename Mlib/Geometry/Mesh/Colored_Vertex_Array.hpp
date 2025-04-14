@@ -37,6 +37,8 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
+enum class RectangleTriangulationMode;
+enum class DelaunayErrorBehavior;
 
 template <class TPos>
 class ColoredVertexArray {
@@ -134,6 +136,9 @@ public:
     void downsample_triangles(size_t n);
     std::shared_ptr<ColoredVertexArray> generate_grind_lines(float edge_angle, float averaged_normal_angle) const;
     std::shared_ptr<ColoredVertexArray> generate_contour_edges() const;
+    std::shared_ptr<ColoredVertexArray> triangulate(
+        RectangleTriangulationMode mode,
+        DelaunayErrorBehavior error_behavior) const;
     std::vector<std::shared_ptr<ColoredVertexArray>> split(
         float depth,
         PhysicsMaterial destination_physics_material) const;

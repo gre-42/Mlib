@@ -80,9 +80,10 @@ void SquareResource::instantiate_child_renderable(const ChildInstantiationOption
     rva_->instantiate_child_renderable(options);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> SquareResource::get_physics_arrays() const
+std::shared_ptr<AnimatedColoredVertexArrays> SquareResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
 {
-    return rva_->get_physics_arrays();
+    return rva_->get_arrays(filter);
 }
 
 void SquareResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -91,4 +92,8 @@ void SquareResource::generate_triangle_rays(size_t npoints, const FixedArray<flo
 
 AggregateMode SquareResource::get_aggregate_mode() const {
     return rva_->get_aggregate_mode();
+}
+
+PhysicsMaterial SquareResource::get_physics_material() const {
+    return rva_->get_physics_material();
 }

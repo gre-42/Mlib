@@ -324,7 +324,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     {},
                     {},
                     cfg.triangle_tangent_error_behavior,
-                    cfg.rectangle_triangulation_mode);
+                    cfg.rectangle_triangulation_mode,
+                    cfg.delaunay_error_behavior);
             } else if (SMatch<1> match; regex_match(line, match, comment_reg)) {
                 // do nothing
             } else if (SMatch<2> match; regex_match(line, match, object_reg) ||

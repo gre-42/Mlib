@@ -66,9 +66,9 @@ void GridResource::instantiate_root_renderables(const RootInstantiationOptions& 
     rva_->instantiate_root_renderables(options);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> GridResource::get_physics_arrays() const
+std::shared_ptr<AnimatedColoredVertexArrays> GridResource::get_arrays(const ColoredVertexArrayFilter& filter) const
 {
-    return rva_->get_physics_arrays();
+    return rva_->get_arrays(filter);
 }
 
 void GridResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {

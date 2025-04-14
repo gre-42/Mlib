@@ -167,6 +167,7 @@ void Mlib::draw_building_walls(
                         NormalVectorErrorBehavior::THROW,
                         TriangleTangentErrorBehavior::THROW,
                         RectangleTriangulationMode::FIRST,
+                        DelaunayErrorBehavior::THROW,
                         &pp00a,
                         &pp11a,
                         &pp01a,

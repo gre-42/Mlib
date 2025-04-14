@@ -94,24 +94,14 @@ void HeterogeneousResource::instantiate_child_renderable(const ChildInstantiatio
     rcva_->instantiate_child_renderable(options);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_physics_arrays() const {
-    do {
-        {
-            std::shared_lock lock{ physics_arrays_mutex_ };
-            if (physics_arrays_ != nullptr) {
-                break;
-            }
-        }
-        std::scoped_lock lock{ physics_arrays_mutex_ };
-        if (physics_arrays_ == nullptr) {
-            // Start with "normal" arrays.
-            auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas);
-            // Append hitboxes.
-            bri->instantiate_hitboxes(res->dcvas, scene_node_resources_);
-            physics_arrays_ = res;
-        }
-    } while (false);
-    return physics_arrays_;
+std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
+{
+    // Start with "normal" arrays.
+    auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas, filter);
+    // Append hitboxes.
+    bri->instantiate_arrays(res->dcvas, scene_node_resources_, filter);
+    return res;
 }
 
 std::list<std::shared_ptr<AnimatedColoredVertexArrays>> HeterogeneousResource::get_rendering_arrays() const {
@@ -160,6 +150,10 @@ void HeterogeneousResource::modify_physics_material_tags(
 
 AggregateMode HeterogeneousResource::get_aggregate_mode() const {
     return ColoredVertexArrayResource(acvas).get_aggregate_mode();
+}
+
+PhysicsMaterial HeterogeneousResource::get_physics_material() const {
+    return ColoredVertexArrayResource(acvas).get_physics_material();
 }
 
 void HeterogeneousResource::print(std::ostream& ostr) const {

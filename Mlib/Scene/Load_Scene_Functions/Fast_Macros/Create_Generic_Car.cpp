@@ -298,7 +298,9 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                         .flags = RigidBodyVehicleFlags::NONE,
                         .waypoint_dy = (CompressedScenePos)0.f,
                         .hitboxes = std::nullopt,
-                        .hitbox_filter = PhysicsResourceFilter{},
+                        .hitbox_filter = ColoredVertexArrayFilter{
+                            .included_tags = PhysicsMaterial::ATTR_COLLIDE
+                        },
                         .collidable_mode = CollidableMode::NONE });
                 }
 

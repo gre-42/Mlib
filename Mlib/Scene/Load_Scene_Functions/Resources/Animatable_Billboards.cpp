@@ -37,7 +37,7 @@ LoadSceneJsonUserFunction AnimatableBillboards::json_user_function = [](const Lo
          substrate = particle_substrate_from_string(args.arguments.at<std::string>(KnownArgs::substrate))]
         ()
         {
-            auto scva = snr.get_single_precision_array(billboards);
+            auto scva = snr.get_single_precision_array(billboards, filter.cva_filter);
             return std::make_shared<ParticlesInstance>(scva, max_num_instances, filter, substrate);
         });
 };

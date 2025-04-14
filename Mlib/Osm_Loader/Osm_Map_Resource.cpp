@@ -10,6 +10,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
@@ -186,8 +187,8 @@ OsmMapResource::OsmMapResource(
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
     {
         auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> UUVector<FixedArray<ColoredVertex<float>, 3>>& {
-            auto& scvas = scene_node_resources.get_physics_arrays(resource_name)->scvas;
-            auto& dcvas = scene_node_resources.get_physics_arrays(resource_name)->dcvas;
+            auto scvas = scene_node_resources.get_arrays(resource_name, ColoredVertexArrayFilter{})->scvas;
+            auto dcvas = scene_node_resources.get_arrays(resource_name, ColoredVertexArrayFilter{})->dcvas;
             if (scvas.size() != 1) {
                 THROW_OR_ABORT('"' + resource_name + "\" does not have exactly one single-precision mesh");
             }
@@ -1056,7 +1057,9 @@ OsmMapResource::OsmMapResource(
             if (config.base_osm_map_resource.empty()) {
                 THROW_OR_ABORT("Base OSM map resource not set");
             }
-            ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_physics_arrays(config.base_osm_map_resource)->dcvas);
+            ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_arrays(
+                config.base_osm_map_resource,
+                ColoredVertexArrayFilter{.included_tags = PhysicsMaterial::ATTR_COLLIDE})->dcvas);
         }
         if (!config.racing_line_playback.empty()) {
             generate_racing_line_playback(
@@ -1541,9 +1544,15 @@ OsmMapResource::OsmMapResource(
             if (!terrain_way_point_lines.empty() ||
                 !way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND].empty())
             {
-                const auto& navigation_dcvas = config.navmesh_resource.empty()
-                    ? get_physics_arrays()->dcvas
-                    : scene_node_resources.get_physics_arrays(config.navmesh_resource)->dcvas;
+                auto filter = ColoredVertexArrayFilter{
+                    .included_tags = PhysicsMaterial::ATTR_COLLIDE
+                };
+                auto navigation_acvas = config.navmesh_resource.empty()
+                    ? get_arrays(filter)
+                    : scene_node_resources.get_arrays(config.navmesh_resource, filter);
+                auto navigation_dcvas = navigation_acvas
+                    ->triangulate(RectangleTriangulationMode::DELAUNAY, DelaunayErrorBehavior::THROW)
+                    ->dcvas;
                 if (!config.refine_explicit_waypoints) {
                     calculate_waypoint_adjacency(
                         way_points_[JoinedWayPointSandbox::EXPLICIT_GROUND],
@@ -1874,8 +1883,10 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
     // rbvh_->instantiate_child_renderable(options);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_physics_arrays() const {
-    return hri_.get_physics_arrays();
+std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
+{
+    return hri_.get_arrays(filter);
 }
 
 std::shared_ptr<ISceneNodeResource> OsmMapResource::generate_grind_lines(
@@ -1883,7 +1894,7 @@ std::shared_ptr<ISceneNodeResource> OsmMapResource::generate_grind_lines(
     float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
 {
-    return std::make_shared<ColoredVertexArrayResource>(get_physics_arrays())->generate_grind_lines(
+    return std::make_shared<ColoredVertexArrayResource>(get_arrays(filter))->generate_grind_lines(
         edge_angle,
         averaged_normal_angle,
         filter);
@@ -1987,7 +1998,7 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
             FixedArray<CompressedScenePos, 2>{+r, +r},
             FixedArray<CompressedScenePos, 2>{-r, +r},
             FixedArray<CompressedScenePos, 2>{-r, -r}};
-        auto hitbox_positions = hri_.bri->hitbox_positions();
+        auto hitbox_positions = hri_.bri->hitbox_positions(scene_node_resources_);
         if (auto it = way_points_.find(JoinedWayPointSandbox::STREET); it != way_points_.end()) {
             plot_way_points_and_obstacles(*wf + debug_prefix + "street.svg", it->second, bounding_contour, hitbox_positions);
         }

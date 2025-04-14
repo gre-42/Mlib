@@ -21,9 +21,14 @@ class ColoredVertexArray;
 struct ColoredVertexArrayFilter;
 enum class PhysicsMaterial: uint32_t;
 enum class SmoothnessTarget;
+enum class RectangleTriangulationMode;
+enum class DelaunayErrorBehavior;
 
 struct AnimatedColoredVertexArrays {
     AnimatedColoredVertexArrays();
+    AnimatedColoredVertexArrays(
+        const AnimatedColoredVertexArrays& other,
+        const ColoredVertexArrayFilter& filter);
     ~AnimatedColoredVertexArrays();
     std::shared_ptr<Bone> skeleton;
     std::map<std::string, size_t> bone_indices;
@@ -46,6 +51,9 @@ struct AnimatedColoredVertexArrays {
         float smoothness,
         size_t niterations,
         float decay = 0.97f);
+    std::shared_ptr<AnimatedColoredVertexArrays> triangulate(
+        RectangleTriangulationMode mode,
+        DelaunayErrorBehavior error_behavior) const;
     void check_consistency() const;
     void print(std::ostream& ostr) const;
 

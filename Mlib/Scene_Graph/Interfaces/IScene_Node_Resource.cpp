@@ -28,7 +28,9 @@ TransformationMatrix<double, double, 3> ISceneNodeResource::get_geographic_mappi
     THROW_OR_ABORT("get_geographic_coordinates not implemented");
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> ISceneNodeResource::get_physics_arrays() const {
+std::shared_ptr<AnimatedColoredVertexArrays> ISceneNodeResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
+{
     THROW_OR_ABORT("get_physics_arrays not implemented");
 }
 
@@ -87,11 +89,15 @@ void ISceneNodeResource::smoothen_edges(
     size_t niterations,
     float decay)
 {
-    THROW_OR_ABORT("smoothen not implemented");
+    THROW_OR_ABORT("smoothen_edges not implemented");
 }
 
 AggregateMode ISceneNodeResource::get_aggregate_mode() const {
-    THROW_OR_ABORT("aggregate_mode not implemented");
+    THROW_OR_ABORT("get_aggregate_mode not implemented");
+}
+
+PhysicsMaterial ISceneNodeResource::get_physics_material() const {
+    THROW_OR_ABORT("get_physics_material not implemented");
 }
 
 std::list<SpawnPoint> ISceneNodeResource::get_spawn_points() const {

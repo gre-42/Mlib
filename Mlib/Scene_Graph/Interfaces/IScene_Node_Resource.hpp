@@ -49,6 +49,7 @@ public:
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
     virtual AggregateMode get_aggregate_mode() const;
+    virtual PhysicsMaterial get_physics_material() const;
     virtual std::list<SpawnPoint> get_spawn_points() const;
     virtual WayPointSandboxes get_way_points() const;
 
@@ -59,7 +60,8 @@ public:
     virtual void print(std::ostream& ostr) const;
 
     // Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(
+        const ColoredVertexArrayFilter& filter) const;
     virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const;
     virtual std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables() const;
     virtual void import_bone_weights(

@@ -1,6 +1,7 @@
 #include "Draw_Into_Street_Rectangles.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -41,7 +42,7 @@ void Mlib::draw_into_street_rectangles(
             .p01_ = funpack(r.rectangle[0][1]),
             .p10_ = funpack(r.rectangle[1][0]),
             .p11_ = funpack(r.rectangle[1][1])};
-        const auto& cvas = scene_node_resources.get_physics_arrays(r.bumps_model)->scvas;
+        const auto& cvas = scene_node_resources.get_arrays(r.bumps_model, ColoredVertexArrayFilter{})->scvas;
         for (const auto& cva : cvas) {
             if (cva->name.name() != "street") {
                 THROW_OR_ABORT("Material name is not \"street\" in resource \"" + r.bumps_model + '"');

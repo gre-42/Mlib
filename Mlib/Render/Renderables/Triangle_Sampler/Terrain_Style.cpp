@@ -1,6 +1,7 @@
 #include "Terrain_Style.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -52,8 +53,8 @@ ScenePos TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_no
         };
         auto add_recources = [&scene_node_resources, &add_cvas](const auto& resource_names){
             for (const auto& l : resource_names) {
-                add_cvas(scene_node_resources.get_physics_arrays(*l.name)->dcvas, *l.name, l.billboard_id);
-                add_cvas(scene_node_resources.get_physics_arrays(*l.name)->scvas, *l.name, l.billboard_id);
+                add_cvas(scene_node_resources.get_arrays(*l.name, ColoredVertexArrayFilter{})->dcvas, *l.name, l.billboard_id);
+                add_cvas(scene_node_resources.get_arrays(*l.name, ColoredVertexArrayFilter{})->scvas, *l.name, l.billboard_id);
             }
         };
         add_recources(config.near_resource_names_valley_regular);

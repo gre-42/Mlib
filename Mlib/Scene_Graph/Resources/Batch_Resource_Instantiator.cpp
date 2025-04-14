@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -23,11 +24,9 @@ using namespace Mlib;
 
 BatchResourceInstantiator::BatchResourceInstantiator(
     const FixedArray<float, 3>& rotation,
-    float scale,
-    HitboxContainer hitbox_container)
+    float scale)
     : rotation_{ rotation }
     , scale_{ scale }
-    , hitbox_container_{ hitbox_container }
 {}
 
 BatchResourceInstantiator::~BatchResourceInstantiator()
@@ -87,13 +86,7 @@ void BatchResourceInstantiator::add_hitbox(
     const VariableAndHash<std::string>& name,
     const ResourceInstanceDescriptor& rid)
 {
-    if (hitbox_container_ == HitboxContainer::TEMPORARY) {
-        hitboxes_[name].push_back(rid);
-    } else if (hitbox_container_ == HitboxContainer::INSTANCES) {
-        resource_instance_positions_[name].push_back(rid);
-    } else {
-        THROW_OR_ABORT("Unknown hitbox container");
-    }
+    hitboxes_[name].push_back(rid);
 }
 
 void BatchResourceInstantiator::preload(
@@ -213,38 +206,44 @@ void BatchResourceInstantiator::instantiate_root_renderables(
     // }
 }
 
-void BatchResourceInstantiator::instantiate_hitboxes(
+void BatchResourceInstantiator::instantiate_arrays(
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
-    const SceneNodeResources& scene_node_resources) const
+    const SceneNodeResources& scene_node_resources,
+    const ColoredVertexArrayFilter& filter) const
 {
     auto rx = tait_bryan_angles_2_matrix(rotation_);
     size_t i = 0;
-    for (auto& [name, ps] : hitboxes_)
+    auto instantiate = [&](const std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>>& positions)
     {
-        auto add_hitbox = [&, &name=name, &ps=ps]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
-            for (auto& x : local_cvas) {
-                for (auto& y : ps) {
-                    cvas.push_back(
-                        x->template transformed<CompressedScenePos>(
-                            TransformationMatrix{
-                                scale_ * dot2d(
-                                    rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
-                                    rx),
-                                funpack(y.position)},
-                        '_' + *name + "_transformed_tm_" + std::to_string(i++)));
+        for (const auto& [name, ps] : positions)
+        {
+            auto add_hitbox = [&, &name=name, &ps=ps]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& local_cvas){
+                for (const auto& x : local_cvas) {
+                    for (const auto& y : ps) {
+                        cvas.push_back(
+                            x->template transformed<CompressedScenePos>(
+                                TransformationMatrix{
+                                    scale_ * dot2d(
+                                        rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
+                                        rx),
+                                    funpack(y.position)},
+                            '_' + *name + "_transformed_tm_" + std::to_string(i++)));
+                    }
+                }
+            };
+            auto acva = scene_node_resources.get_arrays(*name, filter);
+            add_hitbox(acva->scvas);
+            if constexpr (std::is_same_v<ScenePos, double>) {
+                add_hitbox(acva->dcvas);
+            } else {
+                if (!acva->dcvas.empty()) {
+                    THROW_OR_ABORT("Scene position is single precision, but double arrays exist");
                 }
             }
-        };
-        auto acva = scene_node_resources.get_physics_arrays(*name);
-        add_hitbox(acva->scvas);
-        if constexpr (std::is_same_v<ScenePos, double>) {
-            add_hitbox(acva->dcvas);
-        } else {
-            if (!acva->dcvas.empty()) {
-                THROW_OR_ABORT("Scene position is single precision, but double arrays exist");
-            }
         }
-    }
+    };
+    instantiate(hitboxes_);
+    instantiate(resource_instance_positions_);
 }
 
 void BatchResourceInstantiator::insert_into(std::list<FixedArray<CompressedScenePos, 3>*>& positions) {
@@ -281,9 +280,29 @@ void BatchResourceInstantiator::remove(
     }
 }
 
-std::list<FixedArray<CompressedScenePos, 3>> BatchResourceInstantiator::hitbox_positions() const {
+std::list<FixedArray<CompressedScenePos, 3>> BatchResourceInstantiator::hitbox_positions(
+    const SceneNodeResources& scene_node_resources) const
+{
     std::list<FixedArray<CompressedScenePos, 3>> result;
-    for (const auto& [_, hs] : hitboxes_) {
+    for (const auto& [n, hs] : resource_instance_positions_) {
+        auto mat = scene_node_resources.physics_material(*n);
+        if (any(mat & PhysicsMaterial::ATTR_COLLIDE)) {
+            for (const auto& h : hs) {
+                result.push_back(h.position);
+            }
+        }
+    }
+    for (const auto& p : object_resource_descriptors_) {
+        auto mat = scene_node_resources.physics_material(*p.name);
+        if (any(mat & PhysicsMaterial::ATTR_COLLIDE)) {
+            result.push_back(p.position);
+        }
+    }
+    for (const auto& [p, hs] : hitboxes_) {
+        auto mat = scene_node_resources.physics_material(*p);
+        if (!any(mat & PhysicsMaterial::ATTR_COLLIDE)) {
+            THROW_OR_ABORT("Hitbox \"" + *p + "\" is not collidable");
+        }
         for (const auto& h : hs) {
             result.push_back(h.position);
         }

@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
@@ -52,7 +53,7 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
          spawn_duration = args.arguments.at<float>(KnownArgs::spawn_duration) * seconds]
         (TrailsInstance& trails_instance)
         {
-            auto m = sr.get_single_precision_array(model);
+            auto m = sr.get_single_precision_array(model, ColoredVertexArrayFilter{});
             return std::unique_ptr<ITrailStorage>(new TrailStorage(
                 trails_instance,
                 TrailSequence{

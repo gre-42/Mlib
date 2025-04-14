@@ -1,6 +1,7 @@
 #include "Compound_Resource.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
@@ -124,37 +125,25 @@ void CompoundResource::save_to_obj_file(
     }
 }
 
-void CompoundResource::compute_animated_arrays_unsafe() {
+// Animation
+std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
+{
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
-    acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
+    auto acvas = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{ recursion_counter };
-        auto ar = scene_node_resources_.get_physics_arrays(resource_name);
+        auto ar = scene_node_resources_.get_arrays(resource_name, filter);
         if (!ar->bone_indices.empty()) {
             THROW_OR_ABORT("Compound resource does not support bone indices");
         }
         if (ar->skeleton != nullptr) {
             THROW_OR_ABORT("Compound resource does not support skeleton");
         }
-        acvas_->scvas.insert(acvas_->scvas.end(), ar->scvas.begin(), ar->scvas.end());
-        acvas_->dcvas.insert(acvas_->dcvas.end(), ar->dcvas.begin(), ar->dcvas.end());
+        acvas->scvas.insert(acvas->scvas.end(), ar->scvas.begin(), ar->scvas.end());
+        acvas->dcvas.insert(acvas->dcvas.end(), ar->dcvas.begin(), ar->dcvas.end());
     }
-}
-
-// Animation
-std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_physics_arrays() const {
-    {
-        std::shared_lock lock{acva_mutex_};
-        if (acvas_ != nullptr) {
-            return acvas_;
-        }
-    }
-    std::scoped_lock lock{acva_mutex_};
-    if (acvas_ != nullptr) {
-        return acvas_;
-    }
-    const_cast<CompoundResource*>(this)->compute_animated_arrays_unsafe();
-    return acvas_;
+    return acvas;
 }
 
 std::list<std::shared_ptr<AnimatedColoredVertexArrays>> CompoundResource::get_rendering_arrays() const {
@@ -225,7 +214,7 @@ std::shared_ptr<ISceneNodeResource> CompoundResource::generate_grind_lines(
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{ recursion_counter };
-        auto gl = scene_node_resources_.get_physics_arrays(resource_name)->generate_grind_lines(
+        auto gl = scene_node_resources_.get_arrays(resource_name, filter)->generate_grind_lines(
             edge_angle,
             averaged_normal_angle,
             filter);

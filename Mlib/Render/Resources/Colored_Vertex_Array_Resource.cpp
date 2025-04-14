@@ -1844,8 +1844,21 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
         RenderingDynamics::STATIC);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> ColoredVertexArrayResource::get_physics_arrays() const {
-    return triangles_res_;
+std::shared_ptr<AnimatedColoredVertexArrays> ColoredVertexArrayResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
+{
+    auto result = std::make_shared<AnimatedColoredVertexArrays>();
+    for (const auto& cva : triangles_res_->scvas) {
+        if (filter.matches(*cva)) {
+            result->scvas.push_back(cva);
+        }
+    }
+    for (const auto& cva : triangles_res_->dcvas) {
+        if (filter.matches(*cva)) {
+            result->dcvas.push_back(cva);
+        }
+    }
+    return result;
 }
 
 void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -2013,6 +2026,17 @@ AggregateMode ColoredVertexArrayResource::get_aggregate_mode() const {
         THROW_OR_ABORT("aggregate_mode is not unique");
     }
     return *aggregate_modes.begin();
+}
+
+PhysicsMaterial ColoredVertexArrayResource::get_physics_material() const {
+    auto result = PhysicsMaterial::NONE;
+    for (const auto& cva : triangles_res_->scvas) {
+        result |= cva->morphology.physics_material;
+    }
+    for (const auto& cva : triangles_res_->dcvas) {
+        result |= cva->morphology.physics_material;
+    }
+    return result;
 }
 
 void ColoredVertexArrayResource::print(std::ostream& ostr) const {

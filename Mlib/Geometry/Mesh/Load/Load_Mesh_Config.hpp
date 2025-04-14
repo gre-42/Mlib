@@ -1,9 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Delaunay_Error_Behavior.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
+#include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
@@ -61,7 +63,8 @@ struct LoadMeshConfig {
     float laplace_ao_strength;
     bool dynamically_lighted;
     PhysicsMaterial physics_material;
-    RectangleTriangulationMode rectangle_triangulation_mode;
+    RectangleTriangulationMode rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY;
+    DelaunayErrorBehavior delaunay_error_behavior = DelaunayErrorBehavior::THROW;
     bool werror;
 };
 

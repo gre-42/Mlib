@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Save_Polygon_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
@@ -18,7 +19,6 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -66,17 +66,16 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> d_hitboxes;
     if (args.arguments.contains_non_null(KnownArgs::hitboxes)) {
-        PhysicsResourceFilter filter{
-            .cva_filter = {
-                .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-                .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}};
-        auto acva = scene_node_resources.get_physics_arrays(
-            args.arguments.at<std::string>(KnownArgs::hitboxes));
-        auto insert = [&filter](auto& hitboxes, const auto& cvas){
+        ColoredVertexArrayFilter filter{
+            .included_tags = PhysicsMaterial::ATTR_COLLIDE,
+            .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+            .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))};
+        auto acva = scene_node_resources.get_arrays(
+            args.arguments.at<std::string>(KnownArgs::hitboxes),
+            filter);
+        auto insert = [](auto& hitboxes, const auto& cvas){
             for (const auto& cva: cvas) {
-                if (filter.matches(*cva)) {
-                    hitboxes.push_back(cva);
-                }
+                hitboxes.push_back(cva);
             }
         };
         insert(s_hitboxes, acva->scvas);

@@ -134,15 +134,6 @@ void CollidableTriangleSampler::add_far_hitboxes(
                     const FixedArray<CompressedScenePos, 3>& p,
                     const ParsedResourceName& prn)
                 {
-                    if (!prn.hitbox->empty()) {
-                        hri.bri->add_hitbox(
-                            prn.hitbox,
-                            ResourceInstanceDescriptor{
-                                .position = p,
-                                .yangle = 0.f,
-                                .scale = 1.f,
-                                .billboard_id = BILLBOARD_ID_NONE});
-                    }
                     hri.bri->add_parsed_resource_name(
                         p,
                         prn,

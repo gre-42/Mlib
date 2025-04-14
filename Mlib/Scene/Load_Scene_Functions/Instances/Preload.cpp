@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -54,12 +55,13 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
     if (args.arguments.contains(KnownArgs::tire_contacts)) {
         for (const auto &r : args.arguments.at<std::vector<std::string>>(KnownArgs::tire_contacts))
         {
-            auto res = RenderingContextStack::primary_scene_node_resources().get_physics_arrays(r);
+            auto res = RenderingContextStack::primary_scene_node_resources().get_arrays(
+                r,
+                ColoredVertexArrayFilter{
+                    .included_tags = PhysicsMaterial::ATTR_COLLIDE
+                });
             auto preload_cvas = [&](const auto &cvas) {
                 for (const auto &a : cvas) {
-                    if (!any(a->morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
-                        continue;
-                    }
                     const SurfaceContactInfo* c = args.surface_contact_db.get_contact_info(
                         a->morphology.physics_material,
                         PhysicsMaterial::SURFACE_BASE_TIRE);

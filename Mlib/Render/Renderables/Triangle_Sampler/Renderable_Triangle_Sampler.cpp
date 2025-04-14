@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
@@ -32,13 +33,13 @@ RenderableTriangleSampler::RenderableTriangleSampler(
     const Bvh<CompressedScenePos, 3, FixedArray<CompressedScenePos, 3, 3>>* street_bvh,
     ScenePos scale,
     UpAxis up_axis)
-    : scene_node_resources_{scene_node_resources}
-    , terrain_styles_{terrain_styles}
-    , terrain_triangles_{terrain_triangles}
-    , no_grass_{no_grass}
-    , street_bvh_{street_bvh}
-    , scale_{scale}
-    , up_axis_{up_axis}
+    : scene_node_resources_{ scene_node_resources }
+    , terrain_styles_{ terrain_styles }
+    , terrain_triangles_{ terrain_triangles }
+    , no_grass_{ no_grass }
+    , street_bvh_{ street_bvh }
+    , scale_{ scale }
+    , up_axis_{ up_axis }
 {}
 
 RenderableTriangleSampler::~RenderableTriangleSampler()
@@ -111,7 +112,9 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                         yield_counter = 0;
                         std::this_thread::yield();
                     };
-                    auto scvas = scene_node_resources_.get_single_precision_arrays(*prn.name);
+                    auto scvas = scene_node_resources_.get_single_precision_arrays(
+                        *prn.name,
+                        ColoredVertexArrayFilter{.included_tags = PhysicsMaterial::ATTR_COLLIDE});
                     TranslationMatrix<ScenePos, 3> mi_rel{ funpack(p) };
                     auto mvp_instance = mvp * mi_rel;
                     auto m_instance_d = m * mi_rel;

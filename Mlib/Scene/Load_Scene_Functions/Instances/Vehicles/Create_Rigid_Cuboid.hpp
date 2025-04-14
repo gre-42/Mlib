@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
-#include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <optional>
@@ -33,7 +33,7 @@ struct CreateRigidCuboidArgs {
     RigidBodyVehicleFlags flags = RigidBodyVehicleFlags::NONE;
     CompressedScenePos waypoint_dy = (CompressedScenePos)0.f;
     std::optional<std::string> hitboxes;
-    PhysicsResourceFilter hitbox_filter;
+    ColoredVertexArrayFilter hitbox_filter;
     CollidableMode collidable_mode;
 };
 

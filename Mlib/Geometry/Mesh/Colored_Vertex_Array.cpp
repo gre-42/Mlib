@@ -1,6 +1,8 @@
 #include "Colored_Vertex_Array.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Delaunay.hpp>
+#include <Mlib/Geometry/Delaunay_Error_Behavior.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
@@ -534,6 +536,51 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_con
         UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
         UUVector<FixedArray<ColoredVertex<TPos>, 3>>{},
         std::move(contour_edges),
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        UUVector<FixedArray<float, 3>>{},
+        UUVector<FixedArray<uint8_t, 3>>{},
+        std::vector<UUVector<FixedArray<float, 3, 2>>>{},
+        std::vector<UUVector<FixedArray<float, 3>>>{},
+        UUVector<FixedArray<float, 3>>{},
+        UUVector<FixedArray<float, 4>>{});
+}
+
+template <class TPos>
+std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::triangulate(
+    RectangleTriangulationMode mode,
+    DelaunayErrorBehavior error_behavior) const
+{
+    UUVector<FixedArray<ColoredVertex<TPos>, 3>> res_triangles;
+    res_triangles.reserve(triangles.size() + 2 * quads.size());
+    res_triangles.insert(res_triangles.end(), triangles.begin(), triangles.end());
+    for (const auto& q : quads) {
+        auto s = is_delaunay(q(0).position, q(1).position, q(2).position, q(3).position);
+        if (s == DelaunayState::DELAUNAY) {
+            res_triangles.emplace_back(q(0), q(2), q(3));
+            res_triangles.emplace_back(q(0), q(1), q(2));
+        } else if (s == DelaunayState::NOT_DELAUNAY) {
+            res_triangles.emplace_back(q(0), q(1), q(3));
+            res_triangles.emplace_back(q(3), q(1), q(2));
+        } else if (s != DelaunayState::ERROR) {
+            THROW_OR_ABORT("Unknown Delaunay state: " + std::to_string((int)s));
+        } else if (error_behavior == DelaunayErrorBehavior::SKIP) {
+            // Do nothing
+        } else if (error_behavior == DelaunayErrorBehavior::WARN) {
+            lwarn() << "Degenerate quad for triangulation";
+        } else if (error_behavior == DelaunayErrorBehavior::THROW) {
+            THROW_OR_ABORT("Degenerate quad for triangulation");
+        } else {
+            THROW_OR_ABORT("Unknown Delaunay error behavior: " + std::to_string((int)error_behavior));
+        }
+    }
+    return std::make_shared<ColoredVertexArray<TPos>>(
+        name + "_triangulated",
+        material,
+        morphology,
+        modifier_backlog,
+        UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
+        std::move(res_triangles),
+        UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
         UUVector<FixedArray<float, 3>>{},
         UUVector<FixedArray<uint8_t, 3>>{},

@@ -95,7 +95,8 @@ void FoliageResource::save_to_obj_file(
 {}
 
 // Animation
-std::shared_ptr<AnimatedColoredVertexArrays> FoliageResource::get_physics_arrays() const
+std::shared_ptr<AnimatedColoredVertexArrays> FoliageResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
 {
     return std::make_shared<AnimatedColoredVertexArrays>();
 }

@@ -31,10 +31,11 @@ public:
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const override;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
     virtual AggregateMode get_aggregate_mode() const override;
+    virtual PhysicsMaterial get_physics_material() const override;
     virtual void print(std::ostream& ostr) const override;
 
     // ISceneNodeResource, Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(const ColoredVertexArrayFilter& filter) const override;
     virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const override;
     virtual std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables() const override;
     virtual void import_bone_weights(
@@ -79,9 +80,7 @@ public:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas;
 private:
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
-    mutable std::shared_ptr<AnimatedColoredVertexArrays> physics_arrays_;
     mutable SafeAtomicRecursiveSharedMutex rcva_mutex_;
-    mutable SafeAtomicRecursiveSharedMutex physics_arrays_mutex_;
     const SceneNodeResources& scene_node_resources_;
     TransformationMatrix<double, double, 3> geographic_mapping_;
 };

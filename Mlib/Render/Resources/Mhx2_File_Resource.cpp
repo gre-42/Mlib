@@ -30,8 +30,10 @@ void Mhx2FileResource::instantiate_child_renderable(const ChildInstantiationOpti
     rva_->instantiate_child_renderable(options);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> Mhx2FileResource::get_physics_arrays() const {
-    return rva_->get_physics_arrays();
+std::shared_ptr<AnimatedColoredVertexArrays> Mhx2FileResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
+{
+    return rva_->get_arrays(filter);
 }
 
 AggregateMode Mhx2FileResource::get_aggregate_mode() const {

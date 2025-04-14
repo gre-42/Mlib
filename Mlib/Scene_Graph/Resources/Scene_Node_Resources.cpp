@@ -236,12 +236,15 @@ const FixedScaledUnitVector<float, 3>* SceneNodeResources::get_gravity(const std
 }
 
 
-std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_physics_arrays(const std::string& name) const {
+std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_arrays(
+    const std::string& name,
+    const ColoredVertexArrayFilter& filter) const
+{
     auto resource = get_resource(name);
     try {
-        return resource->get_physics_arrays();
+        return resource->get_arrays(filter);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("get_physics_arrays for resource \"" + name + "\" failed: " + e.what());
+        throw std::runtime_error("get_arrays for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
@@ -254,16 +257,25 @@ std::list<std::shared_ptr<AnimatedColoredVertexArrays>> SceneNodeResources::get_
     }
 }
 
-std::shared_ptr<ColoredVertexArray<float>> SceneNodeResources::get_single_precision_array(const std::string& name) const {
-    auto res = get_single_precision_arrays(name);
+std::shared_ptr<ColoredVertexArray<float>> SceneNodeResources::get_single_precision_array(
+    const std::string& name,
+    const ColoredVertexArrayFilter& filter) const
+{
+    auto res = get_single_precision_arrays(name, filter);
     if (res.size() != 1) {
         THROW_OR_ABORT("Resource \"" + name + "\" does not contain exactly one single-precision array");
     }
     return res.front();
 }
 
-std::list<std::shared_ptr<ColoredVertexArray<float>>> SceneNodeResources::get_single_precision_arrays(const std::string& name) const {
-    auto acvas = get_physics_arrays(name);
+std::list<std::shared_ptr<ColoredVertexArray<float>>> SceneNodeResources::get_single_precision_arrays(
+    const std::string& name,
+    const ColoredVertexArrayFilter& filter) const
+{
+    auto acvas = get_arrays(name, filter);
+    if (acvas->scvas.empty()) {
+        THROW_OR_ABORT("Resource \"" + name + "\" contains no single precision arrays");
+    }
     if (!acvas->dcvas.empty()) {
         THROW_OR_ABORT("Resource \"" + name + "\" contains double precision arrays");
     }
@@ -300,6 +312,15 @@ AggregateMode SceneNodeResources::aggregate_mode(const std::string& name) const 
         return resource->get_aggregate_mode();
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("aggregate_mode for resource \"" + name + "\" failed: " + e.what());
+    }
+}
+
+PhysicsMaterial SceneNodeResources::physics_material(const std::string& name) const {
+    auto resource = get_resource(name);
+    try {
+        return resource->get_physics_material();
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("physics_material for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
@@ -507,14 +528,15 @@ void SceneNodeResources::smoothen_edges(
 void SceneNodeResources::import_bone_weights(
     const std::string& destination,
     const std::string& source,
-    float max_distance)
+    float max_distance,
+    const ColoredVertexArrayFilter& filter)
 {
     add_modifier(
         destination,
-        [this, source, max_distance, destination](ISceneNodeResource& dest){
+        [this, source, max_distance, destination, filter](ISceneNodeResource& dest){
             try {
                 auto src = get_resource(source);
-                dest.import_bone_weights(*src->get_physics_arrays(), max_distance);
+                dest.import_bone_weights(*src->get_arrays(filter), max_distance);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("import_bone_weights for resource \"" + destination + "\" failed: " + e.what());
             }

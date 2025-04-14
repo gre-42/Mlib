@@ -1,5 +1,6 @@
 #include "Import_Bone_Weights.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -27,5 +28,6 @@ void ImportBoneWeights::execute(const LoadSceneJsonUserFunctionArgs& args)
     RenderingContextStack::primary_scene_node_resources().import_bone_weights(
         args.arguments.at<std::string>(KnownArgs::destination),
         args.arguments.at<std::string>(KnownArgs::source),
-        args.arguments.at<float>(KnownArgs::max_distance));
+        args.arguments.at<float>(KnownArgs::max_distance),
+        ColoredVertexArrayFilter{});
 }

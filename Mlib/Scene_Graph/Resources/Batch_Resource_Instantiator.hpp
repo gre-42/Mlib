@@ -20,19 +20,14 @@ class SceneNodeResources;
 class ISupplyDepots;
 template <class TPos>
 class ColoredVertexArray;
+struct ColoredVertexArrayFilter;
 struct RootInstantiationOptions;
-
-enum class HitboxContainer {
-    TEMPORARY,
-    INSTANCES
-};
 
 class BatchResourceInstantiator {
 public:
     BatchResourceInstantiator(
         const FixedArray<float, 3>& rotation = fixed_zeros<float, 3>(),
-        float scale = 1.f,
-        HitboxContainer hitbox_container = HitboxContainer::INSTANCES);
+        float scale = 1.f);
     ~BatchResourceInstantiator();
 
     void add_parsed_resource_name(
@@ -60,14 +55,16 @@ public:
         const SceneNodeResources& scene_node_resources,
         const RootInstantiationOptions& options) const;
     
-    void instantiate_hitboxes(
+    void instantiate_arrays(
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
-        const SceneNodeResources& scene_node_resources) const;
+        const SceneNodeResources& scene_node_resources,
+        const ColoredVertexArrayFilter& filter) const;
         
     void insert_into(std::list<FixedArray<CompressedScenePos, 3>*>& positions);
     void remove(std::set<const FixedArray<CompressedScenePos, 3>*> vertices_to_delete);
 
-    std::list<FixedArray<CompressedScenePos, 3>> hitbox_positions() const;
+    std::list<FixedArray<CompressedScenePos, 3>> hitbox_positions(
+        const SceneNodeResources& scene_node_resources) const;
 
     template <class Archive>
     void serialize(Archive& archive) {
@@ -83,7 +80,6 @@ private:
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
     std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>> hitboxes_;
-    HitboxContainer hitbox_container_;
 };
 
 }
