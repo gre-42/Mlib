@@ -1848,6 +1848,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> ColoredVertexArrayResource::get_arr
     const ColoredVertexArrayFilter& filter) const
 {
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
+    result->skeleton = triangles_res_->skeleton;
+    result->bone_indices = triangles_res_->bone_indices;
     for (const auto& cva : triangles_res_->scvas) {
         if (filter.matches(*cva)) {
             result->scvas.push_back(cva);
