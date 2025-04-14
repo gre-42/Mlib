@@ -379,7 +379,7 @@ void Scene::register_node(
     if (name.empty()) {
         THROW_OR_ABORT("register_node received empty name");
     }
-    if (!nodes_.insert({ name, scene_node.ptr() }).second) {
+    if (!nodes_.try_emplace(name, scene_node.ptr()).second) {
         THROW_OR_ABORT("Scene node with name \"" + name + "\" already exists");
     }
 }

@@ -1692,6 +1692,10 @@ void SceneNode::invalidate_transformation_history() {
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node) {
-    node->print(ostr);
+    if (node != nullptr) {
+        node->print(ostr);
+    } else {
+        ostr << "<null node>\n";
+    }
     return ostr;
 }

@@ -162,7 +162,9 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             }
         }
     }
-    auto instantiate = [&](const std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>>& positions)
+    auto instantiate = [&](
+        const std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>>& positions,
+        const std::string& node_infix)
     {
         if (!positions.empty()) {
             auto world_node = make_unique_scene_node(
@@ -194,18 +196,19 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     world_node->add_instances_position(*name, r.position, r.yangle, r.billboard_id);
                 }
             }
+            auto wn = world_node.get(DP_LOC);
             try {
                 options.scene.auto_add_root_node(
-                    *options.instance_name + "_inst_world",
+                    *options.instance_name + '_' + node_infix + "_world",
                     std::move(world_node),
                     RenderingDynamics::STATIC);
             } catch (const std::runtime_error& e) {
-                throw std::runtime_error((std::stringstream() << "Could not add root node: " << e.what() << '\n' << world_node.get(DP_LOC)).str());
+                throw std::runtime_error((std::stringstream() << "Could not add root node: " << e.what() << '\n' << wn).str());
             }
         }
     };
-    instantiate(hitboxes_);
-    instantiate(resource_instance_positions_);
+    instantiate(hitboxes_, "hitboxes");
+    instantiate(resource_instance_positions_, "inst");
     // if (!resource_instance_positions_.empty()) {
     //     options.scene_node.optimize_instances_search_time(lraw());
     // }
