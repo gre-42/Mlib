@@ -51,7 +51,7 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
             auto cva = q->transformed<CompressedScenePos>(t, "_ipl_float");
             cleanup(*cva, filter, min_vertex_distance, modulo_uv);
             if (!cva->empty()) {
-                add_rigid_cuboid(cva, "ipl_static_float");
+                add_rigid_cuboid(cva, "ipl_static_float_" + q->name.full_name());
             }
         }
         for (const auto& [t, q] : double_queue) {
@@ -59,7 +59,7 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
             auto cva = q->transformed<CompressedScenePos>(t, "_ipl_double");
             cleanup(*cva, filter, min_vertex_distance, modulo_uv);
             if (!cva->empty()) {
-                add_rigid_cuboid(cva, "ipl_static_double");
+                add_rigid_cuboid(cva, "ipl_static_double_" + q->name.full_name());
             }
         }
     }
