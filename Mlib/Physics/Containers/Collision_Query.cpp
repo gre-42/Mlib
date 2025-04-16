@@ -373,8 +373,8 @@ bool CollisionQuery::visit_spawn_preventers(
                         return false;
                     }
                 }
-                for (const auto& t0 : rm0.mesh.mesh->get_quads_sphere()) {
-                    if (!can_spawn_at_polygon(t0)) {
+                for (const auto& q0 : rm0.mesh.mesh->get_quads_sphere()) {
+                    if (!can_spawn_at_polygon(q0)) {
                         return false;
                     }
                 }
