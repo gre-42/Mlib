@@ -75,6 +75,7 @@ void Mlib::collide_convex_meshes(
         PhysicsMaterial known_objects =
             PhysicsMaterial::OBJ_CHASSIS |
             PhysicsMaterial::OBJ_TIRE_LINE |
+            PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT |
             PhysicsMaterial::OBJ_BULLET_MESH |
             PhysicsMaterial::OBJ_HITBOX |
             PhysicsMaterial::OBJ_DISTANCEBOX;
