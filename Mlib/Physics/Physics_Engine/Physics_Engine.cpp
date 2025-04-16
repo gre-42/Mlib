@@ -49,22 +49,18 @@ void PhysicsEngine::collide(
     rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
         return (rbtm.rigid_body->mass() != INFINITY);
     });
-    {
-        std::list<RigidBodyVehicle*> olist;
-        for (const auto& o : rigid_bodies_.objects_) {
-            if ((o.rigid_body->mass() == INFINITY) || o.rigid_body->is_deactivated_avatar())
-            {
-                continue;
-            }
-            o.rigid_body->reset_forces(oversampling_iteration);
-            olist.push_back(&o.rigid_body.get());
+    std::vector<RigidBodyAndMeshes*> ovector;
+    ovector.reserve(rigid_bodies_.objects_.size());
+    for (auto& o : rigid_bodies_.objects_) {
+        if ((o.rigid_body->mass() == INFINITY) || o.rigid_body->is_deactivated_avatar())
+        {
+            continue;
         }
-        for (const auto& co : controllables_) {
-            co->notify_reset(burn_in, cfg_);
-        }
-        for (const auto& efp : external_force_providers_) {
-            efp->increment_external_forces(olist, burn_in, cfg_, world);
-        }
+        o.rigid_body->reset_forces(oversampling_iteration);
+        ovector.push_back(&o);
+    }
+    for (const auto& co : controllables_) {
+        co->notify_reset(burn_in, cfg_);
     }
     std::list<std::unique_ptr<IContactInfo>> contact_infos;
     permanent_contacts_.extend_contact_infos(cfg_, contact_infos);
@@ -99,15 +95,16 @@ void PhysicsEngine::collide(
         .ridge_map = rigid_bodies_.ridge_map(),
         .base_log = base_log
     };
-    for (const auto& o : rigid_bodies_.objects_) {
-        if ((o.rigid_body->mass() == INFINITY) || o.rigid_body->is_deactivated_avatar())
-        {
-            continue;
+    for (const auto& o : ovector) {
+        if (o->has_meshes()) {
+            rigid_bodies_.transform_object_and_add(*o);
         }
-        if (o.has_meshes()) {
-            rigid_bodies_.transform_object_and_add(o);
-        }
-        o.rigid_body->collide_with_air(history);
+    }
+    for (const auto& efp : external_force_providers_) {
+        efp->increment_external_forces(burn_in, cfg_, world);
+    }
+    for (const auto& o : ovector) {
+        o->rigid_body->collide_with_air(history);
     }
     collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)
         ? CollisionDirection::BACKWARD

@@ -2,6 +2,7 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
+#include <Mlib/Geometry/Intersection/Intersectors/Swept_Sphere_Aabb.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -14,6 +15,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
@@ -58,10 +60,12 @@ using namespace Mlib;
 KeyBindings::KeyBindings(
     SelectedCameras& selected_cameras,
     const Focuses& focuses,
-    Players& players)
+    Players& players,
+    PhysicsEngine& physics_engine)
     : selected_cameras_{ selected_cameras }
     , focuses_{ focuses }
     , players_{ players }
+    , physics_engine_{ physics_engine }
 {}
 
 KeyBindings::~KeyBindings() {
@@ -247,7 +251,6 @@ static const auto main_name = VariableAndHash<std::string>{ "main" };
 static const auto brakes_name = VariableAndHash<std::string>{ "brakes" };
 
 void KeyBindings::increment_external_forces(
-    const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
     const PhysicsEngineConfig& cfg,
     const StaticWorld& world)
@@ -452,6 +455,13 @@ void KeyBindings::increment_external_forces(
             linfo() << "Position: " << std::setprecision(18) << trafo.t / (ScenePos)meters;
             linfo() << "Pitch: " << z_to_pitch(z) / degrees;
             linfo() << "Yaw: " << z_to_yaw(z) / degrees;
+
+            auto ssaabb = std::make_shared<SweptSphereAabb>(
+                FixedArray<CompressedScenePos, 3>{(CompressedScenePos)-4.f, (CompressedScenePos)-1.f, (CompressedScenePos)-8.f} * meters,
+                FixedArray<CompressedScenePos, 3>{(CompressedScenePos)4.f, (CompressedScenePos)1.f, (CompressedScenePos)8.f} * meters,
+                ((CompressedScenePos)0.5f) * meters);
+            auto material = PhysicsMaterial::OBJ_DISTANCEBOX | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONVEX;
+            linfo() << "Can spawn: " << (int)physics_engine_.collision_query_.can_spawn_at(trafo, { {material, ssaabb} });
         }
     }
     // Avatar controller

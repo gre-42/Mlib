@@ -173,7 +173,7 @@ void test_physics_engine(unsigned int seed) {
         THROW_OR_ABORT("Unknown scene name");
     }
 
-    GravityEfp gefp;
+    GravityEfp gefp{ pe };
     pe.add_external_force_provider(gefp);
 
     RealtimeSleeper physics_sleeper{

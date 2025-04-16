@@ -3,17 +3,18 @@
 
 namespace Mlib {
 
-class RigidBodyVehicle;
+class PhysicsEngine;
 
 class GravityEfp: public IExternalForceProvider {
 public:
-    GravityEfp();
+    explicit GravityEfp(PhysicsEngine& engine);
     ~GravityEfp();
     virtual void increment_external_forces(
-        const std::list<RigidBodyVehicle*>& olist,
         bool burn_in,
         const PhysicsEngineConfig& cfg,
         const StaticWorld& world) override;
+private:
+    PhysicsEngine& engine_;
 };
 
 }

@@ -244,7 +244,6 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     // IExternalForceProvider
     virtual void increment_external_forces(
-        const std::list<RigidBodyVehicle*>& olist,
         bool burn_in,
         const PhysicsEngineConfig& cfg,
         const StaticWorld& world) override;

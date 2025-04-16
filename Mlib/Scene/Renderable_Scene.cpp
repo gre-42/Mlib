@@ -103,6 +103,7 @@ RenderableScene::RenderableScene(
               : std::function<std::chrono::steady_clock::time_point()>(),
           paused_}
     , busy_state_provider_guard_{ dependent_sleeper, physics_set_fps_ }
+    , gefp_{ physics_engine_ }
     , physics_iteration_{
           scene_node_resources,
           rendering_resources_,
@@ -138,7 +139,8 @@ RenderableScene::RenderableScene(
     , key_bindings_{std::make_unique<KeyBindings>(
           selected_cameras_,
           ui_focus.focuses,
-          players_)}
+          players_,
+          physics_engine_)}
     , read_pixels_logic_{ *aggregate_render_logic_, button_states, key_configurations, ReadPixelsRole::INTERMEDIATE }
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(rendering_resources_, read_pixels_logic_) }
     , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW) }

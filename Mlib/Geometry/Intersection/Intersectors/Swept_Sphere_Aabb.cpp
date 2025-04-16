@@ -179,5 +179,5 @@ bool SweptSphereAabb::can_spawn_at(
     if (c == nullptr) {
         THROW_OR_ABORT("SweptSphereAabb can only intersect objects of type SweptSphereAabb");
     }
-    return intersect_aabb_aabb(aabb_small_.casted<ScenePos>(), c->aabb_small_.casted<ScenePos>(), trafo);
+    return !intersect_aabb_aabb(aabb_large_.casted<ScenePos>(), c->aabb_large_.casted<ScenePos>(), trafo);
 }

@@ -294,11 +294,11 @@ bool CollisionQuery::visit_spawn_preventers(
     PhysicsMaterial collidable_mask1,
     const std::function<bool(const RigidBodyVehicle& vehicle0)>& visit) const
 {
-    for (const auto& i1 : intersectables1) {
-        if (!any(i1.physics_material & collidable_mask1)) {
+    for (const auto& i1_rel : intersectables1) {
+        if (!any(i1_rel.physics_material & collidable_mask1)) {
             continue;
         }
-        auto ti1 = TransformedIntersectable{ i1.mesh, trafo1 };
+        auto ti1 = TransformedIntersectable{ i1_rel.mesh, trafo1 };
         auto bs1 = ti1.bounding_sphere();
         for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
             for (const auto& msh0 : o0.meshes) {
@@ -338,7 +338,7 @@ bool CollisionQuery::visit_spawn_preventers(
             }
         }
         if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
-            i1.mesh->aabb(),
+            ti1.aabb(),
             [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0)
             {
                 return std::visit(
@@ -356,7 +356,7 @@ bool CollisionQuery::visit_spawn_preventers(
             return false;
         }
         if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().visit(
-            i1.mesh->aabb(),
+            ti1.aabb(),
             [&](const RigidBodyAndIntersectableMesh& rm0){
                 if (!any(rm0.mesh.physics_material & collidable_mask0)) {
                     return true;
@@ -398,7 +398,7 @@ bool CollisionQuery::can_spawn_at(
         intersectables,
         collidable_mask0,
         collidable_mask1,
-        [](const RigidBodyVehicle& vehicle1){
+        [](const RigidBodyVehicle& vehicle0){
             return false;
         });
 }

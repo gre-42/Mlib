@@ -29,18 +29,19 @@ struct BaseGamepadAnalogAxesBinding;
 class ButtonPress;
 class CursorMovement;
 class ScrollWheelMovement;
+class PhysicsEngine;
 
 class KeyBindings: public IExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
-        Players& players);
+        Players& players,
+        PhysicsEngine& physics_engine);
     ~KeyBindings();
 
     // IExternalForceProvider
     virtual void increment_external_forces(
-        const std::list<RigidBodyVehicle*>& olist,
         bool burn_in,
         const PhysicsEngineConfig& cfg,
         const StaticWorld& world) override;
@@ -109,6 +110,7 @@ private:
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
     Players& players_;
+    PhysicsEngine& physics_engine_;
 };
 
 }

@@ -471,7 +471,6 @@ void Player::advance_time(float dt, const StaticWorld& world) {
 }
 
 void Player::increment_external_forces(
-    const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
     const PhysicsEngineConfig& cfg,
     const StaticWorld& world)
