@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Precision.hpp>
 
 using namespace Mlib;
@@ -70,6 +71,25 @@ void Mlib::collide_convex_meshes(
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionHistory& history)
 {
+    auto check_material = [](const RigidBodyVehicle& o, const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh){
+        PhysicsMaterial known_objects =
+            PhysicsMaterial::OBJ_CHASSIS |
+            PhysicsMaterial::OBJ_TIRE_LINE |
+            PhysicsMaterial::OBJ_BULLET_MESH |
+            PhysicsMaterial::OBJ_HITBOX |
+            PhysicsMaterial::OBJ_DISTANCEBOX;
+
+        if (!any(msh.physics_material & known_objects)) {
+            THROW_OR_ABORT(
+                "Unexpected material for convex mesh \"" + msh.mesh->name() +
+                "\" in object \"" + o.name() + "\". Expected: " +
+                physics_material_to_string(known_objects) + ". Actual: " +
+                physics_material_to_string(msh.physics_material));
+        }
+    };
+    check_material(o0, msh0);
+    check_material(o1, msh1);
+
     PhysicsMaterial combined_material = (msh0.physics_material | msh1.physics_material);
     if (any(combined_material & PhysicsMaterial::OBJ_BULLET_MASK) &&
        !any(combined_material & PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK))
