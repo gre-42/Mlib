@@ -31,7 +31,7 @@ TransformationMatrix<double, double, 3> ISceneNodeResource::get_geographic_mappi
 std::shared_ptr<AnimatedColoredVertexArrays> ISceneNodeResource::get_arrays(
     const ColoredVertexArrayFilter& filter) const
 {
-    THROW_OR_ABORT("get_physics_arrays not implemented");
+    THROW_OR_ABORT("get_arrays not implemented");
 }
 
 std::list<std::shared_ptr<AnimatedColoredVertexArrays>> ISceneNodeResource::get_rendering_arrays() const {

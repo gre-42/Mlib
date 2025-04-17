@@ -34,6 +34,7 @@ struct AnimatedColoredVertexArrays {
     std::map<std::string, size_t> bone_indices;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas;
+    void insert(const AnimatedColoredVertexArrays& other);
     template <class TPos>
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas();
     UUVector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(

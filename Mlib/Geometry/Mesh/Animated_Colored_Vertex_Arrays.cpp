@@ -35,6 +35,17 @@ AnimatedColoredVertexArrays::AnimatedColoredVertexArrays(
 
 AnimatedColoredVertexArrays::~AnimatedColoredVertexArrays() = default;
 
+void AnimatedColoredVertexArrays::insert(const AnimatedColoredVertexArrays& other) {
+    if (!bone_indices.empty() || !other.bone_indices.empty()) {
+        THROW_OR_ABORT("Merging AnimatedColoredVertexArrays does not support bone indices");
+    }
+    if ((skeleton != nullptr) || (other.skeleton != nullptr)) {
+        THROW_OR_ABORT("Merging AnimatedColoredVertexArrays does not support skeleton");
+    }
+    scvas.insert(scvas.end(), other.scvas.begin(), other.scvas.end());
+    dcvas.insert(dcvas.end(), other.dcvas.begin(), other.dcvas.end());
+}
+
 UUVector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectorize_joint_poses(
     const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const
 {

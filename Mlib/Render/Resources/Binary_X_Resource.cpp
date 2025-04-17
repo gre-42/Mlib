@@ -117,6 +117,15 @@ void BinaryXResource::instantiate_child_renderable(const ChildInstantiationOptio
     options.scene_node->add_child(*options.instance_name + "_node90", std::move(node90));
 }
 
+std::shared_ptr<AnimatedColoredVertexArrays> BinaryXResource::get_arrays(
+    const ColoredVertexArrayFilter& filter) const
+{
+    auto acvas = std::make_shared<AnimatedColoredVertexArrays>();
+    acvas->insert(*rva_0_->get_arrays(filter));
+    acvas->insert(*rva_90_->get_arrays(filter));
+    return acvas;
+}
+
 AggregateMode BinaryXResource::get_aggregate_mode() const {
     AggregateMode am_0 = rva_0_->get_aggregate_mode();
     AggregateMode am_90 = rva_90_->get_aggregate_mode();

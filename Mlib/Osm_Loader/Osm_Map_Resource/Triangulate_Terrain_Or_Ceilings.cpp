@@ -26,6 +26,8 @@
 
 using namespace Mlib;
 
+static const float BAD_TRIANGLE_COS = 1 - 1e-8f;
+
 void plot_tris(const std::string& filename, const std::list<p2t::Triangle*>& tris) {
     std::list<FixedArray<ColoredVertex<double>, 3>> triangles;
     for (const auto& t : tris) {
@@ -229,15 +231,16 @@ void triangulate_entity_list(
                 }
             }
             {
-                using Triangle = FixedArray<CompressedScenePos, 3, 3>;
-                auto tlc = triangle_largest_cosine(funpack(Triangle{
+                auto vt = FixedArray<CompressedScenePos, 3, 3>{
                     tt(0).position,
                     tt(1).position,
-                    tt(2).position}));
-                if (std::isnan(tlc) || (tlc > (1 - 1e-7f))) {
+                    tt(2).position
+                };
+                auto tlc = triangle_largest_cosine(funpack(vt));
+                if (std::isnan(tlc) || (tlc > BAD_TRIANGLE_COS)) {
                     auto exception = TriangleException<CompressedScenePos>{
-                        tt(0).position, tt(1).position, tt(2).position,
-                        "Detected bad triangle"};
+                        vt[0], vt[1], vt[2],
+                        "Detected bad triangle in hole \"" + to_string(e) + '"'};
                     THROW_OR_ABORT2(exception);
                 }
             }
@@ -348,17 +351,27 @@ void triangulate_entity_list(
                 lwarn() << "Received unknown point";
                 continue;
             }
+            auto vt = FixedArray<CompressedScenePos, 3, 2>{*c0, *c1, *c2};
+            {
+                auto tlc = triangle_largest_cosine(funpack(vt));
+                if (std::isnan(tlc) || (tlc > BAD_TRIANGLE_COS)) {
+                    auto exception = TriangleException<CompressedScenePos>{
+                        vt[0], vt[1], vt[2],
+                        "Detected bad triangle"};
+                    THROW_OR_ABORT2(exception);
+                }
+            }
             auto uv = terrain_uv<CompressedScenePos, double>(
-                *c0,
-                *c1,
-                *c2,
+                vt[0],
+                vt[1],
+                vt[2],
                 scale,
                 uv_scale,
                 uv_period);
             tl->draw_triangle_wo_normals(
-                {(*c0)(0), (*c0)(1), z},
-                {(*c1)(0), (*c1)(1), z},
-                {(*c2)(0), (*c2)(1), z},
+                {vt(0, 0), vt(0, 1), z},
+                {vt(1, 0), vt(1, 1), z},
+                {vt(2, 0), vt(2, 1), z},
                 Colors::from_rgb(color),
                 Colors::from_rgb(color),
                 Colors::from_rgb(color),

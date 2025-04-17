@@ -134,14 +134,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_arrays(
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{ recursion_counter };
         auto ar = scene_node_resources_.get_arrays(resource_name, filter);
-        if (!ar->bone_indices.empty()) {
-            THROW_OR_ABORT("Compound resource does not support bone indices");
-        }
-        if (ar->skeleton != nullptr) {
-            THROW_OR_ABORT("Compound resource does not support skeleton");
-        }
-        acvas->scvas.insert(acvas->scvas.end(), ar->scvas.begin(), ar->scvas.end());
-        acvas->dcvas.insert(acvas->dcvas.end(), ar->dcvas.begin(), ar->dcvas.end());
+        acvas->insert(*ar);
     }
     return acvas;
 }

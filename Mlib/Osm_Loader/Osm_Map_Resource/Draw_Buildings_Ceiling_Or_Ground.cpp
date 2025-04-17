@@ -1,5 +1,6 @@
 #include "Draw_Buildings_Ceiling_Or_Ground.hpp"
 #include <Mlib/Geometry/Base_Materials.hpp>
+#include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -125,6 +126,8 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 contour_detection_strategy);
         } catch (const p2t::PointException& e) {
             throw p2t::PointException{ e.point, "Could not triangulate building \"" + bu.id + "\": " + e.what() };
+        } catch (const TriangleException<CompressedScenePos>& e) {
+            throw TriangleException<CompressedScenePos>{ e.a, e.b, e.c, "Could not triangulate building \"" + bu.id + "\": " + e.what() };
         } catch (const std::runtime_error& e) {
             throw std::runtime_error{ "Could not triangulate building \"" + bu.id + "\": " + e.what() };
         }
