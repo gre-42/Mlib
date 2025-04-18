@@ -997,7 +997,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    }" << std::endl;
 #ifdef __ANDROID__
         sstr << "    int idx = 2 * best_axis + int(best_sign);";
-        for (size_t i = 0; i < INTERIOR_COUNT_COLORS; ++i) {
+        for (size_t i = 0; i < size(InteriorTextureSet::INTERIOR_COLORS); ++i) {
             sstr << "    if (idx == " << i << ") frag_color = texture(texture_interior[" << i << "], best_uv);" << std::endl;
         }
 #else
