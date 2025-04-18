@@ -4,11 +4,20 @@
 
 namespace Mlib {
 
-struct SpawnArguments {
+enum class SpawnAction {
+    DRY_RUN,
+    DO_IT
+};
+
+struct GeometrySpawnArguments {
+    SpawnAction action;
+    CompressedScenePos y_offset;
+};
+
+struct NodeSpawnArguments {
     std::string suffix;
     bool if_with_graphics;
     bool if_with_physics;
-    CompressedScenePos y_offset;
 };
 
 }

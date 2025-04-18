@@ -223,8 +223,10 @@ public:
     virtual std::string title() const override;
     virtual std::optional<std::string> target_id() const override;
     virtual bool reset_vehicle_requested() override;
-    virtual void reset_vehicle(
-        const OffsetAndTaitBryanAngles<float, ScenePos, 3>& location) override;
+    virtual bool can_reset_vehicle(
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const override;
+    virtual bool try_reset_vehicle(
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) override;
     virtual std::vector<DanglingPtr<SceneNode>> moving_nodes() const override;
     virtual void notify_race_started() override;
     virtual RaceState notify_lap_finished(

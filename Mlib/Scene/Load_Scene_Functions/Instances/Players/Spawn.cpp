@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
@@ -35,12 +36,9 @@ void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
     if (!game_logic->spawner.try_spawn_at_spawn_point(
         vehicle_spawners.get(spawner_name),
-        SpawnPoint{
-            .type = SpawnPointType::ROAD,
-            .location = WayPointLocation::NONE,
-            .position = parse_position(args.arguments.at(KnownArgs::position), scene_node_resources),
-            .rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
-            .team = args.arguments.at<std::string>(KnownArgs::team)
+        {
+            tait_bryan_angles_2_matrix(args.arguments.at<UFixedArray<SceneDir, 3>>(KnownArgs::rotation) * degrees),
+            parse_position(args.arguments.at(KnownArgs::position), scene_node_resources)
         }))
     {
         THROW_OR_ABORT("Could not spawn \"" + spawner_name + '"');

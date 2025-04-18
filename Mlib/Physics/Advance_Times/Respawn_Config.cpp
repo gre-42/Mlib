@@ -7,6 +7,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(max_respawn_distance);
 DECLARE_ARGUMENT(vehicle_length);
 DECLARE_ARGUMENT(max_horizontal_angle);
 DECLARE_ARGUMENT(max_vertical_angle);
@@ -15,6 +16,7 @@ DECLARE_ARGUMENT(max_vertical_angle);
 void Mlib::from_json(const nlohmann::json& j, RespawnConfig& cfg) {
     JsonView jv{ j };
     jv.validate(KnownArgs::options);
+    cfg.max_respawn_distance = jv.at<ScenePos>(KnownArgs::max_respawn_distance) * meters;
     cfg.vehicle_length = jv.at<ScenePos>(KnownArgs::vehicle_length) * meters;
     cfg.max_horizontal_angle = jv.at<float>(KnownArgs::max_horizontal_angle) * degrees;
     cfg.max_vertical_angle = jv.at<float>(KnownArgs::max_vertical_angle) * degrees;

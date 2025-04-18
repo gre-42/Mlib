@@ -50,38 +50,52 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
     vehicle_spawners.get(spawner_name).set_spawn_vehicle(
         [macro_line_executor = args.macro_line_executor,
-         spawner_name,
          asset_id = args.arguments.at<std::string>(KnownArgs::asset_id),
          macro = args.arguments.at(KnownArgs::macro),
          &snr = scene_node_resources,
-         &cq = physics_engine.collision_query_,
-         &scene = scene](const SpawnPoint& p, const SpawnArguments& a){
+         &cq = physics_engine.collision_query_]
+        (
+            const TransformationMatrix<SceneDir, CompressedScenePos, 3>& p,
+            const GeometrySpawnArguments& g,
+            const NodeSpawnArguments* n)
+        {
+            assert_true((g.action == SpawnAction::DRY_RUN) == (n == nullptr));
             auto dp = FixedArray<CompressedScenePos, 3>{
                 (CompressedScenePos)0.f,
-                a.y_offset,
+                g.y_offset,
                 (CompressedScenePos)0.f
             };
             auto trafo = TransformationMatrix<float, ScenePos, 3>{
-                tait_bryan_angles_2_matrix<float>(p.rotation),
-                funpack(p.position + dp)};
+                p.R,
+                funpack(p.t + dp)};
             auto distancebox = snr.get_intersectables(asset_id + "_distancebox");
             if (!cq.can_spawn_at(trafo, distancebox)) {
                 return false;
             }
+            if (g.action == SpawnAction::DRY_RUN) {
+                return true;
+            }
+            if (g.action != SpawnAction::DO_IT) {
+                THROW_OR_ABORT("Unknown spawn action: " + std::to_string((int)g.action));
+            }
+            if (n == nullptr) {
+                THROW_OR_ABORT("Node geometry not set");
+            }
             auto z = z3_from_3x3(trafo.R);
+            auto rotation = matrix_2_tait_bryan_angles(p.R);
             nlohmann::json let{
                 {KnownLet::human_node_position, trafo.t / (ScenePos)meters},
                 {KnownLet::human_node_angle_y, std::atan2(z(0), z(2)) / degrees},
                 {KnownLet::car_node_position, trafo.t / (ScenePos)meters},
-                {KnownLet::car_node_angles, p.rotation / degrees},
+                {KnownLet::car_node_angles, rotation / degrees},
                 // Velocity and angular velocity should be calculated dynamically from the parent of the
                 // spawn point using "parent.velocity_at_position" and "parent.angular_velocity_at_position".
                 // Spawn points do not yet have a parent, so the values are set to zero here.
                 {KnownLet::velocity, fixed_zeros<float, 3>() / kph},
                 {KnownLet::angular_velocity, fixed_zeros<float, 3>() / rpm},  // this is not yet used in the scripts
-                {KnownLet::suffix, a.suffix},
-                {KnownLet::if_with_graphics, a.if_with_graphics},
-                {KnownLet::if_with_physics, a.if_with_physics} };
+                {KnownLet::suffix, n->suffix},
+                {KnownLet::if_with_graphics, n->if_with_graphics},
+                {KnownLet::if_with_physics, n->if_with_physics} };
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
             return true;
         },

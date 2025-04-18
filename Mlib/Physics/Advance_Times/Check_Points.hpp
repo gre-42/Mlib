@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
@@ -36,6 +36,11 @@ struct BeaconNode {
     std::string beacon_node_name;
     DanglingPtr<SceneNode> beacon_node;
     CheckPointPose* check_point_pose;
+};
+
+struct TrafoAndMetersToStart {
+    TransformationMatrix<SceneDir, ScenePos, 3> trafo;
+    double meters_to_start;
 };
 
 class CheckPoints: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
@@ -100,7 +105,7 @@ private:
     std::list<CheckPointPose> checkpoints_ahead_;
     std::optional<FixedArray<ScenePos, 3>> last_direction_;
     std::optional<FixedArray<ScenePos, 3>> last_reached_checkpoint_;
-    std::optional<OffsetAndTaitBryanAngles<float, ScenePos, 3>> last_straight_checkpoint_;
+    std::list<TrafoAndMetersToStart> straight_checkpoints_;
     std::list<TrackElementExtended> history_;
     bool enable_height_changed_mode_;
     FixedArray<float, 3> selection_emissive_;

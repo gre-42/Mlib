@@ -37,6 +37,12 @@ public:
 
     FixedArray<TRotation, tsize> rotation;
     FixedArray<TPos, tsize> position;
+
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(rotation);
+        archive(position);
+    }
 };
 
 };

@@ -1002,8 +1002,19 @@ bool Player::reset_vehicle_requested() {
     return result;
 }
 
-void Player::reset_vehicle(
-    const OffsetAndTaitBryanAngles<float, ScenePos, 3>& location)
+bool Player::can_reset_vehicle(
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const
+{
+    if (vehicle_spawner_ == nullptr) {
+        THROW_OR_ABORT("Player has no vehicle spawner");
+    }
+    return spawner_.can_spawn_at_spawn_point(
+        *vehicle_spawner_,
+        trafo.casted<SceneDir, CompressedScenePos>());
+}
+
+bool Player::try_reset_vehicle(
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo)
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     {
@@ -1011,10 +1022,10 @@ void Player::reset_vehicle(
         reset_vehicle_to_last_checkpoint_requested_ = false;    
     }
     if (vehicle_spawner_ == nullptr) {
-        return;
+        return false;
     }
     if (!has_scene_vehicle()) {
-        return;
+        return false;
     }
     auto vs = vehicle_spawner_;
     vehicle_spawner_->delete_vehicle();
@@ -1023,21 +1034,17 @@ void Player::reset_vehicle(
     }
     if (!spawner_.try_spawn_at_spawn_point(
         *vs,
-        SpawnPoint{
-            .type = SpawnPointType::ROAD,
-            .location = WayPointLocation::STREET,
-            .position = location.position.casted<CompressedScenePos>(),
-            .rotation = location.rotation,
-            .team = team_name()
-        }))
+        trafo.casted<SceneDir, CompressedScenePos>()))
     {
         if (vehicle_spawner_ != nullptr) {
             verbose_abort("Vehicle spawner not null after failed spawning");
         }
+        return false;
     } else {
         if (vehicle_spawner_ == nullptr) {
             verbose_abort("Vehicle spawner is null after spawning");
         }
+        return true;
     }
 }
 

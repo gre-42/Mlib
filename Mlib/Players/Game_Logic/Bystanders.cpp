@@ -64,13 +64,13 @@ bool Bystanders::spawn_for_vip(
                 return true;
             }
         }
-        ScenePos dist2 = sum(squared(funpack(sp->position) - vip_pos));
+        ScenePos dist2 = sum(squared(funpack(sp->trafo.t) - vip_pos));
         // Abort if too far away.
         if (dist2 > squared(cfg_.r_spawn_far)) {
             return true;
         }
         // Abort if behind car.
-        if (dot0d(funpack(sp->position) - vip_pos, vip_z.casted<ScenePos>()) > 0) {
+        if (dot0d(funpack(sp->trafo.t) - vip_pos, vip_z.casted<ScenePos>()) > 0) {
             return true;
         }
         // Abort if another car is nearby.
@@ -78,7 +78,7 @@ bool Bystanders::spawn_for_vip(
             bool exists = false;
             for (const auto& [_, player2] : players_.players()) {
                 if (player2->has_scene_vehicle()) {
-                    if (sum(squared(funpack(sp->position) - player2->scene_node()->position())) < squared(cfg_.r_neighbors)) {
+                    if (sum(squared(funpack(sp->trafo.t) - player2->scene_node()->position())) < squared(cfg_.r_neighbors)) {
                         exists = true;
                         break;
                     }
@@ -89,7 +89,7 @@ bool Bystanders::spawn_for_vip(
             }
         }
         bool spotted = vip_->can_see(
-            funpack(sp->position),
+            funpack(sp->trafo.t),
             cfg_.only_terrain,
             funpack(cfg_.can_see_y_offset));
         if (dist2 < squared(cfg_.r_spawn_near)) {
@@ -101,7 +101,7 @@ bool Bystanders::spawn_for_vip(
             }
             // Abort if not visible after x seconds.
             if (!vip_->can_see(
-                funpack(sp->position),
+                funpack(sp->trafo.t),
                 cfg_.only_terrain,
                 funpack(cfg_.can_see_y_offset),
                 cfg_.visible_after_spawn_time))
@@ -116,7 +116,7 @@ bool Bystanders::spawn_for_vip(
                 return true;
             }
         }
-        if (spawner_.try_spawn_at_spawn_point(spawner, *sp)) {
+        if (spawner_.try_spawn_at_spawn_point(spawner, sp->trafo)) {
             if (spotted) {
                 spawner.set_spotted_by_vip();
             }

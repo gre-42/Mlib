@@ -1,6 +1,7 @@
 #include "Check_Points.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
+#include <Mlib/Iterator/Reverse_Iterator.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
@@ -213,12 +214,13 @@ void CheckPoints::advance_time(float dt) {
         const auto& new_location = new_element.transformation();
         if (sum(squared((*moving_nodes_.begin())->position() - new_location.position)) < squared(radius_)) {
             history_.splice(history_.end(), history);
-            {
-                auto pr = new_element.progress(TrackElementInterpolationKey::METERS_TO_START);
-                history_.remove_if([&](const TrackElementExtended& p){
-                    return pr - p.progress(TrackElementInterpolationKey::METERS_TO_START) > respawn_config_.vehicle_length;
-                });
-            }
+            auto new_meters_to_start = new_element.progress(TrackElementInterpolationKey::METERS_TO_START);
+            history_.remove_if([&](const TrackElementExtended& p){
+                return new_meters_to_start - p.progress(TrackElementInterpolationKey::METERS_TO_START) > respawn_config_.vehicle_length;
+            });
+            straight_checkpoints_.remove_if([&](const TrafoAndMetersToStart& p){
+                return new_meters_to_start - p.meters_to_start > respawn_config_.max_respawn_distance;
+            });
             if (last_reached_checkpoint_.has_value()) {
                 auto dpos = new_location.position - *last_reached_checkpoint_;
                 auto dpos_l2 = sum(squared(dpos));
@@ -231,10 +233,10 @@ void CheckPoints::advance_time(float dt) {
                         {
                             straight_progress_ = progress;
                         } else if (progress - straight_progress_ > respawn_config_.vehicle_length) {
-                            last_straight_checkpoint_ = new_location;
+                            auto& lsc = straight_checkpoints_.emplace_back(new_location.to_matrix(), new_meters_to_start);
                             for (const auto& e : history_) {
-                                last_straight_checkpoint_->position(1) = std::max(
-                                    last_straight_checkpoint_->position(1),
+                                lsc.trafo.t(1) = std::max(
+                                    lsc.trafo.t(1),
                                     e.element.transformation().position(1));
                             }
                         }
@@ -295,22 +297,28 @@ void CheckPoints::advance_time(float dt) {
 }
 
 void CheckPoints::reset_player() {
-    if (player_->reset_vehicle_requested() &&
-        last_straight_checkpoint_.has_value())
-    {
-        for (auto& n : moving_nodes_) {
-            n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-        }
-        moving_nodes_.clear();
-        movings_.clear();
-    
-        player_->reset_vehicle(*last_straight_checkpoint_);
+    if (player_->reset_vehicle_requested()) {
+        for (const auto& sc : reverse(straight_checkpoints_)) {
+            if (!player_->can_reset_vehicle(sc.trafo)) {
+                continue;
+            }
+            for (auto& n : moving_nodes_) {
+                n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+            }
+            moving_nodes_.clear();
+            movings_.clear();
 
-        moving_nodes_ = player_->moving_nodes();
-        movings_.reserve(moving_nodes_.size());
-        for (auto& n : moving_nodes_) {
-            movings_.push_back(&n->get_absolute_movable());
-            n->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+            if (!player_->try_reset_vehicle(sc.trafo)) {
+                verbose_abort("Cannot reset player vehicle");
+            }
+
+            moving_nodes_ = player_->moving_nodes();
+            movings_.reserve(moving_nodes_.size());
+            for (auto& n : moving_nodes_) {
+                movings_.push_back(&n->get_absolute_movable());
+                n->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+            }
+            break;
         }
     }
 }

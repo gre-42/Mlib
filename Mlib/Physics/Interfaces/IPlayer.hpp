@@ -17,8 +17,8 @@ enum class RaceState;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class DestructionFunctions;
-template <class TRotation, class TPos, size_t tsize>
-class OffsetAndTaitBryanAngles;
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
 
 class IPlayer {
 public:
@@ -26,8 +26,10 @@ public:
     virtual std::string title() const = 0;
     virtual std::optional<std::string> target_id() const = 0;
     virtual bool reset_vehicle_requested() = 0;
-    virtual void reset_vehicle(
-        const OffsetAndTaitBryanAngles<float, ScenePos, 3>& location) = 0;
+    virtual bool can_reset_vehicle(
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const = 0;
+    virtual bool try_reset_vehicle(
+        const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) = 0;
     virtual std::vector<DanglingPtr<SceneNode>> moving_nodes() const = 0;
     virtual void notify_race_started() = 0;
     virtual RaceState notify_lap_finished(

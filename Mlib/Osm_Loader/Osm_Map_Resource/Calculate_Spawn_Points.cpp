@@ -48,13 +48,13 @@ void Mlib::calculate_spawn_points(
             const FixedArray<float, 3>& rotation)
         {
             for (double beta = 0; beta < 1; beta += (10 * scale) / ly) {
+                auto position =
+                    (alpha * (beta * rectangle[0][0] + (1. - beta) * rectangle[1][0]) +
+                    (1. - alpha) * (beta * rectangle[0][1] + (1. - beta) * rectangle[1][1])).casted<CompressedScenePos>();
                 spawn_points.push_back(SpawnPoint{
                     .type = spawn_point_type,
                     .location = r.location,
-                    .position =
-                        (alpha * (beta * rectangle[0][0] + (1. - beta) * rectangle[1][0]) +
-                        (1. - alpha) * (beta * rectangle[0][1] + (1. - beta) * rectangle[1][1])).casted<CompressedScenePos>(),
-                    .rotation = rotation});
+                    .trafo = { tait_bryan_angles_2_matrix(rotation), position }});
             }
         };
         if (driving_direction == DrivingDirection::CENTER) {

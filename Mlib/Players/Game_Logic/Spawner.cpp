@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -41,12 +42,12 @@ Spawner::Spawner(
 Spawner::~Spawner() = default;
 
 void Spawner::set_spawn_points(
-    const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& absolute_model_matrix,
     const std::list<SpawnPoint>& spawn_points)
 {
     spawn_points_.clear();
     spawn_points_.reserve(spawn_points.size());
-    FixedArray<float, 3, 3> R = absolute_model_matrix.R / absolute_model_matrix.get_scale();
+    FixedArray<SceneDir, 3, 3> R = absolute_model_matrix.R / absolute_model_matrix.get_scale();
     size_t nsubs = cfg_.spawn_points_nsubdivisions;
     spawn_points_bvh_split_.resize(nsubs);
     for (size_t i = 0; i < nsubs; ++i) {
@@ -55,23 +56,35 @@ void Spawner::set_spawn_points(
     spawn_points_bvh_singular_.reset(new Bvh<CompressedScenePos, 3, const SpawnPoint*>(fixed_full<CompressedScenePos, 3>((CompressedScenePos)10.f), 10));
     for (const auto& [i, sp] : enumerate(spawn_points)) {
         SpawnPoint sp2 = sp;
-        sp2.position = absolute_model_matrix.transform(funpack(sp.position)).casted<CompressedScenePos>();
-        sp2.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(sp.rotation)), R.T()));
+        sp2.trafo.t = absolute_model_matrix.transform(funpack(sp.trafo.t)).casted<CompressedScenePos>();
+        // The spawn rotation is relative to the surface, so use R R1 R^T.
+        sp2.trafo.R = dot2d(dot2d(R, sp.trafo.R), R.T());
         const auto* spb = &spawn_points_.emplace_back(sp2);
-        spawn_points_bvh_split_[i % nsubs]->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.position), spb);
-        spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.position), spb);
+        spawn_points_bvh_split_[i % nsubs]->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.trafo.t), spb);
+        spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<CompressedScenePos, 3>::from_point(sp2.trafo.t), spb);
     }
 }
 
-bool Spawner::try_spawn_at_spawn_point(
+bool Spawner::can_spawn_at_spawn_point(
     VehicleSpawner& spawner,
-    const SpawnPoint& sp)
+    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp) const
 {
     // TimeGuard time_guard{"spawn", "spawn"};
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
-    bool success = spawner.try_spawn(sp, cfg_.spawn_y_offset);
+    return spawner.try_spawn(sp, { SpawnAction::DRY_RUN, cfg_.spawn_y_offset });
+}
+
+bool Spawner::try_spawn_at_spawn_point(
+    VehicleSpawner& spawner,
+    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp)
+{
+    // TimeGuard time_guard{"spawn", "spawn"};
+    // std::scoped_lock lock{ delete_node_mutex_ };
+    // TimeGuard time_guard2{"spawn2", "spawn2"};
+    // auto start = std::chrono::steady_clock::now();
+    bool success = spawner.try_spawn(sp, { SpawnAction::DO_IT, cfg_.spawn_y_offset });
     // lerr() << "Spawner time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<ScenePos>(std::chrono::steady_clock::now() - start)).count();
     ++ntry_spawns_;
     return success;
@@ -124,7 +137,7 @@ void Spawner::respawn_all_players() {
                 continue;
             }
             // lerr() << "Spawning \"" << pit->first << "\" with team \"" << pit->second->get_team_name() << '"'";
-            if (!try_spawn_at_spawn_point(*pit->second, sp)) {
+            if (!try_spawn_at_spawn_point(*pit->second, sp.trafo)) {
                 THROW_OR_ABORT("Could not spawn \"" + pit->first + "\" with team \"" + pit->second->get_team_name() + '"');
             }
             occupied_spawn_points.insert(&sp);
@@ -145,7 +158,7 @@ bool Spawner::try_spawn_player_during_match(VehicleSpawner& spawner) {
                         pos.casted<CompressedScenePos>(),
                         cfg_.r_occupied_spawn_point),
                     [&](const SpawnPoint* sp) {
-                        if (sum(squared(pos - funpack(sp->position))) < squared(cfg_.r_occupied_spawn_point)) {
+                        if (sum(squared(pos - funpack(sp->trafo.t))) < squared(cfg_.r_occupied_spawn_point)) {
                             occupied_spawn_points.insert(sp);
                         }
                         return true;
@@ -164,7 +177,7 @@ bool Spawner::try_spawn_player_during_match(VehicleSpawner& spawner) {
         if (occupied_spawn_points.contains(sp)) {
             continue;
         }
-        if (try_spawn_at_spawn_point(spawner, *sp)) {
+        if (try_spawn_at_spawn_point(spawner, sp->trafo)) {
             return true;
         }
     }

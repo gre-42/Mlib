@@ -6,6 +6,7 @@
 namespace Mlib {
 
 struct RespawnConfig {
+    ScenePos max_respawn_distance = 200.f * meters;
     ScenePos vehicle_length = 20.f * meters;
     float max_horizontal_angle = 30.f * degrees;
     float max_vertical_angle = 5.f * degrees;

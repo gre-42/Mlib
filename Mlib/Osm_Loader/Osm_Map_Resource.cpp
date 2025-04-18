@@ -1436,8 +1436,8 @@ OsmMapResource::OsmMapResource(
                     ++next;
                     if (next != bu.way.nd.end()) {
                         FixedArray<CompressedScenePos, 2> p = (nodes.at(*it).position + nodes.at(*next).position) / 2;
-                        FixedArray<double, 2> dir = funpack(nodes.at(*it).position - nodes.at(*next).position);
-                        double len2 = sum(squared(dir));
+                        FixedArray<ScenePos, 2> dir = funpack(nodes.at(*it).position - nodes.at(*next).position);
+                        ScenePos len2 = sum(squared(dir));
                         if (len2 < 1e-12) {
                             throw PointException{ p, "Spawn direction too small" };
                         }
@@ -1449,8 +1449,9 @@ OsmMapResource::OsmMapResource(
                         spawn_points_.push_back(SpawnPoint{
                             .type = SpawnPointType::SPAWN_LINE,
                             .location = WayPointLocation::UNKNOWN,
-                            .position = {p(0), p(1), height},
-                            .rotation = {0.f, 0.f, (float)std::atan2(dir(0), -dir(1))},
+                            .trafo = {
+                                tait_bryan_angles_2_matrix<SceneDir>({0.f, 0.f, (SceneDir)std::atan2(dir(0), -dir(1))}),
+                                {p(0), p(1), height}},
                             .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
                     }
                 }

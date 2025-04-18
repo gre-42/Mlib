@@ -14,7 +14,6 @@ template <class T>
 class DanglingRef;
 class Bystanders;
 struct SpawnPoint;
-struct SpawnArguments;
 class VehicleSpawner;
 class VehicleSpawners;
 class Player;
@@ -41,11 +40,12 @@ public:
         Scene& scene);
     ~Spawner();
     void set_spawn_points(
-        const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& absolute_model_matrix,
         const std::list<SpawnPoint>& spawn_points);
     void respawn_all_players();
     bool try_spawn_player_during_match(VehicleSpawner& spawner);
-    bool try_spawn_at_spawn_point(VehicleSpawner& spawner, const SpawnPoint& sp);
+    bool can_spawn_at_spawn_point(VehicleSpawner& spawner, const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp) const;
+    bool try_spawn_at_spawn_point(VehicleSpawner& spawner, const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp);
 private:
     std::vector<SpawnPoint*> shuffled_spawn_points();
     std::vector<SpawnPoint> spawn_points_;

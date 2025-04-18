@@ -166,23 +166,31 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
     }
 }
 
-bool VehicleSpawner::try_spawn(const SpawnPoint& spawn_point, CompressedScenePos spawn_y_offset) {
+bool VehicleSpawner::try_spawn(
+    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
+    const GeometrySpawnArguments& geometry)
+{
+    if (!try_spawn_vehicle_) {
+        THROW_OR_ABORT("Vehicle spawner not initialized");
+    }
+    if (geometry.action == SpawnAction::DRY_RUN) {
+        return try_spawn_vehicle_(spawn_point, geometry, nullptr);
+    }
+    if (geometry.action != SpawnAction::DO_IT) {
+        verbose_abort("Unknown spawn action: " + std::to_string((int)geometry.action));
+    }
     if (has_player() && player_->has_scene_vehicle()) {
         THROW_OR_ABORT("Player \"" + player_->id() + "\" already has a vehicle before spawning");
     }
     if (!scene_vehicles_.empty()) {
         THROW_OR_ABORT("Scene vehicles already set before spawning");
     }
-    if (!try_spawn_vehicle_) {
-        THROW_OR_ABORT("Vehicle spawner not initialized");
-    }
-    auto spawn_args = SpawnArguments{
+    auto node_args = NodeSpawnArguments{
         .suffix = suffix_,
         .if_with_graphics = true,
-        .if_with_physics = true,
-        .y_offset = spawn_y_offset
+        .if_with_physics = true
     };
-    if (!try_spawn_vehicle_(spawn_point, spawn_args)) {
+    if (!try_spawn_vehicle_(spawn_point, geometry, &node_args)) {
         if (!scene_vehicles_.empty()) {
             verbose_abort("Scene vehicles set after failed spawning");
         }

@@ -13,8 +13,10 @@
 namespace Mlib {
 
 class Scene;
-struct SpawnPoint;
-struct SpawnArguments;
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
+struct GeometrySpawnArguments;
+struct NodeSpawnArguments;
 class SceneVehicle;
 class RigidBodyVehicle;
 class Player;
@@ -30,7 +32,10 @@ class VehicleSpawner final : public ISpawner, public DestructionObserver<const R
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:
-    using TrySpawnVehicle = std::function<bool(const SpawnPoint& spawn_point, const SpawnArguments& spawn_args)>;
+    using TrySpawnVehicle = std::function<bool(
+        const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
+        const GeometrySpawnArguments& geom,
+        const NodeSpawnArguments* node)>;
 
     VehicleSpawner(
         Scene& scene,
@@ -67,7 +72,9 @@ public:
     void set_spawn_vehicle(
         TrySpawnVehicle try_spawn_vehicle,
         SpawnVehicleAlreadySetBehavior vehicle_spawner_already_set_behavior);
-    bool try_spawn(const SpawnPoint& spawn_point, CompressedScenePos spawn_y_offset);
+    bool try_spawn(
+        const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
+        const GeometrySpawnArguments& geometry);
     void delete_vehicle();
 
     float get_time_since_spawn() const;
