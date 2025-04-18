@@ -1175,8 +1175,8 @@ void RenderableColoredVertexArray::render_cva(
             .filename = *reflection_map,
             .color_mode = ColorMode::RGB,
             .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash())->handle<GLuint>()));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         CHK(glActiveTexture(GL_TEXTURE0));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind dirtmap texture");
