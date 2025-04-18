@@ -103,8 +103,21 @@ private:
     TNode node_;
 };
 
+template <class TContainer, class... TArgs>
+auto& RenderingResources::add(TContainer& container, TArgs&&... args) const {
+    assert_true(mutex_.is_owner());
+    return container.add(std::forward<TArgs>(args)...);
+}
+
+template <class TContainer, class... TArgs>
+auto& RenderingResources::add_font(TContainer& container, TArgs&&... args) const {
+    // assert_true(font_mutex_.is_owner()); // No such method available in "SafeAtomicSharedMutex"
+    return container.add(std::forward<TArgs>(args)...);
+}
+
 template <bool textract, class TContainer, class TKey>
-auto get_or_extract(TContainer& container, const TKey& key) {
+auto RenderingResources::get_or_extract(TContainer& container, const TKey& key) const {
+    assert_true(mutex_.is_owner());
     if constexpr (textract) {
         return ValueExtractor{ container.try_extract(key) };
     } else {
@@ -703,6 +716,12 @@ void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole
     if (color.filename->empty()) {
         THROW_OR_ABORT("Attempt to preload empty texture");
     }
+    {
+        std::shared_lock lock{ mutex_ };
+        if (textures_.contains(color)) {
+            return;
+        }
+    }
     std::scoped_lock lock{ mutex_ };
     if (textures_.contains(color)) {
         return;
@@ -711,27 +730,21 @@ void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole
         get_texture(color, role, CallerType::PRELOAD);
     } else {
         check_color_mode(color, role);
+        if (!preloaded_processed_texture_data_.contains(color) &&
+            !preloaded_processed_texture_array_data_.contains(color) &&
+            !preloaded_raw_texture_data_.contains(color) &&
+            !preloaded_texture_dds_data_.contains(color) &&
+            !auto_atlas_tile_descriptors_.contains(color))
         {
-            std::scoped_lock lock{ mutex_ };
-            if (textures_.contains(color)) {
-                return;
+            if (manual_atlas_tile_descriptors_.contains(color.filename)) {
+                auto data = get_texture_array_data(color, role, FlipMode::VERTICAL);
+                add(preloaded_processed_texture_array_data_, color, std::move(data));
+            } else {
+                auto data = get_texture_data(color, role, FlipMode::VERTICAL);
+                add(preloaded_processed_texture_data_, color, std::move(data));
             }
-            if (!preloaded_processed_texture_data_.contains(color) &&
-                !preloaded_processed_texture_array_data_.contains(color) &&
-                !preloaded_raw_texture_data_.contains(color) &&
-                !preloaded_texture_dds_data_.contains(color) &&
-                !auto_atlas_tile_descriptors_.contains(color))
-            {
-                if (manual_atlas_tile_descriptors_.contains(color.filename)) {
-                    auto data = get_texture_array_data(color, role, FlipMode::VERTICAL);
-                    preloaded_processed_texture_array_data_.add(color, std::move(data));
-                } else {
-                    auto data = get_texture_data(color, role, FlipMode::VERTICAL);
-                    preloaded_processed_texture_data_.add(color, std::move(data));
-                }
-                if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-                    linfo() << this << " Preloaded texture: " << color;
-                }
+            if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+                linfo() << this << " Preloaded texture: " << color;
             }
         }
         append_render_allocator([this, color, role]() { get_texture(color, role, CallerType::PRELOAD); });
@@ -1025,11 +1038,11 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
         } else {
             auto t = initialize_non_dds_texture(color, role, aniso);
             texture = make_shared_texture(t.first);
-            texture_types_.add(color, t.second);
+            add(texture_types_, color, t.second);
         }
     }
 
-    return textures_.add(color, std::move(texture)).handle;
+    return add(textures_, color, std::move(texture)).handle;
 }
 
 GLuint RenderingResources::get_cubemap_unsafe(const VariableAndHash<std::string>& name) const {
@@ -1079,9 +1092,9 @@ void RenderingResources::add_texture(
 {
     LOG_FUNCTION("RenderingResources::set_texture " + *name.filename);
     std::scoped_lock lock{ mutex_ };
-    textures_.add(name, TextureHandleAndOwner{ .handle = id });
+    add(textures_, name, TextureHandleAndOwner{ .handle = id });
     if (texture_size != nullptr) {
-        texture_sizes_.add(name.filename, *texture_size);
+        add(texture_sizes_, name.filename, *texture_size);
     }
 }
 
@@ -1095,7 +1108,7 @@ void RenderingResources::set_texture(
     if (auto v = textures_.try_get(name); v != nullptr) {
         v->handle = std::move(id);
     } else {
-        textures_.add(name, TextureHandleAndOwner{ .handle = std::move(id) });
+        add(textures_, name, TextureHandleAndOwner{ .handle = std::move(id) });
     }
     if (texture_size != nullptr) {
         texture_sizes_.insert_or_assign(name.filename, *texture_size);
@@ -1124,7 +1137,8 @@ void RenderingResources::add_texture_descriptor(const VariableAndHash<std::strin
     if (!descriptor.normal.filename->empty() && !any(descriptor.normal.color_mode & ColorMode::RGB)) {
         THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + *descriptor.normal.filename + '"');
     }
-    texture_descriptors_.add(name, descriptor);
+    std::scoped_lock lock{ mutex_ };
+    add(texture_descriptors_, name, descriptor);
 }
 
 TextureDescriptor RenderingResources::get_existing_texture_descriptor(const VariableAndHash<std::string>& name) const {
@@ -1137,7 +1151,8 @@ void RenderingResources::add_manual_texture_atlas(
     const ManualTextureAtlasDescriptor& texture_atlas_descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_manual_texture_atlas " + *name);
-    manual_atlas_tile_descriptors_.add(name, texture_atlas_descriptor);
+    std::scoped_lock lock{ mutex_ };
+    add(manual_atlas_tile_descriptors_, name, texture_atlas_descriptor);
 }
 
 void RenderingResources::add_auto_texture_atlas(
@@ -1145,7 +1160,8 @@ void RenderingResources::add_auto_texture_atlas(
     const AutoTextureAtlasDescriptor& texture_atlas_descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_auto_texture_atlas " + *name);
-    auto_atlas_tile_descriptors_.add(name, texture_atlas_descriptor);
+    std::scoped_lock lock{ mutex_ };
+    add(auto_atlas_tile_descriptors_, name, texture_atlas_descriptor);
     append_render_allocator([this, name]() { preload(name, TextureRole::COLOR); });
 }
 
@@ -1155,7 +1171,7 @@ void RenderingResources::add_cubemap(const VariableAndHash<std::string>& name, c
     if (texture_descriptors_.contains(name)) {
         THROW_OR_ABORT("Texture descriptor with name \"" + *name + "\" already exists");
     }
-    cubemap_descriptors_.add(name, CubemapDescriptor{.filenames = filenames});
+    add(cubemap_descriptors_, name, CubemapDescriptor{.filenames = filenames});
 }
 
 std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
@@ -1454,11 +1470,13 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const VariableAndHash<
 
 void RenderingResources::set_blend_map_texture(const VariableAndHash<std::string>& name, const BlendMapTexture& bmt) {
     LOG_FUNCTION("RenderingResources::set_blend_map_texture " + *name);
-    blend_map_textures_.add(name, bmt);
+    std::scoped_lock lock{ mutex_ };
+    add(blend_map_textures_, name, bmt);
 }
 
 void RenderingResources::set_alias(VariableAndHash<std::string> alias, VariableAndHash<std::string> name) {
-    aliases_.add(std::move(alias), std::move(name));
+    std::scoped_lock lock{ mutex_ };
+    add(aliases_, std::move(alias), std::move(name));
 }
 
 VariableAndHash<std::string> RenderingResources::get_alias(const VariableAndHash<std::string>& alias) const {
@@ -1620,7 +1638,7 @@ const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& 
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, font.texture_width, font.texture_height, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
     }
-    return font_textures_.add(font_descriptor, std::move(font));
+    return add_font(font_textures_, font_descriptor, std::move(font));
 }
 
 void RenderingResources::save_to_file(
@@ -1724,9 +1742,9 @@ void RenderingResources::add_texture(
         (extension == ".png") ||
         (extension == ".bmp"))
     {
-        preloaded_raw_texture_data_.add(name, std::move(data), flip_mode);
+        add(preloaded_raw_texture_data_, name, std::move(data), flip_mode);
     } else if (extension == ".dds") {
-        preloaded_texture_dds_data_.add(name, std::move(data), flip_mode);
+        add(preloaded_texture_dds_data_, name, std::move(data), flip_mode);
     } else {
         THROW_OR_ABORT("Unknown file extension: \"" + filename + '"');
     }

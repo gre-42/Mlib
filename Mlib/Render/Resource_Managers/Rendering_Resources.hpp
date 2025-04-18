@@ -252,6 +252,12 @@ private:
     void add_auto_texture_atlas(
         const ColormapWithModifiers& name,
         const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
+    template <class TContainer, class... TArgs>
+    auto& add(TContainer& container, TArgs&&... args) const;
+    template <class TContainer, class... TArgs>
+    auto& add_font(TContainer& container, TArgs&&... args) const;
+    template <bool textract, class TContainer, class TKey>
+    auto get_or_extract(TContainer& container, const TKey& key) const;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable SafeAtomicSharedMutex font_mutex_;
     mutable std::list<std::shared_ptr<ActivationState>> set_textures_lazy_;

@@ -53,7 +53,7 @@ public:
 private:
     TMutex mutex_;
     std::atomic<std::thread::id> owner_;
-    std::atomic_uint32_t count_;
+    uint32_t count_;
 };
 
 using RecursiveSharedMutex = GenericRecursiveSharedMutex<std::shared_mutex>;
