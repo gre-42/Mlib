@@ -135,9 +135,9 @@ void TextResource::set_contents(
                 stbtt_aligned_quad q;
                 stbtt_GetBakedQuad(
                     loaded_font_->cdata.data(),
-                    loaded_font_->texture_width,
-                    loaded_font_->texture_height,
-                    cit->second,
+                    integral_cast<int>(loaded_font_->texture_width),
+                    integral_cast<int>(loaded_font_->texture_height),
+                    integral_cast<int>(cit->second),
                     &x,
                     &y,
                     &q,

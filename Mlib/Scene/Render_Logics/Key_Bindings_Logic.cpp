@@ -169,7 +169,7 @@ void KeyBindingsLogic::render_without_setup(
         line_distance_,
         *ew,
         ly,
-        [this, filter, desc, conf](size_t index)
+        [filter, desc, conf](size_t index)
         {
             assert_true((desc != nullptr) && (conf != nullptr));
             const auto& d = (*desc)[index];

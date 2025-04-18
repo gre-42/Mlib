@@ -1,5 +1,8 @@
 #include "Encoding.hpp"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #include <boost/regex/pending/unicode_iterator.hpp>
+#pragma GCC diagnostic pop
 
 using namespace Mlib;
 
@@ -15,7 +18,7 @@ Generator<char> Mlib::u32_to_u8_generator(const std::u32string& utf32) {
     boost::u32_to_u8_iterator it(utf32.begin());
     boost::u32_to_u8_iterator tend(utf32.end());
     for (; it != tend; ++it) {
-        co_yield *it;
+        co_yield (char)*it;
     }
 }
 
@@ -62,7 +65,7 @@ std::string Mlib::u32_to_ascii_string(const std::u32string& wstr) {
     for (size_t i = 0; i < wstr.length(); ++i) {
         unsigned char c = (unsigned char)wstr[i];
         if (c == wstr[i]) {
-            result[i] = c;
+            result[i] = (char)c;
         }
     }
     return result;

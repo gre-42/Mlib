@@ -95,7 +95,7 @@ RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args)
     if (args.hitboxes.has_value()) {
         {
             auto acva = scene_node_resources.get_arrays(*args.hitboxes, args.hitbox_filter);
-            auto insert = [&args](auto& hitboxes, const auto& cvas){
+            auto insert = [](auto& hitboxes, const auto& cvas){
                 for (const auto& cva: cvas) {
                     hitboxes.push_back(cva);
                 }

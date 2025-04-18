@@ -95,7 +95,7 @@ void Mlib::draw_building_walls(
                 if (n <= 0) {
                     return 0.f;
                 }
-                double w2 = 2 * e + (n - 1) * i + n * x;
+                double w2 = 2 * e + ((float)n - 1) * i + (float)n * x;
                 return (float)(w2 / w);
             };
             auto swg = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);

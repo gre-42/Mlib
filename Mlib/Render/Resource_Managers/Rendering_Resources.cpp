@@ -1628,14 +1628,14 @@ const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& 
                 0,  // font location (use offset=0 for plain .ttf)
                 font_descriptor.height_pixels,
                 temp_bitmap.data(),
-                font.texture_width,
-                font.texture_height,
+                integral_cast<int>(font.texture_width),
+                integral_cast<int>(font.texture_height),
                 charset,
                 font.cdata.data()); // no guarantee this fits!
         }
         CHK(glGenTextures(1, &font.texture_handle));
         CHK(glBindTexture(GL_TEXTURE_2D, font.texture_handle));
-        CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, font.texture_width, font.texture_height, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
+        CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, integral_cast<GLsizei>(font.texture_width), integral_cast<GLsizei>(font.texture_height), 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
     }
     return add_font(font_textures_, font_descriptor, std::move(font));
