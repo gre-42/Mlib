@@ -153,10 +153,10 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         auto en = std::make_pair(O((*t)(a).position), O((*t)(b).position));
                         C_DEBUG(lerr());
                         C_DEBUG(lerr() << "insert (0) " << en.first << " | " << en.second);
-                        if (!edge_neighbors.insert({en, O((*t)(c).position)}).second) {
+                        if (!edge_neighbors.try_emplace(en, O((*t)(c).position)).second) {
                             THROW_OR_ABORT("Detected duplicate edge (0)");
                         }
-                        if (!parent_edges.insert({en, ep}).second) {
+                        if (!parent_edges.try_emplace(en, ep).second) {
                             THROW_OR_ABORT("Could not set parent edge (1)");
                         }
                         C_DEBUG(print_debug_info());
@@ -187,16 +187,16 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         if (edge_neighbors.insert_or_assign(p_ab->second, O((*t)(c).position)).second) {
                             THROW_OR_ABORT("Expected edge (5)");
                         }
-                        if (!edge_neighbors.insert({e_bc, O((*t)(a).position)}).second) {
+                        if (!edge_neighbors.try_emplace(e_bc, O((*t)(a).position)).second) {
                             THROW_OR_ABORT("Detected duplicate edge (2)");
                         }
-                        if (!parent_edges.insert({e_bc, p_ab->second}).second) {
+                        if (!parent_edges.try_emplace(e_bc, p_ab->second).second) {
                             THROW_OR_ABORT("Detected duplicate edge (3)");
                         }
-                        if (!edge_neighbors.insert({e_ca, O(z)}).second) {
+                        if (!edge_neighbors.try_emplace(e_ca, O(z)).second) {
                             THROW_OR_ABORT("Detected duplicate edge (4)");
                         }
-                        parent_edges.insert({e_ca, e_bc});
+                        parent_edges.try_emplace(e_ca, e_bc);
                         parent_edges.erase(p_ab);
                         C_DEBUG(print_debug_info());
                         C_DEBUG(lerr() << "nedges=1");
@@ -249,25 +249,24 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         if (it_ab == edge_neighbors.end()) {
                             THROW_OR_ABORT("Could not find it_ab");
                         }
-                        if (!edge_neighbors.insert({e_ca, it_ab->second}).second) {
+                        auto z = it_ab->second;
+                        if (!edge_neighbors.try_emplace(e_ca, z).second) {
                             THROW_OR_ABORT("Detected duplicate edge (5)");
                         }
-                        parent_edges.insert({e_ca, p_bc->second});
+                        parent_edges.try_emplace(e_ca, p_bc->second);
                         if (edge_neighbors.insert_or_assign(p_bc->second, O((*t)(a).position)).second) {
                             THROW_OR_ABORT("Expected edge (1)");
                         }
                         C_DEBUG(lerr() << "b ");
                         C_DEBUG(check_consistency());
                         // ab
-                        if (edge_neighbors.erase(ei_ab) == 0) {
-                            THROW_OR_ABORT("Could not delete edge ab");
-                        }
+                        edge_neighbors.erase(it_ab);
                         if (parent_edges.erase(ei_ab) == 0) {
                             THROW_OR_ABORT("Could not delete parent ab");
                         }
                         // az
                         {
-                            auto e_az = std::make_pair(ei_ab.second, it_ab->second);
+                            auto e_az = std::make_pair(ei_ab.second, z);
                             if (parent_edges.insert_or_assign(e_az, e_ca).second) {
                                 THROW_OR_ABORT("Expected edge (2)");
                             }
