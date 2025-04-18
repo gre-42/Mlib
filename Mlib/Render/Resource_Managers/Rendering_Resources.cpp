@@ -1259,7 +1259,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
     }
     if (auto it = preloaded_processed_texture_data_.try_get(color); it != nullptr) {
         if (copy_behavior == CopyBehavior::RAISE) {
-            THROW_OR_ABORT("Refusing to copy \"" + *color.filename + '"');
+            THROW_OR_ABORT("Refusing to copy processed texture \"" + *color.filename + '"');
         }
         auto result = stb_create<uint8_t>(it->width, it->height, it->nrChannels);
         std::copy(it->data.get(), it->data.get() + it->width * it->height * it->nrChannels, result.data.get());
@@ -1267,7 +1267,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
     }
     if (auto it = preloaded_raw_texture_data_.try_get(color); it != nullptr) {
         if (copy_behavior == CopyBehavior::RAISE) {
-            THROW_OR_ABORT("Refusing to copy \"" + *color.filename + '"');
+            THROW_OR_ABORT("Refusing to copy raw texture \"" + *color.filename + '"');
         }
         return stb_load8(*color.filename, FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT);
     }
