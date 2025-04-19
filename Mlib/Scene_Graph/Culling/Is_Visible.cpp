@@ -37,7 +37,11 @@ bool Mlib::is_visible(
     if (material.blend_mode == BlendMode::INVISIBLE) {
         return false;
     }
-    if (any(external_render_pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_OR_ZOOM_NODE)) {
+    if (any(external_render_pass & ExternalRenderPassType::IMPOSTER_NODE)) {
+        return morphology.center_distances(1) == INFINITY;
+    } else if (any(external_render_pass & ExternalRenderPassType::ZOOM_NODE)) {
+        return morphology.center_distances(0) == 0.f;
+    } else if (any(external_render_pass & ExternalRenderPassType::STANDARD)) {
         if (vc.orthographic()) {
             return true;
         }
