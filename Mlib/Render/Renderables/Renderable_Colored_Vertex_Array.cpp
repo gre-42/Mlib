@@ -1001,7 +1001,7 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     if (any(reflectance != 0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
-        CHK(glUniformMatrix3fv(rp.r_location, 1, GL_TRUE, m.R.T().flat_begin()));
+        CHK(glUniformMatrix3fv(rp.r_location, 1, GL_TRUE, m.R.flat_begin()));
     }
     if (!rcva_->triangles_res_->bone_indices.empty()) {
         for (const auto& [i, l] : enumerate(absolute_bone_transformations)) {
