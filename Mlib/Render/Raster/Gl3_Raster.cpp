@@ -199,7 +199,9 @@ void Gl3Raster::allocate_dxt(const RasterConfig& cfg) {
     native_texture_id_ = std::make_shared<Mlib::Texture>(
         generate_texture,
         native_format_,
-        bool(format_ & Raster::MIPMAP));
+        bool(format_ & Raster::MIPMAP),
+        GL_REPEAT,
+        GL_REPEAT);
     {
         BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, integral_cast<GLint>(native_internal_format_),
@@ -421,7 +423,9 @@ void Gl3Raster::create_texture()
     native_texture_id_ = std::make_shared<Mlib::Texture>(
         generate_texture,
         native_format_,
-        bool(format_ & Raster::MIPMAP));
+        bool(format_ & Raster::MIPMAP),
+        GL_REPEAT,
+        GL_REPEAT);
     BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
     CHK(glTexImage2D(
         GL_TEXTURE_2D,

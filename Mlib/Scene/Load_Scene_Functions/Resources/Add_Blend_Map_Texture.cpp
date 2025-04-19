@@ -45,7 +45,7 @@ void AddBlendMapTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         BlendMapTexture{
             .texture_descriptor = tex.is_variable
-                ? rr.get_existing_texture_descriptor(VariableAndHash{tex.path})
+                ? rr.get_texture_descriptor(VariableAndHash{tex.path})
                 : TextureDescriptor{ .color = {.filename = VariableAndHash{tex.path}} },
             .min_height = args.arguments.at<float>(KnownArgs::min_height),
             .max_height = args.arguments.at<float>(KnownArgs::max_height),

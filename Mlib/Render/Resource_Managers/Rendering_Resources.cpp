@@ -32,6 +32,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Instance_Handles/Texture.hpp>
+#include <Mlib/Render/Instance_Handles/Wrap_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -605,10 +606,6 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     for (const auto& [n, _] : discreteness_) {
         ostr << indent << "  " << *n << '\n';
     }
-    ostr << indent << "Texture wrap\n";
-    for (const auto& [n, _] : texture_wrap_) {
-        ostr << indent << "  " << *n << '\n';
-    }
     ostr << indent << "DDS\n";
     for (const auto& [n, _] : preloaded_texture_dds_data_) {
         ostr << indent << "  " << n << '\n';
@@ -650,7 +647,6 @@ RenderingResources::RenderingResources(
     , offsets_{ "Offset" }
     , discreteness_{ "Discreteness" }
     , scales_{ "Scale" }
-    , texture_wrap_{ "Texture wrap" }
     , blend_map_textures_{ "Blend-map texture" }
     , render_programs_{ "Render program", [](const RenderProgramIdentifier& e) { return "<RPI>"; } }
     , name_{ std::move(name) }
@@ -967,7 +963,17 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
     return std::make_shared<Texture>(
         texture,
         nchannels2format(integral_cast<size_t>(nchannels)),
-        mip_level_count != 0);
+        mip_level_count != 0,
+        wrap_s,
+        wrap_t);
+}
+
+std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
+    const VariableAndHash<std::string>& name,
+    CallerType caller_type) const
+{
+    const auto& desc = get_texture_descriptor(name);
+    return get_texture(desc.color, TextureRole::COLOR, caller_type);
 }
 
 std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
@@ -1007,7 +1013,7 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     aniso = std::min({ aniso, (float)color.anisotropic_filtering_level, (float)max_anisotropic_filtering_level_ });
 
     auto make_shared_texture = [&](GLuint handle) {
-        return std::make_shared<Texture>(handle, color.color_mode, color.mipmap_mode);
+        return std::make_shared<Texture>(handle, color.color_mode, color.mipmap_mode, color.wrap_modes);
         };
     std::shared_ptr<ITextureHandle> texture;
 
@@ -1142,8 +1148,13 @@ void RenderingResources::add_texture_descriptor(const VariableAndHash<std::strin
     add(texture_descriptors_, name, descriptor);
 }
 
-TextureDescriptor RenderingResources::get_existing_texture_descriptor(const VariableAndHash<std::string>& name) const {
-    LOG_FUNCTION("RenderingResources::get_existing_texture_descriptor " + *name);
+bool RenderingResources::contains_texture_descriptor(const VariableAndHash<std::string>& name) const {
+    LOG_FUNCTION("RenderingResources::get_texture_descriptor " + *name);
+    return texture_descriptors_.contains(name);
+}
+
+TextureDescriptor RenderingResources::get_texture_descriptor(const VariableAndHash<std::string>& name) const {
+    LOG_FUNCTION("RenderingResources::get_texture_descriptor " + *name);
     return texture_descriptors_.get(name);
 }
 
@@ -1536,16 +1547,6 @@ void RenderingResources::set_scale(const VariableAndHash<std::string>& name, flo
     scales_.insert_or_assign(name, value);
 }
 
-WrapMode RenderingResources::get_texture_wrap(const VariableAndHash<std::string>& name) const {
-    LOG_FUNCTION("RenderingResources::get_texture_wrap " + *name);
-    return texture_wrap_.get(name);
-}
-
-void RenderingResources::set_texture_wrap(const VariableAndHash<std::string>& name, WrapMode mode) {
-    LOG_FUNCTION("RenderingResources::set_texture_wrap " + *name);
-    texture_wrap_.insert_or_assign(name, mode);
-}
-
 void RenderingResources::delete_vp(const VariableAndHash<std::string>& name, DeletionFailureMode deletion_failure_mode) {
     LOG_FUNCTION("RenderingResources::delete_vp " + *name);
     if (vps_.erase(name) != 1) {
@@ -1919,7 +1920,8 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
     auto handle = std::make_shared<Texture>(
         generate_texture,
         color_mode_from_channels(image.get_components()),
-        MipmapMode::WITH_MIPMAPS);
+        MipmapMode::WITH_MIPMAPS,
+        color.wrap_modes);
 
     BindTextureGuard btg{ GL_TEXTURE_2D, handle->handle<GLuint>() };
 
@@ -2011,7 +2013,9 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
         .width = integral_cast<GLsizei>(image.get_width()),
         .height = integral_cast<GLsizei>(image.get_height()),
         .nchannels = integral_cast<GLsizei>(image.get_components()),
-        .mip_level_count = integral_cast<GLsizei>(image.get_num_mipmaps())};
+        .mip_level_count = integral_cast<GLsizei>(image.get_num_mipmaps()),
+        .wrap_s = wrap_mode_to_native(color.wrap_modes(0)),
+        .wrap_t = wrap_mode_to_native(color.wrap_modes(1))};
     if (data->flip_mode == FlipMode::NONE) {
         return original_texture.handle;
     } else if (data->flip_mode == FlipMode::VERTICAL) {

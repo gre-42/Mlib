@@ -8,6 +8,7 @@
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Download/Download_As_Stb_Image.hpp>
 #include <Mlib/Render/Instance_Handles/Texture.hpp>
+#include <Mlib/Render/Instance_Handles/Wrap_Mode.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 
@@ -67,7 +68,9 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
     texture_color_ = std::make_shared<Texture>(
         generate_texture,
         config_.color_format,
-        config_.with_mipmaps);
+        config_.with_mipmaps,
+        config_.wrap_s,
+        config_.wrap_t);
     if (config.nsamples_msaa == 1) {
         CHK(glBindTexture(GL_TEXTURE_2D, texture_color_->handle<GLuint>()));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
@@ -98,7 +101,10 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         texture_depth_ = std::make_shared<Texture>(
             generate_texture,
             ColorMode::GRAYSCALE,
-            MipmapMode::NO_MIPMAPS);
+            MipmapMode::NO_MIPMAPS,
+            FixedArray<WrapMode, 2>{
+                wrap_mode_from_native(config_.wrap_s),
+                wrap_mode_from_native(config_.wrap_t)});
         if (config.nsamples_msaa == 1) {
             CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_->handle<GLuint>()));
             CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));

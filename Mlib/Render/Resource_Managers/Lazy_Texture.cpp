@@ -54,6 +54,11 @@ MipmapMode LazyTexture::mipmap_mode() const {
 	return colormap_.mipmap_mode;
 }
 
+WrapMode LazyTexture::wrap_modes(size_t i) const {
+	assert_true(i < 2);
+	return colormap_.wrap_modes(i);
+}
+
 ITextureHandle& LazyTexture::texture() {
 	if (texture_ == nullptr) {
 		texture_ = rendering_resources_.get_texture(colormap_, role_, CallerType::RENDER);

@@ -14,7 +14,6 @@ DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(offset);
 DECLARE_ARGUMENT(discreteness);
 DECLARE_ARGUMENT(scale);
-DECLARE_ARGUMENT(wrap_mode);
 }
 
 const std::string SetDirtmap::key = "set_dirtmap";
@@ -37,5 +36,4 @@ void SetDirtmap::execute(const LoadSceneJsonUserFunctionArgs& args)
     rendering_resources.set_offset(dirtmap_name, args.arguments.at<float>(KnownArgs::offset));
     rendering_resources.set_discreteness(dirtmap_name, args.arguments.at<float>(KnownArgs::discreteness));
     rendering_resources.set_scale(dirtmap_name, args.arguments.at<float>(KnownArgs::scale));
-    rendering_resources.set_texture_wrap(dirtmap_name, wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode)));
 }

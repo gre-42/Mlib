@@ -1589,9 +1589,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
         sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_dirt);" << std::endl;
-        if (any(dirt_color_mode & ColorMode::RGBA)) {
+        if (dirt_color_mode == ColorMode::RGBA) {
             sstr << "    dirtiness *= dirt_color.a;" << std::endl;
-        } else if (!any(dirt_color_mode & ColorMode::RGB)) {
+        } else if (dirt_color_mode != ColorMode::RGB) {
             THROW_OR_ABORT("Unsupported dirt color mode: " + color_mode_to_string(dirt_color_mode));
         }
         sstr << "    dirtiness += " << dirtmap_offset << ';' << std::endl;

@@ -48,6 +48,8 @@ struct TextureSizeAndMipmaps {
     GLsizei height;
     GLsizei nchannels;
     GLsizei mip_level_count;
+    GLint wrap_s;
+    GLint wrap_t;
     std::shared_ptr<ITextureHandle> flipped_vertically(float aniso) const;
 };
 
@@ -155,6 +157,9 @@ public:
         const ColormapWithModifiers& color,
         TextureRole role = TextureRole::COLOR) const;
     std::shared_ptr<ITextureHandle> get_texture(
+        const VariableAndHash<std::string>& name,
+        CallerType caller_type = CallerType::RENDER) const;
+    std::shared_ptr<ITextureHandle> get_texture(
         const ColormapWithModifiers& name,
         TextureRole role = TextureRole::COLOR,
         CallerType caller_type = CallerType::RENDER) const;
@@ -174,7 +179,8 @@ public:
         const TextureSize* texture_size = nullptr);
     void set_textures_lazy(std::function<void()> func);
     void add_texture_descriptor(const VariableAndHash<std::string>& name, const TextureDescriptor& descriptor);
-    TextureDescriptor get_existing_texture_descriptor(const VariableAndHash<std::string>& name) const;
+    bool contains_texture_descriptor(const VariableAndHash<std::string>& name) const;
+    TextureDescriptor get_texture_descriptor(const VariableAndHash<std::string>& name) const;
     void add_manual_texture_atlas(const VariableAndHash<std::string>& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
     std::map<ColormapWithModifiers, ManualUvTile> generate_manual_texture_atlas(
         const VariableAndHash<std::string>& name,
@@ -206,8 +212,6 @@ public:
     void set_discreteness(const VariableAndHash<std::string>& name, float value);
     float get_scale(const VariableAndHash<std::string>& name) const;
     void set_scale(const VariableAndHash<std::string>& name, float value);
-    WrapMode get_texture_wrap(const VariableAndHash<std::string>& name) const;
-    void set_texture_wrap(const VariableAndHash<std::string>& name, WrapMode mode);
 
     void delete_vp(const VariableAndHash<std::string>& name, DeletionFailureMode deletion_failure_mode);
     void delete_texture(const ColormapWithModifiers& name, DeletionFailureMode deletion_failure_mode);
@@ -279,7 +283,6 @@ private:
     ThreadsafeStringWithHashUnorderedMap<float> offsets_;
     ThreadsafeStringWithHashUnorderedMap<float> discreteness_;
     ThreadsafeStringWithHashUnorderedMap<float> scales_;
-    ThreadsafeStringWithHashUnorderedMap<WrapMode> texture_wrap_;
     ThreadsafeStringWithHashUnorderedMap<BlendMapTexture> blend_map_textures_;
     mutable ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     std::string name_;

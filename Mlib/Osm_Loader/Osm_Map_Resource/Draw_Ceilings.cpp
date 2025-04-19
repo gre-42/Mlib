@@ -33,7 +33,7 @@ void Mlib::draw_ceilings(
         tls_buildings,
         &displacements,
         Material{
-            .textures_color = { { primary_rendering_resources.get_existing_texture_descriptor(config.ceiling_texture) } },
+            .textures_color = { { primary_rendering_resources.get_texture_descriptor(config.ceiling_texture) } },
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
             .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
             .shading = CEILING_REFLECTANCE,

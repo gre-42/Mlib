@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
@@ -7,6 +8,7 @@ namespace Mlib {
 
 enum class MipmapMode;
 enum class ColorMode;
+enum class WrapMode;
 
 class ITextureHandle {
 public:
@@ -38,6 +40,7 @@ public:
     virtual bool texture_is_loaded_and_try_preload() = 0;
     virtual ColorMode color_mode() const = 0;
     virtual MipmapMode mipmap_mode() const = 0;
+    virtual WrapMode wrap_modes(size_t i) const = 0;
 };
 
 }
