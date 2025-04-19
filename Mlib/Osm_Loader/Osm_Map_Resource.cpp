@@ -1877,9 +1877,10 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             },
             "building_cluster")))
         {
-            auto tm = TranslationMatrix{ c.position.casted<ScenePos>() };
+            auto center = c.cva->aabb().data().center();
+            auto tm = TranslationMatrix{ center.casted<ScenePos>() };
             auto trafo = options.absolute_model_matrix * tm;
-            auto rcva = std::make_shared<ColoredVertexArrayResource>(c.cva);
+            auto rcva = std::make_shared<ColoredVertexArrayResource>(c.cva->translated<float>(-center, "_centered"));
             rcva->instantiate_root_renderables(
                 RootInstantiationOptions{
                     .rendering_resources = options.rendering_resources,
