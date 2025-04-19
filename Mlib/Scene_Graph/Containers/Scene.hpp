@@ -146,6 +146,9 @@ public:
     void notify_cleanup_required();
     void notify_cleanup_done();
     DeleteNodeMutex& delete_node_mutex() const;
+    void set_this_thread_as_render_thread();
+    void clear_render_thread();
+    void assert_this_thread_is_render_thread() const;
     IParticleCreator& particle_instantiator(const VariableAndHash<std::string>& resource_name) const;
 private:
     DanglingRef<SceneNode> get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
@@ -160,6 +163,7 @@ private:
     // |Aggregate|      |       |x    |x    |    |
     // |Instances|      |       |x    |x    |    |
     DeleteNodeMutex& delete_node_mutex_;
+    std::thread::id render_thread_id_;
     MapOfRootNodes morn_;
     RootNodes& root_nodes_;
     RootNodes& static_root_nodes_;

@@ -9,6 +9,7 @@
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Scene_Graph/Containers/Render_Scene_Thread_Guard.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <mutex>
@@ -106,6 +107,7 @@ void StandardRenderLogic::render_with_setup(
             setup);
 
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
+        RenderSceneThreadGuard rstg{ scene_ };
 
         scene_.render(
             setup.vp,

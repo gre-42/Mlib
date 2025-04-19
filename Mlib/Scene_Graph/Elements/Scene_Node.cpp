@@ -45,7 +45,8 @@ SceneNode::SceneNode(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale,
-    PoseInterpolationMode interpolation_mode)
+    PoseInterpolationMode interpolation_mode,
+    SceneNodeDomain domain)
     : clearing_observers{ *this }
     , destruction_observers{ *this }
     , scene_{ nullptr }
@@ -61,6 +62,7 @@ SceneNode::SceneNode(
     , scale_{ scale }
     , rotation_matrix_{ tait_bryan_angles_2_matrix(rotation) }
     , interpolation_mode_{ interpolation_mode }
+    , domain_{ domain }
     , state_{ SceneNodeState::DETACHED }
     , shutting_down_{ false }
     , shutdown_called_{ false }
@@ -70,12 +72,15 @@ SceneNode::SceneNode(
     }
 }
 
-SceneNode::SceneNode(PoseInterpolationMode interpolation_mode)
+SceneNode::SceneNode(
+    PoseInterpolationMode interpolation_mode,
+    SceneNodeDomain domain)
     : SceneNode{
         fixed_zeros<ScenePos, 3>(),
         fixed_zeros<float, 3>(),
         1.f,
-        interpolation_mode}
+        interpolation_mode,
+        domain}
 {}
 
 void SceneNode::shutdown() {
@@ -373,9 +378,7 @@ void SceneNode::clear() {
 }
 
 void SceneNode::clear_unsafe() {
-    if (scene_ != nullptr) {
-        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
-    }
+    assert_node_can_be_modified_by_this_thread();
     clearing_observers.clear();
     clearing_pointers.clear();
     on_clear.clear();
@@ -1684,6 +1687,23 @@ std::string SceneNode::debug_message() const {
 PoseInterpolationMode SceneNode::pose_interpolation_mode() const {
     std::shared_lock lock{ mutex_ };
     return interpolation_mode_;
+}
+
+SceneNodeDomain SceneNode::domain() const {
+    std::shared_lock lock{ mutex_ };
+    return domain_;
+}
+
+void SceneNode::assert_node_can_be_modified_by_this_thread() const {
+    if (scene_ != nullptr) {
+        if (any(domain_ & SceneNodeDomain::PHYSICS)) {
+            scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+        } else if (domain_ == SceneNodeDomain::RENDER) {
+            scene_->assert_this_thread_is_render_thread();
+        } else {
+            verbose_abort("Unsupported scene node domain: \"" + std::to_string((int)domain_));
+        }
+    }
 }
 
 void SceneNode::invalidate_transformation_history() {

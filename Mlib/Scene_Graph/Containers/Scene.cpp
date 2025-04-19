@@ -196,6 +196,9 @@ void Scene::add_root_node(
 
 void Scene::add_root_imposter_node(const DanglingRef<SceneNode>& scene_node)
 {
+    if (scene_node->domain() != SceneNodeDomain::RENDER) {
+        THROW_OR_ABORT("Imposter node domain is not \"render\"");
+    }
     std::scoped_lock lock{ mutex_ };
     scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
     if (!root_imposter_nodes_.insert(scene_node.ptr()).second)
@@ -490,6 +493,7 @@ void Scene::render(
 {
     // AperiodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{5} };
     LOG_FUNCTION("Scene::render");
+    assert_this_thread_is_render_thread();
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
     std::list<Blended> blended;
@@ -914,6 +918,29 @@ void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
 
 DeleteNodeMutex& Scene::delete_node_mutex() const {
     return delete_node_mutex_;
+}
+
+void Scene::set_this_thread_as_render_thread() {
+    if (render_thread_id_ != std::thread::id()) {
+        verbose_abort("Render thread already set");
+    }
+    render_thread_id_ = std::this_thread::get_id();
+}
+
+void Scene::clear_render_thread() {
+    if (render_thread_id_ == std::thread::id()) {
+        verbose_abort("Render thread not set");
+    }
+    render_thread_id_ = std::thread::id();
+}
+
+void Scene::assert_this_thread_is_render_thread() const {
+    auto id = std::this_thread::get_id();
+    if (id != render_thread_id_) {
+        std::stringstream sstr;
+        sstr << "Thread \"" << id << "\" is not the render thread \"" << render_thread_id_ << '"';
+        verbose_abort(sstr.str());
+    }
 }
 
 IParticleCreator& Scene::particle_instantiator(const VariableAndHash<std::string>& resource_name) const {

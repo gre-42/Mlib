@@ -78,6 +78,24 @@ struct SceneNodeBone {
     float rotation_strength;
 };
 
+enum class SceneNodeDomain {
+    NONE = 0,
+    RENDER = 1 << 0,
+    PHYSICS = 1 << 1
+};
+
+inline bool any(SceneNodeDomain d) {
+    return d != SceneNodeDomain::NONE;
+}
+
+inline SceneNodeDomain operator & (SceneNodeDomain a, SceneNodeDomain b) {
+    return (SceneNodeDomain)((int)a & (int)b);
+}
+
+inline SceneNodeDomain operator | (SceneNodeDomain a, SceneNodeDomain b) {
+    return (SceneNodeDomain)((int)a | (int)b);
+}
+
 enum class SceneNodeState {
     DETACHED,
     STATIC,
@@ -119,12 +137,14 @@ class SceneNode: public virtual Object {
     SceneNode& operator = (const SceneNode& other) = delete;
 public:
     explicit SceneNode(
-        PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED);
+        PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED,
+        SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS);
     SceneNode(
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
-        PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED);
+        PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED,
+        SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS);
     virtual ~SceneNode() override;
     virtual void shutdown();
     bool shutting_down() const;
@@ -316,6 +336,8 @@ public:
     void set_debug_message(std::string message);
     std::string debug_message() const;
     PoseInterpolationMode pose_interpolation_mode() const;
+    SceneNodeDomain domain() const;
+    void assert_node_can_be_modified_by_this_thread() const;
     void invalidate_transformation_history();
     mutable DestructionObservers<SceneNode&> clearing_observers;
     mutable DestructionObservers<SceneNode&> destruction_observers;
@@ -356,6 +378,7 @@ private:
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;
     PoseInterpolationMode interpolation_mode_;
+    SceneNodeDomain domain_;
     std::shared_ptr<AnimationState> animation_state_;
     std::list<std::unique_ptr<ColorStyle>> color_styles_;
     std::unique_ptr<AnimationStateUpdater> animation_state_updater_;

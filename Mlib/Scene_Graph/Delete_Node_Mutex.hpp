@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <atomic>
 #include <mutex>
 #include <sstream>
@@ -21,12 +20,12 @@ public:
         if (!this_thread_is_deleter_thread()) {
             std::stringstream sstr;
             sstr << "Deletion by wrong thread (" << std::this_thread::get_id() << " vs. " << deleter_thread_id_ << ')';
-            THROW_OR_ABORT(sstr.str());
+            verbose_abort(sstr.str());
         }
     }
     void set_deleter_thread() {
         if (deleter_thread_id_ != std::thread::id()) {
-            THROW_OR_ABORT("Deleter thread already set");
+            verbose_abort("Deleter thread already set");
         }
         deleter_thread_id_ = std::this_thread::get_id();
     }

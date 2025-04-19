@@ -32,6 +32,7 @@
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Containers/Render_Scene_Thread_Guard.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
@@ -118,6 +119,7 @@ ImposterLogic::~ImposterLogic() {
             DeletionFailureMode::WARN);
     }
     delete_imposter_if_exists();
+    orig_node_->remove_node_hider({ orig_hider, CURRENT_SOURCE_LOCATION });
     on_destroy.clear();
 }
 
@@ -148,7 +150,9 @@ void ImposterLogic::add_imposter(
     auto new_imposter_node = make_unique_scene_node(
         FixedArray<ScenePos, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},
-        1.f);
+        1.f,
+        PoseInterpolationMode::ENABLED,
+        SceneNodeDomain::RENDER);
     res.instantiate_child_renderable(ChildInstantiationOptions{
         .rendering_resources = &rendering_resources_,
         .instance_name = VariableAndHash<std::string>{ "imposter" },
@@ -161,6 +165,7 @@ void ImposterLogic::add_imposter(
 
 void ImposterLogic::delete_imposter_if_exists() {
     if (imposter_node_ != nullptr) {
+        RenderSceneThreadGuard rstg{ scene_ };
         scene_.delete_root_imposter_node(imposter_node_.ref(DP_LOC));
         imposter_node_ = nullptr;
     }
