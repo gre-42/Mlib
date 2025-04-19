@@ -59,7 +59,13 @@ void Mlib::draw_building_walls(
         if (max_height == std::numeric_limits<CompressedScenePos>::lowest()) {
             continue;
         }
+        FixedArray<float, 3> facade_color = color_cycle.empty() || bu.way.tags.contains("color")
+            ? parse_color(bu.way.tags, "color", building_color)
+            : color_cycle.try_multiple_times(100, BuildingInformation{}).color;
         for (const auto& [i, bl] : enumerate(bu.levels)) {
+            auto color = (bl.type == BuildingLevelType::SOCLE)
+                ? fixed_ones<float, 3>()
+                : facade_color;
             const auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
@@ -79,9 +85,6 @@ void Mlib::draw_building_walls(
             }
             tl->material.interior_textures = bl.facade_texture_descriptor.interior_textures;
             tl->material.compute_color_mode();
-            FixedArray<float, 3> color = color_cycle.empty() || bu.way.tags.contains("color")
-                ? parse_color(bu.way.tags, "color", building_color)
-                : color_cycle.try_multiple_times(100, BuildingInformation{}).color;
             auto get_uv_ratio = [&bl, &scale](const std::list<BuildingSegment>& sw){
                 double w = 0.f;
                 for (const auto& we : sw) {
