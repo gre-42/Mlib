@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
@@ -142,6 +143,8 @@ OsmMapResource::OsmMapResource(
     : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale }
     , scene_node_resources_{ scene_node_resources }
     , scale_{ config.scale }
+    , imposter_grid_width_{ config.imposter_grid_width }
+    , max_imposter_texture_size_{ config.max_imposter_texture_size }
     , normalization_matrix_{ uninitialized }
     , triangulation_normalization_matrix_{ uninitialized }
     , terrain_styles_{ config.triangle_sampler_resource_config }
@@ -694,7 +697,9 @@ OsmMapResource::OsmMapResource(
             Material{
                 .reflection_map = config.window_reflection_map,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
+                .aggregate_mode = (max_imposter_texture_size_ == 0)
+                    ? AggregateMode::SORTED_CONTINUOUSLY
+                    : AggregateMode::NONE,
                 .draw_distance_noperations = 1000},
             get_building_morphology[BuildingDetailType::COMBINED],
             buildings,
@@ -720,13 +725,17 @@ OsmMapResource::OsmMapResource(
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
+                .aggregate_mode = (max_imposter_texture_size_ == 0)
+                    ? AggregateMode::SORTED_CONTINUOUSLY
+                    : AggregateMode::NONE,
                 .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
+                .aggregate_mode = (max_imposter_texture_size_ == 0)
+                    ? AggregateMode::SORTED_CONTINUOUSLY
+                    : AggregateMode::NONE,
                 .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             get_building_morphology,
@@ -1845,19 +1854,43 @@ std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> OsmMa
 void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
 {
     hri_.instantiate_root_renderables(options);
-    for (const auto& [i, b] : enumerate(buildings_)) {
-        auto center = b->aabb().data().center();
-        auto tm = TranslationMatrix{ center.casted<ScenePos>() };
-        auto trafo = options.absolute_model_matrix * tm;
-        auto rcva = std::make_shared<ColoredVertexArrayResource>(b->translated<CompressedScenePos>(-center, "_centered"));
-        rcva->instantiate_root_renderables(
-            RootInstantiationOptions{
-                .rendering_resources = options.rendering_resources,
-                .instance_name = VariableAndHash<std::string>{ "building_" + std::to_string(i) },
-                .absolute_model_matrix = trafo,
-                .scene = options.scene,
-                .renderable_resource_filter = options.renderable_resource_filter
-            });
+    if (max_imposter_texture_size_ == 0) {
+        for (const auto& [i, b] : enumerate(buildings_)) {
+            auto center = b->aabb().data().center();
+            auto tm = TranslationMatrix{ center.casted<ScenePos>() };
+            auto trafo = options.absolute_model_matrix * tm;
+            auto rcva = std::make_shared<ColoredVertexArrayResource>(b->translated<CompressedScenePos>(-center, "_centered"));
+            rcva->instantiate_root_renderables(
+                RootInstantiationOptions{
+                    .rendering_resources = options.rendering_resources,
+                    .instance_name = VariableAndHash<std::string>{ "building_" + std::to_string(i) },
+                    .absolute_model_matrix = trafo,
+                    .scene = options.scene,
+                    .renderable_resource_filter = options.renderable_resource_filter
+                });
+        }
+    } else {
+        for (const auto& [i, c] : enumerate(cluster_meshes<CompressedScenePos>(
+            buildings_,
+            [width = fixed_full<ScenePos, 3>(imposter_grid_width_)](const ColoredVertexArray<CompressedScenePos>& cva){
+                return (round(funpack(cva.aabb().data().center()) / width) * width).casted<CompressedScenePos>();
+            },
+            "building_cluster")))
+        {
+            auto tm = TranslationMatrix{ c.position.casted<ScenePos>() };
+            auto trafo = options.absolute_model_matrix * tm;
+            auto rcva = std::make_shared<ColoredVertexArrayResource>(c.cva);
+            rcva->instantiate_root_renderables(
+                RootInstantiationOptions{
+                    .rendering_resources = options.rendering_resources,
+                    .imposters = options.imposters,
+                    .instance_name = VariableAndHash<std::string>{ "building_cluster_" + std::to_string(i) },
+                    .absolute_model_matrix = trafo,
+                    .scene = options.scene,
+                    .max_imposter_texture_size = max_imposter_texture_size_,
+                    .renderable_resource_filter = options.renderable_resource_filter
+                });
+        }
     }
     if (terrain_styles_.requires_renderer()) {
         auto node = make_unique_scene_node(

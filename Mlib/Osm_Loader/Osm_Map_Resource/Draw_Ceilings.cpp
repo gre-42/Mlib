@@ -35,7 +35,9 @@ void Mlib::draw_ceilings(
         Material{
             .textures_color = { { primary_rendering_resources.get_texture_descriptor(config.ceiling_texture) } },
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-            .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
+            .aggregate_mode = (config.max_imposter_texture_size == 0)
+                ? AggregateMode::SORTED_CONTINUOUSLY
+                : AggregateMode::NONE,
             .shading = CEILING_REFLECTANCE,
             .draw_distance_noperations = 1000}.compute_color_mode(),
         morphology,

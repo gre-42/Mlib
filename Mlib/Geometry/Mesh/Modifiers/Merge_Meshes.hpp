@@ -12,8 +12,8 @@ struct Morphology;
 class GroupAndName;
 
 template <class TPos>
-void merge_meshes(
-    std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
+std::shared_ptr<ColoredVertexArray<TPos>> merge_meshes(
+    const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
     const GroupAndName& name,
     const Material& material,
     const Morphology& morphology);

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <compare>
 
 namespace Mlib {
 
@@ -10,6 +11,7 @@ struct Morphology {
     PhysicsMaterial physics_material;
     OrderableFixedArray<float, 2> center_distances{ default_step_distances };
     float max_triangle_distance = INFINITY;
+    std::partial_ordering operator <=> (const Morphology&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(physics_material);

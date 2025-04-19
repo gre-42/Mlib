@@ -37,17 +37,21 @@ LoadSceneJsonUserFunction MergeMeshes::json_user_function = [](const LoadSceneJs
         (ISceneNodeResource& resource)
         {
             for (const auto& acva : resource.get_rendering_arrays()) {
-                merge_meshes(acva->scvas, name, Material{}, Morphology{ .physics_material = physics_material });
-                merge_meshes(
-                    acva->dcvas,
-                    name,
-                    Material{
-                        .aggregate_mode = AggregateMode::ONCE,
-                        .shading{
-                            .ambient = {0.2f, 0.2f, 0.2f},
-                            .diffuse = {0.2f, 0.2f, 0.2f},
-                            .specular = {0.f, 0.f, 0.f}}},
-                            Morphology{ .physics_material = physics_material });
+                if (!acva->scvas.empty()) {
+                    acva->scvas = { merge_meshes(acva->scvas, name, Material{}, Morphology{ .physics_material = physics_material }) };
+                }
+                if (!acva->dcvas.empty()) {
+                    acva->dcvas = { merge_meshes(
+                        acva->dcvas,
+                        name,
+                        Material{
+                            .aggregate_mode = AggregateMode::ONCE,
+                            .shading{
+                                .ambient = {0.2f, 0.2f, 0.2f},
+                                .diffuse = {0.2f, 0.2f, 0.2f},
+                                .specular = {0.f, 0.f, 0.f}}},
+                                Morphology{ .physics_material = physics_material }) };
+                }
             }
         });
 };

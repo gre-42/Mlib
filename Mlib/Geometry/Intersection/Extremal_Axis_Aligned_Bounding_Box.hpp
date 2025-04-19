@@ -78,7 +78,7 @@ public:
         if (const auto* d = std::get_if<AxisAlignedBoundingBox<TData, tndim>>(&data_)) {
             return *d;
         }
-        verbose_abort("ExtremalAxisAlignedBoundingBox is neither empty nor full");
+        verbose_abort("ExtremalAxisAlignedBoundingBox is empty or full");
     }
 private:
     std::variant<ExtremalBoundingVolume, AxisAlignedBoundingBox<TData, tndim>> data_;

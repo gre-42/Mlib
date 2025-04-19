@@ -22,6 +22,7 @@ struct RootInstantiationOptions {
     const VariableAndHash<std::string>& instance_name;
     const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix;
     Scene& scene;
+    uint32_t max_imposter_texture_size = 0;
     const RenderableResourceFilter& renderable_resource_filter;
 };
 

@@ -46,6 +46,7 @@
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/IInstantiation_Reference.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -1838,6 +1839,13 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
         .instance_name = options.instance_name,
         .scene_node = node.ref(DP_LOC),
         .renderable_resource_filter = options.renderable_resource_filter});
+    if (options.max_imposter_texture_size != 0) {
+        if (options.imposters == nullptr) {
+            THROW_OR_ABORT2("Imposters not set for \"" + *options.instance_name + '"');
+        }
+        std::string node_name = *options.instance_name + "-" + std::to_string(options.scene.get_uuid());
+        options.imposters->create_imposter(node.ref(DP_LOC), node_name, options.max_imposter_texture_size);
+    }
     options.scene.auto_add_root_node(
         *options.instance_name + "_cva_world",
         std::move(node),
