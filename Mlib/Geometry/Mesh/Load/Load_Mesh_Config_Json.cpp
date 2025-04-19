@@ -40,10 +40,7 @@ DECLARE_ARGUMENT(ambient_factor);
 DECLARE_ARGUMENT(diffuse_factor);
 DECLARE_ARGUMENT(specular_factor);
 DECLARE_ARGUMENT(reflectance);
-DECLARE_ARGUMENT(fresnel_ambient);
-DECLARE_ARGUMENT(fresnel_min);
-DECLARE_ARGUMENT(fresnel_max);
-DECLARE_ARGUMENT(fresnel_exponent);
+DECLARE_ARGUMENT(fresnel);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(lighten);
@@ -90,14 +87,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .diffuse_factor = j.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
         .specular_factor = j.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
         .reflectance = j.at<UFixedArray<float, 3>>(KnownArgs::reflectance, fixed_zeros<float, 3>()),
-        .fresnel{
-            .reflectance = {
-                .min = j.at<float>(KnownArgs::fresnel_min, 0.f),
-                .max = j.at<float>(KnownArgs::fresnel_max, 0.f),
-                .exponent = j.at<float>(KnownArgs::fresnel_exponent, 0.f)
-            },
-            .ambient = OrderableFixedArray{ j.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient, fixed_zeros<float, 3>()) }
-        },
+        .fresnel = j.at<FresnelAndAmbient>(KnownArgs::fresnel, FresnelAndAmbient{}),
         .desaturate = j.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = j.try_path_or_variable(KnownArgs::histogram).path,
         .lighten = j.at<UFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),

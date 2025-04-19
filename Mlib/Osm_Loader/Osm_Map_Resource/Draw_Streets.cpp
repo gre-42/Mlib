@@ -419,7 +419,7 @@ static void draw_terrain_triangle_hole(
     TriangleList<CompressedScenePos>& triangles)
 {
     if (hv.length() != 3) {
-        THROW_OR_ABORT2("Triangle hole does not have 3 corners");
+        THROW_OR_ABORT("Triangle hole does not have 3 corners");
     }
     triangles.draw_triangle_wo_normals(
         FixedArray<CompressedScenePos, 3>{hv(0).position(0), hv(0).position(1), (CompressedScenePos)0.},
@@ -437,7 +437,7 @@ static void draw_terrain_fan_hole(
     TriangleList<CompressedScenePos>& triangles)
 {
     if (hv.length() < 3) {
-        THROW_OR_ABORT2("Fan has less than 3 corners");
+        THROW_OR_ABORT("Fan has less than 3 corners");
     }
     FixedArray<float, 3> center_color =
         mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors[0];}));

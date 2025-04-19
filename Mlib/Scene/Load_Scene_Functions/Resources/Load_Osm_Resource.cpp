@@ -310,10 +310,7 @@ DECLARE_ARGUMENT(reorient_uv0);
 DECLARE_ARGUMENT(ambient);
 DECLARE_ARGUMENT(diffuse);
 DECLARE_ARGUMENT(specular);
-DECLARE_ARGUMENT(fresnel_min);
-DECLARE_ARGUMENT(fresnel_max);
-DECLARE_ARGUMENT(fresnel_exponent);
-DECLARE_ARGUMENT(fresnel_ambient);
+DECLARE_ARGUMENT(fresnel);
 }
 
 namespace WaysideKnownArgs {
@@ -378,14 +375,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                         .ambient = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::ambient),
                         .diffuse = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::diffuse),
                         .specular = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::specular),
-                        .fresnel = {
-                            .reflectance = {
-                                .min = barrier_style.at<float>(BS::fresnel_min, 0.f),
-                                .max = barrier_style.at<float>(BS::fresnel_max, 0.f),
-                                .exponent = barrier_style.at<float>(BS::fresnel_exponent, 0.f)
-                            },
-                            .ambient = OrderableFixedArray{ barrier_style.at<UFixedArray<float, 3>>(BS::fresnel_ambient, fixed_zeros<float, 3>()) }
-                        }} };
+                        .fresnel = barrier_style.at<FresnelAndAmbient>(BS::fresnel, FresnelAndAmbient{})} };
                 if (!styles.insert({barrier_style.at<std::string>(BS::name), as}).second) {
                     THROW_OR_ABORT("Duplicate barrier style");
                 }

@@ -1841,7 +1841,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
         .renderable_resource_filter = options.renderable_resource_filter});
     if (options.max_imposter_texture_size != 0) {
         if (options.imposters == nullptr) {
-            THROW_OR_ABORT2("Imposters not set for \"" + *options.instance_name + '"');
+            THROW_OR_ABORT("Imposters not set for \"" + *options.instance_name + '"');
         }
         std::string node_name = *options.instance_name + "-" + std::to_string(options.scene.get_uuid());
         options.imposters->create_imposter(node.ref(DP_LOC), node_name, options.max_imposter_texture_size);

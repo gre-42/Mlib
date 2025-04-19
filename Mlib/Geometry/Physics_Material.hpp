@@ -44,6 +44,7 @@ enum class PhysicsMaterial: uint32_t {
     SURFACE_BASE_METAL          = (11 << SURFACE_BASE_OFFSET),      // 1011
     SURFACE_BASE_CONCRETE       = (12 << SURFACE_BASE_OFFSET),      // 1100
     SURFACE_BASE_GLASS          = (13 << SURFACE_BASE_OFFSET),      // 1101
+    SURFACE_BASE_WATER          = (14 << SURFACE_BASE_OFFSET),      // 1110
     SURFACE_WET                 = (1 << (0 + SURFACE_BASE_OFFSET + SURFACE_BASE_NBITS)),
 
     OBJ_BULLET_MASK = OBJ_BULLET_LINE_SEGMENT | OBJ_BULLET_MESH,

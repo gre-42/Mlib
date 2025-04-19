@@ -64,6 +64,7 @@ void CompoundResource::instantiate_root_renderables(const RootInstantiationOptio
             resource_name,
             RootInstantiationOptions{
                 .rendering_resources = options.rendering_resources,
+                .imposters = options.imposters,
                 .supply_depots = options.supply_depots,
                 .instance_name = VariableAndHash{ *options.instance_name + "_compound_" + std::to_string(i) },
                 .absolute_model_matrix = options.absolute_model_matrix,
