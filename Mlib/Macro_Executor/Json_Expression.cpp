@@ -224,8 +224,9 @@ static nlohmann::json eval_recursion(
             if (!regex_match(expression, match, query_re)) {
                 THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ expression } + '"');
             }
+            auto asset_id = subst(match[DbQueryGroups::asset_id].str());
             const auto& db = asset_references[subst(match[DbQueryGroups::group].str())]
-                .at(subst(match[DbQueryGroups::asset_id].str()))
+                .at(asset_id)
                 .rp
                 .database;
             if (match[DbQueryGroups::key].matched) {
@@ -236,11 +237,16 @@ static nlohmann::json eval_recursion(
                 auto key = subst(match[DbQueryGroups::key].str());
                 auto it = res.find(key);
                 if (it == res.end()) {
-                    THROW_OR_ABORT("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ expression } + '"');
+                    THROW_OR_ABORT("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ expression } + "\". Asset ID: \"" + asset_id + "\".");
                 }
                 var = *it;
             } else {
-                var = db.at(match[DbQueryGroups::value].str());
+                auto key = match[DbQueryGroups::value].str();
+                auto v = db.try_at(key);
+                if (!v.has_value()) {
+                    THROW_OR_ABORT("Could not find database key \"" + std::string{ key } + "\": \"" + std::string{ expression } + "\". Asset ID: \"" + asset_id + "\".");
+                }
+                var = *v;
             }
         } else if ((expression.length() > 1) && (expression[1] == '/')) {
             // static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)$");

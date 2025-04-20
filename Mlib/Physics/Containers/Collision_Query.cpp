@@ -206,22 +206,22 @@ bool CollisionQuery::can_see(
     const RigidBodyVehicle& watched,
     bool only_terrain,
     PhysicsMaterial collidable_mask,
-    ScenePos height_offset,
     float time_offset,
     FixedArray<ScenePos, 3>* intersection_point,
     std::variant<const CollisionPolygonSphere<CompressedScenePos, 3>*, const CollisionPolygonSphere<CompressedScenePos, 4>*>* intersection_polygon,
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
-    FixedArray<ScenePos, 3> d = {0.f, height_offset, 0.f};
+    FixedArray<ScenePos, 3> d_watcher = {0.f, funpack(watcher.can_see_y_offset), 0.f};
+    FixedArray<ScenePos, 3> d_watched = {0.f, funpack(watched.can_be_seen_y_offset), 0.f};
     if (time_offset != 0) {
         RigidBodyPulses watcher_rbp = watcher.rbp_;
         RigidBodyPulses watched_rbp = watched.rbp_;
         watcher_rbp.advance_time(time_offset);
         watched_rbp.advance_time(time_offset);
         return can_see(
-            watcher_rbp.transform_to_world_coordinates(watcher.target_) + d,
-            watched_rbp.transform_to_world_coordinates(watched.target_) + d,
+            watcher_rbp.transform_to_world_coordinates(watcher.target_) + d_watcher,
+            watched_rbp.transform_to_world_coordinates(watched.target_) + d_watched,
             &watcher,
             &watched,
             only_terrain,
@@ -232,8 +232,8 @@ bool CollisionQuery::can_see(
             seen_mesh);
     } else {
         return can_see(
-            watcher.abs_target() + d,
-            watched.abs_target() + d,
+            watcher.abs_target() + d_watcher,
+            watched.abs_target() + d_watched,
             &watcher,
             &watched,
             only_terrain,
@@ -250,20 +250,21 @@ bool CollisionQuery::can_see(
     const FixedArray<ScenePos, 3>& watched,
     bool only_terrain,
     PhysicsMaterial collidable_mask,
-    ScenePos height_offset,
+    ScenePos can_be_seen_height_offset,
     float time_offset,
     FixedArray<ScenePos, 3>* intersection_point,
     std::variant<const CollisionPolygonSphere<CompressedScenePos, 3>*, const CollisionPolygonSphere<CompressedScenePos, 4>*>* intersection_polygon,
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
-    FixedArray<ScenePos, 3> d = {0.f, height_offset, 0.f };
+    FixedArray<ScenePos, 3> d_watcher = {0.f, funpack(watcher.can_see_y_offset), 0.f };
+    FixedArray<ScenePos, 3> d_watched = {0.f, can_be_seen_height_offset, 0.f };
     if (time_offset != 0) {
         RigidBodyPulses rbp = watcher.rbp_;
         rbp.advance_time(time_offset);
         return can_see(
-            rbp.transform_to_world_coordinates(watcher.target_) + d,
-            watched + d,
+            rbp.transform_to_world_coordinates(watcher.target_) + d_watcher,
+            watched + d_watched,
             &watcher,
             nullptr,
             only_terrain,
@@ -274,8 +275,8 @@ bool CollisionQuery::can_see(
             seen_mesh);
     } else {
         return can_see(
-            watcher.abs_target() + d,
-            watched + d,
+            watcher.abs_target() + d_watcher,
+            watched + d_watched,
             &watcher,
             nullptr,
             only_terrain,

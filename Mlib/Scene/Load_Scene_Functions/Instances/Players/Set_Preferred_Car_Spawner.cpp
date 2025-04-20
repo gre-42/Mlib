@@ -26,6 +26,7 @@ DECLARE_ARGUMENT(spawner);
 DECLARE_ARGUMENT(asset_id);
 DECLARE_ARGUMENT(macro);
 DECLARE_ARGUMENT(already_set_behavior);
+DECLARE_ARGUMENT(y_offset);
 }
 
 namespace KnownLet {
@@ -51,6 +52,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
     vehicle_spawners.get(spawner_name).set_spawn_vehicle(
         [macro_line_executor = args.macro_line_executor,
          asset_id = args.arguments.at<std::string>(KnownArgs::asset_id),
+         y_offset = args.arguments.at<CompressedScenePos>(KnownArgs::y_offset),
          macro = args.arguments.at(KnownArgs::macro),
          &snr = scene_node_resources,
          &cq = physics_engine.collision_query_]
@@ -62,7 +64,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
             assert_true((g.action == SpawnAction::DRY_RUN) == (n == nullptr));
             auto dp = FixedArray<CompressedScenePos, 3>{
                 (CompressedScenePos)0.f,
-                g.y_offset,
+                y_offset,
                 (CompressedScenePos)0.f
             };
             auto trafo = TransformationMatrix<float, ScenePos, 3>{

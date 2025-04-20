@@ -159,7 +159,6 @@ public:
     bool can_see(
         const RigidBodyVehicle& rbi,
         bool only_terrain = false,
-        ScenePos height_offset = 0,
         float time_offset = 0) const;
     bool can_see(
         const FixedArray<ScenePos, 3>& pos,
@@ -169,12 +168,10 @@ public:
     bool can_see(
         const SceneVehicle& scene_vehicle,
         bool only_terrain = false,
-        ScenePos height_offset = 0,
         float time_offset = 0) const;
     bool can_see(
         const Player& player,
         bool only_terrain = false,
-        ScenePos height_offset = 0,
         float time_offset = 0) const;
     bool is_pedestrian() const;
     bool is_parking() const;

@@ -91,7 +91,7 @@ bool Bystanders::spawn_for_vip(
         bool spotted = vip_->can_see(
             funpack(sp->trafo.t),
             cfg_.only_terrain,
-            funpack(cfg_.can_see_y_offset));
+            funpack(cfg_.spawn_point_can_be_seen_y_offset));
         if (dist2 < squared(cfg_.r_spawn_near)) {
             // The spawn point is near the VIP.
 
@@ -103,7 +103,7 @@ bool Bystanders::spawn_for_vip(
             if (!vip_->can_see(
                 funpack(sp->trafo.t),
                 cfg_.only_terrain,
-                funpack(cfg_.can_see_y_offset),
+                funpack(cfg_.spawn_point_can_be_seen_y_offset),
                 cfg_.visible_after_spawn_time))
             {
                 return true;
@@ -153,8 +153,7 @@ bool Bystanders::delete_for_vip(
         if (dist2 > squared(cfg_.r_delete_far)) {
             if (!vip_->can_see(
                 *vehicle,
-                cfg_.only_terrain,
-                funpack(cfg_.can_see_y_offset)))
+                cfg_.only_terrain))
             {
                 ++ndelete_votes;
                 continue;
@@ -165,8 +164,7 @@ bool Bystanders::delete_for_vip(
         if (!spawner.get_spotted_by_vip() && (spawner.get_time_since_spawn() > cfg_.visible_after_delete_time)) {
             if (!vip_->can_see(
                 *vehicle,
-                cfg_.only_terrain,
-                funpack(cfg_.can_see_y_offset)))
+                cfg_.only_terrain))
             {
                 ++ndelete_votes;
                 continue;

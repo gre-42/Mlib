@@ -11,9 +11,8 @@ struct GameLogicConfig {
     CompressedScenePos r_neighbors = (CompressedScenePos)(20 * meters);
     float visible_after_spawn_time = 2 * seconds;
     float visible_after_delete_time = 3 * seconds;
-    CompressedScenePos spawn_y_offset = (CompressedScenePos)(0.7f * meters);
     bool only_terrain = true;
-    CompressedScenePos can_see_y_offset = (CompressedScenePos)(2 * meters);
+    CompressedScenePos spawn_point_can_be_seen_y_offset = (CompressedScenePos)(2 * meters);
     size_t spawn_points_nsubdivisions = 5 * 60;
     CompressedScenePos r_occupied_spawn_point = (CompressedScenePos)(5 * meters);
 };

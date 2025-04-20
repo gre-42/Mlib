@@ -73,7 +73,7 @@ bool Spawner::can_spawn_at_spawn_point(
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
-    return spawner.try_spawn(sp, { SpawnAction::DRY_RUN, cfg_.spawn_y_offset });
+    return spawner.try_spawn(sp, { SpawnAction::DRY_RUN });
 }
 
 bool Spawner::try_spawn_at_spawn_point(
@@ -84,7 +84,7 @@ bool Spawner::try_spawn_at_spawn_point(
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
-    bool success = spawner.try_spawn(sp, { SpawnAction::DO_IT, cfg_.spawn_y_offset });
+    bool success = spawner.try_spawn(sp, { SpawnAction::DO_IT });
     // lerr() << "Spawner time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<ScenePos>(std::chrono::steady_clock::now() - start)).count();
     ++ntry_spawns_;
     return success;

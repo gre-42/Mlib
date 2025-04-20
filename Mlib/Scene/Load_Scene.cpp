@@ -154,7 +154,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Available_Roles.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Bevel_Box_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Capsule_Surface_Normal.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Jump_Dv.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Door_Distance.hpp>
@@ -162,9 +161,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Sliding_Normal_Modifier.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Trailer_Hitch_Positions.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Waypoint_Ofs.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Ypln_Update_Bullet_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Additive_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Constant_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Fractional_Screen_Constraint.hpp>
@@ -366,7 +362,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
             register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
             register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
-            register_json_user_function(SetJumpDv::key, SetJumpDv::json_user_function);
             register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
             register_json_user_function(SetNodeHider::key, SetNodeHider::json_user_function);
             register_json_user_function(SetNodeRotation::key, SetNodeRotation::json_user_function);
@@ -377,8 +372,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SetRigidBodyRevertSurfacePowerThreshold::key, SetRigidBodyRevertSurfacePowerThreshold::json_user_function);
             register_json_user_function(SetRigidBodyTarget::key, SetRigidBodyTarget::json_user_function);
             register_json_user_function(SetSkaterStyleUpdater::key, SetSkaterStyleUpdater::json_user_function);
-            register_json_user_function(SetTrailerHitchPositions::key, SetTrailerHitchPositions::json_user_function);
-            register_json_user_function(SetWaypointOfs::key, SetWaypointOfs::json_user_function);
             register_json_user_function(SetSkybox::key, SetSkybox::json_user_function);
             register_json_user_function(SetObjective::key, SetObjective::json_user_function);
             register_json_user_function(ResetSupplyDepotCooldowns::key, ResetSupplyDepotCooldowns::json_user_function);
@@ -394,7 +387,6 @@ LoadScene::LoadScene() {
             register_json_user_function(UiBackground::key, UiBackground::json_user_function);
             register_json_user_function(UiExhibit::key, UiExhibit::json_user_function);
             register_json_user_function(VisualNodeStatus3rd::key, VisualNodeStatus3rd::json_user_function);
-            register_json_user_function(YplnUpdateBulletProperties::key, YplnUpdateBulletProperties::json_user_function);
 
             // Resources
             register_json_user_function(AddAudio::key, AddAudio::json_user_function);

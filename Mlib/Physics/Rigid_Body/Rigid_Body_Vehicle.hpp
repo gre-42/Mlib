@@ -287,8 +287,14 @@ public:
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
 
+    // Consider moving the following parameters into the
+    // asset database (i.e. the manifest.json).
     // The relative offset when this object is targeted.
-    FixedArray<float, 3> target_;
+    FixedArray<float, 3> target_ = { 0.f, 0.f, 0.f };
+    CompressedScenePos can_see_y_offset = (CompressedScenePos)(2.f * meters);
+    CompressedScenePos can_be_seen_y_offset = (CompressedScenePos)(2.f * meters);
+    CompressedScenePos waypoint_ofs_ = (CompressedScenePos)0.f;
+    float jump_dv_ = 17.f * kph;
 
     RigidBodyPulses rbp_;
     std::list<std::unique_ptr<CollisionObserver>> collision_observers_;
@@ -305,7 +311,6 @@ public:
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
     std::unique_ptr<RigidBodyMissileController> missile_controller_;
     std::map<ActorTask, std::map<ActorType, VehicleAiWithSkill>> autopilots_;
-    float jump_dv_ = 17.f * kph;
     JumpState jump_state_;
     GrindState grind_state_;
     AlignToSurfaceState align_to_surface_state_;
@@ -316,7 +321,6 @@ public:
     VehicleDomain current_vehicle_domain_;
     VehicleDomain next_vehicle_domain_;
     ActorTask actor_task_;
-    CompressedScenePos waypoint_ofs_;
     ObjectPool& object_pool_;
     std::unique_ptr<ISurfaceNormal> surface_normal_;
     std::unique_ptr<ICollisionNormalModifier> collision_normal_modifier_;

@@ -66,7 +66,6 @@ RigidBodyVehicle::RigidBodyVehicle(
     , energy_old_{ NAN }
 #endif
     , tires_z_{ 0.f, 0.f, -1.f }
-    , target_{ 0.f, 0.f, 0.f }
     , rbp_{ rbp }
     , name_{ std::move(name) }
     , asset_id_{ std::move(asset_id) }
@@ -98,7 +97,6 @@ RigidBodyVehicle::RigidBodyVehicle(
     , current_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , next_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , actor_task_{ ActorTask::UNDEFINED }
-    , waypoint_ofs_{ 0.f }
     , object_pool_{ object_pool }
 {
     if (name_.empty()) {

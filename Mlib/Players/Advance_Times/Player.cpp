@@ -345,7 +345,6 @@ GameMode Player::game_mode() const {
 bool Player::can_see(
     const RigidBodyVehicle& rb,
     bool only_terrain,
-    ScenePos height_offset,
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
@@ -357,7 +356,6 @@ bool Player::can_see(
         rb,
         only_terrain,
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
-        height_offset,
         time_offset);
 }
 
@@ -383,7 +381,6 @@ bool Player::can_see(
 bool Player::can_see(
     const SceneVehicle& scene_vehicle,
     bool only_terrain,
-    ScenePos height_offset,
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
@@ -395,14 +392,12 @@ bool Player::can_see(
         scene_vehicle.rb(),
         only_terrain,
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
-        height_offset,
         time_offset);
 }
 
 bool Player::can_see(
     const Player& player,
     bool only_terrain,
-    ScenePos height_offset,
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
@@ -412,7 +407,6 @@ bool Player::can_see(
     return can_see(
         player.vehicle(),
         only_terrain,
-        height_offset,
         time_offset);
 }
 

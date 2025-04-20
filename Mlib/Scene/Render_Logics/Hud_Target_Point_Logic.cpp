@@ -75,9 +75,9 @@ void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
     if (collision_query_.can_see(
         gun_pose.t,
         gun_pose.t - ScenePos(1000) * gun_pose.R.column(2).casted<ScenePos>(),
-        nullptr, // excluded0,
-        nullptr, // excluded1
-        false, // only_terrain
+        nullptr,    // excluded0,
+        nullptr,    // excluded1
+        false,      // only_terrain
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         &intersection_point))
     {

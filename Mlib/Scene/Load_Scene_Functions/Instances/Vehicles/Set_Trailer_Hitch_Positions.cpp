@@ -7,6 +7,7 @@
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -18,14 +19,6 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(rigid_body);
 DECLARE_ARGUMENT(asset_id);
 }
-
-const std::string SetTrailerHitchPositions::key = "set_trailer_hitch_positions";
-
-LoadSceneJsonUserFunction SetTrailerHitchPositions::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    SetTrailerHitchPositions(args.renderable_scene()).execute(args);
-};
 
 SetTrailerHitchPositions::SetTrailerHitchPositions(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
@@ -45,4 +38,20 @@ void SetTrailerHitchPositions::execute(const LoadSceneJsonUserFunctionArgs& args
     if (auto pos = vars.database.at("trailer_hitch_position_male"); pos.type() != nlohmann::detail::value_t::null) {
         rb.trailer_hitches_.set_position_male(pos.get<UFixedArray<float, 3>>());
     }
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_trailer_hitch_positions",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                SetTrailerHitchPositions(args.renderable_scene()).execute(args);            
+            });
+    }
+} obj;
+
 }

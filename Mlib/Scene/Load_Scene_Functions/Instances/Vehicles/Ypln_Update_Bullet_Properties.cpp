@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -24,14 +25,6 @@ DECLARE_ARGUMENT(ypln_node);
 DECLARE_ARGUMENT(bullet_type);
 DECLARE_ARGUMENT(dpitch_head);
 }
-
-const std::string YplnUpdateBulletProperties::key = "ypln_update_bullet_properties";
-
-LoadSceneJsonUserFunction YplnUpdateBulletProperties::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    YplnUpdateBulletProperties(args.renderable_scene()).execute(args);
-};
 
 YplnUpdateBulletProperties::YplnUpdateBulletProperties(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
@@ -48,4 +41,20 @@ void YplnUpdateBulletProperties::execute(const LoadSceneJsonUserFunctionArgs& ar
     aim_at.set_bullet_velocity(bullet_type.velocity);
     aim_at.set_bullet_feels_gravity(!any(bullet_type.rigid_body_flags & RigidBodyVehicleFlags::FEELS_NO_GRAVITY));
     ypln.pitch_look_at_node().set_dpitch_head(args.arguments.at<float>(KnownArgs::dpitch_head) * degrees);
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "ypln_update_bullet_properties",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                YplnUpdateBulletProperties(args.renderable_scene()).execute(args);            
+            });
+    }
+} obj;
+
 }

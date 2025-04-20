@@ -11,7 +11,6 @@ enum class SpawnAction {
 
 struct GeometrySpawnArguments {
     SpawnAction action;
-    CompressedScenePos y_offset;
 };
 
 struct NodeSpawnArguments {
