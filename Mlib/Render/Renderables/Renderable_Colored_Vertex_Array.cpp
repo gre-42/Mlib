@@ -1564,13 +1564,13 @@ ExtremalBoundingSphere<CompressedScenePos, 3> RenderableColoredVertexArray::boun
     return bounding_sphere_;
 }
 
-ScenePos RenderableColoredVertexArray::max_center_distance(BillboardId billboard_id) const {
+ScenePos RenderableColoredVertexArray::max_center_distance2(BillboardId billboard_id) const {
     ScenePos result = 0.;
-    for (const auto& cva : aggregate_off_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
-    for (const auto& cva : aggregate_once_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
-    for (const auto& cva : aggregate_sorted_continuously_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
-    for (const auto& cva : instances_once_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
-    for (const auto& cva : instances_sorted_continuously_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
+    for (const auto& cva : aggregate_off_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
+    for (const auto& cva : aggregate_once_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
+    for (const auto& cva : aggregate_sorted_continuously_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
+    for (const auto& cva : instances_once_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
+    for (const auto& cva : instances_sorted_continuously_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
     // if (result == 0.) {
     //     THROW_OR_ABORT("Could not calculate visibility AABB, renderable seems to be empty");
     // }

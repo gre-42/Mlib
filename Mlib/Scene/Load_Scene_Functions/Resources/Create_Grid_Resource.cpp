@@ -99,9 +99,9 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
             }}.compute_color_mode(),
         Morphology{
             .physics_material = PhysicsMaterial::NONE,
-            .center_distances = OrderableFixedArray<float, 2>{
+            .center_distances2 = SquaredStepDistances::from_distances(
                 args.arguments.at<UFixedArray<float, 2>>(
                     KnownArgs::center_distances,
-                    FixedArray<float, 2>{0.f, INFINITY }) * meters},
+                    FixedArray<float, 2>{0.f, INFINITY }) * meters),
         }));
 };

@@ -35,19 +35,19 @@ ScenePos TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_no
     }
     std::scoped_lock lock{max_distance_to_camera_mutex_};
     if (std::isnan(max_distance_to_camera_)) {
-        ScenePos max_distance_to_camera = 0.f;
-        auto add_distance = [&max_distance_to_camera](const std::string& name, ScenePos distance){
-            if (!std::isfinite(distance)) {
+        ScenePos max_distance_to_camera2 = 0.f;
+        auto add_distance = [&max_distance_to_camera2](const std::string& name, ScenePos distance2){
+            if (!std::isfinite(distance2)) {
                 THROW_OR_ABORT("Resource \"" + name + "\" contains non-finite maximum center distance");
             }
-            max_distance_to_camera = std::max(distance, max_distance_to_camera);
+            max_distance_to_camera2 = std::max(distance2, max_distance_to_camera2);
         };
         auto add_cvas = [&add_distance](const auto& cvas, const std::string& name, BillboardId billboard_id){
             for (const auto& cva : cvas) {
                 if (billboard_id != BILLBOARD_ID_NONE) {
-                    add_distance(name, cva->material.billboard_atlas_instance(billboard_id, name).max_center_distance);
+                    add_distance(name, cva->material.billboard_atlas_instance(billboard_id, name).max_center_distance2);
                 } else {
-                    add_distance(name, cva->morphology.center_distances(1));
+                    add_distance(name, cva->morphology.center_distances2(1));
                 }
             }
         };
@@ -61,10 +61,10 @@ ScenePos TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_no
         add_recources(config.near_resource_names_mountain_regular);
         add_recources(config.near_resource_names_valley_dirt);
         add_recources(config.near_resource_names_mountain_dirt);
-        if (max_distance_to_camera == 0.f) {
+        if (max_distance_to_camera2 == 0.f) {
             THROW_OR_ABORT("Max distance to camera is zero");
         }
-        max_distance_to_camera_ = max_distance_to_camera;
+        max_distance_to_camera_ = std::sqrt(max_distance_to_camera2);
     }
     return max_distance_to_camera_;
 }

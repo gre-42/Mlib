@@ -348,7 +348,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .dynamically_lighted = cfg.dynamically_lighted},
                 Morphology{
                     .physics_material = cfg.physics_material,
-                    .center_distances = cfg.center_distances,
+                    .center_distances2 = SquaredStepDistances::from_distances(cfg.center_distances),
                     .max_triangle_distance = cfg.max_triangle_distance
                 }};
             auto attrs = MetaAttributes::ATTR_VISIBLE;

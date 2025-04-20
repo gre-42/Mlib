@@ -49,7 +49,7 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const override;
-    virtual ScenePos max_center_distance(BillboardId billboard_id) const override;
+    virtual ScenePos max_center_distance2(BillboardId billboard_id) const override;
 private:
     const SceneNodeResources& scene_node_resources_;
     const TerrainStyles& terrain_styles_;

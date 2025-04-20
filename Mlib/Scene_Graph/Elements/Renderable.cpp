@@ -79,6 +79,6 @@ ExtremalBoundingSphere<CompressedScenePos, 3> Renderable::bounding_sphere() cons
     THROW_OR_ABORT("Renderable::bounding_sphere not implemented");
 }
 
-ScenePos Renderable::max_center_distance(BillboardId billboard_id) const {
-    THROW_OR_ABORT("Renderable::max_center_distance not implemented");
+ScenePos Renderable::max_center_distance2(BillboardId billboard_id) const {
+    THROW_OR_ABORT("Renderable::max_center_distance2 not implemented");
 }

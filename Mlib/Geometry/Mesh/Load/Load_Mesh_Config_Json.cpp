@@ -67,7 +67,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .center_distances = OrderableFixedArray<float, 2>{
             j.at<UFixedArray<float, 2>>(
                 KnownArgs::center_distances,
-                FixedArray<float, 2>{0.f, INFINITY }) * meters},
+                default_step_distances) * meters},
         .max_triangle_distance = j.at<float>(KnownArgs::max_triangle_distance, INFINITY) * meters,
         .blend_mode = blend_mode_from_string(j.at<std::string>(KnownArgs::blend_mode)),
         .alpha_distances = j.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),

@@ -1,8 +1,8 @@
 #include "Draw_Distance_Db.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
-#include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/RGetline.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <algorithm>
@@ -51,19 +51,19 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
             ide_items_.try_emplace(
                 resource_name,
                 texture_dictionary_lower,
-                FixedArray<float, 2>{ -INFINITY, dist[0] },
+                AddableStepDistances{ -INFINITY, dist[0] },
                 flags);
             float prev = -INFINITY;
             for (size_t i = 0; i < n; ++i) {
                 ide_items_.try_emplace(
                     resource_name + "_l" + std::to_string(i),
                     texture_dictionary_lower,
-                    FixedArray<float, 2>{ prev, dist[i] },
+                    AddableStepDistances{ prev, dist[i] },
                     flags);
                 ide_items_.try_emplace(
                     resource_name + "_L" + std::to_string(i),
                     texture_dictionary_lower,
-                    FixedArray<float, 2>{ prev, dist[i] },
+                    AddableStepDistances{ prev, dist[i] },
                     flags);
                 prev = dist[i];
             }
@@ -128,7 +128,7 @@ const IdeItem& DrawDistanceDb::get_item(const std::string& resource_name) const
     return ide_items_.get(resource_name);
 }
 
-FixedArray<float, 2> IdeItem::center_distances(float radius) const
+SquaredStepDistances IdeItem::center_distances2(float radius) const
 {
-    return maximum(raw_center_distances + radius, 0.f);
+    return (raw_center_distances + radius).squared();
 }

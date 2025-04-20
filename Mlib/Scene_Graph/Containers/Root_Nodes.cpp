@@ -113,16 +113,16 @@ void RootNodes::add_root_node(
         THROW_OR_ABORT("Unsupported scene node state: " + std::to_string(int(scene_node_state)));
     }
     auto ref = scene_node.ref(DP_LOC);
-    auto md = scene_node->max_center_distance(BILLBOARD_ID_NONE);
+    auto md2 = scene_node->max_center_distance2(BILLBOARD_ID_NONE);
     scene_.register_node(name, ref);
     scene_node->set_scene_and_state(scene_, scene_node_state);
     if (!node_container_.try_emplace(name, std::move(scene_node)).second) {
         verbose_abort("Could not insert into node container: \"" + name + '"');
     }
-    if (is_static && (md != INFINITY)) {
-        if (md != 0.f) {
+    if (is_static && (md2 != INFINITY)) {
+        if (md2 != 0.f) {
             small_static_nodes_bvh_.insert(
-                AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(ref->position(), md),
+                AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(ref->position(), std::sqrt(md2)),
                 ref);
         } else if (!invisible_static_nodes_.try_emplace(name, ref).second) {
             verbose_abort("add_root_node could not insert node \"" + name + '"');
@@ -141,13 +141,13 @@ void RootNodes::move_node_to_bvh(const std::string& name) {
         invisible_static_nodes_.insert(std::move(m));
         THROW_OR_ABORT("Node \"" + name + "\" is not static");
     }
-    auto md = m.mapped()->max_center_distance(BILLBOARD_ID_NONE);
-    if (md == 0.f) {
+    auto md2 = m.mapped()->max_center_distance2(BILLBOARD_ID_NONE);
+    if (md2 == 0.f) {
         invisible_static_nodes_.insert(std::move(m));
         THROW_OR_ABORT("Node \"" + name + "\" has radius=0");
     }
     small_static_nodes_bvh_.insert(
-        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(m.mapped()->position(), md),
+        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(m.mapped()->position(), std::sqrt(md2)),
         m.mapped());
 }
 

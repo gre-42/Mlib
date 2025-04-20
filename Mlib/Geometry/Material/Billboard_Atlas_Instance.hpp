@@ -13,7 +13,7 @@ struct BillboardAtlasInstance {
     OrderableFixedArray<float, 2> uv_offset = uninitialized;
     uint8_t texture_layer;
     OrderableFixedArray<float, 3> vertex_scale = uninitialized;
-    ScenePos max_center_distance;
+    ScenePos max_center_distance2;
     ExternalRenderPassType occluder_pass;
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     std::partial_ordering operator <=> (const BillboardAtlasInstance&) const = default;
@@ -23,7 +23,7 @@ struct BillboardAtlasInstance {
         archive(uv_offset);
         archive(texture_layer);
         archive(vertex_scale);
-        archive(max_center_distance);
+        archive(max_center_distance2);
         archive(occluder_pass);
         archive(alpha_distances);
     }

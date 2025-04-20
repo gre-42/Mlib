@@ -78,7 +78,7 @@ struct Material {
     const BillboardAtlasInstance& billboard_atlas_instance(
         BillboardId billboard_id,
         const std::string& name) const;
-    ScenePos max_center_distance(
+    ScenePos max_center_distance2(
         BillboardId billboard_id,
         const Morphology& morphology,
         const std::string& name) const;

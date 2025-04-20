@@ -102,7 +102,7 @@ public:
     void set_bounds(
         const AxisAlignedBoundingBox<TPos, 3>& aabb,
         const BoundingSphere<TPos, 3>& bounding_sphere);
-    ScenePos max_center_distance(BillboardId billboard_id) const;
+    ScenePos max_center_distance2(BillboardId billboard_id) const;
     template <class TPosResult, class TPosTransform>
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const UUVector<OffsetAndQuaternion<float, TPosTransform>>& qs,

@@ -332,15 +332,15 @@ OsmMapResource::OsmMapResource(
     GetMorphology get_building_morphology{
         Morphology{
             .physics_material = PhysicsMaterial::NONE,
-            .center_distances = { 0.f, 300.f }
+            .center_distances2 = SquaredStepDistances::from_distances(0.f, 300.f)
         },
         Morphology{
             .physics_material = PhysicsMaterial::NONE,
-            .center_distances = { 300.f, INFINITY }
+            .center_distances2 = SquaredStepDistances::from_distances(300.f, INFINITY)
         },
         Morphology{
             .physics_material = PhysicsMaterial::NONE,
-            .center_distances = { 0.f, INFINITY }
+            .center_distances2 = SquaredStepDistances::from_distances(0.f, INFINITY)
         }};
 
     if (config.with_buildings) {
@@ -1880,7 +1880,9 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             auto center = c.cva->aabb().data().center();
             auto tm = TranslationMatrix{ center.casted<ScenePos>() };
             auto trafo = options.absolute_model_matrix * tm;
-            auto rcva = std::make_shared<ColoredVertexArrayResource>(c.cva->translated<float>(-center, "_centered"));
+            auto scva = c.cva->translated<float>(-center, "_centered");
+            scva->morphology.center_distances2 += imposter_grid_width_;
+            auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scva));
             rcva->instantiate_root_renderables(
                 RootInstantiationOptions{
                     .rendering_resources = options.rendering_resources,

@@ -102,7 +102,7 @@ virtual RenderingStrategies rendering_strategies() const = 0;
             static_assert(sizeof(TBoundingPrimitive) == 0, "Unknown bounding primitive");
         }
     }
-    virtual ScenePos max_center_distance(BillboardId billboard_id) const;
+    virtual ScenePos max_center_distance2(BillboardId billboard_id) const;
 };
 
 }

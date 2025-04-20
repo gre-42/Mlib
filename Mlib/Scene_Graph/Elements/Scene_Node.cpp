@@ -572,11 +572,11 @@ void SceneNode::add_instances_position(
     if (cit == instances_children_.end()) {
         THROW_OR_ABORT("Could not find instance node with name \"" + name + '"');
     }
-    ScenePos mcd = cit->second.scene_node->max_center_distance(billboard_id);
-    if (mcd == 0.) {
+    ScenePos mcd2 = cit->second.scene_node->max_center_distance2(billboard_id);
+    if (mcd2 == 0.) {
         THROW_OR_ABORT("Could not determine max_center_distance of node with name \"" + name + '"');
     }
-    if (mcd == INFINITY) {
+    if (mcd2 == INFINITY) {
         cit->second.large_instances.push_back(
             PositionAndYAngleAndBillboardId{
                 .position = position,
@@ -584,10 +584,10 @@ void SceneNode::add_instances_position(
                 .yangle = yangle}
         );
     } else {
-        if (!std::isfinite(mcd)) {
+        if (!std::isfinite(mcd2)) {
             THROW_OR_ABORT("max_center_distance is not finite");
         }
-        cit->second.max_center_distance = std::max(cit->second.max_center_distance, (CompressedScenePos)mcd);
+        cit->second.max_center_distance = std::max(cit->second.max_center_distance, (CompressedScenePos)std::sqrt(mcd2));
         if (yangle == 0.f) {
             cit->second.small_instances.insert(
                 PositionAndBillboardId{
@@ -1550,17 +1550,17 @@ ExtremalBoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const 
     return result;
 }
 
-ScenePos SceneNode::max_center_distance(BillboardId billboard_id) const {
+ScenePos SceneNode::max_center_distance2(BillboardId billboard_id) const {
     std::shared_lock lock{ mutex_ };
     if (!instances_children_.empty()) {
         return INFINITY;
     }
     ScenePos result = 0.;
     for (const auto& [_, r] : renderables_) {
-        result = std::max(result, (*r)->max_center_distance(billboard_id));
+        result = std::max(result, (*r)->max_center_distance2(billboard_id));
     }
     for (const auto& [_, c] : children_) {
-        auto cb = c.scene_node->max_center_distance(BILLBOARD_ID_NONE);
+        auto cb = c.scene_node->max_center_distance2(BILLBOARD_ID_NONE);
         if (cb == INFINITY) {
             return INFINITY;
         }

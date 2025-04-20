@@ -37,14 +37,14 @@ const BillboardAtlasInstance& Material::billboard_atlas_instance(
     return billboard_atlas_instances[billboard_id];
 }
 
-ScenePos Material::max_center_distance(
+ScenePos Material::max_center_distance2(
     BillboardId billboard_id,
     const Morphology& morphology,
     const std::string& name) const
 {
     return (billboard_id == BILLBOARD_ID_NONE)
-        ? morphology.center_distances(1)
-        : billboard_atlas_instance(billboard_id, name).max_center_distance;
+        ? morphology.center_distances2(1)
+        : billboard_atlas_instance(billboard_id, name).max_center_distance2;
 }
 
 ExternalRenderPassType Material::get_occluder_pass(

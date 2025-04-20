@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <cstddef>
 #include <string>
@@ -10,9 +11,9 @@ enum class IdeFlags;
 
 struct IdeItem {
     std::string texture_dictionary;
-    FixedArray<float, 2> raw_center_distances;
+    AddableStepDistances raw_center_distances;
     IdeFlags flags;
-    FixedArray<float, 2> center_distances(float radius) const;
+    SquaredStepDistances center_distances2(float radius) const;
 };
 
 class DrawDistanceDb {

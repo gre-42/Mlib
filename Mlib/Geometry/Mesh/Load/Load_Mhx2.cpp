@@ -235,7 +235,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .shading = m.shading}.compute_color_mode(),
             Morphology{
                 .physics_material = PhysicsMaterial::ATTR_VISIBLE,
-                .center_distances = cfg.center_distances,
+                .center_distances2 = SquaredStepDistances::from_distances(cfg.center_distances),
                 .max_triangle_distance = cfg.max_triangle_distance,
             }};
         const auto& mesh = geometry.at("mesh");

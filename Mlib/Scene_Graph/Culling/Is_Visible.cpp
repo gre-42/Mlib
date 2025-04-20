@@ -38,16 +38,16 @@ bool Mlib::is_visible(
         return false;
     }
     if (any(external_render_pass & ExternalRenderPassType::IMPOSTER_NODE)) {
-        return morphology.center_distances(1) == INFINITY;
+        return morphology.center_distances2(1) == INFINITY;
     } else if (any(external_render_pass & ExternalRenderPassType::ZOOM_NODE)) {
-        return morphology.center_distances(0) == 0.f;
+        return morphology.center_distances2(0) == 0.f;
     } else if (any(external_render_pass & ExternalRenderPassType::STANDARD)) {
         if (vc.orthographic()) {
             return true;
         }
-        TData max_center_distance = (TData)material.max_center_distance(billboard_id, morphology, object_name);
+        TData max_center_distance2 = (TData)material.max_center_distance2(billboard_id, morphology, object_name);
         TData dist2 = vc.distance_squared();
-        if (!((dist2 >= squared(morphology.center_distances(0))) && (dist2 <= squared(max_center_distance)))) {
+        if (!((dist2 >= morphology.center_distances2(0)) && (dist2 < max_center_distance2))) {
             return false;
         }
         if (!frustum != !aabb) {

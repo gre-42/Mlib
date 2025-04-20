@@ -9,13 +9,13 @@ enum class PhysicsMaterial: uint32_t;
 
 struct Morphology {
     PhysicsMaterial physics_material;
-    OrderableFixedArray<float, 2> center_distances{ default_step_distances };
+    SquaredStepDistances center_distances2{ default_step_distances2 };
     float max_triangle_distance = INFINITY;
     std::partial_ordering operator <=> (const Morphology&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(physics_material);
-        archive(center_distances);
+        archive(center_distances2);
         archive(max_triangle_distance);
     }
 };

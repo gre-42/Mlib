@@ -77,7 +77,7 @@ public:
         AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const override;
     virtual ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
     virtual ExtremalBoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
-    virtual ScenePos max_center_distance(BillboardId billboard_id) const override;
+    virtual ScenePos max_center_distance2(BillboardId billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
 private:
     UUVector<OffsetAndQuaternion<float, float>> calculate_absolute_bone_transformations(const AnimationState* animation_state) const;
