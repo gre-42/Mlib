@@ -51,9 +51,8 @@ void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceL
             if (&a.first->object().get() == &advance_time) {
                 ++nfound;
                 return true;
-            } else {
-                return false;
             }
+            return false;
         });
         if (nfound != 1) {
             lerr() << loc.file_name() << ':' << loc.line();
