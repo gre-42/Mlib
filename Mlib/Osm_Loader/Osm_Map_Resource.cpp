@@ -143,7 +143,7 @@ OsmMapResource::OsmMapResource(
     : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale }
     , scene_node_resources_{ scene_node_resources }
     , scale_{ config.scale }
-    , imposter_grid_width_{ config.imposter_grid_width }
+    , building_cluster_width_{ config.building_cluster_width }
     , max_imposter_texture_size_{ config.max_imposter_texture_size }
     , normalization_matrix_{ uninitialized }
     , triangulation_normalization_matrix_{ uninitialized }
@@ -697,7 +697,7 @@ OsmMapResource::OsmMapResource(
             Material{
                 .reflection_map = config.window_reflection_map,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = (max_imposter_texture_size_ == 0)
+                .aggregate_mode = (building_cluster_width_ == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NONE,
                 .draw_distance_noperations = 1000},
@@ -725,7 +725,7 @@ OsmMapResource::OsmMapResource(
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = (max_imposter_texture_size_ == 0)
+                .aggregate_mode = (building_cluster_width_ == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NONE,
                 .shading = ROOF_REFLECTANCE,
@@ -733,7 +733,7 @@ OsmMapResource::OsmMapResource(
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = (max_imposter_texture_size_ == 0)
+                .aggregate_mode = (building_cluster_width_ == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NONE,
                 .shading = ROOF_REFLECTANCE,
@@ -1854,7 +1854,7 @@ std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> OsmMa
 void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
 {
     hri_.instantiate_root_renderables(options);
-    if (max_imposter_texture_size_ == 0) {
+    if (building_cluster_width_ == 0.f) {
         for (const auto& [i, b] : enumerate(buildings_)) {
             auto center = b->aabb().data().center();
             auto tm = TranslationMatrix{ center.casted<ScenePos>() };
@@ -1872,7 +1872,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
     } else {
         for (const auto& [i, c] : enumerate(cluster_meshes<CompressedScenePos>(
             buildings_,
-            [width = fixed_full<ScenePos, 3>(imposter_grid_width_)](const ColoredVertexArray<CompressedScenePos>& cva){
+            [width = fixed_full<ScenePos, 3>(building_cluster_width_)](const ColoredVertexArray<CompressedScenePos>& cva){
                 return (round(funpack(cva.aabb().data().center()) / width) * width).casted<CompressedScenePos>();
             },
             "building_cluster")))
@@ -1881,7 +1881,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             auto tm = TranslationMatrix{ center.casted<ScenePos>() };
             auto trafo = options.absolute_model_matrix * tm;
             auto scva = c.cva->translated<float>(-center, "_centered");
-            scva->morphology.center_distances2 += imposter_grid_width_;
+            scva->morphology.center_distances2 += building_cluster_width_;
             auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scva));
             rcva->instantiate_root_renderables(
                 RootInstantiationOptions{

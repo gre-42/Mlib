@@ -223,8 +223,8 @@ struct OsmResourceConfig {
     std::map<RoadType, bool> blend_street;
     Interp<double> layer_heights{ std::vector<double>{}, std::vector<double>{} };
     bool use_terrain_holes = false;
-    ScenePos imposter_grid_width = 500.f;
-    uint32_t max_imposter_texture_size = 512;
+    ScenePos building_cluster_width = 500.f;
+    uint32_t max_imposter_texture_size = 0;
     std::string game_level;
     std::string base_osm_map_resource;
     std::string navmesh_resource;

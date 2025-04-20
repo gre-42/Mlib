@@ -101,7 +101,7 @@ public:
         archive(hri_);
         archive(buildings_);
         archive(scale_);
-        archive(imposter_grid_width_);
+        archive(building_cluster_width_);
         archive(max_imposter_texture_size_);
         archive(spawn_points_);
         archive(way_points_);
@@ -135,7 +135,7 @@ private:
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> buildings_;
     SceneNodeResources& scene_node_resources_;
     double scale_;
-    ScenePos imposter_grid_width_;
+    ScenePos building_cluster_width_;
     uint32_t max_imposter_texture_size_;
     std::list<SpawnPoint> spawn_points_;
     WayPointSandboxes way_points_;

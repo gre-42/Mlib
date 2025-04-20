@@ -285,7 +285,7 @@ DECLARE_ARGUMENT(displacementmap_heights);
 DECLARE_ARGUMENT(fog_distances);
 DECLARE_ARGUMENT(fog_ambient);
 DECLARE_ARGUMENT(use_terrain_holes);
-DECLARE_ARGUMENT(imposter_grid_width);
+DECLARE_ARGUMENT(building_cluster_width);
 DECLARE_ARGUMENT(max_imposter_texture_size);
 }
 
@@ -1161,8 +1161,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
         }
         config.use_terrain_holes = args.arguments.at<bool>(KnownArgs::use_terrain_holes, false);
-        if (args.arguments.contains(KnownArgs::imposter_grid_width)) {
-            config.imposter_grid_width = args.arguments.at<ScenePos>(KnownArgs::imposter_grid_width) * meters;
+        if (args.arguments.contains(KnownArgs::building_cluster_width)) {
+            config.building_cluster_width = args.arguments.at<ScenePos>(KnownArgs::building_cluster_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::max_imposter_texture_size)) {
             config.max_imposter_texture_size = args.arguments.at<uint32_t>(KnownArgs::max_imposter_texture_size);
