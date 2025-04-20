@@ -114,9 +114,9 @@ void SkidmarkLogic::render_without_setup(
             clear_color({ 1.f, 1.f, 1.f, 1.f });
         }
         if (fbs_(old_fbs_id_) != nullptr) {
-            auto dpi = ortho_camera->dpi(
+            auto dpi = ortho_camera->dpi({
                 (float)texture_width_,
-                (float)texture_height_);
+                (float)texture_height_});
             auto diff = bi.view.rotate((old_camera_position_ - bi.model.t).casted<float>());
             ViewportGuard vg{
                 diff(0) * dpi(0),

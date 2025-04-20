@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
@@ -42,6 +43,7 @@ public:
 
 class ImposterLogic: public RenderLogic {
     friend OriginalNodeHider;
+    using ProjectedBbox = FixedArray<FixedArray<ScenePos, 3>, 8>;
 public:
     explicit ImposterLogic(
         RenderingResources& rendering_resources,
@@ -51,9 +53,11 @@ public:
         SelectedCameras& cameras,
         const std::string& debug_prefix,
         uint32_t max_texture_size,
-        float down_sampling = 2.f,
+        float down_sampling = 1.f,
         float max_deviation = 2.f,
-        float min_distance = 200.f);
+        float min_distance = 200.f,
+        uint32_t max_texture_size_deviation = 10,
+        float max_dpi_deviation = 0.1f);
     ~ImposterLogic();
 
     virtual std::optional<RenderSetup> try_render_setup(
@@ -84,7 +88,9 @@ private:
     DanglingRef<SceneNode> orig_node_;
     SelectedCameras& cameras_;
     std::shared_ptr<FrameBuffer> fbs_;
-    FixedArray<FixedArray<ScenePos, 3>, 8> old_projected_bbox_;
+    ProjectedBbox old_projected_bbox_;
+    CameraSensorAndNPixels old_npixels_;
+    AxisAlignedBoundingBox<ScenePos, 3> obj_relative_aabb_;
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
     ColormapWithModifiers texture_;
@@ -94,7 +100,8 @@ private:
     float down_sampling_;
     float max_deviation_;
     float min_distance_;
-    AxisAlignedBoundingBox<ScenePos, 3> obj_relative_aabb_ = uninitialized;
+    uint32_t max_texture_size_deviation_;
+    float max_dpi_deviation_;
 };
 
 }

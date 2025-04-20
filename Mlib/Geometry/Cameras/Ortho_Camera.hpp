@@ -17,6 +17,7 @@ public:
     virtual ~OrthoCamera() override;
     virtual std::unique_ptr<Camera> copy() const override;
     virtual FixedArray<float, 4, 4> projection_matrix() const override;
+    virtual FixedArray<float, 2> dpi(const FixedArray<float, 2>& texture_size) const override;
     virtual float get_near_plane() const override;
     virtual float get_far_plane() const override;
     virtual void set_requires_postprocessing(bool value) override;
@@ -34,8 +35,7 @@ public:
     void set_bottom_plane(float bottom_plane);
     void set_top_plane(float top_plane);
 
-    FixedArray<float, 2> dpi(float texture_width, float texture_height) const;
-    FixedArray<float, 2> grid(float texture_width, float texture_height) const;
+    FixedArray<float, 2> grid(const FixedArray<float, 2>& texture_size) const;
 private:
     OrthoCameraConfig cfg_;
     Postprocessing postprocessing_;

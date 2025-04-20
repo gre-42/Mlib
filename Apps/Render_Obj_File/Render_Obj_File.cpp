@@ -1050,7 +1050,9 @@ int main(int argc, char** argv) {
             }
             auto npixels = npixels_for_dpi(
                 la->sensor_aabb,
-                PerspectiveCameraConfig().dpi((float)render_config.windowed_height),
+                mean(PerspectiveCameraConfig().dpi({
+                    (float)render_config.windowed_width,
+                    (float)render_config.windowed_height})),
                 1,
                 2048);
             if (!npixels.has_value()) {

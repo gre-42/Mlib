@@ -67,3 +67,7 @@ FixedArray<float, 4, 4> PerspectiveCamera::projection_matrix() const {
     static_assert(sizeof(p) == sizeof(FixedArray<float, 4, 4>));
     return reinterpret_cast<FixedArray<float, 4, 4>*>(&p)->T();
 }
+
+FixedArray<float, 2> PerspectiveCamera::dpi(const FixedArray<float, 2>& texture_size) const {
+    return cfg_.dpi(texture_size);
+}

@@ -81,7 +81,9 @@ ImposterLogic::ImposterLogic(
     uint32_t max_texture_size,
     float down_sampling,
     float max_deviation,
-    float min_distance)
+    float min_distance,
+    uint32_t max_texture_size_deviation,
+    float max_dpi_deviation)
     : on_node_clear{ orig_node->on_clear, CURRENT_SOURCE_LOCATION }
     , rendering_resources_{ rendering_resources }
     , child_logic_{ child_logic }
@@ -89,6 +91,8 @@ ImposterLogic::ImposterLogic(
     , orig_node_{ orig_node }
     , cameras_{ cameras }
     , old_projected_bbox_{ uninitialized }
+    , old_npixels_{ uninitialized }
+    , obj_relative_aabb_{ uninitialized }
     , orig_hider{ *this }
     , texture_{ ColormapWithModifiers{
         .filename = VariableAndHash{ "imposter_color" + scene.get_temporary_instance_suffix() },
@@ -99,6 +103,8 @@ ImposterLogic::ImposterLogic(
     , down_sampling_{ down_sampling }
     , max_deviation_{ max_deviation }
     , min_distance_{ min_distance }
+    , max_texture_size_deviation_{ max_texture_size_deviation }
+    , max_dpi_deviation_{ max_dpi_deviation }
 {
     if ((max_texture_size_ < 1) || (max_texture_size_ > 4096)) {
         THROW_OR_ABORT("Imposter texture size out of bounds");
@@ -168,6 +174,7 @@ void ImposterLogic::delete_imposter_if_exists() {
         RenderSceneThreadGuard rstg{ scene_ };
         scene_.delete_root_imposter_node(imposter_node_.ref(DP_LOC));
         imposter_node_ = nullptr;
+        fbs_ = nullptr;
     }
 }
 
@@ -194,9 +201,17 @@ void ImposterLogic::render_without_setup(
     auto can = cameras_.camera(DP_LOC);
     auto c = can.node->absolute_bijection(frame_id.external_render_pass.time);
     auto m = orig_node_->absolute_model_matrix();
+    float dpi;
     {
         auto cam_cp = can.camera->copy();
         cam_cp->set_aspect_ratio(lx.flength() / ly.flength());
+        auto vdpi = cam_cp->dpi({ lx.flength(), ly.flength() });
+        auto mdpi = mean(vdpi);
+        if (any(vdpi - mdpi > max_dpi_deviation_)) {
+            lwarn() << "Could not determine unique DPI: " << vdpi;
+            return;
+        }
+        dpi = mdpi / down_sampling_;
         auto mvp = dot2d(cam_cp->projection_matrix().casted<ScenePos>(), (c.view * m).affine());
         VisibilityCheck<ScenePos> vc{mvp};
         if (vc.orthographic()) {
@@ -220,39 +235,43 @@ void ImposterLogic::render_without_setup(
     auto cam_to_obj2_len = std::sqrt(cam_to_obj2_len2);
     cam_to_obj2 /= cam_to_obj2_len;
 
-    float dpi = PerspectiveCameraConfig().dpi(ly.flength()) / down_sampling_;
-
-    bool imposter_outdated;
-    if (imposter_node_ != nullptr) {
-        auto mv = c.view * m;
-        size_t i = 0;
-        imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<ScenePos, 3>& corner){
-            auto pc = mv.transform(corner).casted<float>();
-            auto pc_old = c.view.transform(old_projected_bbox_(i++)).casted<float>();
-            if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
-                return true;
-            }
-            auto pc_proj = FixedArray<float, 2>{pc(0), pc(1)} / (-pc(2));
-            auto pc_old_proj = FixedArray<float, 2>{pc_old(0), pc_old(1)} / (-pc_old(2));
-            if (sum(squared(pc_proj - pc_old_proj)) > squared(max_deviation_ / dpi)) {
-                return false;
-            }
-            return true;
-        });
-    } else {
-        imposter_outdated = true;
-    }
-    if (imposter_outdated) {
-        delete_imposter_if_exists();
-        auto la = gl_lookat_aabb(
+    std::optional<GlLookatAabb> la;
+    std::optional<CameraSensorAndNPixels> npixels;
+    ProjectedBbox projected_bbox = uninitialized;
+    bool old_imposter_exists = (imposter_node_ != nullptr);
+    bool delete_old_imposter = false;
+    bool create_new_imposter = !old_imposter_exists;
+    [&](){
+        la = gl_lookat_aabb(
             camera_position,
             m,
             obj_relative_aabb_);
         if (!la.has_value()) {
+            delete_old_imposter = old_imposter_exists;
+            create_new_imposter = false;
             return;
         }
 
-        {
+        if (la.has_value()) {
+            npixels = npixels_for_dpi(
+                la->sensor_aabb,
+                dpi,
+                1,
+                max_texture_size_);
+            if (!npixels.has_value()) {
+                delete_old_imposter = old_imposter_exists;
+                create_new_imposter = false;
+                return;    
+            }
+            if (old_imposter_exists && !delete_old_imposter) {
+                if ((std::abs(npixels->width - old_npixels_.width) > max_texture_size_deviation_) ||
+                    (std::abs(npixels->height - old_npixels_.height) > max_texture_size_deviation_))
+                {
+                    delete_old_imposter = old_imposter_exists;
+                }
+            }
+        }
+        if (!delete_old_imposter || create_new_imposter) {
             auto iv = TransformationMatrix<float, ScenePos, 3>(
                 la->extrinsic_R, camera_position);
             auto mv = (TransformationMatrix<float, ScenePos, 3>::inverse(
@@ -265,23 +284,42 @@ void ImposterLogic::render_without_setup(
                     return false;
                 }
                 auto pc_proj = pc / (-pc(2));
-                old_projected_bbox_(i) = iv.transform(pc_proj * cam_to_obj2_len);
+                projected_bbox(i) = iv.transform(pc_proj * cam_to_obj2_len);
                 ++i;
                 return true;
             }))
             {
+                delete_old_imposter = old_imposter_exists;
+                create_new_imposter = false;
                 return;
             }
         }
-
-        auto npixels = npixels_for_dpi(
-            la->sensor_aabb,
-            dpi,
-            1,
-            max_texture_size_);
-        if (!npixels.has_value()) {
-            return;
+        if (old_imposter_exists && !delete_old_imposter) {
+            auto mv = c.view * m;
+            size_t i = 0;
+            if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<ScenePos, 3>& corner){
+                auto pc = mv.transform(corner).casted<float>();
+                auto pc_old = c.view.transform(old_projected_bbox_(i++)).casted<float>();
+                if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
+                    return true;
+                }
+                auto pc_proj = FixedArray<float, 2>{pc(0), pc(1)} / (-pc(2));
+                auto pc_old_proj = FixedArray<float, 2>{pc_old(0), pc_old(1)} / (-pc_old(2));
+                if (sum(squared(pc_proj - pc_old_proj)) > squared(max_deviation_ / dpi)) {
+                    return false;
+                }
+                return true;
+            }))
+            {
+                delete_old_imposter = true;
+            }
         }
+    }();
+    if (delete_old_imposter) {
+        delete_imposter_if_exists();
+    }
+    if (create_new_imposter) {
+        assert_true(la.has_value());
         auto imposter_camera_node = make_unique_scene_node(
             camera_position,
             matrix_2_tait_bryan_angles(la->extrinsic_R),
@@ -343,7 +381,6 @@ void ImposterLogic::render_without_setup(
         }
 
         rendering_resources_.set_texture(texture_, fbs_->texture_color());
-        // TODO: Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{
                 la->sensor_aabb,
@@ -352,6 +389,8 @@ void ImposterLogic::render_without_setup(
             m.t,
             camera_position(1),
             (float)std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
+        old_npixels_ = *npixels;
+        old_projected_bbox_ = projected_bbox;
     }
 }
 

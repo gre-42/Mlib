@@ -39,9 +39,9 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
     if (ortho_camera == nullptr) {
         THROW_OR_ABORT("Camera is not an ortho-camera");
     }
-    auto grid2 = ortho_camera->grid(
+    auto grid2 = ortho_camera->grid({
         args.arguments.at<float>(KnownArgs::texture_width),
-        args.arguments.at<float>(KnownArgs::texture_height));
+        args.arguments.at<float>(KnownArgs::texture_height)});
     auto follower = global_object_pool.create_unique<KeepOffsetFromCamera>(
         CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,

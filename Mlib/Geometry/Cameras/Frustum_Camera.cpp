@@ -76,3 +76,7 @@ FixedArray<float, 4, 4> FrustumCamera::projection_matrix() const {
     static_assert(sizeof(p) == sizeof(FixedArray<float, 4, 4>));
     return reinterpret_cast<FixedArray<float, 4, 4>*>(&p)->T();
 }
+
+FixedArray<float, 2> FrustumCamera::dpi(const FixedArray<float, 2>& texture_size) const {
+    THROW_OR_ABORT("DPI computation not implemented for FrustumCamera");
+}

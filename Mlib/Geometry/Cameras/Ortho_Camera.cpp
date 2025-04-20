@@ -98,14 +98,14 @@ FixedArray<float, 4, 4> OrthoCamera::projection_matrix() const {
     return reinterpret_cast<FixedArray<float, 4, 4>*>(&p)->T();
 }
 
-FixedArray<float, 2> OrthoCamera::dpi(float texture_width, float texture_height) const {
+FixedArray<float, 2> OrthoCamera::dpi(const FixedArray<float, 2>& texture_size) const {
     return {
-        texture_width / (get_right_plane() - get_left_plane()),
-        texture_height / (get_top_plane() - get_bottom_plane())};
+        texture_size(0) / (get_right_plane() - get_left_plane()),
+        texture_size(1) / (get_top_plane() - get_bottom_plane())};
 }
 
-FixedArray<float, 2> OrthoCamera::grid(float texture_width, float texture_height) const {
+FixedArray<float, 2> OrthoCamera::grid(const FixedArray<float, 2>& texture_size) const {
     return {
-        (get_right_plane() - get_left_plane()) / texture_width,
-        (get_top_plane() - get_bottom_plane()) / texture_height};
+        (get_right_plane() - get_left_plane()) / texture_size(0),
+        (get_top_plane() - get_bottom_plane()) / texture_size(1)};
 }
