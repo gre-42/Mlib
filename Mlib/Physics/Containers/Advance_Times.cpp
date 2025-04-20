@@ -28,26 +28,36 @@ void AdvanceTimes::add_advance_time(const DanglingBaseClassRef<IAdvanceTime>& ad
 
 void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceLocation loc) {
     if (advancing_time_) {
+        size_t nfound = 0;
         for (auto& [a, loc] : advance_times_) {
             if (a == nullptr) {
                 continue;
             }
             if (a->get() == &advance_time) {
+                ++nfound;
                 a.reset();
-                return;
             }
         }
-        lerr() << loc.file_name() << ':' << loc.line();
-        verbose_abort("Could not delete advance time (0)");
+        if (nfound != 1) {
+            lerr() << loc.file_name() << ':' << loc.line();
+            verbose_abort("Could not delete advance time (0), #found: " + std::to_string(nfound));
+        }
     } else {
-        if (advance_times_.remove_if([&advance_time](const auto& a){
+        size_t nfound = 0;
+        advance_times_.remove_if([&advance_time, &nfound](const auto& a){
             if (a.first == nullptr) {
                 return true;
             }
-            return &a.first->object().get() == &advance_time;
-        }) != 1) {
+            if (&a.first->object().get() == &advance_time) {
+                ++nfound;
+                return true;
+            } else {
+                return false;
+            }
+        });
+        if (nfound != 1) {
             lerr() << loc.file_name() << ':' << loc.line();
-            verbose_abort("Could not delete advance time (1)");
+            verbose_abort("Could not delete advance time (1), #found: " + std::to_string(nfound));
         }
     }
 }
