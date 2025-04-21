@@ -6,6 +6,7 @@
 #include <Mlib/Strings/RGetline.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <algorithm>
+#include <set>
 
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;
@@ -48,24 +49,34 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
         {
             auto texture_dictionary_lower = texture_dictionary;
             std::transform(texture_dictionary_lower.begin(), texture_dictionary_lower.end(), texture_dictionary_lower.begin(), ::tolower);
+            std::set<float> dist_set(dist, dist + n);
+            auto dist_range = [&dist_set, dist](size_t i){
+                auto it = dist_set.find(dist[i]);
+                if (it == dist_set.end()) {
+                    verbose_abort("Internal distance DB error");
+                }
+                if (it == dist_set.begin()) {
+                    return AddableStepDistances{ -INFINITY, dist[i] };
+                } else {
+                    return AddableStepDistances{ *(--it), dist[i] };
+                }
+            };
             ide_items_.try_emplace(
                 resource_name,
                 texture_dictionary_lower,
-                AddableStepDistances{ -INFINITY, dist[0] },
+                dist_range(0),
                 flags);
-            float prev = -INFINITY;
             for (size_t i = 0; i < n; ++i) {
                 ide_items_.try_emplace(
                     resource_name + "_l" + std::to_string(i),
                     texture_dictionary_lower,
-                    AddableStepDistances{ prev, dist[i] },
+                    dist_range(i),
                     flags);
                 ide_items_.try_emplace(
                     resource_name + "_L" + std::to_string(i),
                     texture_dictionary_lower,
-                    AddableStepDistances{ prev, dist[i] },
+                    dist_range(i),
                     flags);
-                prev = dist[i];
             }
             };
         static const auto c = str(", ");
