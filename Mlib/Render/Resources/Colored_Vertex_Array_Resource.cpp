@@ -393,7 +393,8 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_horizontal_detailmap) {
         sstr << "uniform vec2 horizontal_detailmap_remainder;" << std::endl;
-    }    sstr << "out vec3 color;" << std::endl;
+    }
+    sstr << "out vec3 color;" << std::endl;
     for (size_t i = 0; i < uv_map.size(); ++i) {
         sstr << "out vec2 tex_coord" << i << ";" << std::endl;
     }
