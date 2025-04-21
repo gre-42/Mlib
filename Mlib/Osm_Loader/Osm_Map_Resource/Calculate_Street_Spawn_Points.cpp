@@ -1,4 +1,4 @@
-#include "Calculate_Spawn_Points.hpp"
+#include "Calculate_Street_Spawn_Points.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
@@ -9,7 +9,7 @@
 
 using namespace Mlib;
 
-void Mlib::calculate_spawn_points(
+void Mlib::calculate_street_spawn_points(
     std::list<SpawnPoint>& spawn_points,
     const std::list<StreetRectangle>& street_rectangles,
     double scale,

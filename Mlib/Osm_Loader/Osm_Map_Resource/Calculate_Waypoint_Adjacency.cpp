@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>
 #include <Mlib/Navigation/Shortest_Path_Intermediate_Points_Creator.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
@@ -26,7 +27,7 @@ void Mlib::calculate_waypoint_adjacency(
     const std::list<std::pair<StreetWayPoint, StreetWayPoint>>& street_way_point_edge_descriptors,
     const std::map<std::string, Node>& nodes,
     const GroundBvh& ground_bvh,
-    const FixedArray<double, 3, 3>* to_meters,
+    const Bijection<FixedArray<double, 3, 3>>* to_meters,
     const Sample_SoloMesh* ssm,
     double scale,
     double merge_radius,
@@ -179,7 +180,7 @@ void Mlib::calculate_waypoint_adjacency(
     if (ssm != nullptr) {
         std::map<OrderableFixedArray<CompressedScenePos, 3>, dtPolyRef> poly_refs;
         for (auto&& [i, p] : enumerate(way_points.points)) {
-            auto pm = dot1d(*to_meters, funpack(p.position));
+            auto pm = dot1d(to_meters->model, funpack(p.position));
             if (!grounded_way_points.contains(i)) {
                 p.position = pm.casted<CompressedScenePos>();
                 continue;
@@ -195,10 +196,6 @@ void Mlib::calculate_waypoint_adjacency(
             p.position = lp->position.casted<CompressedScenePos>();
         }
         way_points.update_adjacency();
-        auto itm = inv(*to_meters);
-        if (!itm.has_value()) {
-            THROW_OR_ABORT("Could not compute inverse to_meters mapping");
-        }
         ShortestPathIntermediatePointsCreator spipc{ *ssm, poly_refs, (float)waypoint_distance };
         try {
             way_points.subdivide(
@@ -221,12 +218,12 @@ void Mlib::calculate_waypoint_adjacency(
                 },
                 SubdivisionType::ASYMMETRIC);
         } catch (const EdgeException<double>& e) {
-            throw EdgeException<double>{dot1d(*itm, e.a), dot1d(*itm, e.b), e.what()};
+            throw EdgeException<double>{dot1d(to_meters->view, e.a), dot1d(to_meters->view, e.b), e.what()};
         } catch (const PointException<double, 3>& e) {
-            throw PointException<double, 3>{dot1d(*itm, e.point), e.what()};
+            throw PointException<double, 3>{dot1d(to_meters->view, e.point), e.what()};
         }
         for (auto& p : way_points.points) {
-            p.position = dot1d(*itm, funpack(p.position)).casted<CompressedScenePos>();
+            p.position = dot1d(to_meters->view, funpack(p.position)).casted<CompressedScenePos>();
             if (!any(p.flags & WayPointLocation::AIRWAY)) {
                 if (!ground_bvh.height3d(p.position(2), p.position)) {
                     throw PointException<CompressedScenePos, 3>{ p.position, "Could not determine height of shortest-path waypoint" };

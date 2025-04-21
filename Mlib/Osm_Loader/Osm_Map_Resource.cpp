@@ -28,6 +28,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Navigation/NavigationMeshBuilder.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
@@ -41,7 +42,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap_And_Smoothen.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Street_Spawn_Points.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Terrain_Spawn_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Boundary_Barriers.hpp>
@@ -1274,7 +1276,7 @@ OsmMapResource::OsmMapResource(
             CompressedScenePos::from_float_safe(config.much_grass_distance));
     }
     fg.update("Calculate spawn points");
-    calculate_spawn_points(
+    calculate_street_spawn_points(
         spawn_points_,
         street_rectangles,
         config.scale,
@@ -1417,10 +1419,10 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
-    {
-        fg.update("Calculate spawn-points");
+    std::list<Building> spawn_lines = [&](){
+        fg.update("Calculate spawn-lines");
         FacadeTextureCycle ftc({});
-        std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
+        return get_buildings_or_wall_barriers(
             BuildingType::SPAWN_LINE,
             {},         // nodes
             ways,       // ways
@@ -1437,38 +1439,7 @@ OsmMapResource::OsmMapResource(
             ftc,        // entrance_ftc
             ftc,        // middle_ftc
             VerticalSubdivision::NONE);
-        try {
-            for (const Building& bu : spawn_lines) {
-                auto iteam = bu.way.tags.find("team");
-                for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
-                    auto next = it;
-                    ++next;
-                    if (next != bu.way.nd.end()) {
-                        FixedArray<CompressedScenePos, 2> p = (nodes.at(*it).position + nodes.at(*next).position) / 2;
-                        FixedArray<ScenePos, 2> dir = funpack(nodes.at(*it).position - nodes.at(*next).position);
-                        ScenePos len2 = sum(squared(dir));
-                        if (len2 < 1e-12) {
-                            throw PointException{ p, "Spawn direction too small" };
-                        }
-                        dir /= std::sqrt(len2);
-                        CompressedScenePos height;
-                        if (!ground_bvh->height(height, p)) {
-                            throw PointException{ p, "Spawn line out of bounds" };
-                        }
-                        spawn_points_.push_back(SpawnPoint{
-                            .type = SpawnPointType::SPAWN_LINE,
-                            .location = WayPointLocation::UNKNOWN,
-                            .trafo = {
-                                tait_bryan_angles_2_matrix<SceneDir>({0.f, 0.f, (SceneDir)std::atan2(dir(0), -dir(1))}),
-                                {p(0), p(1), height}},
-                            .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
-                    }
-                }
-            }
-        } catch (const PointException<CompressedScenePos, 2>& p) {
-            handle_point_exception2(p, "Bould not apply height map to spawn lines");
-        }
-    }
+    }();
     auto split_grass = [this, &ground_street_bvh, &fg](
         TerrainType source_terrain_type,
         TerrainType target_terrain_type,
@@ -1518,7 +1489,7 @@ OsmMapResource::OsmMapResource(
     save_to_obj_file_if_requested(debug_prefix);
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
     {
-        fg.update("Calculate waypoints");
+        FunctionGuard fgw{ "Calculate waypoints" };
         std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
         try {
             if (config.with_street_way_points) {
@@ -1607,12 +1578,18 @@ OsmMapResource::OsmMapResource(
                     if (auto nm = try_getenv("OSM_NAVMESH_FILENAME"); nm.has_value()) {
                         save_obj(*nm, indexed_face_set, nullptr);
                     }
+                    fgw.update("Calculate navmesh");
                     NavigationMeshBuilder nmb{
                         indexed_face_set,
                         NavigationMeshConfig{
                             .cell_size = 1.f,
                             .agent_radius = config.agent_radius}};
                     auto scaled_rotation = rotation.casted<double>() / scale_;
+                    auto itm = inv(scaled_rotation);
+                    if (!itm.has_value()) {
+                        THROW_OR_ABORT("Could not compute inverse to_meters mapping");
+                    }
+                    Bijection<FixedArray<double, 3, 3>> to_meters{ scaled_rotation, *itm };
                     calculate_waypoint_adjacency(
                         way_points_[JoinedWayPointSandbox::EXPLICIT_GROUND],
                         terrain_way_point_lines,
@@ -1620,7 +1597,7 @@ OsmMapResource::OsmMapResource(
                         way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND],
                         nodes,
                         *ground_bvh,
-                        &scaled_rotation,
+                        &to_meters,
                         &nmb.ssm,
                         config.scale,
                         config.waypoint_merge_radius,
@@ -1633,12 +1610,20 @@ OsmMapResource::OsmMapResource(
                         way_point_edge_descriptors[WayPointSandbox::RUNWAY_OR_TAXIWAY],
                         nodes,
                         *ground_bvh,
-                        &scaled_rotation,
+                        &to_meters,
                         &nmb.ssm,
                         config.scale,
                         config.waypoint_merge_radius,
                         config.waypoint_error_radius,
                         config.waypoint_distance);
+                    fgw.update("Calculate terrain spawn-lines");
+                    calculate_terrain_spawn_points(
+                        spawn_points_,
+                        spawn_lines,
+                        nodes,
+                        *ground_bvh,
+                        &to_meters,
+                        &nmb.ssm);
                 }
             }
         } catch (const PointException<CompressedScenePos, 2>& e) {

@@ -20,6 +20,8 @@ class GroundBvh;
 struct StreetWayPoint;
 class Sample_SoloMesh;
 enum class WayPointsClass;
+template <class T>
+struct Bijection;
 
 void calculate_waypoint_adjacency(
     PointsAndAdjacency<PointAndFlags<FixedArray<CompressedScenePos, 3>, WayPointLocation>>& way_points,
@@ -28,7 +30,7 @@ void calculate_waypoint_adjacency(
     const std::list<std::pair<StreetWayPoint, StreetWayPoint>>& street_way_point_edge_descriptors,
     const std::map<std::string, Node>& nodes,
     const GroundBvh& ground_bvh,
-    const FixedArray<double, 3, 3>* to_meters,
+    const Bijection<FixedArray<double, 3, 3>>* to_meters,
     const Sample_SoloMesh* ssm,
     double scale,
     double merge_radius,
