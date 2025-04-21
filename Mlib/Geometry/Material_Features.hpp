@@ -43,15 +43,10 @@ bool has_normalmap(const std::vector<BlendMapTexture>& textures_color);
 bool fragments_depend_on_distance(
     const FixedArray<float, 2>& fog_distances,
     const FixedArray<float, 4>& alpha_distances,
-    const std::vector<BlendMapTextureAndId>& textures,
-	const std::unordered_map<ColormapPtr, size_t>& texture_ids_color);
+    const std::vector<BlendMapTextureAndId>& textures_color);
 bool fragments_depend_on_normal(const std::vector<BlendMapTexture>& textures_color);
-bool fragments_depend_on_normal(
-    const std::vector<BlendMapTextureAndId>& textures,
-    const std::unordered_map<ColormapPtr, size_t>& texture_ids);
-bool has_horizontal_detailmap(
-    const std::vector<BlendMapTextureAndId>& textures,
-    const std::unordered_map<ColormapPtr, size_t>& texture_ids);
+bool fragments_depend_on_normal(const std::vector<BlendMapTextureAndId>& textures_color);
+bool has_horizontal_detailmap(const std::vector<BlendMapTextureAndId>& textures);
 
 }
 

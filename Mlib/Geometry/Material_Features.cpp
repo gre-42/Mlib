@@ -18,8 +18,7 @@ bool Mlib::has_normalmap(const std::vector<BlendMapTexture>& textures_color) {
 bool Mlib::fragments_depend_on_distance(
     const FixedArray<float, 2>& fog_distances,
     const FixedArray<float, 4>& alpha_distances,
-    const std::vector<BlendMapTextureAndId>& textures,
-    const std::unordered_map<ColormapPtr, size_t>& texture_ids_color)
+    const std::vector<BlendMapTextureAndId>& textures_color)
 {
     if (any(fog_distances != default_step_distances)) {
         return true;
@@ -27,8 +26,8 @@ bool Mlib::fragments_depend_on_distance(
     if (any(alpha_distances != default_linear_distances)) {
         return true;
     }
-    for (const auto& [_, i] : texture_ids_color) {
-        if (textures.at(i).ops->distances != default_linear_distances) {
+    for (const auto& t : textures_color) {
+        if (t.ops->distances != default_linear_distances) {
             return true;
         }
     }
@@ -45,24 +44,20 @@ bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTexture>& textur
     return false;
 }
 
-bool Mlib::fragments_depend_on_normal(
-    const std::vector<BlendMapTextureAndId>& textures,
-    const std::unordered_map<ColormapPtr, size_t>& texture_ids)
+bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTextureAndId>& textures_color)
 {
-    for (const auto& [_, i] : texture_ids) {
-        if (textures.at(i).ops->cosines != default_linear_cosines) {
+    for (const auto& t : textures_color) {
+        if (t.ops->cosines != default_linear_cosines) {
             return true;
         }
     }
     return false;
 }
 
-bool Mlib::has_horizontal_detailmap(
-    const std::vector<BlendMapTextureAndId>& textures,
-    const std::unordered_map<ColormapPtr, size_t>& texture_ids)
+bool Mlib::has_horizontal_detailmap(const std::vector<BlendMapTextureAndId>& textures)
 {
-    for (const auto& [_, i] : texture_ids) {
-        if (textures.at(i).ops->uv_source == BlendMapUvSource::HORIZONTAL) {
+    for (const auto& t : textures) {
+        if (t.ops->uv_source == BlendMapUvSource::HORIZONTAL) {
             return true;
         }
     }

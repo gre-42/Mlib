@@ -617,7 +617,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     bool fragments_depend_on_normal =
         !is_lightmap &&
-        Mlib::fragments_depend_on_normal(blended_textures_color, texture_ids_color);
+        Mlib::fragments_depend_on_normal(blended_textures_color);
     const VariableAndHash<std::string>* reflection_map = nullptr;
     FixedArray<float, 3> reflectance{ 0.f };
     if (!is_lightmap &&
@@ -657,8 +657,8 @@ void RenderableColoredVertexArray::render_cva(
     tic.ntextures_normal = texture_ids_normal.size();
     tic.ntextures_alpha = texture_ids_alpha.size();
     bool has_horizontal_detailmap = false;
-    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_color, texture_ids_color);
-    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_alpha, texture_ids_alpha);
+    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_color);
+    has_horizontal_detailmap |= Mlib::has_horizontal_detailmap(blended_textures_alpha);
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
@@ -705,7 +705,7 @@ void RenderableColoredVertexArray::render_cva(
         fog_distances = default_step_distances;
     }
     bool fragments_depend_on_distance = Mlib::fragments_depend_on_distance(
-        fog_distances, alpha_distances_common, blended_textures_color, texture_ids_color);
+        fog_distances, alpha_distances_common, blended_textures_color);
     if ((tic.ntextures_color == 0) && (tic.ntextures_dirt != 0)) {
         THROW_OR_ABORT(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
