@@ -17,10 +17,24 @@ std::shared_ptr<ColoredVertexArray<TPos>> Mlib::merge_meshes(
         THROW_OR_ABORT("Attempt to merge empty list of meshes");
     }
     std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
+    std::list<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
     std::list<FixedArray<float, 4>> interiormap_uvmaps;
     for (const auto& cva : cvas) {
+        if (!cva->discrete_triangle_texture_layers.empty() &&
+            (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()))
+        {
+            THROW_OR_ABORT("merge_meshes: discrete_triangle_texture_layers size mismatch");
+        }
+        if (!cva->interiormap_uvmaps.empty() &&
+            (cva->interiormap_uvmaps.size() != cva->triangles.size()))
+        {
+            THROW_OR_ABORT("merge_meshes: interiormap_uvmaps size mismatch");
+        }
         for (const auto& t : cva->triangles) {
             triangles.push_back(t);
+        }
+        for (const auto& t : cva->discrete_triangle_texture_layers) {
+            discrete_triangle_texture_layers.push_back(t);
         }
         for (const auto& t : cva->interiormap_uvmaps) {
             interiormap_uvmaps.push_back(t);
@@ -36,7 +50,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> Mlib::merge_meshes(
         UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
         UUVector<FixedArray<float, 3>>{},
-        UUVector<FixedArray<uint8_t, 3>>{},
+        UUVector<FixedArray<uint8_t, 3>>{discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()},
         std::vector<UUVector<FixedArray<float, 3, 2>>>{},
         std::vector<UUVector<FixedArray<float, 3>>>{},
         UUVector<FixedArray<float, 3>>{},

@@ -32,7 +32,7 @@ HeterogeneousResource::HeterogeneousResource(
     : bri{ std::make_unique<BatchResourceInstantiator>(instance_rotation, instance_scale) }
     , acvas{ std::make_shared<AnimatedColoredVertexArrays>() }
     , scene_node_resources_{ scene_node_resources }
-    , geographic_mapping_{geographic_mapping}
+    , geographic_mapping_{ geographic_mapping }
 {}
 
 HeterogeneousResource::~HeterogeneousResource()

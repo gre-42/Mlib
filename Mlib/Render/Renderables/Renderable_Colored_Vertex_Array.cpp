@@ -189,10 +189,10 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                             THROW_OR_ABORT("Aggregate=once requires double precision (material: " + t->material.identifier() + ')');
                         }
                     } else if (t->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
-                        if constexpr (std::is_same_v<TPos, CompressedScenePos>) {
-                            aggregate_sorted_continuously_.push_back(t);
+                        if constexpr (std::is_same_v<TPos, float>) {
+                            saggregate_sorted_continuously_.push_back(t);
                         } else {
-                            THROW_OR_ABORT("Aggregate=sorted_continuously requires double precision (material: " + t->material.identifier() + ')');
+                            daggregate_sorted_continuously_.push_back(t);
                         }
                     } else if (t->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
                         if constexpr (std::is_same_v<TPos, float>) {
@@ -248,7 +248,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     add_cvas(rcva->triangles_res_->dcvas);
     if (aggregate_off_.empty() &&
         aggregate_once_.empty() &&
-        aggregate_sorted_continuously_.empty() &&
+        saggregate_sorted_continuously_.empty() &&
+        daggregate_sorted_continuously_.empty() &&
         instances_once_.empty() &&
         instances_sorted_continuously_.empty() &&
         sphysics_.empty() &&
@@ -267,7 +268,11 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
         aabb_.extend(cva->aabb());
         bounding_sphere_.extend(cva->bounding_sphere());
     }
-    for (auto& cva : aggregate_sorted_continuously_) {
+    for (auto& cva : saggregate_sorted_continuously_) {
+        aabb_.extend(cva->aabb().casted<CompressedScenePos>());
+        bounding_sphere_.extend(cva->bounding_sphere().casted<CompressedScenePos>());
+    }
+    for (auto& cva : daggregate_sorted_continuously_) {
         aabb_.extend(cva->aabb());
         bounding_sphere_.extend(cva->bounding_sphere());
     }
@@ -1013,9 +1018,10 @@ void RenderableColoredVertexArray::render_cva(
         if (cva->material.period_world == 0.f) {
             THROW_OR_ABORT("Horizontal detailmap requires world period");
         }
-        if (render_pass.internal != InternalRenderPass::AGGREGATE) {
-            THROW_OR_ABORT("Horizontal detailmap requires aggregation");
-        }
+        // Moving nodes should use the uv1, uv2, ... fields for detailmaps.
+        // if (render_pass.internal != InternalRenderPass::AGGREGATE) {
+        //     THROW_OR_ABORT("Horizontal detailmap requires aggregation");
+        // }
         FixedArray<float, 2> rem{
             (float)std::remainder(m.t(0), cva->material.period_world),
             (float)std::remainder(m.t(2), cva->material.period_world)};
@@ -1374,7 +1380,10 @@ PhysicsMaterial RenderableColoredVertexArray::physics_attributes() const {
     for (const auto& m : aggregate_once_) {
         result |= m->morphology.physics_material;
     }
-    for (const auto& m : aggregate_sorted_continuously_) {
+    for (const auto& m : saggregate_sorted_continuously_) {
+        result |= m->morphology.physics_material;
+    }
+    for (const auto& m : daggregate_sorted_continuously_) {
         result |= m->morphology.physics_material;
     }
     for (const auto& m : instances_once_) {
@@ -1400,7 +1409,9 @@ RenderingStrategies RenderableColoredVertexArray::rendering_strategies() const {
     if (!aggregate_once_.empty()) {
         result |= RenderingStrategies::MESH_ONCE;
     }
-    if (!aggregate_sorted_continuously_.empty()) {
+    if (!saggregate_sorted_continuously_.empty() ||
+        !daggregate_sorted_continuously_.empty())
+    {
         result |= RenderingStrategies::MESH_SORTED_CONTINUOUSLY;
     }
     if (!instances_once_.empty()) {
@@ -1462,7 +1473,15 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue) const
 {
-    for (const auto& cva : aggregate_sorted_continuously_) {
+    for (const auto& cva : saggregate_sorted_continuously_) {
+        VisibilityCheck vc{mvp};
+        if (vc.is_visible(cva->name.full_name(), cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, external_render_pass.pass))
+        {
+            TransformationMatrix<float, float, 3> mo{m.R, (m.t - offset).casted<float>()};
+            aggregate_queue.push_back({ (float)vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });
+        }
+    }
+    for (const auto& cva : daggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
         if (vc.is_visible(cva->name.full_name(), cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, external_render_pass.pass))
         {
@@ -1551,7 +1570,8 @@ void RenderableColoredVertexArray::extend_aabb(
     };
     extend(aggregate_off_);
     extend(aggregate_once_);
-    extend(aggregate_sorted_continuously_);
+    extend(saggregate_sorted_continuously_);
+    extend(daggregate_sorted_continuously_);
     extend(instances_once_);
     extend(instances_sorted_continuously_);
 }
@@ -1568,7 +1588,8 @@ ScenePos RenderableColoredVertexArray::max_center_distance2(BillboardId billboar
     ScenePos result = 0.;
     for (const auto& cva : aggregate_off_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
     for (const auto& cva : aggregate_once_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
-    for (const auto& cva : aggregate_sorted_continuously_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
+    for (const auto& cva : saggregate_sorted_continuously_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
+    for (const auto& cva : daggregate_sorted_continuously_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
     for (const auto& cva : instances_once_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
     for (const auto& cva : instances_sorted_continuously_) { result = std::max(result, cva->max_center_distance2(billboard_id)); }
     // if (result == 0.) {
@@ -1589,7 +1610,8 @@ void RenderableColoredVertexArray::print_stats(std::ostream& ostr) const {
     };
     print_list(aggregate_off_, "aggregate_off");
     print_list(aggregate_once_, "aggregate_once");
-    print_list(aggregate_sorted_continuously_, "aggregate_sorted_continuously");
+    print_list(saggregate_sorted_continuously_, "saggregate_sorted_continuously");
+    print_list(daggregate_sorted_continuously_, "daggregate_sorted_continuously");
     print_list(instances_once_, "instances_once");
     print_list(instances_sorted_continuously_, "instances_sorted_continuously");
 }

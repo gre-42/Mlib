@@ -1,11 +1,12 @@
-#include "Register_Geographic_Mapping.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -17,25 +18,24 @@ DECLARE_ARGUMENT(transformation);
 DECLARE_ARGUMENT(resource);
 }
 
-const std::string RegisterGeographicMapping::key = "register_geographic_mapping";
+namespace {
 
-LoadSceneJsonUserFunction RegisterGeographicMapping::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    RegisterGeographicMapping(args.renderable_scene()).execute(args);
-};
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "register_geographic_mapping",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                auto absolute_model_matrix = transformation_matrix_from_json<float, ScenePos, 3>(
+                    args.arguments.at(KnownArgs::transformation));
+            
+                RenderingContextStack::primary_scene_node_resources().register_geographic_mapping(
+                    args.arguments.at<std::string>(KnownArgs::resource),
+                    args.arguments.at<std::string>(KnownArgs::name),
+                    absolute_model_matrix.casted<double, double>());
+            });
+    }
+} obj;
 
-RegisterGeographicMapping::RegisterGeographicMapping(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
-{}
-
-void RegisterGeographicMapping::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    auto absolute_model_matrix = transformation_matrix_from_json<float, ScenePos, 3>(
-        args.arguments.at(KnownArgs::transformation));
-
-    scene_node_resources.register_geographic_mapping(
-        args.arguments.at<std::string>(KnownArgs::resource),
-        args.arguments.at<std::string>(KnownArgs::name),
-        absolute_model_matrix.casted<double, double>());
 }

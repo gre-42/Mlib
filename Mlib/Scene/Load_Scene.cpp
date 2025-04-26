@@ -200,7 +200,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Obj_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Print_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Replace_Terrain_Material.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Array_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Animated_Dynamic_Light_Properties.hpp>
@@ -210,7 +209,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Shade_Auto.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/World/Register_Geographic_Mapping.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Gravity.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Wind.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
@@ -338,7 +336,6 @@ LoadScene::LoadScene() {
             register_json_user_function(Preload::key, Preload::json_user_function);
             register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);
             register_json_user_function(RecordTrack::key, RecordTrack::json_user_function);
-            register_json_user_function(RegisterGeographicMapping::key, RegisterGeographicMapping::json_user_function);
             register_json_user_function(RegisterGravity::key, RegisterGravity::json_user_function);
             register_json_user_function(RegisterWind::key, RegisterWind::json_user_function);
             register_json_user_function(RootRenderableInstances::key, RootRenderableInstances::json_user_function);
@@ -416,7 +413,6 @@ LoadScene::LoadScene() {
             register_json_user_function(LoadOsmResource::key, LoadOsmResource::json_user_function);
             register_json_user_function(ObjResource::key, ObjResource::json_user_function);
             register_json_user_function(Repeat::key, Repeat::json_user_function);
-            register_json_user_function(ReplaceTerrainMaterial::key, ReplaceTerrainMaterial::json_user_function);
             register_json_user_function(SaveTextureArrayPng::key, SaveTextureArrayPng::json_user_function);
             register_json_user_function(SaveTexturePng::key, SaveTexturePng::json_user_function);
             register_json_user_function(CreateSquareResource::key, CreateSquareResource::json_user_function);

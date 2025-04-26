@@ -99,7 +99,8 @@ private:
     std::shared_ptr<const ColoredVertexArrayResource> rcva_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_off_;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> aggregate_once_;
-    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> aggregate_sorted_continuously_;
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> saggregate_sorted_continuously_;
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> daggregate_sorted_continuously_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> instances_once_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> instances_sorted_continuously_;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> sphysics_;

@@ -89,6 +89,7 @@ public:
     virtual void print(std::ostream& ostr) const override;
 
     // ISceneNodeResource, Animation
+    virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const override;
     virtual std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables() const override;
     void set_absolute_joint_poses(const UUVector<OffsetAndQuaternion<float, float>>& poses);
     virtual void import_bone_weights(

@@ -12,6 +12,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
@@ -1857,9 +1858,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
     } else {
         for (const auto& [i, c] : enumerate(cluster_meshes<CompressedScenePos>(
             buildings_,
-            [width = fixed_full<ScenePos, 3>(building_cluster_width_)](const ColoredVertexArray<CompressedScenePos>& cva){
-                return (round(funpack(cva.aabb().data().center()) / width) * width).casted<CompressedScenePos>();
-            },
+            cva_to_grid_center<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(building_cluster_width_)),
             "building_cluster")))
         {
             auto center = c.cva->aabb().data().center();

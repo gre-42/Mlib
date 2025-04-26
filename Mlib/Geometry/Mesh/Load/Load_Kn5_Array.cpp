@@ -437,8 +437,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 tl.morphology.physics_material |= PhysicsMaterial::SURFACE_BASE_DIRT;
             }
-            if (!node.isRenderable || !any(attrs & MetaAttributes::ATTR_VISIBLE)) {
-                tl.morphology.physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
+            if (node.isRenderable && any(attrs & MetaAttributes::ATTR_VISIBLE)) {
+                tl.morphology.physics_material |= PhysicsMaterial::ATTR_VISIBLE;
             }
             if (material != nullptr) {
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
@@ -700,7 +700,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     {},                                         // b01
                     cfg.triangle_tangent_error_behavior);
             }
-            if (show_only_collidables) {
+            if (!any(tl.morphology.physics_material & (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE))) {
+                lwarn() << "Skipping node \"" << node.name << "\" because it is neither visible nor collidable";
+            } else if (show_only_collidables) {
                 if (any(tl.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
                     tl.morphology.physics_material |= PhysicsMaterial::ATTR_VISIBLE;
                     tl.material.textures_color.clear();

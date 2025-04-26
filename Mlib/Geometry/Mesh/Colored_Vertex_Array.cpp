@@ -57,6 +57,9 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     , bounding_sphere_has_value_{ false }
 {
     assert_true(!this->name.empty());
+    if (!any(morphology.physics_material & (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE))) {
+        THROW_OR_ABORT("Mesh \"" + this->name.full_name() + "\" is neither visible nor collidable");
+    }
     if (!this->triangle_bone_weights.empty() && (this->triangle_bone_weights.size() != this->triangles.size())) {
         THROW_OR_ABORT("Triangle bone weights size mismatch");
     }
@@ -763,6 +766,9 @@ template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::t
     const UUVector<OffsetAndQuaternion<float, float>>& qs,
     const std::string& suffix) const;
 
+template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::translated(
+    const FixedArray<float, 3>& tm,
+    const std::string& suffix) const;
 template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<CompressedScenePos>::translated(
     const FixedArray<CompressedScenePos, 3>& tm,
     const std::string& suffix) const;

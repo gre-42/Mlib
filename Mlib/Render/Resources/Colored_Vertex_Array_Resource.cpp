@@ -2695,6 +2695,11 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
     }
 }
 
+std::list<std::shared_ptr<AnimatedColoredVertexArrays>> ColoredVertexArrayResource::get_rendering_arrays() const
+{
+    return { triangles_res_ };
+}
+
 std::list<TypedMesh<std::shared_ptr<IIntersectable>>> ColoredVertexArrayResource::get_intersectables() const
 {
     return {};
