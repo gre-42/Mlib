@@ -537,9 +537,7 @@ void Scene::render(
         {
             std::shared_lock lock{ mutex_ };
             root_nodes_.visit(iv.t, [&local_root_nodes](const auto& node) { local_root_nodes.emplace_back(node.ptr()); return true; });
-            if (any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK)) {
-                static_root_nodes_.visit(iv.t, [&local_static_root_nodes](const auto& node) { local_static_root_nodes.emplace_back(&node.obj()); return true; });
-            }
+            static_root_nodes_.visit(iv.t, [&local_static_root_nodes](const auto& node) { local_static_root_nodes.emplace_back(&node.obj()); return true; });
         }
         for (const auto& node : local_root_nodes) {
             node->append_lights_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), lights);
