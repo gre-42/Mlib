@@ -28,14 +28,17 @@ bool Mlib::is_visible(
     {
         return false;
     }
-    if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
-        any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
+    if (external_render_pass != ExternalRenderPassType::STANDARD_AND_LOCAL_LIGHTMAP)
     {
-        ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id, object_name);
-        return (occluder_pass & external_render_pass) == external_render_pass;
-    }
-    if (material.blend_mode == BlendMode::INVISIBLE) {
-        return false;
+        if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
+            any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
+        {
+            ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id, object_name);
+            return (occluder_pass & external_render_pass) == external_render_pass;
+        }
+        if (material.blend_mode == BlendMode::INVISIBLE) {
+            return false;
+        }
     }
     if (any(external_render_pass & ExternalRenderPassType::IMPOSTER_NODE)) {
         return morphology.center_distances2(1) == INFINITY;

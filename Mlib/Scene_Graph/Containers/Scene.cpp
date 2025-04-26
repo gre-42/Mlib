@@ -715,8 +715,11 @@ void Scene::render(
                                     root_instances_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                                 }
                                 // auto start_time = std::chrono::steady_clock::now();
+                                auto main_render_pass = black_render_passes.empty()
+                                    ? external_render_pass.pass
+                                    : ExternalRenderPassType::STANDARD_AND_LOCAL_LIGHTMAP;
                                 SmallInstancesQueues instances_queues{
-                                    external_render_pass.pass,
+                                    main_render_pass,
                                     black_render_passes};
                                 for (const auto& node : nodes) {
                                     node->append_small_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t, PositionAndYAngleAndBillboardId{fixed_zeros<CompressedScenePos, 3>(), BILLBOARD_ID_NONE, 0.f}, instances_queues, scene_graph_config);
@@ -724,7 +727,7 @@ void Scene::render(
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->update_instances(
                                     iv.t,
-                                    sorted_instances.at(external_render_pass.pass),
+                                    sorted_instances.at(main_render_pass),
                                     task_location);
                                 for (auto rp : black_render_passes) {
                                     small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(

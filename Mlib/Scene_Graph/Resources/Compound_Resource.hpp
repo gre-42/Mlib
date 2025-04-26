@@ -19,6 +19,7 @@ public:
     virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
     virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const override;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
+    virtual AggregateMode get_aggregate_mode() const override;
     virtual std::list<SpawnPoint> get_spawn_points() const override;
     virtual WayPointSandboxes get_way_points() const override;
 

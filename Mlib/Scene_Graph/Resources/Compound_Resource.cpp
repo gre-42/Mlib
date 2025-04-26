@@ -1,5 +1,6 @@
 #include "Compound_Resource.hpp"
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
+#include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
@@ -19,6 +20,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
+#include <unordered_set>
 
 using namespace Mlib;
 
@@ -82,6 +84,17 @@ TransformationMatrix<double, double, 3> CompoundResource::get_geographic_mapping
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{ recursion_counter };
     return scene_node_resources_.get_geographic_mapping(resource_names_.front(), absolute_model_matrix);
+}
+
+AggregateMode CompoundResource::get_aggregate_mode() const {
+    std::unordered_set<AggregateMode> result;
+    for (const auto& resource_name : resource_names_) {
+        result.insert(scene_node_resources_.aggregate_mode(resource_name));
+    }
+    if (result.size() != 1) {
+        THROW_OR_ABORT("Could not determine unique aggregate mode");
+    }
+    return *result.begin();
 }
 
 std::list<SpawnPoint> CompoundResource::get_spawn_points() const {

@@ -14,11 +14,16 @@ enum class AggregateMode {
 };
 
 inline AggregateMode operator | (AggregateMode a, AggregateMode b) {
-    return (AggregateMode)((unsigned int)a | (unsigned int)b);
+    return (AggregateMode)((int)a | (int)b);
+}
+
+inline AggregateMode& operator |= (AggregateMode& a, AggregateMode b) {
+    (int&)a |= (int)b;
+    return a;
 }
 
 inline AggregateMode operator & (AggregateMode a, AggregateMode b) {
-    return (AggregateMode)((unsigned int)a & (unsigned int)b);
+    return (AggregateMode)((int)a & (int)b);
 }
 
 inline AggregateMode operator ~ (AggregateMode a) {

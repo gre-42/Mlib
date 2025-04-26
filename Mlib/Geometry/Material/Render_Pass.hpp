@@ -51,6 +51,8 @@ enum class ExternalRenderPassType {
 
     LIGHTMAP_BLACK_GLOBAL_AND_LOCAL         = LIGHTMAP_BLACK_GLOBAL_STATIC | LIGHTMAP_BLACK_LOCAL_INSTANCES,
 
+    STANDARD_AND_LOCAL_LIGHTMAP             = STANDARD_MASK | LIGHTMAP_IS_LOCAL_MASK,
+
     IMPOSTER_NODE                           = IMPOSTER_NODE_MASK,
     ZOOM_NODE                               = ZOOM_NODE_MASK,
 
