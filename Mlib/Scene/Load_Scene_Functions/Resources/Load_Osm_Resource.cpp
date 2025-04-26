@@ -11,7 +11,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Vertex.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -132,7 +133,6 @@ DECLARE_ARGUMENT(path_bumps_endpoint0_resource_name);
 DECLARE_ARGUMENT(path_bumps_endpoint1_resource_name);
 DECLARE_ARGUMENT(water_texture);
 DECLARE_ARGUMENT(water_height);
-DECLARE_ARGUMENT(road_bollard_resource_names);
 DECLARE_ARGUMENT(trashcan_resource_names);
 DECLARE_ARGUMENT(trashcan_distances);
 DECLARE_ARGUMENT(tree_resource_names);
@@ -155,7 +155,8 @@ DECLARE_ARGUMENT(far_flowers_resource_names);
 DECLARE_ARGUMENT(near_trees_resource_names);
 DECLARE_ARGUMENT(far_trees_resource_names);
 DECLARE_ARGUMENT(dirt_decals_resource_names);
-DECLARE_ARGUMENT(wayside_resource_names);
+DECLARE_ARGUMENT(waysides_surface);
+DECLARE_ARGUMENT(waysides_vertex);
 DECLARE_ARGUMENT(extrusion_ambient_occlusion);
 DECLARE_ARGUMENT(laplace_ambient_occlusion);
 DECLARE_ARGUMENT(bounding_terrain_type);
@@ -683,14 +684,11 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::water_height)) {
             config.water_height = fixed_from_meters(args.arguments.at<ScenePos>(KnownArgs::water_height));
         }
-        if (args.arguments.contains_non_null(KnownArgs::road_bollard_resource_names)) {
-            config.road_bollard_resource_names = args.arguments.at_vector<std::string>(KnownArgs::road_bollard_resource_names, parse_resource_name_func);
+        if (args.arguments.contains_non_null(KnownArgs::waysides_surface)) {
+            config.waysides_surface = args.arguments.at<std::vector<WaysideResourceNamesSurface>>(KnownArgs::waysides_surface);
         }
-        if (args.arguments.contains_non_null(KnownArgs::trashcan_resource_names)) {
-            config.trashcan_resource_names = args.arguments.at_vector<std::string>(KnownArgs::trashcan_resource_names, parse_resource_name_func);
-        }
-        if (args.arguments.contains(KnownArgs::trashcan_distances)) {
-            config.trashcan_distances = args.arguments.at<WaysideDistances>(KnownArgs::trashcan_distances);
+        if (args.arguments.contains_non_null(KnownArgs::waysides_vertex)) {
+            config.waysides_vertex = args.arguments.at<std::vector<WaysideResourceNamesVertex>>(KnownArgs::waysides_vertex);
         }
         if (args.arguments.contains_non_null(KnownArgs::tree_resource_names)) {
             config.tree_resource_names = args.arguments.at_vector<std::string>(KnownArgs::tree_resource_names, parse_resource_name_func);
@@ -751,16 +749,6 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains_non_null(KnownArgs::dirt_decals_resource_names)) {
             tconfig.no_grass_decals_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::dirt_decals_resource_names, parse_resource_name_func);
-        }
-        if (args.arguments.contains_non_null(KnownArgs::wayside_resource_names)) {
-            config.waysides = args.arguments.children(KnownArgs::wayside_resource_names, [&parse_resource_name_func](const JsonMacroArguments& a){
-                a.validate(WaysideKnownArgs::options, "wayside: ");
-                return WaysideResourceNames{
-                    .min_dist = a.at<float>(WaysideKnownArgs::min_dist) * meters,
-                    .max_dist = a.at<float>(WaysideKnownArgs::max_dist) * meters,
-                    .resource_names = a.at_vector<std::string>(WaysideKnownArgs::resource_names, parse_resource_name_func)
-                };
-            });
         }
         if (args.arguments.contains(KnownArgs::extrusion_ambient_occlusion)) {
             config.extrusion_ambient_occlusion = args.arguments.at<float>(KnownArgs::extrusion_ambient_occlusion);

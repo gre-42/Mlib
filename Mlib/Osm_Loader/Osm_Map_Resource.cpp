@@ -89,7 +89,8 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Vertex.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Renderables/Color_Cycle.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
@@ -601,7 +602,7 @@ OsmMapResource::OsmMapResource(
         } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
-        for (const WaysideResourceNames& ws : config.waysides) {
+        for (const WaysideResourceNamesVertex& ws : config.waysides_vertex) {
             fg.update("Add grass on Steiner-points");
             ResourceNameCycle rnc{ ws.resource_names };
             add_grass_on_steiner_points(
@@ -1188,33 +1189,17 @@ OsmMapResource::OsmMapResource(
             config.forest_outline_tree_inwards_distance,
             config.scale);
     }
-    if (!config.road_bollard_resource_names.empty()) {
-        ResourceNameCycle rnc{config.road_bollard_resource_names};
-        fg.update("Draw road-bollards");
+    for (const auto& [i, ws] : enumerate(config.waysides_surface)) {
+        fg.update("Draw waysides (" + std::to_string(i) + ')');
         draw_waysides(
             *hri_.bri,
-            rnc,
             street_hole_triangles,
             *ground_bvh,
             entrance_bvh,
             config.scale,
-            config.road_bollard_distances,
+            ws,
             config.contour_detection_strategy);
     }
-    if (!config.trashcan_resource_names.empty()) {
-        ResourceNameCycle rnc{config.trashcan_resource_names};
-        fg.update("Draw trashcans");
-        draw_waysides(
-            *hri_.bri,
-            rnc,
-            street_hole_triangles,
-            *ground_bvh,
-            entrance_bvh,
-            config.scale,
-            config.trashcan_distances,
-            config.contour_detection_strategy);
-    }
-
     {
         // Extrude air support and raise tunnel crossings.
         const auto& air_or_osm = (config.extrude_air_curb_amount == (CompressedScenePos)0.)

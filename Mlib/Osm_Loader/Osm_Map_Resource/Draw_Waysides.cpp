@@ -4,9 +4,10 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Contour.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Distances.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -16,14 +17,14 @@ static const double dx = 0.01;
 
 void Mlib::draw_waysides(
     BatchResourceInstantiator& bri,
-    ResourceNameCycle& rnc,
     const std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& inner_triangles,
     const GroundBvh& ground_bvh,
     const StreetBvh& entrance_bvh,
     double scale,
-    const WaysideDistances& distances,
+    const WaysideResourceNamesSurface& distances,
     ContourDetectionStrategy contour_detection_strategy)
 {
+    ResourceNameCycle rnc{distances.resource_names};
     FastNormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
     auto contours = find_contours(inner_triangles, contour_detection_strategy);
 

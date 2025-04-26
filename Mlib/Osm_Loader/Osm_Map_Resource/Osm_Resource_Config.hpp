@@ -12,7 +12,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Distances.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Renderables/Color_And_Probability.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
@@ -32,7 +31,8 @@ namespace Mlib {
 
 enum class BlendMode;
 enum class DrivingDirection;
-struct WaysideResourceNames;
+struct WaysideResourceNamesSurface;
+struct WaysideResourceNamesVertex;
 struct RoadProperties;
 enum class TerrainType;
 enum class WrapMode;
@@ -111,22 +111,11 @@ struct OsmResourceConfig {
     Map<RoadType, std::string> street_bumps_endpoint1_resource_names;
     VariableAndHash<std::string> water_texture;
     CompressedScenePos water_height = (CompressedScenePos)0.f;
-    std::vector<ParsedResourceName> road_bollard_resource_names;
-    std::vector<ParsedResourceName> trashcan_resource_names;
-    WaysideDistances road_bollard_distances{
-        .tangential_distance = 3.,
-        .normal_distance = 0.25,
-        .gradient_dx = 0.1,
-        .max_gradient = -0.1 };
-    WaysideDistances trashcan_distances{
-        .tangential_distance = 30.,
-        .normal_distance = 0.25,
-        .gradient_dx = NAN,
-        .max_gradient = NAN };
     std::vector<ParsedResourceName> tree_resource_names;
     std::vector<ParsedResourceName> grass_resource_names;
     TriangleSamplerResourceConfig triangle_sampler_resource_config;
-    std::vector<WaysideResourceNames> waysides;
+    std::vector<WaysideResourceNamesSurface> waysides_surface;
+    std::vector<WaysideResourceNamesVertex> waysides_vertex;
     TerrainType bounding_terrain_type = TerrainType::UNDEFINED;
     TerrainType default_terrain_type = TerrainType::UNDEFINED;
     float default_street_width = 7 * meters;
