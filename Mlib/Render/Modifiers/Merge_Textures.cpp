@@ -138,13 +138,14 @@ void Mlib::merge_textures(
                 if (merged_triangles.empty()) {
                     return;
                 }
-                meshes.remove_if([](const std::shared_ptr<AnimatedColoredVertexArrays>& acva){
+                for (const auto& acva : meshes) {
                     acva->dcvas.remove_if([](const std::shared_ptr<ColoredVertexArray<CompressedScenePos>>& cva){
                         return !any(cva->morphology.physics_material & (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE));
                     });
-                    assert_true(!acva->dcvas.empty());
-                    return acva->dcvas.empty();
-                });
+                    if (acva->dcvas.empty()) {
+                        THROW_OR_ABORT("No residual arrays in \"merge_textures\"");
+                    }
+                }
             }
             scene_node_resources.add_resource(
                 merged_materials_config.resource_name,

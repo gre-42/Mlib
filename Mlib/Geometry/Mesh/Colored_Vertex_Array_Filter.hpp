@@ -23,7 +23,7 @@ struct ColoredVertexArrayFilter {
 class ColoredVertexArrayFilters {
 public:
     ColoredVertexArrayFilters();
-    explicit ColoredVertexArrayFilters(std::vector<ColoredVertexArrayFilter> filters);
+    ColoredVertexArrayFilters(std::vector<ColoredVertexArrayFilter> filters);
     template <class TPos>
     bool matches(const ColoredVertexArray<TPos>& cva) const;
 private:
