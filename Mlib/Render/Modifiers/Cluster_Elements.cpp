@@ -20,6 +20,7 @@ static void patch(
     SceneNodeResources& scene_node_resources,
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
     const FixedArray<TWidth, 3>& width,
+    const SquaredStepDistances& center_distances2,
     const GroupAndName& prefix,
     RenderingDynamics rendering_dynamics,
     std::list<std::string>& added_scene_node_resources,
@@ -36,9 +37,11 @@ static void patch(
         prefix + "_cluster")))
     {
         auto resource_name = (prefix + std::to_string(i)).full_name();
+        auto transformed = c.cva->template translated<float>(-c.position, "_centered");
+        transformed->morphology.center_distances2 = center_distances2;
         scene_node_resources.add_resource(
             resource_name,
-            std::make_shared<ColoredVertexArrayResource>(c.cva->template translated<float>(-c.position, "_centered")));
+            std::make_shared<ColoredVertexArrayResource>(transformed));
         added_scene_node_resources.push_back(resource_name);
         auto trafo = TransformationMatrix<SceneDir, ScenePos, 3>{
             fixed_identity_array<SceneDir, 3>(),
@@ -60,6 +63,7 @@ void Mlib::cluster_elements(
     const std::vector<std::string>& resource_names,
     SceneNodeResources& scene_node_resources,
     const FixedArray<float, 3>& width,
+    const SquaredStepDistances& center_distances2,
     RenderingDynamics rendering_dynamics,
     std::list<std::string>& added_scene_node_resources,
     std::list<std::string>& added_instantiables)
@@ -71,6 +75,7 @@ void Mlib::cluster_elements(
                 scene_node_resources,
                 acva->dcvas,
                 width.casted<ScenePos>(),
+                center_distances2,
                 resource_name,
                 rendering_dynamics,
                 added_scene_node_resources,
@@ -79,6 +84,7 @@ void Mlib::cluster_elements(
                 scene_node_resources,
                 acva->scvas,
                 width,
+                center_distances2,
                 resource_name,
                 rendering_dynamics,
                 added_scene_node_resources,

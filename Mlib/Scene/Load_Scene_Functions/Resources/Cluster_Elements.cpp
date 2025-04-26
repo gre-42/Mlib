@@ -1,6 +1,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
+#include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Modifiers/Cluster_Elements.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -15,6 +16,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource_names);
 DECLARE_ARGUMENT(width);
+DECLARE_ARGUMENT(center_distances);
 DECLARE_ARGUMENT(rendering_dynamics);
 DECLARE_ARGUMENT(resource_variable);
 DECLARE_ARGUMENT(instantiables_variable);
@@ -37,6 +39,7 @@ static struct RegisterJsonUserFunction {
                     args.arguments.at<std::vector<std::string>>(KnownArgs::resource_names),
                     scene_node_resources,
                     args.arguments.at<UFixedArray<float, 3>>(KnownArgs::width),
+                    SquaredStepDistances::from_distances(args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center_distances)),
                     rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::rendering_dynamics)),
                     added_scene_node_resources,
                     added_instantiables);
