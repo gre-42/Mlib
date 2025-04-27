@@ -36,12 +36,12 @@ std::list<FixedArray<CompressedScenePos, 2>> Mlib::get_region_margin_contour(
                 *c,
                 *d,
                 *d,
-                width,
-                width,
-                width,
-                width,
-                width,
-                width))
+                2.f * width,
+                2.f * width,
+                2.f * width,
+                2.f * width,
+                2.f * width,
+                2.f * width))
         {
             THROW_OR_ABORT2(EdgeException<CompressedScenePos>(*a, *b, "Error computing region margin"));
         } else {
