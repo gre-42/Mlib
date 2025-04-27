@@ -84,11 +84,10 @@ int main(int argc, char** argv) {
             auto tex = rendering_resources.get_texture_data(
                 colormap,
                 TextureRole::COLOR,
-                FlipMode::NONE,
-                CopyBehavior::COPY);
+                FlipMode::NONE);
             auto& dest = destination_textures[*png_name];
             dest.type = t.type;
-            dest.data = stb_encode_png(tex.data.get(), tex.width, tex.height, tex.nrChannels);
+            dest.data = stb_encode_png(tex->data(), tex->width, tex->height, tex->nrChannels);
             if (args.has_named("--explode")) {
                 auto o = create_ofstream(*png_name, std::ios::binary);
                 if (o->fail()) {

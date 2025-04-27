@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
                 }
                 for (size_t da = 0; da < tile_pixels; ++da) {
                     for (size_t dl = 0; dl < tile_pixels; ++dl) {
-                        unsigned char* rgb = &image.data.get()[(da * (size_t)image.width  + dl) * (size_t)image.nrChannels];
+                        unsigned char* rgb = &image[(da * (size_t)image.width  + dl) * (size_t)image.nrChannels];
                         size_t ga = da + a * tile_pixels;
                         size_t go = dl + o * tile_pixels;
                         // https://www.mapzen.com/blog/elevation/

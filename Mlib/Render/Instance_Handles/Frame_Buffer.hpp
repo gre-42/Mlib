@@ -7,7 +7,7 @@
 #include <cstdint>
 
 template <class TData>
-struct StbInfo;
+class StbInfo;
 
 namespace Mlib {
 

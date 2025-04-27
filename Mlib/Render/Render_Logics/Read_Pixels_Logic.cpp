@@ -129,7 +129,7 @@ bool ReadPixelsLogic::render_optional_setup(
                 setup);
         }
         auto im = fbs->color_to_stb_image(3);
-        if (!stbi_write_png("screenshot.png", im.width, im.height, im.nrChannels, im.data.get(), 0)) {
+        if (!stbi_write_png("screenshot.png", im.width, im.height, im.nrChannels, im.data(), 0)) {
             THROW_OR_ABORT("Could not save screenshot");
         }
     }

@@ -32,7 +32,7 @@ void array_2_stb_image(const Array<TData>& array, TData* data) {
 
 template <class TData>
 Array<TData> stb_image_2_array(const StbInfo<TData>& image) {
-    return stb_image_2_array(image.data.get(), image.width, image.height, image.nrChannels);
+    return stb_image_2_array(image.data(), image.width, image.height, image.nrChannels);
 }
 
 }

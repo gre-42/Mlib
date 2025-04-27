@@ -40,11 +40,11 @@ StbInfo<uint8_t> Mlib::download_as_stb_image(
     if (any(flip_mode & FlipMode::VERTICAL)) {
         res.ref() = reverted_axis(res, 0);
     }
-    auto result = stb_create<uint8_t>(
+    auto result = StbInfo<uint8_t>(
         integral_cast<int>(width),
         integral_cast<int>(height),
         nchannels);
-    std::copy(res.flat_begin(), res.flat_end(), result.data.get());
+    std::copy(res.flat_begin(), res.flat_end(), result.data());
     return result;
 }
 

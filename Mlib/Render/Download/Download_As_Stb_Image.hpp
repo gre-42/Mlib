@@ -3,7 +3,7 @@
 #include <Mlib/Render/Any_Gl.hpp>
 
 template <class TData>
-struct StbInfo;
+class StbInfo;
 
 namespace Mlib {
 

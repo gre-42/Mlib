@@ -29,11 +29,7 @@ int main(int argc, char **argv) {
     if (glass_mask.nrChannels != 1) {
         throw std::runtime_error("Glass mask does not have 1 channel (" + std::to_string(glass_mask.nrChannels) + ')');
     }
-    StbInfo<uint8_t> out{
-        .width = color.width,
-        .height = color.height,
-        .nrChannels = color.nrChannels};
-    out.data.reset(new unsigned char[(size_t)(color.width * color.height * color.nrChannels)]);
+    auto out = StbInfo<uint8_t>(color.width, color.height, color.nrChannels);
     for (size_t r = 0; r < (size_t)color.height; ++r) {
         for (size_t c = 0; c < (size_t)color.width; ++c) {
             size_t i = r * (size_t)color.width  + c;
@@ -42,10 +38,10 @@ int main(int argc, char **argv) {
                 ramp /= (float)color.height;
                 // ramp = std::clamp(2.f * ramp, 0.f, 1.f);
                 ramp = 1 - ramp;
-                out.data.get()[i * (size_t)color.nrChannels + d] = (uint8_t)std::round(255.f * std::clamp(
+                out[i * (size_t)color.nrChannels + d] = (uint8_t)std::round(255.f * std::clamp(
                     soft_light(
-                        color.data.get()[i * (size_t)color.nrChannels + d] / 255.f,
-                        glass_mask.data.get()[i] / 255.f * ramp),
+                        color[i * (size_t)color.nrChannels + d] / 255.f,
+                        glass_mask[i] / 255.f * ramp),
                         0.f,
                         1.f));
             }
@@ -56,7 +52,7 @@ int main(int argc, char **argv) {
         out.width,
         out.height,
         out.nrChannels,
-        out.data.get(),
+        out.data(),
         0))
     {
         throw std::runtime_error("Could not write " + args.named_value("--out"));

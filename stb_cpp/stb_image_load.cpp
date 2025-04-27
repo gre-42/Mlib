@@ -15,13 +15,13 @@
 using namespace Mlib;
 
 template <class TData>
-void stb_image_flip_horizontally(const StbInfo<TData>& image) {
+void stb_image_flip_horizontally(StbInfo<TData>& image) {
     for (size_t r = 0; r < (size_t)image.height; ++r) {
         for (size_t c = 0; c < (size_t)image.width / 2; ++c) {
             for (size_t d = 0; d < (size_t)image.nrChannels; ++d) {
                 std::swap(
-                    image.data.get()[(r * (size_t)image.width + c) * (size_t)image.nrChannels + d],
-                    image.data.get()[(r * (size_t)image.width + (size_t)image.width - 1 - c) * (size_t)image.nrChannels + d]);
+                    image.data()[(r * (size_t)image.width + c) * (size_t)image.nrChannels + d],
+                    image.data()[(r * (size_t)image.width + (size_t)image.width - 1 - c) * (size_t)image.nrChannels + d]);
             }
         }
     }
@@ -29,11 +29,11 @@ void stb_image_flip_horizontally(const StbInfo<TData>& image) {
 
 template <class TData>
 static StbInfo<TData> stb_wrap_and_postprocess(TData* data, int width, int height, int nrChannels, bool flip_horizontally) {
-    StbInfo<TData> result{
-        .width = width,
-        .height = height,
-        .nrChannels = nrChannels};
-    result.data = std::unique_ptr<TData, decltype(&stbi_image_free)>{(TData*)data, &stbi_image_free};
+    auto result = StbInfo<TData>(
+        width,
+        height,
+        nrChannels,
+        (TData*)data);
     if (flip_horizontally) {
         stb_image_flip_horizontally(result);
     }
@@ -102,6 +102,7 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
     } else if (bytes_per_pixel == 16) {
         return stb_wrap_and_postprocess((uint16_t*)image, width, height, nrChannels, any(flip_mode & FlipMode::HORIZONTAL));
     } else {
+        stbi_image_free(image);
         THROW_OR_ABORT("Unsupported image data size");
     }
 }
@@ -122,10 +123,10 @@ StbInfo<uint8_t> stb_load8(
             if (res16 == nullptr) {
                 THROW_OR_ABORT("Image has neither 8 nor 16 bits");
             }
-            auto conv8 = stb_create<uint8_t>(res16->width, res16->height, res16->nrChannels);
-            auto* d16 = res16->data.get();
-            auto* d8 = conv8.data.get();
-            for (; d8 != conv8.data.get() + conv8.width * conv8.height * conv8.nrChannels; ++d8, ++d16) {
+            auto conv8 = StbInfo<uint8_t>(res16->width, res16->height, res16->nrChannels);
+            auto* d16 = res16->data();
+            auto* d8 = conv8.data();
+            for (; d8 != conv8.data() + conv8.width * conv8.height * conv8.nrChannels; ++d8, ++d16) {
                 *d8 = (*d16 >> 8);
             }
             return conv8;
@@ -135,17 +136,3 @@ StbInfo<uint8_t> stb_load8(
     }
     return std::move(*res8);
 }
-
-template <class TData>
-StbInfo<TData> stb_create(int width, int height, int nrChannels) {
-    StbInfo<TData> result{
-        .width = width,
-        .height = height,
-        .nrChannels = nrChannels
-    };
-    result.data.reset((TData*)malloc(size_t(width * height * nrChannels) * sizeof(TData)));
-    return result;
-}
-
-template StbInfo<uint8_t> stb_create(int width, int height, int nrChannels);
-template StbInfo<uint16_t> stb_create(int width, int height, int nrChannels);

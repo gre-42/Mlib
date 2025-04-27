@@ -91,10 +91,10 @@ public:
     explicit ValueExtractor(TNode&& node)
         : node_{ std::move(node) }
     {}
-    auto& operator * () {
+    decltype(auto) operator * () {
         return node_.mapped();
     }
-    auto* operator -> () {
+    decltype(auto) operator -> () {
         return &node_.mapped();
     }
     bool operator == (std::nullptr_t) const {
@@ -103,6 +103,10 @@ public:
 private:
     TNode node_;
 };
+
+static std::shared_ptr<StbInfo<uint8_t>> to_shared(StbInfo<uint8_t>&& i) {
+    return std::make_shared<StbInfo<uint8_t>>(std::move(i));
+}
 
 template <class TContainer, class... TArgs>
 auto& RenderingResources::add(TContainer& container, TArgs&&... args) const {
@@ -254,11 +258,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             THROW_OR_ABORT("#channels not 1: \"" + color.alpha + '"');
         }
         StbInfo<uint8_t> si0_rgb = std::move(si0);
-        si0 = stb_create<uint8_t>(si0_rgb.width, si0_rgb.height, 4);
+        si0 = StbInfo<uint8_t>(si0_rgb.width, si0_rgb.height, 4);
         stb_set_alpha(
-            si0_rgb.data.get(),
-            si_alpha.data.get(),
-            si0.data.get(),
+            si0_rgb.data(),
+            si_alpha.data(),
+            si0.data(),
             si0.width,
             si0.height,
             si_alpha.width,
@@ -274,10 +278,10 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         if (color.color_mode != ColorMode::RGB) {
             THROW_OR_ABORT("Saturate requires RGB output");
         }
-        auto si1 = stb_create<uint8_t>(si0.width, si0.height, 3);
+        auto si1 = StbInfo<uint8_t>(si0.width, si0.height, 3);
         stb_saturate(
-            si0.data.get(),
-            si1.data.get(),
+            si0.data(),
+            si1.data(),
             si0.width,
             si0.height,
             si1.nrChannels);
@@ -287,9 +291,9 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         auto si1 = stb_load_texture(
             color.average, (int)max(source_color_mode), flip_mode);
         stb_average(
-            si0.data.get(),
-            si1.data.get(),
-            si0.data.get(),
+            si0.data(),
+            si1.data(),
+            si0.data(),
             si0.width,
             si0.height,
             si1.width,
@@ -300,7 +304,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (color.desaturate != 0.f) {
         stb_desaturate(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -313,11 +317,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         assert_true(m.shape(0) == (size_t)si0.nrChannels);
         assert_true(m.shape(1) == (size_t)si0.height);
         assert_true(m.shape(2) == (size_t)si0.width);
-        array_2_stb_image(m, si0.data.get());
+        array_2_stb_image(m, si0.data());
     }
     if (!color.mean_color.all_equal(-1.f)) {
         if (!stb_colorize(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -335,7 +339,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             THROW_OR_ABORT("Lighten value out of bounds");
         }
         stb_lighten(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -359,7 +363,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             THROW_OR_ABORT("Lighten bottom value out of bounds");
         }
         stb_lighten_horizontal_gradient(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -384,7 +388,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             THROW_OR_ABORT("Lighten bottom value out of bounds");
         }
         stb_lighten_vertical_gradient(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -395,9 +399,9 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         auto si1 = stb_load_texture(
             color.alpha_blend, 4, flip_mode);
         stb_alpha_blend(
-            si0.data.get(),
-            si1.data.get(),
-            si0.data.get(),
+            si0.data(),
+            si1.data(),
+            si0.data(),
             si0.width,
             si0.height,
             si1.width,
@@ -408,7 +412,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (color.alpha_fac != 1.f) {
         stb_alpha_fac(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -416,7 +420,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (!color.color_to_replace.all_equal(-1.f)) {
         stb_replace_color(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -448,11 +452,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         {
             THROW_OR_ABORT("selected_color_far out of bounds");
         }
-        auto si1 = stb_create<uint8_t>(si0.width, si0.height, 1);
+        auto si1 = StbInfo<uint8_t>(si0.width, si0.height, 1);
         assert_isequal(si0.nrChannels, integral_cast<int>(CW::length(color.selected_color)));
         stb_generate_color_mask(
-            si0.data.get(),
-            si1.data.get(),
+            si0.data(),
+            si1.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -469,11 +473,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             4.f,                        // truncate
             FilterExtension::PERIODIC);
         auto edges = 1.f - 2.f * abs(imf - 0.5f);
-        array_2_stb_image((clipped(edges, 0.f, 1.f) * 255.f).casted<uint8_t>(), si0.data.get());
+        array_2_stb_image((clipped(edges, 0.f, 1.f) * 255.f).casted<uint8_t>(), si0.data());
     }
     if ((color.times != 1.f) || (color.plus != 0.f)) {
         stb_transform(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
@@ -483,7 +487,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (color.invert) {
         stb_invert(
-            si0.data.get(),
+            si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels);
@@ -492,9 +496,9 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         auto si1 = stb_load_texture(
             color.multiply, (int)max(source_color_mode), flip_mode);
         stb_multiply_color(
-            si0.data.get(),
-            si1.data.get(),
-            si0.data.get(),
+            si0.data(),
+            si1.data(),
+            si0.data(),
             si0.width,
             si0.height,
             si1.width,
@@ -515,13 +519,13 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         // computation, so the normals will not really saturate).
         const auto intensity_range = 10.f;
         auto heightmap = stb_image_2_array(si0)[0];
-        si0 = stb_create<uint8_t>(si0.width, si0.height, 3);
+        si0 = StbInfo<uint8_t>(si0.width, si0.height, 3);
         auto nm_transposed = clipped(heightmap_to_normalmap(heightmap.casted<float>(), intensity_range) * 127.5f + 127.5f, 0.f, 255.f).casted<uint8_t>();
         auto nm = Array<uint8_t>{ nm_transposed.shape() };
         nm[0] = nm_transposed[1];
         nm[1] = nm_transposed[0];
         nm[2] = nm_transposed[2];
-        array_2_stb_image(nm, si0.data.get());
+        array_2_stb_image(nm, si0.data());
     }
     return si0;
 }
@@ -533,7 +537,7 @@ static double mean_opacity(const StbInfo<uint8_t>& si) {
     double opacity = 0.f;
     for (int r = 0; r < si.height; ++r) {
         for (int c = 0; c < si.width; ++c) {
-            opacity += double(si.data.get()[(r * si.width + c) * si.nrChannels + 3]) / 255.;
+            opacity += double(si.data()[(r * si.width + c) * si.nrChannels + 3]) / 255.;
         }
     }
     return opacity / double(si.width * si.height);
@@ -570,7 +574,7 @@ static void check_color_mode(
 //     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, log2(std::max(si.width, si.height))));
 // 
 //     int level = 0;
-//     RgbaDownsampler rds{si.data.get(), si.width, si.height};
+//     RgbaDownsampler rds{si.data(), si.width, si.height};
 //     for (RgbaImage im = rds.next(); im.data != nullptr; im = rds.next()) {
 //         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
 //         CHK(glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im.data));
@@ -865,7 +869,7 @@ std::string RenderingResources::get_texture_filename(
         !color.mean_color.all_equal(-1.f) ||
         !color.lighten.all_equal(0.f))
     {
-        std::vector<StbInfo<uint8_t>> sis;
+        std::vector<std::shared_ptr<StbInfo<uint8_t>>> sis;
         if (manual_atlas_tile_descriptors_.contains(color.filename)) {
             sis = get_texture_array_data(color, role, FlipMode::VERTICAL);
         } else {
@@ -877,7 +881,7 @@ std::string RenderingResources::get_texture_filename(
         if (sis.size() != 1) {
             lwarn() << "Texture array \"" << *color.filename << "\" has more than one layer. Only saving the first one.";
         }
-        const auto& si = sis[0];
+        const auto& si = *sis[0];
         if (!default_filename.ends_with(".png")) {
             THROW_OR_ABORT("Filename \"" + default_filename + "\" does not end with .png");
         }
@@ -886,7 +890,7 @@ std::string RenderingResources::get_texture_filename(
             si.width,
             si.height,
             si.nrChannels,
-            si.data.get(),
+            si.data(),
             0))
         {
             THROW_OR_ABORT("Could not save to file \"" + default_filename + '"');
@@ -1075,12 +1079,12 @@ GLuint RenderingResources::get_cubemap_unsafe(const VariableAndHash<std::string>
             GL_TEXTURE_CUBE_MAP_POSITIVE_X + integral_cast<GLuint>(i),
             0,
             GL_RGB,
-            info.width,
-            info.height,
+            info->width,
+            info->height,
             0,
             GL_RGB,
             GL_UNSIGNED_BYTE,
-            info.data.get()));
+            info->data()));
     }
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
@@ -1186,23 +1190,22 @@ void RenderingResources::add_cubemap(const VariableAndHash<std::string>& name, c
     add(cubemap_descriptors_, name, CubemapDescriptor{.filenames = filenames});
 }
 
-std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
+std::vector<std::shared_ptr<StbInfo<uint8_t>>> RenderingResources::get_texture_array_data(
     const ColormapWithModifiers& color,
     TextureRole role,
-    FlipMode flip_mode,
-    CopyBehavior copy_behavior) const
+    FlipMode flip_mode) const
 {
     if (role == TextureRole::COLOR_FROM_DB) {
-        return get_texture_array_data(colormap(color), TextureRole::COLOR, flip_mode, copy_behavior);
+        return get_texture_array_data(colormap(color), TextureRole::COLOR, flip_mode);
     }
     check_color_mode(color, role);
     if (auto it = manual_atlas_tile_descriptors_.try_get(color.filename); it != nullptr) {
-        std::vector<StbInfo<uint8_t>> sis;
+        std::vector<std::shared_ptr<StbInfo<uint8_t>>> sis;
         sis.reserve(it->nlayers);
         for (size_t i = 0; i < it->nlayers; ++i) {
-            sis.push_back(stb_create<uint8_t>(it->width, it->height, (int)max(it->color_mode)));
+            sis.push_back(to_shared(StbInfo<uint8_t>(it->width, it->height, (int)max(it->color_mode))));
         }
-        UnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> source_images;
+        UnorderedMap<ColormapWithModifiers, std::shared_ptr<StbInfo<uint8_t>>> source_images;
         std::vector<AtlasTile> atlas_tiles;
         atlas_tiles.reserve(it->tiles.size());
         for (const auto& [source, target] : it->tiles) {
@@ -1220,7 +1223,7 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
                     .bottom = source.bottom,
                     .width = source.width,
                     .height = source.height,
-                    .image = *si
+                    .image = **si
                 },
                 .target = {
                     .left = target.left,
@@ -1234,14 +1237,13 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
     THROW_OR_ABORT("Unknown texture array: \"" + *color.filename + '"');
 }
 
-StbInfo<uint8_t> RenderingResources::get_texture_data(
+std::shared_ptr<StbInfo<uint8_t>> RenderingResources::get_texture_data(
     const ColormapWithModifiers& color,
     TextureRole role,
-    FlipMode flip_mode,
-    CopyBehavior copy_behavior) const
+    FlipMode flip_mode) const
 {
     if (role == TextureRole::COLOR_FROM_DB) {
-        return get_texture_data(colormap(color), TextureRole::COLOR, flip_mode, copy_behavior);
+        return get_texture_data(colormap(color), TextureRole::COLOR, flip_mode);
     }
     check_color_mode(color, role);
     if (auto it = preloaded_texture_dds_data_.try_get(color); it != nullptr) {
@@ -1267,21 +1269,13 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             RenderToFrameBufferGuard rfg{ fb };
             logic.render(ClearMode::COLOR);
         }
-        return fb->color_to_stb_image(4);
+        return to_shared(fb->color_to_stb_image(4));
     }
     if (auto it = preloaded_processed_texture_data_.try_get(color); it != nullptr) {
-        if (copy_behavior == CopyBehavior::RAISE) {
-            THROW_OR_ABORT("Refusing to copy processed texture \"" + *color.filename + '"');
-        }
-        auto result = stb_create<uint8_t>(it->width, it->height, it->nrChannels);
-        std::copy(it->data.get(), it->data.get() + it->width * it->height * it->nrChannels, result.data.get());
-        return result;
+        return *it;
     }
     if (auto it = preloaded_raw_texture_data_.try_get(color); it != nullptr) {
-        if (copy_behavior == CopyBehavior::RAISE) {
-            THROW_OR_ABORT("Refusing to copy raw texture \"" + *color.filename + '"');
-        }
-        return stb_load8(*color.filename, FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT);
+        return to_shared(stb_load8(*color.filename, FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT));
     }
     auto si = stb_load_and_transform_texture(color, flip_mode);
     if (any(color.color_mode & ColorMode::RGB) &&
@@ -1293,7 +1287,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             lwarn() << color << ": Opacity is only " << opacity;
         }
     }
-    return si;
+    return to_shared(std::move(si));
 }
 
 std::map<ColormapWithModifiers, ManualUvTile> RenderingResources::generate_manual_texture_atlas(
@@ -1367,7 +1361,7 @@ std::map<ColormapWithModifiers, ManualUvTile> RenderingResources::generate_manua
 FixedArray<int, 2> RenderingResources::texture_size(const ColormapWithModifiers& name) const {
     FixedArray<int, 2> image_size = uninitialized;
     if (auto* img = preloaded_processed_texture_data_.try_get(name); img != nullptr) {
-        image_size = { img->width, img->height };
+        image_size = { (*img)->width, (*img)->height };
     } else if (auto* img = preloaded_raw_texture_data_.try_get(name); img != nullptr) {
         auto info = ImageInfo::load(*name.filename, &img->data);
         image_size = { integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1)) };
@@ -1651,13 +1645,13 @@ void RenderingResources::save_to_file(
     if (!filename.ends_with(".png")) {
         THROW_OR_ABORT("Filename \"" + filename + "\" does not end with .png");
     }
-    StbInfo img = get_texture_data(color, role, FlipMode::NONE);
+    auto img = get_texture_data(color, role, FlipMode::NONE);
     if (!stbi_write_png(
         filename.c_str(),
-        img.width,
-        img.height,
-        img.nrChannels,
-        img.data.get(),
+        img->width,
+        img->height,
+        img->nrChannels,
+        img->data(),
         0))
     {
         THROW_OR_ABORT("Could not write \"" + filename + '"');
@@ -1674,10 +1668,10 @@ void RenderingResources::save_array_to_file(
         auto filename = filename_prefix + std::to_string(i) + ".png";
         if (!stbi_write_png(
             filename.c_str(),
-            img.width,
-            img.height,
-            img.nrChannels,
-            img.data.get(),
+            img->width,
+            img->height,
+            img->nrChannels,
+            img->data(),
             0))
         {
             THROW_OR_ABORT("Could not write \"" + filename + '"');
@@ -1809,21 +1803,21 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
         return texture;
     };
-    auto generate_texture_array = [&color, &aniso, &chk_type](const std::vector<StbInfo<uint8_t>>& data) -> std::pair<GLuint, TextureType>
+    auto generate_texture_array = [&color, &aniso, &chk_type](const std::vector<std::shared_ptr<StbInfo<uint8_t>>>& data) -> std::pair<GLuint, TextureType>
     {
         if (data.empty()) {
             THROW_OR_ABORT("Texture array is empty");
         }
         std::vector<uint8_t> flat_data;
-        auto layer_size = integral_cast<size_t>(data[0].width * data[0].height * data[0].nrChannels);
+        auto layer_size = integral_cast<size_t>(data[0]->width * data[0]->height * data[0]->nrChannels);
         flat_data.reserve(layer_size * data.size());
         for (const auto& d : data) {
-            if ((data[0].width != d.width) ||
-                (data[0].height != d.height) ||
-                (data[0].nrChannels != d.nrChannels)) {
+            if ((data[0]->width != d->width) ||
+                (data[0]->height != d->height) ||
+                (data[0]->nrChannels != d->nrChannels)) {
                 THROW_OR_ABORT("Texture array size mismatch");
             }
-            flat_data.insert(flat_data.end(), d.data.get(), d.data.get() + layer_size);
+            flat_data.insert(flat_data.end(), d->data(), d->data() + layer_size);
         }
         GLuint texture;
         GLenum target = (color.depth_interpolation == InterpolationMode::NEAREST)
@@ -1845,11 +1839,11 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
                 target,
                 0,
                 nchannels2internal_format(nchannels),
-                data[0].width,
-                data[0].height,
+                data[0]->width,
+                data[0]->height,
                 integral_cast<GLsizei>(data.size()),
                 0,
-                nchannels2format((size_t)data[0].nrChannels),
+                nchannels2format((size_t)data[0]->nrChannels),
                 GL_UNSIGNED_BYTE,
                 flat_data.data()));
         }
@@ -1865,20 +1859,20 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture: " << color;
         }
-        return { generate_texture((const uint8_t*)it->data.get(), it->width, it->height, it->nrChannels), TextureType::TEXTURE_2D };
+        return { generate_texture((*it)->data(), (*it)->width, (*it)->height, (*it)->nrChannels), TextureType::TEXTURE_2D };
     } else if (auto it = get_or_extract<EXTRACT_PROCESSED>(preloaded_processed_texture_array_data_, color); it != nullptr) {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture array: " << color;
         }
         if (it->size() == 1) {
-            const auto& data = (*it)[0];
-            return { generate_texture((const uint8_t*)data.data.get(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
+            const auto& data = *((*it)[0]);
+            return { generate_texture(data.data(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
         } else {
             return generate_texture_array(*it);
         }
     } else if (auto it = get_or_extract<EXTRACT_RAW>(preloaded_raw_texture_data_, color); it != nullptr) {
         auto si = stb_load8(*color.filename, FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT);
-        return { generate_texture(si.data.get(), si.width, si.height, si.nrChannels), chk_type(TextureType::TEXTURE_2D) };
+        return { generate_texture(si.data(), si.width, si.height, si.nrChannels), chk_type(TextureType::TEXTURE_2D) };
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Could not find preloaded texture: " << color;
@@ -1886,14 +1880,14 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
         if (auto it = manual_atlas_tile_descriptors_.try_get(color.filename); it != nullptr) {
             auto sis = get_texture_array_data(color, role, FlipMode::VERTICAL);
             if (it->nlayers == 1) {
-                const auto& data = sis[0];
-                return { generate_texture(data.data.get(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
+                const auto& data = *sis[0];
+                return { generate_texture(data.data(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
             } else {
                 return generate_texture_array(sis);
             }
         } else {
             auto si = get_texture_data(color, role, FlipMode::VERTICAL);
-            return { generate_texture(si.data.get(), si.width, si.height, si.nrChannels), chk_type(TextureType::TEXTURE_2D) };
+            return { generate_texture(si->data(), si->width, si->height, si->nrChannels), chk_type(TextureType::TEXTURE_2D) };
         }
     }
 }

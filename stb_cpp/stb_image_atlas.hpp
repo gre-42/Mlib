@@ -1,6 +1,7 @@
 #pragma once
 #include "stb_image_load.hpp"
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,5 +25,5 @@ struct AtlasTile {
 };
 
 void build_image_atlas(
-    const std::vector<StbInfo<uint8_t>>& atlas,
+    const std::vector<std::shared_ptr<StbInfo<uint8_t>>>& atlas,
     const std::vector<AtlasTile>& tiles);

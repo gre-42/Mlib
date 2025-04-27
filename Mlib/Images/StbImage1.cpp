@@ -31,7 +31,7 @@ StbImage1::StbImage1(const StbInfo<uint8_t>& stb_info) {
         THROW_OR_ABORT("Image does not have 1 channel");
     }
     resize((size_t)stb_info.height, (size_t)stb_info.width);
-    memcpy(flat_begin(), stb_info.data.get(), nbytes());
+    memcpy(flat_begin(), stb_info.data(), nbytes());
 }
 
 StbImage1 StbImage1::T() const {
