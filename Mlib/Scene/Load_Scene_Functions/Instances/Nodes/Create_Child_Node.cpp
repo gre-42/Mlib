@@ -24,7 +24,7 @@ DECLARE_ARGUMENT(interpolation);
 }
 
 CreateChildNode::CreateChildNode(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args) const

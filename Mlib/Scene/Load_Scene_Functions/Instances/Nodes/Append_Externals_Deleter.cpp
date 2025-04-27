@@ -6,6 +6,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
@@ -15,14 +16,6 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 }
-
-const std::string AppendExternalsDeleter::key = "append_externals_deleter";
-
-LoadSceneJsonUserFunction AppendExternalsDeleter::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    AppendExternalsDeleter(args.renderable_scene()).execute(args);
-};
 
 AppendExternalsDeleter::AppendExternalsDeleter(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
@@ -44,4 +37,20 @@ void AppendExternalsDeleter::execute(const LoadSceneJsonUserFunctionArgs& args)
     //     }
     // );
     players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION)->append_dependent_node(node_name);
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "append_externals_deleter",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                AppendExternalsDeleter(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

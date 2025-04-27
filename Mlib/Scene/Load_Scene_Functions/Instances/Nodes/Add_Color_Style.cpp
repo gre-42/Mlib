@@ -4,6 +4,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -22,14 +23,6 @@ DECLARE_ARGUMENT(specular);
 DECLARE_ARGUMENT(reflection_strength);
 DECLARE_ARGUMENT(reflection_maps);
 }
-
-const std::string AddColorStyle::key = "add_color_style";
-
-LoadSceneJsonUserFunction AddColorStyle::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    AddColorStyle(args.renderable_scene()).execute(args);
-};
 
 AddColorStyle::AddColorStyle(RenderableScene& renderable_scene)
     : LoadSceneInstanceFunction{ renderable_scene }
@@ -63,4 +56,20 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else {
         scene.add_color_style(std::move(style));
     }
+}
+
+namespace {
+
+static struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "add_color_style",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                AddColorStyle(args.renderable_scene()).execute(args);            
+            });
+    }
+} obj;
+
 }

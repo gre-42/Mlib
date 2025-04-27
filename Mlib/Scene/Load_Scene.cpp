@@ -68,9 +68,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_With_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_Without_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Set_Soft_Light.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Add_Color_Style.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Append_Externals_Deleter.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Copy_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Externals.hpp>
@@ -232,13 +229,10 @@ LoadScene::LoadScene() {
             register_json_user_function(SetTexturesLazy::key, SetTexturesLazy::json_user_function);
 
             // Instances
-            register_json_user_function(AddColorStyle::key, AddColorStyle::json_user_function);
             register_json_user_function(AddToInventory::key, AddToInventory::json_user_function);
             register_json_user_function(AddWeaponToInventory::key, AddWeaponToInventory::json_user_function);
-            register_json_user_function(AppendExternalsDeleter::key, AppendExternalsDeleter::json_user_function);
             register_json_user_function(ConnectTrailer::key, ConnectTrailer::json_user_function);
             register_json_user_function(BurnIn::key, BurnIn::json_user_function);
-            register_json_user_function(ClearNode::key, ClearNode::json_user_function);
             register_json_user_function(ClearParameters::key, ClearParameters::json_user_function);
             register_json_user_function(ClearRenderableInstance::key, ClearRenderableInstance::json_user_function);
             register_json_user_function(ClearSkybox::key, ClearSkybox::json_user_function);
