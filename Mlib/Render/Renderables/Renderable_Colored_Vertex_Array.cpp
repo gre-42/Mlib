@@ -725,15 +725,23 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     assert_true(cva->material.number_of_frames > 0);
     Hasher texture_modifiers_hash;
+    texture_modifiers_hash.combine(cva->material.textures_color.size());
     for (const auto& t : cva->material.textures_color) {
         texture_modifiers_hash.combine(t.modifiers_hash());
     }
+    texture_modifiers_hash.combine(cva->material.textures_alpha.size());
     for (const auto& t : cva->material.textures_alpha) {
         texture_modifiers_hash.combine(t.modifiers_hash());
     }
     Hasher lights_hash;
+    lights_hash.combine(filtered_lights.size());
     for (const auto& [_, l] : filtered_lights) {
         lights_hash.combine(l->shading_hash());
+    }
+    Hasher skidmarks_hash;
+    skidmarks_hash.combine(filtered_skidmarks.size());
+    for (const auto& [_, s] : filtered_skidmarks) {
+        skidmarks_hash.combine(s->shading_hash());
     }
     bool has_discrete_atlas_texture_layer = get_has_discrete_atlas_texture_layer(*cva);
     if (has_discrete_atlas_texture_layer) {
@@ -770,8 +778,7 @@ void RenderableColoredVertexArray::render_cva(
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
             .render_pass = render_pass.external.pass,
-            .nlights = filtered_lights.size(),
-            .nskidmarks = filtered_skidmarks.size(),
+            .skidmarks_hash = skidmarks_hash,
             .nbones = rcva_->triangles_res_->bone_indices.size(),
             .blend_mode = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
                 ? BlendMode::CONTINUOUS
@@ -779,8 +786,6 @@ void RenderableColoredVertexArray::render_cva(
             .alpha_distances = alpha_distances_common,
             .fog_distances = fog_distances,
             .fog_emissive = OrderableFixedArray{fog_emissive},
-            .ntextures_color = tic.ntextures_color,
-            .ntextures_alpha = tic.ntextures_alpha,
             .ntextures_normal = tic.ntextures_normal,
             .has_dynamic_emissive = has_dynamic_emissive,
             .lightmap_indices_color = lightmap_indices_color,

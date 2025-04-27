@@ -49,15 +49,12 @@ struct ColoredRenderProgram: public RenderProgram {
 
 struct RenderProgramIdentifier {
     ExternalRenderPassType render_pass;
-    size_t nlights;
-    size_t nskidmarks;
+    size_t skidmarks_hash;
     size_t nbones;
     BlendMode blend_mode;
     OrderableFixedArray<float, 4> alpha_distances;
     OrderableFixedArray<float, 2> fog_distances;
     OrderableFixedArray<float, 3> fog_emissive;
-    size_t ntextures_color;
-    size_t ntextures_alpha;
     size_t ntextures_normal;
     bool has_dynamic_emissive;
     std::vector<size_t> lightmap_indices_color;

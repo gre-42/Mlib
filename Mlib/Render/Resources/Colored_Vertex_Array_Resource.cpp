@@ -243,9 +243,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_alpha,
     size_t texture_modifiers_hash,
     size_t lights_hash,
-    size_t nlights,
-    size_t nskidmarks,
-    size_t ntextures_color,
+    size_t skidmarks_hash,
     BillboardId nbillboard_ids,
     const OrderableFixedArray<float, 3>& reflectance,
     bool reflect_only_y,
@@ -276,7 +274,6 @@ static GenShaderText vertex_shader_text_gen{[](
     bool fragments_depend_on_normal,
     float dirt_scale)
 {
-    assert_true(nlights == lights.size());
     auto tex_coords = [&nuv_indices](const UvMapKey& t) {
         std::stringstream sstr;
         sstr << std::scientific;
@@ -334,8 +331,8 @@ static GenShaderText vertex_shader_text_gen{[](
     for (size_t i = 0; i < ncweight_indices; ++i) {
         sstr << "layout (location=" << (attr_ids->idx_cweight_0 + i) << ") in float vCWeight" << i << ";" << std::endl;
     }
+    assert_true(attr_idc->has_alpha == has_alpha);
     if (has_alpha) {
-        assert_true(attr_idc->has_alpha);
         sstr << "layout (location=" << (attr_ids->idx_alpha) << ") in float vAlpha;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_interiormap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
@@ -346,8 +343,8 @@ static GenShaderText vertex_shader_text_gen{[](
         assert_true(attr_idc->has_tangent);
         sstr << "layout (location=" << attr_ids->idx_tangent << ") in vec3 vTangent;" << std::endl;
     }
-    if (has_instances) {
-        assert_true(attr_idc->has_instance_attrs);
+    assert_true(attr_idc->has_instance_attrs == has_instances);
+    if (attr_idc->has_instance_attrs) {
         if (has_yangle) {
             sstr << "layout (location=" << attr_ids->idx_instance_attrs << ") in vec4 instancePosition;" << std::endl;
         } else {
@@ -360,8 +357,8 @@ static GenShaderText vertex_shader_text_gen{[](
     } else if (has_lookat && !orthographic) {
         sstr << "const vec3 instancePosition = vec3(0.0, 0.0, 0.0);" << std::endl;
     }
-    if (nbillboard_ids != 0) {
-        assert_true(attr_idc->has_billboard_ids);
+    assert_true(attr_idc->has_billboard_ids == (nbillboard_ids != 0));
+    if (attr_idc->has_billboard_ids) {
         sstr << "layout (location=" << attr_ids->idx_billboard_ids << ") in mediump uint billboard_id;" << std::endl;
         sstr << "uniform vec3 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
@@ -376,12 +373,15 @@ static GenShaderText vertex_shader_text_gen{[](
     } else if (has_alpha) {
         sstr << "out float alpha_fac_v;" << std::endl;
     }
+    assert_true(attr_idc->has_bone_indices == (nbones != 0));
+    assert_true(attr_idc->has_bone_weights == (nbones != 0));
     if (nbones != 0) {
         sstr << "layout (location=" << attr_ids->idx_bone_indices << ") in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
         sstr << "layout (location=" << attr_ids->idx_bone_weights << ") in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
+    assert_true(attr_idc->has_texture_layer == (has_discrete_vertex_texture_layer || has_continuous_vertex_texture_layer));
     if (has_discrete_vertex_texture_layer) {
         sstr << "layout (location=" << attr_ids->idx_texture_layer << ") in lowp uint texture_layer;" << std::endl;
     }
@@ -422,9 +422,9 @@ static GenShaderText vertex_shader_text_gen{[](
             }
         }
     }
-    if (nskidmarks != 0) {
-        sstr << "uniform mat4 MVP_skidmarks[" << nskidmarks << "];" << std::endl;
-        sstr << "out vec2 proj_coords01_skidmarks[" << nskidmarks << "];" << std::endl;
+    if (skidmarks.size() != 0) {
+        sstr << "uniform mat4 MVP_skidmarks[" << skidmarks.size() << "];" << std::endl;
+        sstr << "out vec2 proj_coords01_skidmarks[" << skidmarks.size() << "];" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
         sstr << "out vec3 tangent;" << std::endl;
@@ -701,10 +701,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const std::vector<float>& continuous_layer_y,
     size_t texture_modifiers_hash,
     size_t lights_hash,
-    size_t nlights,
-    size_t nskidmarks,
-    size_t ntextures_color,
-    size_t ntextures_alpha,
+    size_t skidmarks_hash,
     size_t ntextures_normal,
     bool has_lightmap_color,
     bool has_lightmap_depth,
@@ -752,7 +749,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     // Mipmapping does not work unless all textures are actually sampled everywhere.
     bool compute_interiormap_at_end = true;
-    assert_true(nlights == lights.size());
     if (std::isnan(alpha_threshold)) {
         THROW_OR_ABORT("alpha_threshold is NAN => unknown blend mode");
     }
@@ -778,7 +774,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_dynamic_emissive) {
         sstr << "uniform vec3 dynamic_emissive;" << std::endl;
     }
-    if (ntextures_color != 0) {
+    if (!textures_color.empty()) {
         for (size_t i = 0; i < uv_map.size(); ++i) {
             sstr << "in vec2 tex_coord" << i << ";" << std::endl;
         }
@@ -793,11 +789,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!reflectance.all_equal(0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
         sstr << "uniform mat3 R;" << std::endl;
     }
-    if (ntextures_color != 0) {
-        sstr << "uniform lowp " << sampler_type_color << " textures_color[" << ntextures_color << "];" << std::endl;
+    if (!textures_color.empty()) {
+        sstr << "uniform lowp " << sampler_type_color << " textures_color[" << textures_color.size() << "];" << std::endl;
     }
-    if (ntextures_alpha != 0) {
-        sstr << "uniform sampler2D textures_alpha[" << ntextures_alpha << "];" << std::endl;
+    if (!textures_alpha.empty()) {
+        sstr << "uniform sampler2D textures_alpha[" << textures_alpha.size() << "];" << std::endl;
     }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
@@ -818,8 +814,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
     }
-    if (nskidmarks != 0) {
-        sstr << "in vec2 proj_coords01_skidmarks[" << nskidmarks << "];" << std::endl;
+    if (!skidmarks.empty()) {
+        sstr << "in vec2 proj_coords01_skidmarks[" << skidmarks.size() << "];" << std::endl;
     }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
     if (has_lightmap_color) {
@@ -1081,7 +1077,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         return sstr.str();
     };
     auto normalmap_coords = [&](const BlendMapTextureAndId& t) {
-        if (t.id_normal >= ntextures_color) {
+        if (t.id_normal >= textures_color.size()) {
             THROW_OR_ABORT("Texture index too large");
         }
         std::stringstream sstr;
@@ -1159,10 +1155,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else if (has_discrete_texture_layer_color) {
         sstr << "    lowp uint texture_layer_fs_transformed = texture_layer_fs;" << std::endl;
     }
-    if (ntextures_color == 1) {
+    if (textures_color.size() == 1) {
         sstr << "    vec4 texture_color_ambient_diffuse = " << sample_color("textures_color[0]", tex_coords(*textures_color[0])) << ';' << std::endl;
         sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
-    } else if (ntextures_color > 1) {
+    } else if (textures_color.size() > 1) {
         if (textures_color[0]->role == BlendMapRole::SUMMAND) {
             sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, texture(textures_color[0], " << tex_coords(*textures_color[0]) << ").a);" << std::endl;
         } else if (textures_color[0]->role == BlendMapRole::DETAIL_BASE) {
@@ -1176,7 +1172,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     if (alpha_threshold != 0) {
-        if (ntextures_color == 0) {
+        if (textures_color.empty()) {
             THROW_OR_ABORT("Alpha threshold requires texture");
         }
         sstr << "    if (texture_color_ambient_diffuse.a < " << alpha_threshold << ") {" << std::endl;
@@ -1404,15 +1400,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         sstr << "    }" << std::endl;
     };
-    if (ntextures_color > 1) {
+    if (textures_color.size() > 1) {
         sample_textures(textures_color, ReductionTarget::COLOR);
         // sstr << "    texture_color_ambient_diffuse.rgb /= max(1e-6, sum_weights);" << std::endl;
     }
-    if (ntextures_alpha > 0) {
+    if (!textures_alpha.empty()) {
         sample_textures(textures_alpha, ReductionTarget::ALPHA);
     }
     if (has_normalmap) {
-        if (ntextures_color == 1) {
+        if (textures_color.size() == 1) {
             sstr << "    vec3 tnorm = " << normalmap_coords(textures_color[0]) << ';' << std::endl;
         }
         if (!any(interior_texture_set)) {
@@ -1585,7 +1581,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac;" << std::endl;
         sstr << "    frag_brightness_specular *= skidmark_fac;" << std::endl;
     }
-    if ((ntextures_color == 0) && has_dirtmap) {
+    if (textures_color.empty() && has_dirtmap) {
         THROW_OR_ABORT("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
     }
     if (has_dirtmap) {
@@ -1604,7 +1600,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "                     + dirt_color.rgb * dirtiness;" << std::endl;
         sstr << "    frag_color.rgb *= color;" << std::endl;
         sstr << "    frag_brightness_specular.rgb *= (1.0 - dirtiness);" << std::endl;
-    } else if (ntextures_color != 0) {
+    } else if (!textures_color.empty()) {
         sstr << "    frag_color = texture_color_ambient_diffuse * vec4(color, 1.0);" << std::endl;
     } else {
         sstr << "    frag_color = vec4(color, alpha_fac);" << std::endl;
@@ -2123,7 +2119,6 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     auto attr_idc = get_attribute_index_calculator(cva);
     auto attr_ids = attr_idc.build();
     Map<UvMapKey, size_t> uv_map;
-    NotSortedUvMap not_sorted_uv_map{ uv_map };
     for (const auto& t : textures_color) {
         NotSortedUvMap{ uv_map }.insert(*t);
     }
@@ -2144,9 +2139,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_alpha,
         id.texture_modifiers_hash,
         id.lights_hash,
-        id.nlights,
-        id.nskidmarks,
-        id.ntextures_color,
+        id.skidmarks_hash,
         id.nbillboard_ids,
         id.reflectance,
         id.reflect_only_y,
@@ -2194,10 +2187,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.continuous_layer_y,
         id.texture_modifiers_hash,
         id.lights_hash,
-        filtered_lights.size(),
-        filtered_skidmarks.size(),
-        id.ntextures_color,
-        id.ntextures_alpha,
+        id.skidmarks_hash,
         id.ntextures_normal,
         !id.lightmap_indices_color.empty(),
         !id.lightmap_indices_depth.empty(),
@@ -2228,7 +2218,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             : 1.f,
         (id.blend_mode == BlendMode::OFF) ||
         any(id.blend_mode & BlendMode::CONTINUOUS_MASK) ||
-        (id.ntextures_color == 0)
+        textures_color.empty()
             ? 0.f
             : any(id.blend_mode & BlendMode::THRESHOLD_02_MASK)
                 ? 0.2f
@@ -2255,10 +2245,10 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         if (id.has_uv_offset_u) {
             rp->uv_offset_u_location = rp->get_uniform_location("uv_offset_u");
         }
-        for (size_t i = 0; i < id.ntextures_color; ++i) {
+        for (size_t i = 0; i < textures_color.size(); ++i) {
             rp->texture_color_locations[i] = rp->get_uniform_location(("textures_color[" + std::to_string(i) + "]").c_str());
         }
-        for (size_t i = 0; i < id.ntextures_alpha; ++i) {
+        for (size_t i = 0; i < textures_alpha.size(); ++i) {
             rp->texture_alpha_locations[i] = rp->get_uniform_location(("textures_alpha[" + std::to_string(i) + "]").c_str());
         }
         if (!id.lightmap_indices_color.empty() || !id.lightmap_indices_depth.empty()) {
@@ -2322,7 +2312,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 }
             }
         }
-        for (size_t i = 0; i < id.nskidmarks; ++i) {
+        for (size_t i = 0; i < filtered_skidmarks.size(); ++i) {
             rp->texture_skidmark_locations[i] = rp->get_uniform_location(("texture_skidmarks[" + std::to_string(i) + "]").c_str());
         }
         if (id.ntextures_reflection != 0) {
