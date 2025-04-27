@@ -1,17 +1,18 @@
 #include "Get_Terrain_Region_Contours.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> Mlib::get_terrain_region_contours(
+std::list<RegionWithMargin<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> Mlib::get_terrain_region_contours(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways)
 {
-    std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> result;
+    std::list<RegionWithMargin<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> result;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.contains("layer") &&
@@ -37,15 +38,15 @@ std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> 
         if (w.second.nd.front() != w.second.nd.back()) {
             THROW_OR_ABORT("Region is not closed: " + w.first);
         }
-        result.push_back({terrain_type, {}});
+        auto& contour = result.emplace_back(terrain_type, TerrainType::UNDEFINED, (CompressedScenePos)0.f);
         auto it = w.second.nd.begin();
         ++it;
         for (; it != w.second.nd.end(); ++it) {
             auto p = nodes.at(*it).position;
-            result.back().second.push_back(p);
+            contour.geometry.push_back(p);
         }
         if (compute_area_clockwise(w.second.nd, nodes, 1.f) > 0.f) {
-            result.back().second.reverse();
+            contour.geometry.reverse();
         }
     }
     return result;

@@ -125,6 +125,7 @@ private:
     void handle_point_exception2(const PointException<CompressedScenePos, 2>& e, const std::string& message) const;
     void handle_point_exception(const p2t::PointException& e, const std::string& message) const;
     void handle_edge_exception(const EdgeException<CompressedScenePos>& e, const std::string& message) const;
+    void handle_edge_exception(const EdgeException<double>& e, const std::string& message) const;
     void handle_edge_exception(const p2t::EdgeException& e, const std::string& message) const;
     void handle_triangle_exception(const TriangleException<CompressedScenePos>& e, const std::string& message) const;
 

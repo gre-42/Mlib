@@ -11,6 +11,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
@@ -110,7 +111,8 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 {},                                                              // steiner_points
                 {},                                                              // bounding_contour
                 {},                                                              // hole_triangles
-                {{TerrainType::FLOWERS, loutline}},                              // region_contours
+                {{TerrainType::FLOWERS, TerrainType::UNDEFINED,                  // region_contours
+                    (CompressedScenePos)0.f, loutline}},
                 scale,                                                           // scale
                 triangulation_scale,                                             // triangulation_scale
                 uv_scale,                                                        // uv_scale

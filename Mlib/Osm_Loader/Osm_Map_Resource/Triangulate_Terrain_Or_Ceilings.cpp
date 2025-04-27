@@ -14,8 +14,10 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Region_Margin_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/PTri.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
@@ -156,8 +158,8 @@ void triangulate_entity_list(
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
-    const std::list<std::pair<EntityType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
-    const std::list<std::pair<EntityType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
+    const std::list<RegionWithMargin<EntityType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
+    const std::list<RegionWithMargin<EntityType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,
     float triangulation_scale,
     float uv_scale,
@@ -208,20 +210,23 @@ void triangulate_entity_list(
     }
 
     size_t ncontours = region_contours.size();
-    std::map<EntityType, std::list<std::list<FixedArray<CompressedScenePos, 2>>>> hole_contours;
+    std::list<RegionWithMargin<EntityType, std::list<std::list<FixedArray<CompressedScenePos, 2>>>>> hole_contours;
     CloseNeighborDetector<CompressedScenePos, 2> close_neighbor_detector{{(CompressedScenePos)10., (CompressedScenePos)10.}, 10};
-    for (const auto& [e, t] : hole_triangles) {
+    for (const auto& hole : hole_triangles) {
         // save_obj("/tmp/" + to_string(e) + ".obj", IndexedFaceSet<float, CompressedScenePos, size_t>{t}, nullptr);
-        for (const auto& tt : t) {
+        for (const auto& tt : hole.geometry) {
             for (const auto& v : tt.flat_iterable()) {
                 if (close_neighbor_detector.contains_neighbor(
                     {v.position(0), v.position(1)},
                     (CompressedScenePos)1e-2))
                 {
                     if (!contour_triangles_filename.empty()) {
-                        plot_tris(contour_triangles_filename + to_string(e) + ".current.obj", t, { OrderableFixedArray{v.position} });
-                        for (const auto& [e1, t1] : hole_triangles) {
-                            plot_tris(contour_triangles_filename + to_string(e1) + ".other.obj", t1, { OrderableFixedArray{v.position} });
+                        plot_tris(contour_triangles_filename + to_string(hole.hole_type) + ".current.obj", hole.geometry, { OrderableFixedArray{v.position} });
+                        for (const auto& hole1 : hole_triangles) {
+                            plot_tris(
+                                contour_triangles_filename + to_string(hole1.hole_type) + ".other.obj",
+                                hole1.geometry,
+                                { OrderableFixedArray{v.position} });
                         }
                     }
                     auto exception = PointException<CompressedScenePos, 2>{
@@ -240,27 +245,27 @@ void triangulate_entity_list(
                 if (std::isnan(tlc) || (tlc > BAD_TRIANGLE_COS)) {
                     auto exception = TriangleException<CompressedScenePos>{
                         vt[0], vt[1], vt[2],
-                        "Detected bad triangle in hole \"" + to_string(e) + '"'};
+                        "Detected bad triangle in hole \"" + to_string(hole.hole_type) + '"'};
                     THROW_OR_ABORT2(exception);
                 }
             }
         }
         try {
-            auto cs3 = find_contours(t, contour_detection_strategy);
-            auto& cs2 = hole_contours[e];
+            auto cs3 = find_contours(hole.geometry, contour_detection_strategy);
+            auto& cs2 = hole_contours.emplace_back(hole.hole_type, hole.margin_type, hole.margin);
             for (const auto& c3 : cs3) {
-                auto& c2 = cs2.emplace_back();
+                auto& c2 = cs2.geometry.emplace_back();
                 for (const auto& p : c3) {
                     c2.push_back({p(0), p(1)});
                 }
             }
+            ncontours += cs2.geometry.size();
         } catch (const EdgeException<CompressedScenePos>& ex) {
             if (!contour_triangles_filename.empty()) {
-                plot_tris(contour_triangles_filename, t, { OrderableFixedArray{ex.a}, OrderableFixedArray{ex.b} });
+                plot_tris(contour_triangles_filename, hole.geometry, { OrderableFixedArray{ex.a}, OrderableFixedArray{ex.b} });
             }
             throw;
         }
-        ncontours += hole_contours[e].size();
     }
     std::vector<std::vector<p2t::Point*>> p2t_hole_contours;
     std::vector<EntityType> p2t_region_types;
@@ -280,11 +285,22 @@ void triangulate_entity_list(
         check_contour(cnt);
         cdt.AddHole(cnt);
     };
+    auto add_margin_contour = [&](
+        EntityType region_type,
+        CompressedScenePos margin,
+        const std::list<FixedArray<CompressedScenePos, 2>>& contour)
+    {
+        std::list<FixedArray<CompressedScenePos, 2>> m;
+        add_contour(region_type, get_region_margin_contour(contour, margin));
+    };
     for (auto& hc : hole_contours) {
-        for (std::list<FixedArray<CompressedScenePos, 2>>& c : hc.second) {
+        for (std::list<FixedArray<CompressedScenePos, 2>>& c : hc.geometry) {
             try {
                 if (compute_area_ccw(c, scale) > 0) {
-                    add_contour(hc.first, c);
+                    add_contour(hc.hole_type, c);
+                    if (hc.margin != (CompressedScenePos)0.f) {
+                        add_margin_contour(hc.margin_type, hc.margin, c);
+                    }
                 } else {
                     c.reverse();
                     add_contour(default_terrain_type, c);
@@ -296,9 +312,9 @@ void triangulate_entity_list(
             }
         }
     }
-    for (const auto& [tpe, c] : region_contours) {
+    for (const auto& contour : region_contours) {
         try {
-            add_contour(tpe, c);
+            add_contour(contour.hole_type, contour.geometry);
         } catch (const p2t::PointException& e) {
             throw p2t::PointException(e.point, "Could not add hole contour: " + std::string(e.what()));
         } catch (const std::runtime_error& e) {
@@ -406,8 +422,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
-    const std::list<std::pair<TerrainType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
-    const std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
+    const std::list<RegionWithMargin<TerrainType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
+    const std::list<RegionWithMargin<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,
     float triangulation_scale,
     float uv_scale,
@@ -449,8 +465,8 @@ void Mlib::triangulate_water(
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
-    const std::list<std::pair<WaterType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
-    const std::list<std::pair<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,
     float triangulation_scale,
     float uv_scale,

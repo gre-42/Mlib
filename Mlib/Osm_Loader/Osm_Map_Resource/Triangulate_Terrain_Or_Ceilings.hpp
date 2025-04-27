@@ -23,14 +23,16 @@ class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 typedef EntityTypeTriangleList<WaterType> WaterTypeTriangleList;
 enum class ContourDetectionStrategy;
+template <class TRegionType, class TGeometry>
+struct RegionWithMargin;
 
 void triangulate_terrain_or_ceilings(
     TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
-    const std::list<std::pair<TerrainType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
-    const std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
+    const std::list<RegionWithMargin<TerrainType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
+    const std::list<RegionWithMargin<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,
     float triangulation_scale,
     float uv_scale,
@@ -50,8 +52,8 @@ void triangulate_water(
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
-    const std::list<std::pair<WaterType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
-    const std::list<std::pair<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,
     float triangulation_scale,
     float uv_scale,

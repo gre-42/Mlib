@@ -76,6 +76,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Parse_Osm_Xml.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Project_Nodes_Onto_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Racing_Line_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Report_Osm_Problems.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_Ways.hpp>
@@ -326,11 +327,11 @@ OsmMapResource::OsmMapResource(
     }
 
     fg.update("Determine terrain region contours");
-    std::list<std::pair<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> terrain_region_contours =
+    std::list<RegionWithMargin<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>> terrain_region_contours =
         get_terrain_region_contours(nodes, ways);
     WayBvh terrain_region_contours_bvh;
-    for (const auto& [_, contour] : terrain_region_contours) {
-        terrain_region_contours_bvh.add_path(contour);
+    for (const auto& contour : terrain_region_contours) {
+        terrain_region_contours_bvh.add_path(contour.geometry);
     }
 
     GetMorphology get_building_morphology{
@@ -572,9 +573,9 @@ OsmMapResource::OsmMapResource(
                 bounding_info,
                 steiner_points,
                 map_outer_contour,
-                {{TerrainType::STREET_HOLE, street_hole_triangles},
-                 {TerrainType::BUILDING_HOLE, building_hole_triangles},
-                 {TerrainType::OCEAN_GROUND, ocean_ground_triangles}},
+                {{TerrainType::STREET_HOLE, TerrainType::UNDEFINED, (CompressedScenePos)0.f, street_hole_triangles},
+                 {TerrainType::BUILDING_HOLE, TerrainType::GRASS, config.building_grass_width, building_hole_triangles},
+                 {TerrainType::OCEAN_GROUND, TerrainType::UNDEFINED, (CompressedScenePos)0.f, ocean_ground_triangles}},
                 terrain_region_contours,
                 config.scale,
                 config.triangulation_scale,
@@ -596,6 +597,8 @@ OsmMapResource::OsmMapResource(
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<CompressedScenePos>& e) {
+            handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const EdgeException<double>& e) {
             handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::EdgeException& e) {
             handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
@@ -1349,7 +1352,7 @@ OsmMapResource::OsmMapResource(
 
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_all;
     if (!config.water_texture->empty()) {
-        std::list<std::pair<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
+        std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
             get_water_region_contours(nodes, ways);
         fg.update("Triangulate water");
         try {
@@ -2080,6 +2083,14 @@ void OsmMapResource::handle_edge_exception(
 
 void OsmMapResource::handle_edge_exception(
     const EdgeException<CompressedScenePos>& e,
+    const std::string& message) const
+{
+    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
+    throw std::runtime_error(e.str(message, &m));
+}
+
+void OsmMapResource::handle_edge_exception(
+    const EdgeException<double>& e,
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
