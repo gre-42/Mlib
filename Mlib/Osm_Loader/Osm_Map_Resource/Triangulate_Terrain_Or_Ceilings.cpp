@@ -172,7 +172,8 @@ void triangulate_entity_list(
     EntityType bounding_terrain_type,
     EntityType default_terrain_type,
     const std::set<EntityType>& excluded_entitities,
-    ContourDetectionStrategy contour_detection_strategy)
+    ContourDetectionStrategy contour_detection_strategy,
+    const std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos>& garden_margin)
 {
     std::list<FixedArray<CompressedScenePos, 2>> steiner_point_positions;
     for (const auto& p : steiner_points) {
@@ -291,7 +292,7 @@ void triangulate_entity_list(
         const std::list<FixedArray<CompressedScenePos, 2>>& contour)
     {
         std::list<FixedArray<CompressedScenePos, 2>> m;
-        add_contour(region_type, get_region_margin_contour(contour, margin));
+        add_contour(region_type, get_region_margin_contour(contour, margin, garden_margin));
     };
     for (auto& hc : hole_contours) {
         for (std::list<FixedArray<CompressedScenePos, 2>>& c : hc.geometry) {
@@ -436,7 +437,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     TerrainType bounding_terrain_type,
     TerrainType default_terrain_type,
     const std::set<TerrainType>& excluded_terrain_types,
-    ContourDetectionStrategy contour_detection_strategy)
+    ContourDetectionStrategy contour_detection_strategy,
+    const std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos>& garden_margin)
 {
     triangulate_entity_list(
         tl_terrain,
@@ -457,7 +459,8 @@ void Mlib::triangulate_terrain_or_ceilings(
         bounding_terrain_type,
         default_terrain_type,
         excluded_terrain_types,
-        contour_detection_strategy);
+        contour_detection_strategy,
+        garden_margin);
 }
 
 void Mlib::triangulate_water(
@@ -498,6 +501,7 @@ void Mlib::triangulate_water(
         triangle_filename,
         bounding_water_type,
         default_water_type,
-        { WaterType::HOLE },  // excluded_entitities
-        contour_detection_strategy);
+        { WaterType::HOLE },            // excluded_entitities
+        contour_detection_strategy,
+        {});                            // garden_margin
 }

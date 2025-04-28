@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Static_Face_Lighting.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
@@ -283,7 +284,7 @@ void Mlib::add_beacons_to_raceways(
         {
             auto sw = subdivided_way(nodes, w.second.nd, scale, raceway_beacon_distance);
             for (const auto& p : sw) {
-                bri.add_parsed_resource_name(p, (CompressedScenePos)0.f, prn, 0.f, 1.f);
+                bri.add_parsed_resource_name(p.position(), (CompressedScenePos)0.f, prn, 0.f, 1.f);
             }
         }
     }

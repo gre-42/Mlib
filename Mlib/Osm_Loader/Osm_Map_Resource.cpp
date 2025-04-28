@@ -60,6 +60,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Generate_Racing_Line_Playback.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Garden_Margin.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Morphology.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
@@ -568,6 +569,7 @@ OsmMapResource::OsmMapResource(
         // }
         fg.update("Triangulate terrain");
         try {
+            auto garden_margin = get_garden_margin(buildings, nodes, config.scale, config.max_wall_width);
             triangulate_terrain_or_ceilings(
                 *tl_terrain_,
                 bounding_info,
@@ -591,7 +593,8 @@ OsmMapResource::OsmMapResource(
                 // Delete street holes because their untriangulated version is
                 // used for terrain smoothing.
                 { TerrainType::STREET_HOLE },
-                config.contour_detection_strategy);
+                config.contour_detection_strategy,
+                garden_margin);
         } catch (const PointException<CompressedScenePos, 2>& e) {
             handle_point_exception2(e, "Could not triangulate terrain (TERRAIN_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::PointException& e) {

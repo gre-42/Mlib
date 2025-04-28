@@ -9,6 +9,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Visit_Line_Segments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -78,24 +79,24 @@ void Mlib::draw_wall_barriers(
             if (bs.depth == 0.f) {
                 float length_mod1 = 0.f;
                 visit_line_segments(sw, [&](
-                    const FixedArray<CompressedScenePos, 2>& aL,
-                    const FixedArray<CompressedScenePos, 2>& aR,
-                    const FixedArray<CompressedScenePos, 2>& b,
-                    const FixedArray<CompressedScenePos, 2>& c,
-                    const FixedArray<CompressedScenePos, 2>& dL,
-                    const FixedArray<CompressedScenePos, 2>& dR,
+                    const SubdividedWayVertex& aL,
+                    const SubdividedWayVertex& aR,
+                    const SubdividedWayVertex& b,
+                    const SubdividedWayVertex& c,
+                    const SubdividedWayVertex& dL,
+                    const SubdividedWayVertex& dR,
                     SegmentPosition position)
                     {
-                        const auto& p0 = b;
-                        const auto& p1 = c;
+                        auto p0 = b.position();
+                        auto p1 = c.position();
                         float width = (float)std::sqrt(sum(squared(p0 - p1)));
                         float height = (bl.top - bl.bottom) * scale;
                         if (steiner_points != nullptr) {
                             steiner_points->push_back({
-                                .position = {b(0), b(1), (CompressedScenePos)0.f},
+                                .position = {p0(0), p0(1), (CompressedScenePos)0.f},
                                 .type = SteinerPointType::WALL });
                             steiner_points->push_back({
-                                .position = {c(0), c(1), (CompressedScenePos)0.f},
+                                .position = {p1(0), p1(1), (CompressedScenePos)0.f},
                                 .type = SteinerPointType::WALL });
                         }
                         FixedArray<float, 2> uv = 1.f / scale * uv_scale * bs.uv;
@@ -134,34 +135,34 @@ void Mlib::draw_wall_barriers(
                             &pp00b,
                             &pp10b,
                             &pp11b);
-                        vertex_height_bindings[&pp00a->position] = c;
-                        vertex_height_bindings[&pp11a->position] = b;
-                        vertex_height_bindings[&pp01a->position] = c;
-                        vertex_height_bindings[&pp00b->position] = c;
-                        vertex_height_bindings[&pp10b->position] = b;
-                        vertex_height_bindings[&pp11b->position] = b;
+                        vertex_height_bindings[&pp00a->position] = c.position();
+                        vertex_height_bindings[&pp11a->position] = b.position();
+                        vertex_height_bindings[&pp01a->position] = c.position();
+                        vertex_height_bindings[&pp00b->position] = c.position();
+                        vertex_height_bindings[&pp10b->position] = b.position();
+                        vertex_height_bindings[&pp11b->position] = b.position();
                         length_mod1 = std::fmod(length_mod1 + width, 1.f / uv(0));
                     });
             } else {
                 FixedArray<float, 2> length_mod1{ 0.f };
                 visit_line_segments(sw, [&](
-                    const FixedArray<CompressedScenePos, 2>& aL,
-                    const FixedArray<CompressedScenePos, 2>& aR,
-                    const FixedArray<CompressedScenePos, 2>& b,
-                    const FixedArray<CompressedScenePos, 2>& c,
-                    const FixedArray<CompressedScenePos, 2>& dL,
-                    const FixedArray<CompressedScenePos, 2>& dR,
+                    const SubdividedWayVertex& aL,
+                    const SubdividedWayVertex& aR,
+                    const SubdividedWayVertex& b,
+                    const SubdividedWayVertex& c,
+                    const SubdividedWayVertex& dL,
+                    const SubdividedWayVertex& dR,
                     SegmentPosition position)
                     {
                         OsmRectangle2D rect = uninitialized;
                         if (!OsmRectangle2D::from_line(
                             rect,
-                            aL,
-                            aR,
-                            b,
-                            c,
-                            dL,
-                            dR,
+                            aL.position(),
+                            aR.position(),
+                            b.position(),
+                            c.position(),
+                            dL.position(),
+                            dR.position(),
                             (CompressedScenePos)(scale * bs.depth),
                             (CompressedScenePos)(scale * bs.depth),
                             (CompressedScenePos)(scale * bs.depth),
@@ -171,16 +172,18 @@ void Mlib::draw_wall_barriers(
                         {
                             lerr() << "Error triangulating barrier " + bu.id;
                         } else {
+                            auto B = b.position();
+                            auto C = c.position();    
                             FixedArray<float, 2> width{
                                 (float)std::sqrt(sum(squared(rect.p00_ - rect.p10_))),
                                 (float)std::sqrt(sum(squared(rect.p01_ - rect.p11_))) };
                             float height = (bl.top - bl.bottom) * scale;
                             if (steiner_points != nullptr) {
                                 steiner_points->push_back({
-                                    .position = {b(0), b(1), (CompressedScenePos)0.f},
+                                    .position = {B(0), B(1), (CompressedScenePos)0.f},
                                     .type = SteinerPointType::WALL });
                                 steiner_points->push_back({
-                                    .position = {c(0), c(1), (CompressedScenePos)0.f},
+                                    .position = {C(0), C(1), (CompressedScenePos)0.f},
                                     .type = SteinerPointType::WALL });
                             }
                             FixedArray<float, 2> uv = 1.f / scale * uv_scale * bs.uv;
@@ -231,12 +234,12 @@ void Mlib::draw_wall_barriers(
                                     &pp00b,
                                     &pp10b,
                                     &pp11b);
-                                set_height_binding(pp00a->position, c);
-                                set_height_binding(pp00b->position, c);
-                                set_height_binding(pp10b->position, b);
-                                set_height_binding(pp11b->position, b);
-                                set_height_binding(pp11a->position, b);
-                                set_height_binding(pp01a->position, c);
+                                set_height_binding(pp00a->position, C);
+                                set_height_binding(pp00b->position, C);
+                                set_height_binding(pp10b->position, B);
+                                set_height_binding(pp11b->position, B);
+                                set_height_binding(pp11a->position, B);
+                                set_height_binding(pp01a->position, C);
                             }
                             {
                                 ColoredVertex<CompressedScenePos>* pp00a;
@@ -273,12 +276,12 @@ void Mlib::draw_wall_barriers(
                                     &pp00b,
                                     &pp10b,
                                     &pp11b);
-                                set_height_binding(pp00a->position, b);
-                                set_height_binding(pp00b->position, b);
-                                set_height_binding(pp10b->position, c);
-                                set_height_binding(pp11b->position, c);
-                                set_height_binding(pp11a->position, c);
-                                set_height_binding(pp01a->position, b);
+                                set_height_binding(pp00a->position, B);
+                                set_height_binding(pp00b->position, B);
+                                set_height_binding(pp10b->position, C);
+                                set_height_binding(pp11b->position, C);
+                                set_height_binding(pp11a->position, C);
+                                set_height_binding(pp01a->position, B);
                             }
                             if (any(position & SegmentPosition::START)) {
                                 ColoredVertex<CompressedScenePos>* pp00a;
@@ -315,12 +318,12 @@ void Mlib::draw_wall_barriers(
                                     &pp00b,
                                     &pp10b,
                                     &pp11b);
-                                set_height_binding(pp00a->position, b);
-                                set_height_binding(pp00b->position, b);
-                                set_height_binding(pp10b->position, b);
-                                set_height_binding(pp11b->position, b);
-                                set_height_binding(pp11a->position, b);
-                                set_height_binding(pp01a->position, b);
+                                set_height_binding(pp00a->position, B);
+                                set_height_binding(pp00b->position, B);
+                                set_height_binding(pp10b->position, B);
+                                set_height_binding(pp11b->position, B);
+                                set_height_binding(pp11a->position, B);
+                                set_height_binding(pp01a->position, B);
                             }
                             if (any(position & SegmentPosition::END)) {
                                 ColoredVertex<CompressedScenePos>* pp00a;
@@ -357,12 +360,12 @@ void Mlib::draw_wall_barriers(
                                     &pp00b,
                                     &pp10b,
                                     &pp11b);
-                                set_height_binding(pp00a->position, c);
-                                set_height_binding(pp00b->position, c);
-                                set_height_binding(pp10b->position, c);
-                                set_height_binding(pp11b->position, c);
-                                set_height_binding(pp11a->position, c);
-                                set_height_binding(pp01a->position, c);
+                                set_height_binding(pp00a->position, C);
+                                set_height_binding(pp00b->position, C);
+                                set_height_binding(pp10b->position, C);
+                                set_height_binding(pp11b->position, C);
+                                set_height_binding(pp11a->position, C);
+                                set_height_binding(pp01a->position, C);
                             }
                             {
                                 ColoredVertex<CompressedScenePos>* pp00a;
@@ -399,12 +402,12 @@ void Mlib::draw_wall_barriers(
                                     &pp00b,
                                     &pp10b,
                                     &pp11b);
-                                set_height_binding(pp00a->position, c);
-                                set_height_binding(pp00b->position, c);
-                                set_height_binding(pp10b->position, c);
-                                set_height_binding(pp11b->position, b);
-                                set_height_binding(pp11a->position, b);
-                                set_height_binding(pp01a->position, b);
+                                set_height_binding(pp00a->position, C);
+                                set_height_binding(pp00b->position, C);
+                                set_height_binding(pp10b->position, C);
+                                set_height_binding(pp11b->position, B);
+                                set_height_binding(pp11a->position, B);
+                                set_height_binding(pp01a->position, B);
                             }
                             length_mod1 = {
                                 std::fmod(length_mod1(0) - width(0), 1.f / uv(0)),

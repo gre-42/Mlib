@@ -5,6 +5,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -56,12 +57,12 @@ std::list<BuildingSegment> Mlib::smooth_building_level(
         OsmRectangle2D rect = uninitialized;
         if (!OsmRectangle2D::from_line(
                 rect,
-                *a,
-                *a,
-                *b,
-                *c,
-                *d,
-                *d,
+                a->position(),
+                a->position(),
+                b->position(),
+                c->position(),
+                d->position(),
+                d->position(),
                 (CompressedScenePos)(scale * width0),
                 (CompressedScenePos)(scale * width1),
                 (CompressedScenePos)(scale * width0),
@@ -72,7 +73,7 @@ std::list<BuildingSegment> Mlib::smooth_building_level(
             THROW_OR_ABORT("Error triangulating level of building " + bu.id);
         } else {
             result.emplace_back(
-                FixedArray<CompressedScenePos, 2, 2>{*a, *b},
+                FixedArray<SubdividedWayVertex, 2>{*a, *b},
                 FixedArray<CompressedScenePos, 2, 2>{rect.p01_, rect.p11_});
         }
         // draw_node(triangles, nodes.at(*a));
@@ -123,7 +124,7 @@ BuildingLevelOutline Mlib::smooth_building_level_outline(
             : (CompressedScenePos)0.;
     }
     for (const auto& w : segments) {
-        result.outline.emplace_back(w.orig[0], w.indented[0]);
+        result.outline.emplace_back(w.orig(0), w.indented[0]);
     }
     return result;
 }

@@ -16,6 +16,8 @@ struct ColoredVertex;
 struct SteinerPointInfo;
 template <typename TData, size_t... tshape>
 class FixedArray;
+template <class TData, size_t... tshape>
+class OrderableFixedArray;
 enum class TerrainType;
 enum class WaterType;
 template <class EntityType>
@@ -45,7 +47,8 @@ void triangulate_terrain_or_ceilings(
     TerrainType bounding_terrain_type,
     TerrainType default_terrain_type,
     const std::set<TerrainType>& excluded_terrain_types,
-    ContourDetectionStrategy contour_detection_strategy);
+    ContourDetectionStrategy contour_detection_strategy,
+    const std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos>& garden_margin);
 
 void triangulate_water(
     WaterTypeTriangleList& tl_water,

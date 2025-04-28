@@ -1,23 +1,24 @@
 #include "Visit_Line_Segments.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 
 using namespace Mlib;
 
 void Mlib::visit_line_segments(
-    const std::list<FixedArray<CompressedScenePos, 2>>& path,
+    const std::list<SubdividedWayVertex>& path,
     const std::function<void(
-        const FixedArray<CompressedScenePos, 2>& aL,
-        const FixedArray<CompressedScenePos, 2>& aR,
-        const FixedArray<CompressedScenePos, 2>& b,
-        const FixedArray<CompressedScenePos, 2>& c,
-        const FixedArray<CompressedScenePos, 2>& dL,
-        const FixedArray<CompressedScenePos, 2>& dR,
+        const SubdividedWayVertex& aL,
+        const SubdividedWayVertex& aR,
+        const SubdividedWayVertex& b,
+        const SubdividedWayVertex& c,
+        const SubdividedWayVertex& dL,
+        const SubdividedWayVertex& dR,
         SegmentPosition position)>& visit)
 {
     if (path.size() < 2) {
         return;
     }
-    if (all(path.front() == path.back())) {
+    if (all(path.front().position() == path.back().position())) {
         auto a = ++path.begin();
         for (size_t i = 0; i < path.size() - 1; ++i) {
             auto b = a;

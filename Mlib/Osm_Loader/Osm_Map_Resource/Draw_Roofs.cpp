@@ -12,6 +12,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Visit_Line_Segments.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -84,7 +85,7 @@ void Mlib::draw_roofs(
             }
             auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
             for (const auto& v : sw) {
-                auto it = displacements.find(OrderableFixedArray{v});
+                auto it = displacements.find(OrderableFixedArray{v.position()});
                 if (it == displacements.end()) {
                     lwarn() << "Displacements not found for building " + bu.id;
                     max_height = std::numeric_limits<CompressedScenePos>::lowest();
@@ -102,23 +103,23 @@ void Mlib::draw_roofs(
             float uwidth = std::sqrt(squared(width) + squared(uheight));
             float length_mod1 = 0.f;
             visit_line_segments(sw, [&](
-                const FixedArray<CompressedScenePos, 2>& aL,
-                const FixedArray<CompressedScenePos, 2>& aR,
-                const FixedArray<CompressedScenePos, 2>& b,
-                const FixedArray<CompressedScenePos, 2>& c,
-                const FixedArray<CompressedScenePos, 2>& dL,
-                const FixedArray<CompressedScenePos, 2>& dR,
+                const SubdividedWayVertex& aL,
+                const SubdividedWayVertex& aR,
+                const SubdividedWayVertex& b,
+                const SubdividedWayVertex& c,
+                const SubdividedWayVertex& dL,
+                const SubdividedWayVertex& dR,
                 SegmentPosition position)
                 {
                     OsmRectangle2D rect = uninitialized;
                     if (!OsmRectangle2D::from_line(
                         rect,
-                        aL,
-                        aR,
-                        b,
-                        c,
-                        dL,
-                        dR,
+                        aL.position(),
+                        aR.position(),
+                        b.position(),
+                        c.position(),
+                        dL.position(),
+                        dR.position(),
                         (CompressedScenePos)(scale * width),
                         (CompressedScenePos)(scale * width),
                         (CompressedScenePos)(scale * width),
@@ -128,13 +129,13 @@ void Mlib::draw_roofs(
                     {
                         lerr() << "Error triangulating roof " + bu.id;
                     } else {
-                        float width = (float)std::sqrt(sum(squared(b - c)));
+                        float width = (float)std::sqrt(sum(squared(b.position() - c.position())));
                         if (model_triangles.empty() ||
                             (tpe == BuildingDetailType::LOW) ||
                             (tpe == BuildingDetailType::COMBINED))
                         {
-                            rect.p00_ = b;
-                            rect.p10_ = c;
+                            rect.p00_ = b.position();
+                            rect.p10_ = c.position();
                             FixedArray<CompressedScenePos, 2, 2, 3> rect3{
                                 FixedArray<CompressedScenePos, 2, 3>{
                                     FixedArray<CompressedScenePos, 3>{rect.p00_(0), rect.p00_(1), max_height + (CompressedScenePos)(zz0 * scale)},

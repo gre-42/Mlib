@@ -67,7 +67,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
             auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
             if (displacements != nullptr) {
                 for (const auto& v : sw.outline) {
-                    auto it = displacements->find(OrderableFixedArray{v.orig});
+                    auto it = displacements->find(OrderableFixedArray{v.orig.position()});
                     if (it == displacements->end()) {
                         lerr() << "Building " + bu.id + ": could not determine displacement";
                         max_height = std::numeric_limits<CompressedScenePos>::lowest();
@@ -125,7 +125,8 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 TerrainType::UNDEFINED,                                          // bounding_terrain_type
                 TerrainType::UNDEFINED,                                          // default_terrain_type
                 {},                                                              // excluded_terrain_types
-                contour_detection_strategy);
+                contour_detection_strategy,
+                {});                                                             // garden_margin
         } catch (const p2t::PointException& e) {
             throw p2t::PointException{ e.point, "Could not triangulate building \"" + bu.id + "\": " + e.what() };
         } catch (const TriangleException<CompressedScenePos>& e) {

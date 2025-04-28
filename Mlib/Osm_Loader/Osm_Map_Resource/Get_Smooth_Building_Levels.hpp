@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Way_Vertex.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <list>
 #include <map>
@@ -14,7 +15,7 @@ enum class DrawBuildingPartType;
 enum class BuildingDetailType;
 
 struct BuildingVertex {
-    FixedArray<CompressedScenePos, 2> orig;
+    SubdividedWayVertex orig;
     FixedArray<CompressedScenePos, 2> indented;
 };
 
@@ -24,7 +25,7 @@ struct BuildingLevelOutline {
 };
 
 struct BuildingSegment {
-    FixedArray<CompressedScenePos, 2, 2> orig;
+    FixedArray<SubdividedWayVertex, 2> orig;
     FixedArray<CompressedScenePos, 2, 2> indented;
 };
 

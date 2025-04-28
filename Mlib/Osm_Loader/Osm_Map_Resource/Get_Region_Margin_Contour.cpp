@@ -1,12 +1,14 @@
 #include "Get_Region_Margin_Contour.hpp"
-#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
 
 using namespace Mlib;
 
 std::list<FixedArray<CompressedScenePos, 2>> Mlib::get_region_margin_contour(
     const std::list<FixedArray<CompressedScenePos, 2>>& region,
-    CompressedScenePos width)
+    CompressedScenePos width,
+    const std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos>& garden_margin)
 {
     std::list<FixedArray<CompressedScenePos, 2>> result;
 
@@ -27,6 +29,11 @@ std::list<FixedArray<CompressedScenePos, 2>> Mlib::get_region_margin_contour(
         if (d == region.end()) {
             d = region.begin();
         }
+        auto b_width = garden_margin.find(OrderableFixedArray{*b});
+        auto w = (b_width == garden_margin.end()
+            ? width
+            : b_width->second);
+
         OsmRectangle2D rect = uninitialized;
         if (!OsmRectangle2D::from_line(
                 rect,
@@ -36,16 +43,17 @@ std::list<FixedArray<CompressedScenePos, 2>> Mlib::get_region_margin_contour(
                 *c,
                 *d,
                 *d,
-                2.f * width,
-                2.f * width,
-                2.f * width,
-                2.f * width,
-                2.f * width,
-                2.f * width))
+                2.f * w,
+                2.f * w,
+                2.f * w,
+                2.f * w,
+                2.f * w,
+                2.f * w))
         {
-            THROW_OR_ABORT2(EdgeException<CompressedScenePos>(*a, *b, "Error computing region margin"));
+            using PE = PointException<CompressedScenePos, 2>;
+            THROW_OR_ABORT2(PE(*b, "Error computing region margin"));
         } else {
-            result.emplace_back(rect.p11_);
+            result.emplace_back(rect.p01_);
         }
         ++a;
         if (a == region.end()) {
