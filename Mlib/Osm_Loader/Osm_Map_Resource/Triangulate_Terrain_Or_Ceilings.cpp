@@ -104,7 +104,7 @@ static void plot_contours(const std::string& filename, const std::vector<std::ve
         }
         visit_contour_intersections(
             contours2,
-            [&highlighted_nodes](const FixedArray<ScenePos, 2>& intersection)
+            [&highlighted_nodes](const FixedArray<ScenePos, 2>& intersection, size_t, size_t)
             {
                 highlighted_nodes.emplace_back(
                     intersection.casted<CompressedScenePos>());

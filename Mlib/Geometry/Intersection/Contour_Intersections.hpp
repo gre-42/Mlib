@@ -2,6 +2,7 @@
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Precision.hpp>
 
@@ -13,8 +14,12 @@ bool visit_contour_intersections(
     const TVisitor& visitor)
 {
     using Edge = FixedArray<CompressedScenePos, 2, 2>;
-    Bvh<CompressedScenePos, 2, Edge> bvh{{(CompressedScenePos)100., (CompressedScenePos)100.}, 10};
-    for (const auto& c : contours) {
+    struct EdgeAndIndex {
+        Edge edge;
+        size_t index;
+    };
+    Bvh<CompressedScenePos, 2, EdgeAndIndex> bvh{{(CompressedScenePos)100., (CompressedScenePos)100.}, 10};
+    for (const auto& [i, c] : enumerate(contours)) {
         for (auto it = c.begin(); it != c.end(); ++it) {
             auto s = it;
             ++s;
@@ -24,18 +29,18 @@ bool visit_contour_intersections(
             auto aabb = AxisAlignedBoundingBox<CompressedScenePos, 2>::from_points(edge);
             if (!bvh.visit(
                 aabb,
-                [&edge, &visitor](const Edge& data)
+                [i, &edge, &visitor](const EdgeAndIndex& data)
             {
                 FixedArray<ScenePos, 2> intersection = uninitialized;
-                if (intersect_lines(intersection, funpack(edge), funpack(data), 0., 0., false, true)) {
-                    return visitor(intersection);
+                if (intersect_lines(intersection, funpack(edge), funpack(data.edge), 0., 0., false, true)) {
+                    return visitor(intersection, i, data.index);
                 }
                 return true;
             }))
             {
                 return false;
             }
-            bvh.insert(aabb, edge);
+            bvh.insert(aabb, EdgeAndIndex{ edge, i });
         }
     }
     return true;

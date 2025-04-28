@@ -228,7 +228,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             for (const auto& v : sw.outline) {
                 outline.emplace_back(v.indented);
             }
-            if (!visit_contour_intersections({ outline }, [](const FixedArray<ScenePos, 2>&){
+            if (!visit_contour_intersections({ outline }, [](const FixedArray<ScenePos, 2>&, size_t, size_t){
                 return false;
             }))
             {
