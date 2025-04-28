@@ -29,10 +29,18 @@ std::list<FixedArray<CompressedScenePos, 2>> Mlib::get_region_margin_contour(
         if (d == region.end()) {
             d = region.begin();
         }
+        auto a_width = garden_margin.find(OrderableFixedArray{*a});
+        auto a_w = (a_width == garden_margin.end()
+            ? width
+            : a_width->second);
         auto b_width = garden_margin.find(OrderableFixedArray{*b});
-        auto w = (b_width == garden_margin.end()
+        auto b_w = (b_width == garden_margin.end()
             ? width
             : b_width->second);
+        auto c_width = garden_margin.find(OrderableFixedArray{*c});
+        auto c_w = (c_width == garden_margin.end()
+            ? width
+            : c_width->second);
 
         OsmRectangle2D rect = uninitialized;
         if (!OsmRectangle2D::from_line(
@@ -43,12 +51,12 @@ std::list<FixedArray<CompressedScenePos, 2>> Mlib::get_region_margin_contour(
                 *c,
                 *d,
                 *d,
-                2.f * w,
-                2.f * w,
-                2.f * w,
-                2.f * w,
-                2.f * w,
-                2.f * w))
+                2.f * std::min(a_w, b_w),
+                2.f * std::min(a_w, b_w),
+                2.f * std::min(b_w, c_w),
+                2.f * std::min(b_w, c_w),
+                2.f * width,
+                2.f * width))
         {
             using PE = PointException<CompressedScenePos, 2>;
             THROW_OR_ABORT2(PE(*b, "Error computing region margin"));
