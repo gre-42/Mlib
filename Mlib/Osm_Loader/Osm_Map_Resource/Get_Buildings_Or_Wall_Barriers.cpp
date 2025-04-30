@@ -1,10 +1,11 @@
 #include "Get_Buildings_Or_Wall_Barriers.hpp"
-#include <Mlib/Geometry/Intersection/Contour_Intersections.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Contour_Is_Ok.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Limits.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
@@ -228,10 +229,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             for (const auto& v : sw.outline) {
                 outline.emplace_back(v.indented);
             }
-            if (!visit_contour_intersections({ outline }, [](const FixedArray<ScenePos, 2>&, size_t, size_t){
-                return false;
-            }))
-            {
+            if (!contour_is_ok(outline, MIN_VERTEX_DISTANCE)) {
                 lwarn() << "Building \"" << id << "\" has intersecting roof segments";
                 bu.roof_9_2.reset();
             }

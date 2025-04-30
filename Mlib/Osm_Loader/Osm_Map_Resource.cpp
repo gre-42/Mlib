@@ -67,6 +67,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Terrain_Way_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Indent_Buildings.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Load_Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Colors.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
@@ -156,7 +157,7 @@ OsmMapResource::OsmMapResource(
     , terrain_styles_{ config.triangle_sampler_resource_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
-    NodesAndWays naws_or;
+    NodesAndWays naws;
     NormalizedPointsFixed<double> normalized_points{ ScaleMode::NONE, OffsetMode::CENTERED };
 
     FunctionGuard fg{ "OSM map resource" };
@@ -167,22 +168,25 @@ OsmMapResource::OsmMapResource(
         config.scale,
         normalized_points,
         normalization_matrix_,
-        naws_or.nodes,
-        naws_or.ways);
+        naws.nodes,
+        naws.ways);
     triangulation_normalization_matrix_ = normalization_matrix_.pre_scaled(config.triangulation_scale);
     
     fg.update("Smoothen ways");
-    NodesAndWays naws_smooth = smoothen_ways(
-        naws_or,
+    naws = smoothen_ways(
+        naws,
         config.smoothed_highways,
         config.smoothed_aeroways,
         config.default_street_width,
         config.default_lane_width,
         config.scale,
         config.max_smooth_highway_length);
-    const std::map<std::string, Node>& nodes = naws_smooth.nodes;
-    const std::map<std::string, Way>& ways = naws_smooth.ways;
-    std::map<std::string, Node>& mnodes = naws_smooth.nodes;
+    naws = indent_buildings(
+        naws,
+        config.indent_buildings_amount);
+    const std::map<std::string, Node>& nodes = naws.nodes;
+    const std::map<std::string, Way>& ways = naws.ways;
+    std::map<std::string, Node>& mnodes = naws.nodes;
 
     OsmTriangleLists osm_triangle_lists{config, ""};
     OsmTriangleLists air_triangle_lists{config, "_air"};

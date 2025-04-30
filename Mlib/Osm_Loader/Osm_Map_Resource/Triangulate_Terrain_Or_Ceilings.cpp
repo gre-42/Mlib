@@ -15,6 +15,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Region_Margin_Contour.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Limits.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/PTri.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Region_With_Margin.hpp>
@@ -104,10 +105,12 @@ static void plot_contours(const std::string& filename, const std::vector<std::ve
         }
         visit_contour_intersections(
             contours2,
-            [&highlighted_nodes](const FixedArray<ScenePos, 2>& intersection, size_t, size_t)
+            [&highlighted_nodes](const FixedArray<ScenePos, 2>& intersection, size_t, size_t, ScenePos distance)
             {
-                highlighted_nodes.emplace_back(
-                    intersection.casted<CompressedScenePos>());
+                if (distance < (ScenePos)MIN_VERTEX_DISTANCE) {
+                    highlighted_nodes.emplace_back(
+                        intersection.casted<CompressedScenePos>());
+                }
                 return true;
             });
     }

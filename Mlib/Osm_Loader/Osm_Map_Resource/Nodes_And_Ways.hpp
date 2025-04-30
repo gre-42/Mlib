@@ -11,7 +11,7 @@ struct Way;
 
 struct NodesAndWays {
     Map<std::string, Node> nodes;
-    std::map<std::string, Way> ways;
+    Map<std::string, Way> ways;
 };
 
 }
