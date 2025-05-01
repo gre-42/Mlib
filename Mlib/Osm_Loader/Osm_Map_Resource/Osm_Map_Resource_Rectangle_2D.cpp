@@ -453,12 +453,12 @@ WarpedSegment2D::WarpedSegment2D(const OsmRectangle2D& r)
 
 FixedArray<CompressedScenePos, 2> WarpedSegment2D::warp_0(double x) const
 {
-    return (((1 - x) / 2) * funpack(r_.p00_) + ((x + 1) / 2) * funpack(r_.p01_)).casted<CompressedScenePos>();
+    return lerp11(r_.p00_, r_.p01_, x).casted<CompressedScenePos>();
 }
 
 FixedArray<CompressedScenePos, 2> WarpedSegment2D::warp_1(double x) const
 {
-    return (((1 - x) / 2) * funpack(r_.p10_) + ((x + 1) / 2) * funpack(r_.p11_)).casted<CompressedScenePos>();
+    return lerp11(r_.p10_, r_.p11_, x).casted<CompressedScenePos>();
 }
 
 FixedArray<CompressedScenePos, 3> WarpedSegment2D::warp_0(const FixedArray<double, 3>& p, double scale, double width, CompressedScenePos height) const
