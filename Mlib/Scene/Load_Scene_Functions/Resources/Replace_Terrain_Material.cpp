@@ -25,7 +25,7 @@ DECLARE_ARGUMENT(up_axis);
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "replace_terrain_material",

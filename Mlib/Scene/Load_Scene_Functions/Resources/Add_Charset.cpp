@@ -16,7 +16,7 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(chars);
 }
         
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "add_charset",

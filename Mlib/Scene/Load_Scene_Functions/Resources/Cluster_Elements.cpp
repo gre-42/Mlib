@@ -24,7 +24,7 @@ DECLARE_ARGUMENT(instantiables_variable);
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "cluster_elements",

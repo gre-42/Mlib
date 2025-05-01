@@ -21,7 +21,7 @@ DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(flip_horizontally);
 }
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "add_to_gallery",

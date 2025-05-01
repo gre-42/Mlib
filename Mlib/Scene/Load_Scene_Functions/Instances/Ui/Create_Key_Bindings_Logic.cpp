@@ -84,7 +84,7 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "key_bindings",

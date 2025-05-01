@@ -17,7 +17,7 @@ DECLARE_ARGUMENT(reason);
 DECLARE_ARGUMENT(indicator);
 }
         
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "set_requires_reload",

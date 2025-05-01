@@ -15,7 +15,7 @@ DECLARE_ARGUMENT(alias);
 DECLARE_ARGUMENT(filenames);
 }
         
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "add_cubemap",

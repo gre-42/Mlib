@@ -20,7 +20,7 @@ DECLARE_ARGUMENT(resource);
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "register_geographic_mapping",

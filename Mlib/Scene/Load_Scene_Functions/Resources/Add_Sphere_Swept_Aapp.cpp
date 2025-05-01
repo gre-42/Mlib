@@ -24,7 +24,7 @@ DECLARE_ARGUMENT(physics_material);
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "add_swept_sphere_aabb",

@@ -45,7 +45,7 @@ void YplnUpdateBulletProperties::execute(const LoadSceneJsonUserFunctionArgs& ar
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "ypln_update_bullet_properties",

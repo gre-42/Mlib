@@ -14,7 +14,7 @@ DECLARE_ARGUMENT(fallback_filename);
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "load_key_configurations",

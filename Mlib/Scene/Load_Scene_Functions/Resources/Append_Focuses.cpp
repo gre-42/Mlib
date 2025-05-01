@@ -15,7 +15,7 @@ DECLARE_ARGUMENT(content);
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "append_focuses",

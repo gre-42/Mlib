@@ -42,7 +42,7 @@ void SetTrailerHitchPositions::execute(const LoadSceneJsonUserFunctionArgs& args
 
 namespace {
 
-static struct RegisterJsonUserFunction {
+struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "set_trailer_hitch_positions",
