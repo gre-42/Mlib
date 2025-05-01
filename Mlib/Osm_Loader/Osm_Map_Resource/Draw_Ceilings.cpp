@@ -38,7 +38,7 @@ void Mlib::draw_ceilings(
             .aggregate_mode = (config.building_cluster_width == 0)
                 ? AggregateMode::SORTED_CONTINUOUSLY
                 : AggregateMode::NONE,
-            .shading = CEILING_REFLECTANCE,
+            .shading = material_shading(RawShading::CEILING, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         morphology,
         buildings,

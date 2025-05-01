@@ -222,7 +222,8 @@ void triangulate_entity_list(
             for (const auto& v : tt.flat_iterable()) {
                 if (close_neighbor_detector.contains_neighbor(
                     {v.position(0), v.position(1)},
-                    (CompressedScenePos)1e-2))
+                    (CompressedScenePos)1e-2,
+                    DuplicateRule::NO_NEIGHBOR))
                 {
                     if (!contour_triangles_filename.empty()) {
                         plot_tris(contour_triangles_filename + to_string(hole.hole_type) + ".current.obj", hole.geometry, { OrderableFixedArray{v.position} });

@@ -12,7 +12,8 @@ static bool contains_close_neighbors(
     for (const auto& p : points) {
         if (close_neighbor_detector.contains_neighbor(
             p,
-            min_distance))
+            min_distance,
+            DuplicateRule::IS_NEIGHBOR))
         {
             return true;
         }

@@ -4,6 +4,11 @@
 
 namespace Mlib {
 
+enum class DuplicateRule {
+    IS_NEIGHBOR,
+    NO_NEIGHBOR
+};
+
 template <class TData, size_t tndim>
 class CloseNeighborDetector {
 public:
@@ -12,10 +17,15 @@ public:
         size_t level)
         : bvh_{ max_size, level }
     {}
-    bool contains_neighbor(const FixedArray<TData, tndim>& p, const TData& distance) {
-        bool res = bvh_.has_neighbor2(p, distance, [p](const auto& n) -> funpack_t<TData> {
+    bool contains_neighbor(
+        const FixedArray<TData, tndim>& p,
+        const TData& distance, DuplicateRule duplicate_rule)
+    {
+        bool res = bvh_.has_neighbor2(p, distance, [&](const auto& n) -> funpack_t<TData> {
             auto dist2 = sum(squared(p - n));
-            if (dist2 == 0.) {
+            if ((duplicate_rule == DuplicateRule::NO_NEIGHBOR) &&
+                (dist2 == 0.))
+            {
                 return INFINITY;
             }
             return dist2;

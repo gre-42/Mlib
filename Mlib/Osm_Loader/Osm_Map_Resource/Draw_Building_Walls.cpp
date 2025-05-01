@@ -23,6 +23,7 @@ void Mlib::draw_building_walls(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
+    const OsmResourceConfig& config,
     const Material& material,
     const Morphology& morphology,
     const std::list<Building>& buildings,
@@ -70,7 +71,7 @@ void Mlib::draw_building_walls(
                 "building_walls_" + std::to_string(mid++),
                 material,
                 morphology + bl.facade_texture_descriptor.material + BASE_VISIBLE_TERRAIN_MATERIAL));
-            tl->material.shading = material_shading(bl.facade_texture_descriptor.material);
+            tl->material.shading = material_shading(bl.facade_texture_descriptor.material, config);
             FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
             FixedArray<float, 3> top_height_color = height_colors(bl.top);
             float bottom_ambient_occlusion;

@@ -38,7 +38,6 @@ NodesAndWays Mlib::indent_buildings(
                 THROW_OR_ABORT("Building contour not closed: \"" + way_id + '"');
             }
             if (amount == (CompressedScenePos)0.f) {
-                result.ways.add(way_id, way);
                 return false;
             }
             return true;

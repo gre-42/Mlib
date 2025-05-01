@@ -15,21 +15,6 @@
 
 using namespace Mlib;
 
-static Shading material_specularity(Shading res, const OsmResourceConfig& config) {
-    res.emissive *= config.emissive_factor;
-    res.ambient *= config.ambient_factor;
-    res.diffuse *= config.diffuse_factor;
-    res.specular *= config.specular_factor;
-    res.fresnel.ambient *= config.fresnel_ambient_factor;
-    res.fog_distances = config.fog_distances;
-    res.fog_ambient = config.fog_ambient;
-    return res;
-}
-
-static Shading material_specularity(PhysicsMaterial material, const OsmResourceConfig& config) {
-    return material_specularity(material_shading(material), config);
-}
-
 static PhysicsMaterial physics_material(
     const std::map<TerrainType, PhysicsMaterial>& m,
     TerrainType terrain_type)
@@ -48,7 +33,7 @@ static Shading terrain_type_specularity(
 {
     auto pm = physics_material(m, terrain_type);
     try {
-        return material_specularity(pm, config);
+        return material_shading(pm, config);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Error determining specularity for terrain type \"" + to_string(terrain_type) + "\": " + e.what());
     }
@@ -216,7 +201,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .contains_skidmarks = true,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = material_specularity(pmit->second, config),
+                .shading = material_shading(pmit->second, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second }));
     }
@@ -263,7 +248,7 @@ OsmTriangleLists::OsmTriangleLists(
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             // depth-func==equal requires aggregation, because the terrain is also aggregated.
                             .aggregate_mode = AggregateMode::ONCE,
-                            .shading = material_specularity(
+                            .shading = material_shading(
                                 (road_properties.type != RoadType::WALL) ? pmit->second : PhysicsMaterial::SURFACE_BASE_STONE,
                                 config),
                             // .reflect_only_y = true,
@@ -303,7 +288,7 @@ OsmTriangleLists::OsmTriangleLists(
                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                     // depth-func==equal requires aggregation, because the terrain is also aggregated.
                     .aggregate_mode = AggregateMode::ONCE,
-                    .shading = material_specularity(MUD_REFLECTANCE, config),
+                    .shading = material_shading(RawShading::MUD, config),
                     // .reflect_only_y = true,
                     .draw_distance_noperations = 1000}.compute_color_mode(),
                 Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
@@ -329,7 +314,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = material_specularity((config.extrude_curb_amount == (CompressedScenePos)0. && tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),
+                .shading = material_shading((config.extrude_curb_amount == (CompressedScenePos)0. && tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second })); // mixed_texture: terrain_texture
     }
@@ -349,7 +334,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = material_specularity((tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),
+                .shading = material_shading((tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second })); // mixed_texture: terrain_texture
     }
@@ -370,7 +355,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = material_specularity(DEFAULT_REFLECTANCE, config),
+                .shading = material_shading(RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second }));
     }
@@ -385,7 +370,7 @@ OsmTriangleLists::OsmTriangleLists(
             // .wrap_mode_t = WrapMode::REPEAT,
             // depth-func==equal requires aggregation, because the terrain is also aggregated.
             .aggregate_mode = AggregateMode::ONCE,
-            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
+            .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE });
     tl_ditch = std::make_shared<TriangleList<CompressedScenePos>>(
@@ -399,7 +384,7 @@ OsmTriangleLists::OsmTriangleLists(
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
-            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
+            .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
     tl_tunnel_crossing = std::make_shared<TriangleList<CompressedScenePos>>(
@@ -409,7 +394,7 @@ OsmTriangleLists::OsmTriangleLists(
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
-            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
+            .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
     tl_tunnel_pipe = std::make_shared<TriangleList<CompressedScenePos>>(
@@ -419,23 +404,23 @@ OsmTriangleLists::OsmTriangleLists(
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
-            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
+            .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
     tl_tunnel_bdry = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_bdry" + name_suffix,
         Material{
-            .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
+            .shading = material_shading(RawShading::DEFAULT, config)},
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
     tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_entrance" + name_suffix,
         Material{
-            .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
+            .shading = material_shading(RawShading::DEFAULT, config)},
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList<CompressedScenePos>>(
         "bridge_entrance" + name_suffix,
         Material{
-            .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
+            .shading = material_shading(RawShading::DEFAULT, config)},
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
@@ -444,7 +429,7 @@ OsmTriangleLists::OsmTriangleLists(
         Material{
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.water_texture)},
             .aggregate_mode = AggregateMode::ONCE,
-            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
+            .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
 }

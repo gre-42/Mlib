@@ -433,7 +433,7 @@ OsmMapResource::OsmMapResource(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
+                .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
                 .draw_distance_noperations = 1000},
             Morphology{ .physics_material = PhysicsMaterial::NONE },
             wall_barriers,
@@ -453,7 +453,7 @@ OsmMapResource::OsmMapResource(
                     .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                     .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                     .aggregate_mode = AggregateMode::ONCE,
-                    .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
+                    .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
                     .draw_distance_noperations = 1000},
                 Morphology{ .physics_material = PhysicsMaterial::NONE },
                 config.scale,
@@ -708,6 +708,7 @@ OsmMapResource::OsmMapResource(
             tls_buildings,
             nullptr,            // Steiner points not required due to existence of ground triangles.
             displacements,
+            config,
             Material{
                 .reflection_map = config.window_reflection_map,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
@@ -742,7 +743,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = (building_cluster_width_ == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NONE,
-                .shading = ROOF_REFLECTANCE,
+                .shading = material_shading(RawShading::ROOF, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
@@ -750,7 +751,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = (building_cluster_width_ == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NONE,
-                .shading = ROOF_REFLECTANCE,
+                .shading = material_shading(RawShading::ROOF, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             get_building_morphology,
             roof_color,
