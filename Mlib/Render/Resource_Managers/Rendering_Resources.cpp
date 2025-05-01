@@ -1831,7 +1831,7 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
         CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
         {
 #ifdef __ANDROID__
-            auto nchannels = (size_t)data[0].nrChannels;
+            auto nchannels = (size_t)data[0]->nrChannels;
 #else
             auto nchannels = max(color.color_mode);
 #endif

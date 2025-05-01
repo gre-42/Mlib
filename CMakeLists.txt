@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18.1)
+cmake_minimum_required(VERSION 3.22.1)
 
 project(Mlib C CXX)
 
@@ -108,7 +108,7 @@ if (MSVC)
     set(RecastNavitation_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/VSRecastBuild)
 elseif(ANDROID)
     # set(RecastNavitation_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Android/recast/build/intermediates/cxx/${CMAKE_BUILD_TYPE}/26d71691/obj/${ANDROID_ABI})
-    set(RecastNavitation_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Android/recast/build/intermediates/stripped_native_libs/debugAndroidTest/stripDebugAndroidTestDebugSymbols/out/lib/${ANDROID_ABI})
+    set(RecastNavitation_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Android/recast/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/${ANDROID_ABI})
 else()
     set(RecastNavitation_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/RecastBuild)
 endif()

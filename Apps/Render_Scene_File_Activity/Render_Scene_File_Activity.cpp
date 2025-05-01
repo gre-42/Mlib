@@ -12,6 +12,7 @@
 #include <Mlib/Android/ndk_helper/AndroidApp.hpp>
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
@@ -23,7 +24,6 @@
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
-#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
@@ -33,6 +33,10 @@
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/IRenderer.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
@@ -231,12 +235,16 @@ JThread loader_thread(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
+    ButtonPress& confirm_button_press,
+    LockableKeyConfigurations& key_configurations,
+    LockableKeyDescriptions& key_descriptions,
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
     std::atomic_bool& load_scene_finished,
     std::chrono::steady_clock::duration render_delay,
-    std::chrono::steady_clock::duration velocity_dt)
+    std::chrono::steady_clock::duration velocity_dt,
+    const std::function<void()>& exit)
 {
     return JThread{[&, render_delay, velocity_dt](){
         try {
@@ -265,12 +273,16 @@ JThread loader_thread(
                     button_states,
                     cursor_states,
                     scroll_wheel_states,
+                    confirm_button_press,
+                    key_configurations,
+                    key_descriptions,
                     ui_focus,
                     layout_constraints,
                     gallery,
                     asset_references,
                     translators,
-                    renderable_scenes);
+                    renderable_scenes,
+                    exit);
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
@@ -533,10 +545,24 @@ void android_main(android_app* app) {
             .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
             .large_max_offset_deviation = safe_stof(args.named_value("--large_max_offset_deviation", "200")) * meters};
 
-        UiFocus ui_focus;
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
+        BaseKeyCombination confirm_key_combination{{{
+            BaseKeyBinding{
+                .key = "ENTER",
+                .gamepad_button = "A",
+                .tap_button = "START"}}}};
+        LockableKeyConfigurations confirm_key_configurations;
+        confirm_key_configurations
+            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
+            ->emplace()
+            .insert("confirm", { std::move(confirm_key_combination) });
+        ButtonPress confirm_button_press{ button_states, confirm_key_configurations, "confirm", "" };
+        UiFocus ui_focus{ get_path_in_appdata_directory({"focus.json"}) };
+        if (ui_focus.can_load()) {
+            ui_focus.load();
+        }
         // AWindow window{*app};
         MenuUserClass menu_user_object{
             .button_states = button_states,
@@ -657,7 +683,7 @@ void android_main(android_app* app) {
 
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
-                Translators translators{ asset_references };
+                Translators translators{ asset_references, external_json_macro_arguments };
                 RenderableScenes renderable_scenes;
 
                 std::atomic_bool load_scene_finished = false;
@@ -665,6 +691,9 @@ void android_main(android_app* app) {
                 DestructionGuard dg0{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr); }};
 
                 DestructionGuard dg1{[](){discard_render_allocators();}};
+                std::function<void()> exit = [](){
+                    lerr() << "Program exit not supported on Android";
+                };
                 JThread loader_future_guard{loader_thread(
                     args,
                     gallery,
@@ -692,7 +721,8 @@ void android_main(android_app* app) {
                     load_scene,
                     load_scene_finished,
                     render_delay,
-                    velocity_dt)};
+                    velocity_dt,
+                    exit)};
                 render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));

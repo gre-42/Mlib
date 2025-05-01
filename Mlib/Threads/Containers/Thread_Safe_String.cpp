@@ -11,9 +11,14 @@ ThreadSafeString::ThreadSafeString(const ThreadSafeString& other) {
     str_ = other.str_;
 }
 
-ThreadSafeString::ThreadSafeString(ThreadSafeString&& other) {
+ThreadSafeString::ThreadSafeString(ThreadSafeString&& other) noexcept {
     std::scoped_lock lock{ mutex_, other.mutex_ };
     str_ = std::move(other.str_);
+}
+
+ThreadSafeString& ThreadSafeString::operator = (const ThreadSafeString& other) {
+    *this = (std::string)other;
+    return *this;
 }
 
 ThreadSafeString& ThreadSafeString::operator = (std::string other) {

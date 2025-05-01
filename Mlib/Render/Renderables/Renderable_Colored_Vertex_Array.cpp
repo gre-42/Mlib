@@ -1062,10 +1062,10 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     };
-    auto setup_texture_colormap = [&cva, &render_pass, &setup_texture_generic](const ColormapWithModifiers& c, GLenum target) {
+    auto setup_texture_colormap = [&setup_texture_generic](const ColormapWithModifiers& c, GLenum target) {
         setup_texture_generic(c.wrap_modes(0), c.wrap_modes(1), c.mipmap_mode, target);
     };
-    auto setup_texture_handle = [&cva, &render_pass, setup_texture_generic](const ITextureHandle& h, GLenum target) {
+    auto setup_texture_handle = [setup_texture_generic](const ITextureHandle& h, GLenum target) {
         setup_texture_generic(h.wrap_modes(0), h.wrap_modes(1), h.mipmap_mode(), target);
     };
     if (tic.ntextures_color != 0) {

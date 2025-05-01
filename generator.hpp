@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <memory>
+
 #if __has_include(<coroutine>)
 #include <coroutine>
 #else

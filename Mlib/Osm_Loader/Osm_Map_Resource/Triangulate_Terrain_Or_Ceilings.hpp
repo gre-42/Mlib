@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
 #include <list>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>

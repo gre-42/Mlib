@@ -9,7 +9,8 @@ class ThreadSafeString {
 public:
     ThreadSafeString();
     ThreadSafeString(const ThreadSafeString& other);
-    ThreadSafeString(ThreadSafeString&& other);
+    ThreadSafeString(ThreadSafeString&& other) noexcept;
+    ThreadSafeString& operator = (const ThreadSafeString& other);
     ThreadSafeString& operator = (std::string other);
     std::strong_ordering operator <=> (const ThreadSafeString& other) const;
     bool operator == (const ThreadSafeString& other) const;

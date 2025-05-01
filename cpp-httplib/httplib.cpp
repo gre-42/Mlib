@@ -9,6 +9,8 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wsign-conversion"
 
+#include <exception>
+
 namespace httplib {
 
 /*

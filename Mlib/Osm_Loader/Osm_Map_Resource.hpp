@@ -136,7 +136,7 @@ private:
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> buildings_;
     SceneNodeResources& scene_node_resources_;
     double scale_;
-    ScenePos building_cluster_width_;
+    float building_cluster_width_;
     uint32_t max_imposter_texture_size_;
     std::list<SpawnPoint> spawn_points_;
     WayPointSandboxes way_points_;

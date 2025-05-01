@@ -1160,7 +1160,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         config.use_terrain_holes = args.arguments.at<bool>(KnownArgs::use_terrain_holes, false);
         if (args.arguments.contains(KnownArgs::building_cluster_width)) {
-            config.building_cluster_width = args.arguments.at<ScenePos>(KnownArgs::building_cluster_width) * meters;
+            config.building_cluster_width = args.arguments.at<float>(KnownArgs::building_cluster_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::max_imposter_texture_size)) {
             config.max_imposter_texture_size = args.arguments.at<uint32_t>(KnownArgs::max_imposter_texture_size);
