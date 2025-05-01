@@ -170,16 +170,19 @@ void Mlib::draw_roofs(
                                     FixedArray<CompressedScenePos, 3, 3> tt = uninitialized;
                                     for (size_t i = 0; i < 3; ++i) {
                                         if (all(t(i).position == FixedArray<float, 3>{0.f, -1.f, 1.f})) {
+                                            // Calculate left indented roof top vertex
                                             tt[i] = FixedArray<CompressedScenePos, 3>{
                                                 rect.p01_(0),
                                                 rect.p01_(1),
                                                 max_height + (CompressedScenePos)(zz1 * scale)};
                                         } else if (all(t(i).position == FixedArray<float, 3>{0.f, 1.f, 1.f})) {
+                                            // Calculate right indented roof top vertex
                                             tt[i] = FixedArray<CompressedScenePos, 3>{
                                                 rect.p11_(0),
                                                 rect.p11_(1),
                                                 max_height + (CompressedScenePos)(zz1 * scale)};
                                         } else {
+                                            // Calculate unindented rail or outer vertex
                                             tt[i] = ws.warp(t(i).position.casted<double>(), scale, 1, (CompressedScenePos)uheight);
                                             tt(i, 2) += max_height + CompressedScenePos(zz0 * scale);
                                         }
