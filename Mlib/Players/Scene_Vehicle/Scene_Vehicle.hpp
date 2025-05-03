@@ -50,8 +50,8 @@ public:
         const CreateRoleExternals& create_vehicle_internals);
     std::string& scene_node_name();
     const std::string& scene_node_name() const;
-    DanglingRef<SceneNode> scene_node();
-    DanglingRef<const SceneNode> scene_node() const;
+    const DanglingRef<SceneNode>& scene_node();
+    const DanglingRef<const SceneNode>& scene_node() const;
     RigidBodyVehicle& rb();
     const RigidBodyVehicle& rb() const;
     DestructionObservers<const SceneVehicle&> destruction_observers;

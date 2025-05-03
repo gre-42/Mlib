@@ -70,11 +70,11 @@ const std::string& SceneVehicle::scene_node_name() const {
     return scene_node_name_;
 }
 
-DanglingRef<SceneNode> SceneVehicle::scene_node() {
+const DanglingRef<SceneNode>& SceneVehicle::scene_node() {
     return scene_node_;
 }
 
-DanglingRef<const SceneNode> SceneVehicle::scene_node() const {
+const DanglingRef<const SceneNode>& SceneVehicle::scene_node() const {
     return scene_node_;
 }
 
