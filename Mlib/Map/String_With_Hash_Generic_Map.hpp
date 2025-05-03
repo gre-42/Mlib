@@ -96,6 +96,29 @@ public:
     decltype(auto) end() { return elements_.end(); }
     decltype(auto) begin() const { return elements_.begin(); }
     decltype(auto) end() const { return elements_.end(); }
+
+    // template <class Archive>
+    // void serialize(Archive& archive) {
+    //     archive(value_name_);
+    //     archive(elements_);
+    // }
+    // 
+    // template<typename Archive>
+    // static void load_and_construct(
+    //     Archive& archive,
+    //     cereal::construct<StringWithHashGenericMap<TBaseMap>> &construct)
+    // {
+    //     std::string value_name;
+    //     archive(value_name);
+    //     auto& obj = construct(value_name);
+    //     archive(obj.elements_);
+    // }
+    TBaseMap& elements() {
+        return elements_;
+    }
+    const TBaseMap& elements() const {
+        return elements_;
+    }
 private:
     TBaseMap elements_;
     std::string value_name_;

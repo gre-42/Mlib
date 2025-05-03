@@ -11,6 +11,8 @@
 
 using namespace Mlib;
 
+static const auto END_SITE = VariableAndHash<std::string>{ "<end site>" };
+
 FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& name) {
     if (name == "xz-y") {
         return x_z_my;
@@ -22,7 +24,9 @@ FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& na
 BvhLoader::BvhLoader(
     const std::string& filename,
     const BvhConfig& cfg)
-    : cfg_{ cfg }
+    : offsets_{ "Offset" }
+    , parents_{ "Parent" }
+    , cfg_{ cfg }
     , frame_time_{ NAN }
 {
     if (!all(cfg.rotation_order < size_t(3))) {
@@ -32,10 +36,10 @@ BvhLoader::BvhLoader(
     if (file->fail()) {
         THROW_OR_ABORT("Could not open \"" + filename + '"');
     }
-    std::vector<Map<std::string, FixedArray<float, 2, 3>>> raw_frames;
+    std::vector<StringWithHashUnorderedMap<FixedArray<float, 2, 3>>> raw_frames;
     std::string line;
-    std::string joint_name;
-    std::list<std::string> joint_stack;
+    VariableAndHash<std::string> joint_name;
+    std::list<VariableAndHash<std::string>> joint_stack;
     bool in_data_section = false;
     size_t nframes = SIZE_MAX;
     while (std::getline(*file, line)) {
@@ -48,13 +52,13 @@ BvhLoader::BvhLoader(
             static const DECLARE_REGEX(motion_re, "^\\s*MOTION\\s*$");
             Mlib::re::cmatch match;
             if (Mlib::re::regex_match(line, match, name_re)) {
-                joint_name = match[2].str();
+                joint_name = VariableAndHash{ match[2].str() };
                 if ((match[1].str() == "ROOT") != joint_stack.empty()) {
                     THROW_OR_ABORT("Inconsistent ROOT hierarchy");
                 }
                 if (!joint_stack.empty() && !parents_.try_emplace(joint_name, joint_stack.back()).second)
                 {
-                    THROW_OR_ABORT("Parent of \"" + joint_name + "\" already set");
+                    THROW_OR_ABORT("Parent of \"" + *joint_name + "\" already set");
                 }
                 joint_stack.push_back(joint_name);
             } else if (Mlib::re::regex_match(line, match, closing_re)) {
@@ -63,17 +67,17 @@ BvhLoader::BvhLoader(
                 }
                 joint_stack.pop_back();
             } else if (Mlib::re::regex_match(line, match, ends_re)) {
-                joint_name = "<end site>";
+                joint_name = END_SITE;
                 joint_stack.push_back(joint_name);
             } else if (Mlib::re::regex_match(line, match, offs_re)) {
-                if (joint_name != "<end site>") {
+                if (joint_name != END_SITE) {
                     if (!offsets_.try_emplace(
                         joint_name,
                         safe_stof(match[1].str()),
                         safe_stof(match[2].str()),
                         safe_stof(match[3].str())).second)
                     {
-                        THROW_OR_ABORT("Could not insert offset for joint " + joint_name);
+                        THROW_OR_ABORT("Could not insert offset for joint " + *joint_name);
                     }
                 }
             } else if (Mlib::re::regex_match(line, match, chan_re)) {
@@ -142,10 +146,10 @@ BvhLoader::BvhLoader(
             if (raw_frames.size() == nframes) {
                 THROW_OR_ABORT("Too many frames in BVH file");
             }
-            auto& frame = raw_frames.emplace_back();
+            auto& frame = raw_frames.emplace_back("BVH frame");
             for (const auto& [joint_name, offset] : offsets_) {
                 frame.add(joint_name, fixed_nans<float, 2, 3>());
-                frame.at(joint_name)[0] = offset;
+                frame.get(joint_name)[0] = offset;
             }
             for (const auto& [i, c] : enumerate(columns_)) {
                 frame.get(c.joint_name)(c.pose_index0, c.pose_index1) = d[i];
@@ -153,7 +157,7 @@ BvhLoader::BvhLoader(
             }
             for (const auto& [n, v] : frame) {
                 if (any(isnan(v))) {
-                    THROW_OR_ABORT("Detected NAN value in joint \"" + n + '"');
+                    THROW_OR_ABORT("Detected NAN value in joint \"" + *n + '"');
                 }
             }
         }
@@ -183,8 +187,9 @@ BvhLoader::BvhLoader(
     if (std::isnan(frame_time_)) {
         THROW_OR_ABORT("Frame time not set");
     }
-    transformed_frames_.resize(raw_frames.size() + (cfg.periodic && !raw_frames.empty()));
+    transformed_frames_.reserve(raw_frames.size() + (cfg.periodic && !raw_frames.empty()));
     for (size_t i = 0; i < raw_frames.size(); ++i) {
+        auto& tf = transformed_frames_.emplace_back("Transformed frame");
         for (const auto& [joint_name, transformation] : raw_frames[i]) {
             const auto& position = transformation[0];
             const auto& rotation = transformation[1];
@@ -194,7 +199,7 @@ BvhLoader::BvhLoader(
                     cfg_.rotation_order),
                 position * cfg_.scale);
             const auto& n = cfg_.parameter_transformation;
-            if (!transformed_frames_.at(i).try_emplace(
+            if (!tf.try_emplace(
                 joint_name,
                 dot2d(n, dot2d(m, n.T()))).second)
             {
@@ -202,23 +207,23 @@ BvhLoader::BvhLoader(
             }
         }
     }
-    smoothen();
     if (cfg.periodic && !raw_frames.empty()) {
-        transformed_frames_[transformed_frames_.size() - 1] = transformed_frames_[0];
+        transformed_frames_.emplace_back(transformed_frames_.at(0));
     }
+    smoothen();
     if (!file->eof() && file->fail()) {
         THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
     }
 }
 
-const Map<std::string, OffsetAndQuaternion<float, float>>& BvhLoader::get_frame(size_t id) const {
+const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& BvhLoader::get_frame(size_t id) const {
     if (id >= transformed_frames_.size()) {
         THROW_OR_ABORT("Frame index too large");
     }
     return transformed_frames_[id];
 }
 
-Map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float time) const {
+StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float time) const {
     if (transformed_frames_.empty()) {
         THROW_OR_ABORT("No frames to interpolate from");
     }
@@ -236,50 +241,48 @@ Map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative_inte
     float a0 = i - float(i0);
     const auto& f0 = get_frame(i0);
     const auto& f1 = get_frame(i1);
-    Map<std::string, OffsetAndQuaternion<float, float>> result;
+    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> result{ "Relative interpolated frame" };
     for (const auto& j0 : f0) {
         const auto& m0 = j0.second;
         const auto& m1 = f1.get(j0.first);
-        if (!result.insert({j0.first, m0.slerp(m1, a0)}).second) {
-            THROW_OR_ABORT("Could not insert interpolated frame");
-        }
+        result.add(j0.first, m0.slerp(m1, a0));
     }
     return result;
 }
 
 void BvhLoader::compute_absolute_transformation(
-    const std::string& name,
-    const Map<std::string, OffsetAndQuaternion<float, float>>& relative_transformations,
-    Map<std::string, OffsetAndQuaternion<float, float>>& absolute_transformations,
+    const VariableAndHash<std::string>& name,
+    const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& relative_transformations,
+    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& absolute_transformations,
     size_t ncalls) const
 {
     if (absolute_transformations.contains(name)) {
         return;
     }
-    auto it = parents_.find(name);
-    if (it == parents_.end()) {
+    const auto* it = parents_.try_get(name);
+    if (it == nullptr) {
         if (!absolute_transformations.try_emplace(name, relative_transformations.get(name)).second) {
             verbose_abort("compute_absolute_transformation internal error");
         }
     } else {
         if (ncalls > 100) {
             for (const auto& [n, p] : parents_) {
-                lerr() << n << " -> " << p;
+                lerr() << *n << " -> " << *p;
             }
             THROW_OR_ABORT("Recursion depth exceeded, probably loop in parents mapping");
         }
         compute_absolute_transformation(
-            it->second,
+            *it,
             relative_transformations,
             absolute_transformations,
             ncalls + 1);
-        absolute_transformations.add(name, absolute_transformations.get(it->second) * relative_transformations.get(name));
+        absolute_transformations.add(name, absolute_transformations.get(*it) * relative_transformations.get(name));
     }
 }
 
-Map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(float time) const {
+StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(float time) const {
     auto rel = get_relative_interpolated_frame(time);
-    Map<std::string, OffsetAndQuaternion<float, float>> result;
+    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> result{ "Absolute interpolated frame" };
     for (const auto& [name, _] : rel) {
         compute_absolute_transformation(name, rel, result, 0);
     }
@@ -300,8 +303,9 @@ void BvhLoader::smoothen() {
     if (!cfg_.periodic) {
         THROW_OR_ABORT("Aperiodic smoothing not implemented");
     }
-    std::vector<Map<std::string, OffsetAndQuaternion<float, float>>>
-        smoothed_transformed_frames(transformed_frames_.size());
+    std::vector<StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>>
+        smoothed_transformed_frames;
+    smoothed_transformed_frames.reserve(transformed_frames_.size());
     // `transformed_frames_.size() - 1` because of the line
     // `transformed_frames_.resize(raw_frames.size() + (cfg.periodic && !raw_frames.empty()));`
     // above. Also, there is a check for periodicity above.
@@ -323,11 +327,13 @@ void BvhLoader::smoothen() {
                 fp.get(joint_name) = fp.get(joint_name).slerp(transformation, cfg_.smooth_alpha);
             }
         }
+        auto& sf = smoothed_transformed_frames.emplace_back("Smoothed transformed frame");
         for (const auto& [joint_name, transformation] : fn) {
-            smoothed_transformed_frames.at(integral_cast<size_t>(t)).add(joint_name, transformation.slerp(fp.get(joint_name), 0.5));
+            sf.add(joint_name, transformation.slerp(fp.get(joint_name), 0.5));
         }
     }
     transformed_frames_ = std::move(smoothed_transformed_frames);
+    transformed_frames_.emplace_back(transformed_frames_.at(0));
 }
 
 float BvhLoader::duration() const {

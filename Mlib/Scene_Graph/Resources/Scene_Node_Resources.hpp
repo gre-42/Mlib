@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Threadsafe_String_Map.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
@@ -131,9 +132,9 @@ public:
         const std::string& name,
         const ColoredVertexArrayFilter& filter) const;
     std::list<TypedMesh<std::shared_ptr<IIntersectable>>> get_intersectables(const std::string& name) const;
-    void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float, float>>& poses);
-    std::map<std::string, OffsetAndQuaternion<float, float>> get_relative_poses(const std::string& name, float seconds) const;
-    std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_poses(const std::string& name, float seconds) const;
+    void set_relative_joint_poses(const std::string& name, const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses);
+    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_relative_poses(const std::string& name, float seconds) const;
+    StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_absolute_poses(const std::string& name, float seconds) const;
     float get_animation_duration(const std::string& name) const;
 
     // Modifiers

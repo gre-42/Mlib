@@ -25,7 +25,7 @@ public:
 
     // Misc
     const Bone& skeleton() const;
-    UUVector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
+    UUVector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) const;
 
     // ISceneNodeResource, Misc
     virtual void preload(const RenderableResourceFilter& filter) const override;
@@ -34,7 +34,7 @@ public:
 
     // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(const ColoredVertexArrayFilter& filter) const override;
-    virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) override;
+    virtual void set_relative_joint_poses(const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) override;
 
     // ISceneNodeResource, Modifiers
     virtual void downsample(size_t n) override;

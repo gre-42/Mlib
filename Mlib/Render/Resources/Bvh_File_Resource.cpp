@@ -16,11 +16,11 @@ void BvhFileResource::preload(const RenderableResourceFilter& filter) const {
     // Do nothing
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> BvhFileResource::get_relative_poses(float time) const {
+StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhFileResource::get_relative_poses(float time) const {
     return bvh_loader->get_relative_interpolated_frame(time);
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> BvhFileResource::get_absolute_poses(float time) const {
+StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> BvhFileResource::get_absolute_poses(float time) const {
     return bvh_loader->get_absolute_interpolated_frame(time);
 }
 

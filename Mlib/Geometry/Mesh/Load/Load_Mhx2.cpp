@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Json/Misc.hpp>
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <filesystem>
@@ -65,7 +66,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     {
         ScaleAndOffset so_skelleton{ j.at("skeleton") };
         const auto& bones = j.at("skeleton").at("bones");
-        std::map<std::string, Bone*> bone_names;
+        StringWithHashUnorderedMap<Bone*> bone_names{ "Bone" };
         for (const auto& bone : bones) {
             FixedArray<float, 4, 4> initial_absolute_transformation = uninitialized;
             {
@@ -122,18 +123,13 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             auto new_bone = std::unique_ptr<Bone>(new Bone{
                 .index = result->bone_indices.size(),
                 .initial_absolute_transformation = OffsetAndQuaternion<float, float>{initial_absolute_transformation}});
-            std::string new_bone_name = bone.at("name").get<std::string>();
-            if (!bone_names.insert({new_bone_name, new_bone.get()}).second) {
-                THROW_OR_ABORT("Could not insert bone " + new_bone_name);
-            }
-            result->bone_indices.insert({new_bone_name, new_bone->index});
+            auto new_bone_name = bone.at("name").get<VariableAndHash<std::string>>();
+            bone_names.add(new_bone_name, new_bone.get());
+            result->bone_indices.add(new_bone_name, new_bone->index);
             if (parent != bone.end()) {
-                std::string parent_name = parent.value().get<std::string>();
-                auto par = bone_names.find(parent_name);
-                if (par == bone_names.end()) {
-                    THROW_OR_ABORT("Unknown bone " + parent_name);
-                }
-                par->second->children.push_back(std::move(new_bone));
+                auto parent_name = parent.value().get<VariableAndHash<std::string>>();
+                auto& par = bone_names.get(parent_name);
+                par->children.push_back(std::move(new_bone));
             } else {
                 if (result->skeleton != nullptr) {
                     THROW_OR_ABORT("Found multiple root bones");
@@ -244,10 +240,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         std::vector<std::list<BoneWeight>> vertex_bone_weights;
         vertex_bone_weights.resize(vertices.size());
         for (const auto& bw : mesh.at("weights").items()) {
-            auto bone_id = result->bone_indices.find(bw.key());
-            if (bone_id == result->bone_indices.end()) {
-                THROW_OR_ABORT("Could not find bone id for " + bw.key());
-            }
+            auto bone_id = result->bone_indices.get(VariableAndHash<std::string>{ bw.key() });
             for (const auto& b : bw.value()) {
                 if (b.size() != 2) {
                     THROW_OR_ABORT("Invalid weight length");
@@ -257,7 +250,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     THROW_OR_ABORT("Vertex ID out of bounds");
                 }
                 vertex_bone_weights[vertex_id].push_back(BoneWeight{
-                    .bone_index = bone_id->second,
+                    .bone_index = bone_id,
                     .weight = b[1].get<float>()});
             }
         }

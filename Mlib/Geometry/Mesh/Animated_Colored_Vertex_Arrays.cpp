@@ -13,6 +13,7 @@
 using namespace Mlib;
 
 AnimatedColoredVertexArrays::AnimatedColoredVertexArrays()
+    : bone_indices{ "Bone index" }
 {}
 
 AnimatedColoredVertexArrays::AnimatedColoredVertexArrays(
@@ -47,7 +48,7 @@ void AnimatedColoredVertexArrays::insert(const AnimatedColoredVertexArrays& othe
 }
 
 UUVector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectorize_joint_poses(
-    const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const
+    const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) const
 {
     UUVector<OffsetAndQuaternion<float, float>> ms(bone_indices.size());
 #ifndef NDEBUG
@@ -56,11 +57,8 @@ UUVector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectori
     }
 #endif
     for (const auto& [name, pose] : poses) {
-        auto it = bone_indices.find(name);
-        if (it == bone_indices.end()) {
-            THROW_OR_ABORT("vectorize_joint_poses: Could not find bone with name " + name);
-        }
-        ms.at(it->second) = pose;
+        auto& it = bone_indices.get(name);
+        ms.at(it) = pose;
     }
 #ifndef NDEBUG
     for (const auto& m : ms) {

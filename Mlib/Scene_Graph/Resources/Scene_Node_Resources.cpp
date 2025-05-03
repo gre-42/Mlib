@@ -364,7 +364,7 @@ void SceneNodeResources::print(const std::string& name, std::ostream& ostr) cons
 
 void SceneNodeResources::set_relative_joint_poses(
     const std::string& name,
-    const std::map<std::string, OffsetAndQuaternion<float, float>>& poses)
+    const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses)
 {
     auto resource = get_resource(name);
     try {
@@ -374,7 +374,7 @@ void SceneNodeResources::set_relative_joint_poses(
     }
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResources::get_relative_poses(const std::string& name, float seconds) const
+StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> SceneNodeResources::get_relative_poses(const std::string& name, float seconds) const
 {
     auto resource = get_resource(name);
     try {
@@ -384,7 +384,7 @@ std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResources::get
     }
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> SceneNodeResources::get_absolute_poses(const std::string& name, float seconds) const
+StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> SceneNodeResources::get_absolute_poses(const std::string& name, float seconds) const
 {
     auto resource = get_resource(name);
     try {

@@ -761,7 +761,7 @@ void SceneNode::move(
         const AnimationState* estate = animation_state_ != nullptr
             ? animation_state_.get()
             : animation_state;
-        if (!bone_.name.empty()) {
+        if (!bone_.name->empty()) {
             if (estate == nullptr) {
                 THROW_OR_ABORT("Bone name is not empty, but animation state is not set");
             }
@@ -778,11 +778,11 @@ void SceneNode::move(
                 auto poses = scene_node_resources->get_absolute_poses(
                     animation_name,
                     time);
-                auto it = poses.find(bone_.name);
-                if (it == poses.end()) {
+                const auto* it = poses.try_get(bone_.name);
+                if (it == nullptr) {
                     THROW_OR_ABORT("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
                 }
-                OffsetAndQuaternion<float, ScenePos> q1{it->second.t.casted<ScenePos>(), it->second.q};
+                OffsetAndQuaternion<float, ScenePos> q1{it->t.casted<ScenePos>(), it->q};
                 auto res_pose = trafo_.slerp(q1, 1.f - bone_.smoothness);
                 res_pose.q = res_pose.q.slerp(Quaternion<float>::identity(), 1.f - bone_.rotation_strength);
                 set_relative_pose(

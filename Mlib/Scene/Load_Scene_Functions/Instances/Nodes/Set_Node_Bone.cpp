@@ -31,7 +31,7 @@ void SetNodeBone::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC)
         ->set_bone(SceneNodeBone{
-            .name = args.arguments.at<std::string>(KnownArgs::bone),
+            .name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::bone),
             .smoothness = args.arguments.at<float>(KnownArgs::smoothness),
             .rotation_strength = args.arguments.at<float>(KnownArgs::rotation_strength)});
 }

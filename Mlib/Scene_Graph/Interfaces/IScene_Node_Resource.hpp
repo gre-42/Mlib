@@ -1,10 +1,10 @@
 #pragma once
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <list>
-#include <map>
 #include <memory>
 #include <string>
 
@@ -67,12 +67,12 @@ public:
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance);
-    virtual std::map<std::string, OffsetAndQuaternion<float, float>> get_relative_poses(float seconds) const;
-    virtual std::map<std::string, OffsetAndQuaternion<float, float>> get_absolute_poses(float seconds) const;
+    virtual StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_relative_poses(float seconds) const;
+    virtual StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>> get_absolute_poses(float seconds) const;
     virtual float get_animation_duration() const;
 
     // Modifiers
-    virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses);
+    virtual void set_relative_joint_poses(const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses);
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false);
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to);
     virtual void downsample(size_t factor);

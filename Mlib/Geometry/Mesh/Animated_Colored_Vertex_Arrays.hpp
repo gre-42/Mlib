@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -31,14 +32,14 @@ struct AnimatedColoredVertexArrays {
         const ColoredVertexArrayFilter& filter);
     ~AnimatedColoredVertexArrays();
     std::shared_ptr<Bone> skeleton;
-    std::map<std::string, size_t> bone_indices;
+    StringWithHashUnorderedMap<size_t> bone_indices;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas;
     void insert(const AnimatedColoredVertexArrays& other);
     template <class TPos>
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas();
     UUVector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(
-        const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
+        const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) const;
     std::shared_ptr<AnimatedColoredVertexArrays> generate_grind_lines(
         float edge_angle,
         float averaged_normal_angle,
@@ -61,7 +62,7 @@ struct AnimatedColoredVertexArrays {
     template <class Archive>
     void serialize(Archive& archive) {
         archive(skeleton);
-        archive(bone_indices);
+        archive(bone_indices.elements());
         archive(scvas);
         archive(dcvas);
     }

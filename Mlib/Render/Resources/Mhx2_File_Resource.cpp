@@ -40,7 +40,7 @@ AggregateMode Mhx2FileResource::get_aggregate_mode() const {
     return rva_->get_aggregate_mode();
 }
 
-void Mhx2FileResource::set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) {
+void Mhx2FileResource::set_relative_joint_poses(const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) {
     UUVector<OffsetAndQuaternion<float, float>> ms = vectorize_joint_poses(poses);
     UUVector<OffsetAndQuaternion<float, float>> mt = acvas_->skeleton->rebase_to_initial_absolute_transform(ms);
     rva_->set_absolute_joint_poses(mt);
@@ -56,7 +56,7 @@ void Mhx2FileResource::downsample(size_t n) {
 }
 
 UUVector<OffsetAndQuaternion<float, float>> Mhx2FileResource::vectorize_joint_poses(
-    const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const
+    const StringWithHashUnorderedMap<OffsetAndQuaternion<float, float>>& poses) const
 {
     return acvas_->vectorize_joint_poses(poses);
 }

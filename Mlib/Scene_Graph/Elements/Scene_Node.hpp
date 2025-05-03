@@ -14,6 +14,7 @@
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <atomic>
 #include <cstdint>
 #include <iosfwd>
@@ -73,7 +74,7 @@ struct SceneNodeChild {
 };
 
 struct SceneNodeBone {
-    std::string name;
+    VariableAndHash<std::string> name;
     float smoothness;
     float rotation_strength;
 };
