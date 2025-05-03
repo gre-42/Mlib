@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Cross.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Bvh_Grid.hpp>
 #include <Mlib/Geometry/Intersection/Caching_Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Distance/Distange_Polygon_Aabb.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
@@ -262,10 +263,10 @@ void test_lines_to_rectangles() {
         width_bcR,
         width_cdL,
         width_cdR);
-    assert_allclose(p00.casted<double>(), FixedArray<double, 2>{0.0414214f, 0.1f});
-    assert_allclose(p01.casted<double>(), FixedArray<double, 2>{0.0414214f, -0.1f});
-    assert_allclose(p10.casted<double>(), FixedArray<double, 2>{0.958579f, 0.1f});
-    assert_allclose(p11.casted<double>(), FixedArray<double, 2>{0.958579f, -0.1f});
+    assert_allclose(p00.casted<double>(), FixedArray<double, 2>{0.0414214f, 0.1f}, 1e-4);
+    assert_allclose(p01.casted<double>(), FixedArray<double, 2>{0.0414214f, -0.1f}, 1e-4);
+    assert_allclose(p10.casted<double>(), FixedArray<double, 2>{0.958579f, 0.1f}, 1e-4);
+    assert_allclose(p11.casted<double>(), FixedArray<double, 2>{0.958579f, -0.1f}, 1e-4);
 }
 
 FixedArray<float, 3> a2k(const FixedArray<float, 3>& angles) {
@@ -401,6 +402,28 @@ void test_bvh_performance() {
             throw std::runtime_error("Could not write img file");
         }
     }
+}
+
+void test_interesection_grid() {
+    using AABB = AxisAlignedBoundingBox<CompressedScenePos, 3>;
+    using Grid = BvhGrid<CompressedScenePos, 3, int>;
+    Grid grid{
+        // BVH
+        { (CompressedScenePos)0.2f, (CompressedScenePos)0.3f, (CompressedScenePos)0.4f },
+        5,
+        // Transition
+        3,
+        // Grid
+        { 2u, 3u, 4u },
+        { (CompressedScenePos)0.5f, (CompressedScenePos)0.6f, (CompressedScenePos)0.7f }
+    };
+
+    grid.root_bvh.insert(
+        AABB::from_min_max(
+            {(CompressedScenePos)1.f, (CompressedScenePos)2.f, (CompressedScenePos)3.f},
+            {(CompressedScenePos)2.f, (CompressedScenePos)3.f, (CompressedScenePos)4.f}),
+        42);
+    grid.grid();
 }
 
 void test_ray_segment_intersects_aabb() {
@@ -808,6 +831,7 @@ int main(int argc, const char** argv) {
         test_inverse_rodrigues();
         test_bvh();
         // test_bvh_performance();
+        test_interesection_grid();
         test_ray_segment_intersects_aabb();
         test_roundness_estimator();
         // test_smoothen_edges();

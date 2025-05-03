@@ -59,7 +59,7 @@ void Mlib::collide_with_terrain(
                             return true;
                         });
                 }
-                rigid_bodies.triangle_bvh().visit(
+                rigid_bodies.triangle_bvh().grid().visit(
                     msh1.mesh->aabb(),
                     [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0){
                         return std::visit([&](const auto& ctp)

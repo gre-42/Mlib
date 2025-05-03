@@ -21,6 +21,9 @@ consteval bool requires_simd_optimization() {
     if (std::is_same_v<T, double>) {
         return false;
     }
+    if (std::is_same_v<T, uint64_t>) {
+        return false;
+    }
     return true;
 }
 

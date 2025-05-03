@@ -29,6 +29,11 @@ struct PhysicsEngineConfig {
     size_t bvh_levels = 15;
     CompressedScenePos supply_depot_attraction_radius = (CompressedScenePos)(10.f * meters);
 
+    // Grid
+    size_t grid_level = 9;
+    FixedArray<size_t, 3> ncells = { 400u, 5u, 400u };
+    CompressedScenePos dilation_radius = (CompressedScenePos)15.f;
+
     // Collision/Friction misc.
     float max_extra_friction = 0;
     float max_extra_w = 0;

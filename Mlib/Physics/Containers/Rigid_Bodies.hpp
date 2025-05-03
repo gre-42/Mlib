@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Bvh_Grid.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Rigid_Body.hpp>
@@ -59,7 +60,7 @@ enum class CollisionRidgeBakingStatus {
 class RigidBodies {
     friend class PhysicsEngine;
 public:
-    using TriangleBvh = CompressedBvh<
+    using TriangleBvh = CompressedBvhGrid<
         CompressedScenePos,
         HalfCompressedScenePos,
         RigidBodyAndCollisionTriangleSphere<CompressedScenePos>,

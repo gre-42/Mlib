@@ -604,6 +604,14 @@ public:
         assert(ndim() == index.length());
         return (*this)(index(0), index(1));
     }
+    inline const TData& operator () (const FixedArray<size_t, 3>& index) const {
+        assert(ndim() == index.length());
+        return (*this)(index(0), index(1), index(2));
+    }
+    inline const TData& operator () (const FixedArray<size_t, 4>& index) const {
+        assert(ndim() == index.length());
+        return (*this)(index(0), index(1), index(2), index(3));
+    }
     template <size_t tsize>
     inline TData& operator () (const FixedArray<size_t, tsize>& index) {
         const Array& a = *this;

@@ -22,7 +22,13 @@ using namespace Mlib;
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
     : cfg_{ cfg }
     , convex_mesh_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
-    , triangle_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
+    , triangle_bvh_{
+        {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size},
+        cfg.bvh_levels,
+        cfg.grid_level,
+        cfg.ncells,
+        fixed_full<CompressedScenePos, 3>(cfg.dilation_radius)
+    }
     , ridge_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
     , line_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
     , collision_ridges_baking_status_{ CollisionRidgeBakingStatus::NOT_BAKED }
@@ -172,7 +178,7 @@ void RigidBodies::add_rigid_body(
                             auto transformed = m->template transformed_polygon_bbox<tnvertices>(
                                 rb.get_new_absolute_model_matrix());
                             for (const auto& t : transformed) {
-                                triangle_bvh_.insert(t.aabb, RigidBodyAndCollisionTriangleSphere<CompressedScenePos>{ rb, t.base });
+                                triangle_bvh_.root_bvh.insert(t.aabb, RigidBodyAndCollisionTriangleSphere<CompressedScenePos>{ rb, t.base });
                             }
                             if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
                                 THROW_OR_ABORT("Collision ridges already baked");
@@ -287,11 +293,11 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
                (it->second == CollidableMode::NONE))
     {
         {
-            auto it = std::find_if(objects_.begin(), objects_.end(), [&rigid_body](const auto& e){ return &e.rigid_body.get() == &rigid_body; });
-            if (it == objects_.end()) {
+            auto it2 = std::find_if(objects_.begin(), objects_.end(), [&rigid_body](const auto& e){ return &e.rigid_body.get() == &rigid_body; });
+            if (it2 == objects_.end()) {
                 THROW_OR_ABORT("Could not delete dynamic rigid body (4)");
             }
-            objects_.erase(it);
+            objects_.erase(it2);
         }
         transformed_objects_.remove_if([&rigid_body](const RigidBodyAndIntersectableMeshes& rbtm){
             return (&rbtm.rigid_body.get() == &rigid_body);
@@ -330,7 +336,7 @@ void RigidBodies::optimize_search_time(std::ostream& ostr) const {
     ostr << "Convex mesh BVH optimization" << std::endl;
     convex_mesh_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
     ostr << "Triangle BVH optimization" << std::endl;
-    triangle_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
+    triangle_bvh_.root_bvh.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
     ostr << "Ridge BVH optimization" << std::endl;
     ridge_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
     ostr << "Line BVH optimization" << std::endl;
@@ -339,7 +345,7 @@ void RigidBodies::optimize_search_time(std::ostream& ostr) const {
 
 void RigidBodies::print_search_time() const {
     linfo() << "Convex mesh search time: " << convex_mesh_bvh_.search_time(BvhDataRadiusType::NONZERO);
-    linfo() << "Triangle search time: " << triangle_bvh_.search_time(BvhDataRadiusType::NONZERO);
+    linfo() << "Triangle search time: " << triangle_bvh_.root_bvh.search_time(BvhDataRadiusType::NONZERO);
     linfo() << "Ridge search time: " << ridge_bvh_.search_time(BvhDataRadiusType::NONZERO);
     linfo() << "Line search time: " << line_bvh_.search_time(BvhDataRadiusType::NONZERO);
 }
@@ -347,7 +353,7 @@ void RigidBodies::print_search_time() const {
 void RigidBodies::print_compression_ratio() const {
     size_t nsmall = 0;
     size_t nlarge = 0;
-    triangle_bvh_.visit_bvhs([&](const auto& bvh){
+    triangle_bvh_.root_bvh.visit_bvhs([&](const auto& bvh){
         nsmall += bvh.data().small_size();
         nlarge += bvh.data().large_size();
         return true;
@@ -366,7 +372,7 @@ void RigidBodies::plot_convex_mesh_bvh_svg(const std::string& filename, size_t a
 }
 
 void RigidBodies::plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    triangle_bvh_.plot_svg<ScenePos>(filename, axis0, axis1);
+    triangle_bvh_.root_bvh.plot_svg<ScenePos>(filename, axis0, axis1);
 }
 
 void RigidBodies::plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {

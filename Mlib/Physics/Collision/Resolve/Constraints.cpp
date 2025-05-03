@@ -532,7 +532,7 @@ void ShockAbsorberContactInfo2::solve(float dt, float relaxation, size_t iterati
 }
 
 void Mlib::solve_contacts(std::list<std::unique_ptr<IContactInfo>>& cis, float dt) {
-    size_t niterations = 10;
+    size_t niterations = 5;
     for (size_t i = 0; i < niterations; ++i) {
         // linfo() << "solve_contacts " << i;
         for (const auto& ci : cis) {

@@ -144,7 +144,7 @@ bool CollisionQuery::can_see(
     {
         return false;
     }
-    if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
+    if (!physics_engine_.rigid_bodies_.triangle_bvh().root_bvh.visit(
         ray,
         [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0)
         {
@@ -338,7 +338,7 @@ bool CollisionQuery::visit_spawn_preventers(
                 }
             }
         }
-        if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
+        if (!physics_engine_.rigid_bodies_.triangle_bvh().root_bvh.visit(
             ti1.aabb(),
             [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0)
             {

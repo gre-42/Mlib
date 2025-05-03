@@ -338,6 +338,20 @@ public:
         }
         return true;
     }
+    template <class TOperation>
+    bool for_each_cell(const TOperation& op) const {
+        static_assert(tndim == 3);
+        for (auto i0 = min(0); i0 <= max(0); ++i0) {
+            for (auto i1 = min(1); i1 <= max(1); ++i1) {
+                for (auto i2 = min(2); i2 <= max(2); ++i2) {
+                    if (!op(FixedArray<TData, tndim>{ i0, i1, i2 })) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
     template <class TResultData>
     AxisAlignedBoundingBox<TResultData, tndim> casted() const {
         return AxisAlignedBoundingBox<TResultData, tndim>(
