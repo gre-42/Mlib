@@ -70,6 +70,7 @@
 #include <stb_cpp/stb_set_alpha.hpp>
 #include <stb_cpp/stb_transform.hpp>
 #include <stb_cpp/stb_truetype_aligned.hpp>
+#include <stb_cpp/stb_write.hpp>
 #include <string>
 #include <vector>
 
@@ -885,16 +886,12 @@ std::string RenderingResources::get_texture_filename(
         if (!default_filename.ends_with(".png")) {
             THROW_OR_ABORT("Filename \"" + default_filename + "\" does not end with .png");
         }
-        if (!stbi_write_png(
-            default_filename.c_str(),
+        stb_write_png(
+            default_filename,
             si.width,
             si.height,
             si.nrChannels,
-            si.data(),
-            0))
-        {
-            THROW_OR_ABORT("Could not save to file \"" + default_filename + '"');
-        }
+            si.data());
         return default_filename;
     } else {
         return *color.filename;
@@ -1646,16 +1643,12 @@ void RenderingResources::save_to_file(
         THROW_OR_ABORT("Filename \"" + filename + "\" does not end with .png");
     }
     auto img = get_texture_data(color, role, FlipMode::NONE);
-    if (!stbi_write_png(
-        filename.c_str(),
+    stb_write_png(
+        filename,
         img->width,
         img->height,
         img->nrChannels,
-        img->data(),
-        0))
-    {
-        THROW_OR_ABORT("Could not write \"" + filename + '"');
-    }
+        img->data());
 }
 
 void RenderingResources::save_array_to_file(
@@ -1666,16 +1659,12 @@ void RenderingResources::save_array_to_file(
     for (const auto& [i, img] : enumerate(get_texture_array_data(color, role, FlipMode::NONE)))
     {
         auto filename = filename_prefix + std::to_string(i) + ".png";
-        if (!stbi_write_png(
-            filename.c_str(),
+        stb_write_png(
+            filename,
             img->width,
             img->height,
             img->nrChannels,
-            img->data(),
-            0))
-        {
-            THROW_OR_ABORT("Could not write \"" + filename + '"');
-        }
+            img->data());
     }
 }
 

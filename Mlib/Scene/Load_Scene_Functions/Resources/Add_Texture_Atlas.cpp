@@ -21,6 +21,7 @@ DECLARE_ARGUMENT(height);
 DECLARE_ARGUMENT(layers);
 DECLARE_ARGUMENT(depth_interpolation);
 DECLARE_ARGUMENT(color_mode);
+DECLARE_ARGUMENT(mipmap_mode);
 DECLARE_ARGUMENT(images);
 }
 
@@ -45,6 +46,8 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& res = RenderingContextStack::primary_rendering_resources();
     auto color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode));
+    auto mipmap_mode = mipmap_mode_from_string(
+        args.arguments.at<std::string>(KnownArgs::mipmap_mode, "with_mipmaps"));
     auto tiles = args.arguments.children(KnownArgs::images, [&](const JsonMacroArguments& a){
         // This is not in a from_json function because of the usage of "path_or_variable".
         a.validate(AtlasTileArgs::options);
@@ -60,7 +63,7 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .name = res.colormap(ColormapWithModifiers{
                     .filename = VariableAndHash{a.path_or_variable(AtlasTileArgs::texture).path},
                     .color_mode = color_mode,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash())
+                    .mipmap_mode = mipmap_mode}.compute_hash())
             },
             .target = {
                 .left = target_position(0),
