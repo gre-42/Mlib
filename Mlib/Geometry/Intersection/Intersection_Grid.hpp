@@ -6,6 +6,7 @@
 #include <Mlib/Math/Floor.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <functional>
+#include <sstream>
 
 namespace Mlib {
 
@@ -78,9 +79,12 @@ public:
     }
     template <class... TVisitors>
     bool visit(const auto& aabb, TVisitors... visitors) const {
-        auto width = aabb.size();
-        if (any(width > dilation_radius_)) {
-            THROW_OR_ABORT("Intersection grid: dilation radius too small");
+        if (auto half_width = aabb.size() / 2; any(half_width > dilation_radius_)) {
+            std::stringstream sstr;
+            sstr <<
+                "Intersection grid: Dilation radius too small. Half width: " <<
+                half_width << ". Dilation radius: " << dilation_radius_;
+            THROW_OR_ABORT(sstr.str());
         }
         auto center = aabb.center();
         auto c = (funpack(center - boundary_.min)) / funpack(boundary_.size());
