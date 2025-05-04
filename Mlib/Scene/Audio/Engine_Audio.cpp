@@ -67,3 +67,7 @@ void EngineAudio::set_position(const AudioSourceState<ScenePos>& position) {
     cross_fade_.set_position(position);
 #endif
 }
+
+void EngineAudio::advance_time(float dt) {
+    cross_fade_.advance_time();
+}

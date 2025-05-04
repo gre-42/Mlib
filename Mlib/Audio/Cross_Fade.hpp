@@ -8,6 +8,7 @@
 #include <functional>
 #include <iosfwd>
 #include <list>
+#include <optional>
 
 namespace Mlib {
 
@@ -32,9 +33,10 @@ class CrossFade {
 public:
     explicit CrossFade(PositionRequirement position_requirement,
                        std::function<bool()> paused,
-                       float dgain = 0.02f,
-                       float dt = 0.01f);
+                       float dgain = 0.02f);
     ~CrossFade();
+    void start_background_thread(float dt = 0.01f);
+    void advance_time();
     void play(const AudioBuffer &audio_buffer,
               float gain_factor = 1.f,
               float pitch = 1.f,
@@ -51,10 +53,11 @@ private:
 
     PositionRequirement position_requirement_;
     Gain total_gain_;
+    float dgain_;
     std::list<AudioSourceAndGain> sources_;
     mutable FastMutex mutex_;
     std::function<bool()> paused_;
-    JThread fader_;
+    std::optional<JThread> fader_;
 };
 
 }

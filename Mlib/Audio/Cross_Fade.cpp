@@ -15,39 +15,47 @@ void AudioSourceAndGain::apply_gain() {
 CrossFade::CrossFade(
     PositionRequirement position_requirement,
     std::function<bool()> paused,
-    float dgain,
-    float dt)
+    float dgain)
     : position_requirement_{ position_requirement }
     , total_gain_{ 0.f }
+    , dgain_{ dgain }
     , paused_{ std::move(paused) }
-    , fader_{ [this, dgain, dt]() {
+{}
+
+CrossFade::~CrossFade() = default;
+
+void CrossFade::start_background_thread(float dt) {
+    std::scoped_lock lock{ mutex_ };
+    if (fader_.has_value()) {
+        THROW_OR_ABORT("CrossFade background thread already started");
+    }
+    fader_.emplace([this, dt]() {
         try {
             ThreadInitializer ti{"Audio CrossFade", ThreadAffinity::POOL};
-            while (!fader_.get_stop_token().stop_requested()) {
-                {
-                    bool pause = paused_();
-                    std::scoped_lock lock{ mutex_ };
-                    if (pause) {
-                        for (auto &s : sources_) {
-                            s.source->mute();
-                        }
-                    } else {
-                        for (auto &s : sources_) {
-                            s.source->unmute();
-                        }
-                        update_gain_unsafe(dgain);
-                    }
-                }
+            while (!fader_->get_stop_token().stop_requested()) {
+                advance_time();
                 Mlib::sleep_for(std::chrono::duration<float>(dt));
             }
         } catch (const std::exception& e) {
             verbose_abort("Exception in cross-fade: " + std::string(e.what()));
         }
-    }}
-{}
+    });
+}
 
-CrossFade::~CrossFade()
-{}
+void CrossFade::advance_time() {
+    bool pause = paused_();
+    std::scoped_lock lock{ mutex_ };
+    if (pause) {
+        for (auto &s : sources_) {
+            s.source->mute();
+        }
+    } else {
+        for (auto &s : sources_) {
+            s.source->unmute();
+        }
+        update_gain_unsafe(dgain_);
+    }
+}
 
 // From: https://stackoverflow.com/questions/14579957/std-container-c-move-to-front
 template <class T>

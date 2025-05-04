@@ -20,13 +20,14 @@ public:
         const std::function<bool()>& audio_paused,
         float p_reference,
         float p_idle);
-    ~EngineAudio();
+    virtual ~EngineAudio() override;
     virtual void notify_rotation(
         float engine_angular_velocity,
         float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) override;
     virtual void set_position(const AudioSourceState<ScenePos>& position) override;
+    virtual void advance_time(float dt) override;
 private:
 #ifndef WITHOUT_ALUT
     std::shared_ptr<AudioBufferSequenceWithHysteresis> driving_buffer_sequence_;

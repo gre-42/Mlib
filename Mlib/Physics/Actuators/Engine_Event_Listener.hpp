@@ -17,6 +17,7 @@ public:
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) = 0;
     virtual void set_position(const AudioSourceState<ScenePos>& position) = 0;
+    virtual void advance_time(float dt) = 0;
 };
 
 }

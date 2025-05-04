@@ -192,21 +192,23 @@ void RigidBodyEngine::advance_time(
         average_tire_w_ /= (float)tires_w_.size();
     }
     if (engine_power_.has_value()) {
-        auto& engine_power = *engine_power_;
         if (!std::isnan(average_tire_w_)) {
-            engine_power.auto_set_gear(dt, average_tire_w_);
+            engine_power_->auto_set_gear(dt, average_tire_w_);
         }
         if (!phase.burn_in && (phase.substep == 0) && (audio_ != nullptr)) {
             audio_->notify_rotation(
-                engine_power.engine_w(),
+                engine_power_->engine_w(),
                 average_tire_w_,
                 engine_power_intent_,
-                engine_power.get_power());
-            audio_->set_position(AudioSourceState<ScenePos>{
-                .position = position,
-                .velocity = velocity
-            });
+                engine_power_->get_power());
         }
+    }
+    if (!phase.burn_in && (phase.substep == 0) && (audio_ != nullptr)) {
+        audio_->set_position(AudioSourceState<ScenePos>{
+            .position = position,
+            .velocity = velocity
+        });
+        audio_->advance_time(dt);
     }
 }
 
