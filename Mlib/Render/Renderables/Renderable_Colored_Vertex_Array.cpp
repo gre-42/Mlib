@@ -725,13 +725,19 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     assert_true(cva->material.number_of_frames > 0);
     Hasher texture_modifiers_hash;
-    texture_modifiers_hash.combine(cva->material.textures_color.size());
-    for (const auto& t : cva->material.textures_color) {
-        texture_modifiers_hash.combine(t.modifiers_hash());
+    texture_modifiers_hash.combine(blended_textures_color.size());
+    for (const auto& t : blended_textures_color) {
+        texture_modifiers_hash.combine(t.ops->modifiers_hash());
+        texture_modifiers_hash.combine(t.id_color);
+        texture_modifiers_hash.combine(t.id_normal);
+        texture_modifiers_hash.combine(t.id_specular);
     }
-    texture_modifiers_hash.combine(cva->material.textures_alpha.size());
-    for (const auto& t : cva->material.textures_alpha) {
-        texture_modifiers_hash.combine(t.modifiers_hash());
+    texture_modifiers_hash.combine(blended_textures_alpha.size());
+    for (const auto& t : blended_textures_alpha) {
+        texture_modifiers_hash.combine(t.ops->modifiers_hash());
+        texture_modifiers_hash.combine(t.id_color);
+        texture_modifiers_hash.combine(t.id_normal);
+        texture_modifiers_hash.combine(t.id_specular);
     }
     Hasher lights_hash;
     lights_hash.combine(filtered_lights.size());
