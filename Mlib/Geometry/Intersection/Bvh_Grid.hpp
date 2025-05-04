@@ -8,7 +8,8 @@ template <class TPosition, size_t tndim, class TPayload>
 class GenericBvhGrid {
 public:
     using TBvh = GenericBvh<TPosition, tndim, TPayload>;
-    using Grid = IntersectionGrid<TPosition, tndim, IntersectionGridPointerEntry<const GenericBvh<TPosition, tndim, TPayload>>>;
+    using Entry = IntersectionGridPointerEntry<const TBvh>;
+    using Grid = IntersectionGrid<TPosition, tndim, IntersectionGridEntries<Entry, Entry>>;
     GenericBvhGrid(
         // BVH
         const FixedArray<TPosition, tndim>& max_size,
@@ -45,8 +46,11 @@ private:
     }
     void insert_into_grid(const TBvh& b, size_t depth) const {
         if (depth == grid_level_) {
-            grid_->insert(&b);
+            grid_->insert(b.aabb(), IntersectionGridPointerEntry{&b}, recursive_v);
         } else {
+            if (!b.data().empty()) {
+                grid_->insert(b.data_aabb(), IntersectionGridPointerEntry{&b}, non_recursive_v);
+            }
             for (const auto& [_, c] : b.children()) {
                 insert_into_grid(c, depth + 1);
             }

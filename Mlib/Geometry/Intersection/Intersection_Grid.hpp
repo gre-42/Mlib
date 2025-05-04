@@ -7,8 +7,12 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <functional>
 #include <sstream>
+#include <vector>
 
 namespace Mlib {
+
+static struct Recursive {} recursive_v;
+static struct NonRecursive {} non_recursive_v;
 
 template <class TData>
 class IntersectionGridPointerEntry {
@@ -16,11 +20,9 @@ public:
     explicit IntersectionGridPointerEntry(TData* data)
         : data_{ data }
     {}
-    decltype(auto) aabb() const {
-        return data_->aabb();
-    }
-    decltype(auto) entry() const {
-        return *this;
+    template <class... TVisitors>
+    bool visit_data(const auto& aabb, TVisitors... visitors) const {
+        return data_->visit_data(aabb, visitors...);
     }
     template <class... TVisitors>
     bool visit(const auto& aabb, TVisitors... visitors) const {
@@ -28,6 +30,34 @@ public:
     }
 private:
     TData* data_;
+};
+
+template <class TNonRecursive, class TRecursive>
+class IntersectionGridEntries {
+public:
+    template <class... TVisitors>
+    bool visit(const auto& aabb, TVisitors... visitors) const {
+        for (const auto& child : non_recursive_) {
+            if (!child.visit_data(aabb, visitors...)) {
+                return false;
+            }
+        }
+        for (const auto& child : recursive_) {
+            if (!child.visit(aabb, visitors...)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    void push_back(TNonRecursive data0, NonRecursive) {
+        non_recursive_.emplace_back(std::move(data0));
+    }
+    void push_back(TRecursive data1, Recursive) {
+        recursive_.emplace_back(std::move(data1));
+    }
+private:
+    std::vector<TNonRecursive> non_recursive_;
+    std::vector<TRecursive> recursive_;
 };
 
 template <class TPosition, size_t tndim, class TData>
@@ -47,12 +77,8 @@ public:
             THROW_OR_ABORT("Number of intersection grid cells cannot be zero");
         }
     }
-    template <class TEntry>
-    void insert(TEntry* entry) {
-        insert(IntersectionGridPointerEntry{ entry });
-    }
-    void insert(const auto& entry) {
-        auto aabb = entry.aabb();
+    template <class... Args>
+    void insert(const auto& aabb, const auto& entry, Args... args) {
         auto c_min = (funpack(aabb.min - boundary_.min - dilation_radius_)) / funpack(boundary_.size());
         auto c_max = (funpack(aabb.max - boundary_.min + dilation_radius_)) / funpack(boundary_.size());
         if (any(c_min < (TUnpackedPosition)0)) {
@@ -72,8 +98,8 @@ public:
             verbose_abort("Intersection grid upper index out of bounds");
         }
         AxisAlignedBoundingBox<size_t, tndim>::from_min_max(id_min, id_max).for_each_cell(
-            [this, &entry](const FixedArray<size_t, tndim>& id){
-                data_(id).push_back(entry.entry());
+            [this, &entry, &args...](const FixedArray<size_t, tndim>& id){
+                data_(id).push_back(entry, std::forward<Args>(args)...);
                 return true;
             });
     }
@@ -98,15 +124,10 @@ public:
         if (any(id >= data_.template fixed_shape<tndim>())) {
             verbose_abort("Intersection grid rounded index out of bounds");
         }
-        for (const auto& child : data_(id)) {
-            if (!child.visit(aabb, visitors...)) {
-                return false;
-            }
-        }
-        return true;
+        return data_(id).visit(aabb, visitors...);
     }
 private:
-    Array<std::vector<TData>> data_;
+    Array<TData> data_;
     AxisAlignedBoundingBox<TPosition, tndim> boundary_;
     FixedArray<TUnpackedPosition, tndim> ncells_;
     FixedArray<TPosition, tndim> dilation_radius_;

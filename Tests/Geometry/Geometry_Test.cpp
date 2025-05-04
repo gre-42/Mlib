@@ -418,12 +418,14 @@ void test_interesection_grid() {
         { (CompressedScenePos)0.5f, (CompressedScenePos)0.6f, (CompressedScenePos)0.7f }
     };
 
-    grid.root_bvh.insert(
-        AABB::from_min_max(
-            {(CompressedScenePos)1.f, (CompressedScenePos)2.f, (CompressedScenePos)3.f},
-            {(CompressedScenePos)2.f, (CompressedScenePos)3.f, (CompressedScenePos)4.f}),
-        42);
-    grid.grid();
+    auto aabb = AABB::from_min_max(
+        {(CompressedScenePos)1.f, (CompressedScenePos)2.f, (CompressedScenePos)3.f},
+        {(CompressedScenePos)2.f, (CompressedScenePos)3.f, (CompressedScenePos)4.f});
+
+    grid.root_bvh.insert(aabb, 42);
+    grid.grid().visit(aabb, [](const auto& element){
+        return true;
+    });
 }
 
 void test_ray_segment_intersects_aabb() {

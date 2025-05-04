@@ -100,6 +100,14 @@ public:
     }
 
     template <class... TVisitors>
+    bool visit_data(const auto& aabb, TVisitors... visitors) const {
+        if (!data_.visit(aabb, visitors...)) {
+            return false;
+        }
+        return true;
+    }
+
+    template <class... TVisitors>
     bool visit(const auto& aabb, TVisitors... visitors) const {
         if (!data_.visit(aabb, visitors...)) {
             return false;
@@ -127,6 +135,15 @@ public:
             }
         }
         return true;
+    }
+
+    AxisAlignedBoundingBox<TPosition, tndim> data_aabb() const {
+        auto result = AxisAlignedBoundingBox<TPosition, tndim>::empty();
+        data_.visit_all([&](const auto& d, const auto&... x){
+            result.extend(d.primitive());
+            return true;
+        });
+        return result;
     }
 
     AxisAlignedBoundingBox<TPosition, tndim> aabb() const {
