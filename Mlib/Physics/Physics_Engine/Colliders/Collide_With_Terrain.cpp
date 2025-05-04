@@ -47,7 +47,7 @@ void Mlib::collide_with_terrain(
                     any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
                     any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_MASK))
                 {
-                    rigid_bodies.convex_mesh_bvh().visit(
+                    rigid_bodies.convex_mesh_bvh().grid().visit(
                         msh1.mesh->aabb(),
                         [&](const RigidBodyAndIntersectableMesh& rm) {
                             collide_convex_meshes(

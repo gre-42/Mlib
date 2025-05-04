@@ -60,6 +60,10 @@ enum class CollisionRidgeBakingStatus {
 class RigidBodies {
     friend class PhysicsEngine;
 public:
+    using ConvexMeshBvh = BvhGrid<
+        CompressedScenePos,
+        3,
+        RigidBodyAndIntersectableMesh>;
     using TriangleBvh = CompressedBvhGrid<
         CompressedScenePos,
         HalfCompressedScenePos,
@@ -96,7 +100,7 @@ public:
     void plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     IterableWrapper<std::list<RigidBodyAndMeshes>> objects() const;
     IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
-    const Bvh<CompressedScenePos, 3, RigidBodyAndIntersectableMesh>& convex_mesh_bvh() const;
+    const ConvexMeshBvh& convex_mesh_bvh() const;
     const TriangleBvh& triangle_bvh() const;
     const RidgeBvh& ridge_bvh() const;
     RidgeMap& ridge_map();
@@ -112,7 +116,7 @@ private:
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     // BVHs. Do not forget to .clear() the BVHs in the "delete_rigid_body" method.
-    Bvh<CompressedScenePos, 3, RigidBodyAndIntersectableMesh> convex_mesh_bvh_;
+    ConvexMeshBvh convex_mesh_bvh_;
     TriangleBvh triangle_bvh_;
     mutable RidgeBvh ridge_bvh_;
     mutable RidgeMap ridge_map_;

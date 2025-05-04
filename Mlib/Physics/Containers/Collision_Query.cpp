@@ -96,7 +96,7 @@ bool CollisionQuery::can_see(
             }
         }
     }
-    if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().visit(
+    if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().root_bvh.visit(
         ray,
         [&](const RigidBodyAndIntersectableMesh& rm0){
             if (!any(rm0.mesh.physics_material & collidable_mask)) {
@@ -338,7 +338,7 @@ bool CollisionQuery::visit_spawn_preventers(
                 }
             }
         }
-        if (!physics_engine_.rigid_bodies_.triangle_bvh().root_bvh.visit(
+        if (!physics_engine_.rigid_bodies_.triangle_bvh().grid().visit(
             ti1.aabb(),
             [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0)
             {
@@ -356,7 +356,7 @@ bool CollisionQuery::visit_spawn_preventers(
         {
             return false;
         }
-        if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().visit(
+        if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().grid().visit(
             ti1.aabb(),
             [&](const RigidBodyAndIntersectableMesh& rm0){
                 if (!any(rm0.mesh.physics_material & collidable_mask0)) {

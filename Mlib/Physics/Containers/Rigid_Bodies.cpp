@@ -21,7 +21,13 @@ using namespace Mlib;
 
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
     : cfg_{ cfg }
-    , convex_mesh_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
+    , convex_mesh_bvh_{
+        {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size},
+        cfg.bvh_levels,
+        cfg.grid_level,
+        cfg.ncells,
+        fixed_full<CompressedScenePos, 3>(cfg.dilation_radius)
+    }
     , triangle_bvh_{
         {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size},
         cfg.bvh_levels,
@@ -154,7 +160,7 @@ void RigidBodies::add_rigid_body(
                             }
                         }
 
-                        convex_mesh_bvh_.insert(
+                        convex_mesh_bvh_.root_bvh.insert(
                             aabb,
                             RigidBodyAndIntersectableMesh{
                                 .rb = { rb, CURRENT_SOURCE_LOCATION },
@@ -334,7 +340,7 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
 
 void RigidBodies::optimize_search_time(std::ostream& ostr) const {
     ostr << "Convex mesh BVH optimization" << std::endl;
-    convex_mesh_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
+    convex_mesh_bvh_.root_bvh.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
     ostr << "Triangle BVH optimization" << std::endl;
     triangle_bvh_.root_bvh.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
     ostr << "Ridge BVH optimization" << std::endl;
@@ -344,7 +350,7 @@ void RigidBodies::optimize_search_time(std::ostream& ostr) const {
 }
 
 void RigidBodies::print_search_time() const {
-    linfo() << "Convex mesh search time: " << convex_mesh_bvh_.search_time(BvhDataRadiusType::NONZERO);
+    linfo() << "Convex mesh search time: " << convex_mesh_bvh_.root_bvh.search_time(BvhDataRadiusType::NONZERO);
     linfo() << "Triangle search time: " << triangle_bvh_.root_bvh.search_time(BvhDataRadiusType::NONZERO);
     linfo() << "Ridge search time: " << ridge_bvh_.search_time(BvhDataRadiusType::NONZERO);
     linfo() << "Line search time: " << line_bvh_.search_time(BvhDataRadiusType::NONZERO);
@@ -368,7 +374,7 @@ void RigidBodies::print_compression_ratio() const {
 }
 
 void RigidBodies::plot_convex_mesh_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    convex_mesh_bvh_.plot_svg<ScenePos>(filename, axis0, axis1);
+    convex_mesh_bvh_.root_bvh.plot_svg<ScenePos>(filename, axis0, axis1);
 }
 
 void RigidBodies::plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
@@ -389,7 +395,7 @@ IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> RigidBodies::transfo
         const_cast<std::list<RigidBodyAndIntersectableMeshes>&>(transformed_objects_));
 }
 
-const Bvh<CompressedScenePos, 3, RigidBodyAndIntersectableMesh>& RigidBodies::convex_mesh_bvh() const {
+const RigidBodies::ConvexMeshBvh& RigidBodies::convex_mesh_bvh() const {
     return convex_mesh_bvh_;
 }
 
