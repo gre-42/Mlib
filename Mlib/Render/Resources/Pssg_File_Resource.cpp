@@ -14,8 +14,8 @@ void Mlib::load_renderable_pssg(
     const PssgArrays<TResourcePos, ScenePos>& arrays,
     const ColoredVertexArrayFilters& filters,
     SceneNodeResources& scene_node_resources,
-    std::list<std::string>& added_scene_node_resources,
-    std::list<std::string>& added_instantiables)
+    std::list<VariableAndHash<std::string>>& added_scene_node_resources,
+    std::list<VariableAndHash<std::string>>& added_instantiables)
 {
     for (const auto& [n, cva] : arrays.resources) {
         if (filters.matches(*cva)) {
@@ -28,7 +28,7 @@ void Mlib::load_renderable_pssg(
     for (const auto& [i, ins] : enumerate(arrays.instances)) {
         const auto& cva = arrays.resources.get(ins.resource_name);
         if (filters.matches(*cva)) {
-            auto instance_name = ins.resource_name + std::to_string(i);
+            auto instance_name = VariableAndHash<std::string>{*ins.resource_name + std::to_string(i)};
             scene_node_resources.add_instantiable(instance_name, ins);
             added_instantiables.push_back(instance_name);
         }
@@ -41,14 +41,14 @@ template void load_renderable_pssg<float>(
     const PssgArrays<float, ScenePos>& arrays,
     const ColoredVertexArrayFilters& filters,
     SceneNodeResources& scene_node_resources,
-    std::list<std::string>& added_scene_node_resources,
-    std::list<std::string>& added_instantiables);
+    std::list<VariableAndHash<std::string>>& added_scene_node_resources,
+    std::list<VariableAndHash<std::string>>& added_instantiables);
 
 template void load_renderable_pssg<CompressedScenePos>(
     const PssgArrays<CompressedScenePos, ScenePos>& arrays,
     const ColoredVertexArrayFilters& filters,
     SceneNodeResources& scene_node_resources,
-    std::list<std::string>& added_scene_node_resources,
-    std::list<std::string>& added_instantiables);
+    std::list<VariableAndHash<std::string>>& added_scene_node_resources,
+    std::list<VariableAndHash<std::string>>& added_instantiables);
 
 }

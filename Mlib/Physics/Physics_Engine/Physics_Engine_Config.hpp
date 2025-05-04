@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Precision.hpp>
@@ -32,7 +33,7 @@ struct PhysicsEngineConfig {
     // Grid
     size_t grid_level = 9;
     FixedArray<size_t, 3> ncells = { 400u, 5u, 400u };
-    CompressedScenePos dilation_radius = (CompressedScenePos)15.f;
+    CompressedScenePos dilation_radius = (CompressedScenePos)(15.f * meters);
 
     // Collision/Friction misc.
     float max_extra_friction = 0;

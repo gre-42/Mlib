@@ -273,7 +273,7 @@ void Mlib::add_beacons_to_raceways(
         .billboard_id = BILLBOARD_ID_NONE,
         .yangle = 0.f,
         .probability = NAN,
-        .aggregate_mode = scene_node_resources.aggregate_mode(*resource_name),
+        .aggregate_mode = scene_node_resources.aggregate_mode(resource_name),
         .create_imposter = false,
         .max_imposter_texture_size = 0,
         .hitbox = VariableAndHash<std::string>{},

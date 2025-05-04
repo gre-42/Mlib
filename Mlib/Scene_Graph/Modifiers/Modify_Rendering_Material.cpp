@@ -10,7 +10,7 @@
 using namespace Mlib;
 
 void Mlib::modify_rendering_material(
-    const std::string& resource_name,
+    const VariableAndHash<std::string>& resource_name,
     SceneNodeResources& scene_node_resources,
     const ColoredVertexArrayFilter& filter,
     std::optional<BlendMode> blend_mode,

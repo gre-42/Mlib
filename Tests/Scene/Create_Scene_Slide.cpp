@@ -29,6 +29,10 @@
 
 using namespace Mlib;
 
+static const auto OBJ_SLIDE = VariableAndHash<std::string>{"obj_slide"};
+static const auto OBJ_BOX = VariableAndHash<std::string>{"obj_box"};
+static const auto BEACON = VariableAndHash<std::string>{"beacon"};
+
 void Mlib::create_scene_slide(
     Scene& scene,
     PhysicsEngine& pe,
@@ -86,9 +90,9 @@ void Mlib::create_scene_slide(
         {1.f, 1.f, 1.f},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX);
 
-    RenderingContextStack::primary_scene_node_resources().add_resource("obj_slide", std::make_shared<ColoredVertexArrayResource>(triangles_slide));
-    RenderingContextStack::primary_scene_node_resources().add_resource("obj_box", std::make_shared<ColoredVertexArrayResource>(triangles_box));
-    RenderingContextStack::primary_scene_node_resources().add_resource("beacon", load_renderable_obj(
+    RenderingContextStack::primary_scene_node_resources().add_resource(OBJ_SLIDE, std::make_shared<ColoredVertexArrayResource>(triangles_slide));
+    RenderingContextStack::primary_scene_node_resources().add_resource(OBJ_BOX, std::make_shared<ColoredVertexArrayResource>(triangles_box));
+    RenderingContextStack::primary_scene_node_resources().add_resource(BEACON, load_renderable_obj(
         "Data/box.obj",
         LoadMeshConfig<float>{
             .position = FixedArray<float, 3>{0.f, 0.f, 0.f},
@@ -111,12 +115,12 @@ void Mlib::create_scene_slide(
     auto scene_node_box = make_unique_scene_node();
     auto scene_node_light = make_unique_scene_node();
 
-    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj_slide", ChildInstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ_SLIDE, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = VariableAndHash<std::string>{ "obj0" },
         .scene_node = scene_node_slide.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj_box", ChildInstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ_BOX, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = VariableAndHash<std::string>{ "obj1_0" },
         .scene_node = scene_node_box.ref(DP_LOC),
@@ -129,21 +133,21 @@ void Mlib::create_scene_slide(
     scene_node_light->set_position({0.f, 50.f, -90.f}, INITIAL_POSE);
     scene_node_light->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
 
-    scene.auto_add_root_node("obj_slide", std::move(scene_node_slide), RenderingDynamics::STATIC);
-    scene.auto_add_root_node("obj_box", std::move(scene_node_box), RenderingDynamics::MOVING);
-    scene.add_root_node("follower_camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.add_root_node("light_node", std::move(scene_node_light), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.auto_add_root_node(OBJ_SLIDE, std::move(scene_node_slide), RenderingDynamics::STATIC);
+    scene.auto_add_root_node(OBJ_BOX, std::move(scene_node_box), RenderingDynamics::MOVING);
+    scene.add_root_node(VariableAndHash<std::string>{"follower_camera"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node(VariableAndHash<std::string>{"light_node"}, std::move(scene_node_light), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
-    scene.get_node("light_node", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter ams_slide{scene.get_node("obj_slide", DP_LOC), std::move(rb_slide), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter ams_box{scene.get_node("obj_box", DP_LOC), std::move(rb_box), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter ams_slide{scene.get_node(OBJ_SLIDE, DP_LOC), std::move(rb_slide), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter ams_box{scene.get_node(OBJ_BOX, DP_LOC), std::move(rb_box), CURRENT_SOURCE_LOCATION};
 
         pe.rigid_bodies_.add_rigid_body(*ams_slide.absolute_movable, triangles_slide, {}, {}, CollidableMode::STATIC);
         pe.rigid_bodies_.add_rigid_body(*ams_box.absolute_movable, triangles_box, {}, {}, CollidableMode::MOVING);

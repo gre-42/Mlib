@@ -36,15 +36,15 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
 {
     args.arguments.validate(KnownArgs::options);
     
-    auto name = args.arguments.at<std::string>(KnownArgs::name);
-    auto animatable = args.arguments.at<std::string>(KnownArgs::animatable);
+    auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
+    auto animatable = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animatable);
 
     auto& pt = RenderingContextStack::primary_trail_resources();
     auto& sr = RenderingContextStack::primary_scene_node_resources();
     pt.insert_storage_instantiator(
         name,
         [&sr,
-         model = args.arguments.at<std::string>(KnownArgs::model),
+         model = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::model),
          u_offset = args.arguments.at<float>(KnownArgs::u_offset),
          u_scale = args.arguments.at<float>(KnownArgs::u_scale),
          duration = args.arguments.at<float>(KnownArgs::duration) * seconds,

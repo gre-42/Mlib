@@ -28,7 +28,7 @@ LoadSceneJsonUserFunction AddBvhResource::json_user_function = [](const LoadScen
     cfg.smooth_alpha = args.arguments.at<float>(KnownArgs::smooth_alpha);
     cfg.periodic = args.arguments.at<bool>(KnownArgs::periodic);
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         [filename=args.arguments.path(KnownArgs::filename), cfg](){
             return std::make_shared<BvhFileResource>(
                 filename,

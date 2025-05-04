@@ -41,7 +41,7 @@ VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene)
 
 void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& lo = get_status_writer(node);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     global_object_pool.create<VisualMovable3rdLogger>(

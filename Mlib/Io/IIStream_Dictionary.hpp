@@ -7,6 +7,9 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
+
 struct StreamAndSize {
     std::unique_ptr<std::istream> stream;
     std::streamsize size;
@@ -15,9 +18,9 @@ struct StreamAndSize {
 class IIStreamDictionary {
 public:
     virtual ~IIStreamDictionary() = default;
-    virtual std::vector<std::string> names() const = 0;
+    virtual std::vector<VariableAndHash<std::string>> names() const = 0;
     virtual StreamAndSize read(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         std::ios::openmode openmode,
         SourceLocation loc) = 0;
 };

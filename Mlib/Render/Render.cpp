@@ -186,12 +186,12 @@ void Render::render_node(
     DestructionGuard scene_destruction_guard{[&](){
         scene.shutdown();
     }};
-    scene.auto_add_root_node("obj", std::move(node), RenderingDynamics::MOVING);
-    scene.add_root_node("camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.auto_add_root_node(VariableAndHash<std::string>{"obj"}, std::move(node), RenderingDynamics::MOVING);
+    scene.add_root_node(VariableAndHash<std::string>{"camera"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     // std::make_shared<GenericCamera>(camera_config, GenericCamera::Postprocessing::ENABLED, GenericCamera::Mode::PERSPECTIVE)
-    scene.get_node("camera", DP_LOC)->set_camera(std::move(camera));
-    scene.add_root_node("light", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.get_node("light", DP_LOC)->add_light(std::make_unique<Light>(Light{
+    scene.get_node(VariableAndHash<std::string>{"camera"}, DP_LOC)->set_camera(std::move(camera));
+    scene.add_root_node(VariableAndHash<std::string>{"light"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.get_node(VariableAndHash<std::string>{"light"}, DP_LOC)->add_light(std::make_unique<Light>(Light{
         .ambient = {0.5f, 0.5f, 0.5f},
         .diffuse = {1.f, 1.f, 1.f},
         .specular = {1.f, 1.f, 1.f},

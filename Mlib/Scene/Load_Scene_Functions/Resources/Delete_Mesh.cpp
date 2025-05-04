@@ -26,7 +26,7 @@ LoadSceneJsonUserFunction DeleteMesh::json_user_function = [](const LoadSceneJso
     auto where = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::where));
 
     RenderingContextStack::primary_scene_node_resources().add_modifier(
-        args.arguments.at<std::string>(KnownArgs::resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
         [where](ISceneNodeResource& resource)
         {
             auto del = [where]<class TPos>(

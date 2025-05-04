@@ -46,15 +46,16 @@ Scene::Scene(
     IParticleRenderer* particle_renderer,
     ITrailRenderer* trail_renderer,
     IDynamicLights* dynamic_lights)
-    : delete_node_mutex_{ delete_node_mutex }
+    : nodes_{ "Scene node" }
+    , delete_node_mutex_{ delete_node_mutex }
     , morn_{ *this }
-    , root_nodes_{ morn_.create("root_nodes") }
-    , static_root_nodes_{ morn_.create("static_root_nodes") }
-    , root_aggregate_once_nodes_{ morn_.create("root_aggregate_once_nodes") }
-    , root_aggregate_always_nodes_{ morn_.create("root_aggregate_always_nodes") }
-    , root_instances_once_nodes_{ morn_.create("root_instances_once_nodes") }
-    , root_instances_always_nodes_{ morn_.create("root_instances_always_nodes") }
-    , static_root_physics_nodes_{ morn_.create("static_root_physics_nodes") }
+    , root_nodes_{ morn_.create(VariableAndHash<std::string>{"root_nodes"}) }
+    , static_root_nodes_{ morn_.create(VariableAndHash<std::string>{"static_root_nodes"}) }
+    , root_aggregate_once_nodes_{ morn_.create(VariableAndHash<std::string>{"root_aggregate_once_nodes"}) }
+    , root_aggregate_always_nodes_{ morn_.create(VariableAndHash<std::string>{"root_aggregate_always_nodes"}) }
+    , root_instances_once_nodes_{ morn_.create(VariableAndHash<std::string>{"root_instances_once_nodes"}) }
+    , root_instances_always_nodes_{ morn_.create(VariableAndHash<std::string>{"root_instances_always_nodes"}) }
+    , static_root_physics_nodes_{ morn_.create(VariableAndHash<std::string>{"static_root_physics_nodes"}) }
     , name_{ std::move(name) }
     , large_aggregate_bg_worker_{ "Large_agg_BG" }
     , large_instances_bg_worker_{ "Large_inst_BG" }
@@ -70,7 +71,7 @@ Scene::Scene(
 {}
 
 void Scene::add_moving_root_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
@@ -79,7 +80,7 @@ void Scene::add_moving_root_node(
 }
 
 void Scene::add_static_root_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
@@ -87,7 +88,7 @@ void Scene::add_static_root_node(
 }
 
 void Scene::add_root_aggregate_once_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
@@ -95,7 +96,7 @@ void Scene::add_root_aggregate_once_node(
 }
 
 void Scene::add_root_aggregate_always_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
@@ -103,7 +104,7 @@ void Scene::add_root_aggregate_always_node(
 }
 
 void Scene::add_root_instances_once_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
@@ -111,7 +112,7 @@ void Scene::add_root_instances_once_node(
 }
 
 void Scene::add_root_instances_always_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
@@ -119,7 +120,7 @@ void Scene::add_root_instances_always_node(
 }
 
 void Scene::add_static_root_physics_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
@@ -127,7 +128,7 @@ void Scene::add_static_root_physics_node(
 }
 
 void Scene::auto_add_root_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node,
     RenderingDynamics rendering_dynamics)
 {
@@ -139,7 +140,7 @@ void Scene::auto_add_root_node(
 }
 
 void Scene::add_root_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node,
     RenderingDynamics rendering_dynamics,
     RenderingStrategies rendering_strategy)
@@ -207,7 +208,7 @@ void Scene::add_root_imposter_node(const DanglingRef<SceneNode>& scene_node)
     }
 }
 
-void Scene::move_root_node_to_bvh(const std::string& name) {
+void Scene::move_root_node_to_bvh(const VariableAndHash<std::string>& name) {
     if (static_root_nodes_.contains(name)) {
         static_root_nodes_.move_node_to_bvh(name);
     } else if (root_aggregate_once_nodes_.contains(name)) {
@@ -220,13 +221,13 @@ void Scene::move_root_node_to_bvh(const std::string& name) {
 }
 
 bool Scene::root_node_scheduled_for_deletion(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     bool must_exist) const
 {
     return morn_.root_node_scheduled_for_deletion(name, must_exist);
 }
 
-void Scene::schedule_delete_root_node(const std::string& name) {
+void Scene::schedule_delete_root_node(const VariableAndHash<std::string>& name) {
     root_nodes_.schedule_delete_root_node(name);
 }
 
@@ -234,7 +235,7 @@ void Scene::delete_scheduled_root_nodes() const {
     morn_.delete_scheduled_root_nodes();
 }
 
-void Scene::try_delete_root_node(const std::string& name) {
+void Scene::try_delete_root_node(const VariableAndHash<std::string>& name) {
     if (nodes_.contains(name)) {
         delete_root_node(name);
     }
@@ -248,7 +249,7 @@ void Scene::delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node) 
     }
 }
 
-void Scene::delete_root_node(const std::string& name) {
+void Scene::delete_root_node(const VariableAndHash<std::string>& name) {
     LOG_FUNCTION("Scene::delete_root_node");
     root_nodes_.delete_root_node(name);
 }
@@ -258,14 +259,14 @@ void Scene::delete_root_nodes(const Mlib::re::cregex& regex) {
     root_nodes_.delete_root_nodes(regex);
 }
 
-void Scene::try_delete_node(const std::string& name) {
+void Scene::try_delete_node(const VariableAndHash<std::string>& name) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (nodes_.contains(name)) {
         delete_node(name);
     }
 }
 
-void Scene::delete_node(const std::string& name) {
+void Scene::delete_node(const VariableAndHash<std::string>& name) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     DanglingPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
     if (!node->shutting_down()) {
@@ -285,7 +286,7 @@ void Scene::delete_nodes(const Mlib::re::cregex& regex) {
     std::unique_lock lock{ mutex_ };
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = it++;
-        if (Mlib::re::regex_match(n->first, regex)) {
+        if (Mlib::re::regex_match(*n->first, regex)) {
             UnlockGuard ulock{ lock };
             delete_node(n->first);
         }
@@ -307,7 +308,7 @@ void Scene::shutdown() {
     morn_.shutdown();
     if (!nodes_.empty()) {
         for (const auto& [name, _] : nodes_) {
-            lerr() << name;
+            lerr() << *name;
         }
         verbose_abort("Registered nodes remain after shutdown");
     }
@@ -342,7 +343,7 @@ void Scene::wait_until_done() const {
     small_instances_bg_worker_.wait_until_done();
 }
 
-bool Scene::contains_node(const std::string& name) const {
+bool Scene::contains_node(const VariableAndHash<std::string>& name) const {
     std::shared_lock lock{ mutex_ };
     return nodes_.contains(name);
 }
@@ -375,23 +376,23 @@ size_t Scene::try_empty_the_trash_can() {
 }
 
 void Scene::register_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     const DanglingRef<SceneNode>& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
-    if (name.empty()) {
+    if (name->empty()) {
         THROW_OR_ABORT("register_node received empty name");
     }
     if (!nodes_.try_emplace(name, scene_node.ptr()).second) {
-        THROW_OR_ABORT("Scene node with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Scene node with name \"" + *name + "\" already exists");
     }
 }
 
-void Scene::unregister_node(const std::string& name) {
+void Scene::unregister_node(const VariableAndHash<std::string>& name) {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (nodes_.erase(name) != 1) {
-        verbose_abort("Could not find node with name (0) \"" + name + '"');
+        verbose_abort("Could not find node with name (0) \"" + *name + '"');
     }
 }
 
@@ -400,20 +401,20 @@ void Scene::unregister_nodes(const Mlib::re::cregex& regex) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
-        if (Mlib::re::regex_match(n.first, regex)) {
+        if (Mlib::re::regex_match(*n.first, regex)) {
             if (nodes_.erase(n.first) != 1) {
-                verbose_abort("Could not find node with name (1) \"" + n.first + '"');
+                verbose_abort("Could not find node with name (1) \"" + *n.first + '"');
             }
         }
     }
 }
 
-DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION loc) const {
+DanglingRef<SceneNode> Scene::get_node(const VariableAndHash<std::string>& name, SOURCE_LOCATION loc) const {
     std::shared_lock lock{ mutex_ };
     if (delete_node_mutex_.this_thread_is_deleter_thread() &&
         morn_.root_node_scheduled_for_deletion(name, false))
     {
-        THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
+        THROW_OR_ABORT("Node \"" + *name + "\" is scheduled for deletion");
     }
     auto res = get_node_that_may_be_scheduled_for_deletion(name).set_loc(loc);
     // Only for debugging purposes, as it
@@ -422,7 +423,7 @@ DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION 
     return res;
 }
 
-DanglingPtr<SceneNode> Scene::try_get_node(const std::string& name, SOURCE_LOCATION loc) const {
+DanglingPtr<SceneNode> Scene::try_get_node(const VariableAndHash<std::string>& name, SOURCE_LOCATION loc) const {
     std::shared_lock lock{ mutex_ };
     if (!contains_node(name)) {
         return nullptr;
@@ -430,13 +431,13 @@ DanglingPtr<SceneNode> Scene::try_get_node(const std::string& name, SOURCE_LOCAT
     return get_node(name, loc).ptr();
 }
 
-std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const Mlib::re::cregex& regex) const {
+std::list<std::pair<VariableAndHash<std::string>, DanglingRef<SceneNode>>> Scene::get_nodes(const Mlib::re::cregex& regex) const {
     std::shared_lock lock{ mutex_ };
-    std::list<std::pair<std::string, DanglingRef<SceneNode>>> result;
+    std::list<std::pair<VariableAndHash<std::string>, DanglingRef<SceneNode>>> result;
     for (const auto& [name, node] : nodes_) {
-        if (Mlib::re::regex_match(name, regex)) {
+        if (Mlib::re::regex_match(*name, regex)) {
             if (morn_.root_node_scheduled_for_deletion(name, false)) {
-                THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
+                THROW_OR_ABORT("Node \"" + *name + "\" is scheduled for deletion");
             }
             result.emplace_back(name, *node);
         }
@@ -444,18 +445,18 @@ std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const
     return result;
 }
 
-DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
+DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const VariableAndHash<std::string>& name) const {
     std::shared_lock lock{ mutex_ };
-    auto it = nodes_.find(name);
-    if (it == nodes_.end()) {
-        THROW_OR_ABORT("Could not find node with name (2) \"" + name + '"');
+    auto it = nodes_.try_get(name);
+    if (it == nullptr) {
+        THROW_OR_ABORT("Could not find node with name (2) \"" + *name + '"');
     }
-    return *it->second;
+    return **it;
 }
 
 bool Scene::visit_all(const std::function<bool(
     const TransformationMatrix<float, ScenePos, 3>& m,
-    const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
+    const StringWithHashUnorderedMap<std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
 {
     std::shared_lock lock{ mutex_ };
     return
@@ -508,7 +509,7 @@ void Scene::render(
             std::shared_lock lock{ mutex_ };
             auto res = root_nodes_.try_get(external_render_pass.black_node_name, DP_LOC);
             if (!res.has_value()) {
-                THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
+                THROW_OR_ABORT("Could not find black node with name \"" + *external_render_pass.black_node_name + '"');
             }
             return *res;
         }();
@@ -523,7 +524,7 @@ void Scene::render(
             node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
     } else {
-        if (!external_render_pass.black_node_name.empty()) {
+        if (!external_render_pass.black_node_name->empty()) {
             THROW_OR_ABORT("Expected empty black node");
         }
         // |         |Lights|Blended|Large|Small|Move|

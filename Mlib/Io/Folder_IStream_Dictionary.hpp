@@ -7,9 +7,9 @@ class FolderIStreamDictionary: public IIStreamDictionary {
 public:
     explicit FolderIStreamDictionary(std::string folder);
     virtual ~FolderIStreamDictionary() override;
-    virtual std::vector<std::string> names() const override;
+    virtual std::vector<VariableAndHash<std::string>> names() const override;
     virtual StreamAndSize read(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         std::ios::openmode openmode,
         SourceLocation loc) override;
 private:

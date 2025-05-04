@@ -111,7 +111,7 @@ private:
 template <class TPos>
 void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto name = args.arguments.at<std::string>(KnownArgs::name);
+    auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     LoadMeshConfig<TPos> load_mesh_config = load_mesh_config_from_json<TPos>(
         args.arguments.child(KnownArgs::config));
     std::string filename = args.arguments.try_path_or_variable(KnownArgs::filename).path;
@@ -136,7 +136,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
              &asset_references=args.asset_references,
              name]()
             {
-                RaceLogic race_logic{ asset_references, name };
+                RaceLogic race_logic{ asset_references, *name };
                 return load_renderable_kn5(
                     filename,
                     load_mesh_config,

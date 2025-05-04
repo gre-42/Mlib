@@ -15,6 +15,8 @@
 
 using namespace Mlib;
 
+static const auto BEACON = VariableAndHash<std::string>{"beacon"};
+
 SingleWaypoint::SingleWaypoint(const DanglingBaseClassRef<Player>& player)
     : player_{ player }
     , target_velocity_{ NAN }
@@ -68,10 +70,10 @@ void SingleWaypoint::move_to_waypoint(
 {
     if (getenv_default_bool("DRAW_WAYPOINT_HISTORY", false)) {
         if (waypoint_.has_value()) {
-            add_beacon(Beacon::create(funpack(waypoint_->position), "beacon"));
+            add_beacon(Beacon::create(funpack(waypoint_->position), BEACON));
         }
         for (const auto& w : waypoint_history_) {
-            add_beacon(Beacon::create(funpack(w.position), "beacon"));
+            add_beacon(Beacon::create(funpack(w.position), BEACON));
         }
     }
     player_->delete_node_mutex_.assert_this_thread_is_deleter_thread();

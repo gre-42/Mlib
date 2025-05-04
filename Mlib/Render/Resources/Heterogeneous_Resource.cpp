@@ -74,7 +74,10 @@ void HeterogeneousResource::instantiate_root_renderables(const RootInstantiation
             .instance_name = VariableAndHash{ *options.instance_name + "_hri_arrays" },
             .scene_node = node.ref(DP_LOC),
             .renderable_resource_filter = options.renderable_resource_filter});
-        options.scene.auto_add_root_node(*options.instance_name + "_hri_world", std::move(node), RenderingDynamics::STATIC);
+        options.scene.auto_add_root_node(
+            VariableAndHash<std::string>{*options.instance_name + "_hri_world"},
+            std::move(node),
+            RenderingDynamics::STATIC);
     }
 }
 
@@ -190,7 +193,8 @@ void HeterogeneousResource::generate_instances() {
                     .probability1 = NAN,
                     .min_distance_to_bdry = NAN,
                     .max_distance_to_bdry = NAN,
-                    .aggregate_mode = scene_node_resources_.aggregate_mode(match[1].str()),
+                    .aggregate_mode = scene_node_resources_.aggregate_mode(
+                        VariableAndHash<std::string>{match[1].str()}),
                     .create_imposter = false,
                     .max_imposter_texture_size = 0,
                     .hitbox = VariableAndHash<std::string>{},

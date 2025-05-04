@@ -40,7 +40,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
     FunctionGuard fg{ "Preloading" };
 
     if (args.arguments.contains(KnownArgs::resources)) {
-        for (const auto &r : args.arguments.at<std::vector<std::string>>(KnownArgs::resources))
+        for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resources))
         {
             RenderingContextStack::primary_scene_node_resources().preload_single(
                 r,
@@ -53,7 +53,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
             RenderableResourceFilter{});
     }
     if (args.arguments.contains(KnownArgs::tire_contacts)) {
-        for (const auto &r : args.arguments.at<std::vector<std::string>>(KnownArgs::tire_contacts))
+        for (const auto &r : args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::tire_contacts))
         {
             auto res = RenderingContextStack::primary_scene_node_resources().get_arrays(
                 r,
@@ -67,7 +67,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {
                         for (const auto& s : c->smoke_infos) {
-                            particle_renderer.preload(*s.smoke_particle_resource_name);
+                            particle_renderer.preload(s.smoke_particle_resource_name);
                         }
                         // RenderingContextStack::primary_scene_node_resources().preload_single(
                         //     c->smoke_particle_resource_name, RenderableResourceFilter{});

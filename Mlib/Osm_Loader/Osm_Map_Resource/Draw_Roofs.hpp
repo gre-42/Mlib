@@ -7,6 +7,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 struct Material;
 struct Morphology;
 template <class TPos>
@@ -23,7 +25,7 @@ class GetMorphology;
 void draw_roofs(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     const SceneNodeResources& scene_node_resources,
-    const std::string& model_name,
+    const VariableAndHash<std::string>& model_name,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
     const Material& roof_material,
     const Material& rail_material,

@@ -26,7 +26,7 @@ SetTrailerHitchPositions::SetTrailerHitchPositions(RenderableScene& renderable_s
 
 void SetTrailerHitchPositions::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& rb = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::rigid_body), DP_LOC));
+    auto& rb = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), DP_LOC));
     auto trailer_asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
         .asset_references["vehicles"]

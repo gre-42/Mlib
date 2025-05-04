@@ -26,8 +26,8 @@ LoadSceneJsonUserFunction ImportBoneWeights::json_user_function = [](const LoadS
 void ImportBoneWeights::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_scene_node_resources().import_bone_weights(
-        args.arguments.at<std::string>(KnownArgs::destination),
-        args.arguments.at<std::string>(KnownArgs::source),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::destination),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::source),
         args.arguments.at<float>(KnownArgs::max_distance),
         ColoredVertexArrayFilter{});
 }

@@ -26,7 +26,7 @@ LoadSceneJsonUserFunction GenRay::json_user_function = [](const LoadSceneJsonUse
 void GenRay::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_scene_node_resources().generate_ray(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::from),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::to));
 }

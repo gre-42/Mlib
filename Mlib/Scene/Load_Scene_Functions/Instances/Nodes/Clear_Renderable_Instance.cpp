@@ -29,6 +29,6 @@ ClearRenderableInstance::ClearRenderableInstance(RenderableScene& renderable_sce
 void ClearRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     scene
-    .get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC)
+    .get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC)
     ->clear_renderable_instance(VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) });
 }

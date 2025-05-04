@@ -75,7 +75,7 @@ void FoliageResource::instantiate_root_renderables(const RootInstantiationOption
         .scene_node = node.ref(DP_LOC),
         .renderable_resource_filter = options.renderable_resource_filter});
     options.scene.auto_add_root_node(
-        *options.instance_name + "_foliage_world",
+        VariableAndHash<std::string>{*options.instance_name + "_foliage_world"},
         std::move(node),
         RenderingDynamics::STATIC);
 }

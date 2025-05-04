@@ -34,7 +34,7 @@ LoadSceneJsonUserFunction RootRenderableInstances::json_user_function = [](const
 };
 
 RootRenderableInstances::RootRenderableInstances(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -43,7 +43,7 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at(KnownArgs::transformation));
 
     scene_node_resources.instantiate_root_renderables(
-        args.arguments.at<std::string>(KnownArgs::resource),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         RootInstantiationOptions{
             .rendering_resources = &rendering_resources,
             .imposters = &imposters,

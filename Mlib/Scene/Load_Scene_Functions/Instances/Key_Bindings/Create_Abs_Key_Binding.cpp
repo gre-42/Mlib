@@ -60,7 +60,7 @@ CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene)
 
 void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& rb = get_rigid_body_vehicle(node);
     auto& kb = key_bindings.add_absolute_movable_key_binding(std::unique_ptr<AbsoluteMovableKeyBinding>(new AbsoluteMovableKeyBinding{

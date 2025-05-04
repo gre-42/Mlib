@@ -19,19 +19,19 @@ void Mlib::instantiate(
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
     const std::set<std::string>& required_prefixes,
-    const std::set<std::string>& exclude,
-    std::set<std::string>* instantiated)
+    const std::set<VariableAndHash<std::string>>& exclude,
+    std::set<VariableAndHash<std::string>>* instantiated)
 {
     if (exclude.contains(info.resource_name)) {
         return;
     }
     if (!std::ranges::any_of(required_prefixes, [&](const auto& p){
-        return info.resource_name.starts_with(p);
+        return info.resource_name->starts_with(p);
         }))
     {
         return;
     }
-    auto name = VariableAndHash{ info.resource_name + "_inst_" + std::to_string(scene.get_uuid()) };
+    auto name = VariableAndHash{ *info.resource_name + "_inst_" + std::to_string(scene.get_uuid()) };
     auto node = make_unique_scene_node(
         info.trafo.t,
         matrix_2_tait_bryan_angles(info.trafo.R),
@@ -50,7 +50,7 @@ void Mlib::instantiate(
     if (!any(node->rendering_strategies())) {
         lwarn() << "Skipping invisible instance \"" << *name << '"';
     } else {
-        scene.auto_add_root_node(*name, std::move(node), info.rendering_dynamics);
+        scene.auto_add_root_node(name, std::move(node), info.rendering_dynamics);
         if (instantiated != nullptr) {
             instantiated->insert(info.resource_name);
         }

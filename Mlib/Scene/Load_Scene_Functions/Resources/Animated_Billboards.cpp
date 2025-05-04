@@ -28,7 +28,7 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
 {
     args.arguments.validate(KnownArgs::options);
     
-    auto name = args.arguments.at<std::string>(KnownArgs::name);
+    auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     auto animatable = VariableAndHash{ args.arguments.at<std::string>(KnownArgs::animatable) };
 
     auto& pr = RenderingContextStack::primary_particle_resources();

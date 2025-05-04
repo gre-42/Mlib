@@ -58,14 +58,14 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto playback = std::make_shared<RigidBodyPlayback>(
         std::make_unique<TrackElementFile>(create_ifstream(filename), filename),
         args.ui_focus.focuses,
-        scene_node_resources.get_geographic_mapping("world.inverse"),
+        scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
         args.arguments.at<float>(KnownArgs::speed),
         node_prefixes.size());
     physics_engine.advance_times_.add_advance_time({ *playback, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     for (const auto& [i, prefix] : enumerate(node_prefixes)) {
-        DanglingRef<SceneNode> node = scene.get_node(prefix + suffix, DP_LOC);
+        DanglingRef<SceneNode> node = scene.get_node(VariableAndHash<std::string>{prefix + suffix}, DP_LOC);
         node->clearing_pointers.add(playback);
         auto playback_object = playback->get_playback_object(i);
         node->set_absolute_movable(playback_object);

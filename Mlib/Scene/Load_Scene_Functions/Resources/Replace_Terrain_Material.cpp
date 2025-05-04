@@ -38,28 +38,15 @@ struct RegisterJsonUserFunction {
                 auto fpathps = [&args](std::string_view name){
                     return args.arguments.pathes_or_variables(name, [](const FPath& v) { return VariableAndHash{ v.path }; });
                 };
-                scene_node_resources.add_modifier(
-                    args.arguments.at<std::string>(KnownArgs::resource_name),
-                    [resource_name = args.arguments.at<std::string>(KnownArgs::resource_name),
-                    textures = fpathps(KnownArgs::textures),
-                    scale = args.arguments.at<double>(KnownArgs::scale, 1.),
-                    uv_scale = args.arguments.at<double>(KnownArgs::uv_scale),
-                    uv_period = args.arguments.at<double>(KnownArgs::uv_period),
-                    up_axis = up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")),
-                    &scene_node_resources = scene_node_resources,
-                    &rendering_resources = rendering_resources]
-                    (ISceneNodeResource& resource)
-                    {
-                        replace_terrain_material(
-                            resource_name,
-                            textures,
-                            scale,
-                            uv_scale,
-                            uv_period,
-                            up_axis,
-                            scene_node_resources,
-                            rendering_resources);
-                    });
+                replace_terrain_material(
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
+                    fpathps(KnownArgs::textures),
+                    args.arguments.at<double>(KnownArgs::scale, 1.),
+                    args.arguments.at<double>(KnownArgs::uv_scale),
+                    args.arguments.at<double>(KnownArgs::uv_period),
+                    up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")),
+                    scene_node_resources,
+                    rendering_resources);
             });
     }
 } obj;

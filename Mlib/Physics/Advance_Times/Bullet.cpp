@@ -30,7 +30,7 @@ Bullet::Bullet(
     RigidBodies& rigid_bodies,
     IPlayer* gunner,
     ITeam* team,
-    std::string bullet_node_name,
+    VariableAndHash<std::string> bullet_node_name,
     const BulletProperties& props,
     std::unique_ptr<ITrailExtender> trace_extender,
     DynamicLights& dynamic_lights,
@@ -131,7 +131,7 @@ void Bullet::notify_collided(
     }
     smoke_generator_.generate_root(
         props_.explosion_resource_name,
-        "explosion" + smoke_generator_.generate_suffix(),
+        VariableAndHash<std::string>{"explosion" + smoke_generator_.generate_suffix()},
         intersection_point,
         fixed_zeros<float, 3>(),
         fixed_zeros<float, 3>(),

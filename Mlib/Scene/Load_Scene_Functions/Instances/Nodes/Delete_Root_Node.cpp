@@ -26,5 +26,5 @@ DeleteRootNode::DeleteRootNode(RenderableScene& renderable_scene)
 
 void DeleteRootNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.delete_root_node(args.arguments.at<std::string>(KnownArgs::name));
+    scene.delete_root_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name));
 }

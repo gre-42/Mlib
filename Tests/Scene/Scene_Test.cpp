@@ -188,8 +188,8 @@ void test_physics_engine(unsigned int seed) {
         [&]() { return physics_sleeper.simulated_time(); }, // simulated_time
         []() { return false; }                              // paused
     };
-    scene_node_resources.register_gravity("world", { 0.f, -9.8f * meters / squared(seconds), 0.f });
-    DynamicWorld dynamic_world{ scene_node_resources, "world" };
+    scene_node_resources.register_gravity(VariableAndHash<std::string>{"world"}, { 0.f, -9.8f * meters / squared(seconds), 0.f });
+    DynamicWorld dynamic_world{ scene_node_resources, VariableAndHash<std::string>{"world"} };
     PhysicsIteration pi{
         scene_node_resources,
         rendering_resources,
@@ -255,7 +255,7 @@ void test_physics_engine(unsigned int seed) {
         key_configurations,
         ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT);
     auto append_lightmap_logic = [&](){
-        DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);
+        DanglingRef<SceneNode> light_node = scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC);
         // Light without shadow
         light_node->add_light(std::make_unique<Light>(Light{
             .shadow_render_pass = ExternalRenderPassType::NONE}));
@@ -272,7 +272,7 @@ void test_physics_engine(unsigned int seed) {
             ExternalRenderPassType::LIGHTMAP_DEPTH,
             light_node,
             light,
-            "",                                 // black_node_name
+            VariableAndHash<std::string>(),     // black_node_name
             true,                               // with_depth_texture
             2048,                               // lightmap_width
             2048,                               // lightmap_height

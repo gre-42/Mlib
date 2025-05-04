@@ -1,5 +1,6 @@
 #include "Smoke_Trail_Generator.hpp"
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -29,7 +30,7 @@ void SmokeTrailGenerator::maybe_generate(
         trail_lifetime_ = 0.f;
         smoke_generator_.generate_root(
             resource_name,
-            instance_prefix + smoke_generator_.generate_suffix(),
+            VariableAndHash<std::string>{instance_prefix + smoke_generator_.generate_suffix()},
             position,
             rotation,
             velocity,

@@ -17,7 +17,7 @@ void Mlib::fit_canvas_to_renderables(
     auto aabb = AxisAlignedBoundingBox<CompressedScenePos, 3>::empty();
     scene.visit_all([&](
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)
+        const StringWithHashUnorderedMap<std::shared_ptr<RenderableWithStyle>>& renderables)
     {
         auto mv = v * m;
         for (const auto& [n, r] : renderables) {

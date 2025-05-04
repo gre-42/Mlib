@@ -48,12 +48,12 @@ void ModifyPhysicsMaterialTags::execute(const LoadSceneJsonUserFunctionArgs& arg
     auto remove = args.arguments.contains(KnownArgs::remove)
         ? physics_material_from_string(args.arguments.at<std::string>(KnownArgs::remove))
         : PhysicsMaterial::NONE;
-    if (auto orn = args.arguments.try_at<std::string>(KnownArgs::resource_name))
+    if (auto orn = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::resource_name))
     {
         RenderingContextStack::primary_scene_node_resources()
             .modify_physics_material_tags(*orn, filter, add, remove);
     }
-    if (auto orns = args.arguments.try_at<std::vector<std::string>>(KnownArgs::resource_names))
+    if (auto orns = args.arguments.try_at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resource_names))
     {
         for (const auto& resource_name : *orns) {
             RenderingContextStack::primary_scene_node_resources()

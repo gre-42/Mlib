@@ -33,7 +33,7 @@ void Mlib::draw_into_street_rectangles(
                 .uvx = tl.styled_road.uvx}});
     }
     for (const auto& r : street_rectangles) {
-        if (r.bumps_model.empty()) {
+        if (r.bumps_model->empty()) {
             continue;
         }
         auto& tl_str = result[r.road_properties];
@@ -45,7 +45,7 @@ void Mlib::draw_into_street_rectangles(
         const auto& cvas = scene_node_resources.get_arrays(r.bumps_model, ColoredVertexArrayFilter{})->scvas;
         for (const auto& cva : cvas) {
             if (cva->name.name() != "street") {
-                THROW_OR_ABORT("Material name is not \"street\" in resource \"" + r.bumps_model + '"');
+                THROW_OR_ABORT("Material name is not \"street\" in resource \"" + *r.bumps_model + '"');
             }
             rect.draw(*tl_str.triangle_list, cva->triangles, scale, 1.f, height, 0.f, 1.f);
         }

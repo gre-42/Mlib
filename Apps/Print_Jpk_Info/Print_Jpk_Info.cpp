@@ -21,10 +21,10 @@ int main(int argc, char **argv) {
             if (args.has_named_value("--export")) {
                 DECLARE_REGEX(re, args.named_value("--export"));
                 for (const auto& name : reader->names()) {
-                    if (!Mlib::re::regex_search(name, re)) {
+                    if (!Mlib::re::regex_search(*name, re)) {
                         continue;
                     }
-                    auto element_filename = std::filesystem::path{ "jpk_element" } / name;
+                    auto element_filename = std::filesystem::path{ "jpk_element" } / *name;
                     auto f = create_ofstream(element_filename, std::ios::binary);
                     if (f->fail()) {
                         THROW_OR_ABORT("Could not open file for write: \"" + element_filename.string() + '"');

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
 #include <cstddef>
 #include <string>
@@ -16,7 +17,7 @@ class DynamicWorld {
     DynamicWorld(const DynamicWorld&) = delete;
     DynamicWorld& operator = (const DynamicWorld&) = delete;
 public:
-    DynamicWorld(const SceneNodeResources& scene_node_resources, std::string name);
+    DynamicWorld(const SceneNodeResources& scene_node_resources, VariableAndHash<std::string> name);
 
     const TransformationMatrix<double, double, 3>* get_geographic_mapping() const;
     const TransformationMatrix<double, double, 3>* get_inverse_geographic_mapping() const;
@@ -24,7 +25,8 @@ public:
     const FixedScaledUnitVector<float, 3>* get_wind() const;
 private:
     const SceneNodeResources& scene_node_resources_;
-    std::string name_;
+    VariableAndHash<std::string> name_;
+    VariableAndHash<std::string> inverse_name_;
 };
 
 }

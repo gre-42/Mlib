@@ -48,7 +48,7 @@ ParsedResourceName Mlib::parse_resource_name(
         .probability1 = match[PROBABILITY1].matched ? safe_stof(match[PROBABILITY1].str()) : 1.f,
         .min_distance_to_bdry = match[MIN_BDRY].matched ? safe_stof(match[MIN_BDRY].str()) : 0.f,
         .max_distance_to_bdry = match[MAX_BDRY].matched ? safe_stof(match[MAX_BDRY].str()) : INFINITY,
-        .aggregate_mode = resources.aggregate_mode(match[NAME].str()),
+        .aggregate_mode = resources.aggregate_mode(VariableAndHash<std::string>{match[NAME].str()}),
         .create_imposter = false,
         .max_imposter_texture_size = 0,
         .hitbox = VariableAndHash<std::string>{ match[HITBOX].str() },

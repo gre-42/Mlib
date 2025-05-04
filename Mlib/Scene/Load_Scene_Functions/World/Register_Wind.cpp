@@ -21,6 +21,6 @@ LoadSceneJsonUserFunction RegisterWind::json_user_function = [](const LoadSceneJ
 {
     args.arguments.validate(KnownArgs::options);
     RenderingContextStack::primary_scene_node_resources().register_wind(
-        args.arguments.at<std::string>(KnownArgs::world),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::world),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::velocity) * kph);
 };

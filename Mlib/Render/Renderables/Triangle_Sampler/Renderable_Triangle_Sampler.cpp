@@ -113,7 +113,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                         std::this_thread::yield();
                     };
                     auto scvas = scene_node_resources_.get_single_precision_arrays(
-                        *prn.name,
+                        prn.name,
                         ColoredVertexArrayFilter{.included_tags = PhysicsMaterial::ATTR_VISIBLE});
                     TranslationMatrix<ScenePos, 3> mi_rel{ funpack(p) };
                     auto mvp_instance = mvp * mi_rel;

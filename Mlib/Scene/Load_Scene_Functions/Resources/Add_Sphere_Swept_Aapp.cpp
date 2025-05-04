@@ -39,7 +39,7 @@ struct RegisterJsonUserFunction {
                 auto l = std::list{ TypedMesh<std::shared_ptr<IIntersectable>>{material, ssaabb} };
                 auto res = std::make_shared<IntersectableResource>(std::move(l));
                 auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
-                scene_node_resources.add_resource(args.arguments.at<std::string>(KnownArgs::name), res);
+                scene_node_resources.add_resource(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), res);
             });
     }
 } obj;

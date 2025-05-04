@@ -39,7 +39,7 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION,
         scene,
         physics_engine.advance_times_,
-        args.arguments.at<std::string>(KnownArgs::node),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
         args.arguments.at<float>(KnownArgs::health),
         args.arguments.at<bool>(KnownArgs::delete_node_when_health_leq_zero),
         std::make_unique<Translator>(

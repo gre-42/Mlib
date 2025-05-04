@@ -111,13 +111,13 @@ static void add_reference_bone(
         1.f,
         PoseInterpolationMode::ENABLED);
     scene_node_resources.instantiate_child_renderable(
-        "reference_bone",
+        VariableAndHash<std::string>{ "reference_bone" },
         ChildInstantiationOptions{
-            .instance_name = VariableAndHash<std::string>{"reference_bone"},
+            .instance_name = VariableAndHash<std::string>{ "reference_bone" },
             .scene_node = bone_node.ref(DP_LOC),
             .interpolation_mode = PoseInterpolationMode::ENABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
-    parent_node->add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
+    parent_node->add_child(VariableAndHash<std::string>{ "reference_bone" + std::to_string(b.index) }, std::move(bone_node));
     for (const auto& c : b.children) {
         add_reference_bone(*c, parent_node, scene_node_resources);
     }
@@ -142,14 +142,14 @@ static void add_bone_frame(
         1.f,
         PoseInterpolationMode::ENABLED);
     scene_node_resources.instantiate_child_renderable(
-        "frame_bone",
+        VariableAndHash<std::string>{ "frame_bone" },
         ChildInstantiationOptions{
-            .instance_name = VariableAndHash<std::string>{"frame_bone"},
+            .instance_name = VariableAndHash<std::string>{ "frame_bone" },
             .scene_node = bone_node.ref(DP_LOC),
             .interpolation_mode = PoseInterpolationMode::ENABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
     DanglingRef<SceneNode> parent = bone_node.ref(DP_LOC);
-    parent_node->add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
+    parent_node->add_child(VariableAndHash<std::string>{ "frame_bone" + std::to_string(b.index) }, std::move(bone_node));
     for (const auto& c : b.children) {
         add_bone_frame(*c, frame, parent, scene_node_resources);
     }
@@ -578,7 +578,7 @@ int main(int argc, char** argv) {
             scene_node->add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{
                 .emissive = {1.f, 1.f, 1.f}}));
         }
-        auto create_light = [&args](const std::string& resource_suffix) {
+        auto create_light = [&args]() {
             if (args.has_named("--no_shadows")) {
                 return std::make_shared<Light>(Light{
                     .ambient = fixed_full<float, 3>(safe_stof(args.named_value("--ambient", "1"))),
@@ -596,7 +596,7 @@ int main(int argc, char** argv) {
         };
         {
             auto filenames = args.unnamed_values();
-            std::list<std::string> resource_names;
+            std::list<VariableAndHash<std::string>> resource_names;
             ColoredVertexArrayFilter cva_filer{
                 .included_names = Mlib::compile_regex(args.named_value("--include", "")),
                 .excluded_names = Mlib::compile_regex(args.named_value("--exclude", "$ ^"))};
@@ -636,7 +636,7 @@ int main(int argc, char** argv) {
                     auto& rr = RenderingContextStack::primary_rendering_resources();
                     auto& sr = RenderingContextStack::primary_scene_node_resources();
                     auto model = load_pssg(filename, IoVerbosity::SILENT);
-                    std::list<std::string> added_instantiables;
+                    std::list<VariableAndHash<std::string>> added_instantiables;
                     try {
                         auto arrays = load_pssg_arrays<float, ScenePos>(
                             model,
@@ -662,7 +662,7 @@ int main(int argc, char** argv) {
                         cfg<float>(args, light_configuration));
                     scene_node_resources.add_resource(name, rmhx2);
                     scene_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-                        .periodic_skelletal_animation_name = "anim",
+                        .periodic_skelletal_animation_name = VariableAndHash<std::string>{"anim"},
                         .periodic_skelletal_animation_frame = {
                             AnimationFrame {
                                 .begin = safe_stof(args.named_value("--loop_begin", "0")),
@@ -687,7 +687,7 @@ int main(int argc, char** argv) {
                         .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
                         .werror = !args.has_named("--no_werror")};
                     if (args.has_named_value("--reference_bone")) {
-                        scene_node_resources.add_resource("reference_bone", load_renderable_obj(
+                        scene_node_resources.add_resource(VariableAndHash<std::string>{"reference_bone"}, load_renderable_obj(
                             args.named_value("--reference_bone"),
                             bone_cfg,
                             scene_node_resources));
@@ -704,44 +704,52 @@ int main(int argc, char** argv) {
                             .parameter_transformation = args.has_named_value("--bvh_trafo")
                                 ? get_parameter_transformation(args.named_value("--bvh_trafo"))
                                 : blender_bvh_config.parameter_transformation};
-                        scene_node_resources.add_resource("anim", std::make_shared<BvhFileResource>(args.named_value("--bvh"), bvh_config));
+                        scene_node_resources.add_resource(
+                            VariableAndHash<std::string>{"anim"},
+                            std::make_shared<BvhFileResource>(args.named_value("--bvh"), bvh_config));
                         if (args.has_named_value("--frame_bone")) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
-                            scene_node_resources.add_resource("frame_bone", load_renderable_obj(
-                                args.named_value("--frame_bone"),
-                                bone_cfg,
-                                scene_node_resources));
+                            scene_node_resources.add_resource(
+                                VariableAndHash<std::string>{"frame_bone"},
+                                load_renderable_obj(
+                                    args.named_value("--frame_bone"),
+                                    bone_cfg,
+                                    scene_node_resources));
                             add_bone_frame(
                                 rmhx2->skeleton(),
-                                rmhx2->vectorize_joint_poses(scene_node_resources.get_relative_poses("anim", bone_frame)),
+                                rmhx2->vectorize_joint_poses(scene_node_resources.get_relative_poses(
+                                    VariableAndHash<std::string>{"anim"},
+                                    bone_frame)),
                                 scene_node.ref(DP_LOC),
                                 scene_node_resources);
                         }
                         // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
                         if (args.has_named_value("--animation_frame")) {
                             float animation_frame = safe_stof(args.named_value("--animation_frame"));
-                            scene_node_resources.set_relative_joint_poses(name, scene_node_resources.get_relative_poses("anim", animation_frame));
+                            scene_node_resources.set_relative_joint_poses(name, scene_node_resources.get_relative_poses(
+                                VariableAndHash<std::string>{"anim"},
+                                animation_frame));
                         }
                     }
                 } else {
                     throw std::runtime_error("File has unknown extension: " + filename);
                 }
             }
-            scene_node_resources.add_resource("objs", std::make_shared<CompoundResource>(
+            scene_node_resources.add_resource(VariableAndHash<std::string>{"objs"}, std::make_shared<CompoundResource>(
                 scene_node_resources,
                 std::vector(resource_names.begin(), resource_names.end())));
             if (args.has_named("--cleanup_mesh")) {
                 add_cleanup_mesh_modifier(
-                    "objs",
+                    VariableAndHash<std::string>{"objs"},
                     scene_node_resources,
                     0.f,                    // min_vertex_distance
                     PhysicsMaterial::NONE,  // min_distance_filter
                     true);                  // modulo_uv (this computes the material.period_world)
             }
             merge_textures(
-                "objs",
+                VariableAndHash<std::string>{"objs"},
                 MergedTexturesConfig{
-                    .resource_name = "merged_resource",
+                    .resource_name = VariableAndHash<std::string>{"merged_resource"},
                     .array_name = "merged_array",
                     .texture_name = ColormapWithModifiers{
                         .filename = VariableAndHash<std::string>{"merged_texture"},
@@ -761,7 +769,7 @@ int main(int argc, char** argv) {
             {
                 if (!args.has_named("--hide_object")) {
                     scene_node_resources.instantiate_child_renderable(
-                        "objs",
+                        VariableAndHash<std::string>{"objs"},
                         ChildInstantiationOptions{
                             .rendering_resources = &rendering_resources,
                             .instance_name = VariableAndHash<std::string>{"objs"},
@@ -792,7 +800,7 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    for (const auto& acva : scene_node_resources.get_rendering_arrays("objs")) {
+                    for (const auto& acva : scene_node_resources.get_rendering_arrays(VariableAndHash<std::string>{"objs"})) {
                         apply_color_gradient(acva->scvas);
                         apply_color_gradient(acva->dcvas);
                     }
@@ -819,7 +827,7 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    for (const auto& acva : scene_node_resources.get_rendering_arrays("objs")) {
+                    for (const auto& acva : scene_node_resources.get_rendering_arrays(VariableAndHash<std::string>{"objs"})) {
                         apply_radial_colors(acva->scvas);
                         apply_radial_colors(acva->dcvas);
                     }
@@ -848,7 +856,7 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    for (const auto& acva : scene_node_resources.get_rendering_arrays("objs")) {
+                    for (const auto& acva : scene_node_resources.get_rendering_arrays(VariableAndHash<std::string>{"objs"})) {
                         apply_cone_colors(acva->scvas);
                         apply_cone_colors(acva->dcvas);
                     }
@@ -868,14 +876,14 @@ int main(int argc, char** argv) {
                         }
                     }
                 };
-                for (const auto& acva : scene_node_resources.get_rendering_arrays("objs")) {
+                for (const auto& acva : scene_node_resources.get_rendering_arrays(VariableAndHash<std::string>{"objs"})) {
                     apply_constant_color(acva->scvas);
                     apply_constant_color(acva->dcvas);
                 }
             }
         }
         scene.auto_add_root_node(
-            "obj",
+            VariableAndHash<std::string>{"obj"},
             std::move(scene_node),
             args.has_named("--large_object_mode")
                 ? RenderingDynamics::STATIC
@@ -905,12 +913,12 @@ int main(int argc, char** argv) {
                 .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
                 .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
                 .werror = !args.has_named("--no_werror")};
-            scene_node_resources.add_resource(*name, load_renderable_obj(
+            scene_node_resources.add_resource(name, load_renderable_obj(
                 args.named_value("--light_beacon"),
                 cfg,
                 scene_node_resources));
             scene_node_resources.instantiate_child_renderable(
-                *name,
+                name,
                 ChildInstantiationOptions{
                     .instance_name = name,
                     .scene_node = scene_node,
@@ -923,7 +931,7 @@ int main(int argc, char** argv) {
         SelectedCameras selected_cameras{scene};
         if (light_configuration == "one") {
             scene.add_root_node(
-                "light_node0",
+                VariableAndHash<std::string>{"light_node0"},
                 make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
                         safe_stof(args.named_value("--light_x", "0")),
@@ -936,14 +944,14 @@ int main(int argc, char** argv) {
                     1.f),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
-            auto light = create_light("light_node0");
-            lights.push_back({.light = light, .node = scene.get_node("light_node0", DP_LOC)});
-            scene.get_node("light_node0", DP_LOC)->add_light(std::move(light));
-            scene.get_node("light_node0", DP_LOC)->set_camera(
+            auto light = create_light();
+            lights.push_back({.light = light, .node = scene.get_node(VariableAndHash<std::string>{"light_node0"}, DP_LOC)});
+            scene.get_node(VariableAndHash<std::string>{"light_node0"}, DP_LOC)->add_light(std::move(light));
+            scene.get_node(VariableAndHash<std::string>{"light_node0"}, DP_LOC)->set_camera(
                 std::make_unique<PerspectiveCamera>(
                     PerspectiveCameraConfig(),
                     PerspectiveCamera::Postprocessing::ENABLED));
-            add_light_beacon_if_set(scene.get_node("light_node0", DP_LOC));
+            add_light_beacon_if_set(scene.get_node(VariableAndHash<std::string>{"light_node0"}, DP_LOC));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
@@ -957,10 +965,10 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Unknown light configuration");
             }
             for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
-                std::string name = "light" + std::to_string(i);
+                auto name = VariableAndHash<std::string>{"light" + std::to_string(i)};
                 auto R = gl_lookat_absolute(
                     scene.get_node(name, DP_LOC)->position(),
-                    scene.get_node("obj", DP_LOC)->position());
+                    scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->position());
                 if (!R.has_value()) {
                     THROW_OR_ABORT("Could not compute lookat for light " + std::to_string(i));
                 }
@@ -972,7 +980,7 @@ int main(int argc, char** argv) {
                         1.f),
                     RenderingDynamics::MOVING,
                     RenderingStrategies::OBJECT);
-                auto light = create_light(name);
+                auto light = create_light();
                 lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
                 scene.get_node(name, DP_LOC)->add_light(light);
                 scene.get_node(name, DP_LOC)->set_camera(
@@ -985,10 +993,10 @@ int main(int argc, char** argv) {
             }
             if (with_diffusivity) {
                 for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
-                    std::string name = "light_s" + std::to_string(i);
+                    auto name = VariableAndHash<std::string>{"light_s" + std::to_string(i)};
                     auto R = gl_lookat_absolute(
                         scene.get_node(name, DP_LOC)->position(),
-                        scene.get_node("obj", DP_LOC)->position());
+                        scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->position());
                     if (!R.has_value()) {
                         THROW_OR_ABORT("Could not compute lookat for light " + std::to_string(i));
                     }
@@ -1000,7 +1008,7 @@ int main(int argc, char** argv) {
                             1.f),
                         RenderingDynamics::MOVING,
                         RenderingStrategies::OBJECT);
-                    auto light = create_light(name);
+                    auto light = create_light();
                     lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
                     scene.get_node(name, DP_LOC)->add_light(std::move(light));
                     scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
@@ -1015,13 +1023,13 @@ int main(int argc, char** argv) {
             throw std::runtime_error("Unknown light configuration");
         }
         if (args.has_named_value("--background_light_ambience")) {
-            std::string name = "background_light";
+            auto name = VariableAndHash<std::string>{"background_light"};
             scene.add_root_node(
                 name,
                 make_unique_scene_node(),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
-            auto light = create_light(name);
+            auto light = create_light();
             lights.push_back({.light = light, .node = scene.get_node(name, DP_LOC)});
             scene.get_node(name, DP_LOC)->add_light(std::move(light));
             scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
@@ -1033,17 +1041,21 @@ int main(int argc, char** argv) {
         }
         
         if (args.has_named("--look_at_aabb")) {
-            auto aabb = scene.get_node("obj", DP_LOC)->relative_aabb();
+            auto aabb = scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->relative_aabb();
             if (aabb.empty()) {
                 throw std::runtime_error("Node has an empty AABB");
             }
             if (aabb.full()) {
                 throw std::runtime_error("Node has a full AABB");
             }
-            scene.add_root_node("follower_camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+            scene.add_root_node(
+                VariableAndHash<std::string>{"follower_camera"},
+                make_unique_scene_node(),
+                RenderingDynamics::MOVING,
+                RenderingStrategies::OBJECT);
             auto la = gl_lookat_aabb(
-                scene.get_node("follower_camera", DP_LOC)->position(),
-                scene.get_node("obj", DP_LOC)->absolute_model_matrix(),
+                scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->position(),
+                scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->absolute_model_matrix(),
                 aabb.data());
             if (!la.has_value()) {
                 throw std::runtime_error("Could not compute frustum, camera might be inside the object's AABB");
@@ -1062,18 +1074,18 @@ int main(int argc, char** argv) {
                 render_results.outputs.at(rsd).width = npixels->width;
                 render_results.outputs.at(rsd).height = npixels->height;
             }
-            scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<FrustumCamera>(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(
                     npixels->scaled_sensor_aabb,
                     la->near_plane,
                     la->far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
-            scene.get_node("follower_camera", DP_LOC)->set_rotation(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_rotation(
                 matrix_2_tait_bryan_angles(la->extrinsic_R),
                 std::chrono::steady_clock::time_point());
         } else {
             scene.add_root_node(
-                "follower_camera",
+                VariableAndHash<std::string>{"follower_camera"},
                 make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
                         safe_stof(args.named_value("--camera_x", "0")),
@@ -1086,7 +1098,7 @@ int main(int argc, char** argv) {
                     1.f),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
-            scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig{
                     .y_fov = safe_stof(args.named_value("--y_fov", "90")) * degrees},
                 PerspectiveCamera::Postprocessing::ENABLED));
@@ -1157,7 +1169,7 @@ int main(int argc, char** argv) {
                     l.light->shadow_render_pass,
                     l.node,
                     l.light,
-                    "",                                 // black_node_name
+                    VariableAndHash<std::string>(),     // black_node_name
                     true,                               // with_depth_texture
                     2048,                               // lightmap_width
                     2048,                               // lightmap_height

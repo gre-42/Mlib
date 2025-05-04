@@ -21,6 +21,6 @@ LoadSceneJsonUserFunction GenContourEdges::json_user_function = [](const LoadSce
     args.arguments.validate(KnownArgs::options);
 
     RenderingContextStack::primary_scene_node_resources().generate_contour_edges(
-        args.arguments.at<std::string>(KnownArgs::source_name),
-        args.arguments.at<std::string>(KnownArgs::dest_name));
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::source_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::dest_name));
 };

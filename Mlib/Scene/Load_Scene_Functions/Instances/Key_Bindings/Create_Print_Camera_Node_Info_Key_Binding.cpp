@@ -40,7 +40,7 @@ void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctio
             args.key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
-        .geographic_mapping = scene_node_resources.get_geographic_mapping("world"),
+        .geographic_mapping = scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
         .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy, CURRENT_SOURCE_LOCATION } }}));
     kb.on_destroy_key_bindings.add([&kbs=key_bindings, &kb]() {
         kbs.delete_print_node_info_key_binding(kb);

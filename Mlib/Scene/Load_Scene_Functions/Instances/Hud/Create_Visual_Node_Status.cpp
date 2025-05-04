@@ -65,7 +65,7 @@ CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene
 
 void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {
         lo = &lo->child_status_writer(args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::child));

@@ -26,5 +26,5 @@ DeleteNode::DeleteNode(RenderableScene& renderable_scene)
 
 void DeleteNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.delete_node(args.arguments.at<std::string>(KnownArgs::name));
+    scene.delete_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name));
 }

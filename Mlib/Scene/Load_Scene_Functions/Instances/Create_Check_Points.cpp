@@ -99,7 +99,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::move(sequence),
         nframes,
         nlaps,
-        scene_node_resources.get_geographic_mapping("world.inverse"),
+        scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
         moving_asset_id,
         args.arguments.at<std::string>(KnownArgs::resource),
         players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION),

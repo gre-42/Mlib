@@ -19,6 +19,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cmath>
 #include <cstdint>
 #include <list>
@@ -101,14 +102,14 @@ struct OsmResourceConfig {
     float boundary_barrier_height = 1.f;
     std::string boundary_barrier_style;
     VariableAndHash<std::string> tunnel_pipe_texture;
-    std::string tunnel_pipe_resource_name = "pipe_box";
-    std::string tunnel_bdry_resource_name = "pipe_box_boundary";
-    Map<RoadType, std::string> street_surface_central_resource_names;
-    Map<RoadType, std::string> street_surface_endpoint0_resource_names;
-    Map<RoadType, std::string> street_surface_endpoint1_resource_names;
-    Map<RoadType, std::string> street_bumps_central_resource_names;
-    Map<RoadType, std::string> street_bumps_endpoint0_resource_names;
-    Map<RoadType, std::string> street_bumps_endpoint1_resource_names;
+    VariableAndHash<std::string> tunnel_pipe_resource_name = VariableAndHash<std::string>{"pipe_box"};
+    VariableAndHash<std::string> tunnel_bdry_resource_name = VariableAndHash<std::string>{"pipe_box_boundary"};
+    Map<RoadType, VariableAndHash<std::string>> street_surface_central_resource_names;
+    Map<RoadType, VariableAndHash<std::string>> street_surface_endpoint0_resource_names;
+    Map<RoadType, VariableAndHash<std::string>> street_surface_endpoint1_resource_names;
+    Map<RoadType, VariableAndHash<std::string>> street_bumps_central_resource_names;
+    Map<RoadType, VariableAndHash<std::string>> street_bumps_endpoint0_resource_names;
+    Map<RoadType, VariableAndHash<std::string>> street_bumps_endpoint1_resource_names;
     VariableAndHash<std::string> water_texture;
     CompressedScenePos water_height = (CompressedScenePos)0.f;
     std::vector<ParsedResourceName> tree_resource_names;
@@ -143,7 +144,7 @@ struct OsmResourceConfig {
     VariableAndHash<std::string> roof_rail_texture;
     float default_roof_9_2_max_building_height = INFINITY * meters;
     std::optional<Roof9_2> default_roof_9_2;
-    std::string roof_model;
+    VariableAndHash<std::string> roof_model;
     bool with_roofs = true;
     bool with_ceilings = false;
     float building_bottom = -3;
@@ -217,8 +218,8 @@ struct OsmResourceConfig {
     float building_cluster_width = 500.f;
     uint32_t max_imposter_texture_size = 0;
     std::string game_level;
-    std::string base_osm_map_resource;
-    std::string navmesh_resource;
+    VariableAndHash<std::string> base_osm_map_resource;
+    VariableAndHash<std::string> navmesh_resource;
     bool refine_explicit_waypoints = true;
     float agent_radius = 0.6f;
 };

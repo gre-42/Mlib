@@ -9,12 +9,12 @@ using namespace Mlib;
 TrailRenderer::TrailRenderer(TrailResources& resources)
     : resources_{ resources }
     , instances_{ [&resources](const VariableAndHash<std::string>& name) {
-        return resources.instantiate_trails_instance(*name);
+        return resources.instantiate_trails_instance(name);
       } }
     , instantiators_{ [this, &resources](const VariableAndHash<std::string>& name) {
         return resources.instantiate_storage(
-            *name,
-            *instances_.get(resources.get_instance_for_storage(*name)));
+            name,
+            *instances_.get(resources.get_instance_for_storage(name)));
       } }
 {}
 
@@ -24,7 +24,7 @@ ITrailStorage& TrailRenderer::get_storage(const VariableAndHash<std::string>& na
     return *instantiators_.get(name);
 }
 
-void TrailRenderer::preload(const std::string& name) {
+void TrailRenderer::preload(const VariableAndHash<std::string>& name) {
     instances_.get(resources_.get_instance_for_storage(name))->preload();
 }
 

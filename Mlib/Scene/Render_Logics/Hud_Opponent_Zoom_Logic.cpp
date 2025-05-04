@@ -112,7 +112,7 @@ void HudOpponentZoomLogic::render_without_setup(
         .external_render_pass = {
             ExternalRenderPassType::ZOOM_NODE,
             frame_id.external_render_pass.time,
-            "",
+            VariableAndHash<std::string>(),
             observed_node,
             zoom_camera_node.get(DP_LOC)
         },

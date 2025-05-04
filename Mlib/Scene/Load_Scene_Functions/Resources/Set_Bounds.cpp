@@ -75,7 +75,7 @@ LoadSceneJsonUserFunction SetBounds::json_user_function = [](const LoadSceneJson
 void SetBounds::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_scene_node_resources().add_modifier(
-        args.arguments.at<std::string>(KnownArgs::resource),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         [aabb = args.arguments.at<LoadableAabb3f>(KnownArgs::aabb),
          sphere = args.arguments.at<LoadableBoundingSphere3f>(KnownArgs::sphere)]
         (ISceneNodeResource& resource) {

@@ -33,7 +33,7 @@ CreateDestinationReachedAi::CreateDestinationReachedAi(RenderableScene& renderab
 
 void CreateDestinationReachedAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle), DP_LOC));
+    auto& vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC));
     vehicle.add_autopilot(
         {
             global_object_pool.create<DestinationReachedAi>(

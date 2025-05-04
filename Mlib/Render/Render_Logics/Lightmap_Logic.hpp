@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_To_Texture/Lowpass.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <string>
 
@@ -22,7 +23,7 @@ public:
         ExternalRenderPassType render_pass_type,
         DanglingRef<SceneNode> light_node,
         std::shared_ptr<Light> light,
-        std::string black_node_name,
+        VariableAndHash<std::string> black_node_name,
         bool with_depth_texture,
         int lightmap_width,
         int lightmap_height,
@@ -51,7 +52,7 @@ private:
     Lowpass lowpass_;
     ExternalRenderPassType render_pass_type_;
     DanglingRef<SceneNode> light_node_;
-    const std::string black_node_name_;
+    const VariableAndHash<std::string> black_node_name_;
     std::shared_ptr<Light> light_;
     bool with_depth_texture_;
     int lightmap_width_;

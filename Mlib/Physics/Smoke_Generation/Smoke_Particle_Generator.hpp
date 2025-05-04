@@ -29,7 +29,7 @@ public:
         Scene& scene);
     void generate_root(
         const VariableAndHash<std::string>& resource_name,
-        const std::string& node_name,
+        const VariableAndHash<std::string>& node_name,
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
@@ -39,7 +39,7 @@ public:
     void generate_child(
         DanglingRef<SceneNode> parent,
         const VariableAndHash<std::string>& resource_name,
-        const std::string& child_node_name,
+        const VariableAndHash<std::string>& child_node_name,
         const FixedArray<ScenePos, 3>& relative_position,
         float animation_duration);
     std::string generate_suffix();

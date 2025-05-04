@@ -98,9 +98,9 @@ void add_instantiables(
     const PssgNode& node,
     const PssgSchema& schema,
     const TransformationMatrix<float, TInstancePos, 3>& m,
-    const Map<std::string, Shader>& shaders,
+    const StringWithHashUnorderedMap<Shader>& shaders,
     const std::string& resource_prefix,
-    UnorderedMap<std::string, std::shared_ptr<ColoredVertexArray<TResourcePos>>>& resources,
+    StringWithHashUnorderedMap<std::shared_ptr<ColoredVertexArray<TResourcePos>>>& resources,
     std::list<InstanceInformation<TInstancePos>>& instances)
 {
     TransformationMatrix<float, TInstancePos, 3> trafo{
@@ -119,8 +119,8 @@ void add_instantiables(
                 if (!shader.starts_with('#')) {
                     THROW_OR_ABORT("shader does not start with \"#\"");
                 }
-                if (auto shader_object = shaders.try_get(shader.substr(1)); shader_object != nullptr) {
-                    auto& resource = *resources.get(resource_prefix + indices.substr(1));
+                if (auto shader_object = shaders.try_get(VariableAndHash<std::string>{shader.substr(1)}); shader_object != nullptr) {
+                    auto& resource = *resources.get(VariableAndHash<std::string>{resource_prefix + indices.substr(1)});
                     if (!resource.material.textures_color.empty()) {
                         THROW_OR_ABORT("Array resource instantiated multiple times");
                     }
@@ -149,7 +149,11 @@ void add_instantiables(
                     THROW_OR_ABORT((std::stringstream() << "Scale is anisotropic: " << scale).str());
                 }
                 auto mcr = TransformationMatrix{ mc.R / mean_scale, mc.t };
-                instances.emplace_back(resource_prefix + indices.substr(1), mcr, mean_scale, RenderingDynamics::STATIC);
+                instances.emplace_back(
+                    VariableAndHash<std::string>{resource_prefix + indices.substr(1)},
+                    mcr,
+                    mean_scale,
+                    RenderingDynamics::STATIC);
             }
             return true;
         });
@@ -425,7 +429,10 @@ struct DataBlockStreams {
 };
 
 struct ShaderGroup {
-    UnorderedMap<std::string, uint32_t> parameters;
+    ShaderGroup()
+        : parameters{ "Shader parameter" }
+    {}
+    StringWithHashUnorderedMap<uint32_t> parameters;
 };
 
 template <class TResourcePos, class TInstancePos>
@@ -439,7 +446,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
     using I = funpack_t<TResourcePos>;
 
     PssgArrays<TResourcePos, TInstancePos> result;
-    UnorderedMap<std::string, ShaderGroup> shader_groups;
+    StringWithHashUnorderedMap<ShaderGroup> shader_groups{ "Shader group" };
     model.root.for_each_node([&](const PssgNode& node){
         const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "SHADERGROUP") {
@@ -449,18 +456,20 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     THROW_OR_ABORT("Shader group child is not a shader input definition");
                 }
                 sg.parameters.add(
-                    input_definition.get_attribute("name", model.schema).string(),
+                    VariableAndHash<std::string>{input_definition.get_attribute("name", model.schema).string()},
                     integral_cast<uint32_t>(sg.parameters.size()));
             }
-            shader_groups.add(node.get_attribute("id", model.schema).string(), std::move(sg));
+            shader_groups.add(
+                VariableAndHash<std::string>{node.get_attribute("id", model.schema).string()},
+                std::move(sg));
         }
         return true;
     });
-    UnorderedMap<std::string, DataBlockStreams> data_block_streams;
+    StringWithHashUnorderedMap<DataBlockStreams> data_block_streams{ "Data block stream "};
     model.root.for_each_node([&](const PssgNode& node){
         const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "DATABLOCK") {
-            std::string node_id = node.get_attribute("id", model.schema).string();
+            auto node_id = VariableAndHash<std::string>{node.get_attribute("id", model.schema).string()};
             uint32_t stream_count = node.get_attribute("streamCount", model.schema).uint32();
             if (stream_count > 100) {
                 THROW_OR_ABORT("Stream count too large");
@@ -481,7 +490,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
         }
         return true;
     });
-    Map<std::string, Shader> shaders;
+    StringWithHashUnorderedMap<Shader> shaders{ "Shader" };
     model.root.for_each_node([&](const PssgNode& node){
         const auto& s = model.schema.nodes.get(node.type_id);
         if (s.name == "SHADERINSTANCE") {
@@ -489,9 +498,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
             if (!shader_group_ref.starts_with('#')) {
                 THROW_OR_ABORT("Shader group reference does not start with \"#\"");
             }
-            auto node_id = node.get_attribute("id", model.schema).string();
-            const auto& shader_group_object = shader_groups.get(shader_group_ref.substr(1));
-            auto try_get_texture = [&](const std::string& parameter_name) -> std::string {
+            auto node_id = VariableAndHash<std::string>{node.get_attribute("id", model.schema).string()};
+            const auto& shader_group_object = shader_groups.get(VariableAndHash<std::string>{shader_group_ref.substr(1)});
+            auto try_get_texture = [&](const VariableAndHash<std::string>& parameter_name) -> std::string {
                 uint32_t parameter_id = shader_group_object.parameters.get(parameter_name);
                 std::string texture_reference;
                 for (const auto& c : node.children) {
@@ -508,7 +517,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 }
                 return "";
                 };
-            auto get_attribute = [&](const std::string& parameter_name) {
+            auto get_attribute = [&](const VariableAndHash<std::string>& parameter_name) {
                 uint32_t parameter_id = shader_group_object.parameters.get(parameter_name);
                 for (const auto& c : node.children) {
                     if ((model.schema.nodes.get(c.type_id).name == "SHADERINPUT") &&
@@ -517,7 +526,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         return c;
                     }
                 }
-                THROW_OR_ABORT("Could not find shader input with parameter name \"" + parameter_name + '"');
+                THROW_OR_ABORT("Could not find shader input with parameter name \"" + *parameter_name + '"');
                 };
             if ((shader_group_ref == "#terrain_simple.fx") ||
                 (shader_group_ref == "#terrain_simple_nm.fx") ||
@@ -557,7 +566,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
 
                 auto blend_uvs = rock
                     ? FixedArray<float, 4>{ 1.f, 1.f, 0.f, 0.f }
-                    : get_attribute("BlendMaskUVScale").template array<float, 4>();
+                    : get_attribute(VariableAndHash<std::string>{"BlendMaskUVScale"}).template array<float, 4>();
                 
                 size_t ntextures =
                     simple_any ? 1 :
@@ -565,22 +574,22 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     4;
                 for (size_t i = 1; i <= ntextures; ++i) {
                     std::string s = std::to_string(i);
-                    auto op_diffuse = try_get_texture("TDiffuseSpecMap" + s);
+                    auto op_diffuse = try_get_texture(VariableAndHash<std::string>{"TDiffuseSpecMap" + s});
                     if (op_diffuse.empty()) {
                         continue;
                     }
                     auto op_uvso = rock
                         ? FixedArray<float, 4>{ 1.f, 1.f, 0.f, 0.f }
-                        : get_attribute("Map" + s + "UVScaleAndOffset").template array<float, 4>();
+                        : get_attribute(VariableAndHash<std::string>{"Map" + s + "UVScaleAndOffset"}).template array<float, 4>();
 
                     auto op_normal = (infield || simple)
                         ? ""
-                        : try_get_texture("TNormalMap" + s);
+                        : try_get_texture(VariableAndHash<std::string>{"TNormalMap" + s});
 
                     if (i != 1) {
-                        auto blend_map = try_get_texture("TBlendMap" + s);
+                        auto blend_map = try_get_texture(VariableAndHash<std::string>{"TBlendMap" + s});
                         if (blend_map.empty()) {
-                            lwarn() << "TBlendMap" + s + " texture not specified. Node: " + node_id;
+                            lwarn() << "TBlendMap" + s + " texture not specified. Node: " + *node_id;
                             continue;
                         }
 
@@ -666,7 +675,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 std::list<BlendMapTexture> textures_color;
 
                 {
-                    auto large_colour_map = try_get_texture("TlargeColourMap");
+                    auto large_colour_map = try_get_texture(VariableAndHash<std::string>{"TlargeColourMap"});
                     if (large_colour_map.empty()) {
                         THROW_OR_ABORT("TlargeColourMap not specified");
                     }
@@ -684,12 +693,12 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         .reweight_mode = BlendMapReweightMode::DISABLED});
                 }
                 {
-                    auto base_diffuse = try_get_texture("TDiffuseSpecMap1");
+                    auto base_diffuse = try_get_texture(VariableAndHash<std::string>{"TDiffuseSpecMap1"});
                     if (base_diffuse.empty()) {
                         THROW_OR_ABORT("Diffuse1 texture not specified");
                     }
 
-                    auto base_normal = try_get_texture("TNormalMap1");
+                    auto base_normal = try_get_texture(VariableAndHash<std::string>{"TNormalMap1"});
 
                     textures_color.emplace_back(BlendMapTexture{
                         .texture_descriptor = TextureDescriptor{
@@ -715,18 +724,18 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
 
                 for (size_t i = 2; i <= 3; ++i) {
                     std::string s = std::to_string(i);
-                    auto op_diffuse = try_get_texture("TDiffuseSpecMap" + s);
+                    auto op_diffuse = try_get_texture(VariableAndHash<std::string>{"TDiffuseSpecMap" + s});
                     if (op_diffuse.empty()) {
                         continue;
                     }
 
-                    auto blend_map = try_get_texture("TBlendMap" + s);
+                    auto blend_map = try_get_texture(VariableAndHash<std::string>{"TBlendMap" + s});
                     if (blend_map.empty()) {
-                        lwarn() << "TBlendMap" + s + " texture not specified. Node: " + node_id;
+                        lwarn() << "TBlendMap" + s + " texture not specified. Node: " + *node_id;
                         continue;
                     }
 
-                    auto op_normal = try_get_texture("TNormalMap" + s);
+                    auto op_normal = try_get_texture(VariableAndHash<std::string>{"TNormalMap" + s});
 
                     textures_color.emplace_back(BlendMapTexture{
                         .texture_descriptor = TextureDescriptor{
@@ -783,9 +792,9 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                 (shader_group_ref == "#decal_ao.fx") ||
                 (shader_group_ref == "#decal_ao_vc.fx"))
             {
-                auto diffuse = try_get_texture("TDiffuseAlphaMap");
-                auto normal = try_get_texture("TNormalMap");
-                auto specular = try_get_texture("TSpecularMap");
+                auto diffuse = try_get_texture(VariableAndHash<std::string>{"TDiffuseAlphaMap"});
+                auto normal = try_get_texture(VariableAndHash<std::string>{"TNormalMap"});
+                auto specular = try_get_texture(VariableAndHash<std::string>{"TSpecularMap"});
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("TDiffuseAlphaMap texture not specified");
                 }
@@ -828,7 +837,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     });
             } else if (shader_group_ref == "#terrain_lod.fx")
             {
-                auto diffuse = try_get_texture("TDiffuseAlphaMap");
+                auto diffuse = try_get_texture(VariableAndHash<std::string>{"TDiffuseAlphaMap"});
                 if (diffuse.empty()) {
                     THROW_OR_ABORT("Diffuse texture not specified");
                 }
@@ -896,7 +905,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                         THROW_OR_ABORT("dataBlock does not start with \"#\"");
                     }
                     auto sub_stream = render_stream.get_attribute("subStream", model.schema).uint32();
-                    const auto& dbs = data_block_streams.get(data_block_name.substr(1));
+                    const auto& dbs = data_block_streams.get(VariableAndHash<std::string>{data_block_name.substr(1)});
                     if (sub_stream >= dbs.streams.size()) {
                         THROW_OR_ABORT("Sub-stream index too large");
                     }
@@ -934,21 +943,23 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     }
                 }
             }
-            auto& cva = *result.resources.add(resource_prefix + node_id, std::make_shared<ColoredVertexArray<TResourcePos>>(
-                resource_prefix + node_id,
-                Material{},
-                Morphology{ cfg.physics_material },
-                ModifierBacklog{},
-                UUVector<FixedArray<ColoredVertex<TResourcePos>, 4>>(),
-                std::move(triangles),
-                UUVector<FixedArray<ColoredVertex<TResourcePos>, 2>>(),
-                UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
-                UUVector<FixedArray<float, 3>>(),
-                UUVector<FixedArray<uint8_t, 3>>(),
-                std::move(uv1),
-                std::move(cweight),
-                std::move(alpha),
-                UUVector<FixedArray<float, 4>>()));
+            auto& cva = *result.resources.add(
+                VariableAndHash<std::string>{resource_prefix + node_id},
+                std::make_shared<ColoredVertexArray<TResourcePos>>(
+                    resource_prefix + node_id,
+                    Material{},
+                    Morphology{ cfg.physics_material },
+                    ModifierBacklog{},
+                    UUVector<FixedArray<ColoredVertex<TResourcePos>, 4>>(),
+                    std::move(triangles),
+                    UUVector<FixedArray<ColoredVertex<TResourcePos>, 2>>(),
+                    UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
+                    UUVector<FixedArray<float, 3>>(),
+                    UUVector<FixedArray<uint8_t, 3>>(),
+                    std::move(uv1),
+                    std::move(cweight),
+                    std::move(alpha),
+                    UUVector<FixedArray<float, 4>>()));
             if (!any(dbm.features & ColoredVertexFeatures::POSITION)) {
                 THROW_OR_ABORT("Vertices have no position in node \"" + node_id + '"');
             }

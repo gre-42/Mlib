@@ -32,11 +32,11 @@ struct RegisterJsonUserFunction {
             {
                 args.arguments.validate(KnownArgs::options);
 
-                std::list<std::string> added_scene_node_resources;
-                std::list<std::string> added_instantiables;
+                std::list<VariableAndHash<std::string>> added_scene_node_resources;
+                std::list<VariableAndHash<std::string>> added_instantiables;
                 auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
                 cluster_elements(
-                    args.arguments.at<std::vector<std::string>>(KnownArgs::resource_names),
+                    args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resource_names),
                     scene_node_resources,
                     args.arguments.at<UFixedArray<float, 3>>(KnownArgs::width),
                     SquaredStepDistances::from_distances(args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center_distances)),

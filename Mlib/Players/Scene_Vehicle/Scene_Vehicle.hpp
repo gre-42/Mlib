@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <functional>
 #include <string>
 
@@ -30,7 +31,7 @@ public:
         const InternalsMode& internals_mode)>;
     SceneVehicle(
         DeleteNodeMutex& delete_node_mutex,
-        std::string scene_node_name,
+        VariableAndHash<std::string> scene_node_name,
         const DanglingRef<SceneNode>& scene_node,
         RigidBodyVehicle& rb);
     ~SceneVehicle();
@@ -48,8 +49,8 @@ public:
         const CreateVehicleExternals& create_vehicle_externals);
     void set_create_vehicle_internals(
         const CreateRoleExternals& create_vehicle_internals);
-    std::string& scene_node_name();
-    const std::string& scene_node_name() const;
+    VariableAndHash<std::string>& scene_node_name();
+    const VariableAndHash<std::string>& scene_node_name() const;
     const DanglingRef<SceneNode>& scene_node();
     const DanglingRef<const SceneNode>& scene_node() const;
     RigidBodyVehicle& rb();
@@ -57,7 +58,7 @@ public:
     DestructionObservers<const SceneVehicle&> destruction_observers;
 private:
     DeleteNodeMutex& delete_node_mutex_;
-    std::string scene_node_name_;
+    VariableAndHash<std::string> scene_node_name_;
     DanglingRef<SceneNode> scene_node_;
     RigidBodyVehicle& rb_;
     CreateVehicleExternals create_vehicle_externals_;

@@ -23,7 +23,7 @@ using namespace Mlib;
 void Mlib::draw_roofs(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls,
     const SceneNodeResources& scene_node_resources,
-    const std::string& model_name,
+    const VariableAndHash<std::string>& model_name,
     const std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 3>>& displacements,
     const Material& roof_material,
     const Material& rail_material,
@@ -36,7 +36,7 @@ void Mlib::draw_roofs(
     float max_length)
 {
     std::list<std::shared_ptr<ColoredVertexArray<float>>> model_triangles;
-    if (!model_name.empty()) {
+    if (!model_name->empty()) {
         model_triangles = scene_node_resources.get_single_precision_arrays(model_name, ColoredVertexArrayFilter{});
     }
     for (auto&& [number, bu] : enumerate(buildings)) {

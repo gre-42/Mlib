@@ -58,8 +58,8 @@ CreateWheel::CreateWheel(RenderableScene& renderable_scene)
 
 void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string vehicle = args.arguments.at<std::string>(KnownArgs::vehicle);
-    auto wheel_node_name = args.arguments.try_at_non_null<std::string>(KnownArgs::wheel);
+    auto vehicle = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle);
+    auto wheel_node_name = args.arguments.try_at_non_null<VariableAndHash<std::string>>(KnownArgs::wheel);
     float radius = args.arguments.at<float>(KnownArgs::radius) * meters;
     auto engine = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::engine);
     auto delta_engine = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::delta_engine);

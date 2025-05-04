@@ -51,9 +51,9 @@ CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(RenderableScene& renderable
 void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> yaw_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::yaw_node), DP_LOC);
-    DanglingRef<SceneNode> pitch_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::pitch_node), DP_LOC);
-    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
+    DanglingRef<SceneNode> yaw_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::yaw_node), DP_LOC);
+    DanglingRef<SceneNode> pitch_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::pitch_node), DP_LOC);
+    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
     float yaw_error_std = args.arguments.at<float>(KnownArgs::yaw_error_std);
     float pitch_velocity_error_std = args.arguments.at<float>(KnownArgs::pitch_error_std);
     float error_alpha = (pitch_velocity_error_std != 0.f)
@@ -84,7 +84,7 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
         args.arguments.at<float>(KnownArgs::dyaw_max) * degrees / integral_to_float<float>(scene_config.physics_engine_config.nsubsteps),
         increment_yaw_error);
     if (args.arguments.contains(KnownArgs::head_node)) {
-        follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<std::string>(KnownArgs::head_node), DP_LOC));
+        follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::head_node), DP_LOC));
     }
     linker.link_relative_movable(
         yaw_node,

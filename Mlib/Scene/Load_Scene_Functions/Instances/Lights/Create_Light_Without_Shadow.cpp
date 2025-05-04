@@ -37,7 +37,7 @@ CreateLightWithoutShadow::CreateLightWithoutShadow(RenderableScene& renderable_s
 
 void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string node_name = args.arguments.at<std::string>(KnownArgs::node);
+    auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
     DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
     node->add_light(std::make_unique<Light>(Light{
         .ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient),

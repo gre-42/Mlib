@@ -29,7 +29,7 @@ FitCanvasToRenderables::FitCanvasToRenderables(RenderableScene& renderable_scene
 
 void FitCanvasToRenderables::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    auto node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto camera = node->get_camera(DP_LOC);
     auto* ortho_camera = dynamic_cast<OrthoCamera*>(&camera.get());
     if (ortho_camera == nullptr) {

@@ -2,6 +2,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
@@ -11,6 +12,8 @@ public:
     using mapped_type = TBaseMap::mapped_type;
     using key_type = TBaseMap::key_type;
     using node_type = TBaseMap::node_type;
+    using iterator = TBaseMap::iterator;
+    using const_iterator = TBaseMap::const_iterator;
 
     explicit StringWithHashGenericMap(std::string value_name)
         : value_name_{ std::move(value_name) }
@@ -29,6 +32,10 @@ public:
     template <class... Args>
     auto try_emplace(key_type key, Args &&...args) {
         return elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
+    }
+
+    decltype(auto) insert(node_type&& node) {
+        return elements_.insert(std::move(node));
     }
 
     void insert_or_assign(const key_type& key, const mapped_type& value) {
@@ -52,12 +59,20 @@ public:
         return elements_.contains(key);
     }
 
-    const mapped_type* try_get(const key_type& key) const {
+    mapped_type* try_get(const key_type& key) {
         auto it = elements_.find(key);
         if (it == elements_.end()) {
             return nullptr;
         }
         return &it->second;
+    }
+
+    const mapped_type* try_get(const key_type& key) const {
+        return const_cast<StringWithHashGenericMap*>(this)->try_get(key);
+    }
+
+    node_type extract(const const_iterator& it) {
+        return elements_.extract(it);
     }
 
     node_type extract(const key_type& key) {
@@ -96,6 +111,15 @@ public:
     decltype(auto) end() { return elements_.end(); }
     decltype(auto) begin() const { return elements_.begin(); }
     decltype(auto) end() const { return elements_.end(); }
+
+    std::vector<key_type> keys() const {
+        std::vector<key_type> result;
+        result.reserve(this->size());
+        for (const auto& [k, _] : *this) {
+            result.push_back(k);
+        }
+        return result;
+    }
 
     // template <class Archive>
     // void serialize(Archive& archive) {

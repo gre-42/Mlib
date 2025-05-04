@@ -74,7 +74,7 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<int>(KnownArgs::z_order),
         CURRENT_SOURCE_LOCATION);
     scene.add_root_node(
-        args.arguments.at<std::string>(KnownArgs::node),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
         std::move(node),
         RenderingDynamics::MOVING,
         RenderingStrategies::OBJECT);

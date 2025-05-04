@@ -9,13 +9,13 @@ using namespace Mlib;
 KeepOffsetFromMovable::KeepOffsetFromMovable(
     AdvanceTimes& advance_times,
     Scene& scene,
-    const std::string& follower_name,
+    VariableAndHash<std::string> follower_name,
     DanglingRef<SceneNode> followed_node,
     IAbsoluteMovable& followed,
     const FixedArray<float, 3>& offset)
     : advance_times_{ advance_times }
     , scene_{ scene }
-    , follower_name_{ follower_name }
+    , follower_name_{ std::move(follower_name) }
     , followed_node_{ followed_node.ptr() }
     , followed_{ &followed }
     , offset_{ offset }
@@ -46,16 +46,16 @@ void KeepOffsetFromMovable::notify_destroyed(SceneNode& destroyed_object) {
     if (&destroyed_object == followed_node_.get()) {
         followed_node_ = nullptr;
         followed_ = nullptr;
-        if (!follower_name_.empty()) {
-            std::string fn = follower_name_;
-            follower_name_.clear();
+        if (!follower_name_->empty()) {
+            VariableAndHash<std::string> fn = follower_name_;
+            follower_name_ = VariableAndHash<std::string>();
             scene_.delete_root_node(fn);
         }
     } else {
         if (followed_node_ != nullptr) {
             followed_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
-        follower_name_.clear();
+        follower_name_ = VariableAndHash<std::string>();
         global_object_pool.remove(this);
     }
 }

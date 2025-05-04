@@ -32,7 +32,7 @@ LoadSceneJsonUserFunction ModifyRenderingMaterial::json_user_function = [](const
     args.arguments.validate(KnownArgs::options);
 
     modify_rendering_material(
-        args.arguments.at<std::string>(KnownArgs::resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
         RenderingContextStack::primary_scene_node_resources(),
         ColoredVertexArrayFilter{
             .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),

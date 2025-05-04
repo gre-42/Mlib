@@ -240,7 +240,7 @@ const std::map<std::string, DestructionFunctionsTokensObject<Team>>& Players::te
 size_t Players::nactive() const {
     size_t nactive = 0;
     for (const auto& [_, p] : players_) {
-        nactive += !p->scene_node_name().empty();
+        nactive += !p->scene_node_name()->empty();
     }
     return nactive;
 }

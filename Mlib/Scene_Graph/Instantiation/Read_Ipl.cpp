@@ -111,8 +111,8 @@ std::list<InstanceInformation<ScenePos>> Mlib::read_ipl(
         // }
         Quaternion<float> q{ -s, v };
         auto r = q.to_rotation_matrix();
-        result.push_back(InstanceInformation{
-            .resource_name = name + ".dff",
+        result.push_back(InstanceInformation<ScenePos>{
+            .resource_name = VariableAndHash<std::string>{name + ".dff"},
             .trafo = trafo_to_world * TransformationMatrix{ r, t },
             .scale = mean_scale,
             .rendering_dynamics = rendering_dynamics});

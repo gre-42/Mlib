@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Transformation/Quaternion_Series.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
@@ -180,7 +181,7 @@ public:
         const VariableAndHash<std::string>& name,
         const std::shared_ptr<const Renderable>& renderable);
     void add_child(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState =  ChildParentState::PARENT_NOT_SET);
@@ -192,22 +193,22 @@ public:
     void clear_absolute_observer();
     void clear_sticky_absolute_observer();
     void clear();
-    DanglingRef<SceneNode> get_child(const std::string& name);
-    DanglingRef<const SceneNode> get_child(const std::string& name) const;
-    void remove_child(const std::string& name);
-    bool contains_child(const std::string& name) const;
+    DanglingRef<SceneNode> get_child(const VariableAndHash<std::string>& name);
+    DanglingRef<const SceneNode> get_child(const VariableAndHash<std::string>& name) const;
+    void remove_child(const VariableAndHash<std::string>& name);
+    bool contains_child(const VariableAndHash<std::string>& name) const;
     void add_aggregate_child(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_child(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_position(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         const FixedArray<CompressedScenePos, 3>& position,
         float yangle,
         BillboardId billboard_id);
@@ -222,7 +223,7 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const std::function<bool(
             const TransformationMatrix<float, ScenePos, 3>& m,
-            const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
+            const StringWithHashUnorderedMap<std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
     void move(
         const TransformationMatrix<float, ScenePos, 3>& v,
         float dt,
@@ -328,8 +329,8 @@ public:
     void set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater);
     bool to_be_deleted() const;
     void set_bone(const SceneNodeBone& bone);
-    void set_periodic_animation(const std::string& name);
-    void set_aperiodic_animation(const std::string& name);
+    void set_periodic_animation(const VariableAndHash<std::string>& name);
+    void set_aperiodic_animation(const VariableAndHash<std::string>& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
     SceneNodeState state() const;
     Scene& scene();
@@ -349,7 +350,7 @@ public:
 private:
     void set_scene_and_state_unsafe(Scene& scene, SceneNodeState state);
     void setup_child_unsafe(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingRef<SceneNode> node,
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
@@ -366,11 +367,11 @@ private:
     IAbsoluteObserver* absolute_observer_;
     IAbsoluteObserver* sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;
-    std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>> renderables_;
-    std::map<std::string, SceneNodeChild> children_;
-    std::map<std::string, SceneNodeChild> aggregate_children_;
-    std::map<std::string, SceneNodeInstances> instances_children_;
-    std::map<std::string, SceneNodeInstances> collide_only_instances_children_;
+    StringWithHashUnorderedMap<std::shared_ptr<RenderableWithStyle>> renderables_;
+    StringWithHashUnorderedMap<SceneNodeChild> children_;
+    StringWithHashUnorderedMap<SceneNodeChild> aggregate_children_;
+    StringWithHashUnorderedMap<SceneNodeInstances> instances_children_;
+    StringWithHashUnorderedMap<SceneNodeInstances> collide_only_instances_children_;
     std::list<std::shared_ptr<Light>> lights_;
     std::list<std::shared_ptr<Skidmark>> skidmarks_;
     OffsetAndQuaternion<float, ScenePos> trafo_;
@@ -384,8 +385,8 @@ private:
     std::list<std::unique_ptr<ColorStyle>> color_styles_;
     std::unique_ptr<AnimationStateUpdater> animation_state_updater_;
     SceneNodeBone bone_;
-    std::string periodic_animation_;
-    std::string aperiodic_animation_;
+    VariableAndHash<std::string> periodic_animation_;
+    VariableAndHash<std::string> aperiodic_animation_;
     SceneNodeState state_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable SafeAtomicRecursiveSharedMutex pose_mutex_;

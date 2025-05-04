@@ -23,8 +23,8 @@ static void patch(
     const SquaredStepDistances& center_distances2,
     const GroupAndName& prefix,
     RenderingDynamics rendering_dynamics,
-    std::list<std::string>& added_scene_node_resources,
-    std::list<std::string>& added_instantiables)
+    std::list<VariableAndHash<std::string>>& added_scene_node_resources,
+    std::list<VariableAndHash<std::string>>& added_instantiables)
 {
     auto split = split_meshes(
         cvas,
@@ -36,7 +36,7 @@ static void patch(
         cva_to_grid_center<TPos, TWidth>(width),
         prefix + "_cluster")))
     {
-        auto resource_name = (prefix + std::to_string(i)).full_name();
+        auto resource_name = VariableAndHash<std::string>{(prefix + std::to_string(i)).full_name()};
         auto transformed = c.cva->template translated<float>(-c.position, "_centered");
         transformed->morphology.center_distances2 = center_distances2;
         scene_node_resources.add_resource(
@@ -60,13 +60,13 @@ static void patch(
 }
 
 void Mlib::cluster_elements(
-    const std::vector<std::string>& resource_names,
+    const std::vector<VariableAndHash<std::string>>& resource_names,
     SceneNodeResources& scene_node_resources,
     const FixedArray<float, 3>& width,
     const SquaredStepDistances& center_distances2,
     RenderingDynamics rendering_dynamics,
-    std::list<std::string>& added_scene_node_resources,
-    std::list<std::string>& added_instantiables)
+    std::list<VariableAndHash<std::string>>& added_scene_node_resources,
+    std::list<VariableAndHash<std::string>>& added_instantiables)
 {
     for (const auto& resource_name : resource_names) {
         const auto& acvas = scene_node_resources.get_rendering_arrays(resource_name);
@@ -76,7 +76,7 @@ void Mlib::cluster_elements(
                 acva->dcvas,
                 width.casted<ScenePos>(),
                 center_distances2,
-                resource_name,
+                *resource_name,
                 rendering_dynamics,
                 added_scene_node_resources,
                 added_instantiables);
@@ -85,7 +85,7 @@ void Mlib::cluster_elements(
                 acva->scvas,
                 width,
                 center_distances2,
-                resource_name,
+                *resource_name,
                 rendering_dynamics,
                 added_scene_node_resources,
                 added_instantiables);

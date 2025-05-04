@@ -49,7 +49,7 @@ FixedArray<CompressedScenePos, 3> Mlib::parse_position(
         (jpos(2).type() == nlohmann::detail::value_t::string))
     {
         pos = parse_geographic_position(
-            scene_node_resources.get_geographic_mapping("world.inverse"),
+            scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
             jpos(0).get<std::string>(),
             jpos(1).get<std::string>(),
             jpos(2).get<std::string>());

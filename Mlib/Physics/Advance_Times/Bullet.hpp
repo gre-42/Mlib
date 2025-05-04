@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
 #include <string>
 
@@ -45,7 +46,7 @@ public:
         RigidBodies& rigid_bodies,
         IPlayer* gunner,
         ITeam* team,
-        std::string bullet_node_name,
+        VariableAndHash<std::string> bullet_node_name,
         const BulletProperties& props,
         std::unique_ptr<ITrailExtender> trace_extender,
         DynamicLights& dynamic_lights,
@@ -75,7 +76,7 @@ private:
     RigidBodies& rigid_bodies_;
     IPlayer* gunner_;
     ITeam* team_;
-    std::string bullet_node_name_;
+    VariableAndHash<std::string> bullet_node_name_;
     const BulletProperties& props_;
     float lifetime_;
     SmokeTrailGenerator trail_generator_;

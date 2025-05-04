@@ -27,7 +27,7 @@ public:
     explicit DeletingDamageable(
         Scene& scene,
         AdvanceTimes& advance_times,
-        std::string root_node_name,
+        VariableAndHash<std::string> root_node_name,
         float health,
         bool delete_node_when_health_leq_zero,
         std::shared_ptr<Translator> translator);
@@ -44,7 +44,7 @@ public:
 protected:
     Scene& scene_;
     AdvanceTimes& advance_times_;
-    std::string root_node_name_;
+    VariableAndHash<std::string> root_node_name_;
     float health_;
     mutable SafeAtomicRecursiveSharedMutex health_mutex_;
     bool delete_node_when_health_leq_zero_;

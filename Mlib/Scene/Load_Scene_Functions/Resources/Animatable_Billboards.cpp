@@ -29,9 +29,9 @@ LoadSceneJsonUserFunction AnimatableBillboards::json_user_function = [](const Lo
     args.arguments.validate(KnownArgs::options);
 
     RenderingContextStack::primary_particle_resources().insert_instance_instantiator(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         [&snr = RenderingContextStack::primary_scene_node_resources(),
-         billboards = args.arguments.at<std::string>(KnownArgs::billboards),
+         billboards = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::billboards),
          max_num_instances = args.arguments.at<size_t>(KnownArgs::max_num_instances),
          filter = RenderableResourceFilter{},
          substrate = particle_substrate_from_string(args.arguments.at<std::string>(KnownArgs::substrate))]

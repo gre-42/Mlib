@@ -31,7 +31,7 @@ SetBevelBoxSurfaceNormal::SetBevelBoxSurfaceNormal(RenderableScene& renderable_s
 
 void SetBevelBoxSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     rb.set_surface_normal(std::make_unique<NormalOnBevelBox>(
         rb.rbp_,

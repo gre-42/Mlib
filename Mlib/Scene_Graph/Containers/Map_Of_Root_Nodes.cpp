@@ -9,19 +9,16 @@
 using namespace Mlib;
 
 MapOfRootNodes::MapOfRootNodes(Scene& scene)
-    : scene_{ scene }
+    : root_nodes_{ "Root node" }
+    , scene_{ scene }
 {}
 
-RootNodes& MapOfRootNodes::create(const std::string& name) {
+RootNodes& MapOfRootNodes::create(VariableAndHash<std::string> name) {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    auto res = root_nodes_.emplace(name, scene_);
-    if (!res.second) {
-        THROW_OR_ABORT("Root node with name \"" + name + "\" already exists");
-    }
-    return res.first->second;
+    return root_nodes_.add(std::move(name), scene_);
 }
 
-bool MapOfRootNodes::root_node_scheduled_for_deletion(const std::string& name, bool must_exist) const {
+bool MapOfRootNodes::root_node_scheduled_for_deletion(const VariableAndHash<std::string>& name, bool must_exist) const {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (const auto& [_, v] : root_nodes_) {
         if (v.contains(name)) {
@@ -29,7 +26,7 @@ bool MapOfRootNodes::root_node_scheduled_for_deletion(const std::string& name, b
         }
     }
     if (must_exist) {
-        THROW_OR_ABORT("MapOfRootNodes::root_node_scheduled_for_deletion: Could not find root node with name \"" + name + '"');
+        THROW_OR_ABORT("MapOfRootNodes::root_node_scheduled_for_deletion: Could not find root node with name \"" + *name + '"');
     } else {
         return false;
     }
@@ -78,7 +75,7 @@ size_t MapOfRootNodes::try_empty_the_trash_can() {
 void MapOfRootNodes::print(std::ostream& ostr) const {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (const auto& [k, v] : root_nodes_) {
-        ostr << k << '\n';
+        ostr << *k << '\n';
         ostr << v;
     }
 }

@@ -49,7 +49,7 @@ public:
         std::function<void(
             const std::optional<std::string>& player,
             const std::string& bullet_suffix,
-            const std::optional<std::string>& target,
+            const std::optional<VariableAndHash<std::string>>& target,
             const FixedArray<float, 3>& velocity,
             const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
         ITrailStorage* bullet_trace_storage,
@@ -89,7 +89,7 @@ private:
     std::function<void(
         const std::optional<std::string>& player,
         const std::string& bullet_suffix,
-        const std::optional<std::string>& target,
+        const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet_;
     ITrailStorage* bullet_trace_storage_;

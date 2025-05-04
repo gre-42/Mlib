@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Instance/Instance_Information.hpp>
-#include <Mlib/Map/Unordered_Map.hpp>
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <iosfwd>
 #include <list>
 #include <memory>
@@ -19,7 +19,10 @@ struct PssgModel;
 
 template <class TResourcePos, class TInstancePos>
 struct PssgArrays {
-    UnorderedMap<std::string, std::shared_ptr<ColoredVertexArray<TResourcePos>>> resources;
+    PssgArrays()
+        : resources{ "PSSG resources" }
+    {}
+    StringWithHashUnorderedMap<std::shared_ptr<ColoredVertexArray<TResourcePos>>> resources;
     std::list<InstanceInformation<TInstancePos>> instances;
 };
 

@@ -45,7 +45,7 @@ CreateLightWithShadow::CreateLightWithShadow(RenderableScene& renderable_scene)
 
 void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node_name = args.arguments.at<std::string>(KnownArgs::node);
+    auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
     auto node = scene.get_node(node_name, DP_LOC);
     auto render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));
     if ((render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
@@ -70,8 +70,8 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         render_pass,
         node,
         light,
-        args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
-        args.arguments.at<bool>(KnownArgs::with_depth_texture),     // with_depth_texture
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::black_node), // black_node_name
+        args.arguments.at<bool>(KnownArgs::with_depth_texture),                 // with_depth_texture
         args.arguments.at<int>(KnownArgs::lightmap_width),
         args.arguments.at<int>(KnownArgs::lightmap_height),
         args.arguments.at<UFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));

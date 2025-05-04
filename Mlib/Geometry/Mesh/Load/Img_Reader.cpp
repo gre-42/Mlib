@@ -17,11 +17,12 @@ struct DirectoryInfo {
 static_assert(sizeof(DirectoryInfo) == 32);
 
 ImgReader::ImgReader(std::istream& directory, std::unique_ptr<std::istream>&& data)
-    : reading_{ false }
+    : directory_{ "IMG entry" }
+    , reading_{ false }
 {
     while (directory.peek() != EOF) {
         auto h = read_binary<DirectoryInfo>(directory, "directory entry", IoVerbosity::SILENT);
-        auto entry_name = remove_trailing_zeros(std::string(h.name, sizeof(h.name)));
+        auto entry_name = VariableAndHash<std::string>{remove_trailing_zeros(std::string(h.name, sizeof(h.name)))};
         // linfo() << "Entry name: " << entry_name;
         directory_.add(
             entry_name,
@@ -51,12 +52,12 @@ std::shared_ptr<IIStreamDictionary> ImgReader::load_from_file(const std::string&
 
 ImgReader::~ImgReader() = default;
 
-std::vector<std::string> ImgReader::names() const {
+std::vector<VariableAndHash<std::string>> ImgReader::names() const {
     return directory_.keys();
 }
 
 StreamAndSize ImgReader::read(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     std::ios::openmode openmode,
     SourceLocation loc)
 {
@@ -71,7 +72,7 @@ StreamAndSize ImgReader::read(
     reading_ = true;
     data_->seekg(v.offset);
     if (data_->fail()) {
-        THROW_OR_ABORT("Could not seek entry \"" + name + '"');
+        THROW_OR_ABORT("Could not seek entry \"" + *name + '"');
     }
     auto stream = std::make_unique<IStreamAndLock<DanglingBaseClassRef<ImgReader>>>(
         *data_,

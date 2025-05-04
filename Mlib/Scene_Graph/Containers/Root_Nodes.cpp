@@ -21,7 +21,10 @@ using namespace Mlib;
 
 RootNodes::RootNodes(Scene& scene)
     : scene_{ scene }
+    , invisible_static_nodes_{ "Invisible static nodes" }
+    , default_nodes_map_{ "Default nodes" }
     , small_static_nodes_bvh_{ fixed_full<ScenePos, 3>(5), 12 }
+    , node_container_{ "Node container" }
     , emptying_trash_can_{ false }
 {}
 
@@ -74,7 +77,7 @@ void RootNodes::clear() {
         node_container_,
         [this](const auto& node){
             if (node.mapped().ptr->shutting_down()) {
-                verbose_abort("Node \"" + node.key() + "\" already shutting down");
+                verbose_abort("Node \"" + *node.key() + "\" already shutting down");
             }
             node.mapped().ptr->shutdown();
             scene_.unregister_node(node.key());
@@ -88,15 +91,15 @@ void RootNodes::clear() {
 }
 
 void RootNodes::add_root_node(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& scene_node,
     SceneNodeState scene_node_state)
 {
     if (root_nodes_to_delete_.contains(name)) {
-        THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
+        THROW_OR_ABORT("Node \"" + *name + "\" is scheduled for deletion");
     }
     if (node_container_.contains(name)) {
-        THROW_OR_ABORT("Node \"" + name + "\" already exists");
+        THROW_OR_ABORT("Node \"" + *name + "\" already exists");
     }
     if (scene_node == nullptr) {
         THROW_OR_ABORT("add_root_node received nullptr");
@@ -117,7 +120,7 @@ void RootNodes::add_root_node(
     scene_.register_node(name, ref);
     scene_node->set_scene_and_state(scene_, scene_node_state);
     if (!node_container_.try_emplace(name, std::move(scene_node)).second) {
-        verbose_abort("Could not insert into node container: \"" + name + '"');
+        verbose_abort("Could not insert into node container: \"" + *name + '"');
     }
     if (is_static && (md2 != INFINITY)) {
         if (md2 != 0.f) {
@@ -125,47 +128,47 @@ void RootNodes::add_root_node(
                 AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(ref->position(), std::sqrt(md2)),
                 ref);
         } else if (!invisible_static_nodes_.try_emplace(name, ref).second) {
-            verbose_abort("add_root_node could not insert node \"" + name + '"');
+            verbose_abort("add_root_node could not insert node \"" + *name + '"');
         }
     } else if (!default_nodes_map_.try_emplace(name, ref).second) {
-        verbose_abort("add_root_node could not insert node \"" + name + '"');
+        verbose_abort("add_root_node could not insert node \"" + *name + '"');
     }
 }
 
-void RootNodes::move_node_to_bvh(const std::string& name) {
+void RootNodes::move_node_to_bvh(const VariableAndHash<std::string>& name) {
     auto m = invisible_static_nodes_.extract(name);
     if (m.empty()) {
-        THROW_OR_ABORT("Could not find non-BVH node with name \"" + name + '"');
+        THROW_OR_ABORT("Could not find non-BVH node with name \"" + *name + '"');
     }
     if (m.mapped()->state() != SceneNodeState::STATIC) {
         invisible_static_nodes_.insert(std::move(m));
-        THROW_OR_ABORT("Node \"" + name + "\" is not static");
+        THROW_OR_ABORT("Node \"" + *name + "\" is not static");
     }
     auto md2 = m.mapped()->max_center_distance2(BILLBOARD_ID_NONE);
     if (md2 == 0.f) {
         invisible_static_nodes_.insert(std::move(m));
-        THROW_OR_ABORT("Node \"" + name + "\" has radius=0");
+        THROW_OR_ABORT("Node \"" + *name + "\" has radius=0");
     }
     small_static_nodes_bvh_.insert(
         AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(m.mapped()->position(), std::sqrt(md2)),
         m.mapped());
 }
 
-bool RootNodes::contains(const std::string& name) const {
+bool RootNodes::contains(const VariableAndHash<std::string>& name) const {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread(); 
     return node_container_.contains(name);
 }
 
 std::optional<DanglingRef<SceneNode>> RootNodes::try_get(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     SOURCE_LOCATION loc)
 {
     std::shared_lock lock{ scene_.mutex_ };
-    auto it = node_container_.find(name);
-    if (it == node_container_.end()) {
+    auto it = node_container_.try_get(name);
+    if (it == nullptr) {
         return std::nullopt;
     }
-    return it->second.ptr.ref(loc);
+    return it->ptr.ref(loc);
 }
 
 bool RootNodes::no_root_nodes_scheduled_for_deletion() const {
@@ -173,22 +176,22 @@ bool RootNodes::no_root_nodes_scheduled_for_deletion() const {
     return root_nodes_to_delete_.empty();
 }
 
-bool RootNodes::root_node_scheduled_for_deletion(const std::string& name) const {
+bool RootNodes::root_node_scheduled_for_deletion(const VariableAndHash<std::string>& name) const {
     std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
     if (!node_container_.contains(name)) {
-        THROW_OR_ABORT("No root node with name \"" + name + "\" exists");
+        THROW_OR_ABORT("No root node with name \"" + *name + "\" exists");
     }
     return root_nodes_to_delete_.contains(name);
 }
 
-void RootNodes::schedule_delete_root_node(const std::string& name) {
+void RootNodes::schedule_delete_root_node(const VariableAndHash<std::string>& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
     if (!node_container_.contains(name)) {
-        verbose_abort("No root node with name \"" + name + "\" exists");
+        verbose_abort("No root node with name \"" + *name + "\" exists");
     }
     if (!root_nodes_to_delete_.insert(name).second) {
-        verbose_abort("Node \"" + name + "\" is already scheduled for deletion");
+        verbose_abort("Node \"" + *name + "\" is already scheduled for deletion");
     }
 }
 
@@ -224,27 +227,26 @@ void RootNodes::print_trash_can_references() const {
     }
 }
 
-void RootNodes::delete_root_node(const std::string& name) {
+void RootNodes::delete_root_node(const VariableAndHash<std::string>& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (scene_.mutex_.is_owner()) {
         verbose_abort("Node deleter already owns the lock. The UnlockGuard will have no effect");;
     }
     std::unique_lock lock{ scene_.mutex_ };
-    auto it = node_container_.find(name);
-    if (it == node_container_.end()) {
-        verbose_abort("RootNodes::delete_root_node: Could not find root node with name \"" + name + '"');
+    auto it = node_container_.try_extract(name);
+    if (it.empty()) {
+        verbose_abort("RootNodes::delete_root_node: Could not find root node with name \"" + *name + '"');
     }
-    if (!it->second.ptr->shutting_down()) {
+    if (!it.mapped().ptr->shutting_down()) {
         scene_.unregister_node(name);
         if (default_nodes_map_.erase(name) == 0) {
             small_static_nodes_bvh_.clear();
         }
         root_nodes_to_delete_.erase(name);
         UnlockGuard ulock{ lock };
-        it->second.ptr->shutdown();
-        trash_can_.push_back(std::move(it->second));
+        it.mapped().ptr->shutdown();
+        trash_can_.push_back(std::move(it.mapped()));
         // linfo() << "add " << &trash_can_.back() << " " << it->first;
-        node_container_.erase(it);
     }
 }
 
@@ -255,20 +257,20 @@ void RootNodes::delete_root_nodes(const Mlib::re::cregex& regex) {
     }
     std::unique_lock lock{ scene_.mutex_ };
     scene_.unregister_nodes(regex);
-    for (auto it = node_container_.begin(); it != node_container_.end(); ) {
-        auto n = it++;
-        if (Mlib::re::regex_match(n->first, regex)) {
-            if (default_nodes_map_.erase(n->first) == 0) {
+    node_container_.erase_if([&](auto& n){
+        if (Mlib::re::regex_match(*n.first, regex)) {
+            if (default_nodes_map_.erase(n.first) == 0) {
                 small_static_nodes_bvh_.clear();
             }
-            root_nodes_to_delete_.erase(n->first);
+            root_nodes_to_delete_.erase(n.first);
             UnlockGuard ulock{ lock };
-            n->second.ptr->shutdown();
-            // linfo() << "add " << n->second.ptr.get(DP_LOC).get() << " " << n->first;
-            trash_can_.push_back(std::move(n->second));
-            node_container_.erase(n);
+            n.second.ptr->shutdown();
+            // linfo() << "add " << n.second.ptr.get(DP_LOC).get() << " " << n.first;
+            trash_can_.push_back(std::move(n.second));
+            return true;
         }
-    }
+        return false;
+    });
 }
 
 void RootNodes::print(std::ostream& ostr) const {
@@ -277,7 +279,7 @@ void RootNodes::print(std::ostream& ostr) const {
     ostr << " Small static nodes: " << small_static_nodes_bvh_.size() << '\n';
     ostr << " Node container\n";
     for (const auto& [k, v] : node_container_) {
-        ostr << " " << k << " #" << v.ptr.nreferences() << '\n';
+        ostr << " " << *k << " #" << v.ptr.nreferences() << '\n';
         v.ptr->print(ostr, 2);
     }
 }

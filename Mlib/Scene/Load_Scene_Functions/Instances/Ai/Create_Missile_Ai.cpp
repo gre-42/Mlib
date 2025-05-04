@@ -68,7 +68,7 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         jdy.at_vector<float>(DyArgs::velocity, parse_kph),
         jdy.at<std::vector<float>>(DyArgs::dy),
         OutOfRangeBehavior::CLAMP };
-    auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::missile), DP_LOC));
+    auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::missile), DP_LOC));
     missile_vehicle.add_autopilot(
         {
             global_object_pool.create<FlyingMissileAi>(

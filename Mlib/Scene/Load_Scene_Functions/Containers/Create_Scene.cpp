@@ -51,7 +51,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
     auto [_, state] = args.renderable_scenes.try_emplace(
         name,
         name,
-        args.arguments.at<std::string>(KnownArgs::world),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::world),
         name + ".rendering_resources",
         args.scene_config.render_config.anisotropic_filtering_level,
         RenderingContextStack::primary_scene_node_resources(),

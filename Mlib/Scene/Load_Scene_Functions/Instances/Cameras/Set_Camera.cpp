@@ -25,5 +25,5 @@ SetCamera::SetCamera(RenderableScene& renderable_scene)
 
 void SetCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    selected_cameras.set_camera_node_name(args.arguments.at<std::string>(KnownArgs::name));
+    selected_cameras.set_camera_node_name(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name));
 }

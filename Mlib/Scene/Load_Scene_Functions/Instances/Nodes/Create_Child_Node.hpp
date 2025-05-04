@@ -7,6 +7,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 struct LoadSceneJsonUserFunctionArgs;
 
 class CreateChildNode: public LoadSceneInstanceFunction {
@@ -14,8 +16,8 @@ public:
     explicit CreateChildNode(RenderableScene& renderable_scene);
     void operator () (
         const std::string& type,
-        const std::string& parent,
-        const std::string& name,
+        const VariableAndHash<std::string>& parent,
+        const VariableAndHash<std::string>& name,
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation = fixed_zeros<float, 3>(),
         float scale = 1.f,

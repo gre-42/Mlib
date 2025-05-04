@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/List/Thread_Safe_List.hpp>
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Time_Point_Series.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -66,62 +67,62 @@ public:
     void add_to_trash_can(DanglingUniquePtr<SceneNode>&& node);
     void add_to_trash_can(std::unique_ptr<DanglingBaseClass>&& obj);
     size_t try_empty_the_trash_can();
-    bool contains_node(const std::string& name) const;
+    bool contains_node(const VariableAndHash<std::string>& name) const;
     void add_moving_root_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
     void add_static_root_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
     void add_root_aggregate_once_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
     void add_root_aggregate_always_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
     void add_root_instances_once_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
     void add_root_instances_always_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
     void add_static_root_physics_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
     void auto_add_root_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node,
         RenderingDynamics rendering_dynamics);
     void add_root_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& scene_node,
         RenderingDynamics rendering_dynamics,
         RenderingStrategies rendering_strategy);
     void add_root_imposter_node(const DanglingRef<SceneNode>& scene_node);
-    void move_root_node_to_bvh(const std::string& name);
+    void move_root_node_to_bvh(const VariableAndHash<std::string>& name);
     bool root_node_scheduled_for_deletion(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         bool must_exist = true) const;
-    void schedule_delete_root_node(const std::string& name);
+    void schedule_delete_root_node(const VariableAndHash<std::string>& name);
     void delete_scheduled_root_nodes() const;
-    void try_delete_root_node(const std::string& name);
+    void try_delete_root_node(const VariableAndHash<std::string>& name);
     void delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node);
-    void delete_root_node(const std::string& name);
+    void delete_root_node(const VariableAndHash<std::string>& name);
     void delete_root_nodes(const Mlib::re::cregex& regex);
-    void try_delete_node(const std::string& name);
-    void delete_node(const std::string& name);
+    void try_delete_node(const VariableAndHash<std::string>& name);
+    void delete_node(const VariableAndHash<std::string>& name);
     void delete_nodes(const Mlib::re::cregex& regex);
     void register_node(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         const DanglingRef<SceneNode>& scene_node);
-    void unregister_node(const std::string& name);
+    void unregister_node(const VariableAndHash<std::string>& name);
     void unregister_nodes(const Mlib::re::cregex& regex);
-    DanglingRef<SceneNode> get_node(const std::string& name, SOURCE_LOCATION loc) const;
-    DanglingPtr<SceneNode> try_get_node(const std::string& name, SOURCE_LOCATION loc) const;
-    std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::re::cregex& regex) const;
+    DanglingRef<SceneNode> get_node(const VariableAndHash<std::string>& name, SOURCE_LOCATION loc) const;
+    DanglingPtr<SceneNode> try_get_node(const VariableAndHash<std::string>& name, SOURCE_LOCATION loc) const;
+    std::list<std::pair<VariableAndHash<std::string>, DanglingRef<SceneNode>>> get_nodes(const Mlib::re::cregex& regex) const;
     bool visit_all(const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
+        const StringWithHashUnorderedMap<std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
     void render(
         const FixedArray<ScenePos, 4, 4>& vp,
         const TransformationMatrix<float, ScenePos, 3>& iv,
@@ -151,11 +152,11 @@ public:
     void assert_this_thread_is_render_thread() const;
     IParticleCreator& particle_instantiator(const VariableAndHash<std::string>& resource_name) const;
 private:
-    DanglingRef<SceneNode> get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
+    DanglingRef<SceneNode> get_node_that_may_be_scheduled_for_deletion(const VariableAndHash<std::string>& name) const;
     // Must be above garbage-collected members for
     // deregistration of child nodes in SceneNode
     // dtor to work.
-    std::map<std::string, DanglingPtr<SceneNode>> nodes_;
+    StringWithHashUnorderedMap<DanglingPtr<SceneNode>> nodes_;
     // |         |Lights|Blended|Large|Small|Move|
     // |---------|------|-------|-----|-----|----|
     // |Dynamic  |x     |x      |     |     |x   |

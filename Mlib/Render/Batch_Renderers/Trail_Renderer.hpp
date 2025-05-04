@@ -16,7 +16,7 @@ public:
 
     // ITrailRenderer
     virtual ITrailStorage& get_storage(const VariableAndHash<std::string>& name) override;
-    virtual void preload(const std::string& name) override;
+    virtual void preload(const VariableAndHash<std::string>& name) override;
     virtual void move(float dt, const StaticWorld& world) override;
     virtual void render(
         const FixedArray<ScenePos, 4, 4>& vp,

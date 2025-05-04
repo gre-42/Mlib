@@ -23,5 +23,6 @@ LoadSceneJsonUserFunction GenInstances::json_user_function = [](const LoadSceneJ
 
 void GenInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextStack::primary_scene_node_resources().generate_instances(args.arguments.at<std::string>(KnownArgs::name));
+    RenderingContextStack::primary_scene_node_resources().generate_instances(
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name));
 }

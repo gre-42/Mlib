@@ -15,8 +15,8 @@ struct BulletTrail {
 };
 
 struct BulletProperties {
-    std::string renderable_resource_name;
-    std::string hitbox_resource_name;
+    VariableAndHash<std::string> renderable_resource_name;
+    VariableAndHash<std::string> hitbox_resource_name;
     VariableAndHash<std::string> explosion_resource_name;
     float explosion_animation_time;
     RigidBodyVehicleFlags rigid_body_flags;

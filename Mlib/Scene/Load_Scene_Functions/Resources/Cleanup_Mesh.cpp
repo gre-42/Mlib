@@ -28,7 +28,7 @@ LoadSceneJsonUserFunction CleanupMesh::json_user_function = [](const LoadSceneJs
         min_distance_filter = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::min_distance_material_filter));
     }
     add_cleanup_mesh_modifier(
-        args.arguments.at<std::string>(KnownArgs::resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
         RenderingContextStack::primary_scene_node_resources(),
         min_vertex_distance,
         min_distance_filter,

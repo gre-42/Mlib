@@ -41,6 +41,8 @@
 
 using namespace Mlib;
 
+static const auto NO_ANIMATION = VariableAndHash<std::string>{ "<no_animation>" };
+
 SceneNode::SceneNode(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
@@ -56,6 +58,11 @@ SceneNode::SceneNode(
     , absolute_observer_{ nullptr }
     , sticky_absolute_observer_{ nullptr }
     , camera_{ nullptr }
+    , renderables_{ "Renderables" }
+    , children_{ "Children" }
+    , aggregate_children_{ "Aggregate children" }
+    , instances_children_{ "Instances children" }
+    , collide_only_instances_children_{ "Collide-only instances children" }
     , trafo_{ OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles({ rotation, position }) }
     , trafo_history_{ trafo_, std::chrono::steady_clock::now() }
     , trafo_history_invalidated_{ false }
@@ -149,21 +156,21 @@ DanglingRef<const SceneNode> SceneNode::parent() const {
 }
 
 void SceneNode::setup_child_unsafe(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingRef<SceneNode> node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
     // Required in SceneNonde::~SceneNode
     if ((child_registration_state == ChildRegistrationState::REGISTERED) && (scene_ == nullptr)) {
-        THROW_OR_ABORT("Parent of registered node " + name + " does not have a scene");
+        THROW_OR_ABORT("Parent of registered node " + *name + " does not have a scene");
     }
-    if (name.empty()) {
+    if (name->empty()) {
         THROW_OR_ABORT("Child node has no name");
     }
     if (child_parent_state == ChildParentState::PARENT_NOT_SET) {
         if (node->parent_ != nullptr) {
-            THROW_OR_ABORT("Scene node \"" + name + "\" already has a parent");
+            THROW_OR_ABORT("Scene node \"" + *name + "\" already has a parent");
         }
         node->parent_ = DanglingPtr<SceneNode>::from_object(*this, DP_LOC);
     } else if (node->parent_ != DanglingPtr<SceneNode>::from_object(*this, DP_LOC)) {
@@ -401,7 +408,7 @@ void SceneNode::clear_unsafe() {
     renderables_.clear();
     auto add_child_to_trash = [this](const auto& child){
         if (child.mapped().scene_node->shutting_down()) {
-            verbose_abort("Child node \"" + child.key() + "\" already shutting down");
+            verbose_abort("Child node \"" + *child.key() + "\" already shutting down");
         }
         child.mapped().scene_node->shutdown();
         if (scene_ != nullptr) {
@@ -422,12 +429,12 @@ void SceneNode::clear_unsafe() {
     animation_state_ = nullptr;
     color_styles_.clear();
     animation_state_updater_ = nullptr;
-    periodic_animation_.clear();
-    aperiodic_animation_.clear();
+    periodic_animation_ = VariableAndHash<std::string>{};
+    aperiodic_animation_ = VariableAndHash<std::string>{};
 }
 
 void SceneNode::add_child(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
@@ -439,73 +446,72 @@ void SceneNode::add_child(
         (child_registration_state == ChildRegistrationState::REGISTERED),
         std::move(node)).second)
     {
-        THROW_OR_ABORT("Child node with name " + name + " already exists");
+        THROW_OR_ABORT("Child node with name " + *name + " already exists");
     }
     setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
 }
 
-DanglingRef<SceneNode> SceneNode::get_child(const std::string& name) {
+DanglingRef<SceneNode> SceneNode::get_child(const VariableAndHash<std::string>& name) {
     std::shared_lock lock{ mutex_ };
-    auto it = children_.find(name);
-    if (it == children_.end()) {
-        THROW_OR_ABORT("Node does not have a child with name \"" + name + '"');
+    auto it = children_.try_get(name);
+    if (it == nullptr) {
+        THROW_OR_ABORT("Node does not have a child with name \"" + *name + '"');
     }
-    return it->second.scene_node.ref(DP_LOC);
+    return it->scene_node.ref(DP_LOC);
 }
 
-DanglingRef<const SceneNode> SceneNode::get_child(const std::string& name) const {
+DanglingRef<const SceneNode> SceneNode::get_child(const VariableAndHash<std::string>& name) const {
     return const_cast<SceneNode*>(this)->get_child(name);
 }
 
-void SceneNode::remove_child(const std::string& name) {
+void SceneNode::remove_child(const VariableAndHash<std::string>& name) {
     std::scoped_lock lock{ mutex_ };
     if (state_ == SceneNodeState::STATIC) {
-        verbose_abort("Cannot remove child \"" + name + "\" from static node");
+        verbose_abort("Cannot remove child \"" + *name + "\" from static node");
     }
-    auto it = children_.find(name);
-    if (it == children_.end()) {
-        verbose_abort("Cannot not remove child with name \"" + name + "\" because it does not exist");
+    auto it = children_.try_extract(name);
+    if (it.empty()) {
+        verbose_abort("Cannot not remove child with name \"" + *name + "\" because it does not exist");
     }
-    if (it->second.scene_node->shutting_down()) {
-        verbose_abort("Child node \"" + name + "\" shutting down (2)");
+    if (it.mapped().scene_node->shutting_down()) {
+        verbose_abort("Child node \"" + *name + "\" shutting down (2)");
     }
-    it->second.scene_node->shutdown();
-    if (it->second.is_registered) {
+    it.mapped().scene_node->shutdown();
+    if (it.mapped().is_registered) {
         if (scene_ == nullptr) {
-            verbose_abort("Can not deregister child \"" + name + "\" because scene is not set");
+            verbose_abort("Can not deregister child \"" + *name + "\" because scene is not set");
         }
         scene_->unregister_node(name);
     }
     if (scene_ != nullptr) {
-        scene_->add_to_trash_can(std::move(it->second.scene_node));
+        scene_->add_to_trash_can(std::move(it.mapped().scene_node));
     }
-    children_.erase(it);
 }
 
-bool SceneNode::contains_child(const std::string& name) const {
+bool SceneNode::contains_child(const VariableAndHash<std::string>& name) const {
     std::shared_lock lock{ mutex_ };
-    return children_.find(name) != children_.end();
+    return children_.contains(name);
 }
 
 void SceneNode::add_aggregate_child(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
     auto nref = node.ref(DP_LOC);
     std::scoped_lock lock{ mutex_ };
-    if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
+    if (!aggregate_children_.try_emplace(name, SceneNodeChild{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
-        .scene_node = std::move(node)})).second)
+        .scene_node = std::move(node)}).second)
     {
-        THROW_OR_ABORT("Aggregate node with name " + name + " already exists");
+        THROW_OR_ABORT("Aggregate node with name " + *name + " already exists");
     }
     setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
 }
 
 void SceneNode::add_instances_child(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     DanglingUniquePtr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
@@ -514,9 +520,9 @@ void SceneNode::add_instances_child(
     if (collide_only_instances_children_.contains(name) ||
         instances_children_.contains(name))
     {
-        THROW_OR_ABORT("Instances node with name " + name + " already exists");
+        THROW_OR_ABORT("Instances node with name " + *name + " already exists");
     }
-    auto emplace_instances_child = [&](std::map<std::string, SceneNodeInstances>& ic)
+    auto emplace_instances_child = [&](StringWithHashUnorderedMap<SceneNodeInstances>& ic)
     {
         if (!ic.try_emplace(
             name,
@@ -526,7 +532,7 @@ void SceneNode::add_instances_child(
             SceneNodeInstances::SmallInstances(fixed_full<CompressedScenePos, 3>(CompressedScenePos(15.f)), 12),    // small_instances
             std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>>()).second)                               // large_instances 
         {
-            verbose_abort("Internal error: Instances node with name " + name + " already exists");
+            verbose_abort("Internal error: Instances node with name " + *name + " already exists");
         }
     };
     auto nref = node.ref(DP_LOC);
@@ -538,7 +544,7 @@ void SceneNode::add_instances_child(
     } else {
         if (!any(pm & PhysicsMaterial::ATTR_VISIBLE)) {
             THROW_OR_ABORT(
-                "Node \"" + name +
+                "Node \"" + *name +
                 "\" is neither collidable nor visible. Physics material: \"" +
                 physics_material_to_string(pm) + '"');
         }
@@ -548,19 +554,19 @@ void SceneNode::add_instances_child(
 }
 
 void SceneNode::add_instances_position(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     const FixedArray<CompressedScenePos, 3>& position,
     float yangle,
     BillboardId billboard_id)
 {
     std::scoped_lock lock{ mutex_ };
     {
-        auto cit = collide_only_instances_children_.find(name);
-        if (cit != collide_only_instances_children_.end()) {
+        auto cit = collide_only_instances_children_.try_get(name);
+        if (cit != nullptr) {
             if (billboard_id != BILLBOARD_ID_NONE) {
-                THROW_OR_ABORT("Billboard ID set in collide-only node \"" + name + '"');
+                THROW_OR_ABORT("Billboard ID set in collide-only node \"" + *name + '"');
             }
-            cit->second.large_instances.push_back(
+            cit->large_instances.push_back(
                 PositionAndYAngleAndBillboardId{
                     .position = position,
                     .billboard_id = billboard_id,
@@ -568,16 +574,16 @@ void SceneNode::add_instances_position(
             return;
         }
     }
-    auto cit = instances_children_.find(name);
-    if (cit == instances_children_.end()) {
-        THROW_OR_ABORT("Could not find instance node with name \"" + name + '"');
+    auto cit = instances_children_.try_get(name);
+    if (cit == nullptr) {
+        THROW_OR_ABORT("Could not find instance node with name \"" + *name + '"');
     }
-    ScenePos mcd2 = cit->second.scene_node->max_center_distance2(billboard_id);
+    ScenePos mcd2 = cit->scene_node->max_center_distance2(billboard_id);
     if (mcd2 == 0.) {
-        THROW_OR_ABORT("Could not determine max_center_distance of node with name \"" + name + '"');
+        THROW_OR_ABORT("Could not determine max_center_distance of node with name \"" + *name + '"');
     }
     if (mcd2 == INFINITY) {
-        cit->second.large_instances.push_back(
+        cit->large_instances.push_back(
             PositionAndYAngleAndBillboardId{
                 .position = position,
                 .billboard_id = billboard_id,
@@ -587,14 +593,14 @@ void SceneNode::add_instances_position(
         if (!std::isfinite(mcd2)) {
             THROW_OR_ABORT("max_center_distance is not finite");
         }
-        cit->second.max_center_distance = std::max(cit->second.max_center_distance, (CompressedScenePos)std::sqrt(mcd2));
+        cit->max_center_distance = std::max(cit->max_center_distance, (CompressedScenePos)std::sqrt(mcd2));
         if (yangle == 0.f) {
-            cit->second.small_instances.insert(
+            cit->small_instances.insert(
                 PositionAndBillboardId{
                     .position = position,
                     .billboard_id = billboard_id});
         } else {
-            cit->second.small_instances.insert(
+            cit->small_instances.insert(
                 PositionAndYAngleAndBillboardId{
                     .position = position,
                     .billboard_id = billboard_id,
@@ -606,7 +612,7 @@ void SceneNode::add_instances_position(
 void SceneNode::optimize_instances_search_time(std::ostream& ostr) const {
     std::shared_lock lock{ mutex_ };
     for (const auto& [name, i] : instances_children_) {
-        ostr << name << std::endl;
+        ostr << *name << std::endl;
         i.small_instances.optimize_search_time(BvhDataRadiusType::ZERO, ostr);
         // i.small_instances.plot_svg<ScenePos>("/tmp/" + name + ".svg", 0, 1);
     }
@@ -765,8 +771,8 @@ void SceneNode::move(
             if (estate == nullptr) {
                 THROW_OR_ABORT("Bone name is not empty, but animation state is not set");
             }
-            auto apply_scene_node_animation = [&](float time, const std::string& animation_name){
-                if (animation_name.empty() || animation_name == "<no_animation>") {
+            auto apply_scene_node_animation = [&](float time, const VariableAndHash<std::string>& animation_name){
+                if (animation_name->empty() || animation_name == NO_ANIMATION) {
                     return;
                 }
                 if (scene_node_resources == nullptr) {
@@ -780,7 +786,7 @@ void SceneNode::move(
                     time);
                 const auto* it = poses.try_get(bone_.name);
                 if (it == nullptr) {
-                    THROW_OR_ABORT("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
+                    THROW_OR_ABORT("Could not find bone with name \"node\" in animation \"" + *animation_name + '"');
                 }
                 OffsetAndQuaternion<float, ScenePos> q1{it->t.casted<ScenePos>(), it->q};
                 auto res_pose = trafo_.slerp(q1, 1.f - bone_.smoothness);
@@ -794,13 +800,13 @@ void SceneNode::move(
             if (estate->aperiodic_animation_frame.active()) {
                 apply_scene_node_animation(
                     estate->aperiodic_animation_frame.time(),
-                    aperiodic_animation_.empty()
+                    aperiodic_animation_->empty()
                         ? estate->aperiodic_skelletal_animation_name
                         : aperiodic_animation_);
             } else {
                 apply_scene_node_animation(
                     estate->periodic_skelletal_animation_frame.time(),
-                    periodic_animation_.empty()
+                    periodic_animation_->empty()
                         ? estate->periodic_skelletal_animation_name
                         : periodic_animation_);
             }
@@ -868,12 +874,12 @@ void SceneNode::set_bone(const SceneNodeBone& bone) {
     bone_ = bone;
 }
 
-void SceneNode::set_periodic_animation(const std::string& name) {
+void SceneNode::set_periodic_animation(const VariableAndHash<std::string>& name) {
     std::scoped_lock lock{ mutex_ };
     periodic_animation_ = name;
 }
 
-void SceneNode::set_aperiodic_animation(const std::string& name) {
+void SceneNode::set_aperiodic_animation(const VariableAndHash<std::string>& name) {
     std::scoped_lock lock{ mutex_ };
     aperiodic_animation_ = name;
 }
@@ -882,7 +888,7 @@ bool SceneNode::visit_all(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
+        const StringWithHashUnorderedMap<std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
 {
     auto m = parent_m * relative_model_matrix();
     std::shared_lock lock{ mutex_ };
@@ -1230,7 +1236,7 @@ void SceneNode::append_physics_to_queue(
         c.scene_node->append_physics_to_queue(m, zero, float_queue, double_queue);
     }
     auto append_instances_children = [&](
-        const std::map<std::string, SceneNodeInstances>& instances_children)
+        const StringWithHashUnorderedMap<SceneNodeInstances>& instances_children)
     {
         for (const auto& [_, i] : un_guarded_iterator(instances_children, lock)) {
             std::shared_lock ilock{ i.mutex };
@@ -1592,21 +1598,21 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     if (!children_.empty()) {
         ostr << " " << ind1 << " Children (" << children_.size() << ")\n";
         for (const auto& [n, c] : children_) {
-            ostr << " " << ind2 << " " << n << " #" << c.scene_node.nreferences() << '\n';
+            ostr << " " << ind2 << " " << *n << " #" << c.scene_node.nreferences() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     if (!aggregate_children_.empty()) {
         ostr << " " << ind1 << " Aggregates (" << aggregate_children_.size() << ")\n";
         for (const auto& [n, c] : aggregate_children_) {
-            ostr << " " << ind2 << " " << n << " #" << c.scene_node.nreferences() << '\n';
+            ostr << " " << ind2 << " " << *n << " #" << c.scene_node.nreferences() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     if (!instances_children_.empty()) {
         ostr << " " << ind1 << " Instances (" << instances_children_.size() << ")\n";
         for (const auto& [n, c] : instances_children_) {
-            ostr << " " << ind2 << " " << n << " #" << c.scene_node.nreferences() <<
+            ostr << " " << ind2 << " " << *n << " #" << c.scene_node.nreferences() <<
                 " #small=" << c.small_instances.size() <<
                 " #large=" << c.large_instances.size() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
@@ -1615,7 +1621,7 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     if (!collide_only_instances_children_.empty()) {
         ostr << " " << ind1 << " Collide-only instances (" << collide_only_instances_children_.size() << ")\n";
         for (const auto& [n, c] : collide_only_instances_children_) {
-            ostr << " " << ind2 << " " << n << " #" << c.scene_node.nreferences() <<
+            ostr << " " << ind2 << " " << *n << " #" << c.scene_node.nreferences() <<
                 " #small=" << c.small_instances.size() <<
                 " #large=" << c.large_instances.size() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);

@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -19,7 +20,7 @@ class RigidBodyVehicle;
 
 struct CreateRigidDiskArgs {
     ObjectPool& object_pool;
-    const std::string& node;
+    const VariableAndHash<std::string>& node;
     const std::string& name;
     const std::string& asset_id;
     float mass;
@@ -32,7 +33,7 @@ struct CreateRigidDiskArgs {
     const TransformationMatrix<double, double, 3>* geographic_coordinates;
     RigidBodyVehicleFlags flags = RigidBodyVehicleFlags::NONE;
     CompressedScenePos waypoint_dy = (CompressedScenePos)0.f;
-    std::optional<std::string> hitboxes;
+    std::optional<VariableAndHash<std::string>> hitboxes;
     ColoredVertexArrayFilter hitbox_filter;
     CollidableMode collidable_mode;
 };

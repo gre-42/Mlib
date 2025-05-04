@@ -42,10 +42,10 @@ CreateHudTargetPointLogic::CreateHudTargetPointLogic(RenderableScene& renderable
 
 void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
+    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
     DanglingPtr<SceneNode> exclusive_node = nullptr;
     if (args.arguments.contains_non_null(KnownArgs::exclusive_node)) {
-        exclusive_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::exclusive_node), DP_LOC).ptr();
+        exclusive_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::exclusive_node), DP_LOC).ptr();
     }
     YawPitchLookAtNodes* ypln = nullptr;
     if (args.arguments.contains(KnownArgs::ypln_node)) {

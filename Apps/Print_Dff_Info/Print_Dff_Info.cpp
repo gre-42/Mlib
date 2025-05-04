@@ -10,25 +10,25 @@
 using namespace Mlib;
 
 static void add_resource(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     const std::shared_ptr<IIStreamDictionary>& img)
 {
-    auto extension = std::filesystem::path{ name }.extension().string();
+    auto extension = std::filesystem::path{ *name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         ::tolower);
     if (extension == ".dff") {
-        linfo() << "dff: " << name;
+        linfo() << "dff: " << *name;
         auto istr = img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION);
         Dff::read_dff(*istr.stream, IoVerbosity::METADATA);
     } else if (extension == ".txd") {
-        linfo() << "txd: " << name;
+        linfo() << "txd: " << *name;
         Dff::read_txd(
             *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION).stream,
             nullptr,
             nullptr,
             IoVerbosity::METADATA);
     } else {
-        THROW_OR_ABORT("Unknown resource type: \"" + name + "\". Extension: \"" + extension + '"');
+        THROW_OR_ABORT("Unknown resource type: \"" + *name + "\". Extension: \"" + extension + '"');
     }
 }
 
@@ -47,7 +47,7 @@ static void add_file_resource(const std::string& name)
         linfo() << "path: " << name;
         auto path = std::filesystem::path{ name };
         auto dir = std::make_shared<FolderIStreamDictionary>(path.parent_path().string());
-        add_resource(path.filename().string(), dir);
+        add_resource(VariableAndHash<std::string>{path.filename().string()}, dir);
     }
 }
 

@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <iosfwd>
-#include <map>
 #include <string>
 
 namespace Mlib {
@@ -11,9 +11,9 @@ class Scene;
 class MapOfRootNodes {
 public:
     explicit MapOfRootNodes(Scene& scene);
-    RootNodes& create(const std::string& name);
+    RootNodes& create(VariableAndHash<std::string> name);
     bool root_node_scheduled_for_deletion(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         bool must_exist = true) const;
     void delete_scheduled_root_nodes() const;
     bool no_root_nodes_scheduled_for_deletion() const;
@@ -22,7 +22,7 @@ public:
     void print_trash_can_references() const;
     void print(std::ostream& ostr) const;
 private:
-    std::map<std::string, RootNodes> root_nodes_;
+    StringWithHashUnorderedMap<RootNodes> root_nodes_;
     Scene& scene_;
 };
 

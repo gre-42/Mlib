@@ -22,7 +22,7 @@ struct StaticWorld;
 class IParticleRenderer {
 public:
     virtual ~IParticleRenderer() = default;
-    virtual void preload(const std::string& name) = 0;
+    virtual void preload(const VariableAndHash<std::string>& name) = 0;
     virtual IParticleCreator& get_instantiator(const VariableAndHash<std::string>& name) = 0;
     virtual void move(float dt, const StaticWorld& world) = 0;
     virtual void render(

@@ -31,7 +31,7 @@ SetRigidBodyAlignToSurfaceRelaxation::SetRigidBodyAlignToSurfaceRelaxation(Rende
 
 void SetRigidBodyAlignToSurfaceRelaxation::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     rb.align_to_surface_state_.align_to_surface_relaxation_ = args.arguments.at<float>(KnownArgs::value);
 }

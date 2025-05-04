@@ -4,6 +4,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class SceneNodeResources;
 struct ColoredVertexArrayFilter;
 enum class BlendMode;
@@ -11,7 +13,7 @@ enum class InterpolationMode;
 enum class ExternalRenderPassType;
 
 void modify_rendering_material(
-    const std::string& resource_name,
+    const VariableAndHash<std::string>& resource_name,
     SceneNodeResources& scene_node_resources,
     const ColoredVertexArrayFilter& filter,
     std::optional<BlendMode> blend_mode,

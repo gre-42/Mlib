@@ -126,10 +126,10 @@ private:
 
 void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<std::string>(KnownArgs::node_to_hide), DP_LOC);
-    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node), DP_LOC);
+    DanglingRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node_to_hide), DP_LOC);
+    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::camera_node), DP_LOC);
     DanglingPtr<SceneNode> punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
-        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node), DP_LOC).ptr()
+        ? scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::punch_angle_node), DP_LOC).ptr()
         : nullptr;
     auto on_hide_or_update = [
         punch_angle_node,

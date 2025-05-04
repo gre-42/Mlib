@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class SceneNodeResources;
 class RenderingResources;
 class Scene;
@@ -41,7 +43,7 @@ private:
     DeleteNodeMutex& delete_node_mutex_;
     const PhysicsEngineConfig& physics_cfg_;
     BaseLog* base_log_;
-    std::list<std::string> beacon_nodes_;
+    std::list<VariableAndHash<std::string>> beacon_nodes_;
 };
 
 }

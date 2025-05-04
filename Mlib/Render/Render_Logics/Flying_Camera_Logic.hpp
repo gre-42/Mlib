@@ -3,6 +3,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 struct GLFWwindow;
 
@@ -32,7 +33,7 @@ public:
     FixedArray<float, 3> angles = fixed_nans<float, 3>();
     FixedArray<ScenePos, 3> obj_position = fixed_nans<ScenePos, 3>();
     FixedArray<float, 3> obj_angles = fixed_nans<float, 3>();
-    std::string obj_node_name = "obj";
+    VariableAndHash<std::string> obj_node_name = VariableAndHash<std::string>{"obj"};
 };
 
 class FlyingCameraLogic: public RenderLogic {

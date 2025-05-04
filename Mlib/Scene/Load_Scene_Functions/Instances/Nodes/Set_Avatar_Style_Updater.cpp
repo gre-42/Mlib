@@ -33,8 +33,8 @@ SetAvatarStyleUpdater::SetAvatarStyleUpdater(RenderableScene& renderable_scene)
 
 void SetAvatarStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> avatar_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::avatar_node), DP_LOC);
-    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
+    DanglingRef<SceneNode> avatar_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::avatar_node), DP_LOC);
+    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(avatar_node);
     if (rb.animation_state_updater_ != nullptr) {
         THROW_OR_ABORT("Rigid body already has a style updater");

@@ -6,6 +6,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -19,7 +20,7 @@ public:
     KeepOffsetFromMovable(
         AdvanceTimes& advance_times,
         Scene& scene,
-        const std::string& follower_name,
+        VariableAndHash<std::string> follower_name,
         DanglingRef<SceneNode> followed_node,
         IAbsoluteMovable& followed,
         const FixedArray<float, 3>& offset);
@@ -32,7 +33,7 @@ public:
 private:
     AdvanceTimes& advance_times_;
     Scene& scene_;
-    std::string follower_name_;
+    VariableAndHash<std::string> follower_name_;
     DanglingPtr<SceneNode> followed_node_;
     IAbsoluteMovable* followed_;
     FixedArray<float, 3> offset_;

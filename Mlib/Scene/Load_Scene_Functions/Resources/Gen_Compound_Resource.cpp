@@ -25,10 +25,10 @@ struct RegisterJsonUserFunction {
                 args.arguments.validate(KnownArgs::options);
 
                 RenderingContextStack::primary_scene_node_resources().add_resource(
-                    args.arguments.at<std::string>(KnownArgs::dest_name),
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::dest_name),
                     std::make_shared<CompoundResource>(
                         RenderingContextStack::primary_scene_node_resources(),
-                        args.arguments.at_non_null<std::vector<std::string>>(KnownArgs::source_names, std::vector<std::string>{})));
+                        args.arguments.at_non_null<std::vector<VariableAndHash<std::string>>>(KnownArgs::source_names, std::vector<VariableAndHash<std::string>>{})));
             });
     }
 } obj;

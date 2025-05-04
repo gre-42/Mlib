@@ -24,7 +24,7 @@ LoadSceneJsonUserFunction ShadeAuto::json_user_function = [](const LoadSceneJson
     args.arguments.validate(KnownArgs::options);
 
     add_shade_auto_modifier(
-        args.arguments.at<std::string>(KnownArgs::resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
         RenderingContextStack::primary_scene_node_resources(),
         ColoredVertexArrayFilter{
             .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),

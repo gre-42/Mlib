@@ -28,6 +28,6 @@ CreateWeaponCycle::CreateWeaponCycle(RenderableScene& renderable_scene)
 
 void CreateWeaponCycle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node), DP_LOC);
+    DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), DP_LOC);
     cycle_node->set_node_modifier(std::make_unique<WeaponCycle>());
 }

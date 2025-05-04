@@ -31,8 +31,8 @@ struct RegisterJsonUserFunction {
                     args.arguments.at(KnownArgs::transformation));
             
                 RenderingContextStack::primary_scene_node_resources().register_geographic_mapping(
-                    args.arguments.at<std::string>(KnownArgs::resource),
-                    args.arguments.at<std::string>(KnownArgs::name),
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
                     absolute_model_matrix.casted<double, double>());
             });
     }

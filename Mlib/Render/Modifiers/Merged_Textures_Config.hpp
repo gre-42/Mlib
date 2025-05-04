@@ -11,7 +11,7 @@ enum class ExternalRenderPassType;
 enum class AggregateMode;
 
 struct MergedTexturesConfig {
-    std::string resource_name;
+    VariableAndHash<std::string> resource_name;
     std::string array_name;
     ColormapWithModifiers texture_name;
     BlendMode blend_mode;

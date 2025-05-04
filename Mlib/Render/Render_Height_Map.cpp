@@ -27,12 +27,12 @@ void Mlib::render_height_map(
 {
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
-    scene_node_resources.add_resource("HeightMapResource", r);
+    scene_node_resources.add_resource(VariableAndHash<std::string>{"HeightMapResource"}, r);
     auto on = make_unique_scene_node();
     scene_node_resources.instantiate_child_renderable(
-        "HeightMapResource",
+        VariableAndHash<std::string>{"HeightMapResource"},
         ChildInstantiationOptions{
-            .instance_name = VariableAndHash<std::string>{ "HeightMapResource" },
+            .instance_name = VariableAndHash<std::string>{"HeightMapResource"},
             .scene_node = on.ref(DP_LOC),
             .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});

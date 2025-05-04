@@ -42,13 +42,13 @@ DECLARE_ARGUMENT(texture);
 
 template <class TPosition>
 static void add_rw_resource(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     const std::shared_ptr<IIStreamDictionary>& img,
     const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg,
     const std::shared_ptr<DrawDistanceDb>& dddb,
-    std::list<std::string>& added_scene_node_resources)
+    std::list<VariableAndHash<std::string>>& added_scene_node_resources)
 {
-    auto extension = std::filesystem::path{ name }.extension().string();
+    auto extension = std::filesystem::path{ *name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         ::tolower);
     if (extension == ".dff") {
@@ -56,7 +56,7 @@ static void add_rw_resource(
         auto& res = RenderingContextStack::primary_scene_node_resources();
         res.add_resource_loader(name, [img, cfg, name, &res, dddb]() {
             auto istr = img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION);
-            return load_renderable_dff(*istr.stream, name, *cfg, res, *dddb);
+            return load_renderable_dff(*istr.stream, *name, *cfg, res, *dddb);
             });
     } else if (extension == ".txd") {
         auto& res = RenderingContextStack::primary_rendering_resources();
@@ -74,7 +74,7 @@ static void add_rw_resource(
                     .width = integral_cast<int>(tx->raster->width()),
                     .height = integral_cast<int>(tx->raster->height())
                 };
-                auto filename = name + '_' + *tx->name;
+                auto filename = *name + '_' + *tx->name;
                 std::transform(filename.begin(), filename.end(), filename.begin(),
                     ::tolower);
                 auto cm = ColormapWithModifiers{
@@ -83,7 +83,7 @@ static void add_rw_resource(
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash();
                 if (res.contains_texture(cm)) {
-                    lwarn() << "Ignoring duplicate texture \"" << *tx->name << "\" with mask \"" << *tx->mask << "\" in dictionary \"" << name << '"';
+                    lwarn() << "Ignoring duplicate texture \"" << *tx->name << "\" with mask \"" << *tx->mask << "\" in dictionary \"" << *name << '"';
                 } else {
                     res.set_texture(
                         cm,
@@ -93,7 +93,7 @@ static void add_rw_resource(
             }
             });
     } else {
-        THROW_OR_ABORT("Unknown resource type: \"" + name + "\". Extension: \"" + extension + '"');
+        THROW_OR_ABORT("Unknown resource type: \"" + *name + "\". Extension: \"" + extension + '"');
     }
 }
 
@@ -102,7 +102,7 @@ static void add_rw_file_resource(
     const std::string& name,
     const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg,
     const std::shared_ptr<DrawDistanceDb>& dddb,
-    std::list<std::string>& added_scene_node_resources)
+    std::list<VariableAndHash<std::string>>& added_scene_node_resources)
 {
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
@@ -110,12 +110,17 @@ static void add_rw_file_resource(
     if (extension == ".img") {
         auto img = ImgReader::load_from_file(name);
         for (const auto& name : img->names()) {
-            add_rw_resource(name, img, cfg, dddb, added_scene_node_resources);
+            add_rw_resource(VariableAndHash<std::string>{name}, img, cfg, dddb, added_scene_node_resources);
         }
     } else {
         auto path = std::filesystem::path{ name };
         auto dir = std::make_shared<FolderIStreamDictionary>(path.parent_path().string());
-        add_rw_resource(path.filename().string(), dir, cfg, dddb, added_scene_node_resources);
+        add_rw_resource(
+            VariableAndHash<std::string>{path.filename().string()},
+            dir,
+            cfg,
+            dddb,
+            added_scene_node_resources);
     }
 }
 
@@ -124,8 +129,8 @@ static void exec(
     const LoadSceneJsonUserFunctionArgs& args,
     const std::shared_ptr<DrawDistanceDb>& dddb)
 {
-    std::list<std::string> added_scene_node_resources;
-    std::list<std::string> added_instantiables;
+    std::list<VariableAndHash<std::string>> added_scene_node_resources;
+    std::list<VariableAndHash<std::string>> added_instantiables;
     auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
     *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
     auto filters = args.arguments.at<ColoredVertexArrayFilters>(KnownArgs::filters, ColoredVertexArrayFilters{});

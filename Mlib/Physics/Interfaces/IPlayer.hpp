@@ -9,6 +9,8 @@
 namespace Mlib {
 
 template <class T>
+class VariableAndHash;
+template <class T>
 class DanglingPtr;
 class SceneNode;
 struct TrackElement;
@@ -24,7 +26,7 @@ class IPlayer {
 public:
     virtual std::string id() const = 0;
     virtual std::string title() const = 0;
-    virtual std::optional<std::string> target_id() const = 0;
+    virtual std::optional<VariableAndHash<std::string>> target_id() const = 0;
     virtual bool reset_vehicle_requested() = 0;
     virtual bool can_reset_vehicle(
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const = 0;

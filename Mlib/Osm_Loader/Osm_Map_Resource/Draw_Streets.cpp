@@ -30,10 +30,13 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
 namespace Mlib {
+
+static const auto ENDPOINT = VariableAndHash<std::string>{ "endpoint" };
 
 static std::pair<FixedArray<CompressedScenePos, 3>, FixedArray<CompressedScenePos, 3>> o23(const std::pair<FixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 2>>& edge) {
     return std::pair<FixedArray<CompressedScenePos, 3>, FixedArray<CompressedScenePos, 3>>{
@@ -92,7 +95,7 @@ struct WayInfo {
     FixedArray<bool, 3> roads_delete;
     FixedArray<bool, 2, 3> roads_delete_side;
     FixedArray<float, 3, 3> colors;
-    std::string model;
+    VariableAndHash<std::string> model;
 };
 
 struct NodeHoleVertex {
@@ -232,7 +235,7 @@ void DrawStreets::calculate_neighbors() {
             if ((layer != 0) && !layer_heights.is_within_range((float)layer)) {
                 continue;
             }
-            std::string model = parse_string(tags, "model", "");
+            auto model = VariableAndHash<std::string>{parse_string(tags, "model", "")};
             double way_length = 0;
             for (auto it = way.nd.begin(); it != way.nd.end(); ++it) {
                 if (nodes.find(*it) == nodes.end()) {
@@ -754,7 +757,7 @@ void DrawStreets::draw_streets_add_waypoints(
             WayPointSandbox sandbox,
             WayPointLocation location,
             size_t nlanes,
-            const std::string& bumps_model)
+            const VariableAndHash<std::string>& bumps_model)
         {
             CurbedStreet c1{ rect, start, stop };
             {
@@ -793,7 +796,7 @@ void DrawStreets::draw_streets_add_waypoints(
                         FixedArray<CompressedScenePos, 3>{c1.s(1, 0, 0), c1.s(1, 0, 1), (CompressedScenePos)0.f},
                         FixedArray<CompressedScenePos, 3>{c1.s(1, 1, 0), c1.s(1, 1, 1), (CompressedScenePos)0.f}}}});
         };
-        std::string bumps_model = auto_model_name(
+        VariableAndHash<std::string> bumps_model = auto_model_name(
             node_id,
             angle_way,
             street_bumps_central_resource_names,
@@ -801,15 +804,15 @@ void DrawStreets::draw_streets_add_waypoints(
             street_bumps_endpoint1_resource_names);
         add(-curb_alpha, curb_alpha, lane_shift, WayPointSandbox::STREET, WayPointLocation::STREET, nlanes, bumps_model);
         if (curb2_alpha != 1) {
-            add(curb2_alpha, 1.f, 0.f, WayPointSandbox::SIDEWALK, WayPointLocation::SIDEWALK, 2, "");
-            add(-1.f, -curb2_alpha, 0.f, WayPointSandbox::SIDEWALK, WayPointLocation::SIDEWALK, 2, "");
+            add(curb2_alpha, 1.f, 0.f, WayPointSandbox::SIDEWALK, WayPointLocation::SIDEWALK, 2, VariableAndHash<std::string>());
+            add(-1.f, -curb2_alpha, 0.f, WayPointSandbox::SIDEWALK, WayPointLocation::SIDEWALK, 2, VariableAndHash<std::string>());
         }
     }
 }
 
 class OptionalString {
 public:
-    explicit OptionalString(const std::string* s)
+    explicit OptionalString(const VariableAndHash<std::string>* s)
         : s_{ s }
     {}
     OptionalString& operator = (std::nullptr_t) {
@@ -830,32 +833,32 @@ public:
     bool operator != (const OptionalString& other) const {
         return !(*this == other);
     }
-    bool operator != (const std::string* other) const {
+    bool operator != (const VariableAndHash<std::string>* other) const {
         return *this != OptionalString{ other };
     }
     const std::string* operator -> () const {
-        return s_;
+        return &**s_;
     }
-    const std::string& operator * () const {
+    const VariableAndHash<std::string>& operator * () const {
         return *s_;
     }
 private:
-    const std::string* s_;
+    const VariableAndHash<std::string>* s_;
 };
 
-std::string DrawStreets::auto_model_name(
+VariableAndHash<std::string> DrawStreets::auto_model_name(
     const std::string& node_id,
     const AngleWay& angle_way,
-    const Map<RoadType, std::string>& central_resource_names,
-    const Map<RoadType, std::string>& endpoint0_resource_names,
-    const Map<RoadType, std::string>& endpoint1_resource_names) const
+    const Map<RoadType, VariableAndHash<std::string>>& central_resource_names,
+    const Map<RoadType, VariableAndHash<std::string>>& endpoint0_resource_names,
+    const Map<RoadType, VariableAndHash<std::string>>& endpoint1_resource_names) const
 {
-    auto model_name = [&](const std::map<RoadType, std::string>& res) -> const std::string* {
-        auto it = res.find(angle_way.road_type);
-        if (it == res.end()) {
+    auto model_name = [&](const Map<RoadType, VariableAndHash<std::string>>& res) -> const VariableAndHash<std::string>* {
+        auto it = res.try_get(angle_way.road_type);
+        if (it == nullptr) {
             return nullptr;
         } else {
-            return &it->second;
+            return it;
         }
     };
     OptionalString model_name_central{ model_name(central_resource_names) };
@@ -964,7 +967,7 @@ std::string DrawStreets::auto_model_name(
             THROW_OR_ABORT("Draw streets internal error");
         }
     }
-    return "";
+    return VariableAndHash<std::string>();
 }
 
 void DrawStreets::draw_streets_draw_ways(
@@ -1090,7 +1093,7 @@ void DrawStreets::draw_streets_draw_ways(
     }
     auto draw_street_with_ditch = [&](
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas,
-        const std::string& model_name)
+        const VariableAndHash<std::string>& model_name)
     {
         for (const auto& cva : cvas) {
             TriangleList<CompressedScenePos>* destination_triangles;
@@ -1143,7 +1146,7 @@ void DrawStreets::draw_streets_draw_ways(
                     (float)(uv_sy * uv_scale * uv_len0 - uv_len_central),
                     (float)(uv_sy * uv_scale * uv_len1 - uv_len_central));
             } catch (const std::runtime_error& e) {
-                throw std::runtime_error("Could not draw street model \"" + model_name + "\": " + e.what());
+                throw std::runtime_error("Could not draw street model \"" + *model_name + "\": " + e.what());
             }
         }
     };
@@ -1210,19 +1213,19 @@ void DrawStreets::draw_streets_draw_ways(
             }
         }
     };
-    if (wi.model.empty()) {
-        std::string model_name = auto_model_name(
+    if (wi.model->empty()) {
+        VariableAndHash<std::string> model_name = auto_model_name(
             node_id,
             angle_way,
             street_surface_central_resource_names,
             street_surface_endpoint0_resource_names,
             street_surface_endpoint1_resource_names);
-        if (!model_name.empty()) {
+        if (!model_name->empty()) {
             draw_street_with_ditch(scene_node_resources.get_arrays(model_name, ColoredVertexArrayFilter{})->scvas, model_name);
         } else {
             draw_procedural_street();
         }
-    } else if (wi.model == "endpoint") {
+    } else if (wi.model == ENDPOINT) {
         draw_procedural_street();
     } else {
         draw_street_with_ditch(scene_node_resources.get_arrays(wi.model, ColoredVertexArrayFilter{})->scvas, wi.model);

@@ -147,21 +147,21 @@ int main(int argc, char** argv) {
                 FixedArray<float, 2>{1.f, 1.f} * safe_stof(args.named_value("--uv_scale", "1")),
                 FixedArray<float, 2>{0.f, 1.f} * safe_stof(args.named_value("--uv_scale", "1")));
             auto cva = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array());
-            scene_node_resources.add_resource("tl", cva);
+            scene_node_resources.add_resource(VariableAndHash<std::string>{ "tl" }, cva);
             scene_node_resources.instantiate_child_renderable(
-                "tl",
+                VariableAndHash<std::string>{ "tl" },
                 ChildInstantiationOptions{
                     .instance_name = VariableAndHash<std::string>{ "tl" },
                     .scene_node = scene_node.ref(DP_LOC),
                     .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = RenderableResourceFilter{}});
         }
-        scene.auto_add_root_node("obj", std::move(scene_node), RenderingDynamics::STATIC);
+        scene.auto_add_root_node(VariableAndHash<std::string>{ "obj" }, std::move(scene_node), RenderingDynamics::STATIC);
 
         std::list<Light*> lights;
         if (light_configuration == "one") {
             scene.add_root_node(
-                "light_node0",
+                VariableAndHash<std::string>{ "light_node0" },
                 make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
                         safe_stox<ScenePos>(args.named_value("--light_x", "0")),
@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
             auto light = std::make_unique<Light>(Light{
                 .shadow_render_pass = ExternalRenderPassType::NONE});
             lights.push_back(light.get());
-            scene.get_node("light_node0", DP_LOC)->add_light(std::move(light));
+            scene.get_node(VariableAndHash<std::string>{ "light_node0" }, DP_LOC)->add_light(std::move(light));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
@@ -190,10 +190,10 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Unknown light configuration");
             }
             for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
-                std::string name = "light" + std::to_string(i);
+                auto name = VariableAndHash<std::string>{ "light" + std::to_string(i) };
                 auto R = gl_lookat_absolute(
                     scene.get_node(name, DP_LOC)->position(),
-                    scene.get_node("obj", DP_LOC)->position());
+                    scene.get_node(VariableAndHash<std::string>{ "obj" }, DP_LOC)->position());
                 if (!R.has_value()) {
                     THROW_OR_ABORT("Lookat failed for light " + std::to_string(i));
                 }
@@ -221,11 +221,11 @@ int main(int argc, char** argv) {
         }
         
         scene.add_root_node(
-            "follower_camera",
+            VariableAndHash<std::string>{ "follower_camera" },
             make_unique_scene_node(),
             RenderingDynamics::MOVING,
             RenderingStrategies::OBJECT);
-        scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<OrthoCamera>(
+        scene.get_node(VariableAndHash<std::string>{ "follower_camera" }, DP_LOC)->set_camera(std::make_unique<OrthoCamera>(
             OrthoCameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
             OrthoCamera::Postprocessing::ENABLED));
         

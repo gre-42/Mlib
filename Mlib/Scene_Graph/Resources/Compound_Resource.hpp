@@ -5,13 +5,15 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class SceneNodeResources;
 
 class CompoundResource: public ISceneNodeResource {
 public:
     CompoundResource(
         SceneNodeResources& scene_node_resources,
-        const std::vector<std::string>& resource_names);
+        std::vector<VariableAndHash<std::string>> resource_names);
     ~CompoundResource();
     
     // Misc
@@ -51,7 +53,7 @@ public:
         const ColoredVertexArrayFilter& filter) const override;
 private:
     SceneNodeResources& scene_node_resources_;
-    std::vector<std::string> resource_names_;
+    std::vector<VariableAndHash<std::string>> resource_names_;
 };
 
 }

@@ -36,7 +36,7 @@ CreateSkidmark::CreateSkidmark(RenderableScene& renderable_scene)
 
 void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node_name = args.arguments.at<std::string>(KnownArgs::node);
+    auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
     auto node = scene.get_node(node_name, DP_LOC);
     auto skidmark = std::make_shared<Skidmark>(Skidmark{
         .texture = nullptr,

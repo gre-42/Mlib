@@ -40,7 +40,7 @@ CreatePlaneController::CreatePlaneController(RenderableScene& renderable_scene)
 
 void CreatePlaneController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     if (rb.plane_controller_ != nullptr) {
         THROW_OR_ABORT("Plane controller already set");

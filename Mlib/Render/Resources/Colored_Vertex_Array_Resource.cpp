@@ -1844,7 +1844,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
         options.imposters->create_imposter(node.ref(DP_LOC), node_name, options.max_imposter_texture_size);
     }
     options.scene.auto_add_root_node(
-        *options.instance_name + "_cva_world",
+        VariableAndHash<std::string>{*options.instance_name + "_cva_world"},
         std::move(node),
         RenderingDynamics::STATIC);
 }

@@ -199,14 +199,14 @@ OsmMapResource::OsmMapResource(
     std::list<StreetRectangle> street_rectangles;
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
     {
-        auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> UUVector<FixedArray<ColoredVertex<float>, 3>>& {
+        auto model_triangles = [&scene_node_resources](const VariableAndHash<std::string>& resource_name) -> UUVector<FixedArray<ColoredVertex<float>, 3>>& {
             auto scvas = scene_node_resources.get_arrays(resource_name, ColoredVertexArrayFilter{})->scvas;
             auto dcvas = scene_node_resources.get_arrays(resource_name, ColoredVertexArrayFilter{})->dcvas;
             if (scvas.size() != 1) {
-                THROW_OR_ABORT('"' + resource_name + "\" does not have exactly one single-precision mesh");
+                THROW_OR_ABORT('"' + *resource_name + "\" does not have exactly one single-precision mesh");
             }
             if (!dcvas.empty()) {
-                THROW_OR_ABORT('"' + resource_name + "\" has a double-precision mesh");
+                THROW_OR_ABORT('"' + *resource_name + "\" has a double-precision mesh");
             }
             return scvas.front()->triangles;
         };
@@ -1073,12 +1073,12 @@ OsmMapResource::OsmMapResource(
         fg.update("Compute ground BVH");
         auto ground_bvh_triangles = osm_triangle_lists.tls_smooth();
         if (config.with_terrain) {
-            if (!config.base_osm_map_resource.empty()) {
+            if (!config.base_osm_map_resource->empty()) {
                 THROW_OR_ABORT("Terrain already set, cannot inherit from base OSM map");
             }
             ground_bvh = std::make_unique<GroundBvh>(ground_bvh_triangles);
         } else {
-            if (config.base_osm_map_resource.empty()) {
+            if (config.base_osm_map_resource->empty()) {
                 THROW_OR_ABORT("Base OSM map resource not set");
             }
             ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_arrays(
@@ -1525,7 +1525,7 @@ OsmMapResource::OsmMapResource(
                 auto filter = ColoredVertexArrayFilter{
                     .included_tags = PhysicsMaterial::ATTR_COLLIDE
                 };
-                auto navigation_acvas = config.navmesh_resource.empty()
+                auto navigation_acvas = config.navmesh_resource->empty()
                     ? get_arrays(filter)
                     : scene_node_resources.get_arrays(config.navmesh_resource, filter);
                 auto navigation_dcvas = navigation_acvas
@@ -1786,16 +1786,16 @@ void OsmMapResource::preload(const RenderableResourceFilter& filter) const {
     auto preload_styles = [&](const TerrainStyle& style) {
         if (style.is_visible()) {
             for (const auto& p : style.config.near_resource_names_valley_regular) {
-                scene_node_resources_.preload_single(*p.name, filter);
+                scene_node_resources_.preload_single(p.name, filter);
             }
             for (const auto& p : style.config.near_resource_names_mountain_regular) {
-                scene_node_resources_.preload_single(*p.name, filter);
+                scene_node_resources_.preload_single(p.name, filter);
             }
             for (const auto& p : style.config.near_resource_names_valley_dirt) {
-                scene_node_resources_.preload_single(*p.name, filter);
+                scene_node_resources_.preload_single(p.name, filter);
             }
             for (const auto& p : style.config.near_resource_names_mountain_dirt) {
-                scene_node_resources_.preload_single(*p.name, filter);
+                scene_node_resources_.preload_single(p.name, filter);
             }
         }
         };
@@ -1890,7 +1890,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             scale_,
             UpAxis::Z));
         options.scene.auto_add_root_node(
-            *options.instance_name + "_osm_near_world",
+            VariableAndHash<std::string>{*options.instance_name + "_osm_near_world"},
             std::move(node),
             RenderingDynamics::STATIC);
     }

@@ -67,41 +67,43 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
     auto diffuse_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
     auto specular_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
     
-    RenderingContextStack::primary_scene_node_resources().add_resource(args.arguments.at<std::string>(KnownArgs::name), std::make_shared<GridResource>(
-        args.arguments.at<UFixedArray<size_t, 2>>(KnownArgs::size),
-        transformation_matrix_from_json<float, double, 3>(args.arguments.at(KnownArgs::location)),
-        args.arguments.at<double>(KnownArgs::tile_length),
-        args.arguments.at<double>(KnownArgs::scale),
-        args.arguments.at<double>(KnownArgs::uv_scale),
-        args.arguments.at<double>(KnownArgs::period),
-        Material{
-            .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
-            .depth_func = args.arguments.contains(KnownArgs::depth_func)
-                ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
-                : DepthFunc::LESS,
-            .textures_color = {primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename).path})},
-            .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
-            .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
-            .alpha_distances = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
-            // .wrap_mode_s = WrapMode::REPEAT,
-            // .wrap_mode_t = WrapMode::REPEAT,
-            .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
-            .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
-            .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
-            .shading{
-                .emissive = OrderableFixedArray{emissive * emissive_factor},
-                .ambient = OrderableFixedArray{ambient * ambient_factor},
-                .diffuse = OrderableFixedArray{diffuse * diffuse_factor},
-                .specular = OrderableFixedArray{specular * specular_factor},
-                .fresnel = args.arguments.at<FresnelAndAmbient>(KnownArgs::fresnel, FresnelAndAmbient{}),
-                .fog_distances = args.arguments.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
-                .fog_ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(1.f)),
-            }}.compute_color_mode(),
-        Morphology{
-            .physics_material = PhysicsMaterial::NONE,
-            .center_distances2 = SquaredStepDistances::from_distances(
-                args.arguments.at<UFixedArray<float, 2>>(
-                    KnownArgs::center_distances,
-                    FixedArray<float, 2>{0.f, INFINITY }) * meters),
-        }));
+    RenderingContextStack::primary_scene_node_resources().add_resource(
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
+        std::make_shared<GridResource>(
+            args.arguments.at<UFixedArray<size_t, 2>>(KnownArgs::size),
+            transformation_matrix_from_json<float, double, 3>(args.arguments.at(KnownArgs::location)),
+            args.arguments.at<double>(KnownArgs::tile_length),
+            args.arguments.at<double>(KnownArgs::scale),
+            args.arguments.at<double>(KnownArgs::uv_scale),
+            args.arguments.at<double>(KnownArgs::period),
+            Material{
+                .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
+                .depth_func = args.arguments.contains(KnownArgs::depth_func)
+                    ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
+                    : DepthFunc::LESS,
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename).path})},
+                .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
+                .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
+                .alpha_distances = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+                // .wrap_mode_s = WrapMode::REPEAT,
+                // .wrap_mode_t = WrapMode::REPEAT,
+                .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
+                .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
+                .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
+                .shading{
+                    .emissive = OrderableFixedArray{emissive * emissive_factor},
+                    .ambient = OrderableFixedArray{ambient * ambient_factor},
+                    .diffuse = OrderableFixedArray{diffuse * diffuse_factor},
+                    .specular = OrderableFixedArray{specular * specular_factor},
+                    .fresnel = args.arguments.at<FresnelAndAmbient>(KnownArgs::fresnel, FresnelAndAmbient{}),
+                    .fog_distances = args.arguments.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
+                    .fog_ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(1.f)),
+                }}.compute_color_mode(),
+            Morphology{
+                .physics_material = PhysicsMaterial::NONE,
+                .center_distances2 = SquaredStepDistances::from_distances(
+                    args.arguments.at<UFixedArray<float, 2>>(
+                        KnownArgs::center_distances,
+                        FixedArray<float, 2>{0.f, INFINITY }) * meters),
+            }));
 };

@@ -49,7 +49,7 @@ Gun::Gun(
     std::function<void(
         const std::optional<std::string>& player,
         const std::string& bullet_suffix,
-        const std::optional<std::string>& target,
+        const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
     ITrailStorage* bullet_trace_storage,
@@ -156,7 +156,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
         - bullet_properties_.velocity * z3_from_3x3(absolute_model_matrix_.R)
         + parent_rb_.velocity_at_position(absolute_model_matrix_.t);
     std::string suffix = "_bullet" + scene_.get_temporary_instance_suffix();
-    std::string bullet_node_name = "car_node" + suffix;
+    auto bullet_node_name = VariableAndHash<std::string>{"car_node" + suffix};
     if (generate_smart_bullet_) {
         auto np = node.ref(DP_LOC);
         scene_.add_root_node(
@@ -203,7 +203,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
         auto& rc = *rcu;
         {
             AbsoluteMovableSetter ams{ node.ref(DP_LOC), std::move(rcu), CURRENT_SOURCE_LOCATION };
-            if (!bullet_properties_.renderable_resource_name.empty()) {
+            if (!bullet_properties_.renderable_resource_name->empty()) {
                 scene_node_resources_.instantiate_child_renderable(
                     bullet_properties_.renderable_resource_name,
                     ChildInstantiationOptions{
@@ -254,7 +254,7 @@ void Gun::generate_muzzle_flash_hider() {
     smoke_generator_.generate_child(
         *node_,
         muzzle_flash_resource_,
-        "muzzle_flash_node" + muzzle_flash_suffix,
+        VariableAndHash<std::string>{"muzzle_flash_node" + muzzle_flash_suffix},
         muzzle_flash_position_.casted<ScenePos>(),
         muzzle_flash_animation_time_);
     generate_muzzle_flash_hider_(muzzle_flash_suffix);

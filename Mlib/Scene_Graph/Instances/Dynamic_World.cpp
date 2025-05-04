@@ -3,9 +3,10 @@
 
 using namespace Mlib;
 
-DynamicWorld::DynamicWorld(const SceneNodeResources& scene_node_resources, std::string name)
+DynamicWorld::DynamicWorld(const SceneNodeResources& scene_node_resources, VariableAndHash<std::string> name)
     : scene_node_resources_{ scene_node_resources }
     , name_{ std::move(name) }
+    , inverse_name_{ *name + ".inverse" }
 {}
 
 const TransformationMatrix<double, double, 3>* DynamicWorld::get_geographic_mapping() const
@@ -15,7 +16,7 @@ const TransformationMatrix<double, double, 3>* DynamicWorld::get_geographic_mapp
 
 const TransformationMatrix<double, double, 3>* DynamicWorld::get_inverse_geographic_mapping() const
 {
-    return scene_node_resources_.get_geographic_mapping(name_ + ".inverse");
+    return scene_node_resources_.get_geographic_mapping(inverse_name_);
 }
 
 const FixedScaledUnitVector<float, 3>* DynamicWorld::get_gravity() const

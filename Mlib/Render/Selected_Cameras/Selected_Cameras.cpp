@@ -7,20 +7,22 @@
 
 using namespace Mlib;
 
+using VH = VariableAndHash<std::string>;
+
 SelectedCameras::SelectedCameras(Scene& scene)
     : camera_changed{ [this]() { return camera_node_exists(); } }
     , scene_{ scene }
     , dirtmap_node_name_{ "dirtmap_node" }
-    , camera_cycle_near_{ *this, {"follower_camera", "turret_camera_node"} }  // "main_gun_end_node"
-    , camera_cycle_far_{ *this, {"45_deg_camera", "light_node", "dirtmap_node"} }
-    , camera_cycle_tripod_{ *this, {"tripod0"} }
+    , camera_cycle_near_{ *this, {VH{"follower_camera"}, VH{"turret_camera_node"}} }  // "main_gun_end_node"
+    , camera_cycle_far_{ *this, {VH{"45_deg_camera"}, VH{"light_node"}, VH{"dirtmap_node"}} }
+    , camera_cycle_tripod_{ *this, {VH{"tripod0"}} }
     , fallback_camera_node_name_{ "stadium_camera" }
     , camera_node_name_{ "follower_camera" }
 {}
 
 SelectedCameras::~SelectedCameras() = default;
 
-std::optional<CameraCycleType> SelectedCameras::cycle(const std::string& name) const {
+std::optional<CameraCycleType> SelectedCameras::cycle(const VariableAndHash<std::string>& name) const {
     if (camera_cycle_near_.contains(name)) {
         return CameraCycleType::NEAR;
     }
@@ -33,7 +35,7 @@ std::optional<CameraCycleType> SelectedCameras::cycle(const std::string& name) c
     return std::nullopt;
 }
 
-void SelectedCameras::set_camera_node_name(const std::string& name) {
+void SelectedCameras::set_camera_node_name(const VariableAndHash<std::string>& name) {
     {
         std::scoped_lock lock{ camera_mutex_ };
         camera_node_name_ = name;
@@ -41,7 +43,7 @@ void SelectedCameras::set_camera_node_name(const std::string& name) {
     camera_changed.emit();
 }
 
-std::optional<NodeAndCamera> SelectedCameras::try_get_camera(const std::string& name, SOURCE_LOCATION loc) const {
+std::optional<NodeAndCamera> SelectedCameras::try_get_camera(const VariableAndHash<std::string>& name, SOURCE_LOCATION loc) const {
     auto node = scene_.try_get_node(name, loc);
     if (node == nullptr) {
         return std::nullopt;
@@ -56,8 +58,8 @@ std::optional<NodeAndCamera> SelectedCameras::try_get_camera(const std::string& 
     };
 }
 
-std::string SelectedCameras::camera_node_name() const {
-    std::string cnn;
+VariableAndHash<std::string> SelectedCameras::camera_node_name() const {
+    VariableAndHash<std::string> cnn;
     {
         std::shared_lock lock{ camera_mutex_ };
         cnn = camera_node_name_;
@@ -77,7 +79,7 @@ NodeAndCamera SelectedCameras::camera(SOURCE_LOCATION loc) const {
 }
 
 std::optional<NodeAndCamera> SelectedCameras::try_camera(SOURCE_LOCATION loc) const {
-    std::string cnn;
+    VariableAndHash<std::string> cnn;
     {
         std::shared_lock lock{ camera_mutex_ };
         cnn = camera_node_name_;
@@ -92,7 +94,10 @@ std::optional<NodeAndCamera> SelectedCameras::try_camera(SOURCE_LOCATION loc) co
     return try_get_camera(cnn, loc);
 }
 
-void SelectedCameras::set_camera_cycle(CameraCycleType tpe, const std::vector<std::string>& cameras) {
+void SelectedCameras::set_camera_cycle(
+    CameraCycleType tpe,
+    const std::vector<VariableAndHash<std::string>>& cameras)
+{
     switch (tpe) {
     case CameraCycleType::NEAR:
         camera_cycle_near_.set_camera_names(cameras);
@@ -107,7 +112,7 @@ void SelectedCameras::set_camera_cycle(CameraCycleType tpe, const std::vector<st
     THROW_OR_ABORT("Unknown camera cycle type: " + std::to_string(int(tpe)));
 }
 
-std::string SelectedCameras::dirtmap_node_name() const {
+VariableAndHash<std::string> SelectedCameras::dirtmap_node_name() const {
     return dirtmap_node_name_;
 }
 

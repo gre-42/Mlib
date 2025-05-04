@@ -24,7 +24,7 @@
 using namespace Mlib;
 
 void Mlib::merge_textures(
-    const std::string& mesh_resource_name,
+    const VariableAndHash<std::string>& mesh_resource_name,
     const MergedTexturesConfig& merged_materials_config,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources)

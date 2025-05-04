@@ -29,7 +29,7 @@ using namespace Mlib;
 
 RenderableScene::RenderableScene(
     std::string name,
-    std::string world,
+    VariableAndHash<std::string> world,
     std::string rendering_resources_name,
     unsigned int max_anisotropic_filtering_level,
     SceneNodeResources& scene_node_resources,

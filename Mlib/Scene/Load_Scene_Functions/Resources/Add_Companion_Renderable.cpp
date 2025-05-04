@@ -28,8 +28,8 @@ LoadSceneJsonUserFunction AddCompanionRenderable::json_user_function = [](const 
 void AddCompanionRenderable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_scene_node_resources().add_companion(
-        args.arguments.at<std::string>(KnownArgs::resource),
-        args.arguments.at<std::string>(KnownArgs::companion_resource),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::companion_resource),
         RenderableResourceFilter{
             .cva_filter = {
                 .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::regex, "")) }});

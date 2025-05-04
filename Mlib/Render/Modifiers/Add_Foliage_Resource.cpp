@@ -11,8 +11,8 @@
 using namespace Mlib;
 
 void Mlib::add_foliage_resource(
-    const std::string& mesh_resource_name,
-    const std::string& foliage_resource_name,
+    const VariableAndHash<std::string>& mesh_resource_name,
+    const VariableAndHash<std::string>& foliage_resource_name,
     SceneNodeResources& scene_node_resources,
     const std::vector<ParsedResourceName>& near_grass_resources,
     const std::vector<ParsedResourceName>& dirty_near_grass_resources,

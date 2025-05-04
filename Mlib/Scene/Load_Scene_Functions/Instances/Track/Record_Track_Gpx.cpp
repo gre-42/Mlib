@@ -35,14 +35,14 @@ RecordTrackGpx::RecordTrackGpx(RenderableScene& renderable_scene)
 
 void RecordTrackGpx::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(recorder_node);
     auto& at = global_object_pool.create<RigidBodyRecorderGpx>(
         CURRENT_SOURCE_LOCATION,
         args.arguments.path(KnownArgs::filename),
         recorder_node,
         rb.rbp_,
-        scene_node_resources.get_geographic_mapping("world"),
+        scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
         args.ui_focus.focuses);
     physics_engine.advance_times_.add_advance_time({ at, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

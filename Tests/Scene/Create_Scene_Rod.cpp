@@ -29,6 +29,14 @@
 
 using namespace Mlib;
 
+static const auto OBJ0 = VariableAndHash<std::string>{"obj0"};
+static const auto OBJ1 = VariableAndHash<std::string>{"obj1"};
+static const auto OBJ = VariableAndHash<std::string>{"obj"};
+static const auto N0 = VariableAndHash<std::string>{"n0"};
+static const auto N1_0 = VariableAndHash<std::string>{"n1_0"};
+static const auto N1_1 = VariableAndHash<std::string>{"n1_1"};
+static const auto BEACON = VariableAndHash<std::string>{"beacon"};
+
 void Mlib::create_scene_rod(
     Scene& scene,
     PhysicsEngine& pe,
@@ -65,9 +73,9 @@ void Mlib::create_scene_rod(
         {0.1f, 1.f, 0.1f},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
 
-    RenderingContextStack::primary_scene_node_resources().add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles01));
-    RenderingContextStack::primary_scene_node_resources().add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
-    RenderingContextStack::primary_scene_node_resources().add_resource("beacon", load_renderable_obj(
+    RenderingContextStack::primary_scene_node_resources().add_resource(OBJ0, std::make_shared<ColoredVertexArrayResource>(triangles01));
+    RenderingContextStack::primary_scene_node_resources().add_resource(OBJ1, std::make_shared<ColoredVertexArrayResource>(triangles1));
+    RenderingContextStack::primary_scene_node_resources().add_resource(BEACON, load_renderable_obj(
         "Data/box.obj",
         LoadMeshConfig<float>{
             .position = FixedArray<float, 3>{0.f, 0.f, 0.f},
@@ -92,12 +100,12 @@ void Mlib::create_scene_rod(
     auto scene_nodeR = make_unique_scene_node();
     auto scene_nodeL = make_unique_scene_node();
 
-    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj0", ChildInstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ0, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
-        .instance_name = VariableAndHash<std::string>{ "obj0" },
+        .instance_name = OBJ0,
         .scene_node = scene_node0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj1", ChildInstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ1, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = VariableAndHash<std::string>{ "obj1_0" },
         .scene_node = scene_node1_0.ref(DP_LOC),
@@ -106,26 +114,26 @@ void Mlib::create_scene_rod(
     scene_node0->set_position({0.f, -4.f, 0.f}, INITIAL_POSE);
     scene_node1_0->set_rotation({0.f, 0.f, 0.1f * float(M_PI)}, INITIAL_POSE);
 
-    scene_nodeR->add_child("n0", std::move(scene_node0));
-    scene_nodeR->add_child("n1_0", std::move(scene_node1_0));
+    scene_nodeR->add_child(N0, std::move(scene_node0));
+    scene_nodeR->add_child(N1_0, std::move(scene_node1_0));
     scene_nodeR->set_position({0.f, -1.f, -40.f}, INITIAL_POSE);
     scene_nodeL->set_position({0.f, 50.f, -40.f}, INITIAL_POSE);
     scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
 
-    scene.auto_add_root_node("obj", std::move(scene_nodeR), RenderingDynamics::MOVING);
-    scene.add_root_node("follower_camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.add_root_node("light_node", std::move(scene_nodeL), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.auto_add_root_node(OBJ, std::move(scene_nodeR), RenderingDynamics::MOVING);
+    scene.add_root_node(VariableAndHash<std::string>{"follower_camera"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node(VariableAndHash<std::string>{"light_node"}, std::move(scene_nodeL), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
-    scene.get_node("light_node", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter ams0{scene.get_node("obj", DP_LOC)->get_child("n0"), std::move(rb0), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter ams1_0{scene.get_node("obj", DP_LOC)->get_child("n1_0"), std::move(rb1_0), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter ams0{scene.get_node(OBJ, DP_LOC)->get_child(N0), std::move(rb0), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter ams1_0{scene.get_node(OBJ, DP_LOC)->get_child(N1_0), std::move(rb1_0), CURRENT_SOURCE_LOCATION};
 
         pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, triangles01, {}, {}, CollidableMode::STATIC);
         pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, triangles1, {}, {}, CollidableMode::MOVING);

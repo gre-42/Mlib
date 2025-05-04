@@ -46,7 +46,7 @@ std::unique_ptr<AnimationState> AvatarAnimationUpdater::update_animation_state(
         ? resource_wo_gun_
         : resource_w_gun_;
     if ((rb_.damageable_ != nullptr) && (rb_.damageable_->health() <= 0.f)) {
-        auto new_animation = resource_name + ".die";
+        auto new_animation = VariableAndHash<std::string>{resource_name + ".die"};
         if (new_animation != animation_state.aperiodic_skelletal_animation_name) {
             return std::unique_ptr<AnimationState>(new AnimationState{
                 .periodic_skelletal_animation_name = animation_state.periodic_skelletal_animation_name,
@@ -60,7 +60,7 @@ std::unique_ptr<AnimationState> AvatarAnimationUpdater::update_animation_state(
                 .delete_node_when_aperiodic_animation_finished = true});
         }
     } else {
-        std::string new_animation;
+        VariableAndHash<std::string> new_animation;
         if (gun.is_none_gun()) {
             new_animation = resource_name + ".walking";
         } else {
@@ -79,7 +79,7 @@ std::unique_ptr<AnimationState> AvatarAnimationUpdater::update_animation_state(
                         new_animation = resource_name + ".run_backward";
                     }
                 }
-                if (new_animation.empty()) {
+                if (new_animation->empty()) {
                     new_animation = resource_name + ".idle";
                 }
             } else {

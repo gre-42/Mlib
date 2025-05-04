@@ -164,7 +164,7 @@ void CheckPoints::advance_time(float dt) {
             auto node = make_unique_scene_node();
             node->add_color_style(std::make_unique<ColorStyle>());
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
-                .beacon_node_name = "check_point_beacon_" + std::to_string(i01_),
+                .beacon_node_name = VariableAndHash<std::string>{"check_point_beacon_" + std::to_string(i01_)},
                 .beacon_node = node.get(DP_LOC)});
             scene_node_resources_.instantiate_child_renderable(
                 resource_name_,

@@ -125,7 +125,7 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
                 FixedArray<float, 2>{0.f, INFINITY }) * meters),
     };
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         [square, transformation, material, morphology](){
             return std::make_shared<SquareResource>(
                 square,

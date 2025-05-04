@@ -30,8 +30,8 @@ void ChildRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     (*this)(
         args.arguments.at<std::string>(KnownArgs::name),
-        args.arguments.at<std::string>(KnownArgs::node),
-        args.arguments.at<std::string>(KnownArgs::resource),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         RenderableResourceFilter{
             .cva_filter = {
                 .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
@@ -40,8 +40,8 @@ void ChildRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 
 void ChildRenderableInstance::operator () (
     const std::string& instance_name,
-    const std::string& node,
-    const std::string& resource,
+    const VariableAndHash<std::string>& node,
+    const VariableAndHash<std::string>& resource,
     const RenderableResourceFilter& resource_filter) const
 {
     scene_node_resources.instantiate_child_renderable(

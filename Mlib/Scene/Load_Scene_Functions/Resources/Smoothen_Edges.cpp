@@ -24,7 +24,7 @@ LoadSceneJsonUserFunction SmoothenEdges::json_user_function = [](const LoadScene
     args.arguments.validate(KnownArgs::options);
 
     RenderingContextStack::primary_scene_node_resources().smoothen_edges(
-        args.arguments.at<std::string>(KnownArgs::resource),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         smoothness_target_from_string(args.arguments.at<std::string>(KnownArgs::target)),
         args.arguments.at<float>(KnownArgs::smoothness),
         args.arguments.at<size_t>(KnownArgs::niterations),

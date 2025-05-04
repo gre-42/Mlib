@@ -5,20 +5,22 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 class SelectedCameras;
 
 class CameraCycle {
 public:
     CameraCycle(
         SelectedCameras& selected_cameras,
-        std::vector<std::string> camera_names);
+        std::vector<VariableAndHash<std::string>> camera_names);
     ~CameraCycle();
-    bool contains(const std::string& name) const;
-    void set_camera_names(const std::vector<std::string>& cameras);
+    bool contains(const VariableAndHash<std::string>& name) const;
+    void set_camera_names(std::vector<VariableAndHash<std::string>> cameras);
     void cycle_camera();
 private:
     SelectedCameras& selected_cameras_;
-    std::vector<std::string> camera_names_;
+    std::vector<VariableAndHash<std::string>> camera_names_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 

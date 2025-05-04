@@ -22,7 +22,8 @@ struct JpkHeader {
 static_assert(sizeof(JpkHeader) == 32);
 
 JpkReader::JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity)
-    : reading_{ false }
+    : directory_{ "JPK entry" }
+    , reading_{ false }
 {
     auto header = read_binary<JpkHeader>(*data, "JPK header", verbosity);
     if (header.magic != 0x4B41504A) {
@@ -59,15 +60,15 @@ JpkReader::JpkReader(std::unique_ptr<std::istream>&& data, IoVerbosity verbosity
         if (name_length > 1000) {
             THROW_OR_ABORT("Name too long");
         }
-        std::string name = read_string(
+        auto name = VariableAndHash<std::string>{read_string(
             *data,
             integral_cast<size_t>((std::streamoff)name_length - integral_cast<std::streamoff>(1)),
             "name",
-            verbosity);
+            verbosity)};
         data->seekg(file_offset);
         directory_.add(name, file_offset, data_size);
         if (any(verbosity & IoVerbosity::METADATA)) {
-            linfo() << "Name: " << name;
+            linfo() << "Name: " << *name;
         }
     }
     data_ = std::move(data);
@@ -86,12 +87,12 @@ std::shared_ptr<IIStreamDictionary> JpkReader::load_from_file(
 
 JpkReader::~JpkReader() = default;
 
-std::vector<std::string> JpkReader::names() const {
+std::vector<VariableAndHash<std::string>> JpkReader::names() const {
     return directory_.keys();
 }
 
 StreamAndSize JpkReader::read(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     std::ios::openmode openmode,
     SourceLocation loc)
 {
@@ -106,7 +107,7 @@ StreamAndSize JpkReader::read(
     reading_ = true;
     data_->seekg(v.offset);
     if (data_->fail()) {
-        THROW_OR_ABORT("Could not seek entry \"" + name + '"');
+        THROW_OR_ABORT("Could not seek entry \"" + *name + '"');
     }
     auto stream = std::make_unique<IStreamAndLock<DanglingBaseClassRef<JpkReader>>>(
         *data_,

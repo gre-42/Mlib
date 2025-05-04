@@ -93,10 +93,10 @@ void BatchResourceInstantiator::preload(
     const SceneNodeResources& scene_node_resources,
     const RenderableResourceFilter& filter) const {
     for (const auto& p : object_resource_descriptors_) {
-        scene_node_resources.preload_single(*p.name, filter);
+        scene_node_resources.preload_single(p.name, filter);
     }
     for (const auto& [name, _] : resource_instance_positions_) {
-        scene_node_resources.preload_single(*name, filter);
+        scene_node_resources.preload_single(name, filter);
     }
 }
 
@@ -123,14 +123,14 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 PoseInterpolationMode::DISABLED);
 
             scene_node_resources.instantiate_child_renderable(
-                *p.name,
+                p.name,
                 ChildInstantiationOptions{
                     .rendering_resources = options.rendering_resources,
                     .instance_name = p.name,
                     .scene_node = node.ref(DP_LOC),
                     .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = options.renderable_resource_filter });
-            std::string node_name = *p.name + "-" + std::to_string(i);
+            auto node_name = VariableAndHash<std::string>{*p.name + "-" + std::to_string(i)};
             if (!p.supplies.empty()) {
                 options.supply_depots->add_supply_depot(node.ref(DP_LOC), p.supplies, p.supplies_cooldown);
                 options.scene.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
@@ -140,7 +140,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                         if (options.imposters == nullptr) {
                             THROW_OR_ABORT("Imposter requested, but no imposters available");
                         }
-                        options.imposters->create_imposter(node.ref(DP_LOC), node_name, p.max_imposter_texture_size);
+                        options.imposters->create_imposter(node.ref(DP_LOC), *node_name, p.max_imposter_texture_size);
                     }
                     options.scene.auto_add_root_node(
                         node_name,
@@ -181,7 +181,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     scale,
                     PoseInterpolationMode::DISABLED);
                 scene_node_resources.instantiate_child_renderable(
-                    *name,
+                    name,
                     ChildInstantiationOptions{
                         .rendering_resources = options.rendering_resources,
                         .instance_name = name,
@@ -191,15 +191,15 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
                     THROW_OR_ABORT("Object " + *name + " requires render pass");
                 }
-                world_node->add_instances_child(*name, std::move(node));
+                world_node->add_instances_child(name, std::move(node));
                 for (const auto& r : ps) {
-                    world_node->add_instances_position(*name, r.position, r.yangle, r.billboard_id);
+                    world_node->add_instances_position(name, r.position, r.yangle, r.billboard_id);
                 }
             }
             auto wn = world_node.get(DP_LOC);
             try {
                 options.scene.auto_add_root_node(
-                    *options.instance_name + '_' + node_infix + "_world",
+                    VariableAndHash<std::string>{*options.instance_name + '_' + node_infix + "_world"},
                     std::move(world_node),
                     RenderingDynamics::STATIC);
             } catch (const std::runtime_error& e) {
@@ -239,7 +239,7 @@ void BatchResourceInstantiator::instantiate_arrays(
                     }
                 }
             };
-            auto acva = scene_node_resources.get_arrays(*name, filter);
+            auto acva = scene_node_resources.get_arrays(name, filter);
             add_hitbox(acva->scvas);
             if constexpr (std::is_same_v<ScenePos, double>) {
                 add_hitbox(acva->dcvas);
@@ -293,7 +293,7 @@ std::list<FixedArray<CompressedScenePos, 3>> BatchResourceInstantiator::hitbox_p
 {
     std::list<FixedArray<CompressedScenePos, 3>> result;
     for (const auto& [n, hs] : resource_instance_positions_) {
-        auto mat = scene_node_resources.physics_material(*n);
+        auto mat = scene_node_resources.physics_material(n);
         if (any(mat & PhysicsMaterial::ATTR_COLLIDE)) {
             for (const auto& h : hs) {
                 result.push_back(h.position);
@@ -301,13 +301,13 @@ std::list<FixedArray<CompressedScenePos, 3>> BatchResourceInstantiator::hitbox_p
         }
     }
     for (const auto& p : object_resource_descriptors_) {
-        auto mat = scene_node_resources.physics_material(*p.name);
+        auto mat = scene_node_resources.physics_material(p.name);
         if (any(mat & PhysicsMaterial::ATTR_COLLIDE)) {
             result.push_back(p.position);
         }
     }
     for (const auto& [p, hs] : hitboxes_) {
-        auto mat = scene_node_resources.physics_material(*p);
+        auto mat = scene_node_resources.physics_material(p);
         if (!any(mat & PhysicsMaterial::ATTR_COLLIDE)) {
             THROW_OR_ABORT("Hitbox \"" + *p + "\" is not collidable");
         }

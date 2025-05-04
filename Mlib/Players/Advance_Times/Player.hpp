@@ -26,6 +26,7 @@
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
 #include <list>
 #include <mutex>
@@ -141,7 +142,7 @@ public:
     bool scene_node_scheduled_for_deletion() const;
     VehicleSpawner* next_scene_vehicle();
     const std::string& next_role() const;
-    const std::string& scene_node_name() const;
+    const VariableAndHash<std::string>& scene_node_name() const;
     SceneVehicle& vehicle();
     const SceneVehicle& vehicle() const;
     VehicleSpawner& vehicle_spawner();
@@ -193,7 +194,7 @@ public:
     void select_opponent(OpponentSelectionStrategy strategy);
     void select_next_vehicle();
     void request_reset_vehicle_to_last_checkpoint();
-    void append_dependent_node(std::string node_name);
+    void append_dependent_node(VariableAndHash<std::string> node_name);
     void create_vehicle_externals(ExternalsMode externals_mode);
     void create_vehicle_internals(const InternalsMode& internals_mode);
     void set_role(const std::string& ui);
@@ -218,7 +219,7 @@ public:
     // IPlayer
     virtual std::string id() const override;
     virtual std::string title() const override;
-    virtual std::optional<std::string> target_id() const override;
+    virtual std::optional<VariableAndHash<std::string>> target_id() const override;
     virtual bool reset_vehicle_requested() override;
     virtual bool can_reset_vehicle(
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const override;
@@ -270,7 +271,7 @@ private:
     SceneVehicle* vehicle_;
     VehicleSpawner* vehicle_spawner_;
     PlayerControlled controlled_;
-    std::optional<std::string> target_id_;
+    std::optional<VariableAndHash<std::string>> target_id_;
     DanglingPtr<SceneNode> target_scene_node_;
     RigidBodyVehicle* target_rb_;
     PlayerStats stats_;
@@ -290,7 +291,7 @@ private:
     VehicleSpawner* next_scene_vehicle_;
     bool reset_vehicle_to_last_checkpoint_requested_;
     std::string next_role_;
-    std::map<DanglingPtr<const SceneNode>, std::string> dependent_nodes_;
+    std::map<DanglingPtr<const SceneNode>, VariableAndHash<std::string>> dependent_nodes_;
     ExternalsMode externals_mode_;
     InternalsMode internals_mode_;
     SingleWaypoint single_waypoint_;

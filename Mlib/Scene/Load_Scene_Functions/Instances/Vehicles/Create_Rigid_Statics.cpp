@@ -57,7 +57,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         fixed_zeros<float, 3>() * degrees,  // I_rotation
         nullptr,                            // pl
-        scene_node_resources.get_geographic_mapping("world"));
+        scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}));
     rb->set_absolute_model_matrix(absolute_model_matrix);
 
     if (args.arguments.contains(KnownArgs::flags)) {
@@ -71,7 +71,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
             .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
             .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))};
         auto acva = scene_node_resources.get_arrays(
-            args.arguments.at<std::string>(KnownArgs::hitboxes),
+            args.arguments.at<VariableAndHash<std::string>>(KnownArgs::hitboxes),
             filter);
         auto insert = [](auto& hitboxes, const auto& cvas){
             for (const auto& cva: cvas) {
@@ -93,17 +93,17 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
             save_triangle_to_obj(*filename, {e.a, e.b, e.c});
         }
-        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     } catch (const PolygonEdgeException<double, 3>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
             save_triangle_to_obj(*filename, e.poly);
         }
-        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     } catch (const PolygonEdgeException<double, 4>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
             save_quad_to_obj(*filename, e.poly);
         }
-        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     }
 }
 

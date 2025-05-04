@@ -21,6 +21,6 @@ LoadSceneJsonUserFunction Downsample::json_user_function = [](const LoadSceneJso
     args.arguments.validate(KnownArgs::options);
 
     RenderingContextStack::primary_scene_node_resources().downsample(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         args.arguments.at<size_t>(KnownArgs::factor));
 };

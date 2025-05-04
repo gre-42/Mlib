@@ -29,7 +29,7 @@ LoadSceneJsonUserFunction ConvexDecomposeTerrain::json_user_function = [](const 
     args.arguments.validate(KnownArgs::options);
 
     RenderingContextStack::primary_scene_node_resources().create_barrier_triangle_hitboxes(
-        args.arguments.at<std::string>(KnownArgs::resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
         args.arguments.at<float>(KnownArgs::depth),
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::destination_physics_material)),
         ColoredVertexArrayFilter{

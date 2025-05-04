@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Advance_Times/Respawn_Config.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <fstream>
 #include <mutex>
 
@@ -33,7 +34,7 @@ struct CheckPointPose {
 };
 
 struct BeaconNode {
-    std::string beacon_node_name;
+    VariableAndHash<std::string> beacon_node_name;
     DanglingPtr<SceneNode> beacon_node;
     CheckPointPose* check_point_pose;
 };
@@ -82,7 +83,7 @@ private:
     std::vector<DanglingPtr<SceneNode>> moving_nodes_;
     std::vector<IAbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
-    std::string resource_name_;
+    VariableAndHash<std::string> resource_name_;
     DanglingBaseClassRef<IPlayer> player_;
     float radius_;
     size_t nbeacons_;

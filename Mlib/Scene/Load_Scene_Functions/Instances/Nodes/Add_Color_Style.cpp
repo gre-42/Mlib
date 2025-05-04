@@ -50,7 +50,7 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
             : OrderableFixedArray{ fixed_full<float, 3>(-1) },
         .reflection_maps = std::move(parsed_reflection_maps),
         .reflection_strength = args.arguments.at<float>(KnownArgs::reflection_strength, -1.f)});
-    if (auto node = args.arguments.try_at<std::string>(KnownArgs::node); node.has_value()) {
+    if (auto node = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::node); node.has_value()) {
         DanglingRef<SceneNode> n = scene.get_node(*node, DP_LOC);
         n->add_color_style(std::move(style));
     } else {

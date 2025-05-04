@@ -37,7 +37,7 @@ void CreateRelativeTransformer::execute(const LoadSceneJsonUserFunctionArgs& arg
     auto w = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm;
     auto rt = std::make_unique<RelativeTransformer>(v, w);
     linker.link_relative_movable<RelativeTransformer>(
-        scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC),
+        scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC),
         { *rt, CURRENT_SOURCE_LOCATION },
         CURRENT_SOURCE_LOCATION);
     global_object_pool.add(std::move(rt), CURRENT_SOURCE_LOCATION);

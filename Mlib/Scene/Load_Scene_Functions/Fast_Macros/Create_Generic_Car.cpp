@@ -30,6 +30,9 @@
 
 using namespace Mlib;
 
+using VH = VariableAndHash<std::string>;
+static const auto WORLD = VariableAndHash<std::string>{"world"};
+
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
@@ -131,7 +134,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
     const auto& vdb = args.asset_references["vehicles"].at(name).rp.database;
     auto wheels = vdb.at<std::string>(KnownDb::wheels);
     const auto& wdb = args.asset_references["wheels"].at(wheels).rp.database;
-    auto parent = "car_node" + tesuffix;
+    auto parent = VH{"car_node" + tesuffix};
 
     auto wheel_left_front_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_0);
     auto wheel_left_front_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_1);
@@ -142,32 +145,32 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto wheel_right_rear_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_0);
     auto wheel_right_rear_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_1);
 
-    create_child_node("dynamic", parent, "wheel_left_front_node" + tesuffix, wheel_left_front_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, "wheel_right_front_node" + tesuffix, wheel_right_front_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, "wheel_left_rear_node" + tesuffix, wheel_left_rear_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, "wheel_right_rear_node" + tesuffix, wheel_right_rear_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, VH{"wheel_left_front_node" + tesuffix}, wheel_left_front_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, VH{"wheel_right_front_node" + tesuffix}, wheel_right_front_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, VH{"wheel_left_rear_node" + tesuffix}, wheel_left_rear_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, VH{"wheel_right_rear_node" + tesuffix}, wheel_right_rear_mount_0.casted<ScenePos>());
 
     if (if_with_graphics) {
-        create_child_node("dynamic", "wheel_right_front_node" + tesuffix, "wheel_right_front_node_visual" + tesuffix, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
-        create_child_node("dynamic", "wheel_right_rear_node" + tesuffix, "wheel_right_rear_node_visual" + tesuffix, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+        create_child_node("dynamic", VH{"wheel_right_front_node" + tesuffix}, VH{"wheel_right_front_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+        create_child_node("dynamic", VH{"wheel_right_rear_node" + tesuffix}, VH{"wheel_right_rear_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
         auto create_graphics = [&](const std::string& suffix, const std::string& decimate){
-            child_renderable_instance("main" + suffix, parent, name + "/main" + decimate);
+            child_renderable_instance("main" + suffix, parent, VH{name + "/main" + decimate});
 
-            child_renderable_instance("wheel" + suffix, "wheel_left_front_node" + tesuffix, name + "/wheel_front" + decimate);
-            child_renderable_instance("wheel" + suffix, "wheel_right_front_node_visual" + tesuffix, name + "/wheel_front" + decimate);
-            child_renderable_instance("wheel" + suffix, "wheel_left_rear_node" + tesuffix, name + "/wheel_rear" + decimate);
-            child_renderable_instance("wheel" + suffix, "wheel_right_rear_node_visual" + tesuffix, name + "/wheel_rear" + decimate);
+            child_renderable_instance("wheel" + suffix, VH{"wheel_left_front_node" + tesuffix}, VH{name + "/wheel_front" + decimate});
+            child_renderable_instance("wheel" + suffix, VH{"wheel_right_front_node_visual" + tesuffix}, VH{name + "/wheel_front" + decimate});
+            child_renderable_instance("wheel" + suffix, VH{"wheel_left_rear_node" + tesuffix}, VH{name + "/wheel_rear" + decimate});
+            child_renderable_instance("wheel" + suffix, VH{"wheel_right_rear_node_visual" + tesuffix}, VH{name + "/wheel_rear" + decimate});
             };
         create_graphics(tesuffix, tedecimate);
         create_graphics("_lowres" + tesuffix, "_lowres");
         auto create_lights = [&]() {
             if (auto p = vdb.try_at_non_null<UFixedArray<ScenePos, 3>>(KnownDb::light_left_front_position); p.has_value()) {
-                create_child_node("dynamic", parent, "light_left_front" + tesuffix, *p);
-                child_renderable_instance("blob" + tesuffix, "light_left_front" + tesuffix, "car_light_beam");
+                create_child_node("dynamic", parent, VH{"light_left_front" + tesuffix}, *p);
+                child_renderable_instance("blob" + tesuffix, VH{"light_left_front" + tesuffix}, VH{"car_light_beam"});
             }
             if (auto p = vdb.try_at_non_null<UFixedArray<ScenePos, 3>>(KnownDb::light_right_front_position); p.has_value()) {
-                create_child_node("dynamic", parent, "light_right_front_position" + tesuffix, *p);
-                child_renderable_instance("blob" + tesuffix, "light_right_front_position" + tesuffix, "car_light_beam");
+                create_child_node("dynamic", parent, VH{"light_right_front_position" + tesuffix}, *p);
+                child_renderable_instance("blob" + tesuffix, VH{"light_right_front_position" + tesuffix}, VH{"car_light_beam"});
             }};
         create_lights();
     }
@@ -186,9 +189,9 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             .w = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::angular_velocity) * rpm,
             .I_rotation = fixed_zeros<float, 3>(),
             .with_penetration_limits = true,
-            .geographic_coordinates = scene_node_resources.get_geographic_mapping("world"),
+            .geographic_coordinates = scene_node_resources.get_geographic_mapping(WORLD),
             .waypoint_dy = (CompressedScenePos)1.2f,
-            .hitboxes = name + "_hitboxes",
+            .hitboxes = VariableAndHash<std::string>{name + "_hitboxes"},
             .collidable_mode = CollidableMode::MOVING});
 
         std::shared_ptr<EngineAudio> av;
@@ -272,7 +275,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             OutOfRangeBehavior::CLAMP};
         auto create_wheel = [&](
             size_t tire_id,
-            const std::string& node,
+            const VariableAndHash<std::string>& node,
             const std::string& name,
             const std::string& asset_id,
             const VariableAndHash<std::string>& engine,
@@ -305,7 +308,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 }
 
                 RigidBodyPulses* wheel_rbp = nullptr;
-                if (!node.empty()) {
+                if (!node->empty()) {
                     auto wheel_node = scene.get_node(node, DP_LOC);
                     if (wheel != nullptr) {
                         wheel_rbp = &wheel->rbp_;
@@ -349,7 +352,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             };
         create_wheel(
             0,
-            "wheel_left_front_node" + tesuffix,
+            VariableAndHash<std::string>{"wheel_left_front_node" + tesuffix},
             "wheel_left_front" + name + tesuffix,
             "wheel_left_front" + name,
             front_engine,
@@ -358,7 +361,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             wheel_left_front_mount_1);
         create_wheel(
             1,
-            "wheel_right_front_node" + tesuffix,
+            VariableAndHash<std::string>{"wheel_right_front_node" + tesuffix},
             "wheel_right_front" + name + tesuffix,
             "wheel_right_front" + name,
             front_engine,
@@ -367,7 +370,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             wheel_right_front_mount_1);
         create_wheel(
             2,
-            "wheel_left_rear_node" + tesuffix,
+            VariableAndHash<std::string>{"wheel_left_rear_node" + tesuffix},
             "wheel_left_rear" + name + tesuffix,
             "wheel_left_rear" + name,
             rear_engine,
@@ -376,7 +379,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             wheel_left_rear_mount_1);
         create_wheel(
             3,
-            "wheel_right_rear_node" + tesuffix,
+            VariableAndHash<std::string>{"wheel_right_rear_node" + tesuffix},
             "wheel_right_rear" + name + tesuffix,
             "wheel_right_rear" + name,
             rear_engine,

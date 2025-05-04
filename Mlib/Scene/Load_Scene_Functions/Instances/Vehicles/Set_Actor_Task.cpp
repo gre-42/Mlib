@@ -32,7 +32,7 @@ SetActorTask::SetActorTask(RenderableScene& renderable_scene)
 
 void SetActorTask::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     rb.set_actor_task(actor_task_from_string(args.arguments.at<std::string>(KnownArgs::task)));
 }

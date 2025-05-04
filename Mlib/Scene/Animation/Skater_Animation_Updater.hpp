@@ -14,7 +14,7 @@ public:
     explicit SkaterAnimationUpdater(
         const RigidBodyVehicle& rb,
         DanglingRef<SceneNode> skateboard_node,
-        const std::string& resource);
+        std::string resource);
     virtual void notify_movement_intent() override;
     virtual std::unique_ptr<AnimationState> update_animation_state(
         const AnimationState& animation_state) override;

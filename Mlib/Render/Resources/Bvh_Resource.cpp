@@ -85,7 +85,7 @@ static void instantiate_bvh(
                 .scene_node = node.ref(DP_LOC),
                 .interpolation_mode = options.interpolation_mode,
                 .renderable_resource_filter = renderable_resource_filter});
-        scene_node->add_child(*name + "_data", std::move(node));
+        scene_node->add_child(VariableAndHash<std::string>{*name + "_data"}, std::move(node));
     }
     size_t i = 0;
     for (const auto& [cb, cv] : bvh.children()) {
@@ -100,7 +100,7 @@ static void instantiate_bvh(
             renderable_resource_filter,
             cv,
             options);
-        scene_node->add_child("bvh_" + std::to_string(i), std::move(node));
+        scene_node->add_child(VariableAndHash<std::string>{"bvh_" + std::to_string(i)}, std::move(node));
         ++i;
     }
 }

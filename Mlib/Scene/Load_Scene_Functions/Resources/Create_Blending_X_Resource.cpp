@@ -52,7 +52,7 @@ LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const
     material.compute_color_mode();
     Morphology morphology{ .physics_material = PhysicsMaterial::NONE };
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         [square, material, morphology](){return std::make_shared<BlendingXResource>(
             square,
             FixedArray<Material, 2>{

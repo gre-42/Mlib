@@ -39,7 +39,7 @@ LoadSceneJsonUserFunction AnimatableTrails::json_user_function = [](const LoadSc
 
     auto zeros3 = fixed_zeros<float, 3>();
     RenderingContextStack::primary_trail_resources().insert_instance_instantiator(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         [&snr = RenderingContextStack::primary_scene_node_resources(),
          texture = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
          shading = Shading{

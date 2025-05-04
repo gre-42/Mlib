@@ -104,7 +104,7 @@ void Spawner::respawn_all_players() {
             continue;
         }
         while (p->has_scene_vehicle()) {
-            std::string node_name = p->get_primary_scene_vehicle().scene_node_name();
+            auto node_name = p->get_primary_scene_vehicle().scene_node_name();
             scene_.delete_root_node(node_name);
         }
         ++ndelete_;

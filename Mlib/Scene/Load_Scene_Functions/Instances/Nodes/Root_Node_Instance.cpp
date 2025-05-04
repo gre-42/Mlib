@@ -43,7 +43,7 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto rendering_dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics, "moving"));
     auto rendering_strategy = rendering_strategy_from_string(args.arguments.at<std::string>(KnownArgs::strategy, "object"));
     scene.add_root_node(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         std::move(node),
         rendering_dynamics,
         rendering_strategy);

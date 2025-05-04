@@ -31,7 +31,7 @@ CreateCrash::CreateCrash(RenderableScene& renderable_scene)
 
 void CreateCrash::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     auto d = std::make_unique<Crash>(
         rb,

@@ -40,10 +40,10 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
     scene_node_resources.add_modifier(
-        args.arguments.at<std::string>(KnownArgs::resource_name),
-        [mesh_resource_name = args.arguments.at<std::string>(KnownArgs::resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
+        [mesh_resource_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
          mcfg = MergedTexturesConfig{
-            .resource_name = args.arguments.at<std::string>(KnownArgs::merged_resource_name),
+            .resource_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::merged_resource_name),
             .array_name = args.arguments.at<std::string>(KnownArgs::merged_array_name),
             .texture_name = ColormapWithModifiers{
                 .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::merged_texture_name),

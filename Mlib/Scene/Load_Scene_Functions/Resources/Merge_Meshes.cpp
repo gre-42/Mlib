@@ -31,7 +31,7 @@ LoadSceneJsonUserFunction MergeMeshes::json_user_function = [](const LoadSceneJs
     args.arguments.validate(KnownArgs::options);
 
     RenderingContextStack::primary_scene_node_resources().add_modifier(
-        args.arguments.at<std::string>(KnownArgs::resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource_name),
         [name = args.arguments.at<std::string>(KnownArgs::merged_name),
          physics_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::merged_physics_material))]
         (ISceneNodeResource& resource)

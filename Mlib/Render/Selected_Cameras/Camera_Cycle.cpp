@@ -7,21 +7,21 @@ using namespace Mlib;
 
 CameraCycle::CameraCycle(
     SelectedCameras& selected_cameras,
-    std::vector<std::string> camera_names)
+    std::vector<VariableAndHash<std::string>> camera_names)
     : selected_cameras_{ selected_cameras }
     , camera_names_{ std::move(camera_names) }
 {}
 
 CameraCycle::~CameraCycle() = default;
 
-bool CameraCycle::contains(const std::string& name) const {
+bool CameraCycle::contains(const VariableAndHash<std::string>& name) const {
     std::shared_lock lock{ mutex_ };
     return std::find(camera_names_.begin(), camera_names_.end(), name) != camera_names_.end();
 }
 
-void CameraCycle::set_camera_names(const std::vector<std::string>& cameras) {
+void CameraCycle::set_camera_names(std::vector<VariableAndHash<std::string>> cameras) {
     std::scoped_lock lock{ mutex_ };
-    camera_names_ = cameras;
+    camera_names_ = std::move(cameras);
 }
 
 void CameraCycle::cycle_camera() {

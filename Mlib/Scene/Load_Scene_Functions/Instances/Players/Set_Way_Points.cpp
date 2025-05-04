@@ -34,6 +34,6 @@ void SetWayPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto location = transformation_matrix_from_json<float, ScenePos, 3>(
         args.arguments.at(KnownArgs::location));
-    auto way_points = scene_node_resources.get_way_points(args.arguments.at<std::string>(KnownArgs::resource));
+    auto way_points = scene_node_resources.get_way_points(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource));
     game_logic->navigate.set_way_points(location, std::move(way_points));
 }

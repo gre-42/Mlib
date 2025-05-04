@@ -30,6 +30,6 @@ SetCameraCycle::SetCameraCycle(RenderableScene& renderable_scene)
 void SetCameraCycle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto tpe = camera_cycle_type_from_string(args.arguments.at<std::string>(KnownArgs::name));
-    auto cameras = args.arguments.at_non_null<std::vector<std::string>>(KnownArgs::cameras, {});
+    auto cameras = args.arguments.at_non_null<std::vector<VariableAndHash<std::string>>>(KnownArgs::cameras, {});
     selected_cameras.set_camera_cycle(tpe, cameras);
 }

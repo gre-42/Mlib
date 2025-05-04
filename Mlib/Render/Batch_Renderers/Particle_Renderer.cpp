@@ -9,12 +9,12 @@ using namespace Mlib;
 ParticleRenderer::ParticleRenderer(ParticleResources& resources)
     : resources_{ resources }
     , instances_{ [&resources](const VariableAndHash<std::string>& name) {
-        return resources.instantiate_particles_instance(*name);
+        return resources.instantiate_particles_instance(name);
       } }
     , instantiators_{ [this, &resources](const VariableAndHash<std::string>& name) {
         return resources.instantiate_particle_creator(
-            *name,
-            *instances_.get(resources.get_instance_for_creator(*name)));
+            name,
+            *instances_.get(resources.get_instance_for_creator(name)));
       } }
 {}
 
@@ -24,7 +24,7 @@ IParticleCreator& ParticleRenderer::get_instantiator(const VariableAndHash<std::
     return *instantiators_.get(name);
 }
 
-void ParticleRenderer::preload(const std::string& name) {
+void ParticleRenderer::preload(const VariableAndHash<std::string>& name) {
     instances_.get(resources_.get_instance_for_creator(name))->preload();
 }
 

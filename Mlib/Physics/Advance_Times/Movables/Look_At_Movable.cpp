@@ -12,7 +12,7 @@ using namespace Mlib;
 LookAtMovable::LookAtMovable(
     AdvanceTimes& advance_times,
     Scene& scene,
-    std::string follower_name,
+    VariableAndHash<std::string> follower_name,
     DanglingRef<SceneNode> follower_node,
     DanglingRef<SceneNode> followed_node,
     IAbsoluteMovable& followed)

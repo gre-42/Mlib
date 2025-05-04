@@ -35,12 +35,12 @@ RecordTrack::RecordTrack(RenderableScene& renderable_scene)
 
 void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(recorder_node);
     auto& at = global_object_pool.create<RigidBodyRecorder>(
         CURRENT_SOURCE_LOCATION,
         args.arguments.path(KnownArgs::filename),
-        scene_node_resources.get_geographic_mapping("world"),
+        scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
         recorder_node,
         rb.rbp_,
         args.ui_focus.focuses);

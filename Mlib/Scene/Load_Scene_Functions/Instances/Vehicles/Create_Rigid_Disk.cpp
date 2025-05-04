@@ -51,7 +51,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args) const
 {
     (*this)(CreateRigidDiskArgs{
         global_object_pool,
-        args.arguments.at<std::string>(KnownArgs::node),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::asset_id),
         args.arguments.at<float>(KnownArgs::mass) * kg,
@@ -61,7 +61,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args) const
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::I_rotation, fixed_zeros<float, 3>()) * degrees,
         args.arguments.at<bool>(KnownArgs::with_penetration_limits, false),
-        scene_node_resources.get_geographic_mapping("world"),
+        scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
         rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags, "none")),
         CompressedScenePos::from_float_safe(args.arguments.at<ScenePos>(KnownArgs::waypoint_dy, 0.f) * meters),
         args.arguments.try_at_non_null(KnownArgs::hitboxes),
@@ -94,7 +94,9 @@ RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args)
     std::list<TypedMesh<std::shared_ptr<IIntersectable>>> intersectables;
     if (args.hitboxes.has_value()) {
         {
-            auto acva = scene_node_resources.get_arrays(*args.hitboxes, args.hitbox_filter);
+            auto acva = scene_node_resources.get_arrays(
+                *args.hitboxes,
+                args.hitbox_filter);
             auto insert = [](auto& hitboxes, const auto& cvas){
                 for (const auto& cva: cvas) {
                     hitboxes.push_back(cva);
@@ -121,17 +123,17 @@ RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args)
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
             save_triangle_to_obj(*filename, {e.a, e.b, e.c});
         }
-        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     } catch (const PolygonEdgeException<double, 3>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
             save_triangle_to_obj(*filename, e.poly);
         }
-        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     } catch (const PolygonEdgeException<double, 4>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
             save_quad_to_obj(*filename, e.poly);
         }
-        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"})));
     }
     return result;
 }

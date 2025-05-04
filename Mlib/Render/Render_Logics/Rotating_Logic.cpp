@@ -161,7 +161,7 @@ void RotatingLogic::render_with_setup(
     notify_rendering(CURRENT_SOURCE_LOCATION);
     float aspect_ratio = lx.flength() / ly.flength();
 
-    DanglingRef<SceneNode> cn = scene_.get_node("camera", DP_LOC);
+    DanglingRef<SceneNode> cn = scene_.get_node(VariableAndHash<std::string>{"camera"}, DP_LOC);
     cn->set_position(
         FixedArray<ScenePos, 3>{0.f, 0.f, user_object_.camera_z},
         std::nullopt);
@@ -173,7 +173,7 @@ void RotatingLogic::render_with_setup(
         bi.view.affine());
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
-        DanglingRef<SceneNode> on = scene_.get_node("obj", DP_LOC);
+        DanglingRef<SceneNode> on = scene_.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC);
         on->set_scale(user_object_.scale);
         on->set_rotation(FixedArray<float, 3>{
             user_object_.angle_x,
@@ -182,7 +182,9 @@ void RotatingLogic::render_with_setup(
             std::nullopt);
     }
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
-        DanglingRef<SceneNode> bn = scene_.get_node("obj", DP_LOC)->get_child("beacon");
+        DanglingRef<SceneNode> bn = scene_
+            .get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)
+            ->get_child(VariableAndHash<std::string>{"beacon"});
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
         const TransformationMatrix<float, ScenePos, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();

@@ -72,7 +72,7 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
     material_0.compute_color_mode();
     material_90.compute_color_mode();
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         [square, material_0, material_90, morphology](){return std::make_shared<BinaryXResource>(
             square,
             material_0,

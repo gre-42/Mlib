@@ -4,6 +4,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 struct LoadSceneJsonUserFunctionArgs;
 struct RenderableResourceFilter;
 
@@ -12,8 +14,8 @@ public:
     explicit ChildRenderableInstance(RenderableScene& renderable_scene);
     void operator () (
         const std::string& instance_name,
-        const std::string& node,
-        const std::string& resource,
+        const VariableAndHash<std::string>& node,
+        const VariableAndHash<std::string>& resource,
         const RenderableResourceFilter& resource_filter = RenderableResourceFilter{}) const;
     void execute(const LoadSceneJsonUserFunctionArgs& args) const;
 };

@@ -147,7 +147,7 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
         THROW_OR_ABORT("Scene vehicles list is empty");
     }
     for (const auto& v : scene_vehicles) {
-        if (v->scene_node_name().empty()) {
+        if (v->scene_node_name()->empty()) {
             THROW_OR_ABORT("Rigid body scene node name is empty");
         }
         if (v->scene_node()->shutting_down()) {

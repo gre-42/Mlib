@@ -31,8 +31,8 @@ CreateVehicleFollowerAi::CreateVehicleFollowerAi(RenderableScene& renderable_sce
 
 void CreateVehicleFollowerAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::missile), DP_LOC));
-    auto& target_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::target), DP_LOC));
+    auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::missile), DP_LOC));
+    auto& target_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::target), DP_LOC));
     global_object_pool.create<FollowerAi>(
         CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,

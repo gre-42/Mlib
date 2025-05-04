@@ -19,6 +19,8 @@
 
 using namespace Mlib;
 
+static const auto BEACON = VariableAndHash<std::string>{"beacon"};
+
 PathfindingWaypoints::PathfindingWaypoints(
     Player& player,
     const PhysicsEngineConfig& cfg)
@@ -60,7 +62,7 @@ void PathfindingWaypoints::select_next_waypoint() {
                 if (sum(squared(p.position - pp)) > squared(200 * meters)) {
                     continue;
                 }
-                add_beacon(Beacon::create(funpack(p.position), "beacon"));
+                add_beacon(Beacon::create(funpack(p.position), BEACON));
             }
         }
     }

@@ -19,7 +19,7 @@ ClearNode::ClearNode(RenderableScene& renderable_scene)
 
 void ClearNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC)->clear();
+    scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC)->clear();
 }
 
 namespace {

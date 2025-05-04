@@ -30,7 +30,7 @@ SetRigidBodyTarget::SetRigidBodyTarget(RenderableScene& renderable_scene)
 
 void SetRigidBodyTarget::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     if (any(rb.target_ != 0.f)) {
         THROW_OR_ABORT("Rigid body target already set");

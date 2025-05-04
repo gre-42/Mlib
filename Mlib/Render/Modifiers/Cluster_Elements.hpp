@@ -7,6 +7,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class SceneNodeResources;
@@ -15,12 +17,12 @@ enum class RenderingDynamics;
 class SquaredStepDistances;
 
 void cluster_elements(
-    const std::vector<std::string>& resource_names,
+    const std::vector<VariableAndHash<std::string>>& resource_names,
     SceneNodeResources& scene_node_resources,
     const FixedArray<float, 3>& width,
     const SquaredStepDistances& center_distances2,
     RenderingDynamics rendering_dynamics,
-    std::list<std::string>& added_scene_node_resources,
-    std::list<std::string>& added_instantiables);
+    std::list<VariableAndHash<std::string>>& added_scene_node_resources,
+    std::list<VariableAndHash<std::string>>& added_instantiables);
 
 }

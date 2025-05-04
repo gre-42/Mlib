@@ -24,6 +24,8 @@ using json = nlohmann::json;
 
 using namespace Mlib;
 
+static const auto WORLD = VariableAndHash<std::string>{"world"};
+
 namespace Mlib {
 
 void to_json(nlohmann::json& j, const LapTimeEventAndId& l) {
@@ -228,7 +230,7 @@ RaceState RaceHistory::notify_lap_finished(
     if (save_playback_) {
         TrackWriter track_writer{
             track_m_filename(max_id),
-            scene_node_resources_.get_geographic_mapping("world") };
+            scene_node_resources_.get_geographic_mapping(WORLD) };
         for (const auto& e : track) {
             track_writer.write(e);
         }

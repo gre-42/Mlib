@@ -29,6 +29,6 @@ PlayerSetAimingGun::PlayerSetAimingGun(RenderableScene& renderable_scene)
 
 void PlayerSetAimingGun::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
+    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
     players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION)->set_gun_node(gun_node);
 }

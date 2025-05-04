@@ -59,7 +59,7 @@ CreateWing::CreateWing(RenderableScene& renderable_scene)
 
 void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle), DP_LOC);
+    DanglingRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC);
     auto& vehicle_rb = get_rigid_body_vehicle(vehicle_node);
     auto position = args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters;
     auto rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees;
@@ -80,11 +80,11 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     DanglingPtr<SceneNode> angle_of_attack_node = nullptr;
     if (args.arguments.contains(KnownArgs::angle_of_attack_node)) {
-        angle_of_attack_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::angle_of_attack_node), DP_LOC).ptr();
+        angle_of_attack_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::angle_of_attack_node), DP_LOC).ptr();
     }
     DanglingPtr<SceneNode> brake_angle_node = nullptr;
     if (args.arguments.contains(KnownArgs::brake_angle_node)) {
-        brake_angle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::brake_angle_node), DP_LOC).ptr();
+        brake_angle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::brake_angle_node), DP_LOC).ptr();
     }
     vehicle_rb.wings_.add(
         wing_id,

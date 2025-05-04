@@ -70,7 +70,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
             auto trafo = TransformationMatrix<float, ScenePos, 3>{
                 p.R,
                 funpack(p.t + dp)};
-            auto distancebox = snr.get_intersectables(asset_id + "_distancebox");
+            auto distancebox = snr.get_intersectables(VariableAndHash<std::string>{asset_id + "_distancebox"});
             if (!cq.can_spawn_at(trafo, distancebox)) {
                 return false;
             }

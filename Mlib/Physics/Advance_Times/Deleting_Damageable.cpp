@@ -12,7 +12,7 @@ using namespace Mlib;
 DeletingDamageable::DeletingDamageable(
     Scene& scene,
     AdvanceTimes& advance_times,
-    std::string root_node_name,
+    VariableAndHash<std::string> root_node_name,
     float health,
     bool delete_node_when_health_leq_zero,
     std::shared_ptr<Translator> translator)

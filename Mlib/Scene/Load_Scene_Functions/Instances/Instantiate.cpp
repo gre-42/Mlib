@@ -33,13 +33,13 @@ Instantiate::Instantiate(RenderableScene& renderable_scene)
 {}
 
 void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
-    auto empty_set = std::set<std::string>();
+    auto empty_set = std::set<VariableAndHash<std::string>>();
     auto matching_set = std::set<std::string>{""};
     auto required_prefixes = args.arguments.at<std::set<std::string>>(KnownArgs::required_prefixes, matching_set);
-    auto exclude = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::except, empty_set);
+    auto exclude = args.arguments.at_non_null<std::set<VariableAndHash<std::string>>>(KnownArgs::except, empty_set);
     auto dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics));
     auto ir = args.arguments.try_at<std::string>(KnownArgs::instantiated_resources);
-    std::set<std::string> instantiated;
+    std::set<VariableAndHash<std::string>> instantiated;
     for (const auto& file : args.arguments.try_pathes_or_variables(KnownArgs::ipl_files)) {
         FunctionGuard fg{ "Instantiate \"" + short_path(file.path) + '"'};
         for (const auto& info : read_ipl(file.path, dynamics)) {
@@ -53,8 +53,8 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 ir.has_value() ? &instantiated : nullptr);
         }
     }
-    for (const auto& name : args.arguments.try_at_vector<std::string>(KnownArgs::instantiables)) {
-        FunctionGuard fg{ "Instantiate \"" + name + '"' };
+    for (const auto& name : args.arguments.try_at_vector<VariableAndHash<std::string>>(KnownArgs::instantiables)) {
+        FunctionGuard fg{ "Instantiate \"" + *name + '"' };
         instantiate(
             scene,
             scene_node_resources.instantiable(name),

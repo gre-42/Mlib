@@ -32,7 +32,7 @@ PlayerSetPlaybackWaypoints::PlayerSetPlaybackWaypoints(RenderableScene& renderab
 void PlayerSetPlaybackWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    auto* inverse_geographic_mapping = scene_node_resources.get_geographic_mapping("world.inverse");
+    auto* inverse_geographic_mapping = scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"});
     if (inverse_geographic_mapping == nullptr) {
         THROW_OR_ABORT("Could not find geographic mapping with name \"world.inverse\"");
     }

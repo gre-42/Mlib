@@ -52,9 +52,9 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
         if (p->game_mode() == GameMode::BYSTANDER) {
             continue;
         }
-        const std::string& node_name = p->scene_node_name();
+        const VariableAndHash<std::string>& node_name = p->scene_node_name();
         all_teams.insert(p->team_name());
-        if (!node_name.empty()) {
+        if (!node_name->empty()) {
             winner_teams.insert(p->team_name());
         }
     }

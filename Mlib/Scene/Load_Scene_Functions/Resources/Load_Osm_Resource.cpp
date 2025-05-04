@@ -343,10 +343,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         return args.arguments.pathes_or_variables(name, [](const FPath& v) { return VariableAndHash{ v.path }; });
     };
 
+    auto resource_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     OsmResourceConfig config;
     auto& tconfig = config.triangle_sampler_resource_config;
     std::string cache_filename;
-    std::string resource_name;
     std::vector<double> layer_heights_layer;
     std::vector<double> layer_heights_height;
     {
@@ -387,7 +387,6 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         auto parse_resource_name_func = [&scene_node_resources](const std::string& jma){
             return parse_resource_name(scene_node_resources, jma);
         };
-        resource_name = args.arguments.at<std::string>(KnownArgs::name);
         config.filename = args.arguments.path(KnownArgs::filename);
         cache_filename = args.arguments.path(KnownArgs::cache_filename);
         if (args.arguments.contains(KnownArgs::heightmap)) {
@@ -1166,7 +1165,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.max_imposter_texture_size = args.arguments.at<uint32_t>(KnownArgs::max_imposter_texture_size);
         }
     }
-    if (resource_name.empty()) {
+    if (resource_name->empty()) {
         THROW_OR_ABORT("Osm resource name not set");
     }
     config.layer_heights = Interp<double>(
@@ -1200,7 +1199,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         osm_map_resource = std::make_shared<OsmMapResource>(
             scene_node_resources,
             cache_filename,
-            resource_name);
+            *resource_name);
     } else {
         FunctionGuard fg{ "Load OSM map" };
         if (enable_cache) {
@@ -1211,7 +1210,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         osm_map_resource = std::make_shared<OsmMapResource>(
             scene_node_resources,
             config,
-            resource_name,
+            *resource_name,
             FileStorageType::CACHE);
         if (enable_cache) {
             osm_map_resource->save_to_file(cache_filename, FileStorageType::CACHE);

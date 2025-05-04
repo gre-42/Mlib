@@ -267,7 +267,7 @@ const RigidBodyVehicle& Player::rigid_body() const {
     return vehicle_->rb();
 }
 
-const std::string& Player::scene_node_name() const {
+const VariableAndHash<std::string>& Player::scene_node_name() const {
     std::shared_lock lock{ mutex_ };
     return vehicle().scene_node_name();
 }
@@ -746,7 +746,7 @@ bool Player::ramming() const {
     return (game_mode_ == GameMode::RAMMING) && (target_rb_ != nullptr);
 }
 
-std::optional<std::string> Player::target_id() const {
+std::optional<VariableAndHash<std::string>> Player::target_id() const {
     std::shared_lock lock{ mutex_ };
     return target_id_;
 }
@@ -1171,11 +1171,11 @@ PlaybackWaypoints& Player::playback_waypoints() {
     return playback_waypoints_;
 }
 
-void Player::append_dependent_node(std::string node_name) {
+void Player::append_dependent_node(VariableAndHash<std::string> node_name) {
     std::scoped_lock lock{ mutex_ };
     auto node = scene_.get_node(node_name, DP_LOC);
     if (!dependent_nodes_.try_emplace(node.ptr(), std::move(node_name)).second) {
-        THROW_OR_ABORT("Node \"" + node_name + "\" already is a dependent node of player \"" + id() + '"');
+        THROW_OR_ABORT("Node \"" + *node_name + "\" already is a dependent node of player \"" + id() + '"');
     }
     node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION }, ObserverAlreadyExistsBehavior::IGNORE);
 }

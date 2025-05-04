@@ -39,7 +39,7 @@ CreateTrailerNode::CreateTrailerNode(RenderableScene& renderable_scene)
 
 void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& rb = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::car_instance), DP_LOC));
+    auto& rb = get_rigid_body_vehicle(scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::car_instance), DP_LOC));
     auto trailer_asset_id = args.arguments.at<std::string>(KnownArgs::trailer_asset_id);
     const auto& vars = args
         .asset_references["vehicles"]
@@ -54,7 +54,7 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         matrix_2_tait_bryan_angles(pose1.R),
         pose1.get_scale());
     scene.add_root_node(
-        args.arguments.at<std::string>(KnownArgs::trailer_node),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::trailer_node),
         std::move(node),
         RenderingDynamics::MOVING,
         RenderingStrategies::OBJECT);

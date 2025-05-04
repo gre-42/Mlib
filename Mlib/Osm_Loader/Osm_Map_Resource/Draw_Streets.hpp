@@ -13,6 +13,8 @@
 
 namespace Mlib {
 
+template <class T>
+class VariableAndHash;
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TData, size_t... tshape>
@@ -59,12 +61,12 @@ struct DrawStreetsInput {
     UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_bdry_triangles;
     std::list<FixedArray<CompressedScenePos, 2, 2>>& way_segments;
     const RacingLineBvh& racing_line_bvh;
-    const Map<RoadType, std::string>& street_surface_central_resource_names;
-    const Map<RoadType, std::string>& street_surface_endpoint0_resource_names;
-    const Map<RoadType, std::string>& street_surface_endpoint1_resource_names;
-    const Map<RoadType, std::string>& street_bumps_central_resource_names;
-    const Map<RoadType, std::string>& street_bumps_endpoint0_resource_names;
-    const Map<RoadType, std::string>& street_bumps_endpoint1_resource_names;
+    const Map<RoadType, VariableAndHash<std::string>>& street_surface_central_resource_names;
+    const Map<RoadType, VariableAndHash<std::string>>& street_surface_endpoint0_resource_names;
+    const Map<RoadType, VariableAndHash<std::string>>& street_surface_endpoint1_resource_names;
+    const Map<RoadType, VariableAndHash<std::string>>& street_bumps_central_resource_names;
+    const Map<RoadType, VariableAndHash<std::string>>& street_bumps_endpoint0_resource_names;
+    const Map<RoadType, VariableAndHash<std::string>>& street_bumps_endpoint1_resource_names;
     const std::map<std::string, Node>& nodes;
     const std::map<std::string, Way>& ways;
     float scale;
@@ -126,12 +128,12 @@ private:
         float curb_alpha,
         float curb2_alpha,
         float lane_shift);
-    std::string auto_model_name(
+        VariableAndHash<std::string> auto_model_name(
         const std::string& node_id,
         const AngleWay& angle_way,
-        const Map<RoadType, std::string>& central_resource_names,
-        const Map<RoadType, std::string>& endpoint0_resource_names,
-        const Map<RoadType, std::string>& endpoint1_resource_names) const;
+        const Map<RoadType, VariableAndHash<std::string>>& central_resource_names,
+        const Map<RoadType, VariableAndHash<std::string>>& endpoint0_resource_names,
+        const Map<RoadType, VariableAndHash<std::string>>& endpoint1_resource_names) const;
     std::map<std::string, WayInfo> way_infos;
     std::map<std::string, std::map<float, AngleWay>> node_angles;
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;

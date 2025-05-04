@@ -25,5 +25,5 @@ MoveNodeToBvh::MoveNodeToBvh(RenderableScene& renderable_scene)
 
 void MoveNodeToBvh::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.move_root_node_to_bvh(args.arguments.at<std::string>(KnownArgs::node));
+    scene.move_root_node_to_bvh(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node));
 }

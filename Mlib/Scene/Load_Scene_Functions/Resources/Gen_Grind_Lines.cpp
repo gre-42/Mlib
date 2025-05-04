@@ -30,8 +30,8 @@ LoadSceneJsonUserFunction GenGrindLines::json_user_function = [](const LoadScene
     args.arguments.validate(KnownArgs::options);
 
     RenderingContextStack::primary_scene_node_resources().generate_grind_lines(
-        args.arguments.at<std::string>(KnownArgs::source_name),
-        args.arguments.at<std::string>(KnownArgs::dest_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::source_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::dest_name),
         args.arguments.at<float>(KnownArgs::edge_angle) * degrees,
         args.arguments.at<float>(KnownArgs::averaged_normal_angle) * degrees,
         ColoredVertexArrayFilter{

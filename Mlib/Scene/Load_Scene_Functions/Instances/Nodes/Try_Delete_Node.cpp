@@ -26,5 +26,5 @@ TryDeleteNode::TryDeleteNode(RenderableScene& renderable_scene)
 
 void TryDeleteNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.try_delete_node(args.arguments.at<std::string>(KnownArgs::name));
+    scene.try_delete_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name));
 }

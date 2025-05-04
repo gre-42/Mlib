@@ -32,7 +32,7 @@ CreateDeltaEngine::CreateDeltaEngine(RenderableScene& renderable_scene)
 void CreateDeltaEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::rigid_body), DP_LOC);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     auto ep = rb.delta_engines_.try_emplace(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name));

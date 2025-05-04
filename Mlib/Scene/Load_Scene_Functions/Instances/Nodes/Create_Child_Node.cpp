@@ -31,8 +31,8 @@ void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args) const
 {
     (*this)(
         args.arguments.at<std::string>(KnownArgs::type),
-        args.arguments.at<std::string>(KnownArgs::parent),
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position, fixed_zeros<ScenePos, 3>()),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
@@ -41,8 +41,8 @@ void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args) const
 
 void CreateChildNode::operator () (
     const std::string& type,
-    const std::string& parent,
-    const std::string& name,
+    const VariableAndHash<std::string>& parent,
+    const VariableAndHash<std::string>& name,
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale,

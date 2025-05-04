@@ -36,8 +36,8 @@ LoadSceneJsonUserFunction AddFoliageResource::json_user_function = [](const Load
     };
     
     add_foliage_resource(
-        args.arguments.at<std::string>(KnownArgs::mesh_resource_name),
-        args.arguments.at<std::string>(KnownArgs::foliage_resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::mesh_resource_name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::foliage_resource_name),
         scene_node_resources,
         args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func),
         args.arguments.at_vector<std::string>(KnownArgs::dirty_near_grass_resource_names, parse_resource_name_func),

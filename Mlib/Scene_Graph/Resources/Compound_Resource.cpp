@@ -26,9 +26,9 @@ using namespace Mlib;
 
 CompoundResource::CompoundResource(
     SceneNodeResources& scene_node_resources,
-    const std::vector<std::string>& resource_names)
+    std::vector<VariableAndHash<std::string>> resource_names)
     : scene_node_resources_{ scene_node_resources }
-    , resource_names_{ resource_names }
+    , resource_names_{ std::move(resource_names) }
 {}
 
 CompoundResource::~CompoundResource()

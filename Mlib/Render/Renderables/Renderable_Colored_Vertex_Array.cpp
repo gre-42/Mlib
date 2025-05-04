@@ -287,8 +287,8 @@ UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calcul
         if (animation_state == nullptr) {
             THROW_OR_ABORT("Animation without animation state");
         }
-        auto get_abt = [this](const std::string& animation_name, float time) {
-            if (animation_name.empty()) {
+        auto get_abt = [this](const VariableAndHash<std::string>& animation_name, float time) {
+            if (animation_name->empty()) {
                 THROW_OR_ABORT("Animation frame has no name");
             }
             if (std::isnan(time)) {
