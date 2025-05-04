@@ -34,6 +34,10 @@ PitchLookAtNode::PitchLookAtNode(
 
 PitchLookAtNode::~PitchLookAtNode() {
     on_destroy.clear();
+    if (head_node_ != nullptr) {
+        head_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+        head_node_ = nullptr;
+    }
 }
 
 void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
