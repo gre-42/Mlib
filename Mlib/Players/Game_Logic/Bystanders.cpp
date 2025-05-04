@@ -24,19 +24,24 @@ Bystanders::Bystanders(
     Scene& scene,
     Spawner& spawner,
     GameLogicConfig& cfg)
-: current_bystander_rng_{ 0 },
-  current_bvh_rng_{ 0 },
-  current_bvh_{ 0 },
-  vip_{ nullptr },
-  vehicle_spawners_{ vehicle_spawners },
-  players_{ players },
-  scene_{ scene },
-  spawner_{ spawner },
-  cfg_{ cfg }
+    : current_bystander_rng_{ 0 }
+    , current_bvh_rng_{ 0 }
+    , spawn_point_rng_{ 0 }
+    , current_bvh_{ 0 }
+    , vip_{ nullptr }
+    , vehicle_spawners_{ vehicle_spawners }
+    , players_{ players }
+    , scene_{ scene }
+    , spawner_{ spawner }
+    , cfg_{ cfg }
 {}
 
-Bystanders::~Bystanders()
-{}
+Bystanders::~Bystanders() = default;
+
+struct SpawnPointAndDistance {
+    const SpawnPoint* sp;
+    ScenePos dist2;
+};
 
 /** Spawn player `player` for VIP with orientation `vpi_z` and position `vpi_pos`.
  */
@@ -49,36 +54,44 @@ bool Bystanders::spawn_for_vip(
     if (spawner.has_scene_vehicle()) {
         THROW_OR_ABORT("Spawner already has a vehicle");
     }
-    bool success = false;
+    std::vector<SpawnPointAndDistance> neighboring_spawn_points;
+    neighboring_spawn_points.reserve(1000);
     spawner_.spawn_points_bvh_split_.at(current_bvh_)->visit(
-        AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
-            vip_pos.casted<CompressedScenePos>(),
-            cfg_.r_spawn_far),
-        [&](const SpawnPoint* sp)
-    {
-        if (spawner.has_player()) {
-            if ((sp->type == SpawnPointType::PARKING) != spawner.get_player()->is_parking()) {
+            AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
+                    vip_pos.casted<CompressedScenePos>(),
+                    cfg_.r_spawn_far),
+            [&](const SpawnPoint* sp)
+            {
+                if (spawner.has_player()) {
+                    if ((sp->type == SpawnPointType::PARKING) != spawner.get_player()->is_parking()) {
+                        return true;
+                    }
+                    if ((sp->location == WayPointLocation::SIDEWALK) != spawner.get_player()->is_pedestrian()) {
+                        return true;
+                    }
+                }
+                ScenePos dist2 = sum(squared(funpack(sp->trafo.t) - vip_pos));
+                // Abort if too far away.
+                if (dist2 > squared(cfg_.r_spawn_far)) {
+                    return true;
+                }
+                // Abort if behind car.
+                if (dot0d(funpack(sp->trafo.t) - vip_pos, vip_z.casted<ScenePos>()) > 0) {
+                    return true;
+                }
+                neighboring_spawn_points.emplace_back(sp, dist2);
                 return true;
-            }
-            if ((sp->location == WayPointLocation::SIDEWALK) != spawner.get_player()->is_pedestrian()) {
-                return true;
-            }
-        }
-        ScenePos dist2 = sum(squared(funpack(sp->trafo.t) - vip_pos));
-        // Abort if too far away.
-        if (dist2 > squared(cfg_.r_spawn_far)) {
-            return true;
-        }
-        // Abort if behind car.
-        if (dot0d(funpack(sp->trafo.t) - vip_pos, vip_z.casted<ScenePos>()) > 0) {
-            return true;
-        }
+                });
+    std::shuffle(neighboring_spawn_points.begin(), neighboring_spawn_points.end(), spawn_point_rng_);
+    bool success = false;
+    for (size_t i = 0; i < std::min(cfg_.spawn_points_visited_max, neighboring_spawn_points.size()); ++i) {
+        const auto& n = neighboring_spawn_points[i];
         // Abort if another car is nearby.
         {
             bool exists = false;
             for (const auto& [_, player2] : players_.players()) {
                 if (player2->has_scene_vehicle()) {
-                    if (sum(squared(funpack(sp->trafo.t) - player2->scene_node()->position())) < squared(cfg_.r_neighbors)) {
+                    if (sum(squared(funpack(n.sp->trafo.t) - player2->scene_node()->position())) < squared(cfg_.r_neighbors)) {
                         exists = true;
                         break;
                     }
@@ -89,10 +102,10 @@ bool Bystanders::spawn_for_vip(
             }
         }
         bool spotted = vip_->can_see(
-            funpack(sp->trafo.t),
+            funpack(n.sp->trafo.t),
             cfg_.only_terrain,
             funpack(cfg_.spawn_point_can_be_seen_y_offset));
-        if (dist2 < squared(cfg_.r_spawn_near)) {
+        if (n.dist2 < squared(cfg_.r_spawn_near)) {
             // The spawn point is near the VIP.
 
             // Abort if visible.
@@ -101,7 +114,7 @@ bool Bystanders::spawn_for_vip(
             }
             // Abort if not visible after x seconds.
             if (!vip_->can_see(
-                funpack(sp->trafo.t),
+                funpack(n.sp->trafo.t),
                 cfg_.only_terrain,
                 funpack(cfg_.spawn_point_can_be_seen_y_offset),
                 cfg_.visible_after_spawn_time))
@@ -116,7 +129,7 @@ bool Bystanders::spawn_for_vip(
                 return true;
             }
         }
-        if (spawner_.try_spawn_at_spawn_point(spawner, sp->trafo)) {
+        if (spawner_.try_spawn_at_spawn_point(spawner, n.sp->trafo)) {
             if (spotted) {
                 spawner.set_spotted_by_vip();
             }
@@ -125,7 +138,7 @@ bool Bystanders::spawn_for_vip(
         } else {
             return true;
         }
-    });
+    }
     // current_bvh_ = (current_bvh_ + 1) % spawn_.spawn_points_bvhs_split_.size();
     current_bvh_ = current_bvh_rng_() % spawner_.spawn_points_bvh_split_.size();
     return success;

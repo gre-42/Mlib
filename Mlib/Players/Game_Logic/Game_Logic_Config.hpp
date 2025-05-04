@@ -14,6 +14,7 @@ struct GameLogicConfig {
     bool only_terrain = true;
     CompressedScenePos spawn_point_can_be_seen_y_offset = (CompressedScenePos)(2 * meters);
     size_t spawn_points_nsubdivisions = 5 * 60;
+    size_t spawn_points_visited_max = 10;
     CompressedScenePos r_occupied_spawn_point = (CompressedScenePos)(5 * meters);
 };
 
