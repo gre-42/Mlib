@@ -33,7 +33,7 @@ struct PhysicsEngineConfig {
     // Grid
     size_t grid_level = 9;
     FixedArray<size_t, 3> ncells = { 400u, 5u, 400u };
-    CompressedScenePos dilation_radius = (CompressedScenePos)(15.f * meters);
+    CompressedScenePos dilation_radius = (CompressedScenePos)(20.f * meters);
 
     // Collision/Friction misc.
     float max_extra_friction = 0;
