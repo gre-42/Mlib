@@ -202,6 +202,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 av = std::make_shared<EngineAudio>(
                     adb.at<std::string>(KnownAudio::name),
                     paused,
+                    paused_changed,
                     adb.at<float>(KnownAudio::p_idle) * hp,
                     adb.at<float>(KnownAudio::p_reference) * hp);
             }

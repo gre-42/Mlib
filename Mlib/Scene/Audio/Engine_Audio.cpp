@@ -13,11 +13,12 @@ using namespace Mlib;
 
 EngineAudio::EngineAudio(
     const std::string& resource_name,
-    const std::function<bool()>& paused,
+    std::function<bool()> audio_paused,
+    EventEmitter& audio_paused_changed,
     float p_reference,
     float p_idle)
 #ifndef WITHOUT_ALUT
-    : cross_fade_{ PositionRequirement::WAITING_FOR_POSITION, paused }
+    : cross_fade_{ PositionRequirement::WAITING_FOR_POSITION, std::move(audio_paused), audio_paused_changed }
     , p_reference_{ p_reference }
     , p_idle_{ p_idle }
 {
@@ -69,5 +70,5 @@ void EngineAudio::set_position(const AudioSourceState<ScenePos>& position) {
 }
 
 void EngineAudio::advance_time(float dt) {
-    cross_fade_.advance_time();
+    cross_fade_.advance_time(dt);
 }

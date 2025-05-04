@@ -14,7 +14,8 @@ public:
     explicit SetFps(
         ISleeper* sleeper,
         std::function<std::chrono::steady_clock::time_point()> simulated_time = std::function<std::chrono::steady_clock::time_point()>(),
-        std::function<bool()> paused = std::function<bool()>());
+        std::function<bool()> paused = std::function<bool()>(),
+        std::function<void()> on_tick = std::function<void()>());
     ~SetFps();
     void tick(std::chrono::steady_clock::time_point completed_time);
     void execute_oldest_funcs();
@@ -31,6 +32,7 @@ private:
     std::atomic<std::chrono::steady_clock::time_point> completed_time_;
     std::function<std::chrono::steady_clock::time_point()> simulated_time_;
     std::function<bool()> paused_;
+    std::function<void()> on_tick_;
     std::mutex execute_mutex_;
     ISleeper* sleeper_;
 };

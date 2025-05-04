@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Images/Ppm_Image.hpp>
+#include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -159,6 +160,7 @@ public:
     ContactSmokeGenerator contact_smoke_generator_;
 
     std::function<bool()> paused_;
+    EventEmitter paused_changed_;
     RealtimeSleeper physics_sleeper_;
     SetFps physics_set_fps_;
     BusyStateProviderGuard busy_state_provider_guard_;

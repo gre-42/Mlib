@@ -6,6 +6,7 @@
 #include <Mlib/Audio/Audio_File_Sequence.hpp>
 #include <Mlib/Audio/Cross_Fade.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
+#include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
@@ -65,7 +66,8 @@ int main(int argc, char** argv) {
         float pitch = safe_stof(args.named_value("--pitch", "1"));
         float gain_factor = safe_stof(args.named_value("--gain", "1"));
         auto paused = [](){return false;};
-        CrossFade cross_fade{ PositionRequirement::POSITION_NOT_REQUIRED, paused, dgain };
+        EventEmitter paused_changed{ [](){return false;} };
+        CrossFade cross_fade{ PositionRequirement::POSITION_NOT_REQUIRED, paused, paused_changed, dgain };
         cross_fade.start_background_thread(dt_fade);
         for (float f : Linspace<float>{
             safe_stof(args.named_value("--f0")),

@@ -89,6 +89,7 @@ RenderableScene::RenderableScene(
         std::shared_lock lock{ ui_focus.focuses.mutex };
         return !ui_focus.has_focus(focus_filter);
       } }
+    , paused_changed_{ [](){ return true; }}
     , physics_sleeper_{
           "Physics FPS: ",
           scene_config_.physics_engine_config.dt / seconds,
@@ -101,7 +102,8 @@ RenderableScene::RenderableScene(
           scene_config_.physics_engine_config.control_fps
               ? [this]() { return physics_sleeper_.simulated_time(); }
               : std::function<std::chrono::steady_clock::time_point()>(),
-          paused_}
+          paused_,
+          [this](){ paused_changed_.emit(); }}
     , busy_state_provider_guard_{ dependent_sleeper, physics_set_fps_ }
     , gefp_{ physics_engine_ }
     , physics_iteration_{

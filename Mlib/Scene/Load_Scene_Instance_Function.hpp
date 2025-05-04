@@ -39,6 +39,7 @@ class PostProcessingLogic;
 class Imposters;
 class SupplyDepots;
 class RenderingResources;
+class EventEmitter;
 
 class LoadSceneInstanceFunction {
 public:
@@ -68,6 +69,7 @@ protected:
     RenderLogics& render_logics;
     RenderLogics& scene_render_logics;
     std::function<bool()>& paused;
+    EventEmitter& paused_changed;
     SetFps& physics_set_fps;
     RenderLogic& scene_logic;
     RenderLogic& read_pixels_logic;

@@ -44,6 +44,7 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
 
 KeepOffsetFromCamera::~KeepOffsetFromCamera() {
     on_destroy.clear();
+    camera_changed_deletion_token_.reset();
 }
 
 void KeepOffsetFromCamera::advance_time(float dt, const StaticWorld& world) {

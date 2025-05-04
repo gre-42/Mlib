@@ -10,6 +10,7 @@
 
 namespace Mlib {
 
+class EventEmitter;
 class AudioBuffer;
 class AudioBufferSequenceWithHysteresis;
 
@@ -17,7 +18,8 @@ class EngineAudio: public EngineEventListener {
 public:
     explicit EngineAudio(
         const std::string& resource_name,
-        const std::function<bool()>& audio_paused,
+        std::function<bool()> audio_paused,
+        EventEmitter& audio_paused_changed,
         float p_reference,
         float p_idle);
     virtual ~EngineAudio() override;

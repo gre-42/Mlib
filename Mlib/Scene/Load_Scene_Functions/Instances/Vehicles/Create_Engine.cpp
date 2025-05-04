@@ -92,6 +92,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
             av = std::make_shared<EngineAudio>(
                 a.at<std::string>(Audio::name),
                 paused,
+                paused_changed,
                 a.at<float>(Audio::p_idle) * hp,
                 a.at<float>(Audio::p_reference) * hp);
         }

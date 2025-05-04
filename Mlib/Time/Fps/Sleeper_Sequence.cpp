@@ -3,7 +3,7 @@
 using namespace Mlib;
 
 SleeperSequence::SleeperSequence(std::vector<ISleeper*> sleepers)
-: sleepers_{std::move(sleepers)}
+    : sleepers_{std::move(sleepers)}
 {}
 
 void SleeperSequence::tick() {

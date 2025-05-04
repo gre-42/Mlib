@@ -1,5 +1,6 @@
 #include "Cross_Fade.hpp"
 #include <Mlib/Audio/Audio_Scene.hpp>
+#include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
@@ -15,14 +16,18 @@ void AudioSourceAndGain::apply_gain() {
 CrossFade::CrossFade(
     PositionRequirement position_requirement,
     std::function<bool()> paused,
+    EventEmitter& paused_changed,
     float dgain)
     : position_requirement_{ position_requirement }
     , total_gain_{ 0.f }
     , dgain_{ dgain }
     , paused_{ std::move(paused) }
+    , erdt_{ paused_changed.insert([this](){ advance_time(0.f); }) }
 {}
 
-CrossFade::~CrossFade() = default;
+CrossFade::~CrossFade() {
+    erdt_.reset();
+}
 
 void CrossFade::start_background_thread(float dt) {
     std::scoped_lock lock{ mutex_ };
@@ -33,7 +38,7 @@ void CrossFade::start_background_thread(float dt) {
         try {
             ThreadInitializer ti{"Audio CrossFade", ThreadAffinity::POOL};
             while (!fader_->get_stop_token().stop_requested()) {
-                advance_time();
+                advance_time(dt);
                 Mlib::sleep_for(std::chrono::duration<float>(dt));
             }
         } catch (const std::exception& e) {
@@ -42,7 +47,7 @@ void CrossFade::start_background_thread(float dt) {
     });
 }
 
-void CrossFade::advance_time() {
+void CrossFade::advance_time(float dt) {
     bool pause = paused_();
     std::scoped_lock lock{ mutex_ };
     if (pause) {
@@ -53,7 +58,9 @@ void CrossFade::advance_time() {
         for (auto &s : sources_) {
             s.source->unmute();
         }
-        update_gain_unsafe(dgain_);
+        if (dt != 0.f) {
+            update_gain_unsafe(dgain_);
+        }
     }
 }
 

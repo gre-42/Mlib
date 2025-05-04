@@ -10,11 +10,13 @@ using namespace Mlib;
 SetFps::SetFps(
     ISleeper* sleeper,
     std::function<std::chrono::steady_clock::time_point()> simulated_time,
-    std::function<bool()> paused)
+    std::function<bool()> paused,
+    std::function<void()> on_tick)
     : stop_requested_{ false }
     , completed_time_()
     , simulated_time_{ std::move(simulated_time) }
     , paused_{ std::move(paused) }
+    , on_tick_{ std::move(on_tick) }
     , sleeper_{ sleeper }
 {}
 
@@ -29,12 +31,18 @@ void SetFps::tick(std::chrono::steady_clock::time_point completed_time)
     execute_oldest_funcs();
     if (paused() && !stop_requested_) {
         while (paused() && !stop_requested_) {
+            if (on_tick_) {
+                on_tick_();
+            }
             while (execute_oldest_func());
             Mlib::sleep_for(std::chrono::microseconds(100));
         }
         if (sleeper_ != nullptr) {
             sleeper_->reset();
         }
+    }
+    if (on_tick_) {
+        on_tick_();
     }
 }
 

@@ -8,10 +8,13 @@
 #include <functional>
 #include <iosfwd>
 #include <list>
+#include <memory>
 #include <optional>
 
 namespace Mlib {
 
+class EventEmitter;
+class EventReceiverDeletionToken;
 class AudioBuffer;
 template <class TPosition>
 struct AudioSourceState;
@@ -33,10 +36,11 @@ class CrossFade {
 public:
     explicit CrossFade(PositionRequirement position_requirement,
                        std::function<bool()> paused,
+                       EventEmitter& paused_changed,
                        float dgain = 0.02f);
     ~CrossFade();
     void start_background_thread(float dt = 0.01f);
-    void advance_time();
+    void advance_time(float dt);
     void play(const AudioBuffer &audio_buffer,
               float gain_factor = 1.f,
               float pitch = 1.f,
@@ -58,6 +62,7 @@ private:
     mutable FastMutex mutex_;
     std::function<bool()> paused_;
     std::optional<JThread> fader_;
+    std::unique_ptr<EventReceiverDeletionToken> erdt_;
 };
 
 }
