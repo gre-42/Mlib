@@ -777,29 +777,29 @@ void Scene::render(
                         external_render_pass);
                 }
             }
-            {
-                // AperiodicLagFinder lag_finder{ "blended: ", std::chrono::milliseconds{5} };
-                // Contains continuous alpha and must therefore be rendered late.
-                LOG_INFO("Scene::render blended");
-                blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
-                for (const auto& b : blended) {
-                    DynamicStyle dynamic_style{ dynamic_lights_ != nullptr
-                        ? dynamic_lights_->get_color(b.m.t)
-                        : fixed_zeros<float, 3>() };
-                    b.renderable().render(
-                        b.mvp,
-                        b.m,
-                        iv,
-                        &dynamic_style,
-                        lights,
-                        skidmarks,
-                        scene_graph_config,
-                        render_config,
-                        { external_render_pass, InternalRenderPass::BLENDED },
-                        b.animation_state.get(),
-                        b.color_style);
-                }
-            }
+        }
+    }
+    {
+        // AperiodicLagFinder lag_finder{ "blended: ", std::chrono::milliseconds{5} };
+        // Contains continuous alpha and must therefore be rendered late.
+        LOG_INFO("Scene::render blended");
+        blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
+        for (const auto& b : blended) {
+            DynamicStyle dynamic_style{ dynamic_lights_ != nullptr
+                ? dynamic_lights_->get_color(b.m.t)
+                : fixed_zeros<float, 3>() };
+            b.renderable().render(
+                b.mvp,
+                b.m,
+                iv,
+                &dynamic_style,
+                lights,
+                skidmarks,
+                scene_graph_config,
+                render_config,
+                { external_render_pass, InternalRenderPass::BLENDED },
+                b.animation_state.get(),
+                b.color_style);
         }
     }
 }
