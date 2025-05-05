@@ -43,7 +43,7 @@ public:
 
 class ImposterLogic: public RenderLogic {
     friend OriginalNodeHider;
-    using ProjectedBbox = FixedArray<FixedArray<ScenePos, 3>, 8>;
+    using ProjectedBbox = FixedArray<ScenePos, 8, 3>;
 public:
     explicit ImposterLogic(
         RenderingResources& rendering_resources,

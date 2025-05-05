@@ -45,7 +45,7 @@
 using namespace Mlib;
 
 OriginalNodeHider::OriginalNodeHider(ImposterLogic& imposter_logic)
-: imposter_logic_{imposter_logic}
+    : imposter_logic_{imposter_logic}
 {}
 
 bool OriginalNodeHider::node_shall_be_hidden(
@@ -68,6 +68,9 @@ bool ImposterNodeHider::node_shall_be_hidden(
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         return true;
     }
+    // A check for "imposter_logic_.imposter_node_ == nullptr" like
+    // in the "OriginalNodeHider" is not necessary, because the
+    // imposter node would not exist in this case.
     return false;
 }
 
@@ -240,7 +243,7 @@ void ImposterLogic::render_without_setup(
     ProjectedBbox projected_bbox = uninitialized;
     bool old_imposter_exists = (imposter_node_ != nullptr);
     bool delete_old_imposter = false;
-    bool create_new_imposter = !old_imposter_exists;
+    bool ensure_imposter_exists = true;
     [&](){
         la = gl_lookat_aabb(
             camera_position,
@@ -248,7 +251,7 @@ void ImposterLogic::render_without_setup(
             obj_relative_aabb_);
         if (!la.has_value()) {
             delete_old_imposter = old_imposter_exists;
-            create_new_imposter = false;
+            ensure_imposter_exists = false;
             return;
         }
 
@@ -260,18 +263,18 @@ void ImposterLogic::render_without_setup(
                 max_texture_size_);
             if (!npixels.has_value()) {
                 delete_old_imposter = old_imposter_exists;
-                create_new_imposter = false;
+                ensure_imposter_exists = false;
                 return;    
             }
             if (old_imposter_exists && !delete_old_imposter) {
                 if ((std::abs(npixels->width - old_npixels_.width) > max_texture_size_deviation_) ||
                     (std::abs(npixels->height - old_npixels_.height) > max_texture_size_deviation_))
                 {
-                    delete_old_imposter = old_imposter_exists;
+                    delete_old_imposter = true;
                 }
             }
         }
-        if (!delete_old_imposter || create_new_imposter) {
+        if (ensure_imposter_exists) {
             auto iv = TransformationMatrix<float, ScenePos, 3>(
                 la->extrinsic_R, camera_position);
             auto mv = (TransformationMatrix<float, ScenePos, 3>::inverse(
@@ -284,13 +287,13 @@ void ImposterLogic::render_without_setup(
                     return false;
                 }
                 auto pc_proj = pc / (-pc(2));
-                projected_bbox(i) = iv.transform(pc_proj * cam_to_obj2_len);
+                projected_bbox[i] = iv.transform(pc_proj * cam_to_obj2_len);
                 ++i;
                 return true;
             }))
             {
                 delete_old_imposter = old_imposter_exists;
-                create_new_imposter = false;
+                ensure_imposter_exists = false;
                 return;
             }
         }
@@ -299,7 +302,7 @@ void ImposterLogic::render_without_setup(
             size_t i = 0;
             if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<ScenePos, 3>& corner){
                 auto pc = mv.transform(corner).casted<float>();
-                auto pc_old = c.view.transform(old_projected_bbox_(i++)).casted<float>();
+                auto pc_old = c.view.transform(old_projected_bbox_[i++]).casted<float>();
                 if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
                     return true;
                 }
@@ -318,7 +321,7 @@ void ImposterLogic::render_without_setup(
     if (delete_old_imposter) {
         delete_imposter_if_exists();
     }
-    if (create_new_imposter) {
+    if (ensure_imposter_exists && (imposter_node_ == nullptr)) {
         assert_true(la.has_value());
         auto imposter_camera_node = make_unique_scene_node(
             camera_position,
