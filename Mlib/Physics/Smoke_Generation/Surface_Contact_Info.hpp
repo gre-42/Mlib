@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Physics/Smoke_Generation/Particle_Descriptor.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <string>
 #include <vector>
@@ -13,12 +14,10 @@ struct SurfaceSmokeRule {
 };
 
 struct SurfaceSmokeInfo {
-    VariableAndHash<std::string> smoke_particle_resource_name;
+    ParticleDescriptor particle;
     std::string smoke_particle_instance_prefix;
     SurfaceSmokeRule vehicle_velocity;
     SurfaceSmokeRule tire_velocity;
-    float air_resistance;
-    float smoke_particle_animation_duration;
 };
 
 struct SurfaceContactInfo {

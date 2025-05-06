@@ -16,12 +16,10 @@ DECLARE_ARGUMENT(particle_velocities);
 
 namespace KnownSmokeArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(resource_name);
+DECLARE_ARGUMENT(particle);
 DECLARE_ARGUMENT(instance_prefix);
 DECLARE_ARGUMENT(vehicle);
 DECLARE_ARGUMENT(tire);
-DECLARE_ARGUMENT(air_resistance);
-DECLARE_ARGUMENT(animation_duration);
 }
 
 namespace Mlib {
@@ -62,10 +60,8 @@ static void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
     if (auto tire = jv.try_at(KnownSmokeArgs::tire)) {
         rules_from_json(*tire, item.tire_velocity);
     }
-    item.smoke_particle_resource_name = jv.at<std::string>(KnownSmokeArgs::resource_name);
+    item.particle = jv.at<ParticleDescriptor>(KnownSmokeArgs::particle);
     item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeArgs::instance_prefix);
-    item.air_resistance = jv.at<float>(KnownSmokeArgs::air_resistance);
-    item.smoke_particle_animation_duration = jv.at<float>(KnownSmokeArgs::animation_duration) * seconds;
 }
 
 }

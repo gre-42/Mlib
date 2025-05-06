@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
+#include <Mlib/Physics/Smoke_Generation/Particle_Trail_Generator.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <compare>
 #include <map>
@@ -31,7 +31,7 @@ public:
     void advance_time(float dt);
 private:
     SmokeParticleGenerator& smoke_particle_generator_;
-    std::unordered_map<RigidBodyVehicle*, std::map<std::pair<size_t, size_t>, SmokeTrailGenerator>> tire_smoke_trail_generators_;
+    std::unordered_map<RigidBodyVehicle*, std::map<std::pair<size_t, size_t>, ParticleTrailGenerator>> tire_smoke_trail_generators_;
 };
 
 }

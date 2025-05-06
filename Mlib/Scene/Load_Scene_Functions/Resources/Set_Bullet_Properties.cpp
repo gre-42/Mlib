@@ -8,14 +8,6 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 
-namespace KnownBulletTrailArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(resource);
-DECLARE_ARGUMENT(dt);
-DECLARE_ARGUMENT(air_resistance);
-DECLARE_ARGUMENT(animation_duration);
-}
-
 namespace KnownBulletArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(renderable);
@@ -37,16 +29,6 @@ DECLARE_ARGUMENT(light_after_impact);
 
 namespace Mlib {
 
-static void from_json(const nlohmann::json& j, BulletTrail& item) {
-    JsonView jv{ j };
-    jv.validate(KnownBulletTrailArgs::options);
-
-    item.resource_name = jv.at<std::string>(KnownBulletTrailArgs::resource, "");
-    item.dt = jv.at<float>(KnownBulletTrailArgs::dt, NAN) * seconds;
-    item.air_resistance = jv.at<float>(KnownBulletTrailArgs::air_resistance);
-    item.animation_duration = jv.at<float>(KnownBulletTrailArgs::animation_duration, NAN) * seconds;
-}
-
 static void from_json(const nlohmann::json& j, BulletProperties& item) {
     JsonView jv{ j };
     jv.validate(KnownBulletArgs::options);
@@ -62,7 +44,7 @@ static void from_json(const nlohmann::json& j, BulletProperties& item) {
     item.damage = jv.at<float>(KnownBulletArgs::damage);
     item.damage_radius = jv.at<float>(KnownBulletArgs::damage_radius, 0.f) * meters;
     item.size = jv.at<UFixedArray<float, 3>>(KnownBulletArgs::size) * meters;
-    if (auto trail = jv.try_at<BulletTrail>(KnownBulletArgs::trail)) {
+    if (auto trail = jv.try_at<ConstantParticleTrail>(KnownBulletArgs::trail)) {
         item.trail = *trail;
     }
     item.trace_storage = jv.at<std::string>(KnownBulletArgs::trace_storage, "");

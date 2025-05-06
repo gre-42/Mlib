@@ -85,11 +85,9 @@ void ContactSmokeGenerator::notify_contact(
             intersection_point,
             rotation,
             dirx * pvel,
-            smoke_info.air_resistance,
-            smoke_info.smoke_particle_resource_name,
-            smoke_info.smoke_particle_instance_prefix,
-            smoke_info.smoke_particle_animation_duration,
+            smoke_info.particle,
             1.f / f,
+            smoke_info.smoke_particle_instance_prefix,
             ParticleType::INSTANCE);
     }
 }
