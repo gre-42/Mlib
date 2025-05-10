@@ -3,6 +3,7 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
+#include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
 #include <Mlib/Physics/Actuators/Engine_Exhaust.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
@@ -10,6 +11,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #ifndef WITHOUT_ALUT
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #endif
@@ -110,10 +112,17 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
     }
 #endif
-    std::shared_ptr<EngineExhaust> ee;
-    if (args.arguments.contains(KnownArgs::exhaust)) {
-        auto a = args.arguments.child(KnownArgs::exhaust);
-        a.validate(Exhaust::options);
+    std::shared_ptr<EngineEventListeners> engine_listeners;
+    auto add_engine_listener = [&](std::shared_ptr<IEngineEventListener> l){
+        if (engine_listeners == nullptr) {
+            engine_listeners = std::make_shared<EngineEventListeners>();
+        }
+        engine_listeners->add(std::move(l));
+    };
+    if (auto engine_exhausts = args.arguments.try_at_non_null<std::vector<nlohmann::json>>(KnownArgs::exhaust); engine_exhausts.has_value()) {
+        if (engine_exhausts->empty()) {
+            THROW_OR_ABORT("Engine exhaust array is empty");
+        }
         auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources);
         node->add_renderable(
             VariableAndHash<std::string>{"exhaust_particles"},
@@ -121,23 +130,22 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.advance_times_.add_advance_time(
             { *particle_renderer, CURRENT_SOURCE_LOCATION },
             CURRENT_SOURCE_LOCATION);
-        ee = std::make_shared<EngineExhaust>(
-            RenderingContextStack::primary_rendering_resources(),
-            scene_node_resources,
-            particle_renderer,
-            scene,
-            a.at<ConstantParticleTrail>(Exhaust::particle),
-            transformation_matrix_from_json<SceneDir, ScenePos, 3>(
-                a.at(Exhaust::location)));
+        for (const auto& engine_exhaust : *engine_exhausts) {
+            JsonView jv{ engine_exhaust };
+            jv.validate(Exhaust::options);
+            add_engine_listener(std::make_shared<EngineExhaust>(
+                RenderingContextStack::primary_rendering_resources(),
+                scene_node_resources,
+                particle_renderer,
+                scene,
+                jv.at<ConstantParticleTrail>(Exhaust::particle),
+                transformation_matrix_from_json<SceneDir, ScenePos, 3>(
+                    jv.at(Exhaust::location))));
+        }
     }
     rb.engines_.add(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         engine_power,
         args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
-#ifdef WITHOUT_ALUT
-        nullptr,
-#else
-        av,
-#endif
-        ee);
+        engine_listeners);
 }

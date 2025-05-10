@@ -17,31 +17,17 @@ using namespace Mlib;
 RigidBodyEngine::RigidBodyEngine(
     const std::optional<EnginePower>& engine_power,
     bool hand_brake_pulled,
-    std::shared_ptr<IEngineEventListener> audio,
-    std::shared_ptr<IEngineEventListener> exhaust)
+    std::shared_ptr<IEngineEventListener> listener)
     : engine_power_intent_{
         .surface_power = 0.f,
         .drive_relaxation = 0.f}
     , engine_power_{ engine_power }
     , ntires_old_{ 0 }
     , hand_brake_pulled_{ hand_brake_pulled }
+    , listener_{ std::move(listener) }
 {
-    if ((audio != nullptr) || (exhaust != nullptr)) {
-        listeners_ = std::make_shared<EngineEventListeners>();
-    }
-    if (!engine_power.has_value()) {
-        if (audio != nullptr) {
-            THROW_OR_ABORT("Engine audio is set but no engine was provided");
-        }
-        if (exhaust != nullptr) {
-            THROW_OR_ABORT("Engine exhaust is set but no engine was provided");
-        }
-    }
-    if (audio != nullptr) {
-        listeners_->add(std::move(audio));
-    }
-    if (exhaust != nullptr) {
-        listeners_->add(std::move(exhaust));
+    if (!engine_power.has_value() && (listener_ != nullptr)) {
+        THROW_OR_ABORT("Engine listener is set but no engine was provided");
     }
 }
 
@@ -210,17 +196,17 @@ void RigidBodyEngine::advance_time(
         if (!std::isnan(average_tire_w_)) {
             engine_power_->auto_set_gear(dt.dt_substep, average_tire_w_);
         }
-        if (!phase.burn_in && (phase.substep == 0) && (listeners_ != nullptr)) {
-            listeners_->notify_rotation(
+        if (!phase.burn_in && (phase.substep == 0) && (listener_ != nullptr)) {
+            listener_->notify_rotation(
                 engine_power_->engine_w(),
                 average_tire_w_,
                 engine_power_intent_,
                 engine_power_->get_power());
         }
     }
-    if (!phase.burn_in && (phase.substep == 0) && (listeners_ != nullptr)) {
-        listeners_->set_location(frame);
-        listeners_->advance_time(dt.dt_step);
+    if (!phase.burn_in && (phase.substep == 0) && (listener_ != nullptr)) {
+        listener_->set_location(frame);
+        listener_->advance_time(dt.dt_step);
     }
 }
 

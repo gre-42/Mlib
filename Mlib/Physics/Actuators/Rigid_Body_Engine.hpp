@@ -33,8 +33,7 @@ public:
     explicit RigidBodyEngine(
         const std::optional<EnginePower>& engine_power,
         bool hand_brake_pulled,
-        std::shared_ptr<IEngineEventListener> audio,
-        std::shared_ptr<IEngineEventListener> exhaust);
+        std::shared_ptr<IEngineEventListener> listener);
     ~RigidBodyEngine();
 
     // StatusWriter
@@ -68,7 +67,7 @@ private:
     std::optional<EnginePower> engine_power_;
     size_t ntires_old_;
     bool hand_brake_pulled_;
-    std::shared_ptr<EngineEventListeners> listeners_;
+    std::shared_ptr<IEngineEventListener> listener_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const TirePowerIntent& tire_power_intent);

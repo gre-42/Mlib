@@ -6,6 +6,7 @@
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
 #include <Mlib/Physics/Actuators/Engine_Exhaust.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
@@ -205,23 +206,30 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             .hitboxes = VariableAndHash<std::string>{name + "_hitboxes"},
             .collidable_mode = CollidableMode::MOVING});
 
-        std::shared_ptr<EngineAudio> av;
+        std::shared_ptr<EngineEventListeners> engine_listeners;
+        auto add_engine_listener = [&](std::shared_ptr<IEngineEventListener> l){
+            if (engine_listeners == nullptr) {
+                engine_listeners = std::make_shared<EngineEventListeners>();
+            }
+            engine_listeners->add(std::move(l));
+        };
+
         if (!args.arguments.at<bool>(KnownArgs::mute)) {
             if (auto engine_audio = vdb.try_at_non_null<std::string>(KnownDb::engine_audio); engine_audio.has_value()) {
                 const auto& adb = args.asset_references["engine_audio"].at(*engine_audio).rp.database;
                 adb.validate(KnownAudio::options);
-                av = std::make_shared<EngineAudio>(
+                add_engine_listener(std::make_shared<EngineAudio>(
                     adb.at<std::string>(KnownAudio::name),
                     paused,
                     paused_changed,
                     adb.at<float>(KnownAudio::p_idle) * hp,
-                    adb.at<float>(KnownAudio::p_reference) * hp);
+                    adb.at<float>(KnownAudio::p_reference) * hp));
             }
         }
-        std::shared_ptr<EngineExhaust> ee;
-        if (auto engine_exhaust = vdb.try_at_non_null(KnownDb::engine_exhaust); engine_exhaust.has_value()) {
-            JsonView jv{ *engine_exhaust };
-            jv.validate(KnownExhaust::options);
+        if (auto engine_exhausts = vdb.try_at_non_null<std::vector<nlohmann::json>>(KnownDb::engine_exhaust); engine_exhausts.has_value()) {
+            if (engine_exhausts->empty()) {
+                THROW_OR_ABORT("Engine exhaust array is empty");
+            }
             auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources);
             scene.get_node(parent, DP_LOC)->add_renderable(
                 VariableAndHash<std::string>{"exhaust_particles"},
@@ -229,14 +237,18 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             physics_engine.advance_times_.add_advance_time(
                 { *particle_renderer, CURRENT_SOURCE_LOCATION },
                 CURRENT_SOURCE_LOCATION);
-            ee = std::make_shared<EngineExhaust>(
-                RenderingContextStack::primary_rendering_resources(),
-                scene_node_resources,
-                particle_renderer,
-                scene,
-                jv.at<ConstantParticleTrail>(KnownExhaust::particle),
-                transformation_matrix_from_json<SceneDir, ScenePos, 3>(
-                    jv.at(KnownExhaust::location)));
+            for (const auto& engine_exhaust : *engine_exhausts) {
+                JsonView jv{ engine_exhaust };
+                jv.validate(KnownExhaust::options);
+                add_engine_listener(std::make_shared<EngineExhaust>(
+                    RenderingContextStack::primary_rendering_resources(),
+                    scene_node_resources,
+                    particle_renderer,
+                    scene,
+                    jv.at<ConstantParticleTrail>(KnownExhaust::particle),
+                    transformation_matrix_from_json<SceneDir, ScenePos, 3>(
+                        jv.at(KnownExhaust::location))));
+            }
         }
 
         auto front_engine = vdb.at<VariableAndHash<std::string>>(KnownDb::front_engine);
@@ -255,8 +267,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                     VariableAndHash<std::string>{ "front" },
                     std::move(engine_power),
                     args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
-                    av,
-                    ee);
+                    engine_listeners);
             }
             {
                 auto engine_power = EnginePower{
@@ -271,8 +282,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                     VariableAndHash<std::string>{ "rear" },
                     std::move(engine_power),
                     args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
-                    av,
-                    ee);
+                    engine_listeners);
             }
         } else if (vdb.contains_non_null(KnownDb::powers)) {
             auto engine_power = EnginePower{
@@ -287,15 +297,13 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 VariableAndHash<std::string>{ "engine" },
                 std::move(engine_power),
                 args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
-                av,
-                ee);
+                engine_listeners);
         } else {
             rb.engines_.add(
                 VariableAndHash<std::string>{ "engine" },
                 std::nullopt,   // power
                 args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
-                nullptr,        // audio
-                nullptr);       // exhaust
+                nullptr);       // listeners
         }
 
         wdb.validate(KnownWheels::options);
