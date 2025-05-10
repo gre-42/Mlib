@@ -52,6 +52,7 @@ ColormapWithModifiers& ColormapWithModifiers::compute_hash() {
         invert,
         height_to_normals,
         saturate,
+        multiply_with_alpha,
         color_mode,
         alpha_fac,
         mipmap_mode,

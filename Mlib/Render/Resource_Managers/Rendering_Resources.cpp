@@ -59,14 +59,15 @@
 #include <stb_cpp/stb_blend.hpp>
 #include <stb_cpp/stb_colorize.hpp>
 #include <stb_cpp/stb_desaturate.hpp>
-#include <stb_cpp/stb_rotate.hpp>
 #include <stb_cpp/stb_generate_color_mask.hpp>
 #include <stb_cpp/stb_image_atlas.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 #include <stb_cpp/stb_invert.hpp>
 #include <stb_cpp/stb_lighten.hpp>
 #include <stb_cpp/stb_mipmaps.hpp>
+#include <stb_cpp/stb_multiply_with_alpha.hpp>
 #include <stb_cpp/stb_replace_color.hpp>
+#include <stb_cpp/stb_rotate.hpp>
 #include <stb_cpp/stb_saturate.hpp>
 #include <stb_cpp/stb_set_alpha.hpp>
 #include <stb_cpp/stb_transform.hpp>
@@ -221,6 +222,13 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             THROW_OR_ABORT("saturate requires RGB");
         }
         source_color_mode = ColorMode::GRAYSCALE;
+    }
+    // Multiply with alpha
+    if (color.multiply_with_alpha) {
+        if (color.color_mode != ColorMode::RGB) {
+            THROW_OR_ABORT("multiply_with_alpha requires RGB");
+        }
+        source_color_mode = ColorMode::RGBA;
     }
     // "Color-selector" vs. "height-to-normals"
     if ((int)has_color_selector + (int)color.height_to_normals + (int)color.saturate > 1) {
@@ -531,6 +539,13 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (color.rotate != 0) {
         si0 = stb_rotate(si0, color.rotate);
+    }
+    if (color.multiply_with_alpha) {
+        si0 = stb_multiply_with_alpha(
+            si0.data(),
+            si0.width,
+            si0.height,
+            si0.nrChannels);
     }
     return si0;
 }
