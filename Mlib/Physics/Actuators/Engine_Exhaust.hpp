@@ -23,7 +23,8 @@ public:
         std::shared_ptr<IParticleRenderer> particle_renderer,
         Scene& scene,
         const ConstantParticleTrail& particle,
-        const TransformationMatrix<SceneDir, ScenePos, 3>& relative_location);
+        const TransformationMatrix<SceneDir, ScenePos, 3>& relative_location,
+        float p_reference);
     virtual ~EngineExhaust() override;
     virtual void notify_rotation(
         float engine_angular_velocity,
@@ -39,6 +40,7 @@ private:
     ParticleTrailGenerator trail_generator_;
     ConstantParticleTrail particle_;
     TransformationMatrix<SceneDir, ScenePos, 3> relative_location_;
+    float p_reference_;
 };
 
 }

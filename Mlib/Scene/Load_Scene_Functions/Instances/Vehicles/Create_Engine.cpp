@@ -51,6 +51,7 @@ namespace Exhaust {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(particle);
 DECLARE_ARGUMENT(location);
+DECLARE_ARGUMENT(p_reference);
 }
 
 const std::string CreateEngine::key = "create_engine";
@@ -140,7 +141,8 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
                 scene,
                 jv.at<ConstantParticleTrail>(Exhaust::particle),
                 transformation_matrix_from_json<SceneDir, ScenePos, 3>(
-                    jv.at(Exhaust::location))));
+                    jv.at(Exhaust::location)),
+                jv.at<float>(Exhaust::p_reference) * hp));
         }
     }
     rb.engines_.add(

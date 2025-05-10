@@ -47,16 +47,10 @@ void EngineAudio::notify_rotation(
         // cross_fade_.play(*driving_buffer, driving_gain, std::abs(angular_velocity) / W_MEAN);
         float f = -engine_angular_velocity / rps;
         auto& seq = driving_buffer_sequence_->get_buffer_and_frequency(f);
-        float p =
-            std::isnan(engine_power_intent.surface_power) ||
-            std::isnan(tires_angular_velocity) ||
-            std::isnan(max_surface_power) ||
-            (sign(engine_power_intent.surface_power) == sign(tires_angular_velocity))
-                ? 0.f
-                : std::clamp(
-                    std::abs(engine_power_intent.surface_power),
-                    0.f,
-                    max_surface_power) * engine_power_intent.drive_relaxation;
+        float p = engine_power_intent.real_power(
+            engine_angular_velocity,
+            tires_angular_velocity,
+            max_surface_power);
         cross_fade_.play(
             *seq.buffer,
             driving_gain_ * std::max(p_idle_, p) / p_reference_,

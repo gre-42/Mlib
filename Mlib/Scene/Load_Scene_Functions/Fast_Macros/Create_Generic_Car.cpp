@@ -96,6 +96,7 @@ namespace KnownExhaust {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(location);
 DECLARE_ARGUMENT(particle);
+DECLARE_ARGUMENT(p_reference);
 }
 
 namespace KnownWheels {
@@ -247,7 +248,8 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                     scene,
                     jv.at<ConstantParticleTrail>(KnownExhaust::particle),
                     transformation_matrix_from_json<SceneDir, ScenePos, 3>(
-                        jv.at(KnownExhaust::location))));
+                        jv.at(KnownExhaust::location)),
+                    jv.at<float>(KnownExhaust::p_reference) * hp));
             }
         }
 
