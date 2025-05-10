@@ -318,7 +318,7 @@ void KeyBindings::increment_external_forces(
             if (k->tire_id != SIZE_MAX) {
                 // float v = std::sqrt(sum(squared(rb->rbp_.v_)));
                 float v = std::abs(dot0d(
-                    rb.rbp_.v_,
+                    rb.rbp_.v_com_,
                     rb.rbp_.rotation_.column(2)));
                 rb.set_tire_angle_y(k->tire_id, alpha * degrees * k->tire_angle_interp(v));
                 // rb->set_tire_accel_x(k->tire_id, alpha * sign(k->tire_angle_interp(0)));

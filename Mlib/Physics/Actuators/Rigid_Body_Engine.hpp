@@ -12,9 +12,12 @@
 
 namespace Mlib {
 
+template <class TDir, class TPos, size_t n>
+struct RotatingFrame;
 template <typename TData, size_t... tshape>
 class FixedArray;
-class EngineEventListener;
+class IEngineEventListener;
+class EngineEventListeners;
 struct EnginePowerDeltaIntent;
 struct TirePowerIntent;
 enum class VelocityClassification;
@@ -29,7 +32,8 @@ public:
     explicit RigidBodyEngine(
         const std::optional<EnginePower>& engine_power,
         bool hand_brake_pulled,
-        std::shared_ptr<EngineEventListener> audio);
+        std::shared_ptr<IEngineEventListener> audio,
+        std::shared_ptr<IEngineEventListener> exhaust);
     ~RigidBodyEngine();
 
     // StatusWriter
@@ -52,8 +56,7 @@ public:
     void reset_forces();
     void advance_time(
         float dt,
-        const FixedArray<ScenePos, 3>& position,
-        const FixedArray<float, 3>& velocity,
+        const RotatingFrame<SceneDir, ScenePos, 3>& frame,
         const PhysicsPhase& phase);
     float engine_w() const;
 
@@ -64,7 +67,7 @@ private:
     std::optional<EnginePower> engine_power_;
     size_t ntires_old_;
     bool hand_brake_pulled_;
-    std::shared_ptr<EngineEventListener> audio_;
+    std::shared_ptr<EngineEventListeners> listeners_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const TirePowerIntent& tire_power_intent);

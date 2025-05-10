@@ -190,7 +190,7 @@ static void handle_extended_reflection(
             if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                 n3 /= std::sqrt(len2);
                 if (normal_impulse != nullptr) {
-                    FixedArray<float, 3> vc = c.o1.rbp_.v_;
+                    FixedArray<float, 3> vc = c.o1.rbp_.v_com_;
                     vc -= normal.casted<float>() * dot0d(normal.casted<float>(), vc);
                     FixedArray<ScenePos, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
                     FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);

@@ -19,6 +19,7 @@ enum class TransformationMode;
 enum class ExternalRenderPassType;
 enum class PhysicsMaterial: uint32_t;
 enum class RectangleTriangulationMode;
+struct BillboardAtlasInstance;
 
 template <class TPos>
 struct LoadMeshConfig {
@@ -39,6 +40,7 @@ struct LoadMeshConfig {
     InterpolationMode magnifying_interpolation_mode;
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
+    std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     VariableAndHash<std::string> reflection_map;
     FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);

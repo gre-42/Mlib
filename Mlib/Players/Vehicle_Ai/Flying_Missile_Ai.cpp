@@ -64,14 +64,14 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
     auto vod = ai_waypoint.velocity_of_destination(fixed_zeros<float, 3>());
     auto flags = ai_waypoint.flags();
 
-    if (dot0d(rigid_body_.rbp_.v_, rigid_body_.rbp_.rotation_.column(2)) > -maximum_velocity_) {
+    if (dot0d(rigid_body_.rbp_.v_com_, rigid_body_.rbp_.rotation_.column(2)) > -maximum_velocity_) {
         controller_.throttle_engine(INFINITY, 1.f);
     } else {
         controller_.throttle_engine(0.f, 1.f);
     }
 
     auto distance2 = sum(squared(funpack(pod) - rigid_body_.rbp_.abs_position()));
-    auto eta = std::min(eta_max_, std::sqrt(distance2 / sum(squared(rigid_body_.rbp_.v_))));
+    auto eta = std::min(eta_max_, std::sqrt(distance2 / sum(squared(rigid_body_.rbp_.v_com_))));
     auto corrected_position_of_destination = funpack(pod) + eta * vod.casted<ScenePos>();
 
     auto dir_d = corrected_position_of_destination - rigid_body_.rbp_.abs_position();
@@ -85,7 +85,7 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
     }
     auto dir = (dir_d / std::sqrt(l2_d)).casted<float>();
 
-    auto vz = dot0d(rigid_body_.rbp_.v_, rigid_body_.rbp_.rotation_.column(2));
+    auto vz = dot0d(rigid_body_.rbp_.v_com_, rigid_body_.rbp_.rotation_.column(2));
     if (vz <= 0.f) {
         if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
             THROW_OR_ABORT("Flying missile AI requires nonzero gravity");

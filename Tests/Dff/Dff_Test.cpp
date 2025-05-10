@@ -1,5 +1,6 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
+#include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>

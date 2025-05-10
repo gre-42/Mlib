@@ -1,9 +1,12 @@
 #include "Engine_Audio.hpp"
 #ifndef WITHOUT_ALUT
 #include <Mlib/Audio/Audio_Buffer_Sequence_With_Hysteresis.hpp>
+#include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <algorithm>
@@ -63,9 +66,11 @@ void EngineAudio::notify_rotation(
 #endif
 }
 
-void EngineAudio::set_position(const AudioSourceState<ScenePos>& position) {
+void EngineAudio::set_location(
+    const RotatingFrame<SceneDir, ScenePos, 3>& frame)
+{
 #ifndef WITHOUT_ALUT
-    cross_fade_.set_position(position);
+    cross_fade_.set_position({ frame.location.t, frame.v });
 #endif
 }
 

@@ -1,4 +1,4 @@
-#include <Mlib/Json/Base.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <string>
 
 namespace Mlib {

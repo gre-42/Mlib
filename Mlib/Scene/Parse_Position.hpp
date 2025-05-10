@@ -1,7 +1,7 @@
 #pragma once
-#include <Mlib/Json/Base.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
+#include <nlohmann/json_fwd.hpp>
 
 namespace Mlib {
 

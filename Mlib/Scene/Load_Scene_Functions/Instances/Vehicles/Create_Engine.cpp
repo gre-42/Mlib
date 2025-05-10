@@ -2,8 +2,9 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
+#include <Mlib/Physics/Actuators/Engine_Exhaust.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
-#include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -29,6 +30,7 @@ DECLARE_ARGUMENT(w_clutch);
 DECLARE_ARGUMENT(max_dw);
 DECLARE_ARGUMENT(hand_brake_pulled);
 DECLARE_ARGUMENT(audio);
+DECLARE_ARGUMENT(exhaust);
 }
 
 namespace Audio {
@@ -37,6 +39,13 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(p_idle);
 DECLARE_ARGUMENT(p_reference);
 DECLARE_ARGUMENT(mute);
+}
+
+
+namespace Exhaust {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(particle);
+DECLARE_ARGUMENT(location);
 }
 
 const std::string CreateEngine::key = "create_engine";
@@ -98,14 +107,24 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
     }
 #endif
+    std::shared_ptr<EngineExhaust> ee;
+    if (args.arguments.contains(KnownArgs::exhaust)) {
+        auto a = args.arguments.child(KnownArgs::exhaust);
+        a.validate(Exhaust::options);
+        ee = std::make_shared<EngineExhaust>(
+            smoke_particle_generator,
+            a.at<ConstantParticleTrail>(Exhaust::particle),
+            transformation_matrix_from_json<SceneDir, ScenePos, 3>(
+                a.at(Exhaust::location)));
+    }
     rb.engines_.add(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         engine_power,
         args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
 #ifdef WITHOUT_ALUT
-        nullptr
+        nullptr,
 #else
-        av
+        av,
 #endif
-        );
+        ee);
 }

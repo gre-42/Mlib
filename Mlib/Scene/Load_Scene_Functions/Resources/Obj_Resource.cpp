@@ -2,8 +2,8 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
+#include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
-#include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -15,6 +15,7 @@
 #include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
+#include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

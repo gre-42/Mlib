@@ -3,6 +3,8 @@
 #include <Mlib/Geometry/Delaunay_Error_Behavior.hpp>
 #include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
+#include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
+#include <Mlib/Geometry/Material/Billboard_Atlas_Instance_Json.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
@@ -12,6 +14,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Scene/Json/Blend_Map_Texture_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -34,6 +37,7 @@ DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(magnifying_interpolation_mode);
 DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
+DECLARE_ARGUMENT(billboards);
 DECLARE_ARGUMENT(reflection_map);
 DECLARE_ARGUMENT(emissive_factor);
 DECLARE_ARGUMENT(ambient_factor);
@@ -44,6 +48,7 @@ DECLARE_ARGUMENT(fresnel);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(lighten);
+DECLARE_ARGUMENT(textures);
 DECLARE_ARGUMENT(period_world);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
 DECLARE_ARGUMENT(rectangle_triangulation_mode);
@@ -81,6 +86,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .magnifying_interpolation_mode = interpolation_mode_from_string(j.at<std::string>(KnownArgs::magnifying_interpolation_mode, "nearest")),
         .aggregate_mode = aggregate_mode_from_string(j.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(j.at<std::string>(KnownArgs::transformation_mode)),
+        .billboard_atlas_instances = j.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {}),
         .reflection_map = VariableAndHash{ j.at_non_null<std::string>(KnownArgs::reflection_map, "") },
         .emissive_factor = j.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor, fixed_ones<float, 3>()),
         .ambient_factor = j.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
@@ -91,6 +97,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .desaturate = j.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = j.try_path_or_variable(KnownArgs::histogram).path,
         .lighten = j.at<UFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
+        .textures = blend_map_textures_from_json(j, KnownArgs::textures),
         .period_world = j.contains(KnownArgs::period_world)
             ? j.at<float>(KnownArgs::period_world)
             : 0.f,

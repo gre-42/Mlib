@@ -27,7 +27,7 @@ void Mlib::collide_grind_infos(
             auto& o0 = *p.rail_rb;
             auto& o1 = *rb;
             auto point_dir = o1.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
-            point_dir *= sign(dot0d(point_dir, o1.rbp_.v_));
+            point_dir *= sign(dot0d(point_dir, o1.rbp_.v_com_));
             point_dir -= dot0d(point_dir, p.rail_direction.casted<float>()) * p.rail_direction.casted<float>();
             if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
                 THROW_OR_ABORT("Collide grind infos without gravity");

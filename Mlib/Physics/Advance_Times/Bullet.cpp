@@ -80,7 +80,7 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
     }
     if (rotate_bullet_) {
         auto R = gl_lookat_relative(
-            rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))),
+            rigid_body_pulses_.v_com_ / std::sqrt(sum(squared(rigid_body_pulses_.v_com_))),
             rigid_body_pulses_.rotation_.column(1));
         if (!R.has_value()) {
             THROW_OR_ABORT("Could not update bullet rotation");

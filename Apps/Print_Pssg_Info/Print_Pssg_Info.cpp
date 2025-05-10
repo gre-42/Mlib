@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg_Arrays.hpp>

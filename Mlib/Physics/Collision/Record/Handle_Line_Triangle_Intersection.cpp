@@ -188,9 +188,9 @@ void Mlib::handle_line_triangle_intersection(
         }
         if (!direction_ok) {
             if (c.o0.grind_state_.wants_to_grind_counter_ > c.history.cfg.nframes_straight_grind) {
-                float v_len2 = sum(squared(c.o0.rbp_.v_));
+                float v_len2 = sum(squared(c.o0.rbp_.v_com_));
                 if (v_len2 > squared(c.history.cfg.continuos_grind_velocity_threshold)) {
-                    float vl = std::abs(dot0d(c.o0.rbp_.v_, X1->direction.casted<float>()) / std::sqrt(v_len2));
+                    float vl = std::abs(dot0d(c.o0.rbp_.v_com_, X1->direction.casted<float>()) / std::sqrt(v_len2));
                     if (vl < c.history.cfg.continuos_grind_cos_threshold) {
                         return;
                     }

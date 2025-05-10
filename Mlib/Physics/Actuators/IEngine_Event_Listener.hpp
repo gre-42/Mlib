@@ -4,19 +4,22 @@
 
 namespace Mlib {
 
-template <class TPosition>
-struct AudioSourceState;
+template <typename TData, size_t... tshape>
+class FixedArray;
+template <class TDir, class TPos, size_t n>
+struct RotatingFrame;
 struct EnginePowerIntent;
 
-class EngineEventListener {
+class IEngineEventListener {
 public:
-    virtual ~EngineEventListener() = default;
+    virtual ~IEngineEventListener() = default;
     virtual void notify_rotation(
         float engine_angular_velocity,
         float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) = 0;
-    virtual void set_position(const AudioSourceState<ScenePos>& position) = 0;
+    virtual void set_location(
+        const RotatingFrame<SceneDir, ScenePos, 3>& frame) = 0;
     virtual void advance_time(float dt) = 0;
 };
 

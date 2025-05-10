@@ -65,12 +65,25 @@ public:
             throw std::runtime_error("Could not interpret \"" + std::string{ name } + "\" as a child array: " + e.what());
         }
     }
+    template <class TData, class TOperation>
+    std::vector<TData> children(
+        std::string_view name,
+        const TOperation& op,
+        std::vector<TData> deflt) const
+    {
+        if (!contains(name)) {
+            return deflt;
+        } else {
+            return children(name, op);
+        }
+    }
     JsonMacroArguments child(std::string_view name) const;
     std::optional<JsonMacroArguments> try_get_child(std::string_view name) const;
     nlohmann::json subst_and_replace(
         const nlohmann::json& j,
         const nlohmann::json& globals,
         const AssetReferences& asset_references) const;
+    JsonMacroArguments as_child(const nlohmann::json& j) const;
     inline nlohmann::json&& move_json() {
         return std::move(j_);
     }
@@ -79,7 +92,6 @@ public:
     }
 private:
     nlohmann::json j_;
-    JsonMacroArguments as_child(const nlohmann::json& j) const;
     std::function<std::list<std::string>(const std::filesystem::path& f)> fpathes_;
     std::function<FPath(const std::filesystem::path& f)> fpath_;
     std::function<std::string(const std::filesystem::path& f)> spath_;

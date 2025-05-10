@@ -73,6 +73,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const ColormapWithModifiers
         "mean_color: " << t.mean_color << '\n' <<
         "lighten: " << t.lighten << '\n' <<
         "lighten_top: " << t.lighten_top << '\n' <<
-        "lighten_bottom: " << t.lighten_bottom << '\n';
+        "lighten_bottom: " << t.lighten_bottom << '\n' <<
+        "color_mode:" << color_mode_to_string(t.color_mode);
     return ostr;
 }

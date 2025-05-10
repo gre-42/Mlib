@@ -36,7 +36,7 @@ CarController::~CarController()
 
 void CarController::set_stearing_wheel_amount(float left_amount, float relaxation) {
     float v = std::abs(dot0d(
-        rb_.rbp_.v_,
+        rb_.rbp_.v_com_,
         rb_.rbp_.rotation_.column(2)));
     steer(left_amount * tire_angle_interp_(v), relaxation);
 }

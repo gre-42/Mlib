@@ -33,6 +33,7 @@
 #include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
+#include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
@@ -183,9 +184,9 @@ void RigidBodyVehicle::integrate_force(
 {
     integrate_force(F, cfg);
     if (damping != 0) {
-        auto vn = n * dot0d(rbp_.v_, n);
-        auto vt = rbp_.v_ - vn;
-        rbp_.v_ = (1 - damping) * vn + vt * (1 - friction);
+        auto vn = n * dot0d(rbp_.v_com_, n);
+        auto vt = rbp_.v_com_ - vn;
+        rbp_.v_com_ = (1 - damping) * vn + vt * (1 - friction);
         rbp_.w_ *= 1 - damping;
     }
 }
@@ -198,7 +199,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
         if (P.type == TirePowerIntentType::ACCELERATE) {
-            auto abs_location = rotor->rotated_location(rbp_.abs_transformation(), rbp_.v_, c.world);
+            auto abs_location = rotor->rotated_location(rbp_.abs_transformation(), rbp_.v_com_, c.world);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, ScenePos, 3>{
@@ -363,7 +364,7 @@ void RigidBodyVehicle::advance_time_skate(
     if ((revert_surface_power_state_.revert_surface_power_threshold_ != INFINITY) &&
         (!grind_state_.grinding_ || (grind_state_.grind_axis_ == 2)))
     {
-        float f = dot0d(rbp_.v_, dot1d(rbp_.rotation_, tires_z_));
+        float f = dot0d(rbp_.v_com_, dot1d(rbp_.rotation_, tires_z_));
         if (!revert_surface_power_state_.revert_surface_power_) {
             f = -f;
         }
@@ -436,8 +437,11 @@ void RigidBodyVehicle::advance_time(
             t.shock_absorber_position = dot0d(rel_tire_pos - t.vehicle_mount_0, t.vertical_line);
         }
     }
-    for (auto& [_, e] : engines_) {
-        e.advance_time(dt_substeps, abs_com(), rbp_.v_, phase);
+    {
+        auto frame = rbp_.rotating_frame();
+        for (auto& [_, e] : engines_) {
+            e.advance_time(dt_substeps, frame, phase);
+        }
     }
 #ifdef COMPUTE_POWER
     float nrg = energy();
@@ -811,13 +815,13 @@ void RigidBodyVehicle::write_status(
     //     ostr << "a: " << a / (meters / (s * s)) << " m/s^2" << std::endl;
     // }
     if (log_components & StatusComponents::SPEED) {
-        ostr << "v: " << std::sqrt(sum(squared(rbp_.v_))) / kph << " km/h" << std::endl;
+        ostr << "v: " << std::sqrt(sum(squared(rbp_.v_com_))) / kph << " km/h" << std::endl;
     }
     if (log_components & StatusComponents::ANGULAR_VELOCITY) {
         ostr << "w: " << std::sqrt(sum(squared(rbp_.w_))) / rpm << " rpm" << std::endl;
     }
     if (log_components & StatusComponents::WHEEL_ANGULAR_VELOCITY) {
-        ostr << "wt: " << std::sqrt(sum(squared(rbp_.v_))) / WHEEL_RADIUS / rpm << " rpm" << std::endl;
+        ostr << "wt: " << std::sqrt(sum(squared(rbp_.v_com_))) / WHEEL_RADIUS / rpm << " rpm" << std::endl;
     }
     if (log_components & StatusComponents::DIAMETER) {
         if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
@@ -827,8 +831,8 @@ void RigidBodyVehicle::write_status(
         // r = v / w
         // r / r2 = v * a / (w * v^2) = a / (w * v)
         if (float w2 = sum(squared(rbp_.w_)); w2 > squared(0.001f * rpm)) {
-            ostr << "d: " << 2 * std::sqrt(sum(squared(rbp_.v_)) / w2) << " m" << std::endl;
-            ostr << "d / d2(g): " << world.gravity->magnitude / std::sqrt(w2 * sum(squared(rbp_.v_))) << std::endl;
+            ostr << "d: " << 2 * std::sqrt(sum(squared(rbp_.v_com_)) / w2) << " m" << std::endl;
+            ostr << "d / d2(g): " << world.gravity->magnitude / std::sqrt(w2 * sum(squared(rbp_.v_com_))) << std::endl;
         } else {
             ostr << "d: undefined" << std::endl;
             ostr << "d / d2(g): undefined" << std::endl;
@@ -887,7 +891,7 @@ void RigidBodyVehicle::write_status(
 
 float RigidBodyVehicle::get_value(StatusComponents status_components) const {
     if (status_components == StatusComponents::SPEED) {
-        return std::sqrt(sum(squared(rbp_.v_))) / kph;
+        return std::sqrt(sum(squared(rbp_.v_com_))) / kph;
     }
     THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
 }

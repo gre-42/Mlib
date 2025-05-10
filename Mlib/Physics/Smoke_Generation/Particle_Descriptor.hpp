@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Json/Base.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <string>
 
 namespace Mlib {

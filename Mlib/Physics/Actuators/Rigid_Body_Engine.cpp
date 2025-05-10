@@ -2,8 +2,9 @@
 #include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
-#include <Mlib/Physics/Actuators/Engine_Event_Listener.hpp>
+#include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
+#include <Mlib/Physics/Actuators/IEngine_Event_Listener.hpp>
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Velocity_Classification.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
@@ -15,17 +16,31 @@ using namespace Mlib;
 RigidBodyEngine::RigidBodyEngine(
     const std::optional<EnginePower>& engine_power,
     bool hand_brake_pulled,
-    std::shared_ptr<EngineEventListener> audio)
-: engine_power_intent_{
-    .surface_power = 0.f,
-    .drive_relaxation = 0.f},
-  engine_power_{ engine_power },
-  ntires_old_{ 0 },
-  hand_brake_pulled_{ hand_brake_pulled },
-  audio_{ std::move(audio) }
+    std::shared_ptr<IEngineEventListener> audio,
+    std::shared_ptr<IEngineEventListener> exhaust)
+    : engine_power_intent_{
+        .surface_power = 0.f,
+        .drive_relaxation = 0.f}
+    , engine_power_{ engine_power }
+    , ntires_old_{ 0 }
+    , hand_brake_pulled_{ hand_brake_pulled }
 {
-    if ((audio != nullptr) && !engine_power.has_value()) {
-        THROW_OR_ABORT("Engine audio is set but no engine was provided");
+    if ((audio != nullptr) || (exhaust != nullptr)) {
+        listeners_ = std::make_shared<EngineEventListeners>();
+    }
+    if (!engine_power.has_value()) {
+        if (audio != nullptr) {
+            THROW_OR_ABORT("Engine audio is set but no engine was provided");
+        }
+        if (exhaust != nullptr) {
+            THROW_OR_ABORT("Engine exhaust is set but no engine was provided");
+        }
+    }
+    if (audio != nullptr) {
+        listeners_->add(std::move(audio));
+    }
+    if (exhaust != nullptr) {
+        listeners_->add(std::move(exhaust));
     }
 }
 
@@ -177,8 +192,7 @@ void RigidBodyEngine::set_surface_power(const EnginePowerIntent& engine_power_in
 
 void RigidBodyEngine::advance_time(
     float dt,
-    const FixedArray<ScenePos, 3>& position,
-    const FixedArray<float, 3>& velocity,
+    const RotatingFrame<SceneDir, ScenePos, 3>& frame,
     const PhysicsPhase& phase)
 {
     float average_tire_w_;
@@ -195,20 +209,17 @@ void RigidBodyEngine::advance_time(
         if (!std::isnan(average_tire_w_)) {
             engine_power_->auto_set_gear(dt, average_tire_w_);
         }
-        if (!phase.burn_in && (phase.substep == 0) && (audio_ != nullptr)) {
-            audio_->notify_rotation(
+        if (!phase.burn_in && (phase.substep == 0) && (listeners_ != nullptr)) {
+            listeners_->notify_rotation(
                 engine_power_->engine_w(),
                 average_tire_w_,
                 engine_power_intent_,
                 engine_power_->get_power());
         }
     }
-    if (!phase.burn_in && (phase.substep == 0) && (audio_ != nullptr)) {
-        audio_->set_position(AudioSourceState<ScenePos>{
-            .position = position,
-            .velocity = velocity
-        });
-        audio_->advance_time(dt);
+    if (!phase.burn_in && (phase.substep == 0) && (listeners_ != nullptr)) {
+        listeners_->set_location(frame);
+        listeners_->advance_time(dt);
     }
 }
 

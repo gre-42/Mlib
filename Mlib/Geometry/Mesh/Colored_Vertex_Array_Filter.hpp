@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Json/Base.hpp>
 #include <Mlib/Regex/Default_Regex.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <vector>
 
 namespace Mlib {

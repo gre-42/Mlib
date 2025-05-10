@@ -1,12 +1,12 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
 #include <Mlib/Geometry/Mesh/Load/Img_Reader.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
-#include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Pssg_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>
@@ -19,6 +19,7 @@
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Dff_File_Resource.hpp>
 #include <Mlib/Render/Resources/Pssg_File_Resource.hpp>
+#include <Mlib/Scene/Json/Load_Mesh_Config_Json.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>

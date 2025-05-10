@@ -62,8 +62,8 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos
             float t = 0;
             for (size_t i = 0; ; ++i) {
                 RigidBodyPulses rbp = followed_->rbp_;
-                rbp.v_ -= initial_bullet_velocity;
-                rbp.v_ *= (1 + verr);
+                rbp.v_com_ -= initial_bullet_velocity;
+                rbp.v_com_ *= (1 + verr);
                 rbp.advance_time(t);
                 if (i == 10) {
                     absolute_point_to_aim_at_ = offset + rbp.transform_to_world_coordinates(followed_->target_);

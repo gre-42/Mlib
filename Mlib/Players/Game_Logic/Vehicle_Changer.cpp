@@ -119,7 +119,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         b_rb.rbp_.set_pose(
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, angle, 0.f}),
             a_trafo.t + (a_rb_old.door_distance_ * a_dir).casted<ScenePos>());
-        b_rb.rbp_.v_ = 0.f;
+        b_rb.rbp_.v_com_ = 0.f;
         b_rb.rbp_.w_ = 0.f;
         b.get_primary_scene_vehicle().scene_node()->invalidate_transformation_history();
         b_rb.activate_avatar();

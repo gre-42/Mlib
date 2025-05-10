@@ -54,6 +54,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     TriangleList<TPos> tl{
         filename,
         Material{
+            .blend_mode = cfg.blend_mode,
             .textures_color = cfg.textures,
             .period_world = cfg.period_world,
             .reflection_map = cfg.reflection_map,
@@ -63,6 +64,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
+            .billboard_atlas_instances = cfg.billboard_atlas_instances,
             .cull_faces = cfg.cull_faces_default,
             .shading{
                 .reflectance = OrderableFixedArray{ cfg.reflectance },
@@ -158,6 +160,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     static const auto smooth_shading_reg = seq(chr('s'), sp);
 
     ObjMaterial current_mtl;
+    bool cfg_has_alpha_texture = false;
+    for (const auto& t : cfg.textures) {
+        if (any(t.texture_descriptor.color.color_mode & ColorMode::RGBA)) {
+            cfg_has_alpha_texture = true;
+            break;
+        }
+    }
+    bool has_alpha_texture = cfg_has_alpha_texture;
 
     std::string line;
     while(std::getline(ifs, line)) {
@@ -247,9 +257,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     n0,
                     n1,
                     n2,
-                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffuse, n0)),
-                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffuse, n1)),
-                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffuse, n2)),
+                    Colors::from_rgb(has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffuse, n0)),
+                    Colors::from_rgb(has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffuse, n1)),
+                    Colors::from_rgb(has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffuse, n2)),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0.f, 0.f},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1.f, 0.f},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{0.f, 1.f},
@@ -310,10 +320,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     n1,
                     n2,
                     n3,
-                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffuse, n0)),
-                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffuse, n1)),
-                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffuse, n2)),
-                    Colors::from_rgb(current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v3.color : sfl.get_color(current_mtl.diffuse, n3)),
+                    Colors::from_rgb(has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffuse, n0)),
+                    Colors::from_rgb(has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffuse, n1)),
+                    Colors::from_rgb(has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffuse, n2)),
+                    Colors::from_rgb(has_alpha_texture || !cfg.apply_static_lighting ? v3.color : sfl.get_color(current_mtl.diffuse, n3)),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0.f, 0.f},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1.f, 0.f},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{1.f, 1.f},
@@ -371,10 +381,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 }
                 if (!td.color.filename->empty() || !td.specular.filename->empty() || !td.normal.filename->empty()) {
                     tl.material.textures_color = { {.texture_descriptor = td } };
+                    has_alpha_texture = current_mtl.has_alpha_texture;
                 } else {
                     tl.material.textures_color = cfg.textures;
+                    has_alpha_texture = cfg_has_alpha_texture;
                 }
-                if (current_mtl.has_alpha_texture || (current_mtl.alpha != 1.f)) {
+                if (has_alpha_texture || (current_mtl.alpha != 1.f)) {
                     tl.material.blend_mode = cfg.blend_mode;
                     tl.material.cull_faces = cfg.cull_faces_alpha;
                 } else {

@@ -6,7 +6,6 @@
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource);
-DECLARE_ARGUMENT(dt);
 DECLARE_ARGUMENT(air_resistance);
 DECLARE_ARGUMENT(animation_duration);
 }

@@ -453,12 +453,12 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || has_interiormap || fragments_depend_on_normal || (!reflectance.all_equal(0.f) && !reflect_only_y)) {
         sstr << "out vec3 Normal;" << std::endl;
     }
-    if (has_lookat) {
-        if (orthographic) {
+    if (orthographic) {
+        if (has_lookat) {
             sstr << "uniform vec3 viewDir;" << std::endl;
-        } else {
-            sstr << "uniform vec3 viewPos;" << std::endl;
         }
+    } else if (has_lookat || (nbillboard_ids != 0)) {
+        sstr << "uniform vec3 viewPos;" << std::endl;
     }
     if ((nbones != 0) || has_rotation_quaternion) {
         sstr << "vec3 rotate(vec4 v, vec3 p) {" << std::endl;

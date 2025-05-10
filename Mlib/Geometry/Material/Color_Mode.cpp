@@ -55,6 +55,6 @@ std::string Mlib::color_mode_to_string(const ColorMode& mode) {
     case ColorMode::AGR_NORMAL:
         return "agr_normal";
     default:
-        THROW_OR_ABORT("Unknown color mode");
+        return "ColorMode(" + std::to_string((int)mode) + ')';
     }
 }

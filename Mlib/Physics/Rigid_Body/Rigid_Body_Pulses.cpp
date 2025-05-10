@@ -6,16 +6,17 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 RigidBodyPulses::RigidBodyPulses(
     float mass,
-    const FixedArray<float, 3, 3>& I, // inertia tensor
-    const FixedArray<float, 3>& com,  // center of mass
-    const FixedArray<float, 3>& v,    // velocity
-    const FixedArray<float, 3>& w,    // angular velocity
+    const FixedArray<float, 3, 3>& I,   // inertia tensor
+    const FixedArray<float, 3>& com,    // center of mass
+    const FixedArray<float, 3>& v_com,  // velocity of the center of mass
+    const FixedArray<float, 3>& w,      // angular velocity
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     bool I_is_diagonal,
@@ -24,7 +25,7 @@ RigidBodyPulses::RigidBodyPulses(
     : mass_{ mass }
     , I_{ I }
     , com_{ com }
-    , v_{ v }
+    , v_com_{ v_com }
     , w_{ w }
     , rotation_{ tait_bryan_angles_2_matrix(rotation) }
     , abs_com_{ dot1d(rotation_, com_).casted<ScenePos>() + position }
@@ -40,7 +41,7 @@ RigidBodyPulses::RigidBodyPulses(
 
 void RigidBodyPulses::advance_time(float dt)
 {
-    abs_com_ += (dt * v_).casted<ScenePos>();
+    abs_com_ += (dt * v_com_).casted<ScenePos>();
     rotation_ = dot2d(rodrigues1(dt * w_, false), rotation_);  // false = check_angle
     rotation_ = tait_bryan_angles_2_matrix(matrix_2_tait_bryan_angles(rotation_));
     if (!I_is_diagonal_) {
@@ -80,8 +81,17 @@ void RigidBodyPulses::update_abs_I_and_inv() {
     abs_I_inv_ = fixed_symmetric_inverse_3x3(abs_I());
 }
 
+RotatingFrame<SceneDir, ScenePos, 3> RigidBodyPulses::rotating_frame() const {
+    return { abs_transformation(), velocity(), w_ };
+}
+
+FixedArray<float, 3> RigidBodyPulses::velocity() const {
+    // return velocity_at_position(abs_position());  // Slow version
+    return v_com_ - cross(w_, dot1d(rotation_, com_));
+}
+
 FixedArray<float, 3> RigidBodyPulses::velocity_at_position(const FixedArray<ScenePos, 3>& position) const {
-    return v_ + cross(w_, (position - abs_com_).casted<float>());
+    return v_com_ + cross(w_, (position - abs_com_).casted<float>());
 }
 
 FixedArray<ScenePos, 3> RigidBodyPulses::abs_position() const {
@@ -135,11 +145,11 @@ FixedArray<float, 3> RigidBodyPulses::dot1d_abs_I(const FixedArray<float, 3>& x)
 }
 
 void RigidBodyPulses::integrate_delta_v(const FixedArray<float, 3>& dv) {
-    v_ += dv;
+    v_com_ += dv;
     if (vmax_ != INFINITY) {
-        auto l = std::sqrt(sum(squared(v_)));
+        auto l = std::sqrt(sum(squared(v_com_)));
         if (l > vmax_) {
-            v_ *= vmax_ / l;
+            v_com_ *= vmax_ / l;
         }
     }
 }
@@ -165,7 +175,7 @@ void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 
 
 float RigidBodyPulses::energy() const {
     // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
-    return 0.5f * (mass_ * sum(squared(v_)) + dot0d(w_, dot1d_abs_I(w_)));
+    return 0.5f * (mass_ * sum(squared(v_com_)) + dot0d(w_, dot1d_abs_I(w_)));
 }
 
 float RigidBodyPulses::effective_mass(const VectorAtPosition<float, ScenePos, 3>& vp) const {
@@ -174,14 +184,14 @@ float RigidBodyPulses::effective_mass(const VectorAtPosition<float, ScenePos, 3>
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyPulses& rbi) {
-    ostr << "RigidBodyPulses" << std::endl;
-    ostr << "mass " << rbi.mass_ << std::endl;
-    ostr << "I " << rbi.I_ << std::endl;
-    ostr << "com " << rbi.com_ << std::endl;
-    ostr << "v " << rbi.v_ << std::endl;
-    ostr << "w " << rbi.w_ << std::endl;
-    ostr << "rotation " << rbi.rotation_ << std::endl;
-    ostr << "abs_com " << rbi.abs_com_ << std::endl;
-    ostr << "I_is_diagonal " << int(rbi.I_is_diagonal_) << std::endl;
+    ostr << "RigidBodyPulses" << '\n';
+    ostr << "mass " << rbi.mass_ << '\n';
+    ostr << "I " << rbi.I_ << '\n';
+    ostr << "com " << rbi.com_ << '\n';
+    ostr << "v (com) " << rbi.v_com_ << '\n';
+    ostr << "w " << rbi.w_ << '\n';
+    ostr << "rotation " << rbi.rotation_ << '\n';
+    ostr << "abs_com " << rbi.abs_com_ << '\n';
+    ostr << "I_is_diagonal " << int(rbi.I_is_diagonal_) << '\n';
     return ostr;
 }

@@ -113,7 +113,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     ScenePos distance_to_waypoint2 = sum(squared(pos3 - funpack(pod)));
     SceneDir lookahead_fac2 = std::max(
         1.f,
-        sum(squared(player_rb.rbp_.v_)) /
+        sum(squared(player_rb.rbp_.v_com_)) /
         squared(lookahead_velocity_));
     if (distance_to_waypoint2 < squared(waypoint_reached_radius_) * lookahead_fac2) {
         result |= VehicleAiMoveToStatus::WAYPOINT_REACHED;
@@ -247,9 +247,9 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                     float dvel;
                     if (player_rb.avatar_controller_ != nullptr) {
                         // Avatars steer through "strafing" with "increment_legs_z".
-                        dvel = dot0d(FixedArray<SceneDir, 2>{player_rb.rbp_.v_(0), player_rb.rbp_.v_(2)}, wpt0_dir) - target_vel;
+                        dvel = dot0d(FixedArray<SceneDir, 2>{player_rb.rbp_.v_com_(0), player_rb.rbp_.v_com_(2)}, wpt0_dir) - target_vel;
                     } else {
-                        dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
+                        dvel = -dot0d(player_rb.rbp_.v_com_, player_rb.rbp_.abs_z()) - target_vel;
                     }
                     if (is_accelerating_on_runway && (std::abs(dvel) < takeoff_velocity_delta_)) {
                         player_rb.actor_task_ = ActorTask::RUNWAY_TAKEOFF;

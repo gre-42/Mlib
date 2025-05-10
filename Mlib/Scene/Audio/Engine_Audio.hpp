@@ -2,7 +2,7 @@
 #ifndef WITHOUT_ALUT
 #include <Mlib/Audio/Cross_Fade.hpp>
 #endif
-#include <Mlib/Physics/Actuators/Engine_Event_Listener.hpp>
+#include <Mlib/Physics/Actuators/IEngine_Event_Listener.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <functional>
 #include <memory>
@@ -14,7 +14,7 @@ class EventEmitter;
 class AudioBuffer;
 class AudioBufferSequenceWithHysteresis;
 
-class EngineAudio: public EngineEventListener {
+class EngineAudio: public IEngineEventListener {
 public:
     explicit EngineAudio(
         const std::string& resource_name,
@@ -28,7 +28,8 @@ public:
         float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) override;
-    virtual void set_position(const AudioSourceState<ScenePos>& position) override;
+    virtual void set_location(
+        const RotatingFrame<SceneDir, ScenePos, 3>& frame) override;
     virtual void advance_time(float dt) override;
 private:
 #ifndef WITHOUT_ALUT

@@ -171,8 +171,8 @@ void test_com() {
     
     // lerr() << r0->rbp_.v_;
     // lerr() << r1->rbp_.v_;
-    assert_allclose(r0->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
-    assert_allclose(r1->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
+    assert_allclose(r0->rbp_.v_com_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
+    assert_allclose(r1->rbp_.v_com_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
     auto dx = FixedArray<ScenePos, 3>{7.8f * meters, 6.5f * meters, 4.3f * meters};
     r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0.casted<ScenePos>() + dx}, cfg);
     r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1.casted<ScenePos>() + dx}, cfg);
@@ -182,7 +182,7 @@ void test_com() {
     {
         r1->rbp_.advance_time(dt);
     }
-    assert_allclose(r0->rbp_.v_, r1->rbp_.v_);
+    assert_allclose(r0->rbp_.v_com_, r1->rbp_.v_com_);
     assert_allclose(
         r0->velocity_at_position(com0.casted<ScenePos>()),
         r1->velocity_at_position(com1.casted<ScenePos>()));

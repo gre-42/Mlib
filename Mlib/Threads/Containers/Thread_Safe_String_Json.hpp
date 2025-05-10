@@ -1,5 +1,5 @@
-#include <Mlib/Json/Base.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 namespace Mlib {
 

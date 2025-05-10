@@ -15,7 +15,7 @@ AttachedWheel::AttachedWheel(
 
 FixedArray<float, 3> AttachedWheel::velocity_at_position(const FixedArray<ScenePos, 3>& position) const {
     auto vv = vehicle_.velocity_at_position(position);
-    vv += vertical_line_ * dot0d(vertical_line_, wheel_.v_ - vv);
+    vv += vertical_line_ * dot0d(vertical_line_, wheel_.v_com_ - vv);
     return vv;
 }
 

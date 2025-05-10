@@ -10,6 +10,8 @@ struct VectorAtPosition;
 class RigidBodyPulses;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <class TDir, class TPos, size_t n>
+struct RotatingFrame;
 
 std::ostream& operator << (std::ostream& ostr, const RigidBodyPulses& rbi);
 
@@ -20,7 +22,7 @@ public:
         float mass,
         const FixedArray<float, 3, 3>& I,   // inertia tensor
         const FixedArray<float, 3>& com,    // center of mass
-        const FixedArray<float, 3>& v,      // velocity
+        const FixedArray<float, 3>& v_com,  // velocity of the center of mass
         const FixedArray<float, 3>& w,      // angular velocity
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
@@ -33,6 +35,8 @@ public:
     TransformationMatrix<float, ScenePos, 3> abs_transformation() const;
     const FixedArray<float, 3, 3>& abs_I() const;
     const FixedArray<float, 3, 3>& abs_I_inv() const;
+    RotatingFrame<SceneDir, ScenePos, 3> rotating_frame() const;
+    FixedArray<float, 3> velocity() const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<ScenePos, 3>& position) const;
     FixedArray<float, 3> solve_abs_I(const FixedArray<float, 3>& x) const;
     FixedArray<float, 3> dot1d_abs_I(const FixedArray<float, 3>& x) const;
@@ -47,10 +51,10 @@ public:
     void advance_time(float dt);
 
     float mass_;
-    FixedArray<float, 3, 3> I_; // inertia tensor
-    FixedArray<float, 3> com_;  // center of mass
-    FixedArray<float, 3> v_;    // velocity
-    FixedArray<float, 3> w_;    // angular velocity
+    FixedArray<float, 3, 3> I_;     // inertia tensor
+    FixedArray<float, 3> com_;      // center of mass
+    FixedArray<float, 3> v_com_;    // velocity of the center of mass
+    FixedArray<float, 3> w_;        // angular velocity
 
     FixedArray<float, 3, 3> rotation_;
     FixedArray<ScenePos, 3> abs_com_;

@@ -519,7 +519,7 @@ bool Player::unstuck() {
     if (!has_scene_vehicle()) {
         return false;
     }
-    if ((sum(squared(vehicle_->rb().rbp_.v_)) > squared(stuck_velocity_)) ||
+    if ((sum(squared(vehicle_->rb().rbp_.v_com_)) > squared(stuck_velocity_)) ||
         (unstuck_start_ != std::chrono::steady_clock::time_point()))
     {
         stuck_start_ = std::chrono::steady_clock::now();
