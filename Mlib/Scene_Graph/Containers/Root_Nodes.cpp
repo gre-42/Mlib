@@ -118,7 +118,12 @@ void RootNodes::add_root_node(
     auto ref = scene_node.ref(DP_LOC);
     auto md2 = scene_node->max_center_distance2(BILLBOARD_ID_NONE);
     scene_.register_node(name, ref);
-    scene_node->set_scene_and_state(scene_, scene_node_state);
+    try {
+        scene_node->set_scene_and_state(scene_, scene_node_state);
+    } catch (const std::runtime_error& e) {
+        scene_.unregister_node(name);
+        throw;
+    }
     if (!node_container_.try_emplace(name, std::move(scene_node)).second) {
         verbose_abort("Could not insert into node container: \"" + *name + '"');
     }

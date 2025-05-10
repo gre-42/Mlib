@@ -2,6 +2,8 @@
 #include <Mlib/Render/Batch_Renderers/Particle_Creator.hpp>
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
+#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -28,33 +30,53 @@ void ParticleRenderer::preload(const VariableAndHash<std::string>& name) {
     instances_.get(resources_.get_instance_for_creator(name))->preload();
 }
 
-void ParticleRenderer::move(float dt, const StaticWorld& world) {
+void ParticleRenderer::advance_time(float dt, const StaticWorld& world) {
     for (auto& [_, instance] : instances_.shared()) {
         instance->move(dt, world);
     }
 }
 
+PhysicsMaterial ParticleRenderer::physics_attributes() const {
+    return PhysicsMaterial::ATTR_VISIBLE;
+}
+
+RenderingStrategies ParticleRenderer::rendering_strategies() const {
+    return RenderingStrategies::OBJECT;
+}
+
+bool ParticleRenderer::requires_render_pass(ExternalRenderPassType render_pass) const {
+    return false;
+}
+
+bool ParticleRenderer::requires_blending_pass(ExternalRenderPassType render_pass) const {
+    return true;
+}
+
 void ParticleRenderer::render(
-    ParticleSubstrate substrate,
-    const FixedArray<ScenePos, 4, 4>& vp,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
+    const DynamicStyle* dynamic_style,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
-    const ExternalRenderPass& external_render_pass) const
+    const RenderPass& render_pass,
+    const AnimationState* animation_state,
+    const ColorStyle* color_style) const
 {
     for (const auto& [_, instance] : instances_.shared()) {
-        if (instance->substrate() != substrate) {
-            continue;
-        }
         instance->render(
-            vp,
+            mvp,
             iv,
             lights,
             skidmarks,
             scene_graph_config,
             render_config,
-            external_render_pass);
+            render_pass.external);
     }
+}
+
+ScenePos ParticleRenderer::max_center_distance2(BillboardId billboard_id) const {
+    return INFINITY;
 }

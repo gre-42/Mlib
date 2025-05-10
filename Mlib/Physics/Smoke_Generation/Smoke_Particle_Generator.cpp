@@ -8,17 +8,20 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 
 SmokeParticleGenerator::SmokeParticleGenerator(
-    RenderingResources* rendering_resources,
+    RenderingResources& rendering_resources,
     SceneNodeResources& scene_node_resources,
+    IParticleRenderer& particle_renderer,
     Scene& scene)
     : rendering_resources_{ rendering_resources }
     , scene_node_resources_{ scene_node_resources }
+    , particle_renderer_{ particle_renderer }
     , scene_{ scene }
 {}
 
@@ -48,14 +51,14 @@ void SmokeParticleGenerator::generate_root(
         scene_node_resources_.instantiate_child_renderable(
             resource_name,
             ChildInstantiationOptions{
-                .rendering_resources = rendering_resources_,
+                .rendering_resources = &rendering_resources_,
                 .instance_name = resource_name,
                 .scene_node = node.ref(DP_LOC),
                 .interpolation_mode = PoseInterpolationMode::DISABLED,
                 .renderable_resource_filter = RenderableResourceFilter{}});
         scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
     } else if (particle_type == ParticleType::INSTANCE) {
-        scene_.particle_instantiator(resource_name).add_particle(
+        particle_renderer_.get_instantiator(resource_name).add_particle(
             TransformationMatrix<float, ScenePos, 3>{
                 tait_bryan_angles_2_matrix(rotation),
                 position},
@@ -88,7 +91,7 @@ void SmokeParticleGenerator::generate_child(
     scene_node_resources_.instantiate_child_renderable(
         resource_name,
         ChildInstantiationOptions{
-            .rendering_resources = rendering_resources_,
+            .rendering_resources = &rendering_resources_,
             .instance_name = resource_name,
             .scene_node = child_node.ref(DP_LOC),
             .interpolation_mode = PoseInterpolationMode::DISABLED,

@@ -13,6 +13,7 @@ class Scene;
 class SceneNode;
 class SceneNodeResources;
 class RenderingResources;
+class IParticleRenderer;
 template <class T>
 class VariableAndHash;
 
@@ -24,8 +25,9 @@ enum class ParticleType {
 class SmokeParticleGenerator {
 public:
     SmokeParticleGenerator(
-        RenderingResources* rendering_resources,
+        RenderingResources& rendering_resources,
         SceneNodeResources& scene_node_resources,
+        IParticleRenderer& particle_renderer,
         Scene& scene);
     void generate_root(
         const VariableAndHash<std::string>& resource_name,
@@ -44,8 +46,9 @@ public:
         float animation_duration);
     std::string generate_suffix();
 private:
-    RenderingResources* rendering_resources_;
+    RenderingResources& rendering_resources_;
     SceneNodeResources& scene_node_resources_;
+    IParticleRenderer& particle_renderer_;
     Scene& scene_;
 };
 

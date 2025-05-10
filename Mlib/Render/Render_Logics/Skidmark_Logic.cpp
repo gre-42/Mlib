@@ -129,14 +129,17 @@ void SkidmarkLogic::render_without_setup(
             ViewportGuard vg{ texture_width_, texture_height_ };
             RenderConfigGuard rcg{ render_config, ExternalRenderPassType::STANDARD };
             particle_renderer_.render(
-                ParticleSubstrate::SKIDMARK,
                 vp,
                 bi.model,
+                bi.view,
+                nullptr,    // dynamic_style
                 lights,
                 skidmarks,
                 scene_graph_config,
                 render_config,
-                { ExternalRenderPassType::STANDARD });
+                { frame_id.external_render_pass, InternalRenderPass::PARTICLES },
+                nullptr,    // animation_state
+                nullptr);   // color_style
         }
         old_fbs_id_ = new_fbs_id;
         old_camera_position_ = bi.model.t;

@@ -39,8 +39,8 @@ class LargeInstancesQueue;
 
 class Renderable {
 public:
-virtual PhysicsMaterial physics_attributes() const = 0;
-virtual RenderingStrategies rendering_strategies() const = 0;
+    virtual PhysicsMaterial physics_attributes() const = 0;
+    virtual RenderingStrategies rendering_strategies() const = 0;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const = 0;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const = 0;
     virtual int continuous_blending_z_order() const;

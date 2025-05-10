@@ -26,6 +26,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -221,7 +222,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             JsonView jv{ *engine_exhaust };
             jv.validate(KnownExhaust::options);
             ee = std::make_shared<EngineExhaust>(
-                smoke_particle_generator,
+                air_particles.smoke_particle_generator,
                 jv.at<ConstantParticleTrail>(KnownExhaust::particle),
                 transformation_matrix_from_json<SceneDir, ScenePos, 3>(
                     jv.at(KnownExhaust::location)));

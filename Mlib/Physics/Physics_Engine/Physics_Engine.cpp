@@ -20,7 +20,6 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
-#include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -32,7 +31,6 @@ PhysicsEngine::PhysicsEngine(const PhysicsEngineConfig& cfg)
     , collision_direction_{ CollisionDirection::FORWARD }
     , surface_contact_db_{ nullptr }
     , contact_smoke_generator_{ nullptr }
-    , particle_renderer_{ nullptr }
     , trail_renderer_{ nullptr }
     , cfg_{ cfg }
 {}
@@ -145,9 +143,6 @@ void PhysicsEngine::move_particles(const StaticWorld& world)
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
     contact_smoke_generator_->advance_time(cfg_.dt_substeps());
-    if (particle_renderer_ != nullptr) {
-        particle_renderer_->move(cfg_.dt_substeps(), world);
-    }
     if (trail_renderer_ != nullptr) {
         trail_renderer_->move(cfg_.dt_substeps(), world);
     }
@@ -208,13 +203,6 @@ void PhysicsEngine::set_contact_smoke_generator(ContactSmokeGenerator& contact_s
         THROW_OR_ABORT("Contact smoke generator already set");
     }
     contact_smoke_generator_ = &contact_smoke_generator;
-}
-
-void PhysicsEngine::set_particle_renderer(IParticleRenderer& particle_renderer) {
-    if (particle_renderer_ != nullptr) {
-        THROW_OR_ABORT("Particle renderer already set");
-    }
-    particle_renderer_ = &particle_renderer;
 }
 
 void PhysicsEngine::set_trail_renderer(ITrailRenderer& trail_renderer) {

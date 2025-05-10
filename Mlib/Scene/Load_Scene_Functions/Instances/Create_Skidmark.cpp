@@ -6,6 +6,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Skidmark_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -46,7 +47,7 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION,
         node,
         skidmark,
-        particle_renderer,
+        *skidmark_particles.particle_renderer,
         args.arguments.at<int>(KnownArgs::texture_width),
         args.arguments.at<int>(KnownArgs::texture_height));
     o.on_skidmark_node_clear.add([&o](){ global_object_pool.remove(o); }, CURRENT_SOURCE_LOCATION);

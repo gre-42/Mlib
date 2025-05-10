@@ -7,7 +7,6 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
-#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
@@ -25,6 +24,7 @@
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
@@ -146,7 +146,6 @@ public:
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;
     RenderingResources rendering_resources_;
-    std::unique_ptr<IParticleRenderer> particle_renderer_;
     std::unique_ptr<ITrailRenderer> trail_renderer_;
     std::unique_ptr<DynamicLights> dynamic_lights_;
     const SceneConfig& scene_config_;
@@ -156,7 +155,8 @@ public:
     SelectedCameras selected_cameras_;
     FlyingCameraUserClass user_object_;
 
-    SmokeParticleGenerator smoke_particle_generator_;
+    SceneParticles air_particles_;
+    SceneParticles skidmark_particles_;
     ContactSmokeGenerator contact_smoke_generator_;
 
     std::function<bool()> paused_;

@@ -33,10 +33,8 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class SceneNode;
 class SceneNodeResources;
-class IParticleRenderer;
 class ITrailRenderer;
 class IDynamicLights;
-class IParticleCreator;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
 struct RenderConfig;
@@ -58,7 +56,6 @@ public:
         std::string name,
         DeleteNodeMutex& delete_node_mutex,
         SceneNodeResources* scene_node_resources = nullptr,
-        IParticleRenderer* particle_renderer = nullptr,
         ITrailRenderer* trail_renderer = nullptr,
         IDynamicLights* dynamic_lights = nullptr);
     Scene(const Scene&) = delete;
@@ -150,7 +147,6 @@ public:
     void set_this_thread_as_render_thread();
     void clear_render_thread();
     void assert_this_thread_is_render_thread() const;
-    IParticleCreator& particle_instantiator(const VariableAndHash<std::string>& resource_name) const;
 private:
     DanglingRef<SceneNode> get_node_that_may_be_scheduled_for_deletion(const VariableAndHash<std::string>& name) const;
     // Must be above garbage-collected members for
@@ -185,7 +181,6 @@ private:
     std::atomic_bool shutting_down_;
     ThreadSafeList<std::unique_ptr<const ColorStyle>> color_styles_;
     SceneNodeResources* scene_node_resources_;
-    IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;
     IDynamicLights* dynamic_lights_;
     mutable std::atomic_uint32_t ncleanups_required_;

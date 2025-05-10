@@ -7,7 +7,6 @@
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
-#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
@@ -22,6 +21,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 
@@ -58,7 +58,6 @@ RenderableScene::RenderableScene(
     , rendering_resources_{
         std::move(rendering_resources_name),
         max_anisotropic_filtering_level }
-    , particle_renderer_{ std::make_unique<ParticleRenderer>(particle_resources) }
     , trail_renderer_{ std::make_unique<TrailRenderer>(trail_resources) }
     , dynamic_lights_{ std::make_unique<DynamicLights>(dynamic_light_db) }
     , scene_config_{ scene_config }
@@ -69,7 +68,6 @@ RenderableScene::RenderableScene(
           name_,
           delete_node_mutex_,
           &scene_node_resources,
-          particle_renderer_.get(),
           trail_renderer_.get(),
           dynamic_lights_.get()}
     , selected_cameras_{ scene_ }
@@ -83,8 +81,21 @@ RenderableScene::RenderableScene(
           .cull_faces = scene_config.render_config.cull_faces,
           .delete_node_mutex = delete_node_mutex_,
           .physics_set_fps = &physics_set_fps_}
-    , smoke_particle_generator_{ &rendering_resources_, scene_node_resources, scene_ }
-    , contact_smoke_generator_{ smoke_particle_generator_ }
+    , air_particles_{
+        scene_node_resources,
+        rendering_resources_,
+        particle_resources,
+        scene_,
+        VariableAndHash<std::string>{ "global_air_particles" }}
+    , skidmark_particles_{
+        scene_node_resources,
+        rendering_resources_,
+        particle_resources,
+        scene_,
+        VariableAndHash<std::string>{ "global_skidmark_particles" }}
+    , contact_smoke_generator_{
+        air_particles_.smoke_particle_generator,
+        skidmark_particles_.smoke_particle_generator }
     , paused_{ [&ui_focus, focus_filter]() {
         std::shared_lock lock{ ui_focus.focuses.mutex };
         return !ui_focus.has_focus(focus_filter);
@@ -167,7 +178,6 @@ RenderableScene::RenderableScene(
 {
     physics_engine_.set_surface_contact_db(surface_contact_db);
     physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);
-    physics_engine_.set_particle_renderer(*particle_renderer_);
     physics_engine_.set_trail_renderer(*trail_renderer_);
     if (config.with_flying_logic) {
         render_logics_.append({ *flying_camera_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
@@ -179,9 +189,13 @@ RenderableScene::RenderableScene(
     scene_render_logics_.append({ *fxaa_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     physics_engine_.add_external_force_provider(gefp_);
     physics_engine_.add_external_force_provider(*key_bindings_);
+    physics_engine_.advance_times_.add_advance_time({ *air_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    physics_engine_.advance_times_.add_advance_time({ *skidmark_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 RenderableScene::~RenderableScene() {
+    air_particles_.particle_renderer->on_destroy.clear();
+    skidmark_particles_.particle_renderer->on_destroy.clear();
     stop_and_join();
     clear();
     object_pool_.clear();

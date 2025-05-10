@@ -5,13 +5,16 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 ContactSmokeGenerator::ContactSmokeGenerator(
-    SmokeParticleGenerator& smoke_particle_generator)
-    : smoke_particle_generator_{ smoke_particle_generator }
+    SmokeParticleGenerator& air_smoke_particle_generator,
+    SmokeParticleGenerator& skidmark_smoke_particle_generator)
+    : air_smoke_particle_generator_{ air_smoke_particle_generator }
+    , skidmark_smoke_particle_generator_{ skidmark_smoke_particle_generator }
 {}
 
 ContactSmokeGenerator::~ContactSmokeGenerator() {
@@ -22,7 +25,7 @@ ContactSmokeGenerator::~ContactSmokeGenerator() {
 
 void ContactSmokeGenerator::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
     if (tire_smoke_trail_generators_.erase(const_cast<RigidBodyVehicle*>(&destroyed_object)) != 1) {
-        THROW_OR_ABORT("Could not find surface contact info to be deleted");
+        verbose_abort("Could not find surface contact info to be deleted");
     }
 }
 
@@ -66,7 +69,14 @@ void ContactSmokeGenerator::notify_contact(
         }
         std::pair<size_t, size_t> key{ c.tire_id1, i };
         if (auto tstgit = tstg.find(key); tstgit == tstg.end()) {
-            if (!tstg.try_emplace(key, smoke_particle_generator_).second)
+            auto& pgen = [&]() -> SmokeParticleGenerator& {
+                switch (smoke_info.particle.substrate) {
+                    case ParticleSubstrate::AIR: return air_smoke_particle_generator_;
+                    case ParticleSubstrate::SKIDMARK: return skidmark_smoke_particle_generator_;
+                };
+                THROW_OR_ABORT("Unknoen particle substrate");
+            }();
+            if (!tstg.try_emplace(key, pgen).second)
             {
                 THROW_OR_ABORT("Could not insert smoke trail generator");
             }

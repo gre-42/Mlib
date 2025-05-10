@@ -17,7 +17,6 @@ class BaseLog;
 enum class CollisionDirection;
 class SurfaceContactDb;
 class ContactSmokeGenerator;
-class IParticleRenderer;
 class ITrailRenderer;
 struct StaticWorld;
 struct PhysicsPhase;
@@ -46,7 +45,6 @@ public:
         float duration);
     void set_surface_contact_db(SurfaceContactDb& surface_contact_db);
     void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);
-    void set_particle_renderer(IParticleRenderer& particle_renderer);
     void set_trail_renderer(ITrailRenderer& trail_renderer);
     inline const PhysicsEngineConfig& config() const { return cfg_; }
 
@@ -58,7 +56,6 @@ private:
     CollisionDirection collision_direction_;
     SurfaceContactDb* surface_contact_db_;
     ContactSmokeGenerator* contact_smoke_generator_;
-    IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;
     std::list<IExternalForceProvider*> external_force_providers_;
     std::set<IControllable*> controllables_;

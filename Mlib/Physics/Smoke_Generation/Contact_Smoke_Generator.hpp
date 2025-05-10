@@ -18,8 +18,9 @@ struct IntersectionScene;
 
 class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
 public:
-    explicit ContactSmokeGenerator(
-        SmokeParticleGenerator& smoke_particle_generator);
+    ContactSmokeGenerator(
+        SmokeParticleGenerator& air_smoke_particle_generator,
+        SmokeParticleGenerator& skidmark_smoke_particle_generator);
     ~ContactSmokeGenerator();
     virtual void notify_destroyed(const RigidBodyVehicle& destroyed_object) override;
 
@@ -30,7 +31,8 @@ public:
         const IntersectionScene& c);
     void advance_time(float dt);
 private:
-    SmokeParticleGenerator& smoke_particle_generator_;
+    SmokeParticleGenerator& air_smoke_particle_generator_;
+    SmokeParticleGenerator& skidmark_smoke_particle_generator_;
     std::unordered_map<RigidBodyVehicle*, std::map<std::pair<size_t, size_t>, ParticleTrailGenerator>> tire_smoke_trail_generators_;
 };
 

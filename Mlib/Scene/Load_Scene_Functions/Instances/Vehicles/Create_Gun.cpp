@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
@@ -143,7 +144,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         &rendering_resources,
         scene,
         scene_node_resources,
-        smoke_particle_generator,
+        air_particles.smoke_particle_generator,
         dynamic_lights,
         physics_engine.rigid_bodies_,
         physics_engine.advance_times_,

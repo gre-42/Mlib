@@ -17,16 +17,28 @@ public:
     // IParticleRenderer
     virtual IParticleCreator& get_instantiator(const VariableAndHash<std::string>& name) override;
     virtual void preload(const VariableAndHash<std::string>& name) override;
-    virtual void move(float dt, const StaticWorld& world) override;
+    
+    // IAdvanceTime
+    virtual void advance_time(float dt, const StaticWorld& world) override;
+
+    // Renderable
+    virtual PhysicsMaterial physics_attributes() const override;
+    virtual RenderingStrategies rendering_strategies() const override;
+    virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
+    virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
+    virtual ScenePos max_center_distance2(BillboardId billboard_id) const override;
     virtual void render(
-        ParticleSubstrate substrate,
-        const FixedArray<ScenePos, 4, 4>& vp,
+        const FixedArray<ScenePos, 4, 4>& mvp,
+        const TransformationMatrix<float, ScenePos, 3>& m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
+        const DynamicStyle* dynamic_style,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass) const override;
+        const RenderPass& render_pass,
+        const AnimationState* animation_state,
+        const ColorStyle* color_style) const override;
 
 private:
     ParticleResources& resources_;

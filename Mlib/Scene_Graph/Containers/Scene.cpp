@@ -22,9 +22,7 @@
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
-#include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -43,7 +41,6 @@ Scene::Scene(
     std::string name,
     DeleteNodeMutex& delete_node_mutex,
     SceneNodeResources* scene_node_resources,
-    IParticleRenderer* particle_renderer,
     ITrailRenderer* trail_renderer,
     IDynamicLights* dynamic_lights)
     : nodes_{ "Scene node" }
@@ -64,7 +61,6 @@ Scene::Scene(
     , uuid_{ 0 }
     , shutting_down_{ false }
     , scene_node_resources_{ scene_node_resources }
-    , particle_renderer_{ particle_renderer }
     , trail_renderer_{ trail_renderer }
     , dynamic_lights_{ dynamic_lights }
     , ncleanups_required_{ 0 }
@@ -754,18 +750,6 @@ void Scene::render(
                 }
             }
             if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-                if (particle_renderer_ != nullptr) {
-                    // AperiodicLagFinder lag_finder{ "particles: ", std::chrono::milliseconds{5} };
-                    particle_renderer_->render(
-                        ParticleSubstrate::AIR,
-                        vp,
-                        iv,
-                        lights,
-                        skidmarks,
-                        scene_graph_config,
-                        render_config,
-                        external_render_pass);
-                }
                 if (trail_renderer_ != nullptr) {
                     trail_renderer_->render(
                         vp,
@@ -943,14 +927,6 @@ void Scene::assert_this_thread_is_render_thread() const {
         sstr << "Thread \"" << id << "\" is not the render thread \"" << render_thread_id_ << '"';
         verbose_abort(sstr.str());
     }
-}
-
-IParticleCreator& Scene::particle_instantiator(const VariableAndHash<std::string>& resource_name) const {
-    std::shared_lock lock{ mutex_ };
-    if (particle_renderer_ == nullptr) {
-        THROW_OR_ABORT("Particle renderer not set");
-    }
-    return particle_renderer_->get_instantiator(resource_name);
 }
 
 void Scene::wait_for_cleanup() const {

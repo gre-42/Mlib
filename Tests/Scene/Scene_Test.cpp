@@ -27,6 +27,7 @@
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
@@ -136,8 +137,10 @@ void test_physics_engine(unsigned int seed) {
         16 };
     SurfaceContactDb surface_contact_db;
     BulletPropertyDb bullet_property_db;
-    SmokeParticleGenerator smoke_particle_generator{ &rendering_resources, scene_node_resources, scene };
-    ContactSmokeGenerator contact_smoke_generator{ smoke_particle_generator };
+    ParticleRenderer particle_renderer{ particle_resources };
+    SmokeParticleGenerator air_smoke_particle_generator{ rendering_resources, scene_node_resources, particle_renderer, scene };
+    SmokeParticleGenerator skidmark_smoke_particle_generator{ rendering_resources, scene_node_resources, particle_renderer, scene };
+    ContactSmokeGenerator contact_smoke_generator{ air_smoke_particle_generator, skidmark_smoke_particle_generator };
     TrailRenderer trail_renderer{ trail_resources };
     pe.set_surface_contact_db(surface_contact_db);
     pe.set_contact_smoke_generator(contact_smoke_generator);

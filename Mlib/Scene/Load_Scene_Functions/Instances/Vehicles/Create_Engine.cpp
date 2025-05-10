@@ -12,6 +12,7 @@
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #endif
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -112,7 +113,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto a = args.arguments.child(KnownArgs::exhaust);
         a.validate(Exhaust::options);
         ee = std::make_shared<EngineExhaust>(
-            smoke_particle_generator,
+            air_particles.smoke_particle_generator,
             a.at<ConstantParticleTrail>(Exhaust::particle),
             transformation_matrix_from_json<SceneDir, ScenePos, 3>(
                 a.at(Exhaust::location)));

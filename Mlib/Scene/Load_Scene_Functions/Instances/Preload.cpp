@@ -11,6 +11,8 @@
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Scene_Particles.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
@@ -67,7 +69,16 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {
                         for (const auto& s : c->smoke_infos) {
-                            particle_renderer.preload(s.particle.resource_name);
+                            switch (s.particle.substrate) {
+                                case ParticleSubstrate::AIR:
+                                    air_particles.particle_renderer->preload(s.particle.resource_name);
+                                    break;
+                                case ParticleSubstrate::SKIDMARK:
+                                    skidmark_particles.particle_renderer->preload(s.particle.resource_name);
+                                    break;
+                                default:
+                                    THROW_OR_ABORT("Unknown substrate: " + std::to_string((int)s.particle.substrate));
+                            }
                         }
                         // RenderingContextStack::primary_scene_node_resources().preload_single(
                         //     c->smoke_particle_resource_name, RenderableResourceFilter{});
