@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Actuators/IEngine_Event_Listener.hpp>
 #include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Physics/Smoke_Generation/Constant_Particle_Trail.hpp>
+#include <Mlib/Physics/Smoke_Generation/Particle_Trail_Generator.hpp>
 #include <optional>
 
 namespace Mlib {
@@ -27,6 +28,7 @@ public:
     virtual void advance_time(float dt) override;
 private:
     SmokeParticleGenerator& smoke_generator_;
+    ParticleTrailGenerator trail_generator_;
     ConstantParticleTrail particle_;
     TransformationMatrix<SceneDir, ScenePos, 3> relative_location_;
     std::optional<RotatingFrame<SceneDir, ScenePos, 3>> parent_frame_;

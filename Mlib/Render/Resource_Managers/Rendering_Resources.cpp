@@ -59,6 +59,7 @@
 #include <stb_cpp/stb_blend.hpp>
 #include <stb_cpp/stb_colorize.hpp>
 #include <stb_cpp/stb_desaturate.hpp>
+#include <stb_cpp/stb_rotate.hpp>
 #include <stb_cpp/stb_generate_color_mask.hpp>
 #include <stb_cpp/stb_image_atlas.hpp>
 #include <stb_cpp/stb_image_load.hpp>
@@ -527,6 +528,9 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
         nm[1] = nm_transposed[0];
         nm[2] = nm_transposed[2];
         array_2_stb_image(nm, si0.data());
+    }
+    if (color.rotate != 0) {
+        si0 = stb_rotate(si0, color.rotate);
     }
     return si0;
 }

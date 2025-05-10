@@ -47,6 +47,7 @@ DECLARE_ARGUMENT(depth_interpolation);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(wrap_mode_s);
 DECLARE_ARGUMENT(wrap_mode_t);
+DECLARE_ARGUMENT(rotate);
 }
 
 const std::string AddTextureDescriptor::key = "add_texture_descriptor";
@@ -65,19 +66,22 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto wrap_modes = OrderableFixedArray<WrapMode, 2>{
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))};
+    auto rotate = args.arguments.at<int>(KnownArgs::rotate, 0);
     auto normal = ColormapWithModifiers{
         .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::normal).path},
         .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
         .color_mode = ColorMode::RGB,
         .mipmap_mode = mipmap_mode,
         .anisotropic_filtering_level = anisotropic_filtering_level,
-        .wrap_modes = wrap_modes}.compute_hash();
+        .wrap_modes = wrap_modes,
+        .rotate = rotate}.compute_hash();
     auto specular = ColormapWithModifiers{
         .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::specular).path},
         .color_mode = ColorMode::RGB,
         .mipmap_mode = mipmap_mode,
         .anisotropic_filtering_level = anisotropic_filtering_level,
-        .wrap_modes = wrap_modes}.compute_hash();
+        .wrap_modes = wrap_modes,
+        .rotate = rotate}.compute_hash();
     {
         auto filename = args.arguments.try_path_or_variable(KnownArgs::normal);
         if (filename.is_variable) {
@@ -125,8 +129,8 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .mipmap_mode = mipmap_mode,
                 .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
                 .anisotropic_filtering_level = anisotropic_filtering_level,
-                .wrap_modes = wrap_modes}.compute_hash(),
+                .wrap_modes = wrap_modes,
+                .rotate = rotate}.compute_hash(),
             .specular = specular,
             .normal = normal });
-
 }

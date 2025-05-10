@@ -21,6 +21,7 @@ class EngineEventListeners;
 struct EnginePowerDeltaIntent;
 struct TirePowerIntent;
 enum class VelocityClassification;
+struct PhysicsTimeStep;
 struct PhysicsPhase;
 
 class RigidBodyEngine: public StatusWriter {
@@ -55,9 +56,9 @@ public:
         const EnginePowerDeltaIntent& delta_intent);
     void reset_forces();
     void advance_time(
-        float dt,
-        const RotatingFrame<SceneDir, ScenePos, 3>& frame,
-        const PhysicsPhase& phase);
+        const PhysicsTimeStep& dt,
+        const PhysicsPhase& phase,
+        const RotatingFrame<SceneDir, ScenePos, 3>& frame);
     float engine_w() const;
 
 private:

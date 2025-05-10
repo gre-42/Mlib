@@ -44,6 +44,7 @@ struct ColormapWithModifiers {
     InterpolationMode depth_interpolation = InterpolationMode::NEAREST;
     unsigned int anisotropic_filtering_level = 0;
     OrderableFixedArray<WrapMode, 2> wrap_modes = { WrapMode::REPEAT, WrapMode::REPEAT };
+    int rotate = 0;
     CachedHash hash;
     ColormapWithModifiers& compute_hash();
     std::partial_ordering operator <=> (const ColormapWithModifiers& other) const;
@@ -82,6 +83,7 @@ struct ColormapWithModifiers {
         archive(depth_interpolation);
         archive(anisotropic_filtering_level);
         archive(wrap_modes);
+        archive(rotate);
         archive(hash);
     }
 };

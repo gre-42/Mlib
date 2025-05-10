@@ -30,6 +30,7 @@
 #include <Mlib/Physics/Interfaces/ISurface_Normal.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Time_Step.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
@@ -427,6 +428,10 @@ void RigidBodyVehicle::advance_time(
     std::list<Beacon>* beacons,
     const PhysicsPhase& phase)
 {
+    auto time_step = PhysicsTimeStep{
+        .dt_step = cfg.dt,
+        .dt_substep = cfg.dt_substeps()
+    };
     auto dt_substeps = cfg.dt_substeps();
     advance_time_skate(cfg, world);
     rbp_.advance_time(dt_substeps);
@@ -440,7 +445,7 @@ void RigidBodyVehicle::advance_time(
     {
         auto frame = rbp_.rotating_frame();
         for (auto& [_, e] : engines_) {
-            e.advance_time(dt_substeps, frame, phase);
+            e.advance_time(time_step, phase, frame);
         }
     }
 #ifdef COMPUTE_POWER

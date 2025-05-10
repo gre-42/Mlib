@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Velocity_Classification.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Time_Step.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <cmath>
 
@@ -191,9 +192,9 @@ void RigidBodyEngine::set_surface_power(const EnginePowerIntent& engine_power_in
 }
 
 void RigidBodyEngine::advance_time(
-    float dt,
-    const RotatingFrame<SceneDir, ScenePos, 3>& frame,
-    const PhysicsPhase& phase)
+    const PhysicsTimeStep& dt,
+    const PhysicsPhase& phase,
+    const RotatingFrame<SceneDir, ScenePos, 3>& frame)
 {
     float average_tire_w_;
     if (tires_w_.empty()) {
@@ -207,7 +208,7 @@ void RigidBodyEngine::advance_time(
     }
     if (engine_power_.has_value()) {
         if (!std::isnan(average_tire_w_)) {
-            engine_power_->auto_set_gear(dt, average_tire_w_);
+            engine_power_->auto_set_gear(dt.dt_substep, average_tire_w_);
         }
         if (!phase.burn_in && (phase.substep == 0) && (listeners_ != nullptr)) {
             listeners_->notify_rotation(
@@ -219,7 +220,7 @@ void RigidBodyEngine::advance_time(
     }
     if (!phase.burn_in && (phase.substep == 0) && (listeners_ != nullptr)) {
         listeners_->set_location(frame);
-        listeners_->advance_time(dt);
+        listeners_->advance_time(dt.dt_step);
     }
 }
 

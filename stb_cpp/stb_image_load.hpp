@@ -65,6 +65,12 @@ public:
     inline const TData& operator [] (size_t i) const {
         return data_.get()[i];
     }
+    inline TData& operator () (int x, int y, int channel) {
+        return data_.get()[(size_t)(channel + (x + y * width) * nrChannels)];
+    }
+    inline const TData& operator () (int x, int y, int channel) const {
+        return const_cast<StbInfo&>(*this)(x, y, channel);
+    }
 private:
     std::unique_ptr<TData, decltype(&stbi_image_free)> data_;
 };

@@ -57,7 +57,8 @@ ColormapWithModifiers& ColormapWithModifiers::compute_hash() {
         mipmap_mode,
         depth_interpolation,
         anisotropic_filtering_level,
-        wrap_modes);
+        wrap_modes,
+        rotate);
     return *this;
 }
 
@@ -74,6 +75,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const ColormapWithModifiers
         "lighten: " << t.lighten << '\n' <<
         "lighten_top: " << t.lighten_top << '\n' <<
         "lighten_bottom: " << t.lighten_bottom << '\n' <<
-        "color_mode:" << color_mode_to_string(t.color_mode);
+        "color_mode:" << color_mode_to_string(t.color_mode) << '\n' <<
+        "rotate:" << t.rotate;
     return ostr;
 }
