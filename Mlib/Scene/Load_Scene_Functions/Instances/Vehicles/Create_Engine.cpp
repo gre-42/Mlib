@@ -6,8 +6,10 @@
 #include <Mlib/Physics/Actuators/Engine_Exhaust.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #ifndef WITHOUT_ALUT
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #endif
@@ -112,8 +114,18 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.contains(KnownArgs::exhaust)) {
         auto a = args.arguments.child(KnownArgs::exhaust);
         a.validate(Exhaust::options);
+        auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources);
+        node->add_renderable(
+            VariableAndHash<std::string>{"exhaust_particles"},
+            particle_renderer);
+        physics_engine.advance_times_.add_advance_time(
+            { *particle_renderer, CURRENT_SOURCE_LOCATION },
+            CURRENT_SOURCE_LOCATION);
         ee = std::make_shared<EngineExhaust>(
-            air_particles.smoke_particle_generator,
+            RenderingContextStack::primary_rendering_resources(),
+            scene_node_resources,
+            particle_renderer,
+            scene,
             a.at<ConstantParticleTrail>(Exhaust::particle),
             transformation_matrix_from_json<SceneDir, ScenePos, 3>(
                 a.at(Exhaust::location)));

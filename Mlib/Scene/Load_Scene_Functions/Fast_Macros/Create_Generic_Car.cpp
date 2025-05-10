@@ -17,6 +17,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.hpp>
+#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
@@ -221,8 +222,18 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
         if (auto engine_exhaust = vdb.try_at_non_null(KnownDb::engine_exhaust); engine_exhaust.has_value()) {
             JsonView jv{ *engine_exhaust };
             jv.validate(KnownExhaust::options);
+            auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources);
+            scene.get_node(parent, DP_LOC)->add_renderable(
+                VariableAndHash<std::string>{"exhaust_particles"},
+                particle_renderer);
+            physics_engine.advance_times_.add_advance_time(
+                { *particle_renderer, CURRENT_SOURCE_LOCATION },
+                CURRENT_SOURCE_LOCATION);
             ee = std::make_shared<EngineExhaust>(
-                air_particles.smoke_particle_generator,
+                RenderingContextStack::primary_rendering_resources(),
+                scene_node_resources,
+                particle_renderer,
+                scene,
                 jv.at<ConstantParticleTrail>(KnownExhaust::particle),
                 transformation_matrix_from_json<SceneDir, ScenePos, 3>(
                     jv.at(KnownExhaust::location)));

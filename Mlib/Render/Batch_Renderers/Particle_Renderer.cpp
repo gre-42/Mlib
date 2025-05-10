@@ -20,7 +20,9 @@ ParticleRenderer::ParticleRenderer(ParticleResources& resources)
       } }
 {}
 
-ParticleRenderer::~ParticleRenderer() = default;
+ParticleRenderer::~ParticleRenderer() {
+    on_destroy.clear();
+}
 
 IParticleCreator& ParticleRenderer::get_instantiator(const VariableAndHash<std::string>& name) {
     return *instantiators_.get(name);

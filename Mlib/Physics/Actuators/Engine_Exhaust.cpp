@@ -1,15 +1,22 @@
 #include "Engine_Exhaust.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 
 using namespace Mlib;
 
 EngineExhaust::EngineExhaust(
-    SmokeParticleGenerator& smoke_generator,
+    RenderingResources& rendering_resources,
+    SceneNodeResources& scene_node_resources,
+    std::shared_ptr<IParticleRenderer> particle_renderer,
+    Scene& scene,
     const ConstantParticleTrail& particle,
     const TransformationMatrix<SceneDir, ScenePos, 3>& relative_location)
-    : smoke_generator_{ smoke_generator }
-    , trail_generator_{ smoke_generator }
+    : particle_renderer_{ particle_renderer }
+    , smoke_generator_{
+        rendering_resources,
+        scene_node_resources,
+        *particle_renderer,
+        scene }
+    , trail_generator_{ smoke_generator_ }
     , particle_{ particle }
     , relative_location_{ relative_location }
 {}
@@ -25,21 +32,14 @@ void EngineExhaust::notify_rotation(
 
 void EngineExhaust::set_location(
     const RotatingFrame<SceneDir, ScenePos, 3>& frame)
-{
-    parent_frame_.emplace(frame);
-}
+{}
 
 void EngineExhaust::advance_time(float dt) {
-    if (!parent_frame_.has_value()) {
-        return;
-    }
     trail_generator_.advance_time(dt);
-    auto location = parent_frame_->location * relative_location_;
-    auto velocity = parent_frame_->velocity_at_position(location.t);
     trail_generator_.maybe_generate(
-        location.t,
-        matrix_2_tait_bryan_angles(location.R),
-        velocity,
+        relative_location_.t,
+        matrix_2_tait_bryan_angles(relative_location_.R),
+        fixed_zeros<SceneDir, 3>(),     // velocity
         particle_.particle,
         particle_.generation_dt,
         "exhaust",

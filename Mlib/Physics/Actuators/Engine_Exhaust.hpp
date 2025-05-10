@@ -5,16 +5,23 @@
 #include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Physics/Smoke_Generation/Constant_Particle_Trail.hpp>
 #include <Mlib/Physics/Smoke_Generation/Particle_Trail_Generator.hpp>
+#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <optional>
 
 namespace Mlib {
 
-class SmokeParticleGenerator;
+class RenderingResources;
+class SceneNodeResources;
+class IParticleRenderer;
+class Scene;
 
 class EngineExhaust: public IEngineEventListener {
 public:
     explicit EngineExhaust(
-        SmokeParticleGenerator& smoke_generator,
+        RenderingResources& rendering_resources,
+        SceneNodeResources& scene_node_resources,
+        std::shared_ptr<IParticleRenderer> particle_renderer,
+        Scene& scene,
         const ConstantParticleTrail& particle,
         const TransformationMatrix<SceneDir, ScenePos, 3>& relative_location);
     virtual ~EngineExhaust() override;
@@ -27,11 +34,11 @@ public:
         const RotatingFrame<SceneDir, ScenePos, 3>& frame) override;
     virtual void advance_time(float dt) override;
 private:
-    SmokeParticleGenerator& smoke_generator_;
+    std::shared_ptr<IParticleRenderer> particle_renderer_;
+    SmokeParticleGenerator smoke_generator_;
     ParticleTrailGenerator trail_generator_;
     ConstantParticleTrail particle_;
     TransformationMatrix<SceneDir, ScenePos, 3> relative_location_;
-    std::optional<RotatingFrame<SceneDir, ScenePos, 3>> parent_frame_;
 };
 
 }
