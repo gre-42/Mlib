@@ -262,7 +262,7 @@ void MacroLineExecutor::operator () (
             // BENCHMARK times.emplace_back("exclude", ot.elapsed());
         } catch (const std::exception& e) {
             std::stringstream msg;
-            msg << "Exception while evaluating conditionals in \"" << j << "\n\n" << e.what();
+            msg << "Exception while evaluating conditionals in \"" << j << "\n\nException message: " << e.what();
             if (verbose_) {
                 linfo() << msg.str();
             }
@@ -289,7 +289,7 @@ void MacroLineExecutor::operator () (
                 // BENCHMARK times.emplace_back("let", ot.elapsed());
             } catch (const std::exception& e) {
                 std::stringstream msg;
-                msg << "Exception while substituting variables for " << std::setw(2) << j << "\n\n" << e.what();
+                msg << "Exception while substituting variables for " << std::setw(2) << j << "\n\nException message: " << e.what();
                 throw std::runtime_error(msg.str());
             }
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
@@ -312,9 +312,9 @@ void MacroLineExecutor::operator () (
                 // BENCHMARK times.emplace_back("macro fork", ot.elapsed());
                 try {
                     mle2(macro_it->second.content, &args, nullptr);
-                } catch (const std::runtime_error& e) {
+                } catch (const std::exception& e) {
                     std::stringstream msg;
-                    msg << "Exception while executing macro \"" << name << "\". Line: " << std::setw(2) << macro_it->second.content << "\n\n" << e.what();
+                    msg << "Exception while executing macro \"" << name << "\". Line: " << std::setw(2) << macro_it->second.content << "\n\nException message: " << e.what();
                     if (verbose_) {
                         linfo() << msg.str();
                     }
@@ -337,7 +337,7 @@ void MacroLineExecutor::operator () (
                         local_json_macro_arguments);
                 } catch (const std::exception& e) {
                     std::stringstream msg;
-                    msg << "Exception while executing function \"" << name << "\". Line: " << std::setw(2) << j << "\n\n" << e.what();
+                    msg << "Exception while executing function \"" << name << "\". Line: " << std::setw(2) << j << "\n\nException message: " << e.what();
                     if (verbose_) {
                         linfo() << msg.str();
                     }
