@@ -202,8 +202,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .ambient = OrderableFixedArray{ cfg.ambient_factor * material.at("ambient_color").get<UFixedArray<float, 3>>() },
                 .diffuse = OrderableFixedArray{ cfg.diffuse_factor * material.at("diffuse_color").get<UFixedArray<float, 3>>() },
                 .specular = OrderableFixedArray{ cfg.specular_factor * material.at("specular_color").get<UFixedArray<float, 3>>() },
-                .fog_distances = OrderableFixedArray{ cfg.fog_distances },
-                .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }
+                .fog_distances = OrderableFixedArray{ cfg.shading.fog_distances },
+                .fog_ambient = OrderableFixedArray{ cfg.shading.fog_ambient }
             },
             .dynamically_lighted = cfg.dynamically_lighted
         }}).second) {

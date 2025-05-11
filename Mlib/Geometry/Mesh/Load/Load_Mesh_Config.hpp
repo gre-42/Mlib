@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
+#include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
@@ -30,8 +31,6 @@ struct LoadMeshConfig {
     float max_triangle_distance = INFINITY;
     BlendMode blend_mode;
     FixedArray<float, 4> alpha_distances = default_linear_distances;
-    FixedArray<float, 2> fog_distances = default_step_distances;
-    FixedArray<float, 3> fog_ambient = { -1.f, -1.f, -1.f };
     bool cull_faces_default;
     bool cull_faces_alpha;
     ExternalRenderPassType occluded_pass;
@@ -42,19 +41,11 @@ struct LoadMeshConfig {
     TransformationMode transformation_mode;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     VariableAndHash<std::string> reflection_map;
+    Shading shading;
     FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specular_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> reflectance = FixedArray<float, 3>(0.f);
-    FresnelAndAmbient fresnel{
-        .reflectance = {
-            .min = 0.f,
-            .max = 0.f,
-            .exponent = 0.f
-        },
-        .ambient = {0.f, 0.f, 0.f}
-    };
     float desaturate = 0.f;
     std::string histogram;
     FixedArray<float, 3> lighten = FixedArray<float, 3>(0.f);

@@ -66,12 +66,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .transformation_mode = cfg.transformation_mode,
             .billboard_atlas_instances = cfg.billboard_atlas_instances,
             .cull_faces = cfg.cull_faces_default,
-            .shading{
-                .reflectance = OrderableFixedArray{ cfg.reflectance },
-                .fresnel = cfg.fresnel,
-                .fog_distances = OrderableFixedArray{ cfg.fog_distances },
-                .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }
-            },
+            .shading = cfg.shading,
             .dynamically_lighted = cfg.dynamically_lighted},
         Morphology{
             .physics_material = cfg.physics_material,

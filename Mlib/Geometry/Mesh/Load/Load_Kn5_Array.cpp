@@ -343,8 +343,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .transformation_mode = cfg.transformation_mode,
                     .cull_faces = cfg.cull_faces_default,
                     .shading = {
-                        .fog_distances = OrderableFixedArray{ cfg.fog_distances },
-                        .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }},
+                        .fog_distances = OrderableFixedArray{ cfg.shading.fog_distances },
+                        .fog_ambient = OrderableFixedArray{ cfg.shading.fog_ambient }},
                     .dynamically_lighted = cfg.dynamically_lighted},
                 Morphology{
                     .physics_material = cfg.physics_material,
@@ -540,7 +540,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     tl.material.shading.fresnel.reflectance.min = fac * material->fresnelC.value_or_default();
                     tl.material.shading.fresnel.reflectance.max = fac * material->fresnelMaxLevel.value_or_default();
                     tl.material.shading.fresnel.reflectance.exponent = material->fresnelEXP.value_or_default();
-                    tl.material.shading.fresnel.ambient = cfg.fresnel.ambient;
+                    tl.material.shading.fresnel.ambient = cfg.shading.fresnel.ambient;
                 }
                 if (any(attrs & MetaAttributes::SURFACE_GRASS) &&
                     (material->shader == "ksGrass") &&

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <compare>
+#include <nlohmann/json_fwd.hpp>
 
 namespace Mlib {
 
@@ -29,5 +30,7 @@ struct Shading {
     }
     std::partial_ordering operator <=> (const Shading&) const = default;
 };
+
+void from_json(const nlohmann::json& j, Shading& shading);
 
 }

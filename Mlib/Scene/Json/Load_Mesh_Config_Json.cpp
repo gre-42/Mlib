@@ -27,8 +27,6 @@ DECLARE_ARGUMENT(center_distances);
 DECLARE_ARGUMENT(max_triangle_distance);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(alpha_distances);
-DECLARE_ARGUMENT(fog_distances);
-DECLARE_ARGUMENT(fog_ambient);
 DECLARE_ARGUMENT(cull_faces_default);
 DECLARE_ARGUMENT(cull_faces_alpha);
 DECLARE_ARGUMENT(occluded_pass);
@@ -39,12 +37,11 @@ DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
 DECLARE_ARGUMENT(billboards);
 DECLARE_ARGUMENT(reflection_map);
+DECLARE_ARGUMENT(shading);
 DECLARE_ARGUMENT(emissive_factor);
 DECLARE_ARGUMENT(ambient_factor);
 DECLARE_ARGUMENT(diffuse_factor);
 DECLARE_ARGUMENT(specular_factor);
-DECLARE_ARGUMENT(reflectance);
-DECLARE_ARGUMENT(fresnel);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(lighten);
@@ -76,8 +73,6 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .max_triangle_distance = j.at<float>(KnownArgs::max_triangle_distance, INFINITY) * meters,
         .blend_mode = blend_mode_from_string(j.at<std::string>(KnownArgs::blend_mode)),
         .alpha_distances = j.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
-        .fog_distances = j.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
-        .fog_ambient = j.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(-1.f)),
         .cull_faces_default = j.at<bool>(KnownArgs::cull_faces_default, true),
         .cull_faces_alpha = j.at<bool>(KnownArgs::cull_faces_alpha, true),
         .occluded_pass = external_render_pass_type_from_string(j.at<std::string>(KnownArgs::occluded_pass)),
@@ -88,12 +83,11 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .transformation_mode = transformation_mode_from_string(j.at<std::string>(KnownArgs::transformation_mode)),
         .billboard_atlas_instances = j.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {}),
         .reflection_map = VariableAndHash{ j.at_non_null<std::string>(KnownArgs::reflection_map, "") },
+        .shading = j.at<Shading>(KnownArgs::shading, Shading{}),
         .emissive_factor = j.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor, fixed_ones<float, 3>()),
         .ambient_factor = j.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
         .diffuse_factor = j.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
         .specular_factor = j.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
-        .reflectance = j.at<UFixedArray<float, 3>>(KnownArgs::reflectance, fixed_zeros<float, 3>()),
-        .fresnel = j.at<FresnelAndAmbient>(KnownArgs::fresnel, FresnelAndAmbient{}),
         .desaturate = j.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = j.try_path_or_variable(KnownArgs::histogram).path,
         .lighten = j.at<UFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),

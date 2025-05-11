@@ -102,10 +102,10 @@ DffArrays<TPosition> Mlib::load_dff(
                         .ambient = OrderableFixedArray<float, 3>((cfg.ambient_factor * col3) * material.surface_properties.ambient),
                         .diffuse = OrderableFixedArray<float, 3>((cfg.diffuse_factor * col3) * material.surface_properties.diffuse),
                         .specular = OrderableFixedArray<float, 3>(cfg.specular_factor * material.surface_properties.specular),
-                        .reflectance = OrderableFixedArray{ cfg.reflectance },
-                        .fresnel = cfg.fresnel,
-                        .fog_distances = OrderableFixedArray{ cfg.fog_distances },
-                        .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }
+                        .reflectance = OrderableFixedArray{ cfg.shading.reflectance },
+                        .fresnel = cfg.shading.fresnel,
+                        .fog_distances = OrderableFixedArray{ cfg.shading.fog_distances },
+                        .fog_ambient = OrderableFixedArray{ cfg.shading.fog_ambient }
                     },
                     .dynamically_lighted = cfg.dynamically_lighted
                 },
