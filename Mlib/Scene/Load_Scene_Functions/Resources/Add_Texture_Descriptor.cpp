@@ -1,4 +1,3 @@
-#include "Add_Texture_Descriptor.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
@@ -6,6 +5,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
 using namespace Mlib;
 
@@ -51,17 +51,17 @@ DECLARE_ARGUMENT(wrap_mode_t);
 DECLARE_ARGUMENT(rotate);
 }
 
-const std::string AddTextureDescriptor::key = "add_texture_descriptor";
+namespace {
 
-LoadSceneJsonUserFunction AddTextureDescriptor::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    execute(args);
-};
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "add_texture_descriptor",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
 
-void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    auto mipmap_mode = mipmap_mode_from_string(
+                auto mipmap_mode = mipmap_mode_from_string(
         args.arguments.at<std::string>(KnownArgs::mipmap_mode, "with_mipmaps"));
     auto anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level);
     auto wrap_modes = OrderableFixedArray<WrapMode, 2>{
@@ -135,4 +135,8 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .rotate = rotate}.compute_hash(),
             .specular = specular,
             .normal = normal });
+            });
+    }
+} obj;
+
 }

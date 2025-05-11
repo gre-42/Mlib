@@ -170,7 +170,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Companion_Renderable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Foliage_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Atlas.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Descriptor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Billboards.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Trails.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animated_Billboards.hpp>
@@ -387,7 +386,6 @@ LoadScene::LoadScene() {
             register_json_user_function(AddCompanionRenderable::key, AddCompanionRenderable::json_user_function);
             register_json_user_function(AddFoliageResource::key, AddFoliageResource::json_user_function);
             register_json_user_function(AddTextureAtlas::key, AddTextureAtlas::json_user_function);
-            register_json_user_function(AddTextureDescriptor::key, AddTextureDescriptor::json_user_function);
             register_json_user_function(AnimatableBillboards::key, AnimatableBillboards::json_user_function);
             register_json_user_function(AnimatedBillboards::key, AnimatedBillboards::json_user_function);
             register_json_user_function(AnimatableTrails::key, AnimatableTrails::json_user_function);

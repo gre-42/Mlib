@@ -42,6 +42,7 @@
 #include <Mlib/Render/Render_To_Texture/Render_To_Texture_2D_Array.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Lazy_Texture.hpp>
+#include <Mlib/Render/Resource_Managers/Texture_Warn_Flags.hpp>
 #include <Mlib/Render/Text/Loaded_Font.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
@@ -181,22 +182,31 @@ static int log2(int n) {
 static StbInfo<uint8_t> stb_load_texture(
     const std::string& filename,
     int nchannels,
-    FlipMode flip_mode)
+    FlipMode flip_mode,
+    TextureWarnFlags suppressed_warnings)
 {
     auto result = stb_load8(filename, flip_mode, nullptr, IncorrectDatasizeBehavior::CONVERT);
     if (result.nrChannels < std::abs(nchannels)) {
         THROW_OR_ABORT(filename + " does not have at least " + std::to_string(nchannels) + " channels");
     }
-    if (!is_power_of_two(result.width) || !is_power_of_two(result.height)) {
-        lwarn() << filename << " size: " << result.width << 'x' << result.height;
+    if (!any(suppressed_warnings & TextureWarnFlags::POWER_OF_TWO)) {
+        if (!is_power_of_two(result.width) || !is_power_of_two(result.height)) {
+            lwarn() << filename << " size: " << result.width << 'x' << result.height;
+        }
     }
-    if ((nchannels > 0) && (result.nrChannels != nchannels)) {
-        lwarn() << filename << " channels: " << result.nrChannels << ", expected: " << nchannels;
+    if (!any(suppressed_warnings & TextureWarnFlags::TOO_MANY_CHANNELS)) {
+        if ((nchannels > 0) && (result.nrChannels != nchannels)) {
+            lwarn() << filename << " channels: " << result.nrChannels << ", expected: " << nchannels;
+        }
     }
     return result;
 }
 
-static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifiers& color, FlipMode flip_mode) {
+static StbInfo<uint8_t> stb_load_and_transform_texture(
+    const ColormapWithModifiers& color,
+    FlipMode flip_mode,
+    TextureWarnFlags suppressed_warnings)
+{
     std::string touch_file = *color.filename + ".xpltd";
     auto source_color_mode = color.color_mode;
     // Color-selector
@@ -258,12 +268,12 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + *color.filename + '"');
         }
         si0 = stb_load_texture(
-            *color.filename, (int)max(ColorMode::RGB), flip_mode);
+            *color.filename, (int)max(ColorMode::RGB), flip_mode, suppressed_warnings);
         if (si0.nrChannels != 3) {
             THROW_OR_ABORT("#channels not 3: \"" + *color.filename + '"');
         }
         auto si_alpha = stb_load_texture(
-            color.alpha, (int)max(ColorMode::GRAYSCALE), flip_mode);
+            color.alpha, (int)max(ColorMode::GRAYSCALE), flip_mode, suppressed_warnings);
         if (si_alpha.nrChannels != 1) {
             THROW_OR_ABORT("#channels not 1: \"" + color.alpha + '"');
         }
@@ -279,7 +289,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             si_alpha.height);
     } else {
         si0 = stb_load_texture(
-            *color.filename, (int)max(source_color_mode), flip_mode);
+            *color.filename, (int)max(source_color_mode), flip_mode, suppressed_warnings);
     }
     if (color.saturate) {
         if (si0.nrChannels != 1) {
@@ -299,7 +309,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (!color.average.empty()) {
         auto si1 = stb_load_texture(
-            color.average, (int)max(source_color_mode), flip_mode);
+            color.average, (int)max(source_color_mode), flip_mode, suppressed_warnings);
         stb_average(
             si0.data(),
             si1.data(),
@@ -322,7 +332,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (!color.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
-        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(color.histogram, -3, FlipMode::NONE));
+        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(color.histogram, -3, FlipMode::NONE, suppressed_warnings));
         Array<unsigned char> m = match_rgba_histograms(image, ref);
         assert_true(m.shape(0) == (size_t)si0.nrChannels);
         assert_true(m.shape(1) == (size_t)si0.height);
@@ -407,7 +417,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (!color.alpha_blend.empty()) {
         auto si1 = stb_load_texture(
-            color.alpha_blend, 4, flip_mode);
+            color.alpha_blend, 4, flip_mode, suppressed_warnings);
         stb_alpha_blend(
             si0.data(),
             si1.data(),
@@ -504,7 +514,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (!color.multiply.empty()) {
         auto si1 = stb_load_texture(
-            color.multiply, (int)max(source_color_mode), flip_mode);
+            color.multiply, (int)max(source_color_mode), flip_mode, suppressed_warnings);
         stb_multiply_color(
             si0.data(),
             si1.data(),
@@ -666,6 +676,7 @@ RenderingResources::RenderingResources(
     , cubemap_descriptors_{ "Cubemap descriptor" }
     , charsets_{ "Charset" }
     , font_textures_{ "Font", [](const auto& e) { return e.ttf_filename; } }
+    , suppressed_warnings_{ "Suppressed warning" }
     , aliases_{ "Alias" }
     , vps_{ "VP" }
     , offsets_{ "Offset" }
@@ -1261,6 +1272,7 @@ std::shared_ptr<StbInfo<uint8_t>> RenderingResources::get_texture_data(
     if (role == TextureRole::COLOR_FROM_DB) {
         return get_texture_data(colormap(color), TextureRole::COLOR, flip_mode);
     }
+    auto suppressed_warnings = get_suppressed_warnings(color.filename);
     check_color_mode(color, role);
     if (auto it = preloaded_texture_dds_data_.try_get(color); it != nullptr) {
         auto info = ImageInfo::load(*color.filename, &it->data);
@@ -1293,7 +1305,7 @@ std::shared_ptr<StbInfo<uint8_t>> RenderingResources::get_texture_data(
     if (auto it = preloaded_raw_texture_data_.try_get(color); it != nullptr) {
         return to_shared(stb_load8(*color.filename, FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT));
     }
-    auto si = stb_load_and_transform_texture(color, flip_mode);
+    auto si = stb_load_and_transform_texture(color, flip_mode, suppressed_warnings);
     if (any(color.color_mode & ColorMode::RGB) &&
         (si.nrChannels == 4) &&
         getenv_default_bool("CHECK_OPACITY", false))
@@ -1494,6 +1506,19 @@ void RenderingResources::set_blend_map_texture(const VariableAndHash<std::string
     LOG_FUNCTION("RenderingResources::set_blend_map_texture " + *name);
     std::scoped_lock lock{ mutex_ };
     add(blend_map_textures_, name, bmt);
+}
+
+void RenderingResources::set_suppressed_warnings(VariableAndHash<std::string> name, TextureWarnFlags warn_flags) {
+    std::scoped_lock lock{ mutex_ };
+    add(suppressed_warnings_, std::move(name), warn_flags);
+}
+
+TextureWarnFlags RenderingResources::get_suppressed_warnings(const VariableAndHash<std::string>& name) const {
+    const auto* res = suppressed_warnings_.try_get(name);
+    if (res == nullptr) {
+        return TextureWarnFlags::NONE;
+    }
+    return *res;
 }
 
 void RenderingResources::set_alias(VariableAndHash<std::string> alias, VariableAndHash<std::string> name) {

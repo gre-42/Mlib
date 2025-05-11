@@ -32,6 +32,7 @@ class StbInfo;
 namespace Mlib {
 
 enum class FlipMode;
+enum class TextureWarnFlags;
 struct TextureDescriptor;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
@@ -196,6 +197,8 @@ public:
     BlendMapTexture get_blend_map_texture(const VariableAndHash<std::string>& name) const;
     void set_blend_map_texture(const VariableAndHash<std::string>& name, const BlendMapTexture& bmt);
 
+    void set_suppressed_warnings(VariableAndHash<std::string> name, TextureWarnFlags warn_flags);
+    TextureWarnFlags get_suppressed_warnings(const VariableAndHash<std::string>& name) const;
     void set_alias(VariableAndHash<std::string> alias, VariableAndHash<std::string> name);
     VariableAndHash<std::string> get_alias(const VariableAndHash<std::string>& alias) const;
     bool contains_alias(const VariableAndHash<std::string>& alias) const;
@@ -271,6 +274,7 @@ private:
     mutable ThreadsafeStringWithHashUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
     mutable ThreadsafeStringWithHashUnorderedMap<std::unordered_map<char32_t, uint32_t>> charsets_;
     mutable VerboseUnorderedMap<FontNameAndHeight, LoadedFont> font_textures_;
+    ThreadsafeStringWithHashUnorderedMap<TextureWarnFlags> suppressed_warnings_;
     ThreadsafeStringWithHashUnorderedMap<VariableAndHash<std::string>> aliases_;
     ThreadsafeStringWithHashUnorderedMap<FixedArray<ScenePos, 4, 4>> vps_;
     ThreadsafeStringWithHashUnorderedMap<float> offsets_;
