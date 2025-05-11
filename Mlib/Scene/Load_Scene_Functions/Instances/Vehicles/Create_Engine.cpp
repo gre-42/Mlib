@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #ifndef WITHOUT_ALUT
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #endif
@@ -124,7 +125,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         if (engine_exhausts->empty()) {
             THROW_OR_ABORT("Engine exhaust array is empty");
         }
-        auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources);
+        auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleSubstrate::AIR);
         node->add_renderable(
             VariableAndHash<std::string>{"exhaust_particles"},
             particle_renderer);

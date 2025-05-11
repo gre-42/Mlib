@@ -3,15 +3,25 @@
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <mutex>
 
 using namespace Mlib;
 
-ParticleRenderer::ParticleRenderer(ParticleResources& resources)
-    : resources_{ resources }
-    , instances_{ [&resources](const VariableAndHash<std::string>& name) {
-        return resources.instantiate_particles_instance(name);
+ParticleRenderer::ParticleRenderer(
+    ParticleResources& resources,
+    ParticleSubstrate substrate)
+    : substrate_{ substrate }
+    , resources_{ resources }
+    , instances_{ [&resources, substrate](const VariableAndHash<std::string>& name) {
+        auto res = resources.instantiate_particles_instance(name);
+        if (res->substrate() != substrate) {
+            THROW_OR_ABORT(
+                "Particle with substrate \"" + particle_substrate_to_string(res->substrate()) +
+                "\" instantiated by \"" + particle_substrate_to_string(substrate) + '"');
+        }
+        return res;
       } }
     , instantiators_{ [this, &resources](const VariableAndHash<std::string>& name) {
         return resources.instantiate_particle_creator(
@@ -68,6 +78,11 @@ void ParticleRenderer::render(
     const ColorStyle* color_style) const
 {
     for (const auto& [_, instance] : instances_.shared()) {
+        if (instance->substrate() != substrate_) {
+            THROW_OR_ABORT(
+                "Particle with substrate \"" + particle_substrate_to_string(instance->substrate()) +
+                "\" rendered by \"" + particle_substrate_to_string(substrate_) + '"');
+        }
         instance->render(
             mvp,
             iv,

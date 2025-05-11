@@ -15,3 +15,13 @@ ParticleSubstrate Mlib::particle_substrate_from_string(const std::string& s) {
     }
     return it->second;
 }
+
+std::string Mlib::particle_substrate_to_string(ParticleSubstrate s) {
+    switch (s) {
+    case ParticleSubstrate::AIR:
+        return "air";
+    case ParticleSubstrate::SKIDMARK:
+        return "skidmark";
+    }
+    THROW_OR_ABORT("Unknown particle substrate: " + std::to_string((int)s));
+}

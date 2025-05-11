@@ -61,6 +61,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
@@ -137,9 +138,10 @@ void test_physics_engine(unsigned int seed) {
         16 };
     SurfaceContactDb surface_contact_db;
     BulletPropertyDb bullet_property_db;
-    ParticleRenderer particle_renderer{ particle_resources };
-    SmokeParticleGenerator air_smoke_particle_generator{ rendering_resources, scene_node_resources, particle_renderer, scene };
-    SmokeParticleGenerator skidmark_smoke_particle_generator{ rendering_resources, scene_node_resources, particle_renderer, scene };
+    ParticleRenderer air_particle_renderer{ particle_resources, ParticleSubstrate::AIR };
+    ParticleRenderer skidmark_particle_renderer{ particle_resources, ParticleSubstrate::SKIDMARK };
+    SmokeParticleGenerator air_smoke_particle_generator{ rendering_resources, scene_node_resources, air_particle_renderer, scene };
+    SmokeParticleGenerator skidmark_smoke_particle_generator{ rendering_resources, scene_node_resources, skidmark_particle_renderer, scene };
     ContactSmokeGenerator contact_smoke_generator{ air_smoke_particle_generator, skidmark_smoke_particle_generator };
     TrailRenderer trail_renderer{ trail_resources };
     pe.set_surface_contact_db(surface_contact_db);

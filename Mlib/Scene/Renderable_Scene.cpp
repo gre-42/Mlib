@@ -22,6 +22,7 @@
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 
@@ -86,13 +87,15 @@ RenderableScene::RenderableScene(
         rendering_resources_,
         particle_resources,
         scene_,
-        VariableAndHash<std::string>{ "global_air_particles" }}
+        VariableAndHash<std::string>{ "global_air_particles" },
+        ParticleSubstrate::AIR}
     , skidmark_particles_{
         scene_node_resources,
         rendering_resources_,
         particle_resources,
         scene_,
-        VariableAndHash<std::string>{ "global_skidmark_particles" }}
+        VariableAndHash<std::string>{ "global_skidmark_particles" },
+        ParticleSubstrate::SKIDMARK}
     , contact_smoke_generator_{
         air_particles_.smoke_particle_generator,
         skidmark_particles_.smoke_particle_generator }
