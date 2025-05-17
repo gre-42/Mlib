@@ -90,17 +90,30 @@ void PathfindingWaypoints::select_next_waypoint() {
                 if ((dist2 < 1e-6) ||
                     (dot0d(diff, z3.casted<ScenePos>()) < -std::cos(45. * degrees) * std::sqrt(dist2)))
                 {
-                    for (const auto& [ni, _] : waypoints_->way_points.adjacency.column(i)) {
-                        const auto& nrs = waypoints_->way_points.points.at(ni).position;
-                        auto ndiff = funpack(nrs - rs);
-                        auto ndist2 = std::sqrt(sum(squared(ndiff)));
-                        if ((ndist2 < 1e-12) ||
-                            (dot0d(ndiff, z3.casted<ScenePos>()) < -std::cos(45. * degrees) * std::sqrt(ndist2)))
-                        {
-                            closest_distance2 = dist2;
-                            closest_id = i;
-                            break;
+                    const auto& neighbors = waypoints_->way_points.adjacency.column(i);
+                    assert_true(!neighbors.empty());
+                    auto waypoint_has_no_neighbor = [&](){
+                        return neighbors.size() == 1;
+                    };
+                    auto waypoint_has_good_neighbor = [&](){
+                        for (const auto& [ni, _] : neighbors) {
+                            if (ni == i) {
+                                continue;
+                            }
+                            const auto& nrs = waypoints_->way_points.points.at(ni).position;
+                            auto ndiff = funpack(nrs - rs);
+                            auto ndist2 = std::sqrt(sum(squared(ndiff)));
+                            if ((ndist2 < 1e-12) ||
+                                (dot0d(ndiff, z3.casted<ScenePos>()) < -std::cos(45. * degrees) * std::sqrt(ndist2)))
+                            {
+                                return true;
+                            }
                         }
+                        return false;
+                    };
+                    if (waypoint_has_no_neighbor() || waypoint_has_good_neighbor()) {
+                        closest_distance2 = dist2;
+                        closest_id = i;
                     }
                 }
             }
