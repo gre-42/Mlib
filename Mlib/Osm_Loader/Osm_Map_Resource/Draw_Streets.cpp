@@ -19,6 +19,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Rectangle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Way_Point.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
@@ -399,18 +400,18 @@ void DrawStreets::draw_streets() {
                     auto yangle = (float)std::atan2((ScenePos)dpos(1), (ScenePos)dpos(0));
                     if (angle_ways.size() > 2) {
                         if (driving_direction == DrivingDirection::RIGHT) {
-                            try_add_street_light(rect.p00_, yangle + M_PI / 2.f);
+                            try_add_street_light(rect.p00_, yangle + 90.f * degrees);
                         }
                         if (driving_direction == DrivingDirection::LEFT) {
-                            try_add_street_light(rect.p01_, yangle + M_PI / 2.f);
+                            try_add_street_light(rect.p01_, yangle + 90.f * degrees);
                         }
                     }
                     if (node_angles.at(angle_way.neighbor_id).size() > 2) {
                         if (driving_direction == DrivingDirection::LEFT) {
-                            try_add_street_light(rect.p10_, yangle - M_PI / 2.f);
+                            try_add_street_light(rect.p10_, yangle - 90.f * degrees);
                         }
                         if (driving_direction == DrivingDirection::RIGHT) {
-                            try_add_street_light(rect.p11_, yangle - M_PI / 2.f);
+                            try_add_street_light(rect.p11_, yangle - 90.f * degrees);
                         }
                     }
                 }
