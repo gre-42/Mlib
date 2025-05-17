@@ -309,8 +309,6 @@ void DrawStreets::calculate_neighbors() {
 }
 
 void DrawStreets::draw_streets() {
-    Bvh<CompressedScenePos, 2, bool> street_light_bvh{{(CompressedScenePos)100.f, (CompressedScenePos)100.f}, 10};
-
     // Compute rectangles and holes for each pair of connected nodes.
     // The "neighbor_is_second" field is used to avoid duplicates.
     for (const auto& [node_id, angle_ways] : node_angles) {
@@ -391,21 +389,30 @@ void DrawStreets::draw_streets() {
                             lane_shift);
                     }
                 }
-                if ((angle_way.road_type != RoadType::WALL) && (!street_lights.empty())) {
-                    CompressedScenePos radius = (CompressedScenePos)(10 * scale);
-                    auto add_distant_point = [&](const FixedArray<CompressedScenePos, 2>& p) {
-                        bool p_found = !street_light_bvh.visit(
-                            AxisAlignedBoundingBox<CompressedScenePos, 2>::from_center_and_radius(p, radius),
-                            [](bool){return false;});
-                        if (!p_found) {
-                            if (auto prn = street_lights.try_multiple_times(10); prn != nullptr) {
-                                street_light_bvh.insert(AxisAlignedBoundingBox<CompressedScenePos, 2>::from_point(p), true);
-                                bri.add_parsed_resource_name(p, (CompressedScenePos)0.f, *prn, 0.f, 1.f);
-                            }
+                if ((angle_way.road_type != RoadType::WALL) && (!stop_signs.empty())) {
+                    auto try_add_street_light = [&](const FixedArray<CompressedScenePos, 2>& p, float yangle) {
+                        if (auto prn = stop_signs.try_multiple_times(10); prn != nullptr) {
+                            bri.add_parsed_resource_name(p, (CompressedScenePos)0.f, *prn, yangle, 1.f);
                         }
                     };
-                    add_distant_point(rect.p00_);
-                    add_distant_point(rect.p11_);
+                    auto dpos = nodes.at(angle_way.neighbor_id).position - nodes.at(node_id).position;
+                    auto yangle = (float)std::atan2((ScenePos)dpos(1), (ScenePos)dpos(0));
+                    if (angle_ways.size() > 2) {
+                        if (driving_direction == DrivingDirection::RIGHT) {
+                            try_add_street_light(rect.p00_, yangle + M_PI / 2.f);
+                        }
+                        if (driving_direction == DrivingDirection::LEFT) {
+                            try_add_street_light(rect.p01_, yangle + M_PI / 2.f);
+                        }
+                    }
+                    if (node_angles.at(angle_way.neighbor_id).size() > 2) {
+                        if (driving_direction == DrivingDirection::LEFT) {
+                            try_add_street_light(rect.p10_, yangle - M_PI / 2.f);
+                        }
+                        if (driving_direction == DrivingDirection::RIGHT) {
+                            try_add_street_light(rect.p11_, yangle - M_PI / 2.f);
+                        }
+                    }
                 }
                 //for (float a = 0.1; a < 0.91; a += 0.4) {
                 //    auto p = a * rect.p00_ + (1 - a) * rect.p10_;

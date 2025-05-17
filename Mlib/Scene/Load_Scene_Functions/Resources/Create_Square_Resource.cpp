@@ -30,6 +30,8 @@ DECLARE_ARGUMENT(occluded_pass);
 DECLARE_ARGUMENT(occluder_pass);
 DECLARE_ARGUMENT(emissive);
 DECLARE_ARGUMENT(ambient);
+DECLARE_ARGUMENT(diffuse);
+DECLARE_ARGUMENT(specular);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(z_order);
 DECLARE_ARGUMENT(depth_func);
@@ -85,8 +87,8 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         .shading{
             .emissive = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
             .ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::ambient),
-            .diffuse = {0.f, 0.f, 0.f},
-            .specular = {0.f, 0.f, 0.f},
+            .diffuse = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::diffuse, UOrderableFixedArray<float, 3>(0.f)),
+            .specular = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::specular, UOrderableFixedArray<float, 3>(0.f)),
             .fog_distances = args.arguments.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
             .fog_ambient= args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, UOrderableFixedArray<float, 3>(0.f))}};
     material.compute_color_mode();

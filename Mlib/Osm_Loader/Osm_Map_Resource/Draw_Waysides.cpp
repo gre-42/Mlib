@@ -13,7 +13,7 @@
 
 using namespace Mlib;
 
-static const double dx = 0.01;
+static const double DX = 0.01;
 
 void Mlib::draw_waysides(
     BatchResourceInstantiator& bri,
@@ -30,8 +30,8 @@ void Mlib::draw_waysides(
 
     for (const auto& contour_coarse : contours) {
         auto interp = interpolated_contour(contour_coarse);
-        for (auto t = 2 * scale * dx; t <= interp.xmax() - 2 * scale * dx; t += scale * distances.tangential_distance) {
-            auto d3 = funpack(interp(t + scale * dx) - interp(t - scale * dx));
+        for (auto t = 2 * scale * DX; t <= interp.xmax() - 2 * scale * DX; t += scale * distances.tangential_distance) {
+            auto d3 = funpack(interp(t + scale * DX) - interp(t - scale * DX));
             auto p3 = funpack(interp(t));
 
             FixedArray<double, 2> p2{ p3(0), p3(1) };

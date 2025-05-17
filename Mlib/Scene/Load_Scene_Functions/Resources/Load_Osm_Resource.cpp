@@ -252,7 +252,7 @@ DECLARE_ARGUMENT(extrude_elevated_grass_amount);
 DECLARE_ARGUMENT(extrude_water_floor_amout);
 DECLARE_ARGUMENT(building_grass_width);
 DECLARE_ARGUMENT(indent_buildings_amount);
-DECLARE_ARGUMENT(street_light_resource_names);
+DECLARE_ARGUMENT(stop_sign_resource_names);
 DECLARE_ARGUMENT(max_wall_width);
 DECLARE_ARGUMENT(with_height_bindings);
 DECLARE_ARGUMENT(street_node_smoothness);
@@ -1047,8 +1047,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.indent_buildings_amount = fixed_from_meters(
                 args.arguments.at<ScenePos>(KnownArgs::indent_buildings_amount));
         }
-        if (args.arguments.contains_non_null(KnownArgs::street_light_resource_names)) {
-            config.street_light_resource_names = args.arguments.at_vector<std::string>(KnownArgs::street_light_resource_names, parse_resource_name_func);
+        if (args.arguments.contains_non_null(KnownArgs::stop_sign_resource_names)) {
+            config.stop_sign_resource_names = args.arguments.at_vector<std::string>(KnownArgs::stop_sign_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains(KnownArgs::max_wall_width)) {
             config.max_wall_width = args.arguments.at<float>(KnownArgs::max_wall_width) * meters;

@@ -213,7 +213,7 @@ OsmMapResource::OsmMapResource(
         auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
         auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
         std::list<FixedArray<CompressedScenePos, 2, 2>> way_segments;
-        ResourceNameCycle street_lights{ config.street_light_resource_names };
+        ResourceNameCycle stop_signs{ config.stop_sign_resource_names };
         RacingLineBvh racing_line_bvh;
         if (!config.racing_line_track.empty()) {
             load_racing_line_bvh(config.racing_line_track, normalization_matrix_, racing_line_bvh);
@@ -263,7 +263,7 @@ OsmMapResource::OsmMapResource(
                 config.curb_color,
                 config.racing_line_width_x,
                 config.racing_line_scale_y,
-                street_lights,
+                stop_signs,
                 config.with_height_bindings,
                 config.driving_direction,
                 config.layer_heights,

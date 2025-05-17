@@ -194,7 +194,7 @@ struct OsmResourceConfig {
     CompressedScenePos extrude_water_floor_amout = (CompressedScenePos)0.f;
     CompressedScenePos building_grass_width = (CompressedScenePos)0.f;
     CompressedScenePos indent_buildings_amount = (CompressedScenePos)0.f;
-    std::vector<ParsedResourceName> street_light_resource_names = {};
+    std::vector<ParsedResourceName> stop_sign_resource_names = {};
     float max_wall_width = 5;
     bool with_height_bindings = false;
     float street_node_smoothness = 0;
