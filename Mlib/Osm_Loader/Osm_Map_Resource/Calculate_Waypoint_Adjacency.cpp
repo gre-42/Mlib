@@ -165,7 +165,7 @@ void Mlib::calculate_waypoint_adjacency(
         double a1)
     {
         WayPoint res = p0 * a0 + p1 * a1;
-        if (!ground_bvh.height(res.position(2), FixedArray<CompressedScenePos, 2>{ res.position(0), res.position(1) })) {
+        if (!ground_bvh.height3d(res.position(2), res.position)) {
             throw PointException<CompressedScenePos, 3>{ res.position, "Could not determine height of interpolated waypoint" };
         }
         return res;
@@ -233,7 +233,7 @@ void Mlib::calculate_waypoint_adjacency(
         way_points.update_adjacency();
     } else {
         InterpolatedIntermediatePointsCreator<WayPoint, decltype(interpolator)> terrain_iipc{
-            (CompressedScenePos)(50. * scale),
+            waypoint_distance * scale,
             interpolator };
         way_points.subdivide(
             [&](size_t r, size_t c, const CompressedScenePos& distance) -> std::vector<WayPoint> {

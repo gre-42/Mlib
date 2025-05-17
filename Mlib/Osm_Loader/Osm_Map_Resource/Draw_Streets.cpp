@@ -774,12 +774,10 @@ void DrawStreets::draw_streets_add_waypoints(
                 if (driving_direction == DrivingDirection::LEFT) {
                     i0 = 0;
                     i1 = 1;
-                }
-                else if (driving_direction == DrivingDirection::RIGHT) {
+                } else if (driving_direction == DrivingDirection::RIGHT) {
                     i0 = 1;
                     i1 = 0;
-                }
-                else {
+                } else {
                     THROW_OR_ABORT("Unknown driving direction");
                 }
                 way_point_edge_descriptors[sandbox].push_back({

@@ -1068,6 +1068,16 @@ OsmMapResource::OsmMapResource(
         }
     }
 
+    if (config.extrude_air_curb_amount != (CompressedScenePos)0.) {
+        fg.update("Insert air triangles lists");
+        // If "extrude_air_curb_amount" is NOT NAN,
+        // insert the air triangle lists here.
+        for (auto& [type, list] : air_triangle_lists.tl_street_curb.map()) {
+            air_triangle_lists.tl_air_street_curb[type]->triangles = std::move(list->triangles);
+        }
+        osm_triangle_lists.insert(air_triangle_lists);
+    }
+
     std::unique_ptr<GroundBvh> ground_bvh;
     {
         fg.update("Compute ground BVH");
@@ -1342,16 +1352,6 @@ OsmMapResource::OsmMapResource(
     }
     if (osm_triangle_lists.tl_street_mud_visuals.contains(RoadType::PATH)) {
         tl_mud_path_visuals_ = osm_triangle_lists.tl_street_mud_visuals[RoadType::PATH];
-    }
-
-    if (config.extrude_air_curb_amount != (CompressedScenePos)0.) {
-        fg.update("Insert air triangles lists");
-        // If "extrude_air_curb_amount" is NOT NAN,
-        // insert the air triangle lists here.
-        for (auto& l : air_triangle_lists.tl_street_curb.map()) {
-            air_triangle_lists.tl_air_street_curb[l.first]->triangles = std::move(l.second->triangles);
-        }
-        osm_triangle_lists.insert(air_triangle_lists);
     }
 
     TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());

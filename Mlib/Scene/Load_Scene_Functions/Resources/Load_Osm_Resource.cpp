@@ -167,6 +167,7 @@ DECLARE_ARGUMENT(default_tunnel_pipe_width);
 DECLARE_ARGUMENT(default_tunnel_pipe_height);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(triangulation_scale);
+DECLARE_ARGUMENT(waypoint_distance);
 DECLARE_ARGUMENT(height_scale);
 DECLARE_ARGUMENT(uv_scale_terrain);
 DECLARE_ARGUMENT(uv_period_terrain);
@@ -780,6 +781,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::triangulation_scale)) {
             config.triangulation_scale = args.arguments.at<float>(KnownArgs::triangulation_scale);
+        }
+        if (args.arguments.contains(KnownArgs::waypoint_distance)) {
+            config.waypoint_distance = args.arguments.at<CompressedScenePos>(KnownArgs::waypoint_distance);
         }
         if (args.arguments.contains(KnownArgs::height_scale)) {
             config.height_scale = args.arguments.at<float>(KnownArgs::height_scale);
