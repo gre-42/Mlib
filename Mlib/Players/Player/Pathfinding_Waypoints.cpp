@@ -86,12 +86,22 @@ void PathfindingWaypoints::select_next_waypoint() {
             const auto& rs = waypoints_->way_points.points.at(i).position;
             auto diff = funpack(rs) - pos3;
             auto dist2 = sum(squared(diff));
-            if ((dist2 < 1e-6) ||
-                (dot0d(diff / std::sqrt(dist2), z3.casted<ScenePos>()) < -std::cos(45. * degrees)))
-            {
-                if (dist2 < closest_distance2) {
-                    closest_distance2 = dist2;
-                    closest_id = i;
+            if (dist2 < closest_distance2) {
+                if ((dist2 < 1e-6) ||
+                    (dot0d(diff, z3.casted<ScenePos>()) < -std::cos(45. * degrees) * std::sqrt(dist2)))
+                {
+                    for (const auto& [ni, _] : waypoints_->way_points.adjacency.column(i)) {
+                        const auto& nrs = waypoints_->way_points.points.at(ni).position;
+                        auto ndiff = funpack(nrs - rs);
+                        auto ndist2 = std::sqrt(sum(squared(ndiff)));
+                        if ((ndist2 < 1e-12) ||
+                            (dot0d(ndiff, z3.casted<ScenePos>()) < -std::cos(45. * degrees) * std::sqrt(ndist2)))
+                        {
+                            closest_distance2 = dist2;
+                            closest_id = i;
+                            break;
+                        }
+                    }
                 }
             }
             return true;
