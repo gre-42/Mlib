@@ -22,16 +22,30 @@ class ButtonStates {
 public:
     ButtonStates();
     ~ButtonStates();
-    float get_gamepad_axis(int axis) const;
-    bool get_gamepad_button_down(int button) const;
-    bool get_gamepad_digital_axis(int axis, float sign_and_threshold) const;
-    bool get_tap_analog_digital_axis(int axis, float sign_and_threshold) const;
+    float get_gamepad_axis(
+        uint32_t gamepad_id,
+        int axis) const;
+    bool get_gamepad_button_down(
+        uint32_t gamepad_id,
+        int button) const;
+    bool get_gamepad_digital_axis(
+        uint32_t gamepad_id,
+        int axis,
+        float sign_and_threshold) const;
+    bool get_tap_analog_digital_axis(
+        uint32_t gamepad_id,
+        int axis,
+        float sign_and_threshold) const;
     void notify_key_event(int key, int action);
     bool get_key_down(int key) const;
     void notify_mouse_button_event(int button, int action);
     bool get_mouse_button_down(int button) const;
-    bool get_tap_button_down(int button) const;
-    float get_tap_joystick_axis(int axis) const;
+    bool get_tap_button_down(
+        uint32_t gamepad_id,
+        int button) const;
+    float get_tap_joystick_axis(
+        uint32_t gamepad_id,
+        int axis) const;
 #ifdef __ANDROID__
     void notify_gamepad_axis(int axis, float value);
 #else
@@ -39,14 +53,14 @@ public:
 #endif
     void print(bool physical = false, bool only_pressed = false) const;
     bool key_down(const BaseKeyBinding& k, const std::string& role = "") const;
-    TapButtonsStates tap_buttons_;
+    std::vector<TapButtonsStates> tap_buttons_;
 private:
 #ifdef __ANDROID__
     std::unordered_map<int, float> gamepad_axes_;
     mutable SafeAtomicRecursiveSharedMutex gamepad_axes_mutex_;
 #else
-    GLFWgamepadstate gamepad_state_;
-    bool has_gamepad_;
+    GLFWgamepadstate gamepad_state_[GLFW_JOYSTICK_LAST + 1];
+    bool has_gamepad_[GLFW_JOYSTICK_LAST + 1];
     mutable SafeAtomicRecursiveSharedMutex gamepad_state_mutex_;
 #endif
     std::unordered_set<int> keys_down_;

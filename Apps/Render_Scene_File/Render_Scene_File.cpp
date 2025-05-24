@@ -190,7 +190,7 @@ JThread loader_thread(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
-    ButtonPress& confirm_button_press,
+    std::vector<ButtonPress>& confirm_button_press,
     LockableKeyConfigurations& key_configurations,
     LockableKeyDescriptions& key_descriptions,
     UiFocuses& ui_focuses,
@@ -548,17 +548,24 @@ int main(int argc, char** argv) {
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
-        BaseKeyCombination confirm_key_combination{{{
+        BaseKeyCombination confirm_key_combination_0{{{
             BaseKeyBinding{
                 .key = "ENTER",
-                .gamepad_button = "A",
-                .tap_button = "START"}}}};
+                .gamepad_button = { 0, "A" },
+                .tap_button = { 0, "START" }}}}};
+        BaseKeyCombination confirm_key_combination_1{{{
+            BaseKeyBinding{
+                .gamepad_button = { 1, "A" }}}}};
         LockableKeyConfigurations confirm_key_configurations;
         confirm_key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->emplace()
-            .insert("confirm", { std::move(confirm_key_combination) });
-        ButtonPress confirm_button_press{ button_states, confirm_key_configurations, "confirm", "" };
+            ->insert(0, "confirm", { std::move(confirm_key_combination_0) });
+        confirm_key_configurations
+            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
+            ->insert(1, "confirm", { std::move(confirm_key_combination_1) });
+        std::vector<ButtonPress> confirm_button_press{
+            {button_states, confirm_key_configurations, 0, "confirm", ""},
+            {button_states, confirm_key_configurations, 1, "confirm", ""} };
         UiFocuses ui_focuses{ get_path_in_appdata_directory({"focus.json"}) };
         ui_focuses.try_load();
         NotifyingJsonMacroArguments external_json_macro_arguments;

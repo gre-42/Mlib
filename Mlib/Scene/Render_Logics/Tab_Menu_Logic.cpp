@@ -76,6 +76,7 @@ TabMenuLogic::TabMenuLogic(
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonStates& button_states,
+    uint32_t user_id,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
     : ew_{ std::move(ew) }
@@ -109,6 +110,7 @@ TabMenuLogic::TabMenuLogic(
         (size_t)ui_focus.menu_selection_ids[id_],
         contents_,
         ListViewOrientation::HORIZONTAL,
+        user_id,
         [this, on_change](){
             merge_substitutions();
             on_change();

@@ -9,19 +9,18 @@ using namespace Mlib;
 
 
 TtyRenderableHider::TtyRenderableHider(const ButtonStates& button_states)
-    : decrease_{ button_states, key_configurations_, "decrease", "" }
-    , increase_{ button_states, key_configurations_, "increase", "" }
-    , decrease_much_{ button_states, key_configurations_, "decrease_much", "" }
-    , increase_much_{ button_states, key_configurations_, "increase_much", "" }
-    , show_only_1_{ button_states, key_configurations_, "show_only_1", "" }
+    : decrease_{ button_states, key_configurations_, 0, "decrease", "" }
+    , increase_{ button_states, key_configurations_, 0, "increase", "" }
+    , decrease_much_{ button_states, key_configurations_, 0, "decrease_much", "" }
+    , increase_much_{ button_states, key_configurations_, 0, "increase_much", "" }
+    , show_only_1_{ button_states, key_configurations_, 0, "show_only_1", "" }
 {
     auto lock = key_configurations_.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
-    auto& cfg = lock->emplace();
-    cfg.insert("decrease", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "UP"}}} });
-    cfg.insert("increase", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "DOWN"}}} });
-    cfg.insert("decrease_much", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "PAGE_UP"}}} });
-    cfg.insert("increase_much", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "PAGE_DOWN"}}} });
-    cfg.insert("show_only_1", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "LEFT_SHIFT"}}} });
+    lock->insert(0, "decrease", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "UP"}}} });
+    lock->insert(0, "increase", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "DOWN"}}} });
+    lock->insert(0, "decrease_much", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "PAGE_UP"}}} });
+    lock->insert(0, "increase_much", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "PAGE_DOWN"}}} });
+    lock->insert(0, "show_only_1", KeyConfiguration{ {.key_bindings = {{.key = "LEFT_CONTROL"}, {.key = "LEFT_SHIFT"}}} });
 }
 
 void TtyRenderableHider::process_input() {

@@ -14,10 +14,12 @@ using namespace Mlib;
 GamepadAnalogAxesPosition::GamepadAnalogAxesPosition(
     const ButtonStates& button_states,
     const LockableKeyConfigurations& key_configurations,
+    uint32_t user_id,
     std::string id,
     std::string role)
     : button_states_{ button_states }
     , key_configurations_{ key_configurations }
+    , user_id_{ user_id }
     , id_{ std::move(id) }
     , role_{ std::move(role) }
 {}
@@ -51,11 +53,7 @@ float GamepadAnalogAxesPosition::axis_alpha()
         return NAN;
     }
     auto lock = key_configurations_.lock_shared();
-    auto& cfg = *lock;
-    if (!cfg.has_value()) {
-        return NAN;
-    }
-    const auto& key_combination = cfg->get(id_);
+    const auto& key_combination = lock->get(user_id_, id_);
 
     auto* axes = key_combination
         .base_gamepad_analog_axes
@@ -72,13 +70,13 @@ float GamepadAnalogAxesPosition::axis_alpha()
     if (const auto& b = axes->joystick; b.has_value()) {
         const auto& id = joystick_axes_map.get(b->axis);
         if (id.has_value()) {
-            float v = button_states_.get_gamepad_axis(*id);
+            float v = button_states_.get_gamepad_axis(b->gamepad_id, *id);
             update_result(::axis_alpha(*b, v));
         }
     }
     if (const auto& b = axes->tap; b.has_value()) {
         const auto& id = tap_analog_axes_map.get(b->axis);
-        float v = button_states_.get_tap_joystick_axis(id);
+        float v = button_states_.get_tap_joystick_axis(b->gamepad_id, id);
         update_result(::axis_alpha(*b, v));
     }
     return result;

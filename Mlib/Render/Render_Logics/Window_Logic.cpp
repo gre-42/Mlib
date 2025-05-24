@@ -18,13 +18,12 @@ namespace Mlib {
 class WindowLogicKeys {
 public:
     explicit WindowLogicKeys(ButtonStates& button_states)
-        : esc{ button_states, key_configurations, "esc", "" }
-        , F11{ button_states, key_configurations, "F11", "" }
+        : esc{ button_states, key_configurations, 0, "esc", "" }
+        , F11{ button_states, key_configurations, 0, "F11", "" }
     {
         auto lock = key_configurations.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
-        auto& cfg = lock->emplace();
-        cfg.insert("esc", { {{{.key = "ESCAPE"}}} });
-        cfg.insert("F11", { {{{.key = "F11"}}} });
+        lock->insert(0, "esc", { {{{.key = "ESCAPE"}}} });
+        lock->insert(0, "F11", { {{{.key = "F11"}}} });
     }
     ButtonPress esc;
     ButtonPress F11;

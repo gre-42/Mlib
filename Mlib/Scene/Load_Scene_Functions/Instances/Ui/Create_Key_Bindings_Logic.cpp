@@ -36,6 +36,7 @@ DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(deflt);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
+DECLARE_ARGUMENT(user_id);
 }
 
 CreateKeyBindingsLogic::CreateKeyBindingsLogic(RenderableScene& renderable_scene) 
@@ -75,7 +76,8 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_filter,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.button_states,
-        ui_focus.all_selection_ids.at(id));
+        ui_focus.all_selection_ids.at(id),
+        args.arguments.at<uint32_t>(KnownArgs::user_id));
     render_logics.append(
         { parameter_setter_logic, CURRENT_SOURCE_LOCATION },
         1 /* z_order */,

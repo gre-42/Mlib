@@ -54,6 +54,7 @@ public:
         UiFocus& ui_focus,
         std::string persisted,
         ButtonStates& button_states,
+        uint32_t user_id,
         const std::function<void()> on_change = [](){},
         const std::function<void()> on_execute = [](){});
     ~ParameterSetterLogic();

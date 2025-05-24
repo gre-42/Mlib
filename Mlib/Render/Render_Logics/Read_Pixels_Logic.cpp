@@ -25,7 +25,7 @@ public:
     explicit ReadPixelsLogicKeys(
         const ButtonStates& button_states,
         const LockableKeyConfigurations& key_configurations)
-        : ctrl_p{ button_states, key_configurations, "take_screenshot", "" }
+        : ctrl_p{ button_states, key_configurations, 0, "take_screenshot", "" }
     {}
     ButtonPress ctrl_p;
 };

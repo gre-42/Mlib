@@ -21,10 +21,6 @@ float ScrollWheelMovement::axis_alpha(float ncached) {
         return NAN;
     }
     auto lock = key_configurations_.lock_shared();
-    auto& cfg = *lock;
-    if (!cfg.has_value()) {
-        return NAN;
-    }
-    const auto& key_combination = cfg->get(id_);
+    const auto& key_combination = lock->get(0, id_);
     return incremental_movement_.axis_alpha(key_combination.base_scroll_wheel_axis, ncached);
 }

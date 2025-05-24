@@ -440,7 +440,7 @@ void LoadScene::operator()(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
-    ButtonPress& confirm_button_press,
+    std::vector<ButtonPress>& confirm_button_press,
     LockableKeyConfigurations& key_configurations,
     LockableKeyDescriptions& key_descriptions,
     UiFocuses& ui_focuses,

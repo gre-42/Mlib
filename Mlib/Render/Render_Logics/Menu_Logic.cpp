@@ -13,12 +13,11 @@ namespace Mlib {
 class MenuLogicKeys {
 public:
     explicit MenuLogicKeys(ButtonStates& button_states)
-        : start{ button_states, key_configurations, "escape", "" }
+        : start{ button_states, key_configurations, 0, "escape", "" }
     {
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->emplace()
-            .insert("escape", { {{{.key = "ESCAPE", .gamepad_button = "START", .tap_button = "ESCAPE"}}} });
+            ->insert(0, "escape", { {{{.key = "ESCAPE", .gamepad_button = {0, "START"}, .tap_button = {0, "ESCAPE"}}}} });
     }
     ButtonPress start;
 private:

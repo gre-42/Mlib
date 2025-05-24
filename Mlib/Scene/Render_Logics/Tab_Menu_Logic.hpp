@@ -5,6 +5,7 @@
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -68,6 +69,7 @@ public:
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
         ButtonStates& button_states,
+        uint32_t user_id,
         std::function<void()> on_execute,
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();

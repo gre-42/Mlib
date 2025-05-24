@@ -17,44 +17,55 @@ ListView::ListView(
     size_t selection_index,
     const IListViewContents& contents,
     ListViewOrientation orientation,
+    uint32_t user_id,
     std::function<void()> on_change)
     : debug_hint_{ std::move(debug_hint) }
     , selection_index_{ selection_index }
     , contents_{ contents }
     , on_change_{ std::move(on_change) }
-    , previous_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "left" : "up", "" }
-    , next_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "right" : "down", "" }
-    , previous_fast_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "page_up", "" }
-    , next_fast_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "page_down", "" }
-    , first_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "home", "" }
-    , last_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "end", "" }
+    , previous_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "left" : "up", "" }
+    , next_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "right" : "down", "" }
+    , previous_fast_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "" : "page_up", "" }
+    , next_fast_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "" : "page_down", "" }
+    , first_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "" : "home", "" }
+    , last_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "" : "end", "" }
 {
     AnalogDigitalAxis left{
-            .axis = "1",
-            .sign_and_threshold = -0.5
+        .gamepad_id = user_id,
+        .axis = "1",
+        .sign_and_threshold = -0.5
     };
     AnalogDigitalAxis right{
-            .axis = "1",
-            .sign_and_threshold = 0.5
+        .gamepad_id = user_id,
+        .axis = "1",
+        .sign_and_threshold = 0.5
     };
     AnalogDigitalAxis up{
-            .axis = "2",
-            .sign_and_threshold = -0.5
+        .gamepad_id = user_id,
+        .axis = "2",
+        .sign_and_threshold = -0.5
     };
     AnalogDigitalAxis down{
-            .axis = "2",
-            .sign_and_threshold = 0.5
+        .gamepad_id = user_id,
+        .axis = "2",
+        .sign_and_threshold = 0.5
     };
     auto lock = key_configurations_.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
-    auto& cfg = lock->emplace();
-    cfg.insert("left", { { {{.key = "LEFT", .joystick_axes = {{"default", {.joystick=left, .tap = left}}}, .tap_button = "LEFT"}} } });
-    cfg.insert("right", { { {{.key = "RIGHT", .joystick_axes = {{"default", {.joystick=right, .tap = right}}}, .tap_button = "RIGHT"}} } });
-    cfg.insert("up", { {.key_bindings = {{.key = "UP", .joystick_axes = {{"default", {.joystick = up, .tap = up}}}, .tap_button = "UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    cfg.insert("down", { {.key_bindings = {{.key = "DOWN", .joystick_axes = {{"default", {.joystick = down, .tap = down}}}, .tap_button = "DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    cfg.insert("page_up", { {.key_bindings = {{.key = "PAGE_UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    cfg.insert("page_down", { {.key_bindings = {{.key = "PAGE_DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    cfg.insert("home", { { {{.key = "HOME"}} } });
-    cfg.insert("end", { { {{.key = "END"}} } });
+    if (user_id == 0) {
+        lock->insert(0, "left", { { {{.key = "LEFT", .joystick_axes = {{"default", {.joystick=left, .tap = left}}}, .tap_button = {0, "LEFT"}}} } });
+        lock->insert(0, "right", { { {{.key = "RIGHT", .joystick_axes = {{"default", {.joystick=right, .tap = right}}}, .tap_button = {0, "RIGHT"}}} } });
+        lock->insert(0, "up", { {.key_bindings = {{.key = "UP", .joystick_axes = {{"default", {.joystick = up, .tap = up}}}, .tap_button = {0, "UP"}}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+        lock->insert(0, "down", { {.key_bindings = {{.key = "DOWN", .joystick_axes = {{"default", {.joystick = down, .tap = down}}}, .tap_button = {0, "DOWN"}}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+        lock->insert(0, "page_up", { {.key_bindings = {{.key = "PAGE_UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+        lock->insert(0, "page_down", { {.key_bindings = {{.key = "PAGE_DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+        lock->insert(0, "home", { { {{.key = "HOME"}} } });
+        lock->insert(0, "end", { { {{.key = "END"}} } });
+    } else {
+        lock->insert(0, "left", { { {{.joystick_axes = {{"default", {.joystick=left, .tap = left}}}, .tap_button = {user_id, "LEFT"}}} } });
+        lock->insert(0, "right", { { {{.joystick_axes = {{"default", {.joystick=right, .tap = right}}}, .tap_button = {user_id, "RIGHT"}}} } });
+        lock->insert(0, "up", { {.key_bindings = {{.joystick_axes = {{"default", {.joystick = up, .tap = up}}}, .tap_button = {user_id, "UP"}}}} });
+        lock->insert(0, "down", { {.key_bindings = {{.joystick_axes = {{"default", {.joystick = down, .tap = down}}}, .tap_button = {user_id, "DOWN"}}}} });
+    }
     if (on_change_ && has_selected_element()) {
         on_change_();
     } else {

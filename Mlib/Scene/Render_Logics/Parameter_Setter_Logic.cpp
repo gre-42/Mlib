@@ -70,6 +70,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     UiFocus& ui_focus,
     std::string persisted,
     ButtonStates& button_states,
+    uint32_t user_id,
     std::function<void()> on_change,
     std::function<void()> on_execute)
     : ew_{ std::move(ew) }
@@ -97,6 +98,7 @@ ParameterSetterLogic::ParameterSetterLogic(
             : selected_id(ui_focus.get_persisted_selection_id(persisted_), options_),
         contents_,
         ListViewOrientation::VERTICAL,
+        user_id,
         [this, on_change](){
             merge_substitutions();
             on_change();

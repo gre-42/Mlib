@@ -80,6 +80,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     ThreadSafeString& next_scene_filename,
     ButtonStates& button_states,
     UiFocus& ui_focus,
+    uint32_t user_id,
     const std::function<void()>& on_change)
     : ew_{ std::move(ew) }
     , charset_{ std::move(charset) }
@@ -102,6 +103,7 @@ SceneSelectorLogic::SceneSelectorLogic(
         ui_focus.all_selection_ids.at(id_),
         contents_,
         ListViewOrientation::VERTICAL,
+        user_id,
         [this, on_change]() {
             next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename();
             merge_substitutions();

@@ -23,11 +23,7 @@ struct RegisterJsonUserFunction {
                 auto lock = args.key_descriptions.lock_exclusive_for(
                     std::chrono::seconds(2),
                     "Key descriptions");
-                auto& cfg = *lock;
-                if (cfg.has_value()) {
-                    THROW_OR_ABORT("Key descriptions already initialized");
-                }
-                cfg.emplace().load(args.arguments.path(KnownArgs::filename));
+                lock->load(args.arguments.path(KnownArgs::filename));
             });
     }
 } obj;

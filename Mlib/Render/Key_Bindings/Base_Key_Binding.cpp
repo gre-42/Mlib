@@ -43,8 +43,8 @@ std::string BaseKeyBinding::to_string(InputType filter) const {
     if (!mouse_button.empty() && any(filter & InputType::MOUSE)) {
         result.emplace_back("(mouse: " + mouse_button + ')');
     }
-    if (!gamepad_button.empty() && any(filter & InputType::JOYSTICK)) {
-        result.emplace_back("(gamepad: " + gamepad_button + ')');
+    if (!gamepad_button.button.empty() && any(filter & InputType::JOYSTICK)) {
+        result.emplace_back("(gamepad: " + std::to_string(gamepad_button.gamepad_id) + '.' + gamepad_button.button + ')');
     }
     if (!joystick_axes.empty() && any(filter & InputType::JOYSTICK)) {
         result.emplace_back("(joystick: (" + join(
@@ -66,8 +66,10 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const BaseKeyBinding& base_
     if (!base_key_binding.mouse_button.empty()) {
         ostr << "mouse button: " << base_key_binding.mouse_button << '\n';
     }
-    if (!base_key_binding.gamepad_button.empty()) {
-        ostr << "gamepad button: " << base_key_binding.gamepad_button << '\n';
+    if (!base_key_binding.gamepad_button.button.empty()) {
+        ostr << "gamepad button: " <<
+            base_key_binding.gamepad_button.button << '.' <<
+            base_key_binding.gamepad_button.button << '\n';
     }
     for (const auto& [k, v] : base_key_binding.joystick_axes) {
         ostr << "analog role: " << k << '\n';

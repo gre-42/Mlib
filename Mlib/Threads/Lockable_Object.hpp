@@ -19,10 +19,10 @@ public:
         : o_{ o }
         , lock_{ mutex, std::defer_lock }
     {}
-    TObject* operator -> () {
+    TObject* operator -> () const {
         return &o_;
     }
-    TObject& operator * () {
+    TObject& operator * () const {
         return o_;
     }
     template <class Rep, class Period>

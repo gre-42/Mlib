@@ -37,6 +37,7 @@ DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(on_change);
 DECLARE_ARGUMENT(assets);
+DECLARE_ARGUMENT(user_id);
 }
 
 CreateSceneSelectorLogic::CreateSceneSelectorLogic(RenderableScene& renderable_scene) 
@@ -83,6 +84,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         args.next_scene_filename,
         args.button_states,
         ui_focus,
+        args.arguments.at<uint32_t>(KnownArgs::user_id),
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]()
         {
             if (on_change.has_value()) {

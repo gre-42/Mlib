@@ -25,17 +25,16 @@ namespace Mlib {
 class FlyingCameraLogicKeys {
 public:
     explicit FlyingCameraLogicKeys(ButtonStates& button_states)
-        : v{ button_states, key_configurations, "v", "" }
-        , w{ button_states, key_configurations, "w", "" }
-        , d{ button_states, key_configurations, "d", "" }
-        , c{ button_states, key_configurations, "c", "" }
+        : v{ button_states, key_configurations, 0, "v", "" }
+        , w{ button_states, key_configurations, 0, "w", "" }
+        , d{ button_states, key_configurations, 0, "d", "" }
+        , c{ button_states, key_configurations, 0, "c", "" }
     {
         auto lock = key_configurations.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
-        auto& cfg = lock->emplace();
-        cfg.insert("v", { {{{.key = "V"}}} });
-        cfg.insert("w", { {{{.key = "W"}}} });
-        cfg.insert("d", { {{{.key = "D"}}} });
-        cfg.insert("c", { {{{.key = "C"}}} });
+        lock->insert(0, "v", { {{{.key = "V"}}} });
+        lock->insert(0, "w", { {{{.key = "W"}}} });
+        lock->insert(0, "d", { {{{.key = "D"}}} });
+        lock->insert(0, "c", { {{{.key = "C"}}} });
     }
     ButtonPress v;
     ButtonPress w;

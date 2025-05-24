@@ -29,12 +29,11 @@ namespace Mlib {
 class RotatingLogicKeys {
 public:
     explicit RotatingLogicKeys(ButtonStates& button_states)
-        : escape{ button_states, key_configurations, "escape", "" }
+        : escape{ button_states, key_configurations, 0, "escape", "" }
     {
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->emplace()
-            .insert("escape", { {{{.key = "ESCAPE"}}} });
+            ->insert(0, "escape", { {{{.key = "ESCAPE"}}} });
     }
     ButtonPress escape;
 private:

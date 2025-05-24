@@ -23,43 +23,9 @@ using namespace Mlib;
 LockedKeyBindings::LockedKeyBindings(
     const LockableKeyDescriptions& key_descriptions,
     LockableKeyConfigurations& key_configurations)
-    : key_descriptions_{ key_descriptions }
-    , key_configurations_{ key_configurations }
+    : descriptions{ key_descriptions.lock_shared() }
+    , configurations{ key_configurations.lock_shared() }
 {}
-
-bool LockedKeyBindings::initialize() const {
-    if (!descriptions_lock_.has_value()) {
-        std::scoped_lock lock{ mutex_ };
-        descriptions_lock_.emplace(key_descriptions_.lock_shared());
-        if (!(*descriptions_lock_)->has_value()) {
-            descriptions_lock_.reset();
-            return false;
-        }
-    }
-    if (!configurations_lock_.has_value()) {
-        std::scoped_lock lock{ mutex_ };
-        configurations_lock_.emplace(key_configurations_.lock_shared());
-        if (!(*configurations_lock_)->has_value()) {
-            configurations_lock_.reset();
-            return false;
-        }
-    }
-    return true;
-}
-
-const KeyDescriptions* LockedKeyBindings::key_descriptions() const {
-    if (!initialize()) {
-        return nullptr;
-    }
-    return &(***descriptions_lock_);
-}
-
-KeyConfigurations* LockedKeyBindings::key_configurations() const {
-    if (!initialize()) {
-        return nullptr;
-    }
-    return &(***configurations_lock_);
-}
 
 KeyBindingsContents::KeyBindingsContents(
     std::string section,
@@ -71,17 +37,12 @@ KeyBindingsContents::KeyBindingsContents(
 {}
 
 size_t KeyBindingsContents::num_entries() const {
-    const auto* desc = locked_key_bindings_.key_descriptions();
-    if (desc == nullptr) {
-        return 0;
-    }
-    return desc->size();
+    return locked_key_bindings_.descriptions->size();
 }
 
 bool KeyBindingsContents::is_visible(size_t index) const {
-    const auto* desc = locked_key_bindings_.key_descriptions();
-    assert_true(desc != nullptr);
-    const auto& k = (*desc)[index];
+    const auto& desc = *locked_key_bindings_.descriptions;
+    const auto& k = desc[index];
     if (k.section != section_) {
         return false;
     }
@@ -107,7 +68,8 @@ KeyBindingsLogic::KeyBindingsLogic(
     FocusFilter focus_filter,
     std::unique_ptr<ExpressionWatcher>&& ew,
     ButtonStates& button_states,
-    std::atomic_size_t& selection_index)
+    std::atomic_size_t& selection_index,
+    uint32_t user_id)
     : charset_{ std::move(charset) }
     , ew_{ std::move(ew) }
     , key_descriptions_{ key_descriptions }
@@ -127,10 +89,12 @@ KeyBindingsLogic::KeyBindingsLogic(
         button_states,
         selection_index,
         contents_,
-        ListViewOrientation::VERTICAL}
+        ListViewOrientation::VERTICAL,
+        user_id}
     , ot_{ ew_->add_observer([this](){
         list_view_.notify_change_visibility();
     }) }
+    , user_id_{ user_id }
 {}
 
 KeyBindingsLogic::~KeyBindingsLogic() {
@@ -160,8 +124,8 @@ void KeyBindingsLogic::render_without_setup(
     if (ew_->result_may_have_changed()) {
         renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }
-    const auto* desc = locked_key_bindings_.key_descriptions();
-    const auto* conf = locked_key_bindings_.key_configurations();
+    const auto& desc = *locked_key_bindings_.descriptions;
+    const auto& conf = *locked_key_bindings_.configurations;
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
         *renderable_text_,
@@ -169,12 +133,15 @@ void KeyBindingsLogic::render_without_setup(
         line_distance_,
         *ew,
         ly,
-        [filter, desc, conf](size_t index)
+        [this, filter, &desc, &conf](size_t index)
         {
-            assert_true((desc != nullptr) && (conf != nullptr));
-            const auto& d = (*desc)[index];
-            const auto& k = conf->get(d.id);
-            return d.title + std::string(sub_sat<size_t>(40, nchars32(d.title)), ' ') + ": " + k.to_string(filter);
+            const auto& d = desc[index];
+            const auto* k = conf.try_get(user_id_, d.id);
+            if (k == nullptr) {
+                return d.title;
+            } else {
+                return d.title + std::string(sub_sat<size_t>(40, nchars32(d.title)), ' ') + ": " + k->to_string(filter);
+            }
             // std::basic_stringstream<char32_t> sstr;
             // sstr << std::left << std::setw(40) << u8_to_u32_string(d.title);
             // return u32_to_u8_string(sstr.str()) + ": " + k.to_string(filter);

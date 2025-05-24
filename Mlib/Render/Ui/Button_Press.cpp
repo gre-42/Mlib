@@ -14,12 +14,14 @@ using namespace Mlib;
 ButtonPress::ButtonPress(
     const ButtonStates& button_states,
     const LockableKeyConfigurations& key_configurations,
+    uint32_t user_id,
     std::string id,
     std::string role)
     : button_states_{ button_states }
     , key_was_up_{ false }
     , keys_down_{ false }
     , key_configurations_{ key_configurations }
+    , user_id_{ user_id }
     , id_{ std::move(id) }
     , role_{ std::move(role) }
 {}
@@ -35,17 +37,16 @@ bool ButtonPress::keys_down() const {
         return false;
     }
     auto lock = key_configurations_.lock_shared();
-    auto& cfg = *lock;
-    if (!cfg.has_value()) {
+    const auto* key_combination = lock->try_get(user_id_, id_);
+    if (key_combination == nullptr) {
         return false;
     }
-    const auto& key_combination = cfg->get(id_);
-    for (const auto& kk : key_combination.base_combo.key_bindings) {
+    for (const auto& kk : key_combination->base_combo.key_bindings) {
         if (!button_states_.key_down(kk, role_)) {
             return false;
         }
     }
-    if (button_states_.key_down(key_combination.base_combo.not_key_binding, role_)) {
+    if (button_states_.key_down(key_combination->base_combo.not_key_binding, role_)) {
         return false;
     }
     return true;

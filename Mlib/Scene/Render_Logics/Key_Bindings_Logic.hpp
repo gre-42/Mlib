@@ -9,6 +9,7 @@
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -22,20 +23,12 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class ExpressionWatcher;
 
-class LockedKeyBindings {
-public:
-    explicit LockedKeyBindings(
+struct LockedKeyBindings {
+    LockedKeyBindings(
         const LockableKeyDescriptions& key_descriptions,
         LockableKeyConfigurations& key_configurations);
-    const KeyDescriptions* key_descriptions() const;
-    KeyConfigurations* key_configurations() const;
-private:
-    bool initialize() const;
-    const LockableKeyDescriptions& key_descriptions_;
-    LockableKeyConfigurations& key_configurations_;
-    mutable std::optional<LockableKeyDescriptions::ConstLockShared> descriptions_lock_;
-    mutable std::optional<LockableKeyConfigurations::LockShared> configurations_lock_;
-    mutable FastMutex mutex_;
+    LockableKeyDescriptions::ConstLockShared descriptions;
+    LockableKeyConfigurations::LockShared configurations;
 };
 
 class KeyBindingsContents: public IListViewContents {
@@ -70,7 +63,8 @@ public:
         FocusFilter focus_filter,
         std::unique_ptr<ExpressionWatcher>&& ew,
         ButtonStates& button_states,
-        std::atomic_size_t& selection_index);
+        std::atomic_size_t& selection_index,
+        uint32_t user_id);
     ~KeyBindingsLogic();
 
     // RenderLogic
@@ -102,6 +96,7 @@ private:
     FocusFilter focus_filter_;
     ListView list_view_;
     JsonMacroArgumentsObserverToken ot_;
+    uint32_t user_id_;
 };
 
 }

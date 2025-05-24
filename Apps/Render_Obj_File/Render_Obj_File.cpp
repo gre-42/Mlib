@@ -1113,8 +1113,7 @@ int main(int argc, char** argv) {
         LockableKeyConfigurations key_configurations;
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->emplace()
-            .insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+            ->insert(0, "take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
         StandardCameraLogic standard_camera_logic{
             scene,
             selected_cameras};

@@ -232,8 +232,7 @@ void test_physics_engine(unsigned int seed) {
     LockableKeyConfigurations key_configurations;
     key_configurations
         .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-        ->emplace()
-        .insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+        ->insert(0, "take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
     FlyingCameraUserClass user_object{
         .button_states = button_states,
         .cursor_states = cursor_states,

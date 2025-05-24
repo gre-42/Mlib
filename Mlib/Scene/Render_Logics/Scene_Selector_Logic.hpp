@@ -6,6 +6,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
+#include <cstdint>
 #include <vector>
 
 namespace Mlib {
@@ -69,6 +70,7 @@ public:
         ThreadSafeString& next_scene_filename,
         ButtonStates& button_states,
         UiFocus& ui_focus,
+        uint32_t user_id,
         const std::function<void()>& on_change = [](){});
     ~SceneSelectorLogic();
 

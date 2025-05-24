@@ -1,5 +1,7 @@
 #pragma once
 #include <Mlib/Map/Map.hpp>
+#include <Mlib/Map/Unordered_Map.hpp>
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
@@ -14,14 +16,16 @@ public:
     ~KeyConfigurations();
 
     void load(
+        uint32_t user_id,
         const std::string& filename,
         const std::string& fallback_filename);
 
-    void insert(std::string id, KeyConfiguration key_configuration);
+    void insert(uint32_t user_id, std::string id, KeyConfiguration key_configuration);
 
-    const KeyConfiguration& get(const std::string& id) const;
+    const KeyConfiguration& get(uint32_t user_id, const std::string& id) const;
+    const KeyConfiguration* try_get(uint32_t user_id, const std::string& id) const;
 private:
-    Map<std::string, KeyConfiguration> key_configurations_;
+    UnorderedMap<uint32_t, Map<std::string, KeyConfiguration>> key_configurations_;
 };
 
 }

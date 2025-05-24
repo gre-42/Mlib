@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <optional>
 #include <string>
@@ -9,6 +10,7 @@ namespace Mlib {
 enum class InputType;
 
 struct BaseAnalogAxisBinding {
+    uint32_t gamepad_id = UINT32_MAX;
     std::string axis;
     float sign_and_scale;
     float deadzone;

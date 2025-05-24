@@ -8,6 +8,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(user_id);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(fallback_filename);
 }
@@ -24,11 +25,8 @@ struct RegisterJsonUserFunction {
                 auto lock = args.key_configurations.lock_exclusive_for(
                     std::chrono::seconds(2),
                     "Key configurations");
-                auto& cfg = *lock;
-                if (cfg.has_value()) {
-                    THROW_OR_ABORT("Key configurations already initialized");
-                }
-                cfg.emplace().load(
+                lock->load(
+                    args.arguments.at<uint32_t>(KnownArgs::user_id),
                     args.arguments.path(KnownArgs::filename),
                     args.arguments.path(KnownArgs::fallback_filename));
             });

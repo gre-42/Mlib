@@ -16,6 +16,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(user_id);
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(role);
 
@@ -69,6 +70,7 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .button_press{
             args.button_states,
             args.key_configurations,
+            args.arguments.at<uint32_t>(KnownArgs::user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
         .cursor_movement = std::make_shared<CursorMovement>(
@@ -78,6 +80,7 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .gamepad_analog_axes_position{
             args.button_states,
             args.key_configurations,
+            args.arguments.at<uint32_t>(KnownArgs::user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },

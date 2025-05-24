@@ -76,9 +76,9 @@ public:
         return it.position->second;
     }
 
-    void insert_or_assign(const key_type& key, const mapped_type& value) {
+    decltype(auto) insert_or_assign(const key_type& key, const mapped_type& value) {
         std::scoped_lock lock{ mutex_ };
-        elements_.insert_or_assign(key, value);
+        return elements_.insert_or_assign(key, value);
     }
 
     void clear() {

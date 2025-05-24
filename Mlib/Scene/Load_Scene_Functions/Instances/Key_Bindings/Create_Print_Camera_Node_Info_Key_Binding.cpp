@@ -12,6 +12,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(user_id);
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(role);
 }
@@ -38,6 +39,7 @@ void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctio
         .button_press{
             args.button_states,
             args.key_configurations,
+            args.arguments.at<uint32_t>(KnownArgs::user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
         .geographic_mapping = scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),

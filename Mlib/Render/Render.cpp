@@ -152,8 +152,7 @@ void Render::render_scene(
     LockableKeyConfigurations key_configurations;
     key_configurations
         .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-        ->emplace()
-        .insert("take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+        ->insert(0, "take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
     RotatingLogic rotating_logic{
         button_states,
         window_->glfw_window(),

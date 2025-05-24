@@ -21,6 +21,7 @@ public:
         size_t selection_index,
         const IListViewContents& contents,
         ListViewOrientation orientation,
+        uint32_t user_id,
         std::function<void()> on_change = std::function<void()>());
     ~ListView();
     void render_and_handle_input(
