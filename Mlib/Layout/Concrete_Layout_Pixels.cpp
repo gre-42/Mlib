@@ -37,7 +37,7 @@ float ConstantConstraint::to_pixels(
     const LayoutConstraintParameters& params,
     PixelsRoundMode round_mode) const
 {
-    return ::Mlib::round(::Mlib::to_pixels(screen_units_, f_, params.dpi), round_mode);
+    return params.min_pixel + ::Mlib::round(::Mlib::to_pixels(screen_units_, f_, params.dpi), round_mode);
 }
 
 AdditiveConstraint::AdditiveConstraint(
@@ -53,7 +53,7 @@ float AdditiveConstraint::to_pixels(
     const LayoutConstraintParameters& params,
     PixelsRoundMode round_mode) const
 {
-    return ::Mlib::round(
+    return params.min_pixel + ::Mlib::round(
         a_.to_pixels(params, PixelsRoundMode::NONE) + ::Mlib::to_pixels(screen_units_, f_, params.dpi),
         round_mode);
 }
@@ -71,7 +71,7 @@ float FractionalConstraint::to_pixels(
     const LayoutConstraintParameters& params,
     PixelsRoundMode round_mode) const
 {
-    return ::Mlib::round(
+    return params.min_pixel + ::Mlib::round(
         (1 - f_) * a_.to_pixels(params, PixelsRoundMode::NONE) +
         f_ * b_.to_pixels(params, PixelsRoundMode::NONE),
         round_mode);

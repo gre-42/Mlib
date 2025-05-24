@@ -37,11 +37,11 @@ const std::string UiExhibit::key = "ui_exhibit";
 LoadSceneJsonUserFunction UiExhibit::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    UiExhibit(args.physics_scene()).execute(args);
+    UiExhibit(args.renderable_scene()).execute(args);
 };
 
-UiExhibit::UiExhibit(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+UiExhibit::UiExhibit(RenderableScene& renderable_scene) 
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
