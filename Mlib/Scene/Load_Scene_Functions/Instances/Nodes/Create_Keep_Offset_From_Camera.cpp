@@ -27,7 +27,7 @@ LoadSceneJsonUserFunction CreateKeepOffsetFromCamera::json_user_function = [](co
 };
 
 CreateKeepOffsetFromCamera::CreateKeepOffsetFromCamera(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& args)

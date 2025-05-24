@@ -1,98 +1,115 @@
 #include "Renderable_Scenes.hpp"
-#include <Mlib/Scene/Renderable_Scene.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene/Generic_Scenes_Impl.hpp>
 
 using namespace Mlib;
 
 RenderableScenes::RenderableScenes()
-    : state_{ RenderableScenesState::RUNNING }
+    : GenericScenes<RenderableScene>{ "Renderable scenes: "}
 {}
 
-RenderableScenes::~RenderableScenes() {
-    {
-        // Set the state to "STOPPING", so the "try_emplace" routine
-        // refuses to create new scenes.
-        std::scoped_lock lock{ mutex_ };
-        state_ = RenderableScenesState::STOPPING;
-    }
-    {
-        // Stop all scenes in arbitrary order and join them
-        // (i.e. destroy their threads).
-        std::shared_lock lock{ mutex_ };
-        for (auto& [_, rs] : renderable_scenes_) {
-            rs.stop_and_join();
-        }
-    }
-    // Destroy scene nodes in order of creation.
-    for (const auto& name : renderable_scenes_name_list_) {
-        (*this)[name].clear();
-    }
-    {
-        // Set the state to "SHUTTING_DOWN", so index-access to scenes
-        // results in an exception.
-        std::scoped_lock lock{ mutex_ };
-        state_ = RenderableScenesState::SHUTTING_DOWN;
-    }
-    // Erase scenes in order of creation.
-    // This requires that dtors are implemented s.t. dtors of new scenes
-    // are called after destructors of the old scenes.
-    for (const auto& name : renderable_scenes_name_list_) {
-        if (renderable_scenes_.erase(name) != 1) {
-            verbose_abort("Could not delete renderable scene");
-        }
-    }
-    if (!renderable_scenes_.empty()) {
-        verbose_abort("Renderable scenes not empty");
-    }
+RenderableScenes::~RenderableScenes() = default;
+
+std::optional<RenderSetup> RenderableScenes::try_render_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
 }
 
-GuardedIterable<RenderableScenes::map_type::iterator, std::shared_lock<SafeAtomicRecursiveSharedMutex>> RenderableScenes::guarded_iterable() {
-    if (shutting_down()) {
-        verbose_abort("RenderableScenes shutting down");
-    }
-    return { mutex_, unsafe_begin(), unsafe_end() };
-}
-
-RenderableScenes::map_type::iterator RenderableScenes::unsafe_begin() {
-    return renderable_scenes_.begin();
-}
-
-RenderableScenes::map_type::iterator RenderableScenes::unsafe_end() {
-    return renderable_scenes_.end();
-}
-
-RenderableScene& RenderableScenes::operator[](const std::string& name) {
+void RenderableScenes::render_without_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{
     std::shared_lock lock{ mutex_ };
-    if (shutting_down()) {
-        verbose_abort("Renderable scenes are shutting down (0)");
+    for (auto& n : fullscreen_scenes_) {
+        (*this)[n].render_toplevel(
+            lx,
+            ly,
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id);
     }
-    auto wit = renderable_scenes_.find(name);
-    if (wit == renderable_scenes_.end()) {
-        THROW_OR_ABORT("Could not find renderable scene with name \"" + name + '"');
+    if (tiled_scenes_.size() <= 1) {
+        for (auto& [_, scenes] : tiled_scenes_) {
+            for (auto& n : scenes) {
+                (*this)[n].render_toplevel(
+                    lx,
+                    ly,
+                    render_config,
+                    scene_graph_config,
+                    render_results,
+                    frame_id);
+            }
+        }
+    } else if (tiled_scenes_.size() == 2) {
+        float lx_end = std::floor(lx.end_pixel / 2.f);
+        {
+            auto region = PixelRegion{ lx.min_pixel, lx_end, ly.min_pixel, ly.end_pixel, RegionRoundMode::DISABLED };
+            auto vg = ViewportGuard::from_widget(region);
+            for (auto& n : tiled_scenes_.begin()->second) {
+                (*this)[n].render_toplevel(
+                        LayoutConstraintParameters::child_x(lx, region),
+                        ly,
+                        render_config,
+                        scene_graph_config,
+                        render_results,
+                        frame_id);
+            }
+        }
+        {
+            auto region = PixelRegion{ lx_end, lx.end_pixel, ly.min_pixel, ly.end_pixel, RegionRoundMode::DISABLED };
+            auto vg = ViewportGuard::from_widget(region);
+            for (auto& n : tiled_scenes_.rbegin()->second) {
+                (*this)[n].render_toplevel(
+                        LayoutConstraintParameters::child_x(lx, region),
+                        ly,
+                        render_config,
+                        scene_graph_config,
+                        render_results,
+                        frame_id);
+            }
+        }
+    } else {
+        THROW_OR_ABORT("Number of tiled scenes exceeds 2");
     }
-    return wit->second;
 }
 
-const RenderableScene& RenderableScenes::operator[](const std::string& name) const {
-    return const_cast<RenderableScenes&>(*this)[name];
-}
-
-RenderableScene* RenderableScenes::try_get(const std::string& name) {
+void RenderableScenes::print(std::ostream& ostr, size_t depth) const
+{
     std::shared_lock lock{ mutex_ };
-    if (shutting_down()) {
-        verbose_abort("Renderable scenes are shutting down (1)");
+    for (const auto& [n, rs] : guarded_iterable()) {
+        ostr << std::string(depth, ' ') << n << '\n';
+        rs.print(ostr, depth + 1);
     }
-    auto res = renderable_scenes_.find(name);
-    if (res == renderable_scenes_.end()) {
-        return nullptr;
-    }
-    return &res->second;
 }
 
-const RenderableScene* RenderableScenes::try_get(const std::string& name) const {
-    return const_cast<RenderableScenes*>(this)->try_get(name);
+void RenderableScenes::add_fullscreen_scene(std::string scene)
+{
+    std::scoped_lock lock{ mutex_ };
+    fullscreen_scenes_.emplace_back(std::move(scene));
 }
 
-bool RenderableScenes::shutting_down() const {
-    return state_ == RenderableScenesState::SHUTTING_DOWN;
+void RenderableScenes::add_tiled_scene(
+    uint32_t tile,
+    std::string scene)
+{
+    std::scoped_lock lock{ mutex_ };
+    tiled_scenes_[tile].emplace_back(std::move(scene));
 }
+
+template GuardedIterable<GenericScenes<RenderableScene>::map_type::iterator, std::shared_lock<SafeAtomicRecursiveSharedMutex>>
+    GenericScenes<RenderableScene>::guarded_iterable();
+template GuardedIterable<GenericScenes<RenderableScene>::map_type::const_iterator, std::shared_lock<SafeAtomicRecursiveSharedMutex>>
+    GenericScenes<RenderableScene>::guarded_iterable() const;
+template RenderableScene* GenericScenes<RenderableScene>::try_get(const std::string& name);
+template const RenderableScene* GenericScenes<RenderableScene>::try_get(const std::string& name) const;

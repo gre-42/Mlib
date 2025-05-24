@@ -24,7 +24,7 @@ LoadSceneJsonUserFunction SetCameraCycle::json_user_function = [](const LoadScen
 };
 
 SetCameraCycle::SetCameraCycle(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void SetCameraCycle::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -140,7 +140,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                         if (options.imposters == nullptr) {
                             THROW_OR_ABORT("Imposter requested, but no imposters available");
                         }
-                        options.imposters->create_imposter(node.ref(DP_LOC), *node_name, p.max_imposter_texture_size);
+                        options.imposters->set_imposter_info(node.ref(DP_LOC), { *node_name, p.max_imposter_texture_size });
                     }
                     options.scene.auto_add_root_node(
                         node_name,

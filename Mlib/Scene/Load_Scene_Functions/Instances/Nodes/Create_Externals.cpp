@@ -20,11 +20,11 @@ const std::string CreateExternals::key = "create_externals";
 LoadSceneJsonUserFunction CreateExternals::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateExternals(args.renderable_scene()).execute(args);
+    CreateExternals(args.physics_scene()).execute(args);
 };
 
-CreateExternals::CreateExternals(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateExternals::CreateExternals(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateExternals::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -24,11 +24,11 @@ const std::string ConnectTrailer::key = "connect_trailer";
 LoadSceneJsonUserFunction ConnectTrailer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    ConnectTrailer(args.renderable_scene()).execute(args);
+    ConnectTrailer(args.physics_scene()).execute(args);
 };
 
-ConnectTrailer::ConnectTrailer(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+ConnectTrailer::ConnectTrailer(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -1,15 +1,15 @@
 #pragma once
 #include <Mlib/Scene/Json_User_Function.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 
 namespace Mlib {
 
-class TryDeleteRootNode: public LoadSceneInstanceFunction {
+class TryDeleteRootNode: public LoadPhysicsSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit TryDeleteRootNode(RenderableScene& renderable_scene);
+    explicit TryDeleteRootNode(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

@@ -25,8 +25,8 @@ DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(interpolation);
 }
 
-RootNodeInstance::RootNodeInstance(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+RootNodeInstance::RootNodeInstance(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -58,7 +58,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                RootNodeInstance(args.renderable_scene()).execute(args);
+                RootNodeInstance(args.physics_scene()).execute(args);
             });
     }
 } obj;

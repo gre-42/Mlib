@@ -2,6 +2,7 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Source_Location.hpp>
+#include <Mlib/Std_Hash.hpp>
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <atomic>
 #include <shared_mutex>
@@ -259,6 +260,18 @@ private:
     }
     DanglingBaseClass& b_;
     T& v_;
+};
+
+}
+
+namespace std {
+
+template <class T>
+struct hash<Mlib::DanglingBaseClassPtr<T>>
+{
+    std::size_t operator()(const Mlib::DanglingBaseClassPtr<T>& s) const noexcept {
+        return std::hash<T*>()(s.get());
+    }
 };
 
 }

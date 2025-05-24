@@ -19,11 +19,11 @@ const std::string PlayerSetWaypoint::key = "player_set_waypoint";
 LoadSceneJsonUserFunction PlayerSetWaypoint::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayerSetWaypoint(args.renderable_scene()).execute(args);
+    PlayerSetWaypoint(args.physics_scene()).execute(args);
 };
 
-PlayerSetWaypoint::PlayerSetWaypoint(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetWaypoint::PlayerSetWaypoint(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)

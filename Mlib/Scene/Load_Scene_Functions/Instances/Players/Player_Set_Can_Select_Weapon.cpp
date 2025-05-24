@@ -20,11 +20,11 @@ const std::string PlayerSetCanSelectBestWeapon::key = "set_can_select_weapon";
 LoadSceneJsonUserFunction PlayerSetCanSelectBestWeapon::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayerSetCanSelectBestWeapon(args.renderable_scene()).execute(args);
+    PlayerSetCanSelectBestWeapon(args.physics_scene()).execute(args);
 };
 
-PlayerSetCanSelectBestWeapon::PlayerSetCanSelectBestWeapon(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetCanSelectBestWeapon::PlayerSetCanSelectBestWeapon(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetCanSelectBestWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)

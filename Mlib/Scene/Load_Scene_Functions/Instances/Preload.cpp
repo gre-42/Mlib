@@ -31,11 +31,11 @@ const std::string Preload::key = "preload";
 LoadSceneJsonUserFunction Preload::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    Preload(args.renderable_scene()).execute(args);
+    Preload(args.physics_scene()).execute(args);
 };
 
-Preload::Preload(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+Preload::Preload(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {

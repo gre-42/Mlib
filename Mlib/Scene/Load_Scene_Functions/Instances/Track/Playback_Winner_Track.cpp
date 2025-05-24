@@ -34,11 +34,11 @@ const std::string PlaybackWinnerTrack::key = "playback_winner_track";
 LoadSceneJsonUserFunction PlaybackWinnerTrack::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlaybackWinnerTrack(args.renderable_scene()).execute(args);
+    PlaybackWinnerTrack(args.physics_scene()).execute(args);
 };
 
-PlaybackWinnerTrack::PlaybackWinnerTrack(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlaybackWinnerTrack::PlaybackWinnerTrack(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -57,7 +57,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto filename = wt->m_filename;
     auto playback = std::make_shared<RigidBodyPlayback>(
         std::make_unique<TrackElementFile>(create_ifstream(filename), filename),
-        args.ui_focus.focuses,
+        ui_focus.focuses,
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
         args.arguments.at<float>(KnownArgs::speed),
         node_prefixes.size());

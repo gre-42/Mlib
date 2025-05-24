@@ -82,11 +82,11 @@ const std::string LoadPlayers::key = "load_players";
 LoadSceneJsonUserFunction LoadPlayers::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    LoadPlayers(args.renderable_scene()).execute(args);
+    LoadPlayers(args.physics_scene()).execute(args);
 };
 
-LoadPlayers::LoadPlayers(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+LoadPlayers::LoadPlayers(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -11,6 +12,7 @@
 
 namespace Mlib {
 
+class IRenderableScene;
 class RenderingResources;
 class Scene;
 class SceneNode;
@@ -46,10 +48,11 @@ class ImposterLogic: public RenderLogic {
     using ProjectedBbox = FixedArray<ScenePos, 8, 3>;
 public:
     explicit ImposterLogic(
+        IRenderableScene* renderable_scene,
         RenderingResources& rendering_resources,
         RenderLogic& child_logic,
         Scene& scene,
-        DanglingRef<SceneNode> orig_node,
+        const DanglingRef<SceneNode>& orig_node,
         SelectedCameras& cameras,
         const std::string& debug_prefix,
         uint32_t max_texture_size,
@@ -82,6 +85,7 @@ private:
         ScenePos camera_y,
         float angle_y);
 
+    DanglingBaseClassPtr<IRenderableScene> renderable_scene_;
     RenderingResources& rendering_resources_;
     RenderLogic& child_logic_;
     Scene& scene_;

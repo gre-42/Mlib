@@ -30,11 +30,11 @@ const std::string SceneToTexture::key = "scene_to_texture";
 LoadSceneJsonUserFunction SceneToTexture::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SceneToTexture(args.renderable_scene()).execute(args);
+    SceneToTexture(args.physics_scene()).execute(args);
 };
 
-SceneToTexture::SceneToTexture(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SceneToTexture::SceneToTexture(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)

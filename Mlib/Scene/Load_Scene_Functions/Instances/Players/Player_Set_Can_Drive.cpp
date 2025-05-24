@@ -20,11 +20,11 @@ const std::string PlayerSetCanDrive::key = "set_can_drive";
 LoadSceneJsonUserFunction PlayerSetCanDrive::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayerSetCanDrive(args.renderable_scene()).execute(args);
+    PlayerSetCanDrive(args.physics_scene()).execute(args);
 };
 
-PlayerSetCanDrive::PlayerSetCanDrive(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetCanDrive::PlayerSetCanDrive(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetCanDrive::execute(const LoadSceneJsonUserFunctionArgs& args)

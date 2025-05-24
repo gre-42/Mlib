@@ -26,8 +26,8 @@ DECLARE_ARGUMENT(bullet_type);
 DECLARE_ARGUMENT(dpitch_head);
 }
 
-YplnUpdateBulletProperties::YplnUpdateBulletProperties(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+YplnUpdateBulletProperties::YplnUpdateBulletProperties(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void YplnUpdateBulletProperties::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -52,7 +52,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                YplnUpdateBulletProperties(args.renderable_scene()).execute(args);            
+                YplnUpdateBulletProperties(args.physics_scene()).execute(args);            
             });
     }
 } obj;

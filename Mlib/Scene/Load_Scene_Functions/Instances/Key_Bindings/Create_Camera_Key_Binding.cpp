@@ -16,7 +16,7 @@ DECLARE_ARGUMENT(tpe);
 }
 
 CreateCameraKeyBinding::CreateCameraKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateCameraKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

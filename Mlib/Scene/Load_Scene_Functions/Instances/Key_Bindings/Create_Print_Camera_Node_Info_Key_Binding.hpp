@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Scene/Json_User_Function.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Renderable_Scene_Instance_Function.hpp>
 
 namespace Mlib {
 
-class CreatePrintCameraNodeInfoKeyBinding: public LoadSceneInstanceFunction {
+class CreatePrintCameraNodeInfoKeyBinding: public LoadRenderableSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;

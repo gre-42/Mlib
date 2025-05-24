@@ -39,7 +39,7 @@ DECLARE_ARGUMENT(submenus);
 }
 
 CreateKeyBindingsLogic::CreateKeyBindingsLogic(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -48,7 +48,7 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto focus_filter = FocusFilter{
         .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
         .submenu_ids = args.arguments.at<std::set<std::string>>(KnownArgs::submenus, { id }) };
-    args.ui_focus.insert_submenu(
+    ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),
@@ -75,7 +75,7 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_filter,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.button_states,
-        args.ui_focus.all_selection_ids.at(id));
+        ui_focus.all_selection_ids.at(id));
     render_logics.append(
         { parameter_setter_logic, CURRENT_SOURCE_LOCATION },
         1 /* z_order */,

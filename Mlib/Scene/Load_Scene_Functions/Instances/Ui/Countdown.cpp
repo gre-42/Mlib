@@ -42,11 +42,11 @@ const std::string Countdown::key = "countdown";
 LoadSceneJsonUserFunction Countdown::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    Countdown(args.renderable_scene()).execute(args);
+    Countdown(args.physics_scene()).execute(args);
 };
 
-Countdown::Countdown(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+Countdown::Countdown(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -66,7 +66,7 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_from_string(args.arguments.at<std::string>(KnownArgs::pending_focus)),
         focus_from_string(args.arguments.at<std::string>(KnownArgs::counting_focus)),
         args.arguments.at<std::string>(KnownArgs::text),
-        args.ui_focus.focuses);
+        ui_focus.focuses);
     countdown_logic.on_node_clear.add([&countdown_logic]() { global_object_pool.remove(countdown_logic); }, CURRENT_SOURCE_LOCATION);
     physics_engine.advance_times_.add_advance_time({ countdown_logic, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     render_logics.append(

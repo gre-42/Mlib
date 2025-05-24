@@ -49,11 +49,11 @@ const std::string CreateWheel::key = "wheel";
 LoadSceneJsonUserFunction CreateWheel::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateWheel(args.renderable_scene()).execute(args);
+    CreateWheel(args.physics_scene()).execute(args);
 };
 
-CreateWheel::CreateWheel(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateWheel::CreateWheel(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)

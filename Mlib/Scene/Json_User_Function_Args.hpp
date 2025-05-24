@@ -11,8 +11,10 @@ namespace Mlib {
 class JsonMacroArguments;
 class MacroLineExecutor;
 class NotifyingJsonMacroArguments;
-class UiFocus;
+class UiFocuses;
 class RenderLogicGallery;
+class PhysicsScene;
+class PhysicsScenes;
 class RenderableScene;
 class RenderableScenes;
 class SurfaceContactDb;
@@ -31,6 +33,7 @@ struct RealtimeDependentFps;
 struct LoadSceneJsonUserFunctionArgs {
     const std::string& name;
     const JsonMacroArguments& arguments;
+    const std::function<PhysicsScene&()>& physics_scene;
     const std::function<RenderableScene&()>& renderable_scene;
     const MacroLineExecutor& macro_line_executor;
     NotifyingJsonMacroArguments& external_json_macro_arguments;
@@ -45,7 +48,7 @@ struct LoadSceneJsonUserFunctionArgs {
     ButtonPress& confirm_button_press;
     LockableKeyConfigurations& key_configurations;
     LockableKeyDescriptions& key_descriptions;
-    UiFocus& ui_focus;
+    UiFocuses& ui_focuses;
     LayoutConstraints& layout_constraints;
     std::atomic_size_t& num_renderings;
     RealtimeDependentFps& render_set_fps;
@@ -54,6 +57,7 @@ struct LoadSceneJsonUserFunctionArgs {
     RenderLogicGallery& gallery;
     AssetReferences& asset_references;
     Translators& translators;
+    PhysicsScenes& physics_scenes;
     RenderableScenes& renderable_scenes;
     const std::function<void()>& exit;
 };

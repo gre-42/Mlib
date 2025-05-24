@@ -19,8 +19,8 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(value);
 }
 
-SetJumpDv::SetJumpDv(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetJumpDv::SetJumpDv(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetJumpDv::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -39,7 +39,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                SetJumpDv(args.renderable_scene()).execute(args);
+                SetJumpDv(args.physics_scene()).execute(args);
             });
     }
 } obj;

@@ -31,7 +31,7 @@ LoadSceneJsonUserFunction CreateCarControllerIdleBinding::json_user_function = [
 };
 
 CreateCarControllerIdleBinding::CreateCarControllerIdleBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

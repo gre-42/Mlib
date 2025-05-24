@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 
 namespace Mlib {
@@ -9,9 +9,9 @@ class VariableAndHash;
 struct LoadSceneJsonUserFunctionArgs;
 struct RenderableResourceFilter;
 
-class ChildRenderableInstance: public LoadSceneInstanceFunction {
+class ChildRenderableInstance: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit ChildRenderableInstance(RenderableScene& renderable_scene);
+    explicit ChildRenderableInstance(PhysicsScene& physics_scene);
     void operator () (
         const std::string& instance_name,
         const VariableAndHash<std::string>& node,

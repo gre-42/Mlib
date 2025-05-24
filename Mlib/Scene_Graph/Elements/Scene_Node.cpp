@@ -27,6 +27,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IRenderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
@@ -201,22 +202,42 @@ void SceneNode::set_node_modifier(std::unique_ptr<INodeModifier>&& node_modifier
     node_modifier_ = std::move(node_modifier);
 }
 
-bool SceneNode::contains_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider) const {
+bool SceneNode::contains_node_hider(
+    const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+    const DanglingBaseClassRef<INodeHider>& node_hider) const
+{
     std::shared_lock lock{ mutex_ };
-    return node_hiders_.contains(node_hider.ptr());
+    auto avail = node_hiders_.find(renderable_scene);
+    if (avail == node_hiders_.end()) {
+        return false;
+    }
+    return avail->second.contains(node_hider.ptr());
 }
 
-void SceneNode::insert_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider) {
+void SceneNode::insert_node_hider(
+    const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+    const DanglingBaseClassRef<INodeHider>& node_hider)
+{
     std::scoped_lock lock{ mutex_ };
-    if (!node_hiders_.insert(node_hider.ptr()).second) {
+    if (!node_hiders_[renderable_scene].insert(node_hider.ptr()).second) {
         THROW_OR_ABORT("Node hider already inserted");
     }
 }
 
-void SceneNode::remove_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider) {
+void SceneNode::remove_node_hider(
+    const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+    const DanglingBaseClassRef<INodeHider>& node_hider)
+{
     std::scoped_lock lock{ mutex_ };
-    if (node_hiders_.erase(node_hider.ptr()) != 1) {
+    auto avail = node_hiders_.find(renderable_scene);
+    if (avail == node_hiders_.end()) {
+        verbose_abort("Could not find node hider to be deleted (0)");
+    }
+    if (avail->second.erase(node_hider.ptr()) != 1) {
         verbose_abort("Could not remove node hider");
+    }
+    if (avail->second.empty()) {
+        node_hiders_.erase(avail);
     }
 }
 
@@ -978,11 +999,21 @@ void SceneNode::render(
     if (state_ == SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Cannot render detached node");
     }
-    for (const auto& nh : node_hiders_) {
-        // Note that the INodeHider may depend on this function being called,
-        // so there should not be any additional check above this line.
-        if (nh->node_shall_be_hidden(camera_node, external_render_pass)) {
-            visibility = SceneNodeVisibility::INVISIBLE;
+    auto visit_node_hider = [&](const auto& avail){
+        for (const auto& nh : avail) {
+            // Note that the INodeHider may depend on this function being called,
+            // so there should not be any additional check above this line.
+            if (nh->node_shall_be_hidden(camera_node, external_render_pass)) {
+                visibility = SceneNodeVisibility::INVISIBLE;
+            }
+        }
+    };
+    if (auto avail = node_hiders_.find(nullptr); avail != node_hiders_.end()) {
+        visit_node_hider(avail->second);
+    }
+    if (external_render_pass.renderable_scene != nullptr) {
+        if (auto avail = node_hiders_.find(external_render_pass.renderable_scene); avail != node_hiders_.end()) {
+            visit_node_hider(avail->second);
         }
     }
     // OpenGL matrices are transposed in memory,

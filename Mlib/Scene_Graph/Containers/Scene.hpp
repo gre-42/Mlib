@@ -2,6 +2,7 @@
 #include <Mlib/List/Thread_Safe_List.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Math/Time_Point_Series.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Containers/Map_Of_Root_Nodes.hpp>
@@ -21,11 +22,6 @@
 
 namespace Mlib {
 
-template <class T>
-class DanglingBaseClassRef;
-template <class T>
-class DanglingBaseClassPtr;
-class DanglingBaseClass;
 class DeleteNodeMutex;
 template <typename TData, size_t... tshape>
 class FixedArray;
@@ -33,6 +29,7 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class SceneNode;
 class SceneNodeResources;
+class IRenderableScene;
 class ITrailRenderer;
 class IDynamicLights;
 struct SceneGraphConfig;
@@ -95,7 +92,9 @@ public:
         DanglingUniquePtr<SceneNode>&& scene_node,
         RenderingDynamics rendering_dynamics,
         RenderingStrategies rendering_strategy);
-    void add_root_imposter_node(const DanglingRef<SceneNode>& scene_node);
+    void add_root_imposter_node(
+        const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+        const DanglingRef<SceneNode>& scene_node);
     void move_root_node_to_bvh(const VariableAndHash<std::string>& name);
     bool root_node_scheduled_for_deletion(
         const VariableAndHash<std::string>& name,
@@ -103,7 +102,9 @@ public:
     void schedule_delete_root_node(const VariableAndHash<std::string>& name);
     void delete_scheduled_root_nodes() const;
     void try_delete_root_node(const VariableAndHash<std::string>& name);
-    void delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node);
+    void delete_root_imposter_node(
+        const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+        const DanglingRef<SceneNode>& scene_node);
     void delete_root_node(const VariableAndHash<std::string>& name);
     void delete_root_nodes(const Mlib::re::cregex& regex);
     void try_delete_node(const VariableAndHash<std::string>& name);
@@ -169,7 +170,9 @@ private:
     RootNodes& root_instances_once_nodes_;
     RootNodes& root_instances_always_nodes_;
     RootNodes& static_root_physics_nodes_;
-    std::set<DanglingPtr<SceneNode>> root_imposter_nodes_;
+    std::unordered_map<
+        DanglingBaseClassPtr<IRenderableScene>,
+        std::set<DanglingPtr<SceneNode>>> root_imposter_nodes_;
     std::string name_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable BackgroundLoop large_aggregate_bg_worker_;

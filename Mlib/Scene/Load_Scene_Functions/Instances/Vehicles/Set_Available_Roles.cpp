@@ -23,11 +23,11 @@ const std::string SetAvailableRoles::key = "set_available_roles";
 LoadSceneJsonUserFunction SetAvailableRoles::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetAvailableRoles(args.renderable_scene()).execute(args);
+    SetAvailableRoles(args.physics_scene()).execute(args);
 };
 
-SetAvailableRoles::SetAvailableRoles(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetAvailableRoles::SetAvailableRoles(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetAvailableRoles::execute(const LoadSceneJsonUserFunctionArgs& args)

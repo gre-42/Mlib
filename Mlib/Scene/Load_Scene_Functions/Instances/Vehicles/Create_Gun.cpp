@@ -45,11 +45,11 @@ const std::string CreateGun::key = "gun";
 LoadSceneJsonUserFunction CreateGun::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateGun(args.renderable_scene()).execute(args);
+    CreateGun(args.physics_scene()).execute(args);
 };
 
-CreateGun::CreateGun(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateGun::CreateGun(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 class PunchAngleRng {

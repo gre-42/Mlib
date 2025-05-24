@@ -651,3 +651,16 @@ DanglingUniquePtr<T> make_dunique( Args&&... args ) {
 }
 
 #endif
+
+
+namespace std {
+
+template <class T>
+struct hash<Mlib::DanglingPtr<T>>
+{
+    std::size_t operator()(const Mlib::DanglingPtr<T>& s) const noexcept {
+        return std::hash<T*>()(s.get());
+    }
+};
+
+}

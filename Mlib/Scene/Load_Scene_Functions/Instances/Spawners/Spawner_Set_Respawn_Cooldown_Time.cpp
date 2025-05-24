@@ -19,11 +19,11 @@ const std::string SpawnerSetRespawnCooldownTime::key = "set_respawn_cooldown_tim
 LoadSceneJsonUserFunction SpawnerSetRespawnCooldownTime::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SpawnerSetRespawnCooldownTime(args.renderable_scene()).execute(args);
+    SpawnerSetRespawnCooldownTime(args.physics_scene()).execute(args);
 };
 
-SpawnerSetRespawnCooldownTime::SpawnerSetRespawnCooldownTime(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SpawnerSetRespawnCooldownTime::SpawnerSetRespawnCooldownTime(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SpawnerSetRespawnCooldownTime::execute(const LoadSceneJsonUserFunctionArgs& args)

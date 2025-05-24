@@ -31,11 +31,11 @@ const std::string AddWeaponToInventory::key = "add_weapon_to_cycle";
 LoadSceneJsonUserFunction AddWeaponToInventory::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    AddWeaponToInventory(args.renderable_scene()).execute(args);
+    AddWeaponToInventory(args.physics_scene()).execute(args);
 };
 
-AddWeaponToInventory::AddWeaponToInventory(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+AddWeaponToInventory::AddWeaponToInventory(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)

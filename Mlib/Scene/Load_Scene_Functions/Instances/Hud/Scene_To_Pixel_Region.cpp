@@ -35,7 +35,7 @@ LoadSceneJsonUserFunction SceneToPixelRegion::json_user_function = [](const Load
 };
 
 SceneToPixelRegion::SceneToPixelRegion(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void SceneToPixelRegion::execute(const LoadSceneJsonUserFunctionArgs& args)

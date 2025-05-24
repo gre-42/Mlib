@@ -30,7 +30,7 @@ LoadSceneJsonUserFunction CreateAbsIdleKeyBinding::json_user_function = [](const
 };
 
 CreateAbsIdleKeyBinding::CreateAbsIdleKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateAbsIdleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

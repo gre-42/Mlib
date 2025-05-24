@@ -507,8 +507,8 @@ void RigidBodyVehicle::notify_destroyed(SceneNode& destroyed_object) {
         }
         destroyed_object.clear_absolute_movable();
     }
-    if (destroyed_object.contains_node_hider({ *this, CURRENT_SOURCE_LOCATION })) {
-        destroyed_object.remove_node_hider({ *this, CURRENT_SOURCE_LOCATION });
+    if (destroyed_object.contains_node_hider(nullptr, { *this, CURRENT_SOURCE_LOCATION })) {
+        destroyed_object.remove_node_hider(nullptr, { *this, CURRENT_SOURCE_LOCATION });
     }
     object_pool_.remove(this);
 }

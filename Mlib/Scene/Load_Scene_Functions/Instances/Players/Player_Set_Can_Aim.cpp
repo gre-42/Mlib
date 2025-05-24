@@ -20,11 +20,11 @@ const std::string PlayerSetCanAim::key = "set_can_aim";
 LoadSceneJsonUserFunction PlayerSetCanAim::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayerSetCanAim(args.renderable_scene()).execute(args);
+    PlayerSetCanAim(args.physics_scene()).execute(args);
 };
 
-PlayerSetCanAim::PlayerSetCanAim(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetCanAim::PlayerSetCanAim(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetCanAim::execute(const LoadSceneJsonUserFunctionArgs& args)

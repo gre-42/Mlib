@@ -1,13 +1,13 @@
 #pragma once
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 
 namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class RootNodeInstance: public LoadSceneInstanceFunction {
+class RootNodeInstance: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit RootNodeInstance(RenderableScene& renderable_scene);
+    explicit RootNodeInstance(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

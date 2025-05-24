@@ -58,7 +58,7 @@ public:
                 node_->clearing_observers.add(*destruction_observer_);
             }
             if (node_hider_ != nullptr) {
-                node_->insert_node_hider(*node_hider_);
+                node_->insert_node_hider(nullptr, *node_hider_);
             }
         }
     }

@@ -5,7 +5,6 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_Ac_Loader.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Asset_Manifests.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Replacement_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
@@ -46,7 +45,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Thread_Top.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Visual_Node_Status_3rd.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate_Game_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate_Grass.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Invalidate_Aggregate_Renderers.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Desired_Weapon.hpp>
@@ -128,7 +126,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Clear_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Controls.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Countdown.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Ui_Background.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Ui_Exhibit.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_To_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
@@ -207,7 +204,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Gravity.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Wind.hpp>
-#include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 
 using namespace Mlib;
@@ -218,7 +215,6 @@ LoadScene::LoadScene() {
         RegisterJsonUserFunctions() {
             // Containers
             register_json_user_function(AddAcLoader::key, AddAcLoader::json_user_function);
-            register_json_user_function(CreateScene::key, CreateScene::json_user_function);
             register_json_user_function(LoadAssetManifests::key, LoadAssetManifests::json_user_function);
             register_json_user_function(LoadReplacementParameters::key, LoadReplacementParameters::json_user_function);
             register_json_user_function(UpdateGallery::key, UpdateGallery::json_user_function);
@@ -303,7 +299,6 @@ LoadScene::LoadScene() {
             register_json_user_function(FocusedText::key, FocusedText::json_user_function);
             register_json_user_function(FollowNode::key, FollowNode::json_user_function);
             register_json_user_function(Minimap::key, Minimap::json_user_function);
-            register_json_user_function(InstantiateGameLogic::key, InstantiateGameLogic::json_user_function);
             register_json_user_function(InstantiateGrass::key, InstantiateGrass::json_user_function);
             register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);
             register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
@@ -374,7 +369,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SpawnerSetRespawnCooldownTime::key, SpawnerSetRespawnCooldownTime::json_user_function);
             register_json_user_function(StartRace::key, StartRace::json_user_function);
             register_json_user_function(TeamSetWaypoint::key, TeamSetWaypoint::json_user_function);
-            register_json_user_function(UiBackground::key, UiBackground::json_user_function);
             register_json_user_function(UiExhibit::key, UiExhibit::json_user_function);
             register_json_user_function(VisualNodeStatus3rd::key, VisualNodeStatus3rd::json_user_function);
 
@@ -449,11 +443,12 @@ void LoadScene::operator()(
     ButtonPress& confirm_button_press,
     LockableKeyConfigurations& key_configurations,
     LockableKeyDescriptions& key_descriptions,
-    UiFocus& ui_focus,
+    UiFocuses& ui_focuses,
     LayoutConstraints& layout_constraints,
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
     Translators& translators,
+    PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
     const std::function<void()>& exit)
 {
@@ -464,12 +459,16 @@ void LoadScene::operator()(
         const JsonMacroArguments& arguments,
         JsonMacroArguments* local_json_macro_arguments)
     {
+        auto physics_scene = [&]() -> PhysicsScene& {
+            return physics_scenes[context];
+        };
         auto renderable_scene = [&]() -> RenderableScene& {
             return renderable_scenes[context];
         };
         LoadSceneJsonUserFunctionArgs args{
             .name = name,
             .arguments = arguments,
+            .physics_scene = physics_scene,
             .renderable_scene = renderable_scene,
             .macro_line_executor = macro_line_executor,
             .external_json_macro_arguments = external_json_macro_arguments,
@@ -484,7 +483,7 @@ void LoadScene::operator()(
             .confirm_button_press = confirm_button_press,
             .key_configurations = key_configurations,
             .key_descriptions = key_descriptions,
-            .ui_focus = ui_focus,
+            .ui_focuses = ui_focuses,
             .layout_constraints = layout_constraints,
             .num_renderings = num_renderings,
             .render_set_fps = render_set_fps,
@@ -493,6 +492,7 @@ void LoadScene::operator()(
             .gallery = gallery,
             .asset_references = asset_references,
             .translators = translators,
+            .physics_scenes = physics_scenes,
             .renderable_scenes = renderable_scenes,
             .exit = exit};
         auto& funcs = json_user_functions();

@@ -15,7 +15,7 @@ LoadSceneJsonUserFunction InvalidateAggregateRenderers::json_user_function = [](
 };
 
 InvalidateAggregateRenderers::InvalidateAggregateRenderers(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void InvalidateAggregateRenderers::execute(const LoadSceneJsonUserFunctionArgs& args)

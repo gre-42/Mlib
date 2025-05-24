@@ -26,11 +26,11 @@ const std::string RecordTrack::key = "record_track";
 LoadSceneJsonUserFunction RecordTrack::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    RecordTrack(args.renderable_scene()).execute(args);
+    RecordTrack(args.physics_scene()).execute(args);
 };
 
-RecordTrack::RecordTrack(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+RecordTrack::RecordTrack(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -43,6 +43,6 @@ void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
         recorder_node,
         rb.rbp_,
-        args.ui_focus.focuses);
+        ui_focus.focuses);
     physics_engine.advance_times_.add_advance_time({ at, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

@@ -22,11 +22,11 @@ const std::string SetRigidBodyAlignToSurfaceRelaxation::key = "set_rigid_body_al
 LoadSceneJsonUserFunction SetRigidBodyAlignToSurfaceRelaxation::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetRigidBodyAlignToSurfaceRelaxation(args.renderable_scene()).execute(args);
+    SetRigidBodyAlignToSurfaceRelaxation(args.physics_scene()).execute(args);
 };
 
-SetRigidBodyAlignToSurfaceRelaxation::SetRigidBodyAlignToSurfaceRelaxation(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetRigidBodyAlignToSurfaceRelaxation::SetRigidBodyAlignToSurfaceRelaxation(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetRigidBodyAlignToSurfaceRelaxation::execute(const LoadSceneJsonUserFunctionArgs& args)

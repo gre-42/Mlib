@@ -216,7 +216,8 @@ void UiFocus::set_requires_reload(std::string submenu, std::string reason) {
 void UiFocus::clear_requires_reload(const std::string& submenu) {
     requires_reload_.erase(submenu);
 }
- const std::map<std::string, std::string>& UiFocus::requires_reload() const {
+
+const std::map<std::string, std::string>& UiFocus::requires_reload() const {
     return requires_reload_;
 }
 
@@ -272,6 +273,67 @@ void UiFocus::save() {
         THROW_OR_ABORT("Could not write to file \"" + filename_ + '"');
     }
     loaded_persistent_selection_ids = current_persistent_selection_ids;
+}
+
+UiFocuses::UiFocuses(std::string filename_prefix)
+    : filename_prefix_{ std::move(filename_prefix) }
+{}
+
+UiFocuses::~UiFocuses() = default;
+
+UiFocus& UiFocuses::operator [] (uint32_t user_id) {
+    auto it = focuses_.find(user_id);
+    if (it == focuses_.end()) {
+        auto res = focuses_.try_emplace(
+            user_id,
+            filename_prefix_.empty() || (user_id != 0)
+                ? ""
+                : filename_prefix_ + std::to_string(user_id) + ".json");
+        if (!res.second) {
+            verbose_abort("Could not create UiFocus");
+        }
+        return res.first->second;
+    }
+    return it->second;
+}
+
+const UiFocus& UiFocuses::operator [] (uint32_t user_id) const {
+    return const_cast<UiFocuses&>(*this)[user_id];
+}
+
+void UiFocuses::trim(uint32_t user_count) {
+    std::erase_if(focuses_, [&](const auto& item) {
+        return item.first >= user_count;
+    });
+}
+
+void UiFocuses::try_load() {
+    for (auto& [_, f] : focuses_) {
+        if (f.can_load()) {
+            f.load();
+        }
+    }
+}
+
+void UiFocuses::try_save() {
+    for (auto& [_, f] : focuses_) {
+        if (f.has_changes() && f.can_save()) {
+            f.save();
+        }
+    }
+}
+
+void UiFocuses::clear() {
+    for (auto& [_, f] : focuses_) {
+        f.clear();
+    }
+}
+
+void UiFocuses::clear_focuses() {
+    for (auto& [_, f] : focuses_) {
+        std::scoped_lock lock{f.focuses.mutex};
+        f.focuses.set_focuses({});
+    }
 }
 
 Focus Mlib::single_focus_from_string(const std::string& str) {

@@ -40,7 +40,7 @@ LoadSceneJsonUserFunction CreateHudOpponentZoom::json_user_function = [](const L
 };
 
 CreateHudOpponentZoom::CreateHudOpponentZoom(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)

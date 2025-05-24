@@ -6,9 +6,9 @@
 
 namespace Mlib {
 
-struct LoadSceneUserFunctionArgs;
-class RenderableScene;
+class PhysicsScene;
 class ObjectPool;
+class DeferredInstantiator;
 class SceneNodeResources;
 class ParticleResources;
 struct SceneParticles;
@@ -21,13 +21,11 @@ class Scene;
 class DynamicWorld;
 class PhysicsEngine;
 class CursorStates;
-class KeyBindings;
-class SelectedCameras;
 struct SceneConfig;
-class RenderLogics;
 class SetFps;
 class RenderLogic;
 class GameLogic;
+class Users;
 class BaseLog;
 class DeleteNodeMutex;
 struct RenderingContext;
@@ -36,19 +34,22 @@ class SkyboxLogic;
 class StandardRenderLogic;
 class AggregateRenderLogic;
 class PostProcessingLogic;
-class Imposters;
 class SupplyDepots;
 class RenderingResources;
 class EventEmitter;
+class RenderLogics;
+class UiFocus;
 
-class LoadSceneInstanceFunction {
+class LoadPhysicsSceneInstanceFunction {
 public:
-    explicit LoadSceneInstanceFunction(RenderableScene& renderable_scene);
-    ~LoadSceneInstanceFunction();
+    explicit LoadPhysicsSceneInstanceFunction(PhysicsScene& physics_scene);
+    ~LoadPhysicsSceneInstanceFunction();
 
 protected:
-    RenderableScene& renderable_scene;
+    PhysicsScene& physics_scene;
     ObjectPool& object_pool;
+    DeferredInstantiator& deferred_instantiator;
+    RenderLogics& render_logics;
     RenderingResources& rendering_resources;
     SceneNodeResources& scene_node_resources;
     ParticleResources& particle_resources;
@@ -61,24 +62,14 @@ protected:
     Scene& scene;
     DynamicWorld& dynamic_world;
     PhysicsEngine& physics_engine;
-    Imposters& imposters;
     SupplyDepots& supply_depots;
-    KeyBindings& key_bindings;
-    SelectedCameras& selected_cameras;
     const SceneConfig& scene_config;
-    RenderLogics& render_logics;
-    RenderLogics& scene_render_logics;
     std::function<bool()>& paused;
     EventEmitter& paused_changed;
     SetFps& physics_set_fps;
-    RenderLogic& scene_logic;
-    RenderLogic& read_pixels_logic;
-    DirtmapLogic& dirtmap_logic;
-    StandardRenderLogic& standard_render_logic;
-    AggregateRenderLogic& aggregate_render_logic;
-    PostProcessingLogic& post_processing_logic;
-    SkyboxLogic& skybox_logic;
     GameLogic* game_logic;
+    Users& users;
+    UiFocus& ui_focus;
     BaseLog& base_log;
     DeleteNodeMutex& delete_node_mutex;
 

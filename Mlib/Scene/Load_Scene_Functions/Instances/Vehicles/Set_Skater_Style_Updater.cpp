@@ -23,11 +23,11 @@ const std::string SetSkaterStyleUpdater::key = "set_skater_style_updater";
 LoadSceneJsonUserFunction SetSkaterStyleUpdater::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetSkaterStyleUpdater(args.renderable_scene()).execute(args);
+    SetSkaterStyleUpdater(args.physics_scene()).execute(args);
 };
 
-SetSkaterStyleUpdater::SetSkaterStyleUpdater(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetSkaterStyleUpdater::SetSkaterStyleUpdater(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetSkaterStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)

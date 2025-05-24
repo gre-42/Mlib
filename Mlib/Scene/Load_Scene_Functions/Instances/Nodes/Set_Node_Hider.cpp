@@ -32,11 +32,11 @@ const std::string SetNodeHider::key = "set_node_hider";
 LoadSceneJsonUserFunction SetNodeHider::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetNodeHider(args.renderable_scene()).execute(args);
+    SetNodeHider(args.physics_scene()).execute(args);
 };
 
-SetNodeHider::SetNodeHider(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetNodeHider::SetNodeHider(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 class NodeHiderWithEvent: public INodeHider, public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
@@ -78,7 +78,7 @@ public:
         } else {
             verbose_abort("Unknown destroyed object");
         }
-        node_to_hide_->remove_node_hider({ *this, CURRENT_SOURCE_LOCATION });
+        node_to_hide_->remove_node_hider(nullptr, { *this, CURRENT_SOURCE_LOCATION });
         node_to_hide_ = nullptr;
         camera_node_ = nullptr;
         global_object_pool.remove(this);
@@ -177,6 +177,6 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& nh = global_object_pool.add(std::move(node_hider), CURRENT_SOURCE_LOCATION);
     node_to_hide->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
     camera_node->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
-    node_to_hide->insert_node_hider({ nh, CURRENT_SOURCE_LOCATION });
+    node_to_hide->insert_node_hider(nullptr, { nh, CURRENT_SOURCE_LOCATION });
     physics_engine.advance_times_.add_advance_time({ nh, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

@@ -24,11 +24,11 @@ const std::string CreateAvatarAsAvatarController::key = "create_avatar_as_avatar
 LoadSceneJsonUserFunction CreateAvatarAsAvatarController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateAvatarAsAvatarController(args.renderable_scene()).execute(args);
+    CreateAvatarAsAvatarController(args.physics_scene()).execute(args);
 };
 
-CreateAvatarAsAvatarController::CreateAvatarAsAvatarController(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateAvatarAsAvatarController::CreateAvatarAsAvatarController(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateAvatarAsAvatarController::execute(const LoadSceneJsonUserFunctionArgs& args)

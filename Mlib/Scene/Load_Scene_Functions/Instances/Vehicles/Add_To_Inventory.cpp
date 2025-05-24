@@ -22,11 +22,11 @@ const std::string AddToInventory::key = "add_to_inventory";
 LoadSceneJsonUserFunction AddToInventory::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    AddToInventory(args.renderable_scene()).execute(args);
+    AddToInventory(args.physics_scene()).execute(args);
 };
 
-AddToInventory::AddToInventory(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+AddToInventory::AddToInventory(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void AddToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)

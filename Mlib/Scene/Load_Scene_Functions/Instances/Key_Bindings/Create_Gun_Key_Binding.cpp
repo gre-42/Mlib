@@ -27,7 +27,7 @@ LoadSceneJsonUserFunction CreateGunKeyBinding::json_user_function = [](const Loa
 };
 
 CreateGunKeyBinding::CreateGunKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

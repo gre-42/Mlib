@@ -28,11 +28,11 @@ const std::string CreateLightWithoutShadow::key = "light_without_shadow";
 LoadSceneJsonUserFunction CreateLightWithoutShadow::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateLightWithoutShadow(args.renderable_scene()).execute(args);
+    CreateLightWithoutShadow(args.physics_scene()).execute(args);
 };
 
-CreateLightWithoutShadow::CreateLightWithoutShadow(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateLightWithoutShadow::CreateLightWithoutShadow(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args)

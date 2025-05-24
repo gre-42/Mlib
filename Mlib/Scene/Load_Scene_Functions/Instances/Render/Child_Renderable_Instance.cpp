@@ -2,7 +2,6 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
-#include <Mlib/Render/Imposters.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -22,8 +21,8 @@ DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 }
 
-ChildRenderableInstance::ChildRenderableInstance(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+ChildRenderableInstance::ChildRenderableInstance(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ChildRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args) const
@@ -62,7 +61,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                ChildRenderableInstance(args.renderable_scene()).execute(args);
+                ChildRenderableInstance(args.physics_scene()).execute(args);
             });
     }
 } obj;

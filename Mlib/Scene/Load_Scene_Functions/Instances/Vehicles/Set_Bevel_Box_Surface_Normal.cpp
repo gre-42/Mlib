@@ -22,11 +22,11 @@ const std::string SetBevelBoxSurfaceNormal::key = "set_bevel_box_surface_normal"
 LoadSceneJsonUserFunction SetBevelBoxSurfaceNormal::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetBevelBoxSurfaceNormal(args.renderable_scene()).execute(args);
+    SetBevelBoxSurfaceNormal(args.physics_scene()).execute(args);
 };
 
-SetBevelBoxSurfaceNormal::SetBevelBoxSurfaceNormal(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetBevelBoxSurfaceNormal::SetBevelBoxSurfaceNormal(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetBevelBoxSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args)

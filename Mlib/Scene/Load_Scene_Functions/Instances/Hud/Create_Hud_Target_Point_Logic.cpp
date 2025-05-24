@@ -37,7 +37,7 @@ LoadSceneJsonUserFunction CreateHudTargetPointLogic::json_user_function = [](con
 };
 
 CreateHudTargetPointLogic::CreateHudTargetPointLogic(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& args)

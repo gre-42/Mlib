@@ -25,11 +25,11 @@ const std::string SetWayPoints::key = "set_way_points";
 LoadSceneJsonUserFunction SetWayPoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetWayPoints(args.renderable_scene()).execute(args);
+    SetWayPoints(args.physics_scene()).execute(args);
 };
 
-SetWayPoints::SetWayPoints(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetWayPoints::SetWayPoints(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetWayPoints::execute(const LoadSceneJsonUserFunctionArgs& args)

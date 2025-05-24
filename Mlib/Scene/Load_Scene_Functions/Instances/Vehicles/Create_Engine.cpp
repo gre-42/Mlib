@@ -63,11 +63,11 @@ LoadSceneJsonUserFunction CreateEngine::json_user_function = [](const LoadSceneJ
     if (args.arguments.contains(KnownArgs::audio)) {
         args.arguments.child(KnownArgs::audio).validate(Audio::options);
     }
-    CreateEngine(args.renderable_scene()).execute(args);
+    CreateEngine(args.physics_scene()).execute(args);
 };
 
-CreateEngine::CreateEngine(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateEngine::CreateEngine(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 static inline float stow(float v) {

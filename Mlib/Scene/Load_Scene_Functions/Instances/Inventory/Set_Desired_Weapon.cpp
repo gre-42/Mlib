@@ -23,11 +23,11 @@ const std::string SetDesiredWeapon::key = "set_desired_weapon";
 LoadSceneJsonUserFunction SetDesiredWeapon::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetDesiredWeapon(args.renderable_scene()).execute(args);
+    SetDesiredWeapon(args.physics_scene()).execute(args);
 };
 
-SetDesiredWeapon::SetDesiredWeapon(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetDesiredWeapon::SetDesiredWeapon(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)

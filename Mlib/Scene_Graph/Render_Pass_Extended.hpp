@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
@@ -8,6 +9,7 @@ namespace Mlib {
 
 enum class ExternalRenderPassType;
 class SceneNode;
+class IRenderableScene;
 
 struct ExternalRenderPass {
     ExternalRenderPassType pass;
@@ -15,6 +17,7 @@ struct ExternalRenderPass {
     VariableAndHash<std::string> black_node_name;
     DanglingPtr<SceneNode> singular_node = nullptr;
     DanglingPtr<SceneNode> nonstandard_camera_node = nullptr;
+    DanglingBaseClassPtr<IRenderableScene> renderable_scene = nullptr;
     std::strong_ordering operator <=> (const ExternalRenderPass&) const = default;
 };
 

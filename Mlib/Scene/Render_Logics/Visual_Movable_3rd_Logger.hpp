@@ -27,7 +27,6 @@ class ExpressionWatcher;
 class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<SceneNode&>, public IAdvanceTime {
 public:
     VisualMovable3rdLogger(
-        RenderLogic& scene_logic,
         const DanglingRef<SceneNode>& scene_node,
         RenderLogics& render_logics,
         AdvanceTimes& advance_times,
@@ -63,7 +62,6 @@ public:
     DestructionFunctionsRemovalTokens on_node_clear;
 private:
     std::unique_ptr<TextResource> renderable_text_;
-    RenderLogic& scene_logic_;
     FastMutex mutex_;
     DanglingPtr<SceneNode> scene_node_;
     StatusWriter& status_writer_;

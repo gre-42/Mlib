@@ -17,11 +17,11 @@ const std::string DeleteRootNodes::key = "delete_root_nodes";
 LoadSceneJsonUserFunction DeleteRootNodes::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DeleteRootNodes(args.renderable_scene()).execute(args);
+    DeleteRootNodes(args.physics_scene()).execute(args);
 };
 
-DeleteRootNodes::DeleteRootNodes(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+DeleteRootNodes::DeleteRootNodes(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void DeleteRootNodes::execute(const LoadSceneJsonUserFunctionArgs& args)

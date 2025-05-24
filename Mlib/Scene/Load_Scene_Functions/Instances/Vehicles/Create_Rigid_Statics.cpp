@@ -37,8 +37,8 @@ DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(flags);
 }
 
-CreateRigidStatics::CreateRigidStatics(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateRigidStatics::CreateRigidStatics(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -116,7 +116,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                CreateRigidStatics(args.renderable_scene()).execute(args);
+                CreateRigidStatics(args.physics_scene()).execute(args);
             });
     }
 } obj;

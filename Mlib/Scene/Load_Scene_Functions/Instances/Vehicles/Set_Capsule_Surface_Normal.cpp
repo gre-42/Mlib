@@ -22,11 +22,11 @@ const std::string SetCapsuleSurfaceNormal::key = "set_capsule_surface_normal";
 LoadSceneJsonUserFunction SetCapsuleSurfaceNormal::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetCapsuleSurfaceNormal(args.renderable_scene()).execute(args);
+    SetCapsuleSurfaceNormal(args.physics_scene()).execute(args);
 };
 
-SetCapsuleSurfaceNormal::SetCapsuleSurfaceNormal(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetCapsuleSurfaceNormal::SetCapsuleSurfaceNormal(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetCapsuleSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -11,11 +11,11 @@ const std::string ResetSupplyDepotCooldowns::key = "reset_supply_depot_cooldowns
 LoadSceneJsonUserFunction ResetSupplyDepotCooldowns::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate({});
-    ResetSupplyDepotCooldowns(args.renderable_scene()).execute(args);
+    ResetSupplyDepotCooldowns(args.physics_scene()).execute(args);
 };
 
-ResetSupplyDepotCooldowns::ResetSupplyDepotCooldowns(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+ResetSupplyDepotCooldowns::ResetSupplyDepotCooldowns(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ResetSupplyDepotCooldowns::execute(const LoadSceneJsonUserFunctionArgs& args)

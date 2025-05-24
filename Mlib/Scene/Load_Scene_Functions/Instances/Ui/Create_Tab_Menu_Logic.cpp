@@ -40,7 +40,7 @@ DECLARE_ARGUMENT(focus_mask);
 }
 
 CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -67,7 +67,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         };
     }
     // If the selection_ids array is not yet initialized, apply the default value.
-    args.ui_focus.all_selection_ids.try_emplace(id, deflt);
+    ui_focus.all_selection_ids.try_emplace(id, deflt);
     auto& tab_menu_logic = object_pool.create<TabMenuLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(id),
@@ -88,7 +88,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.external_json_macro_arguments,
         args.asset_references,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
-        args.ui_focus,
+        ui_focus,
         args.num_renderings,
         args.button_states,
         on_execute);

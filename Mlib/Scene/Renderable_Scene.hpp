@@ -1,17 +1,7 @@
 #pragma once
-#include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Images/Ppm_Image.hpp>
-#include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Physics/Misc/Gravity_Efp.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
-#include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
-#include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
-#include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex/Misc.hpp>
-#include <Mlib/Render/Imposters.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -19,34 +9,16 @@
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
-#include <Mlib/Scene/Scene_Config.hpp>
-#include <Mlib/Scene/Scene_Particles.hpp>
-#include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
-#include <Mlib/Scene_Graph/Fifo_Log.hpp>
-#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
-#include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
-#include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
-#include <Mlib/Time/Fps/Set_Fps.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IRenderable_Scene.hpp>
 #include <memory>
 #include <vector>
 
 namespace Mlib {
 
-class SceneNodeResources;
-class ParticleResources;
-class TrailResources;
-class IParticleRenderer;
-class ITrailRenderer;
-class DynamicLights;
-class SurfaceContactDb;
-class DynamicLightDb;
-
-class GameLogic;
+class PhysicsScene;
 class DirtmapLogic;
 class PostProcessingLogic;
 class FxaaLogic;
@@ -55,18 +27,18 @@ class MotionInterpolationLogic;
 class FlyingCameraUserClass;
 class StandardRenderLogic;
 class AggregateRenderLogic;
-
 class AudioListenerUpdater;
-class PhysicsLoop;
+
 class ButtonStates;
 class CursorStates;
 
-class Translator;
+class UiFocus;
 
 enum class ThreadAffinity;
 enum class ClearMode;
 
 struct FocusFilter;
+struct SceneConfig;
 
 struct SceneConfigResource {
     bool fly;
@@ -82,31 +54,18 @@ struct SceneConfigResource {
     ClearMode clear_mode;
 };
 
-class RenderableScene: public RenderLogic {
+class RenderableScene: public RenderLogic, public IRenderableScene {
 public:
     RenderableScene(
         std::string name,
-        VariableAndHash<std::string> world,
-        std::string rendering_resources_name,
-        unsigned int max_anisotropic_filtering_level,
-        SceneNodeResources& scene_node_resources,
-        ParticleResources& particle_resources,
-        TrailResources& trail_resources,
-        SurfaceContactDb& surface_contact_db,
-        DynamicLightDb& dynamic_light_db,
+        PhysicsScene& physics_scene,
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,
         CursorStates& scroll_wheel_states,
         LockableKeyConfigurations& key_configurations,
         UiFocus& ui_focus,
-        const SceneConfigResource& config,
-        size_t max_tracks,
-        bool save_playback,
-        const RaceIdentifier& race_identfier,
-        const FocusFilter& focus_filter,
-        DependentSleeper& dependent_sleeper,
-        std::shared_ptr<Translator> translator);
+        const SceneConfigResource& config);
     ~RenderableScene();
     RenderableScene(const RenderableScene&) = delete;
     RenderableScene& operator = (const RenderableScene&) = delete;
@@ -125,49 +84,21 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    // Misc
-    void start_physics_loop(
-        const std::string& thread_name,
-        ThreadAffinity thread_affinity);
-    void print_physics_engine_search_time() const;
-    void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();
     void clear();
+
     void instantiate_audio_listener(
         std::chrono::steady_clock::duration delay,
         std::chrono::steady_clock::duration velocity_dt);
-    void instantiate_game_logic(std::function<void()> setup_new_round);
 
     ObjectPool object_pool_;
-    DeleteNodeMutex delete_node_mutex_;
 
     std::string name_;
-    DynamicWorld dynamic_world_;
-    SceneNodeResources& scene_node_resources_;
-    ParticleResources& particle_resources_;
-    RenderingResources rendering_resources_;
-    std::unique_ptr<ITrailRenderer> trail_renderer_;
-    std::unique_ptr<DynamicLights> dynamic_lights_;
+    PhysicsScene& physics_scene_;
     const SceneConfig& scene_config_;
-    PhysicsEngine physics_engine_;
-    VehicleSpawners vehicle_spawners_;
-    Scene scene_;
     SelectedCameras selected_cameras_;
     FlyingCameraUserClass user_object_;
-
-    SceneParticles air_particles_;
-    SceneParticles skidmark_particles_;
-    ContactSmokeGenerator contact_smoke_generator_;
-
-    std::function<bool()> paused_;
-    EventEmitter paused_changed_;
-    RealtimeSleeper physics_sleeper_;
-    SetFps physics_set_fps_;
-    BusyStateProviderGuard busy_state_provider_guard_;
-    FifoLog fifo_log_{10 * 1000};
-    GravityEfp gefp_;
-    PhysicsIteration physics_iteration_;
-    std::unique_ptr<PhysicsLoop> physics_loop_;
+    UiFocus& ui_focus_;
 
     RenderLogics render_logics_;
     RenderLogics scene_render_logics_;
@@ -185,16 +116,10 @@ public:
     std::unique_ptr<BloomLogic> bloom_logic_;
     std::unique_ptr<RenderLogics> imposter_render_logics_;
 
-    Imposters imposters_;
-    Players players_;
-    SupplyDepots supply_depots_;
-    std::unique_ptr<GameLogic> game_logic_;
     std::unique_ptr<AudioListenerUpdater> audio_listener_updater_;
 
-#ifndef WITHOUT_ALUT
-    AudioResourceContext primary_audio_resource_context_;
-    AudioResourceContext secondary_audio_resource_context_;
-#endif
+    bool imposters_instantiated_;
+    bool background_color_applied_;
 };
 
 }

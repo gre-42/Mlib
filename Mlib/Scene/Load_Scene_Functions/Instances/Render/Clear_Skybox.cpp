@@ -19,7 +19,7 @@ LoadSceneJsonUserFunction ClearSkybox::json_user_function = [](const LoadSceneJs
 };
 
 ClearSkybox::ClearSkybox(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void ClearSkybox::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -19,11 +19,11 @@ const std::string DefineWinnerConditionals::key = "define_winner_conditionals";
 
 LoadSceneJsonUserFunction DefineWinnerConditionals::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    DefineWinnerConditionals(args.renderable_scene()).execute(args);
+    DefineWinnerConditionals(args.physics_scene()).execute(args);
 };
 
-DefineWinnerConditionals::DefineWinnerConditionals(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+DefineWinnerConditionals::DefineWinnerConditionals(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args)

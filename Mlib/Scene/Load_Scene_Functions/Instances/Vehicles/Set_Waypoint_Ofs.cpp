@@ -18,8 +18,8 @@ DECLARE_ARGUMENT(vehicle);
 DECLARE_ARGUMENT(dy);
 }
 
-SetWaypointOfs::SetWaypointOfs(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetWaypointOfs::SetWaypointOfs(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetWaypointOfs::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -38,7 +38,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                SetWaypointOfs(args.renderable_scene()).execute(args);            
+                SetWaypointOfs(args.physics_scene()).execute(args);            
             });
     }
 } obj;

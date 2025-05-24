@@ -39,11 +39,11 @@ LoadSceneJsonUserFunction SetExternalsCreator::json_user_function = [](const Loa
 {
     args.arguments.validate(KnownArgs::options);
     args.macro_line_executor.block_arguments().validate_complement(LetKeys::options);
-    SetExternalsCreator(args.renderable_scene()).execute(args);
+    SetExternalsCreator(args.physics_scene()).execute(args);
 };
 
-SetExternalsCreator::SetExternalsCreator(RenderableScene& renderable_scene)
-    : LoadSceneInstanceFunction{ renderable_scene }
+SetExternalsCreator::SetExternalsCreator(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)

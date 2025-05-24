@@ -21,7 +21,6 @@
 using namespace Mlib;
 
 VisualMovable3rdLogger::VisualMovable3rdLogger(
-    RenderLogic& scene_logic,
     const DanglingRef<SceneNode>& scene_node,
     RenderLogics& render_logics,
     AdvanceTimes& advance_times,
@@ -35,7 +34,6 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
     : on_node_clear{ scene_node->on_clear, CURRENT_SOURCE_LOCATION }
-    , scene_logic_{ scene_logic }
     , scene_node_{ scene_node.ptr() }
     , status_writer_{ status_writer }
     , log_components_{ log_components }
@@ -72,7 +70,7 @@ std::optional<RenderSetup> VisualMovable3rdLogger::try_render_setup(
     const LayoutConstraintParameters& ly,
     const RenderedSceneDescriptor& frame_id) const
 {
-    return scene_logic_.try_render_setup(lx, ly, frame_id);
+    return std::nullopt;
 }
 
 void VisualMovable3rdLogger::render_with_setup(

@@ -41,7 +41,7 @@ LoadSceneJsonUserFunction CreateAvatarControllerKeyBinding::json_user_function =
 };
 
 CreateAvatarControllerKeyBinding::CreateAvatarControllerKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

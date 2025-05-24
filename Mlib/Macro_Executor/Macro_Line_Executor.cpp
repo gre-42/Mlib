@@ -237,7 +237,6 @@ void MacroLineExecutor::operator () (
             msg << j;
             THROW_OR_ABORT("Could not find exactly one out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
         }
-        auto context = jv.at<std::string>(MacroKeys::context, context_);
         auto global_args = global_json_macro_arguments_.json_macro_arguments();
         bool include = true;
         try {
@@ -269,6 +268,12 @@ void MacroLineExecutor::operator () (
             throw std::runtime_error(msg.str());
         }
         if (include) {
+            std::string context;
+            if (auto c = jv.try_at<std::string>(MacroKeys::context); c.has_value()) {
+                context = Mlib::eval<std::string>(*c, global_args, merged_args, asset_references_);
+            } else {
+                context = context_;
+            }
             merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
             merged_args.insert_json("__APPDATA__", get_appdata_directory());
             JsonMacroArguments args;

@@ -24,11 +24,11 @@ const std::string PlayerSetBehavior::key = "set_behavior";
 LoadSceneJsonUserFunction PlayerSetBehavior::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayerSetBehavior(args.renderable_scene()).execute(args);
+    PlayerSetBehavior(args.physics_scene()).execute(args);
 };
 
-PlayerSetBehavior::PlayerSetBehavior(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetBehavior::PlayerSetBehavior(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetBehavior::execute(const LoadSceneJsonUserFunctionArgs& args)

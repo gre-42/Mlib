@@ -21,11 +21,11 @@ const std::string SetRigidBodyGrindPoint::key = "set_grind_point";
 LoadSceneJsonUserFunction SetRigidBodyGrindPoint::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetRigidBodyGrindPoint(args.renderable_scene()).execute(args);
+    SetRigidBodyGrindPoint(args.physics_scene()).execute(args);
 };
 
-SetRigidBodyGrindPoint::SetRigidBodyGrindPoint(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetRigidBodyGrindPoint::SetRigidBodyGrindPoint(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetRigidBodyGrindPoint::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -23,7 +23,7 @@ LoadSceneJsonUserFunction SaveToObjFile::json_user_function = [](const LoadScene
     args.arguments.validate(KnownArgs::options);
     auto node = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::node);
     if (node.has_value()) {
-        SaveToObjFile(args.renderable_scene()).execute(args);
+        SaveToObjFile(args.physics_scene()).execute(args);
     } else {
         auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
         scene_node_resources.save_to_obj_file(
@@ -33,8 +33,8 @@ LoadSceneJsonUserFunction SaveToObjFile::json_user_function = [](const LoadScene
     }
 };
 
-SaveToObjFile::SaveToObjFile(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+SaveToObjFile::SaveToObjFile(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SaveToObjFile::execute(const LoadSceneJsonUserFunctionArgs& args)

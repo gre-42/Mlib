@@ -31,11 +31,11 @@ const std::string ThreadTop::key = "thread_top";
 LoadSceneJsonUserFunction ThreadTop::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    ThreadTop(args.renderable_scene()).execute(args);
+    ThreadTop(args.physics_scene()).execute(args);
 };
 
-ThreadTop::ThreadTop(RenderableScene& renderable_scene)
-    : LoadSceneInstanceFunction{ renderable_scene }
+ThreadTop::ThreadTop(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ThreadTop::execute(const LoadSceneJsonUserFunctionArgs& args)

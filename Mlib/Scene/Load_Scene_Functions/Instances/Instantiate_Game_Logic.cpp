@@ -3,7 +3,8 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
 
 using namespace Mlib;
 
@@ -12,24 +13,32 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(setup_new_round);
 }
 
-const std::string InstantiateGameLogic::key = "instantiate_game_logic";
-
-LoadSceneJsonUserFunction InstantiateGameLogic::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    InstantiateGameLogic(args.renderable_scene()).execute(args);
-};
-
-InstantiateGameLogic::InstantiateGameLogic(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+InstantiateGameLogic::InstantiateGameLogic(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void InstantiateGameLogic::execute(const LoadSceneJsonUserFunctionArgs &args) {
-    renderable_scene.instantiate_game_logic(
+    physics_scene.instantiate_game_logic(
         [l = args.arguments.at(KnownArgs::setup_new_round),
          mle = args.macro_line_executor]()
         {
             mle(l, nullptr, nullptr);
         }
     );
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "instantiate_game_logic",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                InstantiateGameLogic(args.physics_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

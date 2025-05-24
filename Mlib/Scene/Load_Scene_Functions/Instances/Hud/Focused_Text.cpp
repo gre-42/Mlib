@@ -31,11 +31,11 @@ const std::string FocusedText::key = "focused_text";
 LoadSceneJsonUserFunction FocusedText::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    FocusedText(args.renderable_scene()).execute(args);
+    FocusedText(args.physics_scene()).execute(args);
 };
 
-FocusedText::FocusedText(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+FocusedText::FocusedText(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)

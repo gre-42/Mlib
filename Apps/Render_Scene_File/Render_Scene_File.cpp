@@ -40,9 +40,12 @@
 #include <Mlib/Render/Ui/Static_Renderable_Hider.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
+#include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
@@ -61,6 +64,7 @@ std::unique_ptr<JThread> render_thread(
     const ParsedArgs& args,
     ButtonStates& button_states,
     LockableKeyConfigurations& key_configurations,
+    PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
     std::atomic_bool& load_scene_finished,
     Renderer& renderer,
@@ -85,19 +89,19 @@ std::unique_ptr<JThread> render_thread(
                     menu_logic.handle_events();
                     if (load_scene_finished) {
                         execute_render_allocators();
-                        auto& rs = renderable_scenes["primary_scene"];
+                        auto& rs = physics_scenes["primary_scene"];
                         rs.scene_.wait_for_cleanup();
                         if (!last_load_scene_finished && 
                             !args.has_named("--no_physics") &&
                             !args.has_named("--single_threaded"))
                         {
-                            for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                            for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                                 r.delete_node_mutex_.clear_deleter_thread();
                                 r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
                             }
                             last_load_scene_finished = true;
                         }
-                        rs.render_toplevel(
+                        renderable_scenes.render_toplevel(
                             lx,
                             ly,
                             render_config,
@@ -105,7 +109,7 @@ std::unique_ptr<JThread> render_thread(
                             render_results,
                             frame_id);
                         if (args.has_named("--single_threaded")) {
-                            for (auto& [_, r] : renderable_scenes.guarded_iterable()) {
+                            for (auto& [_, r] : physics_scenes.guarded_iterable()) {
                                 SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                                 if (!r.physics_set_fps_.paused()) {
                                     r.physics_iteration_(std::chrono::steady_clock::now());
@@ -115,7 +119,7 @@ std::unique_ptr<JThread> render_thread(
                         }
                     } else if (auto rs = renderable_scenes.try_get("loading"); rs != nullptr) {
                         execute_render_allocators();
-                        rs->scene_.wait_for_cleanup();
+                        rs->physics_scene_.scene_.wait_for_cleanup();
                         if (rs->selected_cameras_.camera_node_exists()) {
                             rs->render_toplevel(
                                 lx,
@@ -140,14 +144,14 @@ std::unique_ptr<JThread> render_thread(
 
 void print_debug_info(
     const ParsedArgs& args,
-    RenderableScenes& renderable_scenes)
+    PhysicsScenes& physics_scenes)
 {
     if (args.has_named("--print_search_time") ||
         args.has_named("--print_compression_ratio") ||
         args.has_named("--optimize_search_time") ||
         args.has_named("--plot_triangle_bvh"))
     {
-        for (const auto& [n, r] : renderable_scenes.guarded_iterable()) {
+        for (const auto& [n, r] : physics_scenes.guarded_iterable()) {
             if (args.has_named("--print_search_time")) {
                 linfo() << n << " search time";
                 r.print_physics_engine_search_time();
@@ -171,6 +175,7 @@ JThread loader_thread(
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
     Translators& translators,
+    PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
@@ -188,7 +193,7 @@ JThread loader_thread(
     ButtonPress& confirm_button_press,
     LockableKeyConfigurations& key_configurations,
     LockableKeyDescriptions& key_descriptions,
-    UiFocus& ui_focus,
+    UiFocuses& ui_focuses,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
     std::atomic_bool& load_scene_finished,
@@ -227,32 +232,33 @@ JThread loader_thread(
                     confirm_button_press,
                     key_configurations,
                     key_descriptions,
-                    ui_focus,
+                    ui_focuses,
                     layout_constraints,
                     gallery,
                     asset_references,
                     translators,
+                    physics_scenes,
                     renderable_scenes,
                     exit);
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
-                        for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                        for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                             r.delete_node_mutex_.clear_deleter_thread();
                             r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
                         }
                     } else if (args.has_named("--single_threaded")) {
-                        for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                        for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                             r.scene_.delete_node_mutex().clear_deleter_thread();
                         }
                     }
                 }
                 load_scene_finished = true;
-                renderable_scenes["primary_scene"].instantiate_audio_listener(
+                renderable_scenes["primary_scene_0"].instantiate_audio_listener(
                     render_delay,
                     velocity_dt);
             }
 
-            print_debug_info(args, renderable_scenes);
+            print_debug_info(args, physics_scenes);
 
         } catch (...) {
             add_unhandled_exception(std::current_exception());
@@ -371,6 +377,7 @@ int main(int argc, char** argv) {
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
         "    [--audio_alpha <value>]\n"
+        "    [--user_count <n>]\n"
         "    [--tty_hider]\n"
         "    [--show_only <name>]\n"
         "    [--check_gl_errors]\n"
@@ -454,6 +461,7 @@ int main(int argc, char** argv) {
          "--write_loaded_resources",
          "--audio_frequency",
          "--audio_alpha",
+         "--user_count",
          "--bloom_x",
          "--bloom_y",
          "--bloom_threshold",
@@ -551,10 +559,8 @@ int main(int argc, char** argv) {
             ->emplace()
             .insert("confirm", { std::move(confirm_key_combination) });
         ButtonPress confirm_button_press{ button_states, confirm_key_configurations, "confirm", "" };
-        UiFocus ui_focus{ get_path_in_appdata_directory({"focus.json"}) };
-        if (ui_focus.can_load()) {
-            ui_focus.load();
-        }
+        UiFocuses ui_focuses{ get_path_in_appdata_directory({"focus.json"}) };
+        ui_focuses.try_load();
         NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 
@@ -567,7 +573,7 @@ int main(int argc, char** argv) {
             .exit_on_escape = false};
         MenuUserClass menu_user_object{
             .button_states = button_states,
-            .focuses = ui_focus.focuses};
+            .focuses = ui_focuses[0].focuses};
         WindowLogic window_logic{
             render.glfw_window(),
             window_user_object};
@@ -576,7 +582,7 @@ int main(int argc, char** argv) {
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render.window_should_close() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
-            ui_focus.clear();
+            ui_focuses.clear();
 
             TtyRenderableHider tty_renderable_hider{ button_states };
             StaticRenderableHider static_renderable_hider{ args.named_value("--show_only", "") };
@@ -662,7 +668,8 @@ int main(int argc, char** argv) {
                     {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
                     {"black_lightmap_height", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
                     {"scene_skidmarks_width", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
-                    {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))}};
+                    {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))},
+                    {"user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))}};
                 external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
             }
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
@@ -689,6 +696,7 @@ int main(int argc, char** argv) {
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
+                PhysicsScenes physics_scenes;
                 RenderableScenes renderable_scenes;
 
                 std::atomic_bool load_scene_finished = false;
@@ -700,6 +708,7 @@ int main(int argc, char** argv) {
                         args,
                         button_states,
                         key_configurations,
+                        physics_scenes,
                         renderable_scenes,
                         load_scene_finished,
                         *renderer,
@@ -714,6 +723,7 @@ int main(int argc, char** argv) {
                     gallery,
                     asset_references,
                     translators,
+                    physics_scenes,
                     renderable_scenes,
                     search_path,
                     main_scene_filename,
@@ -731,7 +741,7 @@ int main(int argc, char** argv) {
                     confirm_button_press,
                     key_configurations,
                     key_descriptions,
-                    ui_focus,
+                    ui_focuses,
                     layout_constraints,
                     load_scene,
                     load_scene_finished,
@@ -755,18 +765,13 @@ int main(int argc, char** argv) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
             }
-            {
-                std::scoped_lock lock{ui_focus.focuses.mutex};
-                ui_focus.focuses.set_focuses({});
-            }
+            ui_focuses.clear_focuses();
             if (auto s = (std::string)next_scene_filename; !s.empty()) {
                 main_scene_filename = s;
             }
         }
 
-        if (ui_focus.has_changes() && ui_focus.can_save()) {
-            ui_focus.save();
-        }
+        ui_focuses.try_save();
 
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {
         //     lerr() << "write svg";

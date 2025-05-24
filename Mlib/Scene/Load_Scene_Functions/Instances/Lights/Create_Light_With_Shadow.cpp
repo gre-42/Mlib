@@ -40,7 +40,7 @@ LoadSceneJsonUserFunction CreateLightWithShadow::json_user_function = [](const L
 };
 
 CreateLightWithShadow::CreateLightWithShadow(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)

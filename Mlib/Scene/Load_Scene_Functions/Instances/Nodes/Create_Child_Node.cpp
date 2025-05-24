@@ -23,8 +23,8 @@ DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(interpolation);
 }
 
-CreateChildNode::CreateChildNode(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+CreateChildNode::CreateChildNode(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args) const
@@ -76,7 +76,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                CreateChildNode(args.renderable_scene()).execute(args);
+                CreateChildNode(args.physics_scene()).execute(args);
             });
     }
 } obj;

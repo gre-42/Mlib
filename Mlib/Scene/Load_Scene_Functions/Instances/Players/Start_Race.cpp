@@ -18,11 +18,11 @@ const std::string StartRace::key = "start_race";
 LoadSceneJsonUserFunction StartRace::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    StartRace(args.renderable_scene()).execute(args);
+    StartRace(args.physics_scene()).execute(args);
 };
 
-StartRace::StartRace(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+StartRace::StartRace(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void StartRace::execute(const LoadSceneJsonUserFunctionArgs& args)

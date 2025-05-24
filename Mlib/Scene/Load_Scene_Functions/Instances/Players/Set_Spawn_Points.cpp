@@ -21,11 +21,11 @@ const std::string SetSpawnPoints::key = "set_spawn_points";
 LoadSceneJsonUserFunction SetSpawnPoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetSpawnPoints(args.renderable_scene()).execute(args);
+    SetSpawnPoints(args.physics_scene()).execute(args);
 };
 
-SetSpawnPoints::SetSpawnPoints(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetSpawnPoints::SetSpawnPoints(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetSpawnPoints::execute(const LoadSceneJsonUserFunctionArgs& args)

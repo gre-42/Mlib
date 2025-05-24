@@ -56,11 +56,11 @@ const std::string CreateVisualNodeStatus::key = "visual_node_status";
 LoadSceneJsonUserFunction CreateVisualNodeStatus::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateVisualNodeStatus(args.renderable_scene()).execute(args);
+    CreateVisualNodeStatus(args.physics_scene()).execute(args);
 };
 
-CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateVisualNodeStatus::CreateVisualNodeStatus(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -71,7 +71,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
         lo = &lo->child_status_writer(args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::child));
     }
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
-    auto& logger = object_pool.create<VisualMovableLogger>(
+    auto logger = object_pool.create_unique<VisualMovableLogger>(
         CURRENT_SOURCE_LOCATION,
         object_pool,
         physics_engine.advance_times_,
@@ -87,7 +87,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
     if (args.arguments.contains(KnownArgs::ticks)) {
-        logger.add_logger(std::make_unique<VisualMovableCircularLogger>(
+        logger->add_logger(std::make_unique<VisualMovableCircularLogger>(
             *lo,
             log_components,
             std::make_unique<ExpressionWatcher>(args.macro_line_executor),        
@@ -109,7 +109,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<float>(KnownArgs::blank_angle) * degrees,
             args.arguments.at_vector<std::string>(KnownArgs::ticks, DisplayTick::from_string)));
     } else {
-        logger.add_logger(std::make_unique<VisualMovableTextLogger>(
+        logger->add_logger(std::make_unique<VisualMovableTextLogger>(
             *lo,
             log_components,
             std::make_unique<ExpressionWatcher>(args.macro_line_executor),        
@@ -119,4 +119,5 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance))));
     }
+    logger.release();
 }

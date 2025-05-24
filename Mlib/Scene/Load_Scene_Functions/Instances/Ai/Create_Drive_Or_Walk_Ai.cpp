@@ -36,11 +36,11 @@ const std::string CreateDriveOrWalkAi::key = "create_drive_or_walk_ai";
 LoadSceneJsonUserFunction CreateDriveOrWalkAi::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateDriveOrWalkAi(args.renderable_scene()).execute(args);
+    CreateDriveOrWalkAi(args.physics_scene()).execute(args);
 };
 
-CreateDriveOrWalkAi::CreateDriveOrWalkAi(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateDriveOrWalkAi::CreateDriveOrWalkAi(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)

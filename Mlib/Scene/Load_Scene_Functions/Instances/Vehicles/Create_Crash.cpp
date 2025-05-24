@@ -22,11 +22,11 @@ const std::string CreateCrash::key = "crash";
 LoadSceneJsonUserFunction CreateCrash::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateCrash(args.renderable_scene()).execute(args);
+    CreateCrash(args.physics_scene()).execute(args);
 };
 
-CreateCrash::CreateCrash(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateCrash::CreateCrash(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateCrash::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -23,11 +23,11 @@ const std::string SetActorTask::key = "set_actor_task";
 LoadSceneJsonUserFunction SetActorTask::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetActorTask(args.renderable_scene()).execute(args);
+    SetActorTask(args.physics_scene()).execute(args);
 };
 
-SetActorTask::SetActorTask(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetActorTask::SetActorTask(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetActorTask::execute(const LoadSceneJsonUserFunctionArgs& args)

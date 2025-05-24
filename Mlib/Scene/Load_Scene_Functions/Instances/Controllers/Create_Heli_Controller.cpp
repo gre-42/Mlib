@@ -39,11 +39,11 @@ static float from_degrees(float v) {
 LoadSceneJsonUserFunction CreateHeliController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateHeliController(args.renderable_scene()).execute(args);
+    CreateHeliController(args.physics_scene()).execute(args);
 };
 
-CreateHeliController::CreateHeliController(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateHeliController::CreateHeliController(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateHeliController::execute(const LoadSceneJsonUserFunctionArgs& args)

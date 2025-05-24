@@ -40,7 +40,7 @@ LoadSceneJsonUserFunction CreateRelKeyBinding::json_user_function = [](const Loa
 };
 
 CreateRelKeyBinding::CreateRelKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

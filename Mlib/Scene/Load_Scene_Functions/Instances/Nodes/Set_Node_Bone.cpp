@@ -20,11 +20,11 @@ const std::string SetNodeBone::key = "set_node_bone";
 LoadSceneJsonUserFunction SetNodeBone::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetNodeBone(args.renderable_scene()).execute(args);
+    SetNodeBone(args.physics_scene()).execute(args);
 };
 
-SetNodeBone::SetNodeBone(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetNodeBone::SetNodeBone(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetNodeBone::execute(const LoadSceneJsonUserFunctionArgs& args)

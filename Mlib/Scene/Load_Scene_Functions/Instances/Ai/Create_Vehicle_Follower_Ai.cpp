@@ -22,11 +22,11 @@ const std::string CreateVehicleFollowerAi::key = "create_vehicle_follower_ai";
 LoadSceneJsonUserFunction CreateVehicleFollowerAi::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateVehicleFollowerAi(args.renderable_scene()).execute(args);
+    CreateVehicleFollowerAi(args.physics_scene()).execute(args);
 };
 
-CreateVehicleFollowerAi::CreateVehicleFollowerAi(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateVehicleFollowerAi::CreateVehicleFollowerAi(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateVehicleFollowerAi::execute(const LoadSceneJsonUserFunctionArgs& args)

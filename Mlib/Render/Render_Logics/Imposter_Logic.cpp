@@ -38,6 +38,7 @@
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IRenderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -45,7 +46,7 @@
 using namespace Mlib;
 
 OriginalNodeHider::OriginalNodeHider(ImposterLogic& imposter_logic)
-    : imposter_logic_{imposter_logic}
+    : imposter_logic_{ imposter_logic }
 {}
 
 bool OriginalNodeHider::node_shall_be_hidden(
@@ -75,10 +76,11 @@ bool ImposterNodeHider::node_shall_be_hidden(
 }
 
 ImposterLogic::ImposterLogic(
+    IRenderableScene* renderable_scene,
     RenderingResources& rendering_resources,
     RenderLogic& child_logic,
     Scene& scene,
-    DanglingRef<SceneNode> orig_node,
+    const DanglingRef<SceneNode>& orig_node,
     SelectedCameras& cameras,
     const std::string& debug_prefix,
     uint32_t max_texture_size,
@@ -88,6 +90,7 @@ ImposterLogic::ImposterLogic(
     uint32_t max_texture_size_deviation,
     float max_dpi_deviation)
     : on_node_clear{ orig_node->on_clear, CURRENT_SOURCE_LOCATION }
+    , renderable_scene_{ renderable_scene, CURRENT_SOURCE_LOCATION }
     , rendering_resources_{ rendering_resources }
     , child_logic_{ child_logic }
     , scene_{ scene }
@@ -117,7 +120,9 @@ ImposterLogic::ImposterLogic(
         THROW_OR_ABORT("Cannot compute AABB of \"" + debug_prefix_ + '"');
     }
     obj_relative_aabb_ = aabb.data();
-    orig_node->insert_node_hider({ orig_hider, CURRENT_SOURCE_LOCATION });
+    orig_node_->insert_node_hider(
+        { renderable_scene, CURRENT_SOURCE_LOCATION },
+        { orig_hider, CURRENT_SOURCE_LOCATION });
 }
 
 ImposterLogic::~ImposterLogic() {
@@ -128,7 +133,9 @@ ImposterLogic::~ImposterLogic() {
             DeletionFailureMode::WARN);
     }
     delete_imposter_if_exists();
-    orig_node_->remove_node_hider({ orig_hider, CURRENT_SOURCE_LOCATION });
+    orig_node_->remove_node_hider(
+        renderable_scene_,
+        { orig_hider, CURRENT_SOURCE_LOCATION });
     on_destroy.clear();
 }
 
@@ -167,15 +174,17 @@ void ImposterLogic::add_imposter(
         .instance_name = VariableAndHash<std::string>{ "imposter" },
         .scene_node = new_imposter_node.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    new_imposter_node->insert_node_hider({ imposter_hider_, CURRENT_SOURCE_LOCATION });
-    scene_.add_root_imposter_node(new_imposter_node.ref(DP_LOC));
+    new_imposter_node->insert_node_hider(
+        renderable_scene_,
+        { imposter_hider_, CURRENT_SOURCE_LOCATION });
+    scene_.add_root_imposter_node(renderable_scene_, new_imposter_node.ref(DP_LOC));
     imposter_node_ = std::move(new_imposter_node);
 }
 
 void ImposterLogic::delete_imposter_if_exists() {
     if (imposter_node_ != nullptr) {
         RenderSceneThreadGuard rstg{ scene_ };
-        scene_.delete_root_imposter_node(imposter_node_.ref(DP_LOC));
+        scene_.delete_root_imposter_node(renderable_scene_, imposter_node_.ref(DP_LOC));
         imposter_node_ = nullptr;
         fbs_ = nullptr;
     }

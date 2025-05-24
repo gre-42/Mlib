@@ -20,7 +20,7 @@ LoadSceneJsonUserFunction SetSkybox::json_user_function = [](const LoadSceneJson
 };
 
 SetSkybox::SetSkybox(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void SetSkybox::execute(const LoadSceneJsonUserFunctionArgs& args)

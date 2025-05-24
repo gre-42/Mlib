@@ -31,11 +31,11 @@ LoadSceneJsonUserFunction PlayerSetVehicleControlParameters::json_user_function 
     if (args.arguments.contains(KnownArgs::tire_angle_pid)) {
         args.arguments.child(KnownArgs::tire_angle_pid).validate(TAP::options);
     }
-    PlayerSetVehicleControlParameters(args.renderable_scene()).execute(args);
+    PlayerSetVehicleControlParameters(args.physics_scene()).execute(args);
 };
 
-PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionArgs& args)

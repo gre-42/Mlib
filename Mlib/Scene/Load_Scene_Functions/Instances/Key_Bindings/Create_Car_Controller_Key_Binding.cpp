@@ -36,7 +36,7 @@ LoadSceneJsonUserFunction CreateCarControllerKeyBinding::json_user_function = []
 };
 
 CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 inline float stov(float v) {

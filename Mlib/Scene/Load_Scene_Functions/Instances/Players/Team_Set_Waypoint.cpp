@@ -20,11 +20,11 @@ const std::string TeamSetWaypoint::key = "team_set_waypoint";
 LoadSceneJsonUserFunction TeamSetWaypoint::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    TeamSetWaypoint(args.renderable_scene()).execute(args);
+    TeamSetWaypoint(args.physics_scene()).execute(args);
 };
 
-TeamSetWaypoint::TeamSetWaypoint(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+TeamSetWaypoint::TeamSetWaypoint(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void TeamSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)

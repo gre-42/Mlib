@@ -1,15 +1,15 @@
 #pragma once
 #include <Mlib/Scene/Json_User_Function.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 
 namespace Mlib {
 
-class SetNodeRotation: public LoadSceneInstanceFunction {
+class SetNodeRotation: public LoadPhysicsSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit SetNodeRotation(RenderableScene& renderable_scene);
+    explicit SetNodeRotation(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

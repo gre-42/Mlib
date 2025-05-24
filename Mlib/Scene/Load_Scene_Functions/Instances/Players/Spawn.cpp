@@ -27,8 +27,8 @@ DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
 }
 
-Spawn::Spawn(RenderableScene& renderable_scene)
-    : LoadSceneInstanceFunction{ renderable_scene }
+Spawn::Spawn(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -54,7 +54,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                Spawn(args.renderable_scene()).execute(args);
+                Spawn(args.physics_scene()).execute(args);
             });
     }
 } obj;

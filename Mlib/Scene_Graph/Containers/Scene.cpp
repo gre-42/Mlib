@@ -191,14 +191,16 @@ void Scene::add_root_node(
         rendering_strategies_to_string(rendering_strategy) + '"');
 }
 
-void Scene::add_root_imposter_node(const DanglingRef<SceneNode>& scene_node)
+void Scene::add_root_imposter_node(
+    const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+    const DanglingRef<SceneNode>& scene_node)
 {
     if (scene_node->domain() != SceneNodeDomain::RENDER) {
         THROW_OR_ABORT("Imposter node domain is not \"render\"");
     }
     std::scoped_lock lock{ mutex_ };
     scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
-    if (!root_imposter_nodes_.insert(scene_node.ptr()).second)
+    if (!root_imposter_nodes_[renderable_scene].insert(scene_node.ptr()).second)
     {
         THROW_OR_ABORT("Root imposter node already exists");
     }
@@ -237,11 +239,21 @@ void Scene::try_delete_root_node(const VariableAndHash<std::string>& name) {
     }
 }
 
-void Scene::delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node) {
+void Scene::delete_root_imposter_node(
+    const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+    const DanglingRef<SceneNode>& scene_node)
+{
     std::scoped_lock lock{ mutex_ };
     scene_node->shutdown();
-    if (root_imposter_nodes_.erase(scene_node.ptr()) != 1) {
-        verbose_abort("Could not delete root imposter node");
+    auto avail = root_imposter_nodes_.find(renderable_scene);
+    if (avail == root_imposter_nodes_.end()) {
+        verbose_abort("Could not delete root imposter node (0)");
+    }
+    if (avail->second.erase(scene_node.ptr()) != 1) {
+        verbose_abort("Could not delete root imposter node (1)");
+    }
+    if (avail->second.empty()) {
+        root_imposter_nodes_.erase(avail);
     }
 }
 
@@ -567,8 +579,11 @@ void Scene::render(
                 NodeDanglingPtrs cached_imposter_nodes{ CHUNK_SIZE };
                 {
                     std::shared_lock lock{ mutex_ };
-                    for (const auto& node : root_imposter_nodes_) {
-                        cached_imposter_nodes.emplace_back(node);
+                    auto avail = root_imposter_nodes_.find(external_render_pass.renderable_scene);
+                    if (avail != root_imposter_nodes_.end()) {
+                        for (const auto& node : avail->second) {
+                            cached_imposter_nodes.emplace_back(node);
+                        }
                     }
                 }
                 for (const auto& node : cached_imposter_nodes) {

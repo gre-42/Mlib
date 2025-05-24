@@ -40,7 +40,7 @@ LoadSceneJsonUserFunction CreateVisualGlobalLog::json_user_function = [](const L
 };
 
 CreateVisualGlobalLog::CreateVisualGlobalLog(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateVisualGlobalLog::execute(const LoadSceneJsonUserFunctionArgs& args)

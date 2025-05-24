@@ -27,11 +27,11 @@ const std::string CreateTankController::key = "create_tank_controller";
 LoadSceneJsonUserFunction CreateTankController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateTankController(args.renderable_scene()).execute(args);
+    CreateTankController(args.physics_scene()).execute(args);
 };
 
-CreateTankController::CreateTankController(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateTankController::CreateTankController(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateTankController::execute(const LoadSceneJsonUserFunctionArgs& args)

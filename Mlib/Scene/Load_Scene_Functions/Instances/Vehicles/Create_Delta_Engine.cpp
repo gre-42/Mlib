@@ -22,11 +22,11 @@ const std::string CreateDeltaEngine::key = "create_delta_engine";
 LoadSceneJsonUserFunction CreateDeltaEngine::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateDeltaEngine(args.renderable_scene()).execute(args);
+    CreateDeltaEngine(args.physics_scene()).execute(args);
 };
 
-CreateDeltaEngine::CreateDeltaEngine(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateDeltaEngine::CreateDeltaEngine(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateDeltaEngine::execute(const LoadSceneJsonUserFunctionArgs& args)

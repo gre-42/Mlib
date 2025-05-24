@@ -30,11 +30,11 @@ const std::string CreateTrailerNode::key = "create_trailer_node";
 LoadSceneJsonUserFunction CreateTrailerNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateTrailerNode(args.renderable_scene()).execute(args);
+    CreateTrailerNode(args.physics_scene()).execute(args);
 };
 
-CreateTrailerNode::CreateTrailerNode(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateTrailerNode::CreateTrailerNode(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)

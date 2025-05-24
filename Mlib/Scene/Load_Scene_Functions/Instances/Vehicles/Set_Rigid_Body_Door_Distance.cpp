@@ -22,11 +22,11 @@ const std::string SetRigidBodyDoorDistance::key = "set_rigid_body_door_distance"
 LoadSceneJsonUserFunction SetRigidBodyDoorDistance::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetRigidBodyDoorDistance(args.renderable_scene()).execute(args);
+    SetRigidBodyDoorDistance(args.physics_scene()).execute(args);
 };
 
-SetRigidBodyDoorDistance::SetRigidBodyDoorDistance(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetRigidBodyDoorDistance::SetRigidBodyDoorDistance(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetRigidBodyDoorDistance::execute(const LoadSceneJsonUserFunctionArgs& args)

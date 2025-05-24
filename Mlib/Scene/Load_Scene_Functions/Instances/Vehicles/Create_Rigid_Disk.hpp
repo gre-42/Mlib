@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
@@ -38,9 +38,9 @@ struct CreateRigidDiskArgs {
     CollidableMode collidable_mode;
 };
 
-class CreateRigidDisk: public LoadSceneInstanceFunction {
+class CreateRigidDisk: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit CreateRigidDisk(RenderableScene& renderable_scene);
+    explicit CreateRigidDisk(PhysicsScene& physics_scene);
     RigidBodyVehicle& operator () (const CreateRigidDiskArgs& args) const;
     void execute(const LoadSceneJsonUserFunctionArgs& args) const;
 };

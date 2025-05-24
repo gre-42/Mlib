@@ -20,8 +20,8 @@ DECLARE_ARGUMENT(rigid_body);
 DECLARE_ARGUMENT(asset_id);
 }
 
-SetTrailerHitchPositions::SetTrailerHitchPositions(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetTrailerHitchPositions::SetTrailerHitchPositions(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetTrailerHitchPositions::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -49,7 +49,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                SetTrailerHitchPositions(args.renderable_scene()).execute(args);            
+                SetTrailerHitchPositions(args.physics_scene()).execute(args);            
             });
     }
 } obj;

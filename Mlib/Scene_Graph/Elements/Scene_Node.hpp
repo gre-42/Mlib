@@ -22,7 +22,7 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <set>
+#include <unordered_set>
 
 namespace Mlib {
 
@@ -39,6 +39,7 @@ struct AnimationState;
 class AnimationStateUpdater;
 class SceneNodeResources;
 class Renderable;
+class IRenderableScene;
 class INodeHider;
 class IAbsoluteMovable;
 class Camera;
@@ -174,9 +175,15 @@ public:
     IAbsoluteObserver& get_sticky_absolute_observer() const;
     void set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_observer);
 
-    bool contains_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider) const;
-    void insert_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider);
-    void remove_node_hider(const DanglingBaseClassRef<INodeHider>& node_hider);
+    bool contains_node_hider(
+        const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+        const DanglingBaseClassRef<INodeHider>& node_hider) const;
+    void insert_node_hider(
+        const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+        const DanglingBaseClassRef<INodeHider>& node_hider);
+    void remove_node_hider(
+        const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
+        const DanglingBaseClassRef<INodeHider>& node_hider);
     void add_renderable(
         const VariableAndHash<std::string>& name,
         const std::shared_ptr<const Renderable>& renderable);
@@ -363,7 +370,7 @@ private:
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_;
     DanglingBaseClassPtr<IRelativeMovable> relative_movable_;
     std::unique_ptr<INodeModifier> node_modifier_;
-    std::set<DanglingBaseClassPtr<INodeHider>> node_hiders_;
+    std::unordered_map<DanglingBaseClassPtr<IRenderableScene>, std::unordered_set<DanglingBaseClassPtr<INodeHider>>> node_hiders_;
     IAbsoluteObserver* absolute_observer_;
     IAbsoluteObserver* sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;

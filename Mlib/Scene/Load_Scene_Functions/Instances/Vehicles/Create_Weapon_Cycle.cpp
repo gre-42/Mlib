@@ -19,11 +19,11 @@ const std::string CreateWeaponCycle::key = "create_weapon_cycle";
 LoadSceneJsonUserFunction CreateWeaponCycle::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateWeaponCycle(args.renderable_scene()).execute(args);
+    CreateWeaponCycle(args.physics_scene()).execute(args);
 };
 
-CreateWeaponCycle::CreateWeaponCycle(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateWeaponCycle::CreateWeaponCycle(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateWeaponCycle::execute(const LoadSceneJsonUserFunctionArgs& args)

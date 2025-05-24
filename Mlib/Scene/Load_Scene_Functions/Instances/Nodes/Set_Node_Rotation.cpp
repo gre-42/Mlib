@@ -20,11 +20,11 @@ const std::string SetNodeRotation::key = "set_node_rotation";
 LoadSceneJsonUserFunction SetNodeRotation::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetNodeRotation(args.renderable_scene()).execute(args);
+    SetNodeRotation(args.physics_scene()).execute(args);
 };
 
-SetNodeRotation::SetNodeRotation(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetNodeRotation::SetNodeRotation(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetNodeRotation::execute(const LoadSceneJsonUserFunctionArgs& args)

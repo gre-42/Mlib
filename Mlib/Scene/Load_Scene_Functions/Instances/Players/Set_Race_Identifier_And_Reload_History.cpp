@@ -24,11 +24,11 @@ const std::string SetRaceIdentifierAndReloadHistory::key = "set_race_identifier_
 LoadSceneJsonUserFunction SetRaceIdentifierAndReloadHistory::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetRaceIdentifierAndReloadHistory(args.renderable_scene()).execute(args);
+    SetRaceIdentifierAndReloadHistory(args.physics_scene()).execute(args);
 };
 
-SetRaceIdentifierAndReloadHistory::SetRaceIdentifierAndReloadHistory(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetRaceIdentifierAndReloadHistory::SetRaceIdentifierAndReloadHistory(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetRaceIdentifierAndReloadHistory::execute(const LoadSceneJsonUserFunctionArgs& args)

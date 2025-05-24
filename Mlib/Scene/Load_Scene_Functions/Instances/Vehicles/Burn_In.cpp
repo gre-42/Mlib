@@ -20,11 +20,11 @@ const std::string BurnIn::key = "burn_in";
 LoadSceneJsonUserFunction BurnIn::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    BurnIn(args.renderable_scene()).execute(args);
+    BurnIn(args.physics_scene()).execute(args);
 };
 
-BurnIn::BurnIn(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+BurnIn::BurnIn(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void BurnIn::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -21,11 +21,11 @@ const std::string SetRigidBodyTarget::key = "set_rigid_body_target";
 LoadSceneJsonUserFunction SetRigidBodyTarget::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetRigidBodyTarget(args.renderable_scene()).execute(args);
+    SetRigidBodyTarget(args.physics_scene()).execute(args);
 };
 
-SetRigidBodyTarget::SetRigidBodyTarget(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetRigidBodyTarget::SetRigidBodyTarget(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetRigidBodyTarget::execute(const LoadSceneJsonUserFunctionArgs& args)

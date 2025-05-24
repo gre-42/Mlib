@@ -217,6 +217,12 @@ void PhysicsEngine::add_external_force_provider(IExternalForceProvider& efp)
     external_force_providers_.push_back(&efp);
 }
 
+void PhysicsEngine::remove_external_force_provider(IExternalForceProvider& efp) {
+    if (external_force_providers_.remove_if([&efp](const auto* e){ return e == &efp; }) != 1) {
+        verbose_abort("Could not remove exactly one external force provider");
+    }
+}
+
 void PhysicsEngine::add_controllable(IControllable& co)
 {
     if (!controllables_.insert(&co).second) {

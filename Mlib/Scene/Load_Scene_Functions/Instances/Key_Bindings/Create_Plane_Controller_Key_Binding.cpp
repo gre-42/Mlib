@@ -35,7 +35,7 @@ LoadSceneJsonUserFunction CreatePlaneControllerKeyBinding::json_user_function = 
 };
 
 CreatePlaneControllerKeyBinding::CreatePlaneControllerKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

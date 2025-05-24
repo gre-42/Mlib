@@ -26,7 +26,7 @@ LoadSceneJsonUserFunction CreateAvatarControllerIdleBinding::json_user_function 
 };
 
 CreateAvatarControllerIdleBinding::CreateAvatarControllerIdleBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateAvatarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

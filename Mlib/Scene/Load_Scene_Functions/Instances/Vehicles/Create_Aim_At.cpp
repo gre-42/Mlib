@@ -35,11 +35,11 @@ const std::string CreateAimAt::key = "aim_at";
 LoadSceneJsonUserFunction CreateAimAt::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateAimAt(args.renderable_scene()).execute(args);
+    CreateAimAt(args.physics_scene()).execute(args);
 };
 
-CreateAimAt::CreateAimAt(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateAimAt::CreateAimAt(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)

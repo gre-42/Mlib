@@ -1,15 +1,15 @@
 #pragma once
 #include <Mlib/Scene/Json_User_Function.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 
 namespace Mlib {
 
-class SetInventoryCapacity: public LoadSceneInstanceFunction {
+class SetInventoryCapacity: public LoadPhysicsSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit SetInventoryCapacity(RenderableScene& renderable_scene);
+    explicit SetInventoryCapacity(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

@@ -36,7 +36,7 @@ LoadSceneJsonUserFunction CreateRelKeyBindingTripod::json_user_function = [](con
 };
 
 CreateRelKeyBindingTripod::CreateRelKeyBindingTripod(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& args)

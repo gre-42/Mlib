@@ -55,7 +55,7 @@ LoadSceneJsonUserFunction CreateAbsKeyBinding::json_user_function = [](const Loa
 };
 
 CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

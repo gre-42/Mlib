@@ -21,11 +21,11 @@ const std::string SetDirtmap::key = "set_dirtmap";
 LoadSceneJsonUserFunction SetDirtmap::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetDirtmap(args.renderable_scene()).execute(args);
+    SetDirtmap(args.physics_scene()).execute(args);
 };
 
-SetDirtmap::SetDirtmap(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetDirtmap::SetDirtmap(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 static const auto dirtmap_name = VariableAndHash<std::string>("dirtmap");

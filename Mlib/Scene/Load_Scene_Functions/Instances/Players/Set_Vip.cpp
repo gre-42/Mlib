@@ -17,11 +17,11 @@ const std::string SetVip::key = "set_vip";
 LoadSceneJsonUserFunction SetVip::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetVip(args.renderable_scene()).execute(args);
+    SetVip(args.physics_scene()).execute(args);
 };
 
-SetVip::SetVip(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetVip::SetVip(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetVip::execute(const LoadSceneJsonUserFunctionArgs& args)

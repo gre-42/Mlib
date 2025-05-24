@@ -23,11 +23,11 @@ const std::string SetSlidingNormalModifier::key = "set_sliding_normal_modifier";
 LoadSceneJsonUserFunction SetSlidingNormalModifier::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetSlidingNormalModifier(args.renderable_scene()).execute(args);
+    SetSlidingNormalModifier(args.physics_scene()).execute(args);
 };
 
-SetSlidingNormalModifier::SetSlidingNormalModifier(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetSlidingNormalModifier::SetSlidingNormalModifier(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetSlidingNormalModifier::execute(const LoadSceneJsonUserFunctionArgs& args)

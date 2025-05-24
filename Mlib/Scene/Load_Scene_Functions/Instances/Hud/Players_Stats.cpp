@@ -39,11 +39,11 @@ const std::string PlayersStats::key = "players_stats";
 LoadSceneJsonUserFunction PlayersStats::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayersStats(args.renderable_scene()).execute(args);
+    PlayersStats(args.physics_scene()).execute(args);
 };
 
-PlayersStats::PlayersStats(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayersStats::PlayersStats(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)

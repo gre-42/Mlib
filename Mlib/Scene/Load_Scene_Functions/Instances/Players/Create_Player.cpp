@@ -30,11 +30,11 @@ const std::string CreatePlayer::key = "player_create";
 LoadSceneJsonUserFunction CreatePlayer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreatePlayer(args.renderable_scene()).execute(args);
+    CreatePlayer(args.physics_scene()).execute(args);
 };
 
-CreatePlayer::CreatePlayer(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreatePlayer::CreatePlayer(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -58,7 +58,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::behavior),
         driving_direction_from_string(args.arguments.at<std::string>(KnownArgs::driving_direction)),
         delete_node_mutex,
-        args.ui_focus.focuses);
+        ui_focus.focuses);
     players.add_player({ *player, CURRENT_SOURCE_LOCATION });
     auto& p = global_object_pool.add(std::move(player), CURRENT_SOURCE_LOCATION);
     physics_engine.advance_times_.add_advance_time({ p, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);

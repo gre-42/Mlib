@@ -32,7 +32,7 @@ LoadSceneJsonUserFunction CreateWeaponCycleKeyBinding::json_user_function = [](c
 };
 
 CreateWeaponCycleKeyBinding::CreateWeaponCycleKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

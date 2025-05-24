@@ -20,11 +20,11 @@ const std::string PlayerSetAimingGun::key = "player_set_aiming_gun";
 LoadSceneJsonUserFunction PlayerSetAimingGun::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayerSetAimingGun(args.renderable_scene()).execute(args);
+    PlayerSetAimingGun(args.physics_scene()).execute(args);
 };
 
-PlayerSetAimingGun::PlayerSetAimingGun(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetAimingGun::PlayerSetAimingGun(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetAimingGun::execute(const LoadSceneJsonUserFunctionArgs& args)

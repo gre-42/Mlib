@@ -31,11 +31,11 @@ const std::string SetAnimationState::key = "set_animation_state";
 LoadSceneJsonUserFunction SetAnimationState::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetAnimationState(args.renderable_scene()).execute(args);
+    SetAnimationState(args.physics_scene()).execute(args);
 };
 
-SetAnimationState::SetAnimationState(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetAnimationState::SetAnimationState(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)

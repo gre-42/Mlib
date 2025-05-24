@@ -28,11 +28,11 @@ const std::string SpawnerSetNodes::key = "spawner_set_nodes";
 LoadSceneJsonUserFunction SpawnerSetNodes::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SpawnerSetNodes(args.renderable_scene()).execute(args);
+    SpawnerSetNodes(args.physics_scene()).execute(args);
 };
 
-SpawnerSetNodes::SpawnerSetNodes(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+SpawnerSetNodes::SpawnerSetNodes(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)

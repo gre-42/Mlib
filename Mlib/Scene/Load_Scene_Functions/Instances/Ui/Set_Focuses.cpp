@@ -1,3 +1,4 @@
+#include "Set_Focuses.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -13,6 +14,16 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(focuses);
 }
 
+SetFocuses::SetFocuses(PhysicsScene& renderable_scene)
+    : LoadPhysicsSceneInstanceFunction{renderable_scene}
+{}
+
+void SetFocuses::execute(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgs::options);
+    std::scoped_lock lock{ui_focus.focuses.mutex};
+    ui_focus.focuses.set_focuses(args.arguments.at_vector<std::string>(KnownArgs::focuses, single_focus_from_string));
+}
+
 namespace {
 
 struct RegisterJsonUserFunction {
@@ -21,9 +32,7 @@ struct RegisterJsonUserFunction {
             "set_focuses",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
-                std::scoped_lock lock{args.ui_focus.focuses.mutex};
-                args.ui_focus.focuses.set_focuses(args.arguments.at_vector<std::string>(KnownArgs::focuses, single_focus_from_string));
+                SetFocuses(args.physics_scene()).execute(args);
             });
     }
 } obj;

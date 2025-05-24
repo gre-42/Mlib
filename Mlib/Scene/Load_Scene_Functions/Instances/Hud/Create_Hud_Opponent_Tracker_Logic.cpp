@@ -35,7 +35,7 @@ LoadSceneJsonUserFunction CreateHudOpponentTracker::json_user_function = [](cons
 };
 
 CreateHudOpponentTracker::CreateHudOpponentTracker(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args)

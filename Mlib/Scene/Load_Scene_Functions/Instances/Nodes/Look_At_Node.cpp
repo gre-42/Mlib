@@ -20,11 +20,11 @@ const std::string LookAtNode::key = "look_at_node";
 LoadSceneJsonUserFunction LookAtNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    LookAtNode(args.renderable_scene()).execute(args);
+    LookAtNode(args.physics_scene()).execute(args);
 };
 
-LookAtNode::LookAtNode(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+LookAtNode::LookAtNode(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void LookAtNode::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -18,7 +18,7 @@ struct RegisterJsonUserFunction {
                     if (v.type() != nlohmann::detail::value_t::string) {
                         THROW_OR_ABORT("Value of \"" + k + "\" is not of type string");
                     }
-                    args.ui_focus.set_persisted_selection_id(k, v.get<std::string>(), PersistedValueType::DEFAULT);
+                    args.ui_focuses[0].set_persisted_selection_id(k, v.get<std::string>(), PersistedValueType::DEFAULT);
                 }
             });
     }

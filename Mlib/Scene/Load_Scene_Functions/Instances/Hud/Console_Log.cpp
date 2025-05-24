@@ -25,11 +25,11 @@ const std::string ConsoleLog::key = "console_log";
 LoadSceneJsonUserFunction ConsoleLog::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    ConsoleLog(args.renderable_scene()).execute(args);
+    ConsoleLog(args.physics_scene()).execute(args);
 };
 
-ConsoleLog::ConsoleLog(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+ConsoleLog::ConsoleLog(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ConsoleLog::execute(const LoadSceneJsonUserFunctionArgs& args)

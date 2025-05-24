@@ -27,11 +27,11 @@ const std::string FollowNode::key = "follow_node";
 LoadSceneJsonUserFunction FollowNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    FollowNode(args.renderable_scene()).execute(args);
+    FollowNode(args.physics_scene()).execute(args);
 };
 
-FollowNode::FollowNode(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+FollowNode::FollowNode(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)

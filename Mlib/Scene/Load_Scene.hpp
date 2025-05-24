@@ -10,6 +10,7 @@ namespace Mlib {
 class RenderLogicGallery;
 class AssetReferences;
 class Translators;
+class PhysicsScenes;
 class RenderableScenes;
 class NotifyingJsonMacroArguments;
 struct SceneConfig;
@@ -17,7 +18,7 @@ struct RenderConfig;
 class ButtonStates;
 class CursorStates;
 class ButtonPress;
-class UiFocus;
+class UiFocuses;
 class RenderLogics;
 class ThreadSafeString;
 class SurfaceContactDb;
@@ -48,11 +49,12 @@ public:
         ButtonPress& confirm_button_press,
         LockableKeyConfigurations& key_configurations,
         LockableKeyDescriptions& key_descriptions,
-        UiFocus& ui_focus,
+        UiFocuses& ui_focuses,
         LayoutConstraints& layout_constraints,
         RenderLogicGallery& gallery,
         AssetReferences& asset_references,
         Translators& translators,
+        PhysicsScenes& physics_scenes,
         RenderableScenes& renderable_scenes,
         const std::function<void()>& exit);
 private:

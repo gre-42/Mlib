@@ -24,11 +24,11 @@ const std::string CreatePerspectiveCamera::key = "perspective_camera";
 
 LoadSceneJsonUserFunction CreatePerspectiveCamera::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    CreatePerspectiveCamera(args.renderable_scene()).execute(args);
+    CreatePerspectiveCamera(args.physics_scene()).execute(args);
 };
 
-CreatePerspectiveCamera::CreatePerspectiveCamera(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreatePerspectiveCamera::CreatePerspectiveCamera(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreatePerspectiveCamera::execute(const LoadSceneJsonUserFunctionArgs& args)

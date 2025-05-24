@@ -40,7 +40,7 @@ DECLARE_ARGUMENT(assets);
 }
 
 CreateSceneSelectorLogic::CreateSceneSelectorLogic(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -57,7 +57,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
     auto focus_filter = FocusFilter{
         .focus_mask = Focus::NEW_GAME_MENU,
         .submenu_ids = { id } };
-    args.ui_focus.insert_submenu(
+    ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title=args.arguments.at<std::string>(KnownArgs::title),
@@ -82,7 +82,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.next_scene_filename,
         args.button_states,
-        args.ui_focus,
+        ui_focus,
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]()
         {
             if (on_change.has_value()) {

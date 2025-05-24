@@ -141,6 +141,24 @@ private:
     std::map<std::string, std::string> requires_reload_;
 };
 
+class UiFocuses {
+public:
+    explicit UiFocuses(std::string filename_prefix);
+    ~UiFocuses();
+    UiFocuses(const UiFocuses&) = delete;
+    UiFocuses& operator = (const UiFocuses&) = delete;
+    UiFocus& operator [] (uint32_t user_id);
+    const UiFocus& operator [] (uint32_t user_id) const;
+    void trim(uint32_t user_count);
+    void try_load();
+    void try_save();
+    void clear();
+    void clear_focuses();
+private:
+    std::map<uint32_t, UiFocus> focuses_;
+    std::string filename_prefix_;
+};
+
 Focus single_focus_from_string(const std::string& str);
 Focus focus_from_string(const std::string& str);
 std::string focus_to_string(Focus focus);

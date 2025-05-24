@@ -20,11 +20,11 @@ const std::string FitCanvasToRenderables::key = "fit_canvas_to_renderables";
 
 LoadSceneJsonUserFunction FitCanvasToRenderables::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    FitCanvasToRenderables(args.renderable_scene()).execute(args);
+    FitCanvasToRenderables(args.physics_scene()).execute(args);
 };
 
-FitCanvasToRenderables::FitCanvasToRenderables(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+FitCanvasToRenderables::FitCanvasToRenderables(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void FitCanvasToRenderables::execute(const LoadSceneJsonUserFunctionArgs& args)

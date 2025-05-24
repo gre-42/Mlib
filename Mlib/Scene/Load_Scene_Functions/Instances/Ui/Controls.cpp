@@ -36,7 +36,7 @@ LoadSceneJsonUserFunction Controls::json_user_function = [](const LoadSceneJsonU
 };
 
 Controls::Controls(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -45,7 +45,7 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto focus_filter = FocusFilter{
         .focus_mask = Focus::SETTINGS_MENU,
         .submenu_ids = { id } };
-    args.ui_focus.insert_submenu(
+    ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),

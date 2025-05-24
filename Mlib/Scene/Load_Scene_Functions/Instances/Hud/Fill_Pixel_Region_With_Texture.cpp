@@ -12,6 +12,7 @@
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -36,11 +37,11 @@ const std::string FillPixelRegionWithTexture::key = "fill_pixel_region_with_text
 LoadSceneJsonUserFunction FillPixelRegionWithTexture::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    FillPixelRegionWithTexture(args.renderable_scene()).execute(args);
+    FillPixelRegionWithTexture(args.physics_scene()).execute(args);
 };
 
-FillPixelRegionWithTexture::FillPixelRegionWithTexture(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+FillPixelRegionWithTexture::FillPixelRegionWithTexture(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -50,7 +51,7 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto& scene_window_logic = object_pool.create<FillPixelRegionWithTextureLogic>(
         CURRENT_SOURCE_LOCATION,
         std::make_shared<FillWithTextureLogic>(
-            rs.rendering_resources_.get_texture_lazy(
+            rs.physics_scene_.rendering_resources_.get_texture_lazy(
                 ColormapWithModifiers{
                     .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
                     .color_mode = ColorMode::RGBA,

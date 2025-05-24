@@ -29,11 +29,11 @@ static float from_degrees(float v) {
 LoadSceneJsonUserFunction CreatePlaneAsCarController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreatePlaneAsCarController(args.renderable_scene()).execute(args);
+    CreatePlaneAsCarController(args.physics_scene()).execute(args);
 };
 
-CreatePlaneAsCarController::CreatePlaneAsCarController(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreatePlaneAsCarController::CreatePlaneAsCarController(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args)

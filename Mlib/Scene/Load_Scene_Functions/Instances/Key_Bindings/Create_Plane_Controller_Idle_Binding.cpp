@@ -25,7 +25,7 @@ LoadSceneJsonUserFunction CreatePlaneControllerIdleBinding::json_user_function =
 };
 
 CreatePlaneControllerIdleBinding::CreatePlaneControllerIdleBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreatePlaneControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

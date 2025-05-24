@@ -22,11 +22,11 @@ const std::string CreateSpawner::key = "spawner_create";
 LoadSceneJsonUserFunction CreateSpawner::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateSpawner(args.renderable_scene()).execute(args);
+    CreateSpawner(args.physics_scene()).execute(args);
 };
 
-CreateSpawner::CreateSpawner(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateSpawner::CreateSpawner(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -6,7 +6,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
-#include <Mlib/Render/Imposters.hpp>
+#include <Mlib/Render/Deferred_Instantiator.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
@@ -30,11 +30,11 @@ const std::string RootRenderableInstances::key = "root_renderable_instances";
 LoadSceneJsonUserFunction RootRenderableInstances::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    RootRenderableInstances(args.renderable_scene()).execute(args);
+    RootRenderableInstances(args.physics_scene()).execute(args);
 };
 
-RootRenderableInstances::RootRenderableInstances(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+RootRenderableInstances::RootRenderableInstances(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -46,7 +46,7 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         RootInstantiationOptions{
             .rendering_resources = &rendering_resources,
-            .imposters = &imposters,
+            .imposters = &deferred_instantiator,
             .supply_depots = &supply_depots,
             .instance_name = VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) },
             .absolute_model_matrix = absolute_model_matrix,

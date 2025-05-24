@@ -25,7 +25,7 @@ LoadSceneJsonUserFunction CreatePrintCameraNodeInfoKeyBinding::json_user_functio
 };
 
 CreatePrintCameraNodeInfoKeyBinding::CreatePrintCameraNodeInfoKeyBinding(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

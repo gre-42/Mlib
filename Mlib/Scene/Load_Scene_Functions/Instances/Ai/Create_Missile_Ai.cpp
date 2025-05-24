@@ -44,11 +44,11 @@ static inline float parse_kph(float v) {
 LoadSceneJsonUserFunction CreateMissileAi::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateMissileAi(args.renderable_scene()).execute(args);
+    CreateMissileAi(args.physics_scene()).execute(args);
 };
 
-CreateMissileAi::CreateMissileAi(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateMissileAi::CreateMissileAi(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)

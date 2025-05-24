@@ -9,11 +9,11 @@ const std::string ClearParameters::key = "clear_parameters";
 LoadSceneJsonUserFunction ClearParameters::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate({});
-    ClearParameters(args.renderable_scene()).execute(args);
+    ClearParameters(args.physics_scene()).execute(args);
 };
 
-ClearParameters::ClearParameters(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+ClearParameters::ClearParameters(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ClearParameters::execute(const LoadSceneJsonUserFunctionArgs& args)

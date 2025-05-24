@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
@@ -38,9 +38,9 @@ struct CreateRigidCuboidArgs {
     CollidableMode collidable_mode;
 };
 
-class CreateRigidCuboid: public LoadSceneInstanceFunction {
+class CreateRigidCuboid: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit CreateRigidCuboid(RenderableScene& renderable_scene);
+    explicit CreateRigidCuboid(PhysicsScene& physics_scene);
     RigidBodyVehicle& operator () (const CreateRigidCuboidArgs& args) const;
     void execute(const LoadSceneJsonUserFunctionArgs& args) const;
 };

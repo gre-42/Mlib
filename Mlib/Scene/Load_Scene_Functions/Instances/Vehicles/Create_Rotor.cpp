@@ -60,11 +60,11 @@ LoadSceneJsonUserFunction CreateRotor::json_user_function = [](const LoadSceneJs
     if (args.arguments.contains(KnownArgs::align_to_gravity_pid)) {
         args.arguments.child(KnownArgs::align_to_gravity_pid).validate(PidArgs::options);
     }
-    CreateRotor(args.renderable_scene()).execute(args);
+    CreateRotor(args.physics_scene()).execute(args);
 };
 
-CreateRotor::CreateRotor(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateRotor::CreateRotor(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)

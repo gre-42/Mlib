@@ -30,11 +30,11 @@ const std::string CreateCarController::key = "create_car_controller";
 LoadSceneJsonUserFunction CreateCarController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateCarController(args.renderable_scene()).execute(args);
+    CreateCarController(args.physics_scene()).execute(args);
 };
 
-CreateCarController::CreateCarController(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateCarController::CreateCarController(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 inline float stov(float v) {

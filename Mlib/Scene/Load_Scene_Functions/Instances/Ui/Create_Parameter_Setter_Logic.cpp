@@ -62,7 +62,7 @@ DECLARE_ARGUMENT(persistent);
 }
 
 CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -111,7 +111,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto focus_filter = FocusFilter{
         .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
         .submenu_ids = args.arguments.at<std::set<std::string>>(KnownArgs::submenus, { id }) };
-    args.ui_focus.insert_submenu(
+    ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),
@@ -143,7 +143,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         focus_filter,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
-        args.ui_focus,
+        ui_focus,
         args.arguments.at<std::string>(KnownArgs::persistent, ""),
         args.button_states,
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]() {

@@ -24,11 +24,11 @@ const std::string SetAvatarStyleUpdater::key = "set_avatar_style_updater";
 LoadSceneJsonUserFunction SetAvatarStyleUpdater::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetAvatarStyleUpdater(args.renderable_scene()).execute(args);
+    SetAvatarStyleUpdater(args.physics_scene()).execute(args);
 };
 
-SetAvatarStyleUpdater::SetAvatarStyleUpdater(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetAvatarStyleUpdater::SetAvatarStyleUpdater(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetAvatarStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)

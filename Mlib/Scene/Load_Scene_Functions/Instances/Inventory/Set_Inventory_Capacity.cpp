@@ -22,11 +22,11 @@ const std::string SetInventoryCapacity::key = "set_inventory_capacity";
 LoadSceneJsonUserFunction SetInventoryCapacity::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetInventoryCapacity(args.renderable_scene()).execute(args);
+    SetInventoryCapacity(args.physics_scene()).execute(args);
 };
 
-SetInventoryCapacity::SetInventoryCapacity(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetInventoryCapacity::SetInventoryCapacity(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetInventoryCapacity::execute(const LoadSceneJsonUserFunctionArgs& args)

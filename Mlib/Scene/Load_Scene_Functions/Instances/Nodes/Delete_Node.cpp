@@ -17,11 +17,11 @@ const std::string DeleteNode::key = "delete_node";
 LoadSceneJsonUserFunction DeleteNode::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DeleteNode(args.renderable_scene()).execute(args);
+    DeleteNode(args.physics_scene()).execute(args);
 };
 
-DeleteNode::DeleteNode(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+DeleteNode::DeleteNode(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void DeleteNode::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -22,11 +22,11 @@ const std::string PlayerSetPlaybackWaypoints::key = "set_playback_way_points";
 LoadSceneJsonUserFunction PlayerSetPlaybackWaypoints::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayerSetPlaybackWaypoints(args.renderable_scene()).execute(args);
+    PlayerSetPlaybackWaypoints(args.physics_scene()).execute(args);
 };
 
-PlayerSetPlaybackWaypoints::PlayerSetPlaybackWaypoints(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetPlaybackWaypoints::PlayerSetPlaybackWaypoints(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetPlaybackWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args)

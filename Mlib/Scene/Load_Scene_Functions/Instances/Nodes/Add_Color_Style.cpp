@@ -24,8 +24,8 @@ DECLARE_ARGUMENT(reflection_strength);
 DECLARE_ARGUMENT(reflection_maps);
 }
 
-AddColorStyle::AddColorStyle(RenderableScene& renderable_scene)
-    : LoadSceneInstanceFunction{ renderable_scene }
+AddColorStyle::AddColorStyle(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -67,7 +67,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                AddColorStyle(args.renderable_scene()).execute(args);            
+                AddColorStyle(args.physics_scene()).execute(args);            
             });
     }
 } obj;

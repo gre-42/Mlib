@@ -25,11 +25,11 @@ const std::string CreateAvatarAsCarController::key = "create_avatar_as_car_contr
 LoadSceneJsonUserFunction CreateAvatarAsCarController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateAvatarAsCarController(args.renderable_scene()).execute(args);
+    CreateAvatarAsCarController(args.physics_scene()).execute(args);
 };
 
-CreateAvatarAsCarController::CreateAvatarAsCarController(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateAvatarAsCarController::CreateAvatarAsCarController(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateAvatarAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args)

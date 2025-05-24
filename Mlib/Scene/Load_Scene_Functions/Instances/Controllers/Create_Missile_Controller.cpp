@@ -45,11 +45,11 @@ const std::string CreateMissileController::key = "create_missile_controller";
 LoadSceneJsonUserFunction CreateMissileController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateMissileController(args.renderable_scene()).execute(args);
+    CreateMissileController(args.physics_scene()).execute(args);
 };
 
-CreateMissileController::CreateMissileController(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateMissileController::CreateMissileController(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateMissileController::execute(const LoadSceneJsonUserFunctionArgs& args)

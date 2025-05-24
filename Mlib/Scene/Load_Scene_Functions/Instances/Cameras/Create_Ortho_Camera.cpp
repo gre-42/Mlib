@@ -26,11 +26,11 @@ const std::string CreateOrthoCamera::key = "ortho_camera";
 
 LoadSceneJsonUserFunction CreateOrthoCamera::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
-    CreateOrthoCamera(args.renderable_scene()).execute(args);
+    CreateOrthoCamera(args.physics_scene()).execute(args);
 };
 
-CreateOrthoCamera::CreateOrthoCamera(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateOrthoCamera::CreateOrthoCamera(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateOrthoCamera::execute(const LoadSceneJsonUserFunctionArgs& args)

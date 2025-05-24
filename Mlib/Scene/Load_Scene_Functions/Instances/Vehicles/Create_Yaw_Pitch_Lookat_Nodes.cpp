@@ -41,11 +41,11 @@ const std::string CreateYawPitchLookatNodes::key = "yaw_pitch_look_at_nodes";
 LoadSceneJsonUserFunction CreateYawPitchLookatNodes::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateYawPitchLookatNodes(args.renderable_scene()).execute(args);
+    CreateYawPitchLookatNodes(args.physics_scene()).execute(args);
 };
 
-CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& args)

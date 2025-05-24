@@ -50,11 +50,11 @@ const std::string CreateWing::key = "wing";
 LoadSceneJsonUserFunction CreateWing::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateWing(args.renderable_scene()).execute(args);
+    CreateWing(args.physics_scene()).execute(args);
 };
 
-CreateWing::CreateWing(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateWing::CreateWing(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)

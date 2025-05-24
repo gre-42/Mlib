@@ -23,11 +23,11 @@ const std::string CreateRelativeTransformer::key = "relative_transformer";
 LoadSceneJsonUserFunction CreateRelativeTransformer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateRelativeTransformer(args.renderable_scene()).execute(args);
+    CreateRelativeTransformer(args.physics_scene()).execute(args);
 };
 
-CreateRelativeTransformer::CreateRelativeTransformer(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateRelativeTransformer::CreateRelativeTransformer(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateRelativeTransformer::execute(const LoadSceneJsonUserFunctionArgs& args)

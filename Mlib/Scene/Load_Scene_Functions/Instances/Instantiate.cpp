@@ -28,8 +28,8 @@ DECLARE_ARGUMENT(dynamics);
 DECLARE_ARGUMENT(instantiated_resources);
 }
 
-Instantiate::Instantiate(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+Instantiate::Instantiate(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
@@ -81,7 +81,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                Instantiate(args.renderable_scene()).execute(args);
+                Instantiate(args.physics_scene()).execute(args);
             });
     }
 } obj;

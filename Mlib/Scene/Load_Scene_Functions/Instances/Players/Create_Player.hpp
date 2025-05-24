@@ -1,15 +1,15 @@
 #pragma once
 #include <Mlib/Scene/Json_User_Function.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 
 namespace Mlib {
 
-class CreatePlayer: public LoadSceneInstanceFunction {
+class CreatePlayer: public LoadPhysicsSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit CreatePlayer(RenderableScene& renderable_scene);
+    explicit CreatePlayer(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
@@ -11,9 +11,9 @@ template <class T>
 class VariableAndHash;
 struct LoadSceneJsonUserFunctionArgs;
 
-class CreateChildNode: public LoadSceneInstanceFunction {
+class CreateChildNode: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit CreateChildNode(RenderableScene& renderable_scene);
+    explicit CreateChildNode(PhysicsScene& physics_scene);
     void operator () (
         const std::string& type,
         const VariableAndHash<std::string>& parent,

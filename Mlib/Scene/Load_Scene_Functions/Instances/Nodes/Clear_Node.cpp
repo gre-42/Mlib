@@ -13,8 +13,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 }
 
-ClearNode::ClearNode(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+ClearNode::ClearNode(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ClearNode::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -31,7 +31,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                ClearNode(args.renderable_scene()).execute(args);
+                ClearNode(args.physics_scene()).execute(args);
             });
     }
 } obj;

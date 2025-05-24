@@ -22,11 +22,11 @@ const std::string CreateCopyRotation::key = "copy_rotation";
 LoadSceneJsonUserFunction CreateCopyRotation::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateCopyRotation(args.renderable_scene()).execute(args);
+    CreateCopyRotation(args.physics_scene()).execute(args);
 };
 
-CreateCopyRotation::CreateCopyRotation(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateCopyRotation::CreateCopyRotation(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateCopyRotation::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -25,7 +25,7 @@ DECLARE_ARGUMENT(reset_vehicle);
 }
 
 CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)

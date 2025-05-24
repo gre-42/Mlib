@@ -16,11 +16,11 @@ const std::string ExecuteInPhysicsThread::key = "execute_in_physics_thread";
 LoadSceneJsonUserFunction ExecuteInPhysicsThread::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    ExecuteInPhysicsThread(args.renderable_scene()).execute(args);
+    ExecuteInPhysicsThread(args.physics_scene()).execute(args);
 };
 
-ExecuteInPhysicsThread::ExecuteInPhysicsThread(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+ExecuteInPhysicsThread::ExecuteInPhysicsThread(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void ExecuteInPhysicsThread::execute(const LoadSceneJsonUserFunctionArgs& args)

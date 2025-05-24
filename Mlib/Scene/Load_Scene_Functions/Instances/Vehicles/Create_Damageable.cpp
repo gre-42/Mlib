@@ -26,11 +26,11 @@ const std::string CreateDamageable::key = "damageable";
 LoadSceneJsonUserFunction CreateDamageable::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateDamageable(args.renderable_scene()).execute(args);
+    CreateDamageable(args.physics_scene()).execute(args);
 };
 
-CreateDamageable::CreateDamageable(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateDamageable::CreateDamageable(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)

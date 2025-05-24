@@ -129,16 +129,16 @@ static inline float stoa(float v) {
     return v * degrees;
 }
 
-CreateGenericCar::CreateGenericCar(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateGenericCar::CreateGenericCar(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto create_child_node = CreateChildNode{ renderable_scene };
-    auto child_renderable_instance = ChildRenderableInstance{ renderable_scene };
-    auto create_rigid_cuboid = CreateRigidCuboid{ renderable_scene };
-    auto create_rigid_disk = CreateRigidDisk{ renderable_scene };
+    auto create_child_node = CreateChildNode{ physics_scene };
+    auto child_renderable_instance = ChildRenderableInstance{ physics_scene };
+    auto create_rigid_cuboid = CreateRigidCuboid{ physics_scene };
+    auto create_rigid_disk = CreateRigidDisk{ physics_scene };
 
     auto name = args.arguments.at<std::string>(KnownArgs::name);
     auto tesuffix = args.arguments.at<std::string>(KnownArgs::tesuffix);
@@ -470,7 +470,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                CreateGenericCar(args.renderable_scene()).execute(args);
+                CreateGenericCar(args.physics_scene()).execute(args);
             });
     }
 } obj;

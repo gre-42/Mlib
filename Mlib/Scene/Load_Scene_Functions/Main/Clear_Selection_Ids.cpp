@@ -9,6 +9,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(except);
+DECLARE_ARGUMENT(user_id);
 }
 
 namespace {
@@ -21,7 +22,7 @@ struct RegisterJsonUserFunction {
             {
                 args.arguments.validate(KnownArgs::options);
                 std::erase_if(
-                    args.ui_focus.all_selection_ids,
+                    args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::user_id)].all_selection_ids,
                     [except=args.arguments.at<std::string>(KnownArgs::except)]
                     (const auto& it)
                     {return it.first != except;});

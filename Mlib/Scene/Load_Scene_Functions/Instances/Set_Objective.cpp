@@ -18,11 +18,11 @@ const std::string SetObjective::key = "set_objective";
 LoadSceneJsonUserFunction SetObjective::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetObjective(args.renderable_scene()).execute(args);
+    SetObjective(args.physics_scene()).execute(args);
 };
 
-SetObjective::SetObjective(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetObjective::SetObjective(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetObjective::execute(const LoadSceneJsonUserFunctionArgs& args)

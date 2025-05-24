@@ -73,11 +73,12 @@ DECLARE_ARGUMENT(submenus);
 }
 
 CreateCheckPoints::CreateCheckPoints(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     auto moving_asset_id = args.arguments.at<std::string>(KnownArgs::moving_asset_id);
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
     size_t nframes = args.arguments.at<bool>(KnownArgs::circular) ? 1 : 0;
@@ -111,7 +112,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_node_resources,
         scene,
         delete_node_mutex,
-        args.ui_focus.focuses,
+        ui_focus.focuses,
         args.arguments.at<bool>(KnownArgs::height_changed),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::selection_emissivity, fixed_full<float, 3>(-1.f)),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::deselection_emissivity, fixed_full<float, 3>(-1.f)),
@@ -168,7 +169,6 @@ struct RegisterJsonUserFunction {
             "check_points",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateCheckPoints(args.renderable_scene()).execute(args);
             });
     }

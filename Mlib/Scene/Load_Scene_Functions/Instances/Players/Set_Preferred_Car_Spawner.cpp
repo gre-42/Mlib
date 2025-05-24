@@ -42,8 +42,8 @@ DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
 }
 
-SetPreferredCarSpawner::SetPreferredCarSpawner(RenderableScene& renderable_scene)
-    : LoadSceneInstanceFunction{ renderable_scene }
+SetPreferredCarSpawner::SetPreferredCarSpawner(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -115,7 +115,7 @@ struct RegisterJsonUserFunction {
             {
                 args.arguments.validate(KnownArgs::options);
                 args.macro_line_executor.block_arguments().validate_complement(KnownLet::options);
-                SetPreferredCarSpawner(args.renderable_scene()).execute(args);
+                SetPreferredCarSpawner(args.physics_scene()).execute(args);
             });
     }
 } obj;

@@ -20,7 +20,7 @@ LoadSceneJsonUserFunction SetSoftLight::json_user_function = [](const LoadSceneJ
 };
 
 SetSoftLight::SetSoftLight(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void SetSoftLight::execute(const LoadSceneJsonUserFunctionArgs& args)

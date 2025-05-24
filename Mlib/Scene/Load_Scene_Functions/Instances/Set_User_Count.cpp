@@ -1,16 +1,24 @@
+#include "Set_User_Count.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
-#include <mutex>
 
 using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(content);
+DECLARE_ARGUMENT(user_count);
+}
+
+SetUserCount::SetUserCount(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
+{}
+
+void SetUserCount::execute(const LoadSceneJsonUserFunctionArgs &args) {
+    users.set_user_count(args.arguments.at<uint32_t>(KnownArgs::user_count));
 }
 
 namespace {
@@ -18,14 +26,11 @@ namespace {
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "append_focuses",
+            "set_user_count",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                std::scoped_lock lock{args.ui_focus.focuses.mutex};
-                for (Focus focus : args.arguments.at_vector<std::string>(KnownArgs::content, focus_from_string)) {
-                    args.ui_focus.focuses.push_back(focus);
-                }
+                SetUserCount(args.physics_scene()).execute(args);
             });
     }
 } obj;

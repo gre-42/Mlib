@@ -35,7 +35,7 @@ DECLARE_ARGUMENT(focus_mask);
 }
 
 CreateRequiresReloadLogic::CreateRequiresReloadLogic(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+: LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateRequiresReloadLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -56,13 +56,12 @@ void CreateRequiresReloadLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         FocusFilter{focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask))},
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
-        args.ui_focus);
+        ui_focus);
     render_logics.append(
         { requires_reload_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order, 0),
         CURRENT_SOURCE_LOCATION);
 }
-
 
 namespace {
 

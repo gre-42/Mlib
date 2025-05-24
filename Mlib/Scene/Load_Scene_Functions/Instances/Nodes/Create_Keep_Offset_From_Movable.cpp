@@ -22,11 +22,11 @@ const std::string CreateKeepOffsetFromMovable::key = "keep_offset_from_movable";
 LoadSceneJsonUserFunction CreateKeepOffsetFromMovable::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateKeepOffsetFromMovable(args.renderable_scene()).execute(args);
+    CreateKeepOffsetFromMovable(args.physics_scene()).execute(args);
 };
 
-CreateKeepOffsetFromMovable::CreateKeepOffsetFromMovable(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateKeepOffsetFromMovable::CreateKeepOffsetFromMovable(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& args)

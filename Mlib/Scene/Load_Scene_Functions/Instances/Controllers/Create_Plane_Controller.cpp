@@ -31,11 +31,11 @@ const std::string CreatePlaneController::key = "create_plane_controller";
 LoadSceneJsonUserFunction CreatePlaneController::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreatePlaneController(args.renderable_scene()).execute(args);
+    CreatePlaneController(args.physics_scene()).execute(args);
 };
 
-CreatePlaneController::CreatePlaneController(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreatePlaneController::CreatePlaneController(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreatePlaneController::execute(const LoadSceneJsonUserFunctionArgs& args)

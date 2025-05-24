@@ -26,11 +26,11 @@ const std::string InstantiateGrass::key = "instantiate_grass";
 LoadSceneJsonUserFunction InstantiateGrass::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    InstantiateGrass(args.renderable_scene()).execute(args);
+    InstantiateGrass(args.physics_scene()).execute(args);
 };
 
-InstantiateGrass::InstantiateGrass(RenderableScene& renderable_scene) 
-    : LoadSceneInstanceFunction{ renderable_scene }
+InstantiateGrass::InstantiateGrass(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void InstantiateGrass::execute(const LoadSceneJsonUserFunctionArgs &args) {

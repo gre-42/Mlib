@@ -1,15 +1,15 @@
 #pragma once
 #include <Mlib/Scene/Json_User_Function.hpp>
-#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
+#include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
 
 namespace Mlib {
 
-class SetBackgroundColor: public LoadSceneInstanceFunction {
+class SetBackgroundColor: public LoadPhysicsSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit SetBackgroundColor(RenderableScene& renderable_scene);
+    explicit SetBackgroundColor(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

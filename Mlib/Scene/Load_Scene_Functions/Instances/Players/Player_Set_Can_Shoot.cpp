@@ -20,11 +20,11 @@ const std::string PlayerSetCanShoot::key = "set_can_shoot";
 LoadSceneJsonUserFunction PlayerSetCanShoot::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    PlayerSetCanShoot(args.renderable_scene()).execute(args);
+    PlayerSetCanShoot(args.physics_scene()).execute(args);
 };
 
-PlayerSetCanShoot::PlayerSetCanShoot(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+PlayerSetCanShoot::PlayerSetCanShoot(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void PlayerSetCanShoot::execute(const LoadSceneJsonUserFunctionArgs& args)

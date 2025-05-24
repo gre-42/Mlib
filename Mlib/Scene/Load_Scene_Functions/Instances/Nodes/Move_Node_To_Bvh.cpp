@@ -16,11 +16,11 @@ const std::string MoveNodeToBvh::key = "move_node_to_bvh";
 LoadSceneJsonUserFunction MoveNodeToBvh::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    MoveNodeToBvh(args.renderable_scene()).execute(args);
+    MoveNodeToBvh(args.physics_scene()).execute(args);
 };
 
-MoveNodeToBvh::MoveNodeToBvh(RenderableScene& renderable_scene)
-    : LoadSceneInstanceFunction{ renderable_scene }
+MoveNodeToBvh::MoveNodeToBvh(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void MoveNodeToBvh::execute(const LoadSceneJsonUserFunctionArgs& args)

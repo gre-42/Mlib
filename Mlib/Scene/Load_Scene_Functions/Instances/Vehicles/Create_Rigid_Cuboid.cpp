@@ -43,8 +43,8 @@ DECLARE_ARGUMENT(flags);
 DECLARE_ARGUMENT(waypoint_dy);
 }
 
-CreateRigidCuboid::CreateRigidCuboid(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateRigidCuboid::CreateRigidCuboid(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args) const
@@ -147,7 +147,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                CreateRigidCuboid(args.renderable_scene()).execute(args);
+                CreateRigidCuboid(args.physics_scene()).execute(args);
             });
     }
 } obj;

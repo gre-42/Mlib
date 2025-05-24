@@ -22,11 +22,11 @@ const std::string SetRigidBodyRevertSurfacePowerThreshold::key = "set_rigid_body
 LoadSceneJsonUserFunction SetRigidBodyRevertSurfacePowerThreshold::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetRigidBodyRevertSurfacePowerThreshold(args.renderable_scene()).execute(args);
+    SetRigidBodyRevertSurfacePowerThreshold(args.physics_scene()).execute(args);
 };
 
-SetRigidBodyRevertSurfacePowerThreshold::SetRigidBodyRevertSurfacePowerThreshold(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetRigidBodyRevertSurfacePowerThreshold::SetRigidBodyRevertSurfacePowerThreshold(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetRigidBodyRevertSurfacePowerThreshold::execute(const LoadSceneJsonUserFunctionArgs& args)

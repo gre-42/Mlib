@@ -24,11 +24,11 @@ const std::string CreateDestinationReachedAi::key = "create_destination_reached_
 LoadSceneJsonUserFunction CreateDestinationReachedAi::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateDestinationReachedAi(args.renderable_scene()).execute(args);
+    CreateDestinationReachedAi(args.physics_scene()).execute(args);
 };
 
-CreateDestinationReachedAi::CreateDestinationReachedAi(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateDestinationReachedAi::CreateDestinationReachedAi(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateDestinationReachedAi::execute(const LoadSceneJsonUserFunctionArgs& args)

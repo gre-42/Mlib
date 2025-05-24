@@ -17,8 +17,8 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 }
 
-AppendExternalsDeleter::AppendExternalsDeleter(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+AppendExternalsDeleter::AppendExternalsDeleter(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void AppendExternalsDeleter::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -48,7 +48,7 @@ struct RegisterJsonUserFunction {
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                AppendExternalsDeleter(args.renderable_scene()).execute(args);
+                AppendExternalsDeleter(args.physics_scene()).execute(args);
             });
     }
 } obj;

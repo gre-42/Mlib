@@ -19,11 +19,11 @@ const std::string CreateInternals::key = "create_internals";
 LoadSceneJsonUserFunction CreateInternals::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateInternals(args.renderable_scene()).execute(args);
+    CreateInternals(args.physics_scene()).execute(args);
 };
 
-CreateInternals::CreateInternals(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateInternals::CreateInternals(PhysicsScene& physics_scene) 
+: LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateInternals::execute(const LoadSceneJsonUserFunctionArgs& args)
