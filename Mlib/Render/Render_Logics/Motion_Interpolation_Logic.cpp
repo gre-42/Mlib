@@ -278,7 +278,7 @@ bool MotionInterpolationLogic::render_optional_setup(
         bool interpolate = ((frame_id.time_id % 2) == 1);
         bool render_texture = ((frame_id.time_id % 2) == 0);
         if (render_texture) {
-            RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = frame_id.time_id };
+            RenderedSceneDescriptor rsd{.external_render_pass = {frame_id.external_render_pass.user_id, ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = frame_id.time_id };
             auto it = frame_buffers_.find(rsd);
             if (it == frame_buffers_.end()) {
                 it = frame_buffers_.try_emplace(rsd, std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION)).first;
@@ -296,7 +296,7 @@ bool MotionInterpolationLogic::render_optional_setup(
         }
 
         if (!interpolate) {
-            RenderedSceneDescriptor rsd_r{.external_render_pass = {ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = (frame_id.time_id + 2) % 4 };
+            RenderedSceneDescriptor rsd_r{.external_render_pass = {frame_id.external_render_pass.user_id, ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = (frame_id.time_id + 2) % 4 };
             auto it = frame_buffers_.find(rsd_r);
             if (it != frame_buffers_.end()) {
                 rp_no_interpolate_.use();
@@ -310,8 +310,8 @@ bool MotionInterpolationLogic::render_optional_setup(
                 // save_movie.save("/tmp/mov-", "-n", width, height);
             }
         } else {
-            RenderedSceneDescriptor rsd_r0{.external_render_pass = {ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = (frame_id.time_id + 1) % 4 };
-            RenderedSceneDescriptor rsd_r1{.external_render_pass = {ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = (frame_id.time_id + 3) % 4 };
+            RenderedSceneDescriptor rsd_r0{.external_render_pass = {frame_id.external_render_pass.user_id, ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = (frame_id.time_id + 1) % 4 };
+            RenderedSceneDescriptor rsd_r1{.external_render_pass = {frame_id.external_render_pass.user_id, ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = (frame_id.time_id + 3) % 4 };
             auto it0 = frame_buffers_.find(rsd_r0);
             auto it1 = frame_buffers_.find(rsd_r1);
             if ((it0 != frame_buffers_.end()) && (it1 != frame_buffers_.end())) {

@@ -31,7 +31,8 @@ CheckPoints::CheckPoints(
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     std::string asset_id,
-    const std::string& resource_name,
+    VariableAndHash<std::string> resource_name,
+    std::string node_prefix,
     const DanglingBaseClassRef<IPlayer>& player,
     size_t nbeacons,
     float distance,
@@ -57,7 +58,8 @@ CheckPoints::CheckPoints(
         1 } // ntransformations
     , nlaps_{ nlaps }
     , asset_id_{ std::move(asset_id) }
-    , resource_name_{ resource_name }
+    , resource_name_{ std::move(resource_name) }
+    , node_prefix_{ std::move(node_prefix) }
     , player_{ player }
     , radius_{ radius }
     , nbeacons_{ nbeacons }
@@ -164,7 +166,7 @@ void CheckPoints::advance_time(float dt) {
             auto node = make_unique_scene_node();
             node->add_color_style(std::make_unique<ColorStyle>());
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
-                .beacon_node_name = VariableAndHash<std::string>{"check_point_beacon_" + std::to_string(i01_)},
+                .beacon_node_name = VariableAndHash<std::string>{node_prefix_ + std::to_string(i01_)},
                 .beacon_node = node.get(DP_LOC)});
             scene_node_resources_.instantiate_child_renderable(
                 resource_name_,

@@ -62,6 +62,7 @@ struct RegisterJsonUserFunction {
                 auto layout = scene_layout_from_string(args.arguments.at<std::string>(KnownArgs::layout));
                 auto name = args.arguments.at<std::string>(KnownArgs::name);
                 auto& physics_scene = args.physics_scenes[args.arguments.at<std::string>(KnownArgs::physics)];
+                auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
                 auto [_, state] = args.renderable_scenes.try_emplace(
                     name,
                     name,
@@ -73,7 +74,8 @@ struct RegisterJsonUserFunction {
                     args.key_configurations,
                     layout == SceneLayout::FULL_SCREEN
                         ? physics_scene.ui_focus_
-                        : args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::user_id)],
+                        : args.ui_focuses[user_id],
+                    user_id,
                     SceneConfigResource{
                         .fly = args.arguments.at<bool>(KnownArgs::fly),
                         .rotate = args.arguments.at<bool>(KnownArgs::rotate),

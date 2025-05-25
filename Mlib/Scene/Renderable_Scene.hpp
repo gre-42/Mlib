@@ -14,6 +14,7 @@
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IRenderable_Scene.hpp>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -66,6 +67,7 @@ public:
         CursorStates& scroll_wheel_states,
         LockableKeyConfigurations& key_configurations,
         UiFocus& ui_focus,
+        uint32_t user_id,
         const SceneConfigResource& config);
     ~RenderableScene();
     RenderableScene(const RenderableScene&) = delete;
@@ -101,6 +103,7 @@ public:
     SelectedCameras selected_cameras_;
     FlyingCameraUserClass user_object_;
     UiFocus& ui_focus_;
+    uint32_t user_id_;
 
     RenderLogics render_logics_;
     RenderLogics scene_render_logics_;

@@ -32,6 +32,7 @@ RenderableScene::RenderableScene(
     CursorStates& scroll_wheel_states,
     LockableKeyConfigurations& key_configurations,
     UiFocus& ui_focus,
+    uint32_t user_id,
     const SceneConfigResource& config)
     : on_clear_physics_{ physics_scene.on_clear_, CURRENT_SOURCE_LOCATION }
     , object_pool_{ InObjectPoolDestructor::CLEAR }
@@ -50,6 +51,7 @@ RenderableScene::RenderableScene(
           .delete_node_mutex = physics_scene.delete_node_mutex_,
           .physics_set_fps = &physics_scene.physics_set_fps_}
     , ui_focus_{ ui_focus }
+    , user_id_{ user_id }
     , render_logics_{ ui_focus }
     , scene_render_logics_{ ui_focus }
     , standard_camera_logic_{
@@ -158,6 +160,7 @@ void RenderableScene::render_without_setup(
     }
 
     auto f = frame_id;
+    f.external_render_pass.user_id = user_id_;
     auto completed_time = physics_scene_.physics_set_fps_.completed_time();
     if (completed_time != std::chrono::steady_clock::time_point()) {
         f.external_render_pass.time = std::min(

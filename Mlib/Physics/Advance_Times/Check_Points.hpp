@@ -52,7 +52,8 @@ public:
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         std::string asset_id,
-        const std::string& resource_name,
+        VariableAndHash<std::string> resource_name,
+        std::string node_prefix,
         const DanglingBaseClassRef<IPlayer>& player,
         size_t nbeacons,
         float distance,
@@ -84,6 +85,7 @@ private:
     std::vector<IAbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     VariableAndHash<std::string> resource_name_;
+    std::string node_prefix_;
     DanglingBaseClassRef<IPlayer> player_;
     float radius_;
     size_t nbeacons_;

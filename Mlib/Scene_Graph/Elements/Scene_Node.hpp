@@ -141,13 +141,15 @@ class SceneNode: public virtual Object {
 public:
     explicit SceneNode(
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED,
-        SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS);
+        SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
+        uint32_t user_id = UINT32_MAX);
     SceneNode(
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED,
-        SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS);
+        SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
+        uint32_t user_id = UINT32_MAX);
     virtual ~SceneNode() override;
     virtual void shutdown();
     bool shutting_down() const;
@@ -339,6 +341,9 @@ public:
     void set_periodic_animation(const VariableAndHash<std::string>& name);
     void set_aperiodic_animation(const VariableAndHash<std::string>& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
+    inline bool is_visible_for_user(uint32_t user_id) const {
+        return (user_id == UINT32_MAX) || (user_id_ == UINT32_MAX) || (user_id == user_id_);
+    }
     SceneNodeState state() const;
     Scene& scene();
     const Scene& scene() const;
@@ -365,6 +370,7 @@ private:
     TransformationMatrix<float, ScenePos, 3> absolute_model_matrix(
         LockingStrategy locking_strategy,
         std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    uint32_t user_id_;
     Scene* scene_;
     DanglingPtr<SceneNode> parent_;
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_;

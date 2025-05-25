@@ -4,6 +4,7 @@
 #include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
 #include <compare>
+#include <cstdint>
 
 namespace Mlib {
 
@@ -12,6 +13,7 @@ class SceneNode;
 class IRenderableScene;
 
 struct ExternalRenderPass {
+    uint32_t user_id;
     ExternalRenderPassType pass;
     std::chrono::steady_clock::time_point time;
     VariableAndHash<std::string> black_node_name;

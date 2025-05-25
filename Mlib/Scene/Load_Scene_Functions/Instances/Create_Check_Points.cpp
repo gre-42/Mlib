@@ -35,6 +35,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(moving_asset_id);
 DECLARE_ARGUMENT(moving_suffix);
 DECLARE_ARGUMENT(resource);
+DECLARE_ARGUMENT(node_prefix);
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(nbeacons);
 DECLARE_ARGUMENT(distance);
@@ -102,7 +103,8 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         nlaps,
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
         moving_asset_id,
-        args.arguments.at<std::string>(KnownArgs::resource),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
+        args.arguments.at<std::string>(KnownArgs::node_prefix),
         players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION),
         args.arguments.at<size_t>(KnownArgs::nbeacons),
         args.arguments.at<float>(KnownArgs::distance) * meters,

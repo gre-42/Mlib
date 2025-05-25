@@ -23,6 +23,7 @@ DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(interpolation);
+DECLARE_ARGUMENT(user_id);
 }
 
 RootNodeInstance::RootNodeInstance(PhysicsScene& physics_scene) 
@@ -31,6 +32,7 @@ RootNodeInstance::RootNodeInstance(PhysicsScene& physics_scene)
 
 void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     // root nodes do not have a default pose
     FixedArray<CompressedScenePos, 3> pos = parse_position(
         args.arguments.at(KnownArgs::position),
@@ -39,7 +41,9 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
         pos.casted<ScenePos>() * (ScenePos)meters,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
-        pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")));
+        pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")),
+        SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
+        args.arguments.at<uint32_t>(KnownArgs::user_id, UINT32_MAX));
     auto rendering_dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics, "moving"));
     auto rendering_strategy = rendering_strategy_from_string(args.arguments.at<std::string>(KnownArgs::strategy, "object"));
     scene.add_root_node(
@@ -57,7 +61,6 @@ struct RegisterJsonUserFunction {
             "root_node_instance",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 RootNodeInstance(args.physics_scene()).execute(args);
             });
     }

@@ -49,9 +49,11 @@ SceneNode::SceneNode(
     const FixedArray<float, 3>& rotation,
     float scale,
     PoseInterpolationMode interpolation_mode,
-    SceneNodeDomain domain)
+    SceneNodeDomain domain,
+    uint32_t user_id)
     : clearing_observers{ *this }
     , destruction_observers{ *this }
+    , user_id_{ user_id }
     , scene_{ nullptr }
     , parent_{ nullptr }
     , absolute_movable_{ nullptr }
@@ -82,13 +84,15 @@ SceneNode::SceneNode(
 
 SceneNode::SceneNode(
     PoseInterpolationMode interpolation_mode,
-    SceneNodeDomain domain)
+    SceneNodeDomain domain,
+    uint32_t user_id)
     : SceneNode{
         fixed_zeros<ScenePos, 3>(),
         fixed_zeros<float, 3>(),
         1.f,
         interpolation_mode,
-        domain}
+        domain,
+        user_id}
 {}
 
 void SceneNode::shutdown() {

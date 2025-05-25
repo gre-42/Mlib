@@ -345,6 +345,7 @@ void ImposterLogic::render_without_setup(
                 FrustumCamera::Postprocessing::ENABLED));
         RenderedSceneDescriptor imposter_rsd{
             .external_render_pass = {
+                frame_id.external_render_pass.user_id,
                 ExternalRenderPassType::IMPOSTER_NODE,
                 frame_id.external_render_pass.time,
                 VariableAndHash<std::string>(),
