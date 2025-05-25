@@ -40,6 +40,20 @@ float ConstantConstraint::to_pixels(
     return params.min_pixel + ::Mlib::round(::Mlib::to_pixels(screen_units_, f_, params.dpi), round_mode);
 }
 
+LengthConstraint::LengthConstraint(
+    float f,
+    ScreenUnits screen_units)
+    : f_{ f }
+    , screen_units_{ screen_units }
+{}
+
+float LengthConstraint::to_pixels(
+    const LayoutConstraintParameters& params,
+    PixelsRoundMode round_mode) const
+{
+    return ::Mlib::round(::Mlib::to_pixels(screen_units_, f_, params.dpi), round_mode);
+}
+
 AdditiveConstraint::AdditiveConstraint(
     float f,
     ScreenUnits screen_units,

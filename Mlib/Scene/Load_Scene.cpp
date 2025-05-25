@@ -153,9 +153,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Sliding_Normal_Modifier.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Additive_Screen_Constraint.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Constant_Screen_Constraint.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Fractional_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Render_Fps.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Textures_Lazy.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio.hpp>
@@ -405,9 +402,6 @@ LoadScene::LoadScene() {
             register_json_user_function(ModifyRenderingMaterial::key, ModifyRenderingMaterial::json_user_function);
             register_json_user_function(PrintResource::key, PrintResource::json_user_function);
             register_json_user_function(CreateTapButton::key, CreateTapButton::json_user_function);
-            register_json_user_function(CreateAdditiveScreenConstraint::key, CreateAdditiveScreenConstraint::json_user_function);
-            register_json_user_function(CreateConstantScreenConstraint::key, CreateConstantScreenConstraint::json_user_function);
-            register_json_user_function(CreateFractionalScreenConstraint::key, CreateFractionalScreenConstraint::json_user_function);
             register_json_user_function(SetAnimatedDynamicLightProperties::key, SetAnimatedDynamicLightProperties::json_user_function);
             register_json_user_function(SetBounds::key, SetBounds::json_user_function);
             register_json_user_function(SetConstantDynamicLightProperties::key, SetConstantDynamicLightProperties::json_user_function);

@@ -33,6 +33,19 @@ private:
     ScreenUnits screen_units_;
 };
 
+class LengthConstraint: public ILayoutPixels {
+public:
+    LengthConstraint(
+        float f,
+        ScreenUnits screen_units);
+    virtual float to_pixels(
+        const LayoutConstraintParameters& params,
+        PixelsRoundMode round_mode) const override;
+private:
+    float f_;
+    ScreenUnits screen_units_;
+};
+
 class AdditiveConstraint: public ILayoutPixels {
 public:
     AdditiveConstraint(

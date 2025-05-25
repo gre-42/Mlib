@@ -21,13 +21,13 @@ namespace {
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "constant_screen_constraint",
+            "length_screen_constraint",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
                 args.layout_constraints.set_pixels(
                     args.arguments.at<std::string>(KnownArgs::name),
-                    std::make_unique<ConstantConstraint>(
+                    std::make_unique<LengthConstraint>(
                         args.arguments.at<float>(KnownArgs::value),
                         screen_units_from_string(args.arguments.at<std::string>(KnownArgs::units))));
             });
