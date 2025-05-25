@@ -56,11 +56,11 @@ const std::string CreateVisualNodeStatus::key = "visual_node_status";
 LoadSceneJsonUserFunction CreateVisualNodeStatus::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateVisualNodeStatus(args.physics_scene()).execute(args);
+    CreateVisualNodeStatus(args.renderable_scene()).execute(args);
 };
 
-CreateVisualNodeStatus::CreateVisualNodeStatus(PhysicsScene& physics_scene) 
-    : LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene) 
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -45,11 +45,11 @@ const std::string CreateVisualPlayerBulletCount::key = "visual_player_bullet_cou
 LoadSceneJsonUserFunction CreateVisualPlayerBulletCount::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    CreateVisualPlayerBulletCount(args.physics_scene()).execute(args);
+    CreateVisualPlayerBulletCount(args.renderable_scene()).execute(args);
 };
 
-CreateVisualPlayerBulletCount::CreateVisualPlayerBulletCount(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateVisualPlayerBulletCount::CreateVisualPlayerBulletCount(RenderableScene& renderable_scene) 
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs& args)

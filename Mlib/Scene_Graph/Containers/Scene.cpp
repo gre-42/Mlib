@@ -545,20 +545,24 @@ void Scene::render(
         NodeRawPtrs local_static_root_nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t, [&local_root_nodes](const auto& node) { local_root_nodes.emplace_back(node.ptr()); return true; });
-            static_root_nodes_.visit(iv.t, [&local_static_root_nodes](const auto& node) { local_static_root_nodes.emplace_back(&node.obj()); return true; });
+            root_nodes_.visit(iv.t, [&](const auto& node) {
+                if (node->is_visible_for_user(external_render_pass.user_id)) {
+                    local_root_nodes.emplace_back(node.ptr());
+                }
+                return true;
+            });
+            static_root_nodes_.visit(iv.t, [&](const auto& node) {
+                if (node->is_visible_for_user(external_render_pass.user_id)) {
+                    local_static_root_nodes.emplace_back(&node.obj());
+                }
+                return true;
+            });
         }
         for (const auto& node : local_root_nodes) {
-            if (!node->is_visible_for_user(external_render_pass.user_id)) {
-                continue;
-            }
             node->append_lights_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), lights);
             node->append_skidmarks_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), skidmarks);
         }
         for (const auto& node : local_static_root_nodes) {
-            if (!node->is_visible_for_user(external_render_pass.user_id)) {
-                continue;
-            }
             node->append_lights_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), lights);
         }
         if (any(external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {

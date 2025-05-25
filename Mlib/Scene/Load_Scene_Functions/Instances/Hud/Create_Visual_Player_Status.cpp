@@ -65,11 +65,11 @@ LoadSceneJsonUserFunction CreateVisualPlayerStatus::json_user_function = [](cons
     if (args.arguments.contains(KnownArgs::circular)) {
         args.arguments.child(KnownArgs::circular).validate(CircularArgs::options);
     }
-    CreateVisualPlayerStatus(args.physics_scene()).execute(args);
+    CreateVisualPlayerStatus(args.renderable_scene()).execute(args);
 };
 
-CreateVisualPlayerStatus::CreateVisualPlayerStatus(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_scene) 
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
