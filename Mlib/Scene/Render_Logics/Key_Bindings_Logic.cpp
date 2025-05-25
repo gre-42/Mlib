@@ -70,7 +70,8 @@ KeyBindingsLogic::KeyBindingsLogic(
     ButtonStates& button_states,
     std::atomic_size_t& selection_index,
     uint32_t user_id)
-    : charset_{ std::move(charset) }
+    : user_id_{ user_id }
+    , charset_{ std::move(charset) }
     , ew_{ std::move(ew) }
     , key_descriptions_{ key_descriptions }
     , key_configurations_{ key_configurations }
@@ -94,7 +95,6 @@ KeyBindingsLogic::KeyBindingsLogic(
     , ot_{ ew_->add_observer([this](){
         list_view_.notify_change_visibility();
     }) }
-    , user_id_{ user_id }
 {}
 
 KeyBindingsLogic::~KeyBindingsLogic() {
@@ -119,7 +119,7 @@ void KeyBindingsLogic::render_without_setup(
 {
     LOG_FUNCTION("KeyBindingsLogic::render");
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
-    auto s = ew_->eval<std::string>("%input_type");
+    auto s = ew_->eval<std::string>("%input_type_" + std::to_string(user_id_));
     auto filter = input_type_from_string(s);
     if (ew_->result_may_have_changed()) {
         renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});

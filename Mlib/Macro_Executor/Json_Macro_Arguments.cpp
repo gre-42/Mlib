@@ -84,15 +84,18 @@ static nlohmann::json subst_and_replace(
     const nlohmann::json& locals,
     const AssetReferences& asset_references)
 {
+    auto ev = [&](const std::string& s){
+        return eval(s, JsonView{ globals }, JsonView{ locals }, asset_references);
+    };
     if (j.type() == nlohmann::detail::value_t::object) {
         auto result = nlohmann::json::object();
         for (const auto& [key, value] : j.items()) {
             if (key.starts_with('#') ||
                 unexpanded_keys.contains(key))
             {
-                result[key] = value;
+                result[ev(key)] = value;
             } else {
-                result[key] = subst_and_replace(value, globals, locals, asset_references);
+                result[ev(key)] = subst_and_replace(value, globals, locals, asset_references);
             }
         }
         return result;
@@ -105,8 +108,7 @@ static nlohmann::json subst_and_replace(
         return result;
     }
     if (j.type() == nlohmann::detail::value_t::string) {
-        auto s = j.get<std::string>();
-        return eval(s, JsonView{ globals }, JsonView{ locals }, asset_references);
+        return ev(j.get<std::string>());
     }
     return j;
 }

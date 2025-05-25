@@ -83,6 +83,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    uint32_t user_id_;
     std::string charset_;
     std::unique_ptr<ExpressionWatcher> ew_;
     const LockableKeyDescriptions& key_descriptions_;
@@ -96,7 +97,6 @@ private:
     FocusFilter focus_filter_;
     ListView list_view_;
     JsonMacroArgumentsObserverToken ot_;
-    uint32_t user_id_;
 };
 
 }
