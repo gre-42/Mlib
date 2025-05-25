@@ -14,8 +14,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(focuses);
 }
 
-SetFocuses::SetFocuses(PhysicsScene& renderable_scene)
-    : LoadPhysicsSceneInstanceFunction{renderable_scene}
+SetFocuses::SetFocuses(RenderableScene& renderable_scene)
+    : LoadRenderableSceneInstanceFunction{renderable_scene}
 {}
 
 void SetFocuses::execute(const LoadSceneJsonUserFunctionArgs& args) {
@@ -32,7 +32,7 @@ struct RegisterJsonUserFunction {
             "set_focuses",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                SetFocuses(args.physics_scene()).execute(args);
+                SetFocuses(args.renderable_scene()).execute(args);
             });
     }
 } obj;
