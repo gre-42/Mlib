@@ -6,13 +6,13 @@
 namespace Mlib {
 
 class ButtonStates;
-class Focuses;
+class UiFocuses;
 class MenuLogicKeys;
 
 class MenuUserClass {
 public:
     ButtonStates& button_states;
-    Focuses& focuses;
+    UiFocuses& ui_focuses;
 };
 
 class MenuLogic {

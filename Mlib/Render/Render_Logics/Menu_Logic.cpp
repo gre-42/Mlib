@@ -1,4 +1,5 @@
 #include "Menu_Logic.hpp"
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
@@ -13,13 +14,18 @@ namespace Mlib {
 class MenuLogicKeys {
 public:
     explicit MenuLogicKeys(ButtonStates& button_states)
-        : start{ button_states, key_configurations, 0, "escape", "" }
+        : start{
+            {button_states, key_configurations, 0, "escape", ""},
+            {button_states, key_configurations, 1, "escape", ""} }
     {
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
             ->insert(0, "escape", { {{{.key = "ESCAPE", .gamepad_button = {0, "START"}, .tap_button = {0, "ESCAPE"}}}} });
+        key_configurations
+            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
+            ->insert(1, "escape", { {{{.gamepad_button = {1, "START"}, .tap_button = {1, "ESCAPE"}}}} });
     }
-    ButtonPress start;
+    std::vector<ButtonPress> start;
 private:
     LockableKeyConfigurations key_configurations;
 };
@@ -37,18 +43,21 @@ MenuLogic::~MenuLogic() = default;
 
 void MenuLogic::handle_events() {
     LOG_FUNCTION("FlyingCameraLogic::render");
-    if (keys_->start.keys_pressed()) {
-        std::scoped_lock lock{user_object_.focuses.mutex};
-        if (user_object_.focuses.has_focus(Focus::MENU_ANY)) {
-            if (user_object_.focuses.size() > 1) {
-                user_object_.focuses.pop_back();
+    for (auto [user_id, start] : enumerate(keys_->start)) {
+        if (start.keys_pressed()) {
+            auto& focuses = user_object_.ui_focuses[user_id].focuses;
+            std::scoped_lock lock{focuses.mutex};
+            if (focuses.has_focus(Focus::MENU_ANY)) {
+                if (focuses.size() > 1) {
+                    focuses.pop_back();
+                }
+            } else if (focuses.countdown_active() || focuses.has_focus(Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) {
+                focuses.push_back(Focus::MAIN_MENU);
+            } else if (focuses.game_over_countdown_active()) {
+                // Do nothing, menu will show automatically after the countdown is finished
+            } else if (!focuses.empty()) {
+                THROW_OR_ABORT("Unknown focus value: " + (std::stringstream() << focuses).str());
             }
-        } else if (user_object_.focuses.countdown_active() || user_object_.focuses.has_focus(Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) {
-            user_object_.focuses.push_back(Focus::MAIN_MENU);
-        } else if (user_object_.focuses.game_over_countdown_active()) {
-            // Do nothing, menu will show automatically after the countdown is finished
-        } else if (!user_object_.focuses.empty()) {
-            THROW_OR_ABORT("Unknown focus value: " + (std::stringstream() << user_object_.focuses).str());
         }
     }
 }

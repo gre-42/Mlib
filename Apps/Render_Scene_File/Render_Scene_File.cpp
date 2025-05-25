@@ -580,7 +580,7 @@ int main(int argc, char** argv) {
             .exit_on_escape = false};
         MenuUserClass menu_user_object{
             .button_states = button_states,
-            .focuses = ui_focuses[0].focuses};
+            .ui_focuses = ui_focuses};
         WindowLogic window_logic{
             render.glfw_window(),
             window_user_object};
