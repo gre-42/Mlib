@@ -149,6 +149,7 @@ void test_template_regex() {
     {
         linfo() << "subst " << substitute_dollar("hello $xyz world $uv", [](std::string_view s) { return "-42-"; });
         linfo() << "subst " << substitute_dollar("../../scripts/include_all.scn.json", [](std::string_view s) { return "-42-"; });
+        linfo() << "subst " << substitute_dollar("${selected_vehicle_id-_$user_name}", [](std::string_view s) { return "-42-"; });
     }
     // {
     //     auto re_group_world = seq(bdry, str("hello"), bdry);

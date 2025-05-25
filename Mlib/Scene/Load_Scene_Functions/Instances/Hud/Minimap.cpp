@@ -37,11 +37,11 @@ const std::string Minimap::key = "minimap";
 LoadSceneJsonUserFunction Minimap::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    Minimap(args.physics_scene()).execute(args);
+    Minimap(args.renderable_scene()).execute(args);
 };
 
-Minimap::Minimap(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+Minimap::Minimap(RenderableScene& renderable_scene) 
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
