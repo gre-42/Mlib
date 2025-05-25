@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Images/Ppm_Image.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
@@ -91,6 +92,7 @@ public:
         std::chrono::steady_clock::duration delay,
         std::chrono::steady_clock::duration velocity_dt);
 
+    DestructionFunctionsRemovalTokens on_clear_physics_;
     ObjectPool object_pool_;
 
     std::string name_;

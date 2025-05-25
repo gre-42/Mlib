@@ -25,6 +25,7 @@ DECLARE_ARGUMENT(submenus);
 DECLARE_ARGUMENT(max_tracks);
 DECLARE_ARGUMENT(save_playback);
 DECLARE_ARGUMENT(gid);
+DECLARE_ARGUMENT(primary_user_id);
 }
 
 using namespace Mlib;
@@ -63,6 +64,7 @@ struct RegisterJsonUserFunction {
                         .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
                         .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})},
                     args.render_set_fps.ds,
+                    args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::primary_user_id)],
                     std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }));
                 if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
                     THROW_OR_ABORT("Scene with name \"" + name + "\" already exists");

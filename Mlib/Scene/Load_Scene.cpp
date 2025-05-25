@@ -40,7 +40,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Fill_Pixel_Region_With_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Focused_Text.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Minimap.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Players_Stats.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Pixel_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Thread_Top.hpp>
@@ -125,7 +124,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Record_Track_Gpx.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Clear_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Controls.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Countdown.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Ui_Exhibit.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_To_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
@@ -233,7 +231,6 @@ LoadScene::LoadScene() {
             register_json_user_function(ClearSkybox::key, ClearSkybox::json_user_function);
             register_json_user_function(ConsoleLog::key, ConsoleLog::json_user_function);
             register_json_user_function(Controls::key, Controls::json_user_function);
-            register_json_user_function(Countdown::key, Countdown::json_user_function);
             register_json_user_function(CreateAbsKeyBinding::key, CreateAbsKeyBinding::json_user_function);
             register_json_user_function(CreateAvatarControllerIdleBinding::key, CreateAvatarControllerIdleBinding::json_user_function);
             register_json_user_function(CreateAvatarControllerKeyBinding::key, CreateAvatarControllerKeyBinding::json_user_function);
@@ -320,7 +317,6 @@ LoadScene::LoadScene() {
             register_json_user_function(PlayerSetPlaybackWaypoints::key, PlayerSetPlaybackWaypoints::json_user_function);
             register_json_user_function(PlayerSetVehicleControlParameters::key, PlayerSetVehicleControlParameters::json_user_function);
             register_json_user_function(PlayerSetWaypoint::key, PlayerSetWaypoint::json_user_function);
-            register_json_user_function(PlayersStats::key, PlayersStats::json_user_function);
             register_json_user_function(Preload::key, Preload::json_user_function);
             register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);
             register_json_user_function(RecordTrack::key, RecordTrack::json_user_function);

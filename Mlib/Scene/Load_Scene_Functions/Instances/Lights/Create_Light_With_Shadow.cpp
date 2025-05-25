@@ -63,7 +63,7 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         .lightmap_color = nullptr,
         .lightmap_depth = nullptr,
         .shadow_render_pass = render_pass});
-    auto& o = global_object_pool.create<LightmapLogic>(
+    auto o = object_pool.create_unique<LightmapLogic>(
         CURRENT_SOURCE_LOCATION,
         rendering_resources,
         read_pixels_logic,
@@ -75,10 +75,11 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<int>(KnownArgs::lightmap_width),
         args.arguments.at<int>(KnownArgs::lightmap_height),
         args.arguments.at<UFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));
-    o.on_node_clear.add([&o]() { global_object_pool.remove(o); }, CURRENT_SOURCE_LOCATION);
+    o->on_node_clear.add([&p=object_pool, &o=*o]() { p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
-        { o, CURRENT_SOURCE_LOCATION },
+        { *o, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
     node->add_light(light);
+    o.release();
 }

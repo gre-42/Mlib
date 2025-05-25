@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
@@ -34,20 +35,13 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string PlayersStats::key = "players_stats";
-
-LoadSceneJsonUserFunction PlayersStats::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    PlayersStats(args.physics_scene()).execute(args);
-};
-
-PlayersStats::PlayersStats(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+PlayersStats::PlayersStats(RenderableScene& renderable_scene) 
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     auto& players_stats_logic = object_pool.create<PlayersStatsLogic>(
         CURRENT_SOURCE_LOCATION,
         players,
@@ -70,4 +64,19 @@ void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
         { players_stats_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order),
         CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "players_stats",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                PlayersStats(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

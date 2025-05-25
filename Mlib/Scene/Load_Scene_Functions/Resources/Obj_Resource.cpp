@@ -66,18 +66,16 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& pose,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity,
-        unsigned int rank) override
+        uint32_t rank) override
     {
-        if (rank == 0) {
-            asset_references_["levels"].merge_into_database(
-                asset_id_,
-                JsonMacroArguments{{
-                    {"car_node_position", pose.t},
-                    {"car_node_angles", matrix_2_tait_bryan_angles(pose.R) / degrees},
-                    {"vehicle_velocity", velocity},
-                    {"vehicle_angular_velocity", angular_velocity}
-                }});
-        }
+        nlohmann::json j{
+            {"car_node_position", pose.t},
+            {"car_node_angles", matrix_2_tait_bryan_angles(pose.R) / degrees},
+            {"vehicle_velocity", velocity},
+            {"vehicle_angular_velocity", angular_velocity}};
+        asset_references_["levels"].merge_into_database(
+            asset_id_,
+            JsonMacroArguments{{{std::to_string(rank), std::move(j)}}});
     }
     void set_checkpoints(
         const std::vector<TransformationMatrix<float, ScenePos, 3>>& checkpoints) override

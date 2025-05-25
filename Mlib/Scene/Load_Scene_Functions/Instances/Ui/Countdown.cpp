@@ -12,18 +12,18 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Render_Logics/Countdown_Logic.hpp>
+#include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
-#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(z_order);
 DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
@@ -37,24 +37,15 @@ DECLARE_ARGUMENT(counting_focus);
 DECLARE_ARGUMENT(text);
 }
 
-const std::string Countdown::key = "countdown";
-
-LoadSceneJsonUserFunction Countdown::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    Countdown(args.physics_scene()).execute(args);
-};
-
-Countdown::Countdown(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+Countdown::Countdown(RenderableScene& renderable_scene) 
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node = make_unique_scene_node();
-    auto& countdown_logic = global_object_pool.create<CountDownLogic>(
+    args.arguments.validate(KnownArgs::options);
+    auto countdown_logic = object_pool.create_unique<CountDownLogic>(
         CURRENT_SOURCE_LOCATION,
-        node.ref(CURRENT_SOURCE_LOCATION),
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),        
         args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
@@ -66,16 +57,31 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_from_string(args.arguments.at<std::string>(KnownArgs::pending_focus)),
         focus_from_string(args.arguments.at<std::string>(KnownArgs::counting_focus)),
         args.arguments.at<std::string>(KnownArgs::text),
-        ui_focus.focuses);
-    countdown_logic.on_node_clear.add([&countdown_logic]() { global_object_pool.remove(countdown_logic); }, CURRENT_SOURCE_LOCATION);
-    physics_engine.advance_times_.add_advance_time({ countdown_logic, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        ui_focus.focuses,
+        renderable_scene.physics_scene_.on_clear_);
+    physics_engine.advance_times_.add_advance_time({ *countdown_logic, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    countdown_logic->on_clear_physics_scene.add(
+        [&a=physics_engine.advance_times_, &l=*countdown_logic](){
+            a.delete_advance_time(l, CURRENT_SOURCE_LOCATION);
+        }, CURRENT_SOURCE_LOCATION);
     render_logics.append(
-        { countdown_logic, CURRENT_SOURCE_LOCATION },
+        { *countdown_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order),
         CURRENT_SOURCE_LOCATION);
-    scene.add_root_node(
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
-        std::move(node),
-        RenderingDynamics::MOVING,
-        RenderingStrategies::OBJECT);
+    countdown_logic.release();
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "countdown",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                Countdown(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

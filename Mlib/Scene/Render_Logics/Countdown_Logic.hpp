@@ -5,7 +5,6 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
-#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 namespace Mlib {
 
@@ -14,13 +13,12 @@ class Focuses;
 class AdvanceTimes;
 class ExpressionWatcher;
 
-class CountDownLogic:
+class CountDownLogic final:
     public RenderLogic,
     public RenderTextLogic,
     public IAdvanceTime {
 public:
     CountDownLogic(
-        DanglingRef<SceneNode> node,
         std::unique_ptr<ExpressionWatcher>&& ew,
         std::string charset,
         std::string ttf_filename,
@@ -32,7 +30,8 @@ public:
         Focus pending_focus,
         Focus counting_focus,
         std::string text,
-        Focuses& focuses);
+        Focuses& focuses,
+        DestructionFunctions& on_clear_physics_scene);
     ~CountDownLogic();
 
     // RenderLogic
@@ -52,9 +51,9 @@ public:
     // IAdvanceTime
     virtual void advance_time(float dt, const StaticWorld& world) override;
 
-    DestructionFunctionsRemovalTokens on_node_clear;
+    DestructionFunctionsRemovalTokens on_clear_physics_scene;
+
 private:
-    DanglingPtr<SceneNode> node_;
     std::unique_ptr<ExpressionWatcher> ew_;
     std::string charset_;
     float elapsed_time_;

@@ -27,9 +27,10 @@ PhysicsScene::PhysicsScene(
     const RaceIdentifier& race_identfier,
     const FocusFilter& focus_filter,
     DependentSleeper& dependent_sleeper,
+    UiFocus& ui_focus,
     std::shared_ptr<Translator> translator)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
-    , ui_focus_{ "" }
+    , ui_focus_{ ui_focus }
     , name_{ std::move(name) }
     , scene_config_{ scene_config }
     , scene_node_resources_{ scene_node_resources }
@@ -154,6 +155,7 @@ void PhysicsScene::stop_and_join() {
 
 void PhysicsScene::clear() {
     scene_.shutdown();
+    on_clear_.clear();
 }
 
 void PhysicsScene::instantiate_game_logic(std::function<void()> setup_new_round) {

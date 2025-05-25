@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
@@ -38,6 +39,7 @@ class DynamicLightDb;
 
 class PhysicsLoop;
 
+class UiFocus;
 struct FocusFilter;
 struct SceneConfig;
 struct RaceIdentifier;
@@ -64,6 +66,7 @@ public:
         const RaceIdentifier& race_identfier,
         const FocusFilter& focus_filter,
         DependentSleeper& dependent_sleeper,
+        UiFocus& ui_focus,
         std::shared_ptr<Translator> translator);
     ~PhysicsScene();
 
@@ -77,9 +80,10 @@ public:
     void clear();
     void instantiate_game_logic(std::function<void()> setup_new_round);
 
+    DestructionFunctions on_clear_;
     DeleteNodeMutex delete_node_mutex_;
     ObjectPool object_pool_;
-    UiFocus ui_focus_;
+    UiFocus& ui_focus_;
     std::string name_;
     const SceneConfig& scene_config_;
     SceneNodeResources& scene_node_resources_;

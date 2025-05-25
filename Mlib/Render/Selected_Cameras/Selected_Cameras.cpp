@@ -13,11 +13,11 @@ SelectedCameras::SelectedCameras(Scene& scene)
     : camera_changed{ [this]() { return camera_node_exists(); } }
     , scene_{ scene }
     , dirtmap_node_name_{ "dirtmap_node" }
-    , camera_cycle_near_{ *this, {VH{"follower_camera"}, VH{"turret_camera_node"}} }  // "main_gun_end_node"
+    , camera_cycle_near_{ *this, {VH{"follower_camera_0"}, VH{"turret_camera_node"}} }  // "main_gun_end_node"
     , camera_cycle_far_{ *this, {VH{"45_deg_camera"}, VH{"light_node"}, VH{"dirtmap_node"}} }
     , camera_cycle_tripod_{ *this, {VH{"tripod0"}} }
     , fallback_camera_node_name_{ "stadium_camera" }
-    , camera_node_name_{ "follower_camera" }
+    , camera_node_name_{ "follower_camera_0" }
 {}
 
 SelectedCameras::~SelectedCameras() = default;

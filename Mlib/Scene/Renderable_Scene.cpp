@@ -33,7 +33,8 @@ RenderableScene::RenderableScene(
     LockableKeyConfigurations& key_configurations,
     UiFocus& ui_focus,
     const SceneConfigResource& config)
-    : object_pool_{ InObjectPoolDestructor::CLEAR }
+    : on_clear_physics_{ physics_scene.on_clear_, CURRENT_SOURCE_LOCATION }
+    , object_pool_{ InObjectPoolDestructor::CLEAR }
     , name_{ std::move(name) }
     , physics_scene_{ physics_scene }
     , scene_config_{ scene_config }
@@ -105,17 +106,21 @@ RenderableScene::RenderableScene(
     render_logics_.append({ *bloom_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     scene_render_logics_.append({ *fxaa_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 
+    on_clear_physics_.add([this](){
+        if (audio_listener_updater_ != nullptr) {
+            physics_scene_.physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_, CURRENT_SOURCE_LOCATION);
+            audio_listener_updater_ = nullptr;
+        }
+        physics_scene_.physics_engine_.remove_external_force_provider(*key_bindings_);
+        render_logics_.remove(physics_scene_.render_logics_);
+    }, CURRENT_SOURCE_LOCATION);
+
     physics_scene_.physics_engine_.add_external_force_provider(*key_bindings_);
 }
 
 RenderableScene::~RenderableScene() {
     object_pool_.clear();
-    render_logics_.remove(physics_scene_.render_logics_);
-    physics_scene_.physics_engine_.remove_external_force_provider(*key_bindings_);
-    if (audio_listener_updater_ != nullptr) {
-        physics_scene_.physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_, CURRENT_SOURCE_LOCATION);
-        audio_listener_updater_ = nullptr;
-    }
+    on_clear_physics_.clear();
 }
 
 // RenderLogic

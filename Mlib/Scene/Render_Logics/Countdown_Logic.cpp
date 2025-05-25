@@ -20,7 +20,6 @@
 using namespace Mlib;
 
 CountDownLogic::CountDownLogic(
-    DanglingRef<SceneNode> node,
     std::unique_ptr<ExpressionWatcher>&& ew,
     std::string charset,
     std::string ttf_filename,
@@ -32,15 +31,15 @@ CountDownLogic::CountDownLogic(
     Focus pending_focus,
     Focus counting_focus,
     std::string text,
-    Focuses& focuses)
+    Focuses& focuses,
+    DestructionFunctions& on_clear_physics_scene)
     : RenderTextLogic{
         ascii,
         std::move(ttf_filename),
         color,
         font_height,
         line_distance }
-    , on_node_clear{ node->on_clear, CURRENT_SOURCE_LOCATION }
-    , node_{ node.ptr() }
+    , on_clear_physics_scene{ on_clear_physics_scene, CURRENT_SOURCE_LOCATION }
     , ew_{ std::move(ew) }
     , charset_{ std::move(charset) }
     , elapsed_time_{ NAN }
@@ -54,7 +53,6 @@ CountDownLogic::CountDownLogic(
 
 CountDownLogic::~CountDownLogic() {
     on_destroy.clear();
-    node_ = nullptr;
 }
 
 std::optional<RenderSetup> CountDownLogic::try_render_setup(

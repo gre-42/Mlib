@@ -703,8 +703,8 @@ int main(int argc, char** argv) {
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
-                PhysicsScenes physics_scenes;
                 RenderableScenes renderable_scenes;
+                PhysicsScenes physics_scenes;
 
                 std::atomic_bool load_scene_finished = false;
                 std::unique_ptr<Renderer> renderer;

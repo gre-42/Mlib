@@ -264,12 +264,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     time_r->second->hmatrix.casted<float, ScenePos>()));
             }
             // No periodic extension by default.
-            if (auto it = nodes.find("AC_PIT_0"); it != nodes.end()) {
-                race_logic->set_start_pose(
-                    ac_start_to_car(it->second->hmatrix.casted<float, ScenePos>()),
-                    fixed_zeros<float, 3>() / kph,  // velocity
-                    fixed_zeros<float, 3>() / rpm,  // angular_velocity
-                    0);                             // rank
+            for (uint32_t rank = 0; rank < 2; ++rank) {
+                if (auto it = nodes.find("AC_PIT_" + std::to_string(rank)); it != nodes.end()) {
+                    race_logic->set_start_pose(
+                        ac_start_to_car(it->second->hmatrix.casted<float, ScenePos>()),
+                        fixed_zeros<float, 3>() / kph,  // velocity
+                        fixed_zeros<float, 3>() / rpm,  // angular_velocity
+                        rank);                          // rank
+                }
             }
             auto find_ab = [&](
                 const std::string& name_start_l,
@@ -307,12 +309,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 "AC_OPEN_START_R",
                 "AC_OPEN_FINISH_L",
                 "AC_OPEN_FINISH_R");
-            if (auto it = nodes.find("AC_START_0"); it != nodes.end()) {
-                race_logic->set_start_pose(
-                    ac_start_to_car(it->second->hmatrix.casted<float, ScenePos>()),
-                    fixed_zeros<float, 3>() / kph,  // velocity
-                    fixed_zeros<float, 3>() / rpm,  // angular_velocity
-                    0);                             // rank
+            for (uint32_t rank = 0; rank < 2; ++rank) {
+                if (auto it = nodes.find("AC_START_" + std::to_string(rank)); it != nodes.end()) {
+                    race_logic->set_start_pose(
+                        ac_start_to_car(it->second->hmatrix.casted<float, ScenePos>()),
+                        fixed_zeros<float, 3>() / kph,  // velocity
+                        fixed_zeros<float, 3>() / rpm,  // angular_velocity
+                        rank);                          // rank
+                }
             }
             // for (const auto& c : checkpoints) {
             //     linfo() << "Checkpoint: " << c.t();

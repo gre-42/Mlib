@@ -83,13 +83,13 @@ public:
     template<class T, class... Args>
         requires std::is_convertible_v<T&, Object&>
     std::unique_ptr<T, DeleteFromPool<T>> create_unique(SourceLocation loc, Args&&... args) {
-        auto& res = create<T>(loc, args...);
+        auto& res = create<T>(loc, std::forward<Args>(args)...);
         return { &res, DeleteFromPool<T>(*this) };
     }
     template<class T, class... Args>
         requires std::is_convertible_v<T&, Object&>
     std::shared_ptr<T> create_shared(SourceLocation loc, Args&&... args) {
-        auto& res = create<T>(loc, args...);
+        auto& res = create<T>(loc, std::forward<Args>(args)...);
         return { &res, DeleteFromPool<T>(*this) };
     }
 

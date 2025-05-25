@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
+#include <cstdint>
 
 namespace Mlib {
 
@@ -15,7 +16,7 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& pose,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity,
-        unsigned int rank) = 0;
+        uint32_t rank) = 0;
     virtual void set_checkpoints(
         const std::vector<TransformationMatrix<float, ScenePos, 3>>& checkpoints) = 0;
     virtual void set_circularity(bool is_circular) = 0;
