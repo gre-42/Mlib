@@ -1,6 +1,4 @@
 #include "Physics_Scene.hpp"
-#include <Mlib/Macro_Executor/Focus.hpp>
-#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
@@ -25,7 +23,6 @@ PhysicsScene::PhysicsScene(
     size_t max_tracks,
     bool save_playback,
     const RaceIdentifier& race_identfier,
-    const FocusFilter& focus_filter,
     DependentSleeper& dependent_sleeper,
     UiFocus& ui_focus,
     std::shared_ptr<Translator> translator)
@@ -46,11 +43,11 @@ PhysicsScene::PhysicsScene(
     // => Create PhysicsEngine before Scene
     , physics_engine_{ scene_config.physics_engine_config }
     , scene_{
-          name_,
-          delete_node_mutex_,
-          &scene_node_resources,
-          trail_renderer_.get(),
-          dynamic_lights_.get()}
+        name_,
+        delete_node_mutex_,
+        &scene_node_resources,
+        trail_renderer_.get(),
+        dynamic_lights_.get()}
     , air_particles_{
         scene_node_resources,
         rendering_resources_,
@@ -68,9 +65,8 @@ PhysicsScene::PhysicsScene(
     , contact_smoke_generator_{
         air_particles_.smoke_particle_generator,
         skidmark_particles_.smoke_particle_generator }
-    , paused_{ [this, focus_filter]() {
-        std::shared_lock lock{ ui_focus_.focuses.mutex };
-        return !ui_focus_.has_focus(focus_filter);
+    , paused_{ [this]() {
+        return (usage_counter_.count() == 0);
       } }
     , paused_changed_{ [](){ return true; }}
     , physics_sleeper_{

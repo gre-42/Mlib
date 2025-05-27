@@ -1,4 +1,6 @@
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -25,6 +27,8 @@ DECLARE_ARGUMENT(with_flying_logic);
 DECLARE_ARGUMENT(clear_mode);
 DECLARE_ARGUMENT(physics);
 DECLARE_ARGUMENT(layout);
+DECLARE_ARGUMENT(focus_mask);
+DECLARE_ARGUMENT(submenus);
 DECLARE_ARGUMENT(user_id);
 }
 
@@ -75,6 +79,9 @@ struct RegisterJsonUserFunction {
                     layout == SceneLayout::FULL_SCREEN
                         ? physics_scene.ui_focus_
                         : args.ui_focuses[user_id],
+                    FocusFilter{
+                        .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
+                        .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})},
                     user_id,
                     SceneConfigResource{
                         .fly = args.arguments.at<bool>(KnownArgs::fly),

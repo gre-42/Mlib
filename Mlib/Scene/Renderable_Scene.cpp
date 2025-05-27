@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
@@ -32,10 +33,12 @@ RenderableScene::RenderableScene(
     CursorStates& scroll_wheel_states,
     LockableKeyConfigurations& key_configurations,
     UiFocus& ui_focus,
+    const FocusFilter& focus_filter,
     uint32_t user_id,
     const SceneConfigResource& config)
     : on_clear_physics_{ physics_scene.on_clear_, CURRENT_SOURCE_LOCATION }
     , object_pool_{ InObjectPoolDestructor::CLEAR }
+    , counter_user_{ DanglingBaseClassRef<UsageCounter>{physics_scene.usage_counter_, CURRENT_SOURCE_LOCATION} }
     , name_{ std::move(name) }
     , physics_scene_{ physics_scene }
     , scene_config_{ scene_config }
@@ -51,6 +54,7 @@ RenderableScene::RenderableScene(
           .delete_node_mutex = physics_scene.delete_node_mutex_,
           .physics_set_fps = &physics_scene.physics_set_fps_}
     , ui_focus_{ ui_focus }
+    , focus_filter_{ focus_filter }
     , user_id_{ user_id }
     , render_logics_{ ui_focus }
     , scene_render_logics_{ ui_focus }
@@ -115,6 +119,7 @@ RenderableScene::RenderableScene(
         }
         physics_scene_.physics_engine_.remove_external_force_provider(*key_bindings_);
         render_logics_.remove(physics_scene_.render_logics_);
+        counter_user_.reset();
     }, CURRENT_SOURCE_LOCATION);
 
     physics_scene_.physics_engine_.add_external_force_provider(*key_bindings_);
@@ -157,6 +162,10 @@ void RenderableScene::render_without_setup(
             *standard_render_logic_,
             *post_processing_logic_);
         background_color_applied_ = true;
+    }
+    {
+        std::shared_lock lock{ ui_focus_.focuses.mutex };
+        counter_user_->set(ui_focus_.has_focus(focus_filter_));
     }
 
     auto f = frame_id;

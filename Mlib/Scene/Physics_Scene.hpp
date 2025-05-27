@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Memory/Usage_Counter.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
@@ -39,8 +39,6 @@ class DynamicLightDb;
 
 class PhysicsLoop;
 
-class UiFocus;
-struct FocusFilter;
 struct SceneConfig;
 struct RaceIdentifier;
 
@@ -64,7 +62,6 @@ public:
         size_t max_tracks,
         bool save_playback,
         const RaceIdentifier& race_identfier,
-        const FocusFilter& focus_filter,
         DependentSleeper& dependent_sleeper,
         UiFocus& ui_focus,
         std::shared_ptr<Translator> translator);
@@ -113,6 +110,7 @@ public:
     std::unique_ptr<GameLogic> game_logic_;
     Users users_;
     DeferredInstantiator deferred_instantiator_;
+    UsageCounter usage_counter_;
 
 #ifndef WITHOUT_ALUT
     AudioResourceContext primary_audio_resource_context_;

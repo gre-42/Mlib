@@ -1,6 +1,5 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
-#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
@@ -20,8 +19,6 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(world);
-DECLARE_ARGUMENT(focus_mask);
-DECLARE_ARGUMENT(submenus);
 DECLARE_ARGUMENT(max_tracks);
 DECLARE_ARGUMENT(save_playback);
 DECLARE_ARGUMENT(gid);
@@ -60,9 +57,6 @@ struct RegisterJsonUserFunction {
                         .session = "",
                         .laps = 0,
                         .milliseconds = 0},
-                    FocusFilter{
-                        .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
-                        .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})},
                     args.render_set_fps.ds,
                     args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::primary_user_id)],
                     std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }));

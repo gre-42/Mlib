@@ -1,7 +1,9 @@
 #pragma once
 #include <Mlib/Images/Ppm_Image.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Memory/Usage_Counter.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
@@ -67,6 +69,7 @@ public:
         CursorStates& scroll_wheel_states,
         LockableKeyConfigurations& key_configurations,
         UiFocus& ui_focus,
+        const FocusFilter& focus_filter,
         uint32_t user_id,
         const SceneConfigResource& config);
     ~RenderableScene();
@@ -96,6 +99,7 @@ public:
 
     DestructionFunctionsRemovalTokens on_clear_physics_;
     ObjectPool object_pool_;
+    std::optional<CounterUser> counter_user_;
 
     std::string name_;
     PhysicsScene& physics_scene_;
@@ -103,6 +107,7 @@ public:
     SelectedCameras selected_cameras_;
     FlyingCameraUserClass user_object_;
     UiFocus& ui_focus_;
+    FocusFilter focus_filter_;
     uint32_t user_id_;
 
     RenderLogics render_logics_;
