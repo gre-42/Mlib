@@ -96,9 +96,7 @@ PhysicsScene::PhysicsScene(
           &fifo_log_}
     , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, std::move(translator) }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
-#ifndef WITHOUT_ALUT
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
-#endif
 {
     physics_engine_.set_surface_contact_db(surface_contact_db);
     physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);

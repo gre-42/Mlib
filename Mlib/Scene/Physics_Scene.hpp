@@ -114,10 +114,8 @@ public:
     DeferredInstantiator deferred_instantiator_;
     UsageCounter usage_counter_;
 
-#ifndef WITHOUT_ALUT
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;
-#endif
 };
 
 }

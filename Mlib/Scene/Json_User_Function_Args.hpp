@@ -5,10 +5,11 @@
 #include <functional>
 #include <list>
 #include <string>
-#include <vector>
 
 namespace Mlib {
 
+template <class T>
+class VerboseVector;
 class JsonMacroArguments;
 class MacroLineExecutor;
 class NotifyingJsonMacroArguments;
@@ -46,7 +47,7 @@ struct LoadSceneJsonUserFunctionArgs {
     ButtonStates& button_states;
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
-    std::vector<ButtonPress>& confirm_button_press;
+    VerboseVector<ButtonPress>& confirm_button_press;
     LockableKeyConfigurations& key_configurations;
     LockableKeyDescriptions& key_descriptions;
     UiFocuses& ui_focuses;

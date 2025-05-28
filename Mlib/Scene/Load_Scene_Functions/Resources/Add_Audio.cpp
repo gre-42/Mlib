@@ -25,10 +25,8 @@ LoadSceneJsonUserFunction AddAudio::json_user_function = [](const LoadSceneJsonU
 
 void AddAudio::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-#ifndef WITHOUT_ALUT
     AudioResourceContextStack::primary_audio_resources()->add_buffer(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.path(KnownArgs::filename),
         args.arguments.at<float>(KnownArgs::gain, 1.f));
-#endif
 }

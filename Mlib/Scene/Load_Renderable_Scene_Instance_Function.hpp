@@ -85,10 +85,8 @@ protected:
     DeleteNodeMutex& delete_node_mutex;
 
 private:
-#ifndef WITHOUT_ALUT
     AudioResourceContextGuard arg0_;
     AudioResourceContextGuard arg1_;
-#endif
 };
 
 }

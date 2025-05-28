@@ -1,10 +1,9 @@
-#ifndef WITHOUT_ALUT
+#include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
-#endif
-#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
@@ -20,6 +19,9 @@
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Input_Config.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
@@ -27,32 +29,29 @@
 #include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Window_Logic.hpp>
 #include <Mlib/Render/Renderer.hpp>
-#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
-#include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
-#include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Render/Ui/Static_Renderable_Hider.hpp>
-#include <Mlib/Scene/Renderable_Scene.hpp>
-#include <Mlib/Scene/Renderable_Scenes.hpp>
+#include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
+#include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Physics_Scenes.hpp>
-#include <Mlib/Scene/Load_Scene.hpp>
+#include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Scene/Renderable_Scenes.hpp>
+#include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Threads/J_Thread.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
-#include <Mlib/Threads/J_Thread.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <filesystem>
 
@@ -190,7 +189,7 @@ JThread loader_thread(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
-    std::vector<ButtonPress>& confirm_button_press,
+    VerboseVector<ButtonPress>& confirm_button_press,
     LockableKeyConfigurations& key_configurations,
     LockableKeyDescriptions& key_descriptions,
     UiFocuses& ui_focuses,
@@ -205,14 +204,10 @@ JThread loader_thread(
     return JThread{[&, render_delay, velocity_dt](){
         try {
             ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
-#ifndef WITHOUT_ALUT
             AudioResourceContext arc;
-#endif
             {
-#ifndef WITHOUT_ALUT
                 AudioResourceContextGuard arcg{ arc };
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
-#endif
                 // GlContextGuard gcg{ render2.window() };
                 load_scene(
                     &search_path,
@@ -484,12 +479,10 @@ int main(int argc, char** argv) {
         if (args.has_named("--check_gl_errors")) {
             check_gl_errors(CheckErrors::ENABLED);
         }
-#ifndef WITHOUT_ALUT
         AudioDevice audio_device;
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
         AudioScene::set_default_alpha(safe_stof(args.named_value("--audio_alpha", "0.1")));
-#endif
 
         std::atomic_size_t num_renderings;
         RenderConfig render_config{
@@ -548,24 +541,27 @@ int main(int argc, char** argv) {
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
-        BaseKeyCombination confirm_key_combination_0{{{
-            BaseKeyBinding{
-                .key = "ENTER",
-                .gamepad_button = { 0, "A" },
-                .tap_button = { 0, "START" }}}}};
-        BaseKeyCombination confirm_key_combination_1{{{
-            BaseKeyBinding{
-                .gamepad_button = { 1, "A" }}}}};
         LockableKeyConfigurations confirm_key_configurations;
-        confirm_key_configurations
-            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->insert(0, "confirm", { std::move(confirm_key_combination_0) });
-        confirm_key_configurations
-            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->insert(1, "confirm", { std::move(confirm_key_combination_1) });
-        std::vector<ButtonPress> confirm_button_press{
-            {button_states, confirm_key_configurations, 0, "confirm", ""},
-            {button_states, confirm_key_configurations, 1, "confirm", ""} };
+        uint32_t ngamepads = 2;
+        VerboseVector<ButtonPress> confirm_button_press("Confirm button press");
+        confirm_button_press.reserve(ngamepads);
+        {
+            auto locked_key_configs = confirm_key_configurations
+                .lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
+            BaseKeyCombination confirm_key_combination_0{{{
+                BaseKeyBinding{
+                    .key = "ENTER",
+                    .gamepad_button = { 0, "A" },
+                    .tap_button = { 0, "START" }}}}};
+            locked_key_configs->insert(0, "confirm", { std::move(confirm_key_combination_0) });
+            confirm_button_press.emplace_back(button_states, confirm_key_configurations, 0, "confirm", "");
+            for (uint32_t i = 1; i < ngamepads; ++i) {
+                BaseKeyCombination confirm_key_combination_i{{{
+                    BaseKeyBinding{.gamepad_button = { i, "A" }}}}};
+                locked_key_configs->insert(i, "confirm", { std::move(confirm_key_combination_i) });
+                confirm_button_press.emplace_back(button_states, confirm_key_configurations, i, "confirm", "");
+            }
+        }
         UiFocuses ui_focuses{ get_path_in_appdata_directory({"focus.json"}) };
         ui_focuses.try_load();
         NotifyingJsonMacroArguments external_json_macro_arguments;

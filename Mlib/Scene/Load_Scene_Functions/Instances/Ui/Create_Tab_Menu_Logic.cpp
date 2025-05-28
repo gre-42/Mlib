@@ -1,5 +1,6 @@
 #include "Create_Tab_Menu_Logic.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Constraint_Window.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
@@ -74,7 +75,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION,
         std::move(id),
         focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
-        args.confirm_button_press.at(user_id),
+        args.confirm_button_press.get(user_id),
         args.gallery,
         list_view_style_from_string(args.arguments.at<std::string>(KnownArgs::style)),
         args.arguments.at<std::string>(KnownArgs::selection_marker),

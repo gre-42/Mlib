@@ -30,10 +30,8 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(PhysicsScene&
     , ui_focus{ physics_scene.ui_focus_ }
     , base_log{ physics_scene.fifo_log_ }
     , delete_node_mutex{ physics_scene.delete_node_mutex_ }
-#ifndef WITHOUT_ALUT
     , arg0_{ physics_scene.primary_audio_resource_context_ }
     , arg1_{ physics_scene.secondary_audio_resource_context_ }
-#endif
 {}
 
 LoadPhysicsSceneInstanceFunction::~LoadPhysicsSceneInstanceFunction() = default;

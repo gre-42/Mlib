@@ -1,7 +1,5 @@
 #pragma once
-#ifndef WITHOUT_ALUT
 #include <Mlib/Audio/Cross_Fade.hpp>
-#endif
 #include <Mlib/Physics/Actuators/IEngine_Event_Listener.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <functional>
@@ -32,13 +30,11 @@ public:
         const RotatingFrame<SceneDir, ScenePos, 3>& frame) override;
     virtual void advance_time(float dt) override;
 private:
-#ifndef WITHOUT_ALUT
     std::shared_ptr<AudioBufferSequenceWithHysteresis> driving_buffer_sequence_;
     float driving_gain_;
     CrossFade cross_fade_;
     float p_reference_;
     float p_idle_;
-#endif
 };
 
 }

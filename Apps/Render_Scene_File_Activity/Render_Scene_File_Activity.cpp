@@ -1,9 +1,3 @@
-#ifndef WITHOUT_ALUT
-#include <Mlib/Audio/Audio_Context.hpp>
-#include <Mlib/Audio/Audio_Device.hpp>
-#include <Mlib/Audio/Audio_Listener.hpp>
-#include <Mlib/Audio/Audio_Scene.hpp>
-#endif
 #include <Mlib/Android/game_helper/AContext.hpp>
 #include <Mlib/Android/game_helper/AEngine.hpp>
 #include <Mlib/Android/game_helper/ARenderLoop.hpp>
@@ -12,6 +6,10 @@
 #include <Mlib/Android/ndk_helper/AndroidApp.hpp>
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Audio/Audio_Context.hpp>
+#include <Mlib/Audio/Audio_Device.hpp>
+#include <Mlib/Audio/Audio_Listener.hpp>
+#include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -33,9 +31,9 @@
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/IRenderer.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -51,19 +49,19 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
+#include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
-#include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Threads/J_Thread.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
-#include <Mlib/Threads/J_Thread.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <filesystem>
 
@@ -249,14 +247,10 @@ JThread loader_thread(
     return JThread{[&, render_delay, velocity_dt](){
         try {
             ThreadInitializer ti{"Scene loader", ThreadAffinity::POOL};
-#ifndef WITHOUT_ALUT
             AudioResourceContext arc;
-#endif
             {
-#ifndef WITHOUT_ALUT
                 AudioResourceContextGuard arcg{ arc };
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
-#endif
                 // GlContextGuard gcg{ render2.window() };
                 load_scene(
                     &search_path,
@@ -490,12 +484,10 @@ void android_main(android_app* app) {
         if (args.has_named("--check_gl_errors")) {
             check_gl_errors(CheckErrors::ENABLED);
         }
-#ifndef WITHOUT_ALUT
         AudioDevice audio_device;
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
         AudioScene::set_default_alpha(safe_stof(args.named_value("--audio_alpha", "0.1")));
-#endif
 
         std::atomic_size_t num_renderings;
         RenderConfig render_config{

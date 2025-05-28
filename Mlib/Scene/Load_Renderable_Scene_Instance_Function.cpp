@@ -40,10 +40,8 @@ LoadRenderableSceneInstanceFunction::LoadRenderableSceneInstanceFunction(Rendera
     , base_log{ renderable_scene.physics_scene_->fifo_log_ }
     , ui_focus{ renderable_scene.ui_focus_ }
     , delete_node_mutex{ renderable_scene.physics_scene_->delete_node_mutex_ }
-#ifndef WITHOUT_ALUT
     , arg0_{ renderable_scene.physics_scene_->primary_audio_resource_context_ }
     , arg1_{ renderable_scene.physics_scene_->secondary_audio_resource_context_ }
-#endif
 {}
 
 LoadRenderableSceneInstanceFunction::~LoadRenderableSceneInstanceFunction() = default;

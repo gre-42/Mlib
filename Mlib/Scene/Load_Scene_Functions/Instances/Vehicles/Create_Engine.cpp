@@ -12,14 +12,12 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
-#ifndef WITHOUT_ALUT
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
-#endif
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -99,7 +97,6 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<float>(KnownArgs::w_clutch) * rpm,
             args.arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / seconds};
     }
-#ifndef WITHOUT_ALUT
     std::shared_ptr<EngineAudio> av;
     if (args.arguments.contains(KnownArgs::audio)) {
         auto a = args.arguments.child(KnownArgs::audio);
@@ -113,7 +110,6 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
                 a.at<float>(Audio::p_reference) * hp);
         }
     }
-#endif
     std::shared_ptr<EngineEventListeners> engine_listeners;
     auto add_engine_listener = [&](std::shared_ptr<IEngineEventListener> l){
         if (engine_listeners == nullptr) {

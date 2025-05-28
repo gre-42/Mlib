@@ -1,6 +1,4 @@
 #pragma once
-#ifndef WITHOUT_ALUT
-
 #include <Mlib/Resource_Context.hpp>
 #include <memory>
 
@@ -26,5 +24,3 @@ public:
 };
 
 }
-
-#endif

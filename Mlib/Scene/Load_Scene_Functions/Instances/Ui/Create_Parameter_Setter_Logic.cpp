@@ -1,5 +1,6 @@
 #include "Create_Parameter_Setter_Logic.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
@@ -132,7 +133,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         CURRENT_SOURCE_LOCATION,
         std::move(id),
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
-        args.confirm_button_press.at(user_id),
+        args.confirm_button_press.get(user_id),
         args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
