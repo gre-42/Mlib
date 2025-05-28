@@ -16,6 +16,10 @@ AggregateRenderLogic::AggregateRenderLogic(
     RenderingResources& rendering_resources,
     RenderLogic& child_logic)
     : child_logic_{ child_logic }
+    , small_aggregate_bg_worker_{ "Small_agg_BG" }
+    , large_aggregate_bg_worker_{ "Large_agg_BG" }
+    , small_instances_bg_worker_{ "Small_inst_BG" }
+    , large_instances_bg_worker_{ "Large_inst_BG" }
     , small_sorted_aggregate_renderer_{ std::make_shared<AggregateArrayRenderer>(rendering_resources) }
     , small_sorted_instances_renderers_{ std::make_shared<ArrayInstancesRenderers>(rendering_resources) }
     , large_aggregate_renderer_{ std::make_shared<AggregateArrayRenderer>(rendering_resources) }
@@ -52,9 +56,13 @@ bool AggregateRenderLogic::render_optional_setup(
     std::optional<InstancesRendererGuard> irg;
     if (create_render_guards) {
         arg.emplace(
+            &small_aggregate_bg_worker_,
+            &large_aggregate_bg_worker_,
             small_sorted_aggregate_renderer_,
             large_aggregate_renderer_);
         irg.emplace(
+            &small_instances_bg_worker_,
+            &large_instances_bg_worker_,
             small_sorted_instances_renderers_,
             large_instances_renderer_);
     }
@@ -81,4 +89,18 @@ void AggregateRenderLogic::invalidate_aggregate_renderers() {
     small_sorted_instances_renderers_->invalidate();
     large_aggregate_renderer_->invalidate();
     large_instances_renderer_->invalidate();
+}
+
+void AggregateRenderLogic::wait_until_done() {
+    large_aggregate_bg_worker_.wait_until_done();
+    large_instances_bg_worker_.wait_until_done();
+    small_aggregate_bg_worker_.wait_until_done();
+    small_instances_bg_worker_.wait_until_done();
+}
+
+void AggregateRenderLogic::stop_and_join() {
+    large_aggregate_bg_worker_.shutdown();
+    large_instances_bg_worker_.shutdown();
+    small_aggregate_bg_worker_.shutdown();
+    small_instances_bg_worker_.shutdown();
 }

@@ -553,10 +553,18 @@ int main(int argc, char** argv) {
             .rendering_resources = rendering_resources,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
+        BackgroundLoop small_aggregate_bg_worker{ "Small_agg_BG" };
+        BackgroundLoop large_aggregate_bg_worker{ "Large_agg_BG" };
+        BackgroundLoop small_instances_bg_worker{ "Small_inst_BG" };
+        BackgroundLoop large_instances_bg_worker{ "Large_inst_BG" };
         AggregateRendererGuard aggregate_renderer_guard{
+            &small_aggregate_bg_worker,
+            &large_aggregate_bg_worker,
             std::make_shared<AggregateArrayRenderer>(rendering_resources),
             std::make_shared<AggregateArrayRenderer>(rendering_resources)};
         InstancesRendererGuard instances_renderer_guard{
+            &small_instances_bg_worker,
+            &large_instances_bg_worker,
             std::make_shared<ArrayInstancesRenderers>(rendering_resources),
             std::make_shared<ArrayInstancesRenderer>(rendering_resources)};
         DeleteNodeMutex delete_node_mutex;

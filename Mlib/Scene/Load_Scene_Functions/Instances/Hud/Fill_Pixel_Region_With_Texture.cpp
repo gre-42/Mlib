@@ -51,7 +51,7 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto& scene_window_logic = object_pool.create<FillPixelRegionWithTextureLogic>(
         CURRENT_SOURCE_LOCATION,
         std::make_shared<FillWithTextureLogic>(
-            rs.physics_scene_.rendering_resources_.get_texture_lazy(
+            rs.physics_scene_->rendering_resources_.get_texture_lazy(
                 ColormapWithModifiers{
                     .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
                     .color_mode = ColorMode::RGBA,

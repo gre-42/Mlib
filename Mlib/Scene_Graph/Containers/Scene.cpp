@@ -26,6 +26,7 @@
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Unlock_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
@@ -54,10 +55,6 @@ Scene::Scene(
     , root_instances_always_nodes_{ morn_.create(VariableAndHash<std::string>{"root_instances_always_nodes"}) }
     , static_root_physics_nodes_{ morn_.create(VariableAndHash<std::string>{"static_root_physics_nodes"}) }
     , name_{ std::move(name) }
-    , large_aggregate_bg_worker_{ "Large_agg_BG" }
-    , large_instances_bg_worker_{ "Large_inst_BG" }
-    , small_aggregate_bg_worker_{ "Small_agg_BG" }
-    , small_instances_bg_worker_{ "Small_inst_BG" }
     , uuid_{ 0 }
     , shutting_down_{ false }
     , scene_node_resources_{ scene_node_resources }
@@ -309,7 +306,6 @@ void Scene::shutdown() {
     if (shutting_down_) {
         return;
     }
-    stop_and_join();
     delete_node_mutex_.clear_deleter_thread();
     delete_node_mutex_.set_deleter_thread();
     shutting_down_ = true;
@@ -334,21 +330,6 @@ void Scene::shutdown() {
         morn_.print_trash_can_references();
         verbose_abort("Dangling references remain after scene shutdown");
     }
-}
-
-void Scene::stop_and_join() {
-    large_aggregate_bg_worker_.shutdown();
-    large_instances_bg_worker_.shutdown();
-    small_aggregate_bg_worker_.shutdown();
-    small_instances_bg_worker_.shutdown();
-}
-
-void Scene::wait_until_done() const {
-    std::shared_lock lock{ mutex_ };
-    large_aggregate_bg_worker_.wait_until_done();
-    large_instances_bg_worker_.wait_until_done();
-    small_aggregate_bg_worker_.wait_until_done();
-    small_instances_bg_worker_.wait_until_done();
 }
 
 bool Scene::contains_node(const VariableAndHash<std::string>& name) const {
@@ -625,13 +606,21 @@ void Scene::render(
                             large_aggregate_renderer->update_aggregates(iv.t, aggregate_queue, external_render_pass, task_location);
                         });
                     };
-                    if (is_foreground_task || (is_background_task && !large_aggregate_renderer->is_initialized())) {
-                        large_aggregate_bg_worker_.wait_until_done();
+                    if (is_foreground_task) {
                         large_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
-                    } else if (is_background_task && large_aggregate_bg_worker_.done()) {
-                        auto dist = sum(squared(large_aggregate_renderer->offset() - iv.t));
-                        if (dist > squared(scene_graph_config.large_max_offset_deviation)) {
-                            large_aggregate_bg_worker_.run(large_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
+                    } else if (is_background_task) {
+                        auto* worker = IAggregateRenderer::large_aggregate_bg_worker();
+                        if (worker == nullptr) {
+                            THROW_OR_ABORT("Scene::render: large_aggregate_bg_worker not set");
+                        }
+                        if (!large_aggregate_renderer->is_initialized()) {
+                            worker->wait_until_done();
+                            large_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
+                        } else if (worker->done()) {
+                            auto dist = sum(squared(large_aggregate_renderer->offset() - iv.t));
+                            if (dist > squared(scene_graph_config.large_max_offset_deviation)) {
+                                worker->run(large_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
+                            }
                         }
                     }
                     // AperiodicLagFinder lag_finder{ "Large aggregates: ", std::chrono::milliseconds{5} };
@@ -658,13 +647,21 @@ void Scene::render(
                             large_instances_renderer->update_instances(iv.t, instances_queue.queue(), task_location);
                         });
                     };
-                    if (is_foreground_task || (is_background_task && !large_instances_renderer->is_initialized())) {
-                        large_instances_bg_worker_.wait_until_done();
+                    if (is_foreground_task) {
                         large_instances_renderer_update_func(TaskLocation::FOREGROUND)();
-                    } else if (is_background_task && large_instances_bg_worker_.done()) {
-                        auto dist = sum(squared(large_instances_renderer->offset() - iv.t));
-                        if (dist > squared(scene_graph_config.large_max_offset_deviation)) {
-                            large_instances_bg_worker_.run(large_instances_renderer_update_func(TaskLocation::BACKGROUND));
+                    } else if (is_background_task) {
+                        auto* worker = IInstancesRenderer::large_instances_bg_worker();
+                        if (worker == nullptr) {
+                            THROW_OR_ABORT("Scene::render: large_instances_bg_worker not set");
+                        }
+                        if (!large_instances_renderer->is_initialized()) {
+                            worker->wait_until_done();
+                            large_instances_renderer_update_func(TaskLocation::FOREGROUND)();
+                        } else if (worker->done()) {
+                            auto dist = sum(squared(large_instances_renderer->offset() - iv.t));
+                            if (dist > squared(scene_graph_config.large_max_offset_deviation)) {
+                                worker->run(large_instances_renderer_update_func(TaskLocation::BACKGROUND));
+                            }
                         }
                     }
                     // AperiodicLagFinder lag_finder{ "large instances: ", std::chrono::milliseconds{5} };
@@ -695,13 +692,21 @@ void Scene::render(
                             small_sorted_aggregate_renderer->update_aggregates(iv.t, sorted_aggregate_queue, external_render_pass, task_location);
                         });
                     };
-                    if (is_foreground_task || (is_background_task && !small_sorted_aggregate_renderer->is_initialized())) {
-                        small_aggregate_bg_worker_.wait_until_done();
+                    if (is_foreground_task) {
                         small_sorted_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
-                    } else if (is_background_task && small_aggregate_bg_worker_.done()) {
-                        WorkerStatus status = small_aggregate_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
-                        if (status == WorkerStatus::IDLE) {
-                            small_aggregate_bg_worker_.run(small_sorted_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
+                    } else if (is_background_task) {
+                        auto* worker = IAggregateRenderer::small_aggregate_bg_worker();
+                        if (worker == nullptr) {
+                            THROW_OR_ABORT("Scene::render: large_instances_bg_worker not set");
+                        }
+                        if (!small_sorted_aggregate_renderer->is_initialized()) {
+                            worker->wait_until_done();
+                            small_sorted_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
+                        } else if (worker->done()) {
+                            WorkerStatus status = worker->tick(scene_graph_config.small_aggregate_update_interval);
+                            if (status == WorkerStatus::IDLE) {
+                                worker->run(small_sorted_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
+                            }
                         }
                     }
                     // AperiodicLagFinder lag_finder{ "Small sorted aggregates: ", std::chrono::milliseconds{5} };
@@ -758,14 +763,21 @@ void Scene::render(
                                 // lerr() << this << " " << external_render_pass.pass << ", elapsed time: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - start_time).count() << " s";
                             });
                         };
-                        if (is_foreground_task || (is_background_task && !small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->is_initialized())) {
-                            small_instances_bg_worker_.wait_until_done();
+                        if (is_foreground_task) {
                             small_instances_renderer_update_func(TaskLocation::FOREGROUND)();
-                        } else if (is_background_task && small_instances_bg_worker_.done()) {
-                            WorkerStatus status = small_instances_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
-                            if (status == WorkerStatus::IDLE) {
-                                small_instances_bg_worker_.run(
-                                    small_instances_renderer_update_func(TaskLocation::BACKGROUND));
+                        } else if (is_background_task) {
+                            auto* worker = IInstancesRenderer::small_instances_bg_worker();
+                            if (worker == nullptr) {
+                                THROW_OR_ABORT("Scene::render: small_instances_bg_worker not set");
+                            }
+                            if (!small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->is_initialized()) {
+                                worker->wait_until_done();
+                                small_instances_renderer_update_func(TaskLocation::FOREGROUND)();
+                            } else if (worker->done()) {
+                                WorkerStatus status = worker->tick(scene_graph_config.small_aggregate_update_interval);
+                                if (status == WorkerStatus::IDLE) {
+                                    worker->run(small_instances_renderer_update_func(TaskLocation::BACKGROUND));
+                                }
                             }
                         }
                     }

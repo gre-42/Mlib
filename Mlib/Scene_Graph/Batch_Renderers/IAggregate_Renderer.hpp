@@ -20,18 +20,24 @@ class IAggregateRenderer;
 struct ColorStyle;
 struct ExternalRenderPass;
 enum class TaskLocation;
+class BackgroundLoop;
 
 class AggregateRendererGuard {
     AggregateRendererGuard(const AggregateRendererGuard&) = delete;
     AggregateRendererGuard& operator=(const AggregateRendererGuard&) = delete;
 public:
     AggregateRendererGuard(
+        BackgroundLoop* small_aggregate_bg_worker,
+        BackgroundLoop* large_aggregate_bg_worker,
         std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer,
         std::shared_ptr<IAggregateRenderer> large_aggregate_renderer);
     ~AggregateRendererGuard();
+
 private:
     std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer_;
     std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;
+    BackgroundLoop* old_small_aggregate_bg_worker_;
+    BackgroundLoop* old_large_aggregate_bg_worker_;
     const std::shared_ptr<IAggregateRenderer>* old_small_sorted_aggregate_renderer_;
     const std::shared_ptr<IAggregateRenderer>* old_large_aggregate_renderer_;
 };
@@ -58,10 +64,14 @@ public:
         const ExternalRenderPass& external_render_pass,
         const std::list<const ColorStyle*>& color_styles) const = 0;
     virtual FixedArray<ScenePos, 3> offset() const = 0;
+    static BackgroundLoop* small_aggregate_bg_worker();
+    static BackgroundLoop* large_aggregate_bg_worker();
     static std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer();
     static std::shared_ptr<IAggregateRenderer> large_aggregate_renderer();
 
 private:
+    static THREAD_LOCAL(BackgroundLoop*) small_aggregate_bg_worker_;
+    static THREAD_LOCAL(BackgroundLoop*) large_aggregate_bg_worker_;
     static THREAD_LOCAL(const std::shared_ptr<IAggregateRenderer>*) small_sorted_aggregate_renderer_;
     static THREAD_LOCAL(const std::shared_ptr<IAggregateRenderer>*) large_aggregate_renderer_;
 };

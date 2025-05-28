@@ -8,7 +8,6 @@
 #include <Mlib/Scene_Graph/Containers/Map_Of_Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
@@ -138,8 +137,6 @@ public:
     void print(std::ostream& ostr) const;
     void shutdown();
     bool shutting_down() const;
-    void stop_and_join();
-    void wait_until_done() const;
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
     void wait_for_cleanup() const;
     void notify_cleanup_required();
@@ -175,10 +172,6 @@ private:
         std::set<DanglingPtr<SceneNode>>> root_imposter_nodes_;
     std::string name_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
-    mutable BackgroundLoop large_aggregate_bg_worker_;
-    mutable BackgroundLoop large_instances_bg_worker_;
-    mutable BackgroundLoop small_aggregate_bg_worker_;
-    mutable BackgroundLoop small_instances_bg_worker_;
     mutable FastMutex uuid_mutex_;
     size_t uuid_;
     std::atomic_bool shutting_down_;

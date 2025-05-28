@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Usage_Counter.hpp>
@@ -62,7 +63,7 @@ class RenderableScene: public RenderLogic, public IRenderableScene {
 public:
     RenderableScene(
         std::string name,
-        PhysicsScene& physics_scene,
+        const DanglingBaseClassRef<PhysicsScene>& physics_scene,
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,
@@ -90,6 +91,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    void wait_until_done() const;
     void stop_and_join();
     void clear();
 
@@ -97,12 +99,13 @@ public:
         std::chrono::steady_clock::duration delay,
         std::chrono::steady_clock::duration velocity_dt);
 
+    DestructionFunctionsRemovalTokens on_stop_and_join_physics_;
     DestructionFunctionsRemovalTokens on_clear_physics_;
     ObjectPool object_pool_;
     std::optional<CounterUser> counter_user_;
 
     std::string name_;
-    PhysicsScene& physics_scene_;
+    DanglingBaseClassPtr<PhysicsScene> physics_scene_;
     const SceneConfig& scene_config_;
     SelectedCameras selected_cameras_;
     FlyingCameraUserClass user_object_;

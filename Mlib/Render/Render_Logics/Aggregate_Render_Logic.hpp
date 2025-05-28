@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <memory>
 
@@ -32,8 +33,14 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
     void invalidate_aggregate_renderers();
+    void wait_until_done();
+    void stop_and_join();
 private:
     RenderLogic& child_logic_;
+    BackgroundLoop small_aggregate_bg_worker_;
+    BackgroundLoop large_aggregate_bg_worker_;
+    BackgroundLoop small_instances_bg_worker_;
+    BackgroundLoop large_instances_bg_worker_;
     std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer_;
     std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
     std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;

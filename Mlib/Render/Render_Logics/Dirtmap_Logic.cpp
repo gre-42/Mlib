@@ -57,9 +57,13 @@ void DirtmapLogic::render_without_setup(
         auto setup = child_logic_.render_setup(lx, ly, dirtmap_rsd);
         {
             AggregateRendererGuard arg{
+                nullptr,
+                nullptr,
                 std::make_shared<AggregateArrayRenderer>(rendering_resources_),
                 std::make_shared<AggregateArrayRenderer>(rendering_resources_)};
             InstancesRendererGuard irg{
+                nullptr,
+                nullptr,
                 std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                 std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
             child_logic_.render_with_setup(

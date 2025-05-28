@@ -70,7 +70,7 @@ struct RegisterJsonUserFunction {
                 auto [_, state] = args.renderable_scenes.try_emplace(
                     name,
                     name,
-                    physics_scene,
+                    DanglingBaseClassRef<PhysicsScene>{ physics_scene, CURRENT_SOURCE_LOCATION },
                     args.scene_config,
                     args.button_states,
                     args.cursor_states,

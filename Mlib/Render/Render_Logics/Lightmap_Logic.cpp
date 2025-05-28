@@ -111,9 +111,13 @@ void LightmapLogic::render_without_setup(
             std::optional<InstancesRendererGuard> irg;
             if (create_render_guards) {
                 arg.emplace(
+                    nullptr,
+                    nullptr,
                     std::make_shared<AggregateArrayRenderer>(rendering_resources_),
                     std::make_shared<AggregateArrayRenderer>(rendering_resources_));
                 irg.emplace(
+                    nullptr,
+                    nullptr,
                     std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                     std::make_shared<ArrayInstancesRenderer>(rendering_resources_));
             }

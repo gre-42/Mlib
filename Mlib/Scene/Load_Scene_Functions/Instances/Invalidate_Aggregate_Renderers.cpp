@@ -2,6 +2,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
@@ -20,6 +21,6 @@ InvalidateAggregateRenderers::InvalidateAggregateRenderers(RenderableScene& rend
 
 void InvalidateAggregateRenderers::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.wait_until_done();
+    renderable_scene.wait_until_done();
     aggregate_render_logic.invalidate_aggregate_renderers();
 }

@@ -146,7 +146,7 @@ void PhysicsScene::stop_and_join() {
         physics_loop_->stop_and_join();
         physics_loop_ = nullptr;
     }
-    scene_.stop_and_join();
+    on_stop_and_join_.clear();
 }
 
 void PhysicsScene::clear() {

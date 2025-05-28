@@ -58,7 +58,7 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_from_string(args.arguments.at<std::string>(KnownArgs::counting_focus)),
         args.arguments.at<std::string>(KnownArgs::text),
         ui_focus.focuses,
-        renderable_scene.physics_scene_.on_clear_);
+        renderable_scene.physics_scene_->on_clear_);
     physics_engine.advance_times_.add_advance_time({ *countdown_logic, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     countdown_logic->on_clear_physics_scene.add(
         [&a=physics_engine.advance_times_, &l=*countdown_logic](){

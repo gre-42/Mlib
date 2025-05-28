@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -46,7 +47,7 @@ class Translator;
 
 enum class ThreadAffinity;
 
-class PhysicsScene {
+class PhysicsScene: public DanglingBaseClass {
 public:
     PhysicsScene(
         std::string name,
@@ -77,6 +78,7 @@ public:
     void clear();
     void instantiate_game_logic(std::function<void()> setup_new_round);
 
+    DestructionFunctions on_stop_and_join_;
     DestructionFunctions on_clear_;
     DeleteNodeMutex delete_node_mutex_;
     ObjectPool object_pool_;
