@@ -40,6 +40,7 @@ DECLARE_ARGUMENT(game_mode);
 DECLARE_ARGUMENT(unstuck_mode);
 DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(user);
 }
 
 namespace TeamKeys {
@@ -75,6 +76,12 @@ DECLARE_ARGUMENT(yaw_error_std);
 DECLARE_ARGUMENT(pitch_error_std);
 DECLARE_ARGUMENT(error_alpha);
 DECLARE_ARGUMENT(respawn_cooldown_time);
+}
+
+namespace UserKeys {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(id);
+DECLARE_ARGUMENT(name);
 }
 
 const std::string LoadPlayers::key = "load_players";
@@ -158,6 +165,37 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
             auto vehicle_name = player.at(PlayerKeys::spawned_vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
             const auto& vars = args.asset_references["vehicles"].at(vehicle_name).rp;
             if (auto controller = player.try_at<std::string>(PlayerKeys::controller); controller.has_value()) {
+                nlohmann::json let{
+                    {"spawner_name", player.at<std::string>(PlayerKeys::name)},
+                    {"player_name", player.at<std::string>(PlayerKeys::name)},
+                    {"asset_id", vehicle_name},
+                    {"team", team},
+                    {"game_mode", get(PlayerKeys::game_mode).get<std::string>()},
+                    {"initial_behavior", get(PlayerKeys::behavior).get<std::string>()},
+                    {"role", get(PlayerKeys::role).get<std::string>()},
+                    {"unstuck_mode", get(PlayerKeys::unstuck_mode).get<std::string>()},
+                    {"if_human_style", true},
+                    {"if_car_body_renderable_style", true},
+                    {"color", color},
+                    {"user_drive", get_skill(SourceKeys::user, SkillsKeys::can_drive)},
+                    {"user_aim", get_skill(SourceKeys::user, SkillsKeys::can_aim)},
+                    {"user_shoot", get_skill(SourceKeys::user, SkillsKeys::can_shoot)},
+                    {"ai_drive", get_skill(SourceKeys::ai, SkillsKeys::can_drive)},
+                    {"ai_aim", get_skill(SourceKeys::ai, SkillsKeys::can_aim)},
+                    {"ai_shoot", get_skill(SourceKeys::ai, SkillsKeys::can_shoot)},
+                    {"ai_select_opponent", get_skill(SourceKeys::ai, SkillsKeys::can_select_opponent)},
+                    {"ai_select_weapon", get_skill(SourceKeys::ai, SkillsKeys::can_select_weapon)},
+                    {"velocity_error_std", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
+                    {"yaw_error_std", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
+                    {"pitch_error_std", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
+                    {"error_alpha", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
+                    {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
+                    {"mute", false}
+                };
+                if (auto user = player.try_at(PlayerKeys::user); user.has_value()) {
+                    let["user_id"] = user->at("id");
+                    let["user_name"] = user->at("name");
+                }
                 nlohmann::json line{
                     {
                         MacroKeys::playback,
@@ -167,33 +205,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     },
                     {
                         MacroKeys::let,
-                        {
-                            {"spawner_name", player.at<std::string>(PlayerKeys::name)},
-                            {"player_name", player.at<std::string>(PlayerKeys::name)},
-                            {"asset_id", vehicle_name},
-                            {"team", team},
-                            {"game_mode", get(PlayerKeys::game_mode).get<std::string>()},
-                            {"initial_behavior", get(PlayerKeys::behavior).get<std::string>()},
-                            {"role", get(PlayerKeys::role).get<std::string>()},
-                            {"unstuck_mode", get(PlayerKeys::unstuck_mode).get<std::string>()},
-                            {"if_human_style", true},
-                            {"if_car_body_renderable_style", true},
-                            {"color", color},
-                            {"user_drive", get_skill(SourceKeys::user, SkillsKeys::can_drive)},
-                            {"user_aim", get_skill(SourceKeys::user, SkillsKeys::can_aim)},
-                            {"user_shoot", get_skill(SourceKeys::user, SkillsKeys::can_shoot)},
-                            {"ai_drive", get_skill(SourceKeys::ai, SkillsKeys::can_drive)},
-                            {"ai_aim", get_skill(SourceKeys::ai, SkillsKeys::can_aim)},
-                            {"ai_shoot", get_skill(SourceKeys::ai, SkillsKeys::can_shoot)},
-                            {"ai_select_opponent", get_skill(SourceKeys::ai, SkillsKeys::can_select_opponent)},
-                            {"ai_select_weapon", get_skill(SourceKeys::ai, SkillsKeys::can_select_weapon)},
-                            {"velocity_error_std", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
-                            {"yaw_error_std", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
-                            {"pitch_error_std", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
-                            {"error_alpha", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
-                            {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
-                            {"mute", false}
-                        }
+                        std::move(let)
                     }
                 };
                 args.macro_line_executor(line, nullptr, nullptr);

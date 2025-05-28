@@ -139,7 +139,7 @@ static nlohmann::json eval_recursion(
         static const auto comparison_re = seq(
             group(plus(no_space)),
             chr(' '),
-            group(par(str("=="), str("!="), str("in"), str("not in"))),
+            group(par(str("=="), str("!="), str("<="), str("in"), str("not in"))),
             chr(' '),
             group(plus(adot)),
             eof);
@@ -153,6 +153,10 @@ static nlohmann::json eval_recursion(
             }
             if (op == "!=") {
                 return eval_recursion(left, globals, locals, asset_references, recursion + 1) !=
+                       eval_recursion(right, globals, locals, asset_references, recursion + 1);
+            }
+            if (op == "<=") {
+                return eval_recursion(left, globals, locals, asset_references, recursion + 1) <=
                        eval_recursion(right, globals, locals, asset_references, recursion + 1);
             }
             if (op == "in") {
