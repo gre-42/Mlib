@@ -87,5 +87,5 @@ void HudOpponentTrackerLogic::render_with_setup(
 }
 
 void HudOpponentTrackerLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "HudOpponentTrackerLogic\n";
+    ostr << std::string(depth, ' ') << "HudOpponentTrackerLogic";
 }

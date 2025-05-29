@@ -120,5 +120,5 @@ void CountDownLogic::advance_time(float dt, const StaticWorld& world) {
 }
 
 void CountDownLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "CountDownLogic\n";
+    ostr << std::string(depth, ' ') << "CountDownLogic";
 }

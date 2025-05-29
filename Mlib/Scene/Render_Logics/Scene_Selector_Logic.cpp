@@ -171,5 +171,5 @@ void SceneSelectorLogic::merge_substitutions() const {
 }
 
 void SceneSelectorLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "SceneSelectorLogic\n";
+    ostr << std::string(depth, ' ') << "SceneSelectorLogic";
 }

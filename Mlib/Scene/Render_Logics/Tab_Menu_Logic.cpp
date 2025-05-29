@@ -249,5 +249,5 @@ void TabMenuLogic::merge_substitutions() const {
 }
 
 void TabMenuLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "TabMenuLogic\n";
+    ostr << std::string(depth, ' ') << "TabMenuLogic";
 }

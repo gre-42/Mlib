@@ -186,5 +186,5 @@ void ParameterSetterLogic::merge_substitutions() const {
 }
 
 void ParameterSetterLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "ParameterSetterLogic\n";
+    ostr << std::string(depth, ' ') << "ParameterSetterLogic";
 }

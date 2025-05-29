@@ -60,5 +60,5 @@ FocusFilter FillPixelRegionWithTextureLogic::focus_filter() const {
 }
 
 void FillPixelRegionWithTextureLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "FillPixelRegionWithTextureLogic\n";
+    ostr << std::string(depth, ' ') << "FillPixelRegionWithTextureLogic";
 }

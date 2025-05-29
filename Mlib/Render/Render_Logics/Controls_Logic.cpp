@@ -62,5 +62,5 @@ FocusFilter ControlsLogic::focus_filter() const {
 }
 
 void ControlsLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "ControlsLogic\n";
+    ostr << std::string(depth, ' ') << "ControlsLogic";
 }

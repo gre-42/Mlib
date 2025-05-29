@@ -153,5 +153,5 @@ void MinimapLogic::render_without_setup(
 }
 
 void MinimapLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "MinimapLogic\n";
+    ostr << std::string(depth, ' ') << "MinimapLogic";
 }

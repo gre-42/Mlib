@@ -195,5 +195,5 @@ void FlyingCameraLogic::render_without_setup(
 {}
 
 void FlyingCameraLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "FlyingCameraLogic\n";
+    ostr << std::string(depth, ' ') << "FlyingCameraLogic";
 }

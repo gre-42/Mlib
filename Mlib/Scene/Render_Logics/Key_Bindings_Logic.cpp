@@ -155,5 +155,5 @@ FocusFilter KeyBindingsLogic::focus_filter() const {
 }
 
 void KeyBindingsLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "KeyBindingsLogic\n";
+    ostr << std::string(depth, ' ') << "KeyBindingsLogic";
 }

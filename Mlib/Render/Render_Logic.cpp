@@ -66,7 +66,9 @@ void RenderLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     if (!render_optional_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id, nullptr)) {
-        THROW_OR_ABORT("RenderLogic::render_without_setup not implemented");
+        std::stringstream sstr;
+        print(sstr, 0);
+        THROW_OR_ABORT("RenderLogic::render_without_setup not implemented in \"" + sstr.str() + '"');
     }
 }
 
@@ -80,7 +82,9 @@ void RenderLogic::render_with_setup(
     const RenderSetup& setup)
 {
     if (!render_optional_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id, &setup)) {
-        THROW_OR_ABORT("RenderLogic::render_with_setup not implemented");
+        std::stringstream sstr;
+        print(sstr, 0);
+        THROW_OR_ABORT("RenderLogic::render_with_setup not implemented in \"" + sstr.str() + '"');
     }
 }
 

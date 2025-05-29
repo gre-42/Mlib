@@ -79,6 +79,7 @@ void RenderLogics::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "RenderLogics\n";
     for (const auto& c : render_logics_) {
         c.second->print(ostr, depth + 1);
+        ostr << '\n';
     }
 }
 

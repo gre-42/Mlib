@@ -152,5 +152,5 @@ void SkidmarkLogic::render_without_setup(
 }
 
 void SkidmarkLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "SkidmarkLogic\n";
+    ostr << std::string(depth, ' ') << "SkidmarkLogic";
 }

@@ -128,5 +128,5 @@ void HudOpponentZoomLogic::render_without_setup(
 }
 
 void HudOpponentZoomLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "HudOpponentZoomLogic\n";
+    ostr << std::string(depth, ' ') << "HudOpponentZoomLogic";
 }

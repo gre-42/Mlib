@@ -205,7 +205,7 @@ void RotatingLogic::render_with_setup(
 }
 
 void RotatingLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "RotatingLogic\n";
+    ostr << std::string(depth, ' ') << "RotatingLogic";
 }
 
 #endif

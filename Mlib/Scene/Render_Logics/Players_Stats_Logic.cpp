@@ -80,5 +80,5 @@ FocusFilter PlayersStatsLogic::focus_filter() const {
 }
 
 void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "PlayersStatsLogic\n";
+    ostr << std::string(depth, ' ') << "PlayersStatsLogic";
 }

@@ -109,5 +109,5 @@ void HudTargetPointLogic::render_with_setup(
 }
 
 void HudTargetPointLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "HudTargetPointLogic\n";
+    ostr << std::string(depth, ' ') << "HudTargetPointLogic";
 }

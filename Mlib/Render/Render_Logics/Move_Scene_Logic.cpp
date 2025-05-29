@@ -54,5 +54,5 @@ void MoveSceneLogic::render_without_setup(
 }
 
 void MoveSceneLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "MoveSceneLogic\n";
+    ostr << std::string(depth, ' ') << "MoveSceneLogic";
 }

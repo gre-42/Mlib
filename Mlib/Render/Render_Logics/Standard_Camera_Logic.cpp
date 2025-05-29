@@ -88,5 +88,5 @@ void StandardCameraLogic::render_with_setup(
 {}
 
 void StandardCameraLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "StandardCameraLogic\n";
+    ostr << std::string(depth, ' ') << "StandardCameraLogic";
 }
