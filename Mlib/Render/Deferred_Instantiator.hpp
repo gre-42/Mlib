@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
 #include <unordered_map>
 
@@ -14,6 +15,16 @@ class Scene;
 class SelectedCameras;
 class StandardRenderLogic;
 class PostProcessingLogic;
+
+struct ImposterInfoAndDestructionToken {
+    template <class... Args>
+    ImposterInfoAndDestructionToken(ImposterInfo info, Args&&... args)
+        : info{ std::move(info) }
+        , on_node_clear{ std::forward<Args>(args)... }
+    {}
+    ImposterInfo info;
+    DestructionFunctionsRemovalTokens on_node_clear;
+};
 
 class DeferredInstantiator: public IImposters {
 public:
@@ -35,7 +46,7 @@ public:
         StandardRenderLogic& standard_render_logic,
         PostProcessingLogic& post_processing_logic);
 private:
-    std::unordered_map<DanglingPtr<SceneNode>, ImposterInfo> infos_;
+    std::unordered_map<DanglingPtr<SceneNode>, ImposterInfoAndDestructionToken> infos_;
     std::optional<FixedArray<float, 3>> background_color_;
     bool imposters_created_;
 };

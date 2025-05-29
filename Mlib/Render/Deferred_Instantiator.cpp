@@ -21,9 +21,19 @@ void DeferredInstantiator::set_imposter_info(
     if (imposters_created_) {
         THROW_OR_ABORT("DeferredInstantiator already created");
     }
-    if (!infos_.try_emplace(scene_node.ptr(), info).second) {
+    auto res = infos_.try_emplace(
+        scene_node.ptr(),
+        info,
+        scene_node->on_clear,
+        CURRENT_SOURCE_LOCATION);
+    if (!res.second) {
         THROW_OR_ABORT("Imposter info already set");
     }
+    res.first->second.on_node_clear.add([this, n=scene_node.ptr()](){
+        if (infos_.erase(n) != 1) {
+            verbose_abort("DeferredInstantiator: Could not remove node info");
+        }
+    }, CURRENT_SOURCE_LOCATION);
 }
 
 void DeferredInstantiator::create_imposters(
@@ -43,8 +53,8 @@ void DeferredInstantiator::create_imposters(
             scene,
             *scene_node,
             cameras,
-            info.debug_prefix,
-            info.max_texture_size);
+            info.info.debug_prefix,
+            info.info.max_texture_size);
         imposter_logic.on_node_clear.add([&imposter_logic]() { global_object_pool.remove(imposter_logic); }, CURRENT_SOURCE_LOCATION);
         render_logics.prepend(
             { imposter_logic, CURRENT_SOURCE_LOCATION },

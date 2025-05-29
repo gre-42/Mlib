@@ -93,6 +93,7 @@ public:
     DynamicWorld dynamic_world_;
     RenderLogics render_logics_;
     PhysicsEngine physics_engine_;
+    DeferredInstantiator deferred_instantiator_;
     Scene scene_;
     SceneParticles air_particles_;
     SceneParticles skidmark_particles_;
@@ -111,7 +112,6 @@ public:
     SupplyDepots supply_depots_;
     std::unique_ptr<GameLogic> game_logic_;
     Users users_;
-    DeferredInstantiator deferred_instantiator_;
     UsageCounter usage_counter_;
 
     AudioResourceContext primary_audio_resource_context_;
