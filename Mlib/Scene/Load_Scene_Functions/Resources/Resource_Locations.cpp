@@ -80,7 +80,7 @@ static void add_rw_resource(
                     ::tolower);
                 auto cm = ColormapWithModifiers{
                     .filename = VariableAndHash{filename},
-                    .color_mode = ColorMode::RGBA,
+                    .color_mode = ColorMode::RGB | ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash();
                 if (res.contains_texture(cm)) {

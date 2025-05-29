@@ -121,7 +121,7 @@ DffArrays<TPosition> Mlib::load_dff(
                 tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
                     .color = ColormapWithModifiers{
                         .filename = VariableAndHash{ filename_lower },
-                        .color_mode = ColorMode::RGBA,
+                        .color_mode = ColorMode::RGB | ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }.compute_hash()}} };
                 // linfo() << "Texture: " << tex->name;
