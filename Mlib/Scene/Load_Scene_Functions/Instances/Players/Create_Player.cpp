@@ -12,11 +12,14 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <cstdint>
 
 using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(user_name);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(game_mode);
@@ -42,7 +45,8 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (game_logic == nullptr) {
         THROW_OR_ABORT("Game logic is null, cannot create player");
     }
-    auto player = std::make_unique<Player>(
+    auto player = global_object_pool.create_unique<Player>(
+        CURRENT_SOURCE_LOCATION,
         scene,
         supply_depots,
         game_logic->navigate,
@@ -51,6 +55,8 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.collision_query_,
         vehicle_spawners,
         players,
+        args.arguments.at<uint32_t>(KnownArgs::user_id, UINT32_MAX),
+        args.arguments.at<std::string>(KnownArgs::user_name, ""),
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::team),
         game_mode_from_string(args.arguments.at<std::string>(KnownArgs::game_mode)),
@@ -60,7 +66,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         delete_node_mutex,
         ui_focus.focuses);
     players.add_player({ *player, CURRENT_SOURCE_LOCATION });
-    auto& p = global_object_pool.add(std::move(player), CURRENT_SOURCE_LOCATION);
-    physics_engine.advance_times_.add_advance_time({ p, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    physics_engine.add_external_force_provider(p);
+    physics_engine.advance_times_.add_advance_time({ *player, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    physics_engine.add_external_force_provider(*player);
+    player.release();
 }

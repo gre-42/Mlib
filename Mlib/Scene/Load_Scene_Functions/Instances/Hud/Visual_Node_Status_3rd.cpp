@@ -32,11 +32,11 @@ const std::string VisualNodeStatus3rd::key = "visual_node_status_3rd";
 LoadSceneJsonUserFunction VisualNodeStatus3rd::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    VisualNodeStatus3rd(args.physics_scene()).execute(args);
+    VisualNodeStatus3rd(args.renderable_scene()).execute(args);
 };
 
-VisualNodeStatus3rd::VisualNodeStatus3rd(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene) 
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -46,6 +46,7 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     global_object_pool.create<VisualMovable3rdLogger>(
         CURRENT_SOURCE_LOCATION,
+        scene_logic,
         node,
         render_logics,
         physics_engine.advance_times_,

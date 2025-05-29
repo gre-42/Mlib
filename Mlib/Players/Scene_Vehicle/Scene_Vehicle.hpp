@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <cstddef>
 #include <functional>
 #include <string>
 
@@ -20,10 +21,14 @@ class SceneVehicle {
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
     using CreateVehicleExternals = std::function<void(
+        uint32_t user_id,
+        const std::string& user_name,
         const std::string& player_name,
         ExternalsMode externals_mode,
         const std::string& behavior)>;
     using CreateRoleExternals = std::function<void(
+        uint32_t user_id,
+        const std::string& user_name,
         const std::string& player_name,
         ExternalsMode externals_mode,
         const SkillMap& skills,
@@ -36,10 +41,14 @@ public:
         RigidBodyVehicle& rb);
     ~SceneVehicle();
     void create_vehicle_externals(
+        uint32_t user_id,
+        const std::string& user_name,
         const std::string& player_name,
         ExternalsMode externals_mode,
         const std::string& behavior) const;
     void create_vehicle_internals(
+        uint32_t user_id,
+        const std::string& user_name,
         const std::string& player_name,
         ExternalsMode externals_mode,
         const SkillMap& skills,

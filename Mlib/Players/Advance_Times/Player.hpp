@@ -118,6 +118,8 @@ public:
         CollisionQuery& collision_query,
         VehicleSpawners& vehicle_spawners,
         Players& players,
+        uint32_t user_id,
+        std::string user_name,
         std::string id,
         std::string team,
         GameMode game_mode,
@@ -151,6 +153,8 @@ public:
     void change_gun_node(DanglingPtr<SceneNode> gun_node);
     bool has_way_points() const;
     void set_way_point_location_filter(JoinedWayPointSandbox filter);
+    uint32_t user_id() const;
+    const std::string& user_name() const;
     const std::string& team_name() const;
     DanglingBaseClassRef<Team> team();
     PlayerStats& stats();
@@ -266,6 +270,8 @@ private:
     CollisionQuery& collision_query_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
+    uint32_t user_id_;
+    std::string user_name_;
     std::string id_;
     std::string team_;
     SceneVehicle* vehicle_;

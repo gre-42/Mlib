@@ -24,6 +24,8 @@ DECLARE_ARGUMENT(internals);
 
 namespace LetKeys {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(externals_user_id);
+DECLARE_ARGUMENT(externals_user_name);
 DECLARE_ARGUMENT(externals_player_name);
 DECLARE_ARGUMENT(if_pc);
 DECLARE_ARGUMENT(if_manual_aim);
@@ -57,6 +59,8 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::externals),
          spawner_name](
+            uint32_t user_id,
+            const std::string& user_name,
             const std::string& player_name,
             ExternalsMode externals_mode,
             const std::string& behavior)
@@ -65,6 +69,8 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 THROW_OR_ABORT("Invalid externals mode");
             }
             nlohmann::json let{
+                {LetKeys::externals_user_id, user_id},
+                {LetKeys::externals_user_name, user_name},
                 {LetKeys::externals_player_name, player_name},
                 {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
                 {LetKeys::behavior, behavior}
@@ -76,6 +82,8 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::internals),
          spawner_name](
+            uint32_t user_id,
+            const std::string& user_name,
             const std::string& player_name,
             ExternalsMode externals_mode,
             const SkillMap& skills,
@@ -94,6 +102,10 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {LetKeys::behavior, behavior},
                 {LetKeys::externals_role, internals_mode.role}
             };
+            if (user_id != UINT32_MAX) {
+                let[LetKeys::externals_user_id] = user_id;
+                let[LetKeys::externals_user_name] = user_name;
+            }
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
         }
     );
