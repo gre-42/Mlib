@@ -159,7 +159,7 @@ void RenderableScene::render_without_setup(
         physics_scene_->deferred_instantiator_.create_imposters(
             this,
             physics_scene_->rendering_resources_,
-            render_logics_,
+            read_pixels_logic_,
             *imposter_render_logics_,
             physics_scene_->scene_,
             selected_cameras_);

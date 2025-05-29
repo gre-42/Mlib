@@ -36,8 +36,8 @@ public:
     void create_imposters(
         IRenderableScene* renderable_scene,
         RenderingResources& rendering_resources,
-        RenderLogics& render_logics,
         RenderLogic& child_logic,
+        RenderLogics& render_logics,
         Scene& scene,
         SelectedCameras& cameras) const;
     void set_background_color(

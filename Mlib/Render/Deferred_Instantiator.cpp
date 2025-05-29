@@ -39,8 +39,8 @@ void DeferredInstantiator::set_imposter_info(
 void DeferredInstantiator::create_imposters(
     IRenderableScene* renderable_scene,
     RenderingResources& rendering_resources,
-    RenderLogics& render_logics,
     RenderLogic& child_logic,
+    RenderLogics& render_logics,
     Scene& scene,
     SelectedCameras& cameras) const
 {
