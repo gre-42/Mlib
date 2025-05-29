@@ -18,7 +18,9 @@ PlaneAsCarController::PlaneAsCarController(
     ascend_to(rb.rbp_.abs_position()(1));
 }
 
-PlaneAsCarController::~PlaneAsCarController() = default;
+PlaneAsCarController::~PlaneAsCarController() {
+    on_destroy.clear();
+}
 
 static const auto wheels_name = VariableAndHash<std::string>{"wheels"};
 static const auto turbine_name = VariableAndHash<std::string>{"turbine"};

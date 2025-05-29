@@ -7,7 +7,7 @@ namespace Mlib {
 
 class YawPitchLookAtNodes;
 
-class AvatarAsCarController: public RigidBodyVehicleController {
+class AvatarAsCarController final: public RigidBodyVehicleController {
 public:
     AvatarAsCarController(
         RigidBodyVehicle& rb,

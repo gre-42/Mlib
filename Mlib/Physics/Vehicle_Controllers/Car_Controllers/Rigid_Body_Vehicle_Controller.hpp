@@ -1,12 +1,15 @@
 #pragma once
-#include <Mlib/Memory/Deallocators.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Destruction_Notifier.hpp>
+#include <optional>
 
 namespace Mlib {
 
 class RigidBodyVehicle;
 enum class SteeringType;
 
-class RigidBodyVehicleController {
+class RigidBodyVehicleController: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
     RigidBodyVehicleController(
         RigidBodyVehicle& rb,
@@ -25,7 +28,7 @@ public:
     void reset_relaxation(
         float drive_relaxation,
         float steer_relaxation);
-    void set_trailer(RigidBodyVehicleController& trailer);
+    void set_trailer(const DanglingBaseClassRef<RigidBodyVehicleController>& trailer);
     virtual void apply();
     const SteeringType steering_type;
 protected:
@@ -36,9 +39,8 @@ protected:
     float steer_relaxation_;
     double target_height_;
 private:
-    RigidBodyVehicleController* trailer_;
-    Deallocators deallocators_;
-    DeallocationToken trailer_token_;
+    DanglingBaseClassPtr<RigidBodyVehicleController> trailer_;
+    std::optional<DestructionFunctionsRemovalTokens> on_destroy_trailer_;
 };
 
 }

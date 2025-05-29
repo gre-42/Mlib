@@ -11,7 +11,7 @@ namespace Mlib {
 
 class PhysicsEngine;
 
-class CarController: public RigidBodyVehicleController, public IControllable {
+class CarController final: public RigidBodyVehicleController, public IControllable {
 public:
     CarController(
         RigidBodyVehicle& rb,

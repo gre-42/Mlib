@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-class PlaneAsCarController: public RigidBodyVehicleController {
+class PlaneAsCarController final: public RigidBodyVehicleController {
 public:
     PlaneAsCarController(
         RigidBodyVehicle& rb,

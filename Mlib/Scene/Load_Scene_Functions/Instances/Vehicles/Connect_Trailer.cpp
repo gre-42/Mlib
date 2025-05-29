@@ -45,5 +45,5 @@ void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
         trailer_rb.rbp_,
         car_rb.trailer_hitches_.get_position_male().casted<ScenePos>(),
         trailer_rb.trailer_hitches_.get_position_female().casted<ScenePos>()));
-    car_rb.vehicle_controller().set_trailer(trailer_rb.vehicle_controller());
+    car_rb.vehicle_controller().set_trailer({ trailer_rb.vehicle_controller(), CURRENT_SOURCE_LOCATION });
 }

@@ -20,8 +20,9 @@ TankController::TankController(
   delta_power_{ steering_multiplier }
 {}
 
-TankController::~TankController()
-{}
+TankController::~TankController() {
+    on_destroy.clear();
+}
 
 static const auto main_name = VariableAndHash<std::string>{"main"};
 static const auto left_name = VariableAndHash<std::string>{"left"};

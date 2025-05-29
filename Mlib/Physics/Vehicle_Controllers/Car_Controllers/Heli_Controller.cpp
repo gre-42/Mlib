@@ -27,7 +27,9 @@ HeliController::HeliController(
     ascend_to(rb.rbp_.abs_position()(1));
 }
 
-HeliController::~HeliController() = default;
+HeliController::~HeliController() {
+    on_destroy.clear();
+}
 
 static const size_t PITCH = 0;
 static const size_t YAW = 1;

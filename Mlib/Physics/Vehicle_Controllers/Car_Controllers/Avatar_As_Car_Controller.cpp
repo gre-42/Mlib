@@ -18,7 +18,9 @@ AvatarAsCarController::AvatarAsCarController(
     , ypln_{ ypln }
 {}
 
-AvatarAsCarController::~AvatarAsCarController() = default;
+AvatarAsCarController::~AvatarAsCarController() {
+    on_destroy.clear();
+}
 
 static const auto legs_name = VariableAndHash<std::string>{ "legs" };
 

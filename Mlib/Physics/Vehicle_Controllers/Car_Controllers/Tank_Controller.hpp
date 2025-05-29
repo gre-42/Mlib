@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-class TankController: public RigidBodyVehicleController {
+class TankController final: public RigidBodyVehicleController {
 public:
     explicit TankController(
         RigidBodyVehicle& rb,

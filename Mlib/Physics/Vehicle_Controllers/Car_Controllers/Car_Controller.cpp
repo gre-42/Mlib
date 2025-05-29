@@ -31,6 +31,7 @@ CarController::CarController(
 
 CarController::~CarController()
 {
+    on_destroy.clear();
     physics_engine_.remove_controllable(*this);
 }
 

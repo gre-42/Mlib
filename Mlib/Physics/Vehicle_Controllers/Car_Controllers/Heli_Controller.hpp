@@ -9,7 +9,7 @@ namespace Mlib {
 
 enum class VehicleDomain;
 
-class HeliController: public RigidBodyVehicleController {
+class HeliController final: public RigidBodyVehicleController {
 public:
     HeliController(
         RigidBodyVehicle& rb,

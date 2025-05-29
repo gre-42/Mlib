@@ -17,8 +17,7 @@ RigidBodyVehicleController::RigidBodyVehicleController(
   steer_angle_{ NAN },
   steer_relaxation_{ 0.f },
   target_height_{ NAN },
-  trailer_{ nullptr },
-  trailer_token_{DeallocationToken::empty()}
+  trailer_{ nullptr }
 {}
 
 RigidBodyVehicleController::~RigidBodyVehicleController() = default;
@@ -122,12 +121,21 @@ void RigidBodyVehicleController::reset_relaxation(
     }
 }
 
-void RigidBodyVehicleController::set_trailer(RigidBodyVehicleController& trailer) {
+void RigidBodyVehicleController::set_trailer(
+    const DanglingBaseClassRef<RigidBodyVehicleController>& trailer)
+{
     if (trailer_ != nullptr) {
-        THROW_OR_ABORT("Trailer already set");
+        THROW_OR_ABORT("Trailer already set (0)");
     }
-    trailer_token_ = trailer.deallocators_.insert([this](){trailer_ = nullptr;});
-    trailer_ = &trailer;
+    if (on_destroy_trailer_.has_value()) {
+        THROW_OR_ABORT("Trailer already set (1)");
+    }
+    on_destroy_trailer_.emplace(trailer->on_destroy, CURRENT_SOURCE_LOCATION);
+    on_destroy_trailer_->add([this](){
+        trailer_ = nullptr;
+        on_destroy_trailer_.reset();
+    }, CURRENT_SOURCE_LOCATION);
+    trailer_ = trailer.ptr();
 }
 
 void RigidBodyVehicleController::apply() {
