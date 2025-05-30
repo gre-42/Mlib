@@ -1067,7 +1067,52 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
+    {
+        // Extrude air support and raise tunnel crossings.
+        const auto& air_or_osm = (config.extrude_air_curb_amount == (CompressedScenePos)0.)
+            ? osm_triangle_lists
+            : air_triangle_lists;
 
+        fg.update("Flip air-support normals");
+        // Must be after "delete_backfacing_triangles".
+        air_or_osm.tl_air_support->flip();
+        air_or_osm.tl_tunnel_crossing->flip();
+        // Raise tunnel crossings.
+        for (auto& t : air_or_osm.tl_tunnel_crossing->triangles) {
+            for (auto& v : t.flat_iterable()) {
+                v.position(2) += (CompressedScenePos)(config.default_tunnel_pipe_height * config.scale);
+            }
+        }
+
+        // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
+        std::set<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*> triangles_to_delete;
+        for (const auto& t : air_or_osm.tl_air_support->triangles) {
+            if (boundary_vertices.contains(OrderableFixedArray{t(0).position}) ||
+                boundary_vertices.contains(OrderableFixedArray{t(1).position}) ||
+                boundary_vertices.contains(OrderableFixedArray{t(2).position}))
+            {
+                triangles_to_delete.insert(&t);
+            }
+        }
+        if (config.extrude_air_support_amount != (CompressedScenePos)0.) {
+            TriangleList<CompressedScenePos>::extrude(
+                *air_or_osm.tl_air_support,                                 // dest
+                {air_or_osm.tl_air_support},                                // triangle_lists
+                nullptr,                                                    // follower_triangles
+                nullptr,                                                    // source_triangles
+                &boundary_vertices,                                         // clamped_vertices
+                nullptr,                                                    // vertices_not_to_connect
+                config.extrude_air_support_amount * config.scale,           // height
+                config.scale,                                               // scale
+                1,                                                          // uv_scale_x
+                config.uv_scale_terrain,                                    // uv_scale_y
+                false,                                                      // uvs_equal_lengths
+                0.f);                                                       // ambient_occlusion
+            air_or_osm.tl_air_support->triangles.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex<CompressedScenePos>, 3>& t){
+                return triangles_to_delete.contains(&t);
+            });
+        }
+    }
     if (config.extrude_air_curb_amount != (CompressedScenePos)0.) {
         fg.update("Insert air triangles lists");
         // If "extrude_air_curb_amount" is NOT NAN,
@@ -1220,52 +1265,6 @@ OsmMapResource::OsmMapResource(
             config.scale,
             ws,
             config.contour_detection_strategy);
-    }
-    {
-        // Extrude air support and raise tunnel crossings.
-        const auto& air_or_osm = (config.extrude_air_curb_amount == (CompressedScenePos)0.)
-            ? osm_triangle_lists
-            : air_triangle_lists;
-
-        fg.update("Flip air-support normals");
-        // Must be after "delete_backfacing_triangles".
-        air_or_osm.tl_air_support->flip();
-        air_or_osm.tl_tunnel_crossing->flip();
-        // Raise tunnel crossings.
-        for (auto& t : air_or_osm.tl_tunnel_crossing->triangles) {
-            for (auto& v : t.flat_iterable()) {
-                v.position(2) += (CompressedScenePos)(config.default_tunnel_pipe_height * config.scale);
-            }
-        }
-
-        // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
-        std::set<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*> triangles_to_delete;
-        for (const auto& t : air_or_osm.tl_air_support->triangles) {
-            if (boundary_vertices.contains(OrderableFixedArray{t(0).position}) ||
-                boundary_vertices.contains(OrderableFixedArray{t(1).position}) ||
-                boundary_vertices.contains(OrderableFixedArray{t(2).position}))
-            {
-                triangles_to_delete.insert(&t);
-            }
-        }
-        if (config.extrude_air_support_amount != (CompressedScenePos)0.) {
-            TriangleList<CompressedScenePos>::extrude(
-                *air_or_osm.tl_air_support,                                 // dest
-                {air_or_osm.tl_air_support},                                // triangle_lists
-                nullptr,                                                    // follower_triangles
-                nullptr,                                                    // source_triangles
-                &boundary_vertices,                                         // clamped_vertices
-                nullptr,                                                    // vertices_not_to_connect
-                config.extrude_air_support_amount * config.scale,           // height
-                config.scale,                                               // scale
-                1,                                                          // uv_scale_x
-                config.uv_scale_terrain,                                    // uv_scale_y
-                false,                                                      // uvs_equal_lengths
-                0.f);                                                       // ambient_occlusion
-            air_or_osm.tl_air_support->triangles.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex<CompressedScenePos>, 3>& t){
-                return triangles_to_delete.contains(&t);
-            });
-        }
     }
 
     // for (auto& l : tls_ground) {
