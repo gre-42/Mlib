@@ -824,6 +824,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_continuous_texture_layer = has_continuous_texture_layer,
             .has_discrete_vertex_texture_layer = si.has_discrete_triangle_texture_layers(),
             .has_discrete_atlas_texture_layer = has_discrete_atlas_texture_layer,
+            .has_continuous_uniform_texture_layer_normal = false,
             .nbillboard_ids = integral_cast<BillboardId>(cva->material.billboard_atlas_instances.size()),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,

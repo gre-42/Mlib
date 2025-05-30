@@ -82,6 +82,7 @@ struct RenderProgramIdentifier {
     bool has_continuous_texture_layer;
     bool has_discrete_vertex_texture_layer;
     bool has_discrete_atlas_texture_layer;
+    bool has_continuous_uniform_texture_layer_normal;
     BillboardId nbillboard_ids;
     bool reorient_normals;
     bool reorient_uv0;
