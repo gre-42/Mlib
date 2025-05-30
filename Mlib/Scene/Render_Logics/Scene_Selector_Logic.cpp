@@ -62,7 +62,7 @@ size_t SceneEntryContents::num_entries() const {
 }
 
 bool SceneEntryContents::is_visible(size_t index) const {
-    const auto& entry = scene_entries_[index];
+    const auto& entry = scene_entries_.at(index);
     return ew_.eval(entry.required().dynamic, entry.locals());
 }
 

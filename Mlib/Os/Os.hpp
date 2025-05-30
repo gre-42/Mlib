@@ -25,6 +25,28 @@ enum class LogLevel {
     INFO
 };
 
+enum class LogFlags {
+    NONE = 0,
+    SUPPRESS_DUPLICATES = (1 << 0)
+};
+
+inline bool any(LogFlags f) {
+    return f != LogFlags::NONE;
+}
+
+inline LogFlags operator & (LogFlags a, LogFlags b) {
+    return (LogFlags)((int)a & (int)b);
+}
+
+inline LogFlags operator | (LogFlags a, LogFlags b) {
+    return (LogFlags)((int)a | (int)b);
+}
+
+inline LogFlags& operator |= (LogFlags& a, LogFlags b) {
+    (int&)a |= (int)b;
+    return a;
+}
+
 LogLevel log_level_from_string(const std::string& s);
 
 void set_log_level(LogLevel log_level);
@@ -51,11 +73,11 @@ private:
     bool destroyed_;
 };
 
-LLog linfo();
-LLog lwarn();
-LLog lerr();
-LLog lraw();
-LLog lout();
+LLog linfo(LogFlags flags = LogFlags::NONE);
+LLog lwarn(LogFlags flags = LogFlags::NONE);
+LLog lerr(LogFlags flags = LogFlags::NONE);
+LLog lraw(LogFlags flags = LogFlags::NONE);
+LLog lout(LogFlags flags = LogFlags::NONE);
 
 std::unique_ptr<std::istream> create_ifstream(
     const std::filesystem::path& filename,

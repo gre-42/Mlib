@@ -31,6 +31,7 @@ class LayoutConstraints;
 class AssetReferences;
 class Translators;
 struct RealtimeDependentFps;
+class WindowLogic;
 
 struct LoadSceneJsonUserFunctionArgs {
     const std::string& name;
@@ -61,6 +62,7 @@ struct LoadSceneJsonUserFunctionArgs {
     Translators& translators;
     PhysicsScenes& physics_scenes;
     RenderableScenes& renderable_scenes;
+    WindowLogic& window_logic;
     const std::function<void()>& exit;
 };
 

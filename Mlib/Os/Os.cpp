@@ -104,14 +104,14 @@ static std::string get_path_in_files_dir(
     return std::filesystem::weakly_canonical(res);
 }
 
-LLog Mlib::linfo() {
+LLog Mlib::linfo(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
         [&](const std::string& s) {
             if (g_log_level >= LogLevel::INFO) {
                 std::scoped_lock lock{ mutex };
-                if (s != last_message) {
+                if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
                     LOGI("%s", s.c_str());
                     last_message = s;
                 }
@@ -119,14 +119,14 @@ LLog Mlib::linfo() {
         }};
 }
 
-LLog Mlib::lwarn() {
+LLog Mlib::lwarn(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
         [&](const std::string& s) {
             if (g_log_level >= LogLevel::WARNING) {
                 std::scoped_lock lock{ mutex };
-                if (s != last_message) {
+                if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
                     LOGW("%s", s.c_str());
                     last_message = s;
                 }
@@ -134,28 +134,34 @@ LLog Mlib::lwarn() {
         }};
 }
 
-LLog Mlib::lerr() {
+LLog Mlib::lerr(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
         [&](const std::string& s) {
             if (g_log_level >= LogLevel::ERROR) {
                 std::scoped_lock lock{ mutex };
-                if (s != last_message) {
+                if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
                     LOGE("%s", s.c_str());
                     last_message = s;
                 }
             }}};
 }
 
-LLog Mlib::lraw() {
+LLog Mlib::lraw(LogFlags flags) {
+    if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
+        THROW_OR_ABORT("Raw logger cannot suppress duplicates");
+    }
     return LLog{
         [](const std::string& s) {
             LOGI("%s", s.c_str());
         }};
 }
 
-LLog Mlib::lout() {
+LLog Mlib::lout(LogFlags flags) {
+    if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
+        THROW_OR_ABORT("Out logger cannot suppress duplicates");
+    }
     return LLog{
         [](const std::string& s) {
             LOGI("%s", s.c_str());
@@ -236,54 +242,60 @@ void Mlib::set_thread_name(const std::string& name) {
 
 #else
 
-LLog Mlib::linfo() {
+LLog Mlib::linfo(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
         [&](const std::string& s) {
         if (g_log_level >= LogLevel::INFO) {
             std::scoped_lock lock{ mutex };
-            if (s != last_message) {
+            if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
                 std::cerr << "Info: " << s << std::endl;
                 last_message = s;
             }
         }}};
 }
 
-LLog Mlib::lwarn() {
+LLog Mlib::lwarn(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
         [&](const std::string& s) {
             std::scoped_lock lock{ mutex };
-            if (s != last_message) {
+            if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
                 std::cerr << "Warning: " << s << std::endl;
                 last_message = s;
             }
         }};
 }
 
-LLog Mlib::lerr() {
+LLog Mlib::lerr(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
         [&](const std::string& s) {
             std::scoped_lock lock{ mutex };
-            if (s != last_message) {
+            if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
                 std::cerr << "Error: " << s << std::endl;
                 last_message = s;
             }
         }};
 }
 
-LLog Mlib::lraw() {
+LLog Mlib::lraw(LogFlags flags) {
+    if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
+        THROW_OR_ABORT("Raw logger cannot suppress duplicates");
+    }
     return LLog{
         [](const std::string& s) {
             std::cerr << s << std::endl;
         }};
 }
 
-LLog Mlib::lout() {
+LLog Mlib::lout(LogFlags flags) {
+    if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
+        THROW_OR_ABORT("Out logger cannot suppress duplicates");
+    }
     return LLog{
         [](const std::string& s) {
             std::cout << s << std::endl;

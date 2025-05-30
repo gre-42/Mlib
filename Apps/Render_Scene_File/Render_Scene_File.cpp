@@ -176,6 +176,7 @@ JThread loader_thread(
     Translators& translators,
     PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
+    WindowLogic& window_logic,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
     ThreadSafeString& next_scene_filename,
@@ -234,6 +235,7 @@ JThread loader_thread(
                     translators,
                     physics_scenes,
                     renderable_scenes,
+                    window_logic,
                     exit);
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
@@ -728,6 +730,7 @@ int main(int argc, char** argv) {
                     translators,
                     physics_scenes,
                     renderable_scenes,
+                    window_logic,
                     search_path,
                     main_scene_filename,
                     next_scene_filename,

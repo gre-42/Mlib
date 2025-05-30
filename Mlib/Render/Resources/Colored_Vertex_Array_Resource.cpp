@@ -1288,7 +1288,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "            weight *= w;" << std::endl;
                 } else if (t->reduction == BlendMapReductionOperation::FEATHER) {
                     if (t->discreteness == 0) {
-                        THROW_OR_ABORT("Detail-mask with feather as zero discreteness");
+                        THROW_OR_ABORT("Detail-mask with feather has zero discreteness");
                     }
                     sstr << "            weight += (0.5 - abs(weight - 0.5)) * (w + " << t->plus << ") * " << t->discreteness << ';' << std::endl;
                     sstr << "            weight = clamp(weight, 0.0, 1.0);" << std::endl;

@@ -28,6 +28,7 @@ class BulletPropertyDb;
 class DynamicLightDb;
 class LayoutConstraints;
 struct RealtimeDependentFps;
+class WindowLogic;
 
 class LoadScene {
 public:
@@ -58,6 +59,7 @@ public:
         Translators& translators,
         PhysicsScenes& physics_scenes,
         RenderableScenes& renderable_scenes,
+        WindowLogic& window_logic,
         const std::function<void()>& exit);
 private:
     MacroRecorder macro_file_executor_;

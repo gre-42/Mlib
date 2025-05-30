@@ -440,6 +440,7 @@ void LoadScene::operator()(
     Translators& translators,
     PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
+    WindowLogic& window_logic,
     const std::function<void()>& exit)
 {
     MacroLineExecutor::JsonUserFunction json_user_function = [&](
@@ -484,6 +485,7 @@ void LoadScene::operator()(
             .translators = translators,
             .physics_scenes = physics_scenes,
             .renderable_scenes = renderable_scenes,
+            .window_logic = window_logic,
             .exit = exit};
         auto& funcs = json_user_functions();
         auto it = funcs.find(args.name);
