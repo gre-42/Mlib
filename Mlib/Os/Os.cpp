@@ -108,7 +108,7 @@ LLog Mlib::linfo(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
-        [&](const std::string& s) {
+        [&, flags](const std::string& s) {
             if (g_log_level >= LogLevel::INFO) {
                 std::scoped_lock lock{ mutex };
                 if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
@@ -123,7 +123,7 @@ LLog Mlib::lwarn(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
-        [&](const std::string& s) {
+        [&, flags](const std::string& s) {
             if (g_log_level >= LogLevel::WARNING) {
                 std::scoped_lock lock{ mutex };
                 if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
@@ -138,7 +138,7 @@ LLog Mlib::lerr(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
-        [&](const std::string& s) {
+        [&, flags](const std::string& s) {
             if (g_log_level >= LogLevel::ERROR) {
                 std::scoped_lock lock{ mutex };
                 if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
@@ -246,7 +246,7 @@ LLog Mlib::linfo(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
-        [&](const std::string& s) {
+        [&, flags](const std::string& s) {
         if (g_log_level >= LogLevel::INFO) {
             std::scoped_lock lock{ mutex };
             if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
@@ -260,7 +260,7 @@ LLog Mlib::lwarn(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
-        [&](const std::string& s) {
+        [&, flags](const std::string& s) {
             std::scoped_lock lock{ mutex };
             if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
                 std::cerr << "Warning: " << s << std::endl;
@@ -273,7 +273,7 @@ LLog Mlib::lerr(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
-        [&](const std::string& s) {
+        [&, flags](const std::string& s) {
             std::scoped_lock lock{ mutex };
             if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
                 std::cerr << "Error: " << s << std::endl;

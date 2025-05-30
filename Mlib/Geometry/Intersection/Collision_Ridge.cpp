@@ -46,7 +46,7 @@ void CollisionRidgeSphere<TPosition>::combine(
         (min_cos == RIDGE_UNTOUCHABLE))
     {
         min_cos = RIDGE_360;
-        lwarn() << "Creating 360 ridge";
+        lwarn(LogFlags::SUPPRESS_DUPLICATES) << "Creating 360 ridge";
         return;
     }
     if (min_cos != RIDGE_SINGLE_FACE) {
@@ -58,7 +58,7 @@ void CollisionRidgeSphere<TPosition>::combine(
     if (ts0 != ts1) {
         physics_material |= PhysicsMaterial::ATTR_TWO_SIDED;
         ts0 = true;
-        lwarn() << "Conflicting two-sidedness in collision ridges";
+        lwarn(LogFlags::SUPPRESS_DUPLICATES) << "Conflicting two-sidedness in collision ridges";
     }
     auto tang = tangent();
     if (auto c = dot0d(tang, other_normal_f); ts0) {
