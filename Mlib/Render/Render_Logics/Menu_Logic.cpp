@@ -8,6 +8,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <cstddef>
 #include <sstream>
 
 namespace Mlib {
@@ -43,7 +44,7 @@ MenuLogic::~MenuLogic() = default;
 
 void MenuLogic::handle_events() {
     LOG_FUNCTION("FlyingCameraLogic::render");
-    for (auto [user_id, start] : enumerate(keys_->start)) {
+    for (auto [user_id, start] : tenumerate<uint32_t>(keys_->start)) {
         if (start.keys_pressed()) {
             auto& focuses = user_object_.ui_focuses[user_id].focuses;
             std::scoped_lock lock{focuses.mutex};

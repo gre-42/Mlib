@@ -117,7 +117,7 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
             break;
         }
         case AINPUT_EVENT_TYPE_MOTION: {
-            std::scoped_lock lock{eng->buttons_states_.tap_buttons_.mutex};
+            std::scoped_lock lock{eng->buttons_states_.tap_buttons_mutex_};
             for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
                 int32_t action_and_pointer_idX = AMotionEvent_getAction(event);
                 int32_t pointer_idX = (action_and_pointer_idX & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
@@ -132,49 +132,51 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                             // Mlib::lraw() << "skip";
                             break;
                         }
-                        if (auto bit = eng->buttons_states_.tap_buttons_.button_pointer_ids.find(pointer_id);
-                            (bit != eng->buttons_states_.tap_buttons_.button_pointer_ids.end()) &&
-                            (bit->second != nullptr))
-                        {
-                            const auto &bs = *bit->second;
-                            if (bs.key.has_value()) {
-                                auto kit = eng->buttons_states_.tap_buttons_.button_down.find(
-                                    *bs.key);
-                                if (kit != eng->buttons_states_.tap_buttons_.button_down.end()) {
-                                    kit->second = false;
+                        for (auto& [_, tap_buttons] : eng->buttons_states_.tap_buttons_) {
+                            if (auto bit = tap_buttons.button_pointer_ids.find(pointer_id);
+                                (bit != tap_buttons.button_pointer_ids.end()) &&
+                                (bit->second != nullptr))
+                            {
+                                const auto &bs = *bit->second;
+                                if (bs.key.has_value()) {
+                                    auto kit = tap_buttons.button_down.find(
+                                        *bs.key);
+                                    if (kit != tap_buttons.button_down.end()) {
+                                        kit->second = false;
+                                    }
                                 }
+                                bit->second = nullptr;
                             }
-                            bit->second = nullptr;
-                        }
-                        if (auto xit = eng->buttons_states_.tap_buttons_.joystick_xaxis_pointer_ids.find(pointer_id);
-                            (xit != eng->buttons_states_.tap_buttons_.joystick_xaxis_pointer_ids.end()) &&
-                            (xit->second != nullptr))
-                        {
-                            const auto &bs = *xit->second;
-                            if (bs.joystick_xaxis.has_value()) {
-                                auto jit = eng->buttons_states_.tap_buttons_.joystick_axis_position.find(
-                                    *bs.joystick_xaxis);
-                                if (jit !=
-                                    eng->buttons_states_.tap_buttons_.joystick_axis_position.end()) {
-                                    jit->second = NAN;
+                            if (auto xit = tap_buttons.joystick_xaxis_pointer_ids.find(pointer_id);
+                                (xit != tap_buttons.joystick_xaxis_pointer_ids.end()) &&
+                                (xit->second != nullptr))
+                            {
+                                const auto &bs = *xit->second;
+                                if (bs.joystick_xaxis.has_value()) {
+                                    auto jit = tap_buttons.joystick_axis_position.find(
+                                        *bs.joystick_xaxis);
+                                    if (jit !=
+                                            tap_buttons.joystick_axis_position.end()) {
+                                        jit->second = NAN;
+                                    }
                                 }
+                                xit->second = nullptr;
                             }
-                            xit->second = nullptr;
-                        }
-                        if (auto yit = eng->buttons_states_.tap_buttons_.joystick_yaxis_pointer_ids.find(pointer_id);
-                            (yit != eng->buttons_states_.tap_buttons_.joystick_yaxis_pointer_ids.end()) &&
-                            (yit->second != nullptr))
-                        {
-                            const auto &bs = *yit->second;
-                            if (bs.joystick_yaxis.has_value()) {
-                                auto jit = eng->buttons_states_.tap_buttons_.joystick_axis_position.find(
-                                    *bs.joystick_yaxis);
-                                if (jit !=
-                                    eng->buttons_states_.tap_buttons_.joystick_axis_position.end()) {
-                                    jit->second = NAN;
+                            if (auto yit = tap_buttons.joystick_yaxis_pointer_ids.find(pointer_id);
+                                (yit != tap_buttons.joystick_yaxis_pointer_ids.end()) &&
+                                (yit->second != nullptr))
+                            {
+                                const auto &bs = *yit->second;
+                                if (bs.joystick_yaxis.has_value()) {
+                                    auto jit = tap_buttons.joystick_axis_position.find(
+                                        *bs.joystick_yaxis);
+                                    if (jit !=
+                                            tap_buttons.joystick_axis_position.end()) {
+                                        jit->second = NAN;
+                                    }
                                 }
+                                yit->second = nullptr;
                             }
-                            yit->second = nullptr;
                         }
                         break;
                     }
@@ -191,44 +193,46 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                         }
                         float x = AMotionEvent_getX(event, i);
                         float y = AMotionEvent_getY(event, i);
-                        for (auto &tb: eng->buttons_states_.tap_buttons_.button_states) {
-                            auto ew = tb.widget->evaluate(
-                                eng->LayoutParametersX(),
-                                eng->LayoutParametersY(),
-                                Mlib::YOrientation::SWAPPED,
-                                Mlib::RegionRoundMode::ENABLED);
-                            if ((ew->width() > 0.f) && (ew->height() > 0.f) &&
-                                (x >= ew->left()) && (x <= ew->right()) &&
-                                (y >= ew->bottom()) && (y <= ew->top()))
-                            {
-                                if (const auto &k = tb.key) {
-                                    eng->buttons_states_.tap_buttons_.button_down[*k] = true;
-                                    if ((action == AMOTION_EVENT_ACTION_DOWN) ||
-                                        (action == AMOTION_EVENT_ACTION_POINTER_DOWN))
-                                    {
-                                        eng->buttons_states_.tap_buttons_.button_pointer_ids[pointer_id] = &tb;
+                        for (auto& [_, tap_buttons] : eng->buttons_states_.tap_buttons_) {
+                            for (auto &tb: tap_buttons.button_states) {
+                                auto ew = tb.widget->evaluate(
+                                    eng->LayoutParametersX(),
+                                    eng->LayoutParametersY(),
+                                    Mlib::YOrientation::SWAPPED,
+                                    Mlib::RegionRoundMode::ENABLED);
+                                if ((ew->width() > 0.f) && (ew->height() > 0.f) &&
+                                    (x >= ew->left()) && (x <= ew->right()) &&
+                                    (y >= ew->bottom()) && (y <= ew->top()))
+                                {
+                                    if (const auto &k = tb.key) {
+                                        tap_buttons.button_down[*k] = true;
+                                        if ((action == AMOTION_EVENT_ACTION_DOWN) ||
+                                            (action == AMOTION_EVENT_ACTION_POINTER_DOWN))
+                                        {
+                                            tap_buttons.button_pointer_ids[pointer_id] = &tb;
+                                        }
                                     }
-                                }
-                                if (const auto &v = tb.joystick_xaxis) {
-                                    eng->buttons_states_.tap_buttons_.joystick_axis_position[*v] =
-                                        std::clamp(
-                                            (2.f * x - (ew->left() + ew->right())) / ew->width(),
-                                            -1.f, 1.f);
-                                    if ((action == AMOTION_EVENT_ACTION_DOWN) ||
-                                        (action == AMOTION_EVENT_ACTION_POINTER_DOWN))
-                                    {
-                                        eng->buttons_states_.tap_buttons_.joystick_xaxis_pointer_ids[pointer_id] = &tb;
+                                    if (const auto &v = tb.joystick_xaxis) {
+                                        tap_buttons.joystick_axis_position[*v] =
+                                            std::clamp(
+                                                (2.f * x - (ew->left() + ew->right())) / ew->width(),
+                                                -1.f, 1.f);
+                                        if ((action == AMOTION_EVENT_ACTION_DOWN) ||
+                                            (action == AMOTION_EVENT_ACTION_POINTER_DOWN))
+                                        {
+                                            tap_buttons.joystick_xaxis_pointer_ids[pointer_id] = &tb;
+                                        }
                                     }
-                                }
-                                if (const auto &v = tb.joystick_yaxis) {
-                                    eng->buttons_states_.tap_buttons_.joystick_axis_position[*v] =
-                                        std::clamp(
-                                            (2.f * y - (ew->bottom() + ew->top())) / ew->height(),
-                                            -1.f, 1.f);
-                                    if ((action == AMOTION_EVENT_ACTION_DOWN) ||
-                                        (action == AMOTION_EVENT_ACTION_POINTER_DOWN))
-                                    {
-                                        eng->buttons_states_.tap_buttons_.joystick_yaxis_pointer_ids[pointer_id] = &tb;
+                                    if (const auto &v = tb.joystick_yaxis) {
+                                        tap_buttons.joystick_axis_position[*v] =
+                                            std::clamp(
+                                                (2.f * y - (ew->bottom() + ew->top())) / ew->height(),
+                                                -1.f, 1.f);
+                                        if ((action == AMOTION_EVENT_ACTION_DOWN) ||
+                                            (action == AMOTION_EVENT_ACTION_POINTER_DOWN))
+                                        {
+                                            tap_buttons.joystick_yaxis_pointer_ids[pointer_id] = &tb;
+                                        }
                                     }
                                 }
                             }

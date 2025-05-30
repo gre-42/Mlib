@@ -1,4 +1,3 @@
-#ifndef __ANDROID__
 #pragma once
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
@@ -89,4 +88,3 @@ private:
 };
 
 }
-#endif

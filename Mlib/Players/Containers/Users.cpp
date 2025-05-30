@@ -23,7 +23,7 @@ void Users::for_each_user(const std::function<void(uint32_t)>& operation) {
     if (user_count_ == 0) {
         THROW_OR_ABORT("User count not set");
     }
-    for (size_t i = 0; i < user_count_; ++i) {
+    for (uint32_t i = 0; i < user_count_; ++i) {
         operation(i);
     }
 }

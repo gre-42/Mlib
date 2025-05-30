@@ -6,6 +6,7 @@
 #include <Mlib/Android/ndk_helper/AndroidApp.hpp>
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
@@ -40,6 +41,7 @@
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Window_Logic.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
@@ -50,8 +52,11 @@
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
+#include <Mlib/Scene/Physics_Scenes.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
+#include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
@@ -78,15 +83,16 @@ public:
         const ParsedArgs &args,
         RealtimeDependentFps& render_set_fps,
         MenuLogic& menu_logic)
-    : render_config_{render_config},
-      scene_graph_config_{scene_graph_config},
-      render_results_{render_results},
-      args_{args},
-      render_set_fps_{render_set_fps},
-      menu_logic_{menu_logic},
-      renderable_scenes_{nullptr},
-      load_scene_finished_{nullptr},
-      last_load_scene_finished_{false}
+        : render_config_{ render_config }
+        , scene_graph_config_{ scene_graph_config }
+        , render_results_{ render_results }
+        , args_{ args }
+        , render_set_fps_{ render_set_fps }
+        , menu_logic_{ menu_logic }
+        , physics_scenes_{ nullptr }
+        , renderable_scenes_{ nullptr }
+        , load_scene_finished_{ nullptr }
+        , last_load_scene_finished_{ false }
     {
         render_set_fps_.set_fps.tick(std::chrono::steady_clock::time_point());
     }
@@ -111,6 +117,9 @@ public:
         if (load_scene_finished_ == nullptr) {
             verbose_abort("load_scene_finished is null");
         }
+        if (physics_scenes_ == nullptr) {
+            verbose_abort("physics_scenes is null");
+        }
         if (renderable_scenes_ == nullptr) {
             verbose_abort("renderable_scenes is null");
         }
@@ -118,19 +127,19 @@ public:
         auto rsd = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
         if (*load_scene_finished_) {
             execute_render_allocators();
-            auto& rs = (*renderable_scenes_)["primary_scene"];
+            auto& rs = (*physics_scenes_)["primary_scene"];
             rs.scene_.wait_for_cleanup();
             if (!last_load_scene_finished_ &&
                 !args_.has_named("--no_physics") &&
                 !args_.has_named("--single_threaded"))
             {
-                for (auto& [n, r] : renderable_scenes_->guarded_iterable()) {
+                for (auto& [n, r] : physics_scenes_->guarded_iterable()) {
                     r.delete_node_mutex_.clear_deleter_thread();
                     r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
                 }
                 last_load_scene_finished_ = true;
             }
-            rs.render_toplevel(
+            renderable_scenes_->render_toplevel(
                 lx,
                 ly,
                 render_config_,
@@ -138,7 +147,7 @@ public:
                 render_results_,
                 rsd);
             if (args_.has_named("--single_threaded")) {
-                for (auto& [_, r] : renderable_scenes_->guarded_iterable()) {
+                for (auto& [_, r] : physics_scenes_->guarded_iterable()) {
                     SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                     if (!r.physics_set_fps_.paused()) {
                         r.physics_iteration_(std::chrono::steady_clock::now());
@@ -148,7 +157,7 @@ public:
             }
         } else if (auto rs = renderable_scenes_->try_get("loading"); rs != nullptr) {
             execute_render_allocators();
-            rs->scene_.wait_for_cleanup();
+            rs->physics_scene_->scene_.wait_for_cleanup();
             if (rs->selected_cameras_.camera_node_exists()) {
                 rs->render_toplevel(
                     lx,
@@ -165,9 +174,11 @@ public:
     }
 
     void set_scene(
+        PhysicsScenes* physics_scenes,
         RenderableScenes* renderable_scenes,
         std::atomic_bool* load_scene_finished)
     {
+        physics_scenes_ = physics_scenes;
         renderable_scenes_ = renderable_scenes;
         load_scene_finished_ = load_scene_finished;
         last_load_scene_finished_ = false;
@@ -180,6 +191,7 @@ private:
     const ParsedArgs &args_;
     RealtimeDependentFps& render_set_fps_;
     MenuLogic& menu_logic_;
+    PhysicsScenes* physics_scenes_;
     RenderableScenes* renderable_scenes_;
     std::atomic_bool* load_scene_finished_;
     RootRenderedSceneDescriptor rrsd_;
@@ -188,14 +200,14 @@ private:
 
 void print_debug_info(
     const ParsedArgs& args,
-    RenderableScenes& renderable_scenes)
+    PhysicsScenes& physics_scenes)
 {
     if (args.has_named("--print_search_time") ||
         args.has_named("--print_compression_ratio") ||
         args.has_named("--optimize_search_time") ||
         args.has_named("--plot_triangle_bvh"))
     {
-        for (const auto& [n, r] : renderable_scenes.guarded_iterable()) {
+        for (const auto& [n, r] : physics_scenes.guarded_iterable()) {
             if (args.has_named("--print_search_time")) {
                 linfo() << n << " search time";
                 r.print_physics_engine_search_time();
@@ -219,7 +231,9 @@ JThread loader_thread(
     RenderLogicGallery& gallery,
     AssetReferences& asset_references,
     Translators& translators,
+    PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
+    WindowLogic& window_logic,
     const std::list<std::string>& search_path,
     const std::string& main_scene_filename,
     ThreadSafeString& next_scene_filename,
@@ -233,10 +247,10 @@ JThread loader_thread(
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
-    ButtonPress& confirm_button_press,
+    VerboseVector<ButtonPress>& confirm_button_press,
     LockableKeyConfigurations& key_configurations,
     LockableKeyDescriptions& key_descriptions,
-    UiFocus& ui_focus,
+    UiFocuses& ui_focuses,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
     std::atomic_bool& load_scene_finished,
@@ -270,32 +284,34 @@ JThread loader_thread(
                     confirm_button_press,
                     key_configurations,
                     key_descriptions,
-                    ui_focus,
+                    ui_focuses,
                     layout_constraints,
                     gallery,
                     asset_references,
                     translators,
+                    physics_scenes,
                     renderable_scenes,
+                    window_logic,
                     exit);
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
-                        for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                        for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                             r.delete_node_mutex_.clear_deleter_thread();
                             r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
                         }
                     } else if (args.has_named("--single_threaded")) {
-                        for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                        for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                             r.scene_.delete_node_mutex().clear_deleter_thread();
                         }
                     }
                 }
                 load_scene_finished = true;
-                renderable_scenes["primary_scene"].instantiate_audio_listener(
+                renderable_scenes["primary_scene_0"].instantiate_audio_listener(
                     render_delay,
                     velocity_dt);
             }
 
-            print_debug_info(args, renderable_scenes);
+            print_debug_info(args, physics_scenes);
 
         } catch (...) {
             add_unhandled_exception(std::current_exception());
@@ -395,6 +411,7 @@ void android_main(android_app* app) {
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
         "    [--audio_alpha <value>]\n"
+        "    [--user_count <n>]\n"
         "    [--check_gl_errors]\n"
         "    [--verbose]",
         {"--wire_frame",
@@ -470,6 +487,7 @@ void android_main(android_app* app) {
          "--write_loaded_resources",
          "--audio_frequency",
          "--audio_alpha",
+         "--user_count",
          "--bloom_x",
          "--bloom_y",
          "--bloom_threshold"});
@@ -540,25 +558,36 @@ void android_main(android_app* app) {
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
-        BaseKeyCombination confirm_key_combination{{{
-            BaseKeyBinding{
-                .key = "ENTER",
-                .gamepad_button = "A",
-                .tap_button = "START"}}}};
         LockableKeyConfigurations confirm_key_configurations;
-        confirm_key_configurations
-            .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->emplace()
-            .insert("confirm", { std::move(confirm_key_combination) });
-        ButtonPress confirm_button_press{ button_states, confirm_key_configurations, "confirm", "" };
-        UiFocus ui_focus{ get_path_in_appdata_directory({"focus.json"}) };
-        if (ui_focus.can_load()) {
-            ui_focus.load();
+        uint32_t ngamepads = 2;
+        VerboseVector<ButtonPress> confirm_button_press("Confirm button press");
+        confirm_button_press.reserve(ngamepads);
+        {
+            auto locked_key_configs = confirm_key_configurations
+                .lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
+            BaseKeyCombination confirm_key_combination_0{{{
+                BaseKeyBinding{
+                    .key = "ENTER",
+                    .gamepad_button = { 0, "A" },
+                    .tap_button = { 0, "START" }}}}};
+            locked_key_configs->insert(0, "confirm", { std::move(confirm_key_combination_0) });
+            confirm_button_press.emplace_back(button_states, confirm_key_configurations, 0, "confirm", "");
+            for (uint32_t i = 1; i < ngamepads; ++i) {
+                BaseKeyCombination confirm_key_combination_i{{{
+                    BaseKeyBinding{.gamepad_button = { i, "A" }}}}};
+                locked_key_configs->insert(i, "confirm", { std::move(confirm_key_combination_i) });
+                confirm_button_press.emplace_back(button_states, confirm_key_configurations, i, "confirm", "");
+            }
         }
-        // AWindow window{*app};
+        UiFocuses ui_focuses{ get_path_in_appdata_directory({"focus.json"}) };
+        ui_focuses.try_load();
+        NotifyingJsonMacroArguments external_json_macro_arguments;
+        // FifoLog fifo_log{10 * 1000};
+
         MenuUserClass menu_user_object{
             .button_states = button_states,
-            .focuses = ui_focus.focuses};
+            .ui_focuses = ui_focuses};
+        WindowLogic window_logic;
         MenuLogic menu_logic{menu_user_object};
         // Declared as first class to let destructors of other classes succeed.
         SceneRenderer scene_renderer{
@@ -575,13 +604,12 @@ void android_main(android_app* app) {
         ARenderLoop render_loop{ *app, a_engine };
         // AUi::RequestReadExternalStoragePermission();
 
-        NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
-            ui_focus.clear();
+            ui_focuses.clear();
             button_states.tap_buttons_.clear();
 
             PhysicsEngineConfig physics_engine_config{
@@ -649,7 +677,8 @@ void android_main(android_app* app) {
                     {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
                     {"black_lightmap_height", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
                     {"scene_skidmarks_width", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
-                    {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))}};
+                    {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))},
+                    {"user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))}};
                 external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
             }
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
@@ -677,10 +706,11 @@ void android_main(android_app* app) {
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
                 RenderableScenes renderable_scenes;
+                PhysicsScenes physics_scenes;
 
                 std::atomic_bool load_scene_finished = false;
-                scene_renderer.set_scene(&renderable_scenes, &load_scene_finished);
-                DestructionGuard dg0{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr); }};
+                scene_renderer.set_scene(&physics_scenes, &renderable_scenes, &load_scene_finished);
+                DestructionGuard dg0{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr, nullptr); }};
 
                 DestructionGuard dg1{[](){discard_render_allocators();}};
                 std::function<void()> exit = [](){
@@ -691,7 +721,9 @@ void android_main(android_app* app) {
                     gallery,
                     asset_references,
                     translators,
+                    physics_scenes,
                     renderable_scenes,
+                    window_logic,
                     search_path,
                     main_scene_filename,
                     next_scene_filename,
@@ -708,7 +740,7 @@ void android_main(android_app* app) {
                     confirm_button_press,
                     key_configurations,
                     key_descriptions,
-                    ui_focus,
+                    ui_focuses,
                     layout_constraints,
                     load_scene,
                     load_scene_finished,
@@ -720,18 +752,13 @@ void android_main(android_app* app) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
             }
-            {
-                std::scoped_lock lock{ui_focus.focuses.mutex};
-                ui_focus.focuses.set_focuses({});
-            }
+            ui_focuses.clear_focuses();
             if (auto s = (std::string)next_scene_filename; !s.empty()) {
                 main_scene_filename = s;
             }
         }
 
-        if (ui_focus.has_changes() && ui_focus.can_save()) {
-            ui_focus.save();
-        }
+        ui_focuses.try_save();
 
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {
         //     lerr() << "write svg";

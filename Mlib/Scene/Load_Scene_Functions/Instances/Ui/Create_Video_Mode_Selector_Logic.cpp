@@ -4,12 +4,14 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Video_Mode_Selector_Logic.hpp>
@@ -54,7 +56,7 @@ void CreateVideoModeSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& 
         focus_filter.focus_mask,
         0);
     auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
-    auto& scene_selector_logic = object_pool.create<VideoModeSelectorLogic>(
+    auto& video_selector_logic = object_pool.create<VideoModeSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(id),
         args.window_logic,
@@ -75,7 +77,7 @@ void CreateVideoModeSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& 
         ui_focus,
         user_id);
     render_logics.append(
-        { scene_selector_logic, CURRENT_SOURCE_LOCATION },
+        { video_selector_logic, CURRENT_SOURCE_LOCATION },
         1 /* z_order */,
         CURRENT_SOURCE_LOCATION);
 }

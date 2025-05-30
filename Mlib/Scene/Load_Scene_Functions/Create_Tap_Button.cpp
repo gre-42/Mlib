@@ -12,6 +12,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(user_id);
 DECLARE_ARGUMENT(key);
 DECLARE_ARGUMENT(x_axis);
 DECLARE_ARGUMENT(y_axis);
@@ -19,7 +20,6 @@ DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
-DECLARE_ARGUMENT(viewport_id);
 }
 
 const std::string CreateTapButton::key = "create_tap_button";
@@ -35,10 +35,10 @@ std::optional<decltype(TOperation()(T()))> otransform(const std::optional<T>& v,
 LoadSceneJsonUserFunction CreateTapButton::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    auto viewport_id = args.arguments.at<uint32_t>(KnownArgs::viewport_id);
-    std::scoped_lock lock{args.button_states.tap_buttons_.at(viewport_id).mutex};
+    auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
+    std::scoped_lock lock{args.button_states.tap_buttons_mutex_};
     auto key = args.arguments.try_at<std::string>(KnownArgs::key);
-    args.button_states.tap_buttons_.at(viewport_id).button_states.push_back(
+    args.button_states.tap_buttons_[user_id].button_states.push_back(
         TapButtonState{
             .key = otransform(
                     args.arguments.try_at<std::string>(KnownArgs::key),

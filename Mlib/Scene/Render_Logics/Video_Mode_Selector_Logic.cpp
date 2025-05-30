@@ -1,4 +1,3 @@
-#ifndef __ANDROID__
 #include "Video_Mode_Selector_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
@@ -125,4 +124,3 @@ FocusFilter VideoModeSelectorLogic::focus_filter() const {
 void VideoModeSelectorLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "VideoModeSelectorLogic";
 }
-#endif

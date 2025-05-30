@@ -20,7 +20,7 @@ class WindowLogicKeys;
 class WindowUserClass {
 public:
     WindowPosition window_position;
-    ButtonStates &button_states;
+    ButtonStates& button_states;
     bool exit_on_escape;
 };
 
@@ -66,6 +66,41 @@ private:
     std::optional<DesiredVideoMode> desired_mode_;
 };
 
+}
+
+#else
+#include <string>
+namespace Mlib {
+
+struct VideoMode {
+    int width;
+    int height;
+    int red_bits;
+    int green_bits;
+    int blue_bits;
+    int refresh_rate;
+    std::string to_string() const;
+};
+
+struct DesiredVideoMode {
+    int width;
+    int height;
+    int refresh_rate;
+};
+
+class WindowLogic {
+    WindowLogic(const WindowLogic&) = delete;
+    WindowLogic& operator = (const WindowLogic&) = delete;
+public:
+    WindowLogic();
+    ~WindowLogic();
+
+    void handle_events();
+    void clear_fullscreen_modes();
+    std::vector<VideoMode> fullscreen_modes() const;
+    void set_fullscreen_mode(const DesiredVideoMode& mode);
+    bool is_fullscreen() const;
+};
 }
 
 #endif

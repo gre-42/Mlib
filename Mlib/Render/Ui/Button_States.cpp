@@ -80,22 +80,41 @@ void ButtonStates::update_gamepad_state() {
     }
 }
 #else
-float ButtonStates::get_gamepad_axis(int axis) const {
+
+bool ButtonStates::get_gamepad_button_down(uint32_t gamepad_id, int button) const {
+    std::shared_lock lock{ gamepad_button_mutex_ };
+    auto git = gamepad_buttons_.find(gamepad_id);
+    if (git == gamepad_buttons_.end()) {
+        return false;
+    }
+    auto it = git->second.find(button);
+    if (it == git->second.end()) {
+        return false;
+    }
+    return it->second;
+}
+
+float ButtonStates::get_gamepad_axis(uint32_t gamepad_id, int axis) const {
     std::shared_lock lock{ gamepad_axes_mutex_ };
-    auto it = gamepad_axes_.find(axis);
-    if (it == gamepad_axes_.end()) {
+    auto git = gamepad_axes_.find(gamepad_id);
+    if (git == gamepad_axes_.end()) {
+        return NAN;
+    }
+    auto it = git->second.find(axis);
+    if (it == git->second.end()) {
         return NAN;
     }
     return it->second;
 }
 
-bool ButtonStates::get_gamepad_button_down(int button) const {
-    return get_key_down(button);
+void ButtonStates::notify_gamepad_button(uint32_t gamepad_id, int axis, bool value) {
+    std::scoped_lock lock{ gamepad_button_mutex_ };
+    gamepad_buttons_[gamepad_id][axis] = value;
 }
 
-void ButtonStates::notify_gamepad_axis(int axis, float value) {
+void ButtonStates::notify_gamepad_axis(uint32_t gamepad_id, int axis, float value) {
     std::scoped_lock lock{ gamepad_axes_mutex_ };
-    gamepad_axes_[axis] = value;
+    gamepad_axes_[gamepad_id][axis] = value;
 }
 #endif
 
@@ -151,9 +170,13 @@ bool ButtonStates::get_tap_button_down(
     uint32_t gamepad_id,
     int button) const
 {
-    std::shared_lock lock{ tap_buttons_.at(gamepad_id).mutex };
-    auto it = tap_buttons_.at(gamepad_id).button_down.find(button);
-    if (it == tap_buttons_.at(gamepad_id).button_down.end()) {
+    std::shared_lock lock{ tap_buttons_mutex_ };
+    auto git = tap_buttons_.find(gamepad_id);
+    if (git == tap_buttons_.end()) {
+        return false;
+    }
+    auto it = git->second.button_down.find(button);
+    if (it == git->second.button_down.end()) {
         // The tap button might not yet exist (it is created dynamically),
         // so this is not an error.
         return false;
@@ -165,9 +188,13 @@ float ButtonStates::get_tap_joystick_axis(
     uint32_t gamepad_id,
     int axis) const
 {
-    std::shared_lock lock{ tap_buttons_.at(gamepad_id).mutex };
-    auto it = tap_buttons_.at(gamepad_id).joystick_axis_position.find(axis);
-    if (it == tap_buttons_.at(gamepad_id).joystick_axis_position.end()) {
+    std::shared_lock lock{ tap_buttons_mutex_ };
+    auto bit = tap_buttons_.find(gamepad_id);
+    if (bit == tap_buttons_.end()) {
+        return NAN;
+    }
+    auto it = bit->second.joystick_axis_position.find(axis);
+    if (it == bit->second.joystick_axis_position.end()) {
         // The tap button might not yet exist (it is created dynamically),
         // so this is not an error.
         return NAN;

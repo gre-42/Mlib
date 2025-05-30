@@ -149,5 +149,39 @@ void WindowLogic::set_fullscreen_mode(const DesiredVideoMode& mode) {
     desired_mode_ = mode;
 }
 
+#else
+
+#include "Window_Logic.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
+#include <sstream>
+
+using namespace Mlib;
+
+std::string VideoMode::to_string() const {
+    return (std::stringstream() << "  " << width << " x " << height << " @ " << refresh_rate << " Hz").str();
+}
+
+WindowLogic::WindowLogic() = default;
+WindowLogic::~WindowLogic() = default;
+
+void WindowLogic::handle_events() {
+    THROW_OR_ABORT("WindowLogic::handle_events not implemented");
+}
+
+void WindowLogic::clear_fullscreen_modes() {
+    THROW_OR_ABORT("WindowLogic::clear_fullscreen_modes not implemented");
+}
+
+std::vector<VideoMode> WindowLogic::fullscreen_modes() const {
+    THROW_OR_ABORT("WindowLogic::fullscreen_modes not implemented");
+}
+
+void WindowLogic::set_fullscreen_mode(const DesiredVideoMode& mode) {
+    THROW_OR_ABORT("WindowLogic::set_fullscreen_mode not implemented");
+}
+
+bool WindowLogic::is_fullscreen() const {
+    THROW_OR_ABORT("WindowLogic::is_fullscreen not implemented");
+}
 
 #endif
