@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <cstddef>
 #include <memory>
 
@@ -8,7 +9,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 struct AnimationState;
 
-class AnimationStateUpdater {
+class AnimationStateUpdater: public virtual DanglingBaseClass {
 public:
     virtual ~AnimationStateUpdater() = default;
     virtual void notify_movement_intent() = 0;

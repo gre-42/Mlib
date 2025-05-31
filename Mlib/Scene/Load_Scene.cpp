@@ -77,8 +77,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Move_Node_To_Bvh.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Animation_State.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Avatar_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Bone.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Rotation.hpp>
@@ -151,7 +149,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Door_Distance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Revert_Surface_Power_Threshold.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Target.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Sliding_Normal_Modifier.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Render_Fps.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Textures_Lazy.hpp>
@@ -325,8 +322,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SceneToPixelRegion::key, SceneToPixelRegion::json_user_function);
             register_json_user_function(SceneToTexture::key, SceneToTexture::json_user_function);
             register_json_user_function(ThreadTop::key, ThreadTop::json_user_function);
-            register_json_user_function(SetAnimationState::key, SetAnimationState::json_user_function);
-            register_json_user_function(SetAvatarStyleUpdater::key, SetAvatarStyleUpdater::json_user_function);
             register_json_user_function(SetBackgroundColor::key, SetBackgroundColor::json_user_function);
             register_json_user_function(FitCanvasToRenderables::key, FitCanvasToRenderables::json_user_function);
             register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
@@ -349,7 +344,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SetRigidBodyGrindPoint::key, SetRigidBodyGrindPoint::json_user_function);
             register_json_user_function(SetRigidBodyRevertSurfacePowerThreshold::key, SetRigidBodyRevertSurfacePowerThreshold::json_user_function);
             register_json_user_function(SetRigidBodyTarget::key, SetRigidBodyTarget::json_user_function);
-            register_json_user_function(SetSkaterStyleUpdater::key, SetSkaterStyleUpdater::json_user_function);
             register_json_user_function(SetSkybox::key, SetSkybox::json_user_function);
             register_json_user_function(SetObjective::key, SetObjective::json_user_function);
             register_json_user_function(ResetSupplyDepotCooldowns::key, ResetSupplyDepotCooldowns::json_user_function);

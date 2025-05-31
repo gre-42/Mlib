@@ -304,7 +304,7 @@ public:
     IDamageable* damageable_;
     std::set<RigidBodyVehicle*> passengers_;
     float door_distance_;
-    AnimationStateUpdater* animation_state_updater_;
+    DanglingBaseClassPtr<AnimationStateUpdater> animation_state_updater_;
     Drivers drivers_;
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;

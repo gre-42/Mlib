@@ -671,13 +671,15 @@ int main(int argc, char** argv) {
                         filename,
                         cfg<float>(args, light_configuration));
                     scene_node_resources.add_resource(name, rmhx2);
-                    scene_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-                        .periodic_skelletal_animation_name = VariableAndHash<std::string>{"anim"},
-                        .periodic_skelletal_animation_frame = {
-                            AnimationFrame {
-                                .begin = safe_stof(args.named_value("--loop_begin", "0")),
-                                .end = safe_stof(args.named_value("--loop_end", "2")),
-                                .time = safe_stof(args.named_value("--loop_time", "1"))}}}));
+                    scene_node->set_animation_state(
+                        std::unique_ptr<AnimationState>(new AnimationState{
+                            .periodic_skelletal_animation_name = VariableAndHash<std::string>{"anim"},
+                            .periodic_skelletal_animation_frame = {
+                                AnimationFrame {
+                                    .begin = safe_stof(args.named_value("--loop_begin", "0")),
+                                    .end = safe_stof(args.named_value("--loop_end", "2")),
+                                    .time = safe_stof(args.named_value("--loop_time", "1"))}}}),
+                        AnimationStateAlreadyExistsBehavior::THROW);
                     LoadMeshConfig<float> bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),

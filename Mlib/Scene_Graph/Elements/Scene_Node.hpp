@@ -125,6 +125,11 @@ enum class LockingStrategy {
     ACQUIRE_LOCK
 };
 
+enum class AnimationStateAlreadyExistsBehavior {
+    REPLACE,
+    THROW
+};
+
 enum class PhysicsMaterial: uint32_t;
 enum class RenderingStrategies;
 
@@ -334,7 +339,9 @@ public:
     ColorStyle& color_style(const VariableAndHash<std::string>& name);
     const ColorStyle& color_style(const VariableAndHash<std::string>& name) const;
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
-    void set_animation_state(std::unique_ptr<AnimationState>&& animation_state);
+    void set_animation_state(
+        std::unique_ptr<AnimationState>&& animation_state,
+        AnimationStateAlreadyExistsBehavior already_exists_behavior);
     void set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater);
     bool to_be_deleted() const;
     void set_bone(const SceneNodeBone& bone);

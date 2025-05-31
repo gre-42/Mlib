@@ -733,13 +733,21 @@ void SceneNode::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
     color_styles_.push_back(std::move(color_style));
 }
 
-void SceneNode::set_animation_state(std::unique_ptr<AnimationState>&& animation_state) {
+void SceneNode::set_animation_state(
+    std::unique_ptr<AnimationState>&& animation_state,
+    AnimationStateAlreadyExistsBehavior already_exists_behavior)
+{
     if (scene_ != nullptr) {
         scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
     }
     std::scoped_lock lock{ mutex_ };
     if (!renderables_.empty()) {
         THROW_OR_ABORT("Animation state was set after renderables, this leads to a race condition");
+    }
+    if ((already_exists_behavior == AnimationStateAlreadyExistsBehavior::THROW) &&
+        (animation_state_ != nullptr))
+    {
+        THROW_OR_ABORT("Animation state already set");
     }
     animation_state_ = std::move(animation_state);
 }
@@ -785,7 +793,7 @@ void SceneNode::move(
             if (animation_state_updater_ != nullptr) {
                 auto s = animation_state_updater_->update_animation_state(*animation_state_);
                 if (s != nullptr) {
-                    set_animation_state(std::move(s));
+                    set_animation_state(std::move(s), AnimationStateAlreadyExistsBehavior::REPLACE);
                 }
             }
         }

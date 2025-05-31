@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Animation/Animation_Frame.hpp>
+#include <Mlib/Scene_Graph/Animation/Periodic_Reference_Time.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cmath>
 
@@ -18,6 +19,9 @@ struct AnimationState {
             .begin = NAN,
             .end = NAN,
             .time = NAN}};
+    PeriodicReferenceTime periodic_reference_time {
+        std::chrono::steady_clock::time_point(),
+        std::chrono::steady_clock::duration{0}};
     const bool delete_node_when_aperiodic_animation_finished = false;
 };
 

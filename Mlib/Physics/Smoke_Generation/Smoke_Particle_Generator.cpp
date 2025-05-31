@@ -41,13 +41,15 @@ void SmokeParticleGenerator::generate_root(
             rotation,
             1.f,
             PoseInterpolationMode::DISABLED);
-        node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-            .aperiodic_animation_frame = AperiodicAnimationFrame{
-                AnimationFrame{
-                    .begin = 0.f,
-                    .end = animation_duration,
-                    .time = 0.f}},
-            .delete_node_when_aperiodic_animation_finished = true}));
+        node->set_animation_state(
+            std::unique_ptr<AnimationState>(new AnimationState{
+                .aperiodic_animation_frame = AperiodicAnimationFrame{
+                    AnimationFrame{
+                        .begin = 0.f,
+                        .end = animation_duration,
+                        .time = 0.f}},
+                .delete_node_when_aperiodic_animation_finished = true}),
+            AnimationStateAlreadyExistsBehavior::THROW);
         scene_node_resources_.instantiate_child_renderable(
             resource_name,
             ChildInstantiationOptions{
@@ -81,13 +83,15 @@ void SmokeParticleGenerator::generate_child(
         fixed_zeros<float, 3>(),
         1.f,
         PoseInterpolationMode::DISABLED);
-    child_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
-        .aperiodic_animation_frame = AperiodicAnimationFrame{
-            AnimationFrame{
-                .begin = 0.f,
-                .end = animation_duration,
-                .time = 0.f}},
-        .delete_node_when_aperiodic_animation_finished = true}));
+    child_node->set_animation_state(
+        std::unique_ptr<AnimationState>(new AnimationState{
+            .aperiodic_animation_frame = AperiodicAnimationFrame{
+                AnimationFrame{
+                    .begin = 0.f,
+                    .end = animation_duration,
+                    .time = 0.f}},
+            .delete_node_when_aperiodic_animation_finished = true}),
+        AnimationStateAlreadyExistsBehavior::THROW);
     scene_node_resources_.instantiate_child_renderable(
         resource_name,
         ChildInstantiationOptions{
