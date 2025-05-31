@@ -77,6 +77,7 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
             .width = args.arguments.at<int>(KnownArgs::width),
             .height = args.arguments.at<int>(KnownArgs::height),
             .nlayers = args.arguments.at<size_t>(KnownArgs::layers, 1),
+            .mipmap_mode = mipmap_mode,
             .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
             .color_mode = color_mode,
             .tiles = tiles});

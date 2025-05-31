@@ -45,6 +45,7 @@ DECLARE_ARGUMENT(saturate);
 DECLARE_ARGUMENT(multiply_with_alpha);
 DECLARE_ARGUMENT(mipmap_mode);
 DECLARE_ARGUMENT(depth_interpolation);
+DECLARE_ARGUMENT(layers);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(wrap_mode_s);
 DECLARE_ARGUMENT(wrap_mode_t);
@@ -57,22 +58,26 @@ struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
             "add_texture_descriptor",
-            [](const LoadSceneJsonUserFunctionArgs& args)
-            {
-                args.arguments.validate(KnownArgs::options);
+            [](const LoadSceneJsonUserFunctionArgs& args){
+    args.arguments.validate(KnownArgs::options);
 
-                auto mipmap_mode = mipmap_mode_from_string(
+    auto mipmap_mode = mipmap_mode_from_string(
         args.arguments.at<std::string>(KnownArgs::mipmap_mode, "with_mipmaps"));
     auto anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level);
     auto wrap_modes = OrderableFixedArray<WrapMode, 2>{
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))};
     auto rotate = args.arguments.at<int>(KnownArgs::rotate, 0);
+    auto depth_interpolation = interpolation_mode_from_string(
+        args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest"));
+    auto layers = args.arguments.at<uint32_t>(KnownArgs::layers, 1);
     auto normal = ColormapWithModifiers{
         .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::normal).path},
         .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
         .color_mode = ColorMode::RGB,
         .mipmap_mode = mipmap_mode,
+        .depth_interpolation = depth_interpolation,
+        .layers = layers,
         .anisotropic_filtering_level = anisotropic_filtering_level,
         .wrap_modes = wrap_modes,
         .rotate = rotate}.compute_hash();
@@ -129,12 +134,13 @@ struct RegisterJsonUserFunction {
                 .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
                 .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
                 .mipmap_mode = mipmap_mode,
-                .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
+                .depth_interpolation = depth_interpolation,
+                .layers = layers,
                 .anisotropic_filtering_level = anisotropic_filtering_level,
                 .wrap_modes = wrap_modes,
                 .rotate = rotate}.compute_hash(),
-            .specular = specular,
-            .normal = normal });
+            .specular = std::move(specular),
+            .normal = std::move(normal) });
             });
     }
 } obj;

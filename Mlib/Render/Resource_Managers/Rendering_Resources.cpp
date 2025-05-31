@@ -845,7 +845,8 @@ TextureType RenderingResources::texture_type(
     if (auto it = manual_atlas_tile_descriptors_.try_get(name.filename); it != nullptr) {
         return it->nlayers == 1
             ? TextureType::TEXTURE_2D
-            : it->depth_interpolation == InterpolationMode::NEAREST
+            : (it->depth_interpolation == InterpolationMode::NEAREST) ||
+              (it->mipmap_mode == MipmapMode::WITH_MIPMAPS_2D)
                 ? TextureType::TEXTURE_2D_ARRAY
                 : TextureType::TEXTURE_3D;
     }
@@ -1491,7 +1492,7 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const VariableAndHash<
             .texture_descriptor = {.color = ColormapWithModifiers{
                 .filename = name,
                 .color_mode = mit->color_mode,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                .mipmap_mode = mit->mipmap_mode,
                 .depth_interpolation = mit->depth_interpolation}.compute_hash()}};
     }
     {
@@ -1853,9 +1854,11 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
             flat_data.insert(flat_data.end(), d->data(), d->data() + layer_size);
         }
         GLuint texture;
-        GLenum target = (color.depth_interpolation == InterpolationMode::NEAREST)
-            ? GL_TEXTURE_2D_ARRAY
-            : GL_TEXTURE_3D;
+        GLenum target =
+            (color.depth_interpolation == InterpolationMode::NEAREST) ||
+            (color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D)
+                ? GL_TEXTURE_2D_ARRAY
+                : GL_TEXTURE_3D;
         CHK(glGenTextures(1, &texture));
         CHK(glBindTexture(target, texture));
         if (aniso != 0) {
@@ -1881,7 +1884,7 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
                 flat_data.data()));
         }
 
-        if (color.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+        if (color.mipmap_mode != MipmapMode::NO_MIPMAPS) {
             CHK(glGenerateMipmap(target));
         }
         CHK(glBindTexture(target, 0));

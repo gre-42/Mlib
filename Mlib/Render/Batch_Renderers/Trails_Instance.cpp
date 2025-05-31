@@ -25,7 +25,7 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
             .textures_color = {BlendMapTexture{.texture_descriptor = {.color = ColormapWithModifiers{
                 .filename = texture,
                 .color_mode = ColorMode::RGBA,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS_2D,
                 .depth_interpolation = InterpolationMode::LINEAR}.compute_hash()}}},
             .continuous_layer_x = continuous_layer_x,
             .continuous_layer_y = continuous_layer_y,

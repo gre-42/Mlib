@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
+#include <list>
 #include <set>
 #include <string>
 
@@ -20,6 +21,7 @@ void instantiate(
     RenderingResources& rendering_resources,
     const std::set<std::string>& required_prefixes,
     const std::set<VariableAndHash<std::string>>& exclude,
-    std::set<VariableAndHash<std::string>>* instantiated);
+    std::set<VariableAndHash<std::string>>* instantiated_resources,
+    std::list<VariableAndHash<std::string>>* instantiated_root_nodes);
 
 }

@@ -26,6 +26,7 @@ DECLARE_ARGUMENT(required_prefixes);
 DECLARE_ARGUMENT(except);
 DECLARE_ARGUMENT(dynamics);
 DECLARE_ARGUMENT(instantiated_resources);
+DECLARE_ARGUMENT(instantiated_root_nodes);
 }
 
 Instantiate::Instantiate(PhysicsScene& physics_scene) 
@@ -33,13 +34,16 @@ Instantiate::Instantiate(PhysicsScene& physics_scene)
 {}
 
 void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
+    args.arguments.validate(KnownArgs::options);
     auto empty_set = std::set<VariableAndHash<std::string>>();
     auto matching_set = std::set<std::string>{""};
     auto required_prefixes = args.arguments.at<std::set<std::string>>(KnownArgs::required_prefixes, matching_set);
     auto exclude = args.arguments.at_non_null<std::set<VariableAndHash<std::string>>>(KnownArgs::except, empty_set);
     auto dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics));
-    auto ir = args.arguments.try_at<std::string>(KnownArgs::instantiated_resources);
-    std::set<VariableAndHash<std::string>> instantiated;
+    auto ires = args.arguments.try_at<std::string>(KnownArgs::instantiated_resources);
+    auto irno = args.arguments.try_at<std::string>(KnownArgs::instantiated_root_nodes);
+    std::set<VariableAndHash<std::string>> instantiated_resources;
+    std::list<VariableAndHash<std::string>> instantiated_root_nodes;
     for (const auto& file : args.arguments.try_pathes_or_variables(KnownArgs::ipl_files)) {
         FunctionGuard fg{ "Instantiate \"" + short_path(file.path) + '"'};
         for (const auto& info : read_ipl(file.path, dynamics)) {
@@ -50,7 +54,8 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 rendering_resources,
                 required_prefixes,
                 exclude,
-                ir.has_value() ? &instantiated : nullptr);
+                ires.has_value() ? &instantiated_resources : nullptr,
+                irno.has_value() ? &instantiated_root_nodes : nullptr);
         }
     }
     for (const auto& name : args.arguments.try_at_vector<VariableAndHash<std::string>>(KnownArgs::instantiables)) {
@@ -62,13 +67,20 @@ void Instantiate::execute(const LoadSceneJsonUserFunctionArgs &args) {
             rendering_resources,
             required_prefixes,
             exclude,
-            ir.has_value() ? &instantiated : nullptr);
+            ires.has_value() ? &instantiated_resources : nullptr,
+            irno.has_value() ? &instantiated_root_nodes : nullptr);
     }
-    if (ir.has_value()) {
+    if (ires.has_value()) {
         if (args.local_json_macro_arguments == nullptr) {
             THROW_OR_ABORT("instantiated_resources requires local arguments");
         }
-        args.local_json_macro_arguments->set(*ir, instantiated);
+        args.local_json_macro_arguments->set(*ires, instantiated_resources);
+    }
+    if (irno.has_value()) {
+        if (args.local_json_macro_arguments == nullptr) {
+            THROW_OR_ABORT("instantiated_root_nodes requires local arguments");
+        }
+        args.local_json_macro_arguments->set(*irno, instantiated_root_nodes);
     }
 }
 
@@ -80,7 +92,6 @@ struct RegisterJsonUserFunction {
             "instantiate",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 Instantiate(args.physics_scene()).execute(args);
             });
     }

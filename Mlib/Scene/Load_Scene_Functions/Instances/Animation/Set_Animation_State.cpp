@@ -28,7 +28,7 @@ static void from_json(const nlohmann::json& j, std::chrono::duration<Rep, Period
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(nodes);
 DECLARE_ARGUMENT(animation_loop_name);
 DECLARE_ARGUMENT(animation_loop_begin);
 DECLARE_ARGUMENT(animation_loop_end);
@@ -48,47 +48,50 @@ SetAnimationState::SetAnimationState(PhysicsScene& physics_scene)
 void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    float animation_loop_end;
-    if (args.arguments.contains(KnownArgs::animation_loop_end)) {
-        auto le = args.arguments.at(KnownArgs::animation_loop_end);
-        if (le.type() == nlohmann::json::value_t::string) {
-            if (le.get<std::string>() != "full") {
-                THROW_OR_ABORT("Unsupported value for \"" + std::string{ KnownArgs::animation_loop_end } + "\": " + le.get<std::string>());
+    for (const auto& node_name : args.arguments.try_at_vector<VariableAndHash<std::string>>(KnownArgs::nodes))
+    {
+        DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
+        float animation_loop_end;
+        if (args.arguments.contains(KnownArgs::animation_loop_end)) {
+            auto le = args.arguments.at(KnownArgs::animation_loop_end);
+            if (le.type() == nlohmann::json::value_t::string) {
+                if (le.get<std::string>() != "full") {
+                    THROW_OR_ABORT("Unsupported value for \"" + std::string{ KnownArgs::animation_loop_end } + "\": " + le.get<std::string>());
+                }
+                if (!args.arguments.contains(KnownArgs::animation_loop_name)) {
+                    THROW_OR_ABORT("Periodic animation end set to \"full\", but animation is not set");
+                }
+                animation_loop_end = RenderingContextStack::primary_scene_node_resources()
+                    .get_animation_duration(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animation_loop_name));
+            } else {
+                animation_loop_end = args.arguments.at<float>(KnownArgs::animation_loop_end) * seconds;
             }
-            if (!args.arguments.contains(KnownArgs::animation_loop_name)) {
-                THROW_OR_ABORT("Periodic animation end set to \"full\", but animation is not set");
-            }
-            animation_loop_end = RenderingContextStack::primary_scene_node_resources()
-                .get_animation_duration(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animation_loop_name));
         } else {
-            animation_loop_end = args.arguments.at<float>(KnownArgs::animation_loop_end) * seconds;
+            animation_loop_end = NAN;
         }
-    } else {
-        animation_loop_end = NAN;
+        std::map<std::string, std::string> reflection_maps;
+        node->set_animation_state(
+            std::unique_ptr<AnimationState>(new AnimationState{
+                .periodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animation_loop_name, VariableAndHash<std::string>()),
+                .aperiodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::aperiodic_animation_name, VariableAndHash<std::string>()),
+                .periodic_skelletal_animation_frame = {
+                    AnimationFrame{
+                        .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN) * seconds,
+                        .end = animation_loop_end * seconds,
+                        .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN) * seconds}},
+                .aperiodic_animation_frame = {
+                    AnimationFrame{
+                        .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN) * seconds,
+                        .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN) * seconds,
+                        .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN) * seconds}},
+                .periodic_reference_time{
+                    std::chrono::steady_clock::now(),
+                    args.arguments.at<std::chrono::steady_clock::duration>(
+                        KnownArgs::periodic_reference_time_duration,
+                        std::chrono::steady_clock::duration{0})},
+                .delete_node_when_aperiodic_animation_finished = args.arguments.at<bool>(KnownArgs::delete_node_when_aperiodic_animation_finished, false)}),
+            AnimationStateAlreadyExistsBehavior::THROW);
     }
-    std::map<std::string, std::string> reflection_maps;
-    node->set_animation_state(
-        std::unique_ptr<AnimationState>(new AnimationState{
-            .periodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animation_loop_name, VariableAndHash<std::string>()),
-            .aperiodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::aperiodic_animation_name, VariableAndHash<std::string>()),
-            .periodic_skelletal_animation_frame = {
-                AnimationFrame{
-                    .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN) * seconds,
-                    .end = animation_loop_end * seconds,
-                    .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN) * seconds}},
-            .aperiodic_animation_frame = {
-                AnimationFrame{
-                    .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN) * seconds,
-                    .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN) * seconds,
-                    .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN) * seconds}},
-            .periodic_reference_time{
-                std::chrono::steady_clock::now(),
-                args.arguments.at<std::chrono::steady_clock::duration>(
-                    KnownArgs::periodic_reference_time_duration,
-                    std::chrono::steady_clock::duration{0})},
-            .delete_node_when_aperiodic_animation_finished = args.arguments.at<bool>(KnownArgs::delete_node_when_aperiodic_animation_finished, false)}),
-        AnimationStateAlreadyExistsBehavior::THROW);
 }
 
 namespace {

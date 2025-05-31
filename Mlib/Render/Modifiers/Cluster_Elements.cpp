@@ -19,6 +19,7 @@ template <class TPos, class TWidth>
 static void patch(
     SceneNodeResources& scene_node_resources,
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
     const FixedArray<TWidth, 3>& width,
     const SquaredStepDistances& center_distances2,
     const GroupAndName& prefix,
@@ -43,14 +44,14 @@ static void patch(
             resource_name,
             std::make_shared<ColoredVertexArrayResource>(transformed));
         added_scene_node_resources.push_back(resource_name);
-        auto trafo = TransformationMatrix<SceneDir, ScenePos, 3>{
+        auto ctrafo = trafo * TransformationMatrix<SceneDir, ScenePos, 3>{
             fixed_identity_array<SceneDir, 3>(),
             c.position.template casted<ScenePos>()};
         scene_node_resources.add_instantiable(
             resource_name,
             InstanceInformation<ScenePos>{
                 .resource_name = resource_name,
-                .trafo = trafo,
+                .trafo = ctrafo,
                 .scale = 1,
                 .rendering_dynamics = rendering_dynamics
             });
@@ -62,6 +63,7 @@ static void patch(
 void Mlib::cluster_elements(
     const std::vector<VariableAndHash<std::string>>& resource_names,
     SceneNodeResources& scene_node_resources,
+    const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
     const FixedArray<float, 3>& width,
     const SquaredStepDistances& center_distances2,
     RenderingDynamics rendering_dynamics,
@@ -74,6 +76,7 @@ void Mlib::cluster_elements(
             patch<CompressedScenePos, ScenePos>(
                 scene_node_resources,
                 acva->dcvas,
+                trafo,
                 width.casted<ScenePos>(),
                 center_distances2,
                 *resource_name,
@@ -83,6 +86,7 @@ void Mlib::cluster_elements(
             patch<float, float>(
                 scene_node_resources,
                 acva->scvas,
+                trafo,
                 width,
                 center_distances2,
                 *resource_name,

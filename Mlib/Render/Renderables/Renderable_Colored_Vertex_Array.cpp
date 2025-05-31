@@ -910,7 +910,9 @@ void RenderableColoredVertexArray::render_cva(
         if (!any(texture_layer_properties & TextureLayerProperties::UNIFORM)) {
             THROW_OR_ABORT("Periodic reference time active, but no uniform texture layer configured");
         }
-        CHK(glUniform1f(rp.texture_layer_location_uniform, animation_state->periodic_reference_time.phase01(render_pass.external.time)));
+        CHK(glUniform1f(
+            rp.texture_layer_location_uniform,
+            animation_state->periodic_reference_time.phase01(render_pass.external.time)));
     }
     if (!cva->material.billboard_atlas_instances.empty()) {
         size_t n = cva->material.billboard_atlas_instances.size();
@@ -1085,12 +1087,8 @@ void RenderableColoredVertexArray::render_cva(
     {
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap_mode_to_native(wrap_mode_s)));
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap_mode_to_native(wrap_mode_t)));
-        if (mipmap_mode == MipmapMode::WITH_MIPMAPS) {
-            if (target == GL_TEXTURE_3D) {
-                CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-            } else {
-                CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-            }
+        if (mipmap_mode != MipmapMode::NO_MIPMAPS) {
+            CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
         } else {
             CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         }
@@ -1106,43 +1104,43 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     };
-    auto setup_texture_colormap = [&setup_texture_generic](const ColormapWithModifiers& c, GLenum target) {
-        setup_texture_generic(c.wrap_modes(0), c.wrap_modes(1), c.mipmap_mode, target);
-    };
-    auto setup_texture_handle = [setup_texture_generic](const ITextureHandle& h, GLenum target) {
+    auto setup_texture = [&setup_texture_generic](
+        const ITextureHandle& h,
+        TextureLayerProperties tlp)
+    {
+        auto cont = all(tlp, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::COLOR);
+            auto disc = all(tlp, TextureLayerProperties::DISCRETE | TextureLayerProperties::COLOR);
+            auto mip2 = (h.mipmap_mode() == MipmapMode::WITH_MIPMAPS_2D);
+        GLenum target = (cont && !mip2)
+            ? GL_TEXTURE_3D
+            : (disc || mip2)
+                ? GL_TEXTURE_2D_ARRAY
+                : GL_TEXTURE_2D;
+        CHK(glBindTexture(target, h.handle<GLuint>()));
         setup_texture_generic(h.wrap_modes(0), h.wrap_modes(1), h.mipmap_mode(), target);
     };
     if (tic.ntextures_color != 0) {
         for (const auto& [c, i] : texture_ids_color) {
             LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + c->filename + '"');
-            auto texture = secondary_rendering_resources_.contains_texture(*c)
-                ? secondary_rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB)
-                : rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
+            const auto& texture = secondary_rendering_resources_.contains_texture(*c)
+                ? *secondary_rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB)
+                : *rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c->filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
-            GLenum target = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::COLOR)
-                ? GL_TEXTURE_3D
-                : all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::COLOR)
-                    ? GL_TEXTURE_2D_ARRAY
-                    : GL_TEXTURE_2D;
-            CHK(glBindTexture(target, texture->handle<GLuint>()));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
-            setup_texture_colormap(*c, target);
-            CHK(glActiveTexture(GL_TEXTURE0));
+            setup_texture(texture, texture_layer_properties);
         }
     }
     if (tic.ntextures_alpha != 0) {
         for (const auto& [c, i] : texture_ids_alpha) {
             LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + c->filename + '"');
-            auto texture = secondary_rendering_resources_.contains_texture(*c)
-                ? secondary_rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB)
-                : rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
+            const auto& texture = secondary_rendering_resources_.contains_texture(*c)
+                ? *secondary_rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB)
+                : *rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c->filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_alpha(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, texture->handle<GLuint>()));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
-            setup_texture_colormap(*c, GL_TEXTURE_2D);
-            CHK(glActiveTexture(GL_TEXTURE0));
+            setup_texture(texture, TextureLayerProperties::NONE);
         }
     }
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
@@ -1197,15 +1195,9 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_normal != 0) {
         for (const auto& [c, i] : texture_ids_normal) {
             assert_true(!c->filename->empty());
+            const auto& texture = *rcva_->rendering_resources_.get_texture(*c);
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
-            GLenum target = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::NORMAL)
-                ? GL_TEXTURE_3D
-                : all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::NORMAL)
-                    ? GL_TEXTURE_2D_ARRAY
-                    : GL_TEXTURE_2D;
-            CHK(glBindTexture(target, rcva_->rendering_resources_.get_texture(*c)->handle<GLuint>()));
-            setup_texture_colormap(*c, target);
-            CHK(glActiveTexture(GL_TEXTURE0));
+            setup_texture(texture, texture_layer_properties);
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind skidmark texture");
@@ -1257,9 +1249,7 @@ void RenderableColoredVertexArray::render_cva(
             if (texture.color_mode() != ColorMode::GRAYSCALE) {
                 THROW_OR_ABORT("Dirtmap \"" + *dname + "\" does not have colormode grayscale");
             }
-            CHK(glBindTexture(GL_TEXTURE_2D, texture.handle<GLuint>()));
-            setup_texture_handle(texture, GL_TEXTURE_2D);
-            CHK(glActiveTexture(GL_TEXTURE0));
+            setup_texture(texture, TextureLayerProperties::NONE);
         }
 
         {
@@ -1270,9 +1260,7 @@ void RenderableColoredVertexArray::render_cva(
             {
                 THROW_OR_ABORT("Dirt texture \"" + *cva->material.dirt_texture + "\" does not have colormode RGB or RGBA");
             }
-            CHK(glBindTexture(GL_TEXTURE_2D, texture.handle<GLuint>()));
-            setup_texture_handle(texture, GL_TEXTURE_2D);
-            CHK(glActiveTexture(GL_TEXTURE0));
+            setup_texture(texture, TextureLayerProperties::NONE);
         }
     }
     for (size_t i = 0; i < tic.ntextures_interior; ++i) {
@@ -1281,19 +1269,16 @@ void RenderableColoredVertexArray::render_cva(
         if (h.color_mode() != ColorMode::RGB) {
             THROW_OR_ABORT("Interiormap texture \"" + *cva->material.interior_textures[i] + "\" does not have color mode RGB");
         }
-        CHK(glBindTexture(GL_TEXTURE_2D, h.handle<GLuint>()));
-        setup_texture_handle(h, GL_TEXTURE_2D);
-        CHK(glActiveTexture(GL_TEXTURE0));
+        setup_texture(h, TextureLayerProperties::NONE);
     }
     if (tic.ntextures_specular != 0) {
         assert_true(tic.ntextures_specular == 1);
         assert_true(!cva->material.textures_color.empty());
         const auto& desc = cva->material.textures_color[0].texture_descriptor;
         assert_true(!desc.specular.filename->empty());
+        const auto& texture = *rcva_->rendering_resources_.get_texture(desc.specular);
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_specular())));
-        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(desc.specular)->handle<GLuint>()));
-        setup_texture_colormap(desc.specular, GL_TEXTURE_2D);
-        CHK(glActiveTexture(GL_TEXTURE0));
+        setup_texture(texture, TextureLayerProperties::NONE);
     }
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
         !is_lightmap &&

@@ -30,6 +30,7 @@ public:
     virtual WayPointSandboxes get_way_points() const override;
 
     // ISceneNodeResource, Animation
+    virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_arrays(const ColoredVertexArrayFilter& filter) const override;
 
     // ISceneNodeResource, Modifiers

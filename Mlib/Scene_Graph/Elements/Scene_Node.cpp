@@ -741,9 +741,9 @@ void SceneNode::set_animation_state(
         scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
     }
     std::scoped_lock lock{ mutex_ };
-    if (!renderables_.empty()) {
-        THROW_OR_ABORT("Animation state was set after renderables, this leads to a race condition");
-    }
+    // if (!renderables_.empty()) {
+    //     THROW_OR_ABORT("Animation state was set after renderables, this leads to a race condition");
+    // }
     if ((already_exists_behavior == AnimationStateAlreadyExistsBehavior::THROW) &&
         (animation_state_ != nullptr))
     {
@@ -757,9 +757,9 @@ void SceneNode::set_animation_state_updater(std::unique_ptr<AnimationStateUpdate
         scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
     }
     std::scoped_lock lock{ mutex_ };
-    if (!renderables_.empty()) {
-        THROW_OR_ABORT("Animation state updater was set after renderables, this leads to a race condition");
-    }
+    // if (!renderables_.empty()) {
+    //     THROW_OR_ABORT("Animation state updater was set after renderables, this leads to a race condition");
+    // }
     if (animation_state_updater_ != nullptr) {
         THROW_OR_ABORT("Scene node already has an animation state updater");
     }

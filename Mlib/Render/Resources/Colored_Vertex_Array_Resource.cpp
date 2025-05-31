@@ -769,9 +769,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     auto sample_color = [&](size_t i)
     {
         const auto& t = textures_color.at(i);
-        return any(texture_layer_properties & TextureLayerProperties::COLOR)
-            ? "texture(textures_color[" + std::to_string(t.id_color) + "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed))"
-            : "texture(textures_color[" + std::to_string(t.id_color) + "], " + tex_coords(*t) + ')';
+        if (any(texture_layer_properties & TextureLayerProperties::COLOR)) {
+            if (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
+                return
+                    "array_texture_blend(textures_color[" + std::to_string(t.id_color) +
+                    "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed), " +
+                    std::to_string(t->texture_descriptor.color.layers - 1) + ")";
+            } else {
+                return
+                    "texture(textures_color[" + std::to_string(t.id_color) +
+                    "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed))";
+            }
+        } else {
+            return "texture(textures_color[" + std::to_string(t.id_color) + "], " + tex_coords(*t) + ')';
+        }
     };
     auto sample_specularmap = [&]()
     {
@@ -787,9 +798,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     auto sample_normalmap_ = [&](size_t i)
     {
         const auto& t = textures_color.at(i);
-        return any(texture_layer_properties & TextureLayerProperties::NORMAL)
-            ? "texture(texture_normalmap[" + std::to_string(t.id_normal) + "], vec3(" + tex_coords(*t) + ", normal_texture_layer))"
-            : "texture(texture_normalmap[" + std::to_string(t.id_normal) + "], " + tex_coords(*t) + ')';
+        if (any(texture_layer_properties & TextureLayerProperties::NORMAL)) {
+            if (t->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
+                return
+                    "array_texture_blend(texture_normalmap[" + std::to_string(t.id_normal) +
+                    "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed), " +
+                    std::to_string(t->texture_descriptor.normal.layers - 1) + ")";
+            } else {
+                return
+                    "texture(texture_normalmap[" + std::to_string(t.id_normal) +
+                    "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed))";
+            }
+        } else {
+            return "texture(texture_normalmap[" + std::to_string(t.id_normal) + "], " + tex_coords(*t) + ')';
+        }
     };
     auto normalmap_coords = [&](size_t i) {
         const auto& t = textures_color.at(i);
@@ -828,9 +850,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (!textures_color.empty()) {
-        const char* sampler_type = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::COLOR)
+        auto cont = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::COLOR);
+        auto disc = all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::COLOR);
+        auto mip2 = (textures_color[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        if (cont || disc) {
+            for (const auto& t : textures_color) {
+                auto cmip2 = (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+                if (cmip2 != mip2) {
+                    THROW_OR_ABORT("Unsupported mipmap modes in texture \"" + *t->texture_descriptor.color.filename + '"');
+                }
+            }
+        }
+        const char* sampler_type = (cont && !mip2)
             ? "sampler3D"
-            : all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::COLOR)
+            : (disc || mip2)
                 ? "sampler2DArray"
                 : "sampler2D";
         sstr << "uniform lowp " << sampler_type << " textures_color[" << ntextures_color << "];" << std::endl;
@@ -879,9 +912,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "in vec3 bitangent;" << std::endl;
     }
     if (has_normalmap) {
-        const char* sampler_type = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::NORMAL)
+        auto cont = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::NORMAL);
+        auto disc = all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::NORMAL);
+        auto mip2 = (textures_color[0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        if (cont || disc) {
+            for (const auto& t : textures_color) {
+                auto cmip2 = (t->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+                if (cmip2 != mip2) {
+                    THROW_OR_ABORT("Unsupported mipmap modes in texture \"" + *t->texture_descriptor.normal.filename + '"');
+                }
+            }
+        }
+        const char* sampler_type = (cont && !mip2)
             ? "sampler3D"
-            : all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::NORMAL)
+            : (disc || mip2)
                 ? "sampler2DArray"
                 : "sampler2D";
         sstr << "uniform " << sampler_type << " texture_normalmap[" << ntextures_normal << "];" << std::endl;
@@ -956,6 +1000,21 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             if (((pred0 || pred1 || pred3) && !orthographic) || any(interior_texture_set) || pred2) {
                 sstr << "uniform highp vec3 viewPos;" << std::endl;
             }
+        }
+    }
+    if (!textures_color.empty()) {
+        auto mip2_color = (textures_color[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        auto mip2_normal = (textures_color[0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        if (mip2_color || mip2_normal) {
+            // https://stackoverflow.com/a/35297000/2292832
+            // http://gamedev.net/forums/topic/523831-mipmapping-3d-texture/4397804/
+            sstr << "vec4 array_texture_blend(in sampler2DArray array_tex, in vec3 coord, in float nlayers) {" << std::endl;
+            sstr << "    float frac = fract(coord.z * nlayers);" << std::endl;
+            sstr << "    coord.z = floor(coord.z * nlayers);" << std::endl;
+            sstr << "    vec4 top = texture(array_tex, coord);" << std::endl;
+            sstr << "    vec4 bottom = texture(array_tex, coord + vec3(0, 0, 1));" << std::endl;
+            sstr << "    return mix(top, bottom, frac);" << std::endl;
+            sstr << "}" << std::endl;
         }
     }
     if (!lights.empty()) {

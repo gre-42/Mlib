@@ -20,7 +20,8 @@ void Mlib::instantiate(
     RenderingResources& rendering_resources,
     const std::set<std::string>& required_prefixes,
     const std::set<VariableAndHash<std::string>>& exclude,
-    std::set<VariableAndHash<std::string>>* instantiated)
+    std::set<VariableAndHash<std::string>>* instantiated_resources,
+    std::list<VariableAndHash<std::string>>* instantiated_root_nodes)
 {
     if (exclude.contains(info.resource_name)) {
         return;
@@ -51,8 +52,11 @@ void Mlib::instantiate(
         lwarn() << "Skipping invisible instance \"" << *name << '"';
     } else {
         scene.auto_add_root_node(name, std::move(node), info.rendering_dynamics);
-        if (instantiated != nullptr) {
-            instantiated->insert(info.resource_name);
+        if (instantiated_resources != nullptr) {
+            instantiated_resources->insert(info.resource_name);
+        }
+        if (instantiated_root_nodes != nullptr) {
+            instantiated_root_nodes->push_back(name);
         }
     }
 }

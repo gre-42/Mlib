@@ -27,6 +27,7 @@ ChildRenderableInstance::ChildRenderableInstance(PhysicsScene& physics_scene)
 
 void ChildRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args) const
 {
+    args.arguments.validate(KnownArgs::options);
     (*this)(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
@@ -60,7 +61,6 @@ struct RegisterJsonUserFunction {
             "child_renderable_instance",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 ChildRenderableInstance(args.physics_scene()).execute(args);
             });
     }

@@ -66,6 +66,11 @@ void GridResource::instantiate_root_renderables(const RootInstantiationOptions& 
     rva_->instantiate_root_renderables(options);
 }
 
+std::list<std::shared_ptr<AnimatedColoredVertexArrays>> GridResource::get_rendering_arrays() const
+{
+    return rva_->get_rendering_arrays();
+}
+
 std::shared_ptr<AnimatedColoredVertexArrays> GridResource::get_arrays(const ColoredVertexArrayFilter& filter) const
 {
     return rva_->get_arrays(filter);

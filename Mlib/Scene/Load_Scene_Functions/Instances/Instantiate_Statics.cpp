@@ -26,6 +26,7 @@ InstantiateStatics::InstantiateStatics(PhysicsScene& physics_scene)
 {}
 
 void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
+    args.arguments.validate(KnownArgs::options);
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>> double_queue;
     scene.append_physics_to_queue(float_queue, double_queue);
@@ -73,7 +74,6 @@ struct RegisterJsonUserFunction {
             "instantiate_statics",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 InstantiateStatics(args.physics_scene()).execute(args);
             });
     }
