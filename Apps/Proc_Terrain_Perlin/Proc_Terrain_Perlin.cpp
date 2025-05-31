@@ -2,11 +2,9 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Make_Seamless.hpp>
 #include <Mlib/Images/Normalize.hpp>
-#include <Mlib/Images/Pgm_Image.hpp>
-#include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <siv/PerlinNoise.hpp>
-#include <stb/stb_image_write.h>
 
 using namespace Mlib;
 
@@ -73,7 +71,7 @@ int main(int argc, char** argv) {
         if (size_t seamless_overlap = safe_stoz(args.named_value("--seamless_overlap", "0")); seamless_overlap != 0) {
             out = clipped(make_symmetric_2d(out, seamless_overlap), 0.f, 1.f);
         }
-        PgmImage::from_float(out).save_to_file(args.named_value("--out"));
+        StbImage1::from_float_grayscale(out).save_to_file(args.named_value("--out"));
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;
