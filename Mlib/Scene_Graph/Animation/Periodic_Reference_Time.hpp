@@ -8,6 +8,7 @@ public:
     explicit PeriodicReferenceTime(
         std::chrono::steady_clock::time_point reference,
         std::chrono::steady_clock::duration period_duration);
+    bool active() const;
     float phase01(std::chrono::steady_clock::time_point time) const;
 private:
     std::chrono::steady_clock::time_point reference_;

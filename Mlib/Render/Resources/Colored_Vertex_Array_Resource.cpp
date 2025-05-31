@@ -266,9 +266,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_rotation_quaternion,
     bool has_uv_offset_u,
     size_t nbones,
-    bool has_continuous_vertex_texture_layer,
-    bool has_discrete_vertex_texture_layer,
-    bool has_discrete_atlas_texture_layer,
+    TextureLayerProperties texture_layer_properties,
     bool reorient_normals,
     bool reorient_uv0,
     bool has_depth_fog,
@@ -366,7 +364,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform vec3 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;
-        if (has_discrete_atlas_texture_layer) {
+        if (any(texture_layer_properties & TextureLayerProperties::ATLAS)) {
             sstr << "uniform uint texture_layers[" << nbillboard_ids << "];" << std::endl;
         }
         if (!orthographic) {
@@ -384,12 +382,14 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
-    assert_true(attr_idc->has_texture_layer == (has_discrete_vertex_texture_layer || has_continuous_vertex_texture_layer));
-    if (has_discrete_vertex_texture_layer) {
-        sstr << "layout (location=" << attr_ids->idx_texture_layer << ") in lowp uint texture_layer;" << std::endl;
-    }
-    if (has_continuous_vertex_texture_layer) {
-        sstr << "layout (location=" << attr_ids->idx_texture_layer << ") in float texture_layer;" << std::endl;
+    assert_true(attr_idc->has_texture_layer == any(texture_layer_properties & TextureLayerProperties::VERTEX));
+    if (any(texture_layer_properties & TextureLayerProperties::VERTEX)) {
+        if (any(texture_layer_properties & TextureLayerProperties::DISCRETE)) {
+            sstr << "layout (location=" << attr_ids->idx_texture_layer << ") in lowp uint texture_layer;" << std::endl;
+        }
+        if (any(texture_layer_properties & TextureLayerProperties::CONTINUOUS)) {
+            sstr << "layout (location=" << attr_ids->idx_texture_layer << ") in float texture_layer;" << std::endl;
+        }
     }
     if (has_uv_offset_u) {
         sstr << "uniform float uv_offset_u;" << std::endl;
@@ -438,11 +438,13 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirt;" << std::endl;
     }
-    if (has_continuous_vertex_texture_layer) {
-        sstr << "out float texture_layer_fs;" << std::endl;
-    }
-    if (has_discrete_atlas_texture_layer || has_discrete_vertex_texture_layer) {
-        sstr << "flat out lowp uint texture_layer_fs;" << std::endl;
+    if (any(texture_layer_properties & (TextureLayerProperties::VERTEX | TextureLayerProperties::ATLAS))) {
+        if (any(texture_layer_properties & TextureLayerProperties::CONTINUOUS)) {
+            sstr << "out float texture_layer_fs;" << std::endl;
+        }
+        if (any(texture_layer_properties & TextureLayerProperties::DISCRETE)) {
+            sstr << "flat out lowp uint texture_layer_fs;" << std::endl;
+        }
     }
     if (has_interiormap) {
         sstr << "layout (location=" << attr_ids->idx_interior_mapping_bottom_left << ") in vec3 interior_bottom_left;" << std::endl;
@@ -470,10 +472,10 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    if (has_discrete_atlas_texture_layer) {
+    if (any(texture_layer_properties & TextureLayerProperties::ATLAS)) {
         sstr << "    texture_layer_fs = texture_layers[billboard_id];" << std::endl;
     }
-    if (has_discrete_vertex_texture_layer || has_continuous_vertex_texture_layer) {
+    if (any(texture_layer_properties & TextureLayerProperties::VERTEX)) {
         sstr << "    texture_layer_fs = texture_layer;" << std::endl;
     }
     if (has_interiormap) {
@@ -705,7 +707,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     size_t texture_modifiers_hash,
     size_t lights_hash,
     size_t skidmarks_hash,
+    size_t ntextures_color,
     size_t ntextures_normal,
+    size_t ntextures_alpha,
     bool has_lightmap_color,
     bool has_lightmap_depth,
     bool has_specularmap,
@@ -716,9 +720,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& reflectance,
     bool reflect_only_y,
     bool has_dirtmap,
-    bool has_continuous_texture_layer_color,
-    bool has_discrete_texture_layer_color,
-    bool has_continuous_uniform_texture_layer_normal,
+    TextureLayerProperties texture_layer_properties,
     InteriorTextureSet interior_texture_set,
     const OrderableFixedArray<float, 2>& facade_inner_size,
     const OrderableFixedArray<float, 3>& interior_size,
@@ -764,15 +766,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << tex_coord << uv_map[t];
         return sstr.str();
     };
-    const char* sampler_type_color = has_continuous_texture_layer_color
-        ? "sampler3D"
-        : has_discrete_texture_layer_color
-            ? "sampler2DArray"
-            : "sampler2D";
     auto sample_color = [&](size_t i)
     {
         const auto& t = textures_color.at(i);
-        return (has_continuous_texture_layer_color || has_discrete_texture_layer_color)
+        return any(texture_layer_properties & TextureLayerProperties::COLOR)
             ? "texture(textures_color[" + std::to_string(t.id_color) + "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed))"
             : "texture(textures_color[" + std::to_string(t.id_color) + "], " + tex_coords(*t) + ')';
     };
@@ -790,7 +787,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     auto sample_normalmap_ = [&](size_t i)
     {
         const auto& t = textures_color.at(i);
-        return has_continuous_uniform_texture_layer_normal
+        return any(texture_layer_properties & TextureLayerProperties::NORMAL)
             ? "texture(texture_normalmap[" + std::to_string(t.id_normal) + "], vec3(" + tex_coords(*t) + ", normal_texture_layer))"
             : "texture(texture_normalmap[" + std::to_string(t.id_normal) + "], " + tex_coords(*t) + ')';
     };
@@ -831,10 +828,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (!textures_color.empty()) {
-        sstr << "uniform lowp " << sampler_type_color << " textures_color[" << textures_color.size() << "];" << std::endl;
+        const char* sampler_type = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::COLOR)
+            ? "sampler3D"
+            : all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::COLOR)
+                ? "sampler2DArray"
+                : "sampler2D";
+        sstr << "uniform lowp " << sampler_type << " textures_color[" << ntextures_color << "];" << std::endl;
     }
     if (!textures_alpha.empty()) {
-        sstr << "uniform sampler2D textures_alpha[" << textures_alpha.size() << "];" << std::endl;
+        sstr << "uniform sampler2D textures_alpha[" << ntextures_alpha << "];" << std::endl;
     }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
@@ -877,12 +879,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "in vec3 bitangent;" << std::endl;
     }
     if (has_normalmap) {
-        if (has_continuous_uniform_texture_layer_normal) {
-            sstr << "uniform float normal_texture_layer;" << std::endl;
-            sstr << "uniform sampler3D texture_normalmap[" << ntextures_normal << "];" << std::endl;
-        } else {
-            sstr << "uniform sampler2D texture_normalmap[" << ntextures_normal << "];" << std::endl;
-        }
+        const char* sampler_type = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::NORMAL)
+            ? "sampler3D"
+            : all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::NORMAL)
+                ? "sampler2DArray"
+                : "sampler2D";
+        sstr << "uniform " << sampler_type << " texture_normalmap[" << ntextures_normal << "];" << std::endl;
     }
     if (has_reflection_map) {
         sstr << "uniform samplerCube texture_reflection;" << std::endl;
@@ -893,11 +895,21 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform sampler2D texture_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirt;" << std::endl;
     }
-    if (has_continuous_texture_layer_color) {
-        sstr << "in float texture_layer_fs;" << std::endl;
+    if (any(texture_layer_properties & (TextureLayerProperties::ATLAS | TextureLayerProperties::VERTEX))) {
+        if (any(texture_layer_properties & TextureLayerProperties::CONTINUOUS)) {
+            sstr << "in float texture_layer_fs;" << std::endl;
+        }
+        if (any(texture_layer_properties & TextureLayerProperties::DISCRETE)) {
+            sstr << "flat in lowp uint texture_layer_fs;" << std::endl;
+        }
     }
-    if (has_discrete_texture_layer_color) {
-        sstr << "flat in lowp uint texture_layer_fs;" << std::endl;
+    if (any(texture_layer_properties & TextureLayerProperties::UNIFORM)) {
+        if (any(texture_layer_properties & TextureLayerProperties::CONTINUOUS)) {
+            sstr << "uniform float texture_layer_fs;" << std::endl;
+        }
+        if (any(texture_layer_properties & TextureLayerProperties::DISCRETE)) {
+            sstr << "uniform lowp uint texture_layer_fs;" << std::endl;
+        }
     }
     if (any(interior_texture_set)) {
         sstr << "in vec3 interior_bottom_left_fs;" << std::endl;
@@ -1179,9 +1191,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!continuous_layer_x.empty()) {
         sstr << "    float texture_layer_fs_transformed;" << std::endl;
         bisect_texture_layer(sstr, 0, continuous_layer_x.size() - 1, continuous_layer_x, continuous_layer_y, 0);
-    } else if (has_continuous_texture_layer_color) {
+    } else if (any(texture_layer_properties & TextureLayerProperties::CONTINUOUS)) {
         sstr << "    float texture_layer_fs_transformed = texture_layer_fs;" << std::endl;
-    } else if (has_discrete_texture_layer_color) {
+    } else if (any(texture_layer_properties & TextureLayerProperties::DISCRETE)) {
         sstr << "    lowp uint texture_layer_fs_transformed = texture_layer_fs;" << std::endl;
     }
     if (textures_color.size() == 1) {
@@ -2185,9 +2197,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_rotation_quaternion,
         id.has_uv_offset_u,
         triangles_res_->bone_indices.size(),
-        id.has_continuous_texture_layer,
-        id.has_discrete_vertex_texture_layer,
-        id.has_discrete_atlas_texture_layer,
+        id.texture_layer_properties,
         id.reorient_normals,
         id.reorient_uv0,
         id.fog_distances != default_step_distances,
@@ -2214,7 +2224,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.texture_modifiers_hash,
         id.lights_hash,
         id.skidmarks_hash,
+        id.ntextures_color,
         id.ntextures_normal,
+        id.ntextures_alpha,
         !id.lightmap_indices_color.empty(),
         !id.lightmap_indices_depth.empty(),
         id.has_specularmap,
@@ -2225,9 +2237,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.reflectance,
         id.reflect_only_y,
         id.ntextures_dirt != 0,
-        id.has_continuous_texture_layer,
-        id.has_discrete_atlas_texture_layer || id.has_discrete_vertex_texture_layer,
-        id.has_continuous_uniform_texture_layer_normal,
+        id.texture_layer_properties,
         id.interior_texture_set,
         id.facade_inner_size,
         id.interior_size,
@@ -2272,10 +2282,10 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         if (id.has_uv_offset_u) {
             rp->uv_offset_u_location = rp->get_uniform_location("uv_offset_u");
         }
-        for (size_t i = 0; i < textures_color.size(); ++i) {
+        for (size_t i = 0; i < id.ntextures_color; ++i) {
             rp->texture_color_locations[i] = rp->get_uniform_location(("textures_color[" + std::to_string(i) + "]").c_str());
         }
-        for (size_t i = 0; i < textures_alpha.size(); ++i) {
+        for (size_t i = 0; i < id.ntextures_alpha; ++i) {
             rp->texture_alpha_locations[i] = rp->get_uniform_location(("textures_alpha[" + std::to_string(i) + "]").c_str());
         }
         if (!id.lightmap_indices_color.empty() || !id.lightmap_indices_depth.empty()) {
@@ -2289,14 +2299,19 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         for (size_t i = 0; i < filtered_skidmarks.size(); ++i) {
             rp->mvp_skidmarks_locations[i] = rp->get_uniform_location(("MVP_skidmarks[" + std::to_string(i) + "]").c_str());
         }
+        if (any(id.texture_layer_properties & TextureLayerProperties::UNIFORM)) {
+            rp->texture_layer_location_uniform = rp->get_uniform_location("texture_layer_fs");
+        } else {
+            rp->texture_layer_location_uniform = 0;
+        }
         if (id.nbillboard_ids != 0) {
             rp->vertex_scale_location = rp->get_uniform_location("vertex_scale");
             rp->uv_scale_location = rp->get_uniform_location("uv_scale");
             rp->uv_offset_location = rp->get_uniform_location("uv_offset");
-            if (id.has_discrete_atlas_texture_layer) {
-                rp->texture_layers_location = rp->get_uniform_location("texture_layers");
+            if (any(id.texture_layer_properties & TextureLayerProperties::ATLAS)) {
+                rp->texture_layers_location_atlas = rp->get_uniform_location("texture_layers");
             } else {
-                rp->texture_layers_location = 0;
+                rp->texture_layers_location_atlas = 0;
             }
             if (!id.orthographic) {
                 rp->alpha_distances_location = rp->get_uniform_location("alpha_distances");
@@ -2307,7 +2322,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->vertex_scale_location = 0;
             rp->uv_scale_location = 0;
             rp->uv_offset_location = 0;
-            rp->texture_layers_location = 0;
+            rp->texture_layers_location_atlas = 0;
             rp->alpha_distances_location = 0;
         }
         if (id.has_dynamic_emissive) {

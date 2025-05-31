@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Layer_Properties.hpp>
 #include <map>
 
 namespace Mlib {
@@ -42,7 +43,8 @@ struct ColoredRenderProgram: public RenderProgram {
     GLint vertex_scale_location;
     GLint uv_scale_location;
     GLint uv_offset_location;
-    GLint texture_layers_location;
+    GLint texture_layers_location_atlas;
+    GLint texture_layer_location_uniform;
     GLint alpha_distances_location;
     GLint dynamic_emissive_location;
 };
@@ -55,7 +57,9 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 4> alpha_distances;
     OrderableFixedArray<float, 2> fog_distances;
     OrderableFixedArray<float, 3> fog_emissive;
+    size_t ntextures_color;
     size_t ntextures_normal;
+    size_t ntextures_alpha;
     bool has_dynamic_emissive;
     std::vector<size_t> lightmap_indices_color;
     std::vector<size_t> lightmap_indices_depth;
@@ -79,10 +83,7 @@ struct RenderProgramIdentifier {
     bool has_yangle;
     bool has_rotation_quaternion;
     bool has_uv_offset_u;
-    bool has_continuous_texture_layer;
-    bool has_discrete_vertex_texture_layer;
-    bool has_discrete_atlas_texture_layer;
-    bool has_continuous_uniform_texture_layer_normal;
+    TextureLayerProperties texture_layer_properties;
     BillboardId nbillboard_ids;
     bool reorient_normals;
     bool reorient_uv0;

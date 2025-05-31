@@ -10,6 +10,10 @@ PeriodicReferenceTime::PeriodicReferenceTime(
     , period_duration_{ period_duration }
 {}
 
+bool PeriodicReferenceTime::active() const {
+    return (period_duration_.count() != 0);
+}
+
 float PeriodicReferenceTime::phase01(
     std::chrono::steady_clock::time_point time) const
 {

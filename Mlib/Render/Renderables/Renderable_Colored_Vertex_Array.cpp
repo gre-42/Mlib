@@ -771,18 +771,47 @@ void RenderableColoredVertexArray::render_cva(
     {
         THROW_OR_ABORT("Detected discrete texture layer per vertex and per instance");
     }
-    bool has_discrete_texture_layer =
-        si.has_discrete_triangle_texture_layers() ||
-        has_discrete_atlas_texture_layer;
-    bool has_continuous_texture_layer = si.has_continuous_triangle_texture_layers();
+    TextureLayerProperties texture_layer_properties = TextureLayerProperties::NONE;
+    if (si.has_discrete_triangle_texture_layers()) {
+        add(texture_layer_properties, (
+            TextureLayerProperties::DISCRETE |
+            TextureLayerProperties::VERTEX |
+            TextureLayerProperties::COLOR |
+            TextureLayerProperties::NORMAL));
+    }
+    if (has_discrete_atlas_texture_layer) {
+        add(texture_layer_properties, (
+            TextureLayerProperties::DISCRETE |
+            TextureLayerProperties::ATLAS |
+            TextureLayerProperties::COLOR |
+            TextureLayerProperties::NORMAL));
+    }
+    if (si.has_continuous_triangle_texture_layers()) {
+        add(texture_layer_properties, (
+            TextureLayerProperties::CONTINUOUS |
+            TextureLayerProperties::VERTEX |
+            TextureLayerProperties::COLOR |
+            TextureLayerProperties::NORMAL));
+    }
     if ((instances != nullptr) && instances->has_continuous_texture_layer()) {
-        if (has_continuous_texture_layer) {
+        if (any(texture_layer_properties)) {
             THROW_OR_ABORT("Detected continuous texture layers in both, vertices and instances");
         }
-        has_continuous_texture_layer = true;
+        add(texture_layer_properties, (
+            TextureLayerProperties::CONTINUOUS |
+            TextureLayerProperties::VERTEX |
+            TextureLayerProperties::COLOR |
+            TextureLayerProperties::NORMAL));
     }
-    if (has_continuous_texture_layer && has_discrete_texture_layer) {
-        THROW_OR_ABORT("Detected discrete and continuous texture layer");
+    if ((animation_state != nullptr) && animation_state->periodic_reference_time.active()) {
+        if (any(texture_layer_properties)) {
+            THROW_OR_ABORT("Detected continuous texture layers in both, renderable and animation");
+        }
+        add(texture_layer_properties, (
+            TextureLayerProperties::CONTINUOUS |
+            TextureLayerProperties::UNIFORM |
+            TextureLayerProperties::COLOR |
+            TextureLayerProperties::NORMAL));
     }
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
@@ -795,7 +824,9 @@ void RenderableColoredVertexArray::render_cva(
             .alpha_distances = alpha_distances_common,
             .fog_distances = fog_distances,
             .fog_emissive = OrderableFixedArray{fog_emissive},
+            .ntextures_color = tic.ntextures_color,
             .ntextures_normal = tic.ntextures_normal,
+            .ntextures_alpha = tic.ntextures_alpha,
             .has_dynamic_emissive = has_dynamic_emissive,
             .lightmap_indices_color = lightmap_indices_color,
             .lightmap_indices_depth = lightmap_indices_depth,
@@ -821,10 +852,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_yangle = has_yangle,
             .has_rotation_quaternion = has_rotation_quaternion,
             .has_uv_offset_u = (cva->material.number_of_frames != 1),  // Texture is required in lightmap also due to alpha channel.
-            .has_continuous_texture_layer = has_continuous_texture_layer,
-            .has_discrete_vertex_texture_layer = si.has_discrete_triangle_texture_layers(),
-            .has_discrete_atlas_texture_layer = has_discrete_atlas_texture_layer,
-            .has_continuous_uniform_texture_layer_normal = false,
+            .texture_layer_properties = texture_layer_properties,
             .nbillboard_ids = integral_cast<BillboardId>(cva->material.billboard_atlas_instances.size()),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
@@ -878,6 +906,12 @@ void RenderableColoredVertexArray::render_cva(
         }
         CHK(glUniform1f(rp.uv_offset_u_location, uv_offset_u));
     }
+    if ((animation_state != nullptr) && animation_state->periodic_reference_time.active()) {
+        if (!any(texture_layer_properties & TextureLayerProperties::UNIFORM)) {
+            THROW_OR_ABORT("Periodic reference time active, but no uniform texture layer configured");
+        }
+        CHK(glUniform1f(rp.texture_layer_location_uniform, animation_state->periodic_reference_time.phase01(render_pass.external.time)));
+    }
     if (!cva->material.billboard_atlas_instances.empty()) {
         size_t n = cva->material.billboard_atlas_instances.size();
         auto ni = integral_cast<GLsizei>(n);
@@ -907,7 +941,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform2fv(rp.uv_scale_location, ni, (const GLfloat*)uv_scale.data()));
         CHK(glUniform3fv(rp.vertex_scale_location, ni, (const GLfloat*)vertex_scale.data()));
         if (has_discrete_atlas_texture_layer) {
-            CHK(glUniform1uiv(rp.texture_layers_location, ni, (const GLuint*)texture_layers.data()));
+            CHK(glUniform1uiv(rp.texture_layers_location_atlas, ni, (const GLuint*)texture_layers.data()));
         }
         if (!vc.orthographic()) {
             CHK(glUniform4fv(rp.alpha_distances_location, ni, (const GLfloat*)alpha_distances_billboards.data()));
@@ -1086,9 +1120,9 @@ void RenderableColoredVertexArray::render_cva(
                 : rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c->filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
-            GLenum target = has_continuous_texture_layer
+            GLenum target = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::COLOR)
                 ? GL_TEXTURE_3D
-                : has_discrete_texture_layer
+                : all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::COLOR)
                     ? GL_TEXTURE_2D_ARRAY
                     : GL_TEXTURE_2D;
             CHK(glBindTexture(target, texture->handle<GLuint>()));
@@ -1164,8 +1198,13 @@ void RenderableColoredVertexArray::render_cva(
         for (const auto& [c, i] : texture_ids_normal) {
             assert_true(!c->filename->empty());
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(*c)->handle<GLuint>()));
-            setup_texture_colormap(*c, GL_TEXTURE_2D);
+            GLenum target = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::NORMAL)
+                ? GL_TEXTURE_3D
+                : all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::NORMAL)
+                    ? GL_TEXTURE_2D_ARRAY
+                    : GL_TEXTURE_2D;
+            CHK(glBindTexture(target, rcva_->rendering_resources_.get_texture(*c)->handle<GLuint>()));
+            setup_texture_colormap(*c, target);
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
