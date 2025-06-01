@@ -771,10 +771,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         const auto& t = textures_color.at(i);
         if (any(texture_layer_properties & TextureLayerProperties::COLOR)) {
             if (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
-                return
-                    "array_texture_blend(textures_color[" + std::to_string(t.id_color) +
-                    "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed), " +
-                    std::to_string(t.tex_color->layers() - 1) + ")";
+                return "array_texture_blend_color" + std::to_string(i) + "(texture_layer_fs_transformed)";
             } else {
                 return
                     "texture(textures_color[" + std::to_string(t.id_color) +
@@ -800,10 +797,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         const auto& t = textures_color.at(i);
         if (any(texture_layer_properties & TextureLayerProperties::NORMAL)) {
             if (t->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
-                return
-                    "array_texture_blend(texture_normalmap[" + std::to_string(t.id_normal) +
-                    "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed), " +
-                    std::to_string(t.tex_normal->layers() - 1) + ")";
+                return "array_texture_blend_normal" + std::to_string(i) + "(texture_layer_fs_transformed)";
             } else {
                 return
                     "texture(texture_normalmap[" + std::to_string(t.id_normal) +
@@ -860,6 +854,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     THROW_OR_ABORT("Unsupported mipmap modes in texture \"" + *t->texture_descriptor.color.filename + '"');
                 }
             }
+        } else if (mip2) {
+            THROW_OR_ABORT(
+                "Color: 2D mipmaps require a texture layer: \"" +
+                *textures_color[0]->texture_descriptor.color.filename + '"');
         }
         const char* sampler_type = (cont && !mip2)
             ? "sampler3D"
@@ -922,13 +920,17 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     THROW_OR_ABORT("Unsupported mipmap modes in texture \"" + *t->texture_descriptor.normal.filename + '"');
                 }
             }
+        } else if (mip2) {
+            THROW_OR_ABORT(
+                "Normalmap: 2D mipmaps require a texture layer: \"" +
+                *textures_color[0]->texture_descriptor.normal.filename + '"');
         }
         const char* sampler_type = (cont && !mip2)
             ? "sampler3D"
             : (disc || mip2)
                 ? "sampler2DArray"
                 : "sampler2D";
-        sstr << "uniform " << sampler_type << " texture_normalmap[" << ntextures_normal << "];" << std::endl;
+        sstr << "uniform lowp " << sampler_type << " texture_normalmap[" << ntextures_normal << "];" << std::endl;
     }
     if (has_reflection_map) {
         sstr << "uniform samplerCube texture_reflection;" << std::endl;
@@ -1005,16 +1007,35 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!textures_color.empty()) {
         auto mip2_color = (textures_color[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         auto mip2_normal = (textures_color[0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
-        if (mip2_color || mip2_normal) {
-            // https://stackoverflow.com/a/35297000/2292832
-            // http://gamedev.net/forums/topic/523831-mipmapping-3d-texture/4397804/
-            sstr << "vec4 array_texture_blend(in sampler2DArray array_tex, in vec3 coord, in float nlayers) {" << std::endl;
-            sstr << "    float frac = fract(coord.z * nlayers);" << std::endl;
-            sstr << "    coord.z = floor(coord.z * nlayers);" << std::endl;
-            sstr << "    vec4 top = texture(array_tex, coord);" << std::endl;
-            sstr << "    vec4 bottom = texture(array_tex, coord + vec3(0, 0, 1));" << std::endl;
-            sstr << "    return mix(top, bottom, frac);" << std::endl;
-            sstr << "}" << std::endl;
+        if (mip2_color) {
+            for (const auto& [i, t] : enumerate(textures_color)) {
+                if (t->texture_descriptor.color.filename->empty()) {
+                    continue;
+                }
+                sstr << "vec4 array_texture_blend_color" << i << "(in float z) {" << std::endl;
+                sstr << "    float layers = " << t.tex_color->layers() << ".0;" << std::endl;
+                sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
+                sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
+                sstr << "    vec4 top = texture(textures_color[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
+                sstr << "    vec4 bottom = texture(textures_color[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
+                sstr << "    return mix(top, bottom, frac);" << std::endl;
+                sstr << "}" << std::endl;
+            }
+        }
+        if (mip2_normal) {
+            for (const auto& [i, t] : enumerate(textures_color)) {
+                if (t->texture_descriptor.normal.filename->empty()) {
+                    continue;
+                }
+                sstr << "vec4 array_texture_blend_normal" << i << "(in float z) {" << std::endl;
+                sstr << "    float layers = " << t.tex_normal->layers() << ".0;" << std::endl;
+                sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
+                sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
+                sstr << "    vec4 top = texture(texture_normalmap[" << t.id_normal << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
+                sstr << "    vec4 bottom = texture(texture_normalmap[" << t.id_normal << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
+                sstr << "    return mix(top, bottom, frac);" << std::endl;
+                sstr << "}" << std::endl;
+            }
         }
     }
     if (!lights.empty()) {

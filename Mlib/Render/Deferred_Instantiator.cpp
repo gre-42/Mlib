@@ -63,9 +63,15 @@ void DeferredInstantiator::create_imposters(
     }
 }
 
+bool DeferredInstantiator::has_background_color() const {
+    std::scoped_lock lock{ background_color_mutex_ };
+    return background_color_.has_value();
+}
+
 void DeferredInstantiator::set_background_color(
     const FixedArray<float, 3>& background_color)
 {
+    std::scoped_lock lock{ background_color_mutex_ };
     background_color_ = background_color;
 }
 
@@ -73,6 +79,7 @@ void DeferredInstantiator::apply_background_color(
     StandardRenderLogic& standard_render_logic,
     PostProcessingLogic& post_processing_logic)
 {
+    std::scoped_lock lock{ background_color_mutex_ };
     if (!background_color_.has_value()) {
         THROW_OR_ABORT("Background color not set");
     }

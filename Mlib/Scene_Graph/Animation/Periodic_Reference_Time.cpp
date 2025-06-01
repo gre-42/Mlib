@@ -21,7 +21,7 @@ float PeriodicReferenceTime::phase01(
     if (period_duration_.count() <= 0) {
         THROW_OR_ABORT("PeriodicReferenceTime::phase01 on object with period duration <= 0");
     }
-    auto num = integral_to_float<float>(((time - reference_) % period_duration_).count());
-    auto denom = integral_to_float<float>(period_duration_.count());
-    return num / denom;
+    auto num = integral_to_float<double>(((time - reference_) % period_duration_).count());
+    auto denom = integral_to_float<double>(period_duration_.count());
+    return (float)(num / denom);
 }

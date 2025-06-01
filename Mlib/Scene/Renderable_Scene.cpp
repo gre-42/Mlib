@@ -165,7 +165,9 @@ void RenderableScene::render_without_setup(
             selected_cameras_);
         imposters_instantiated_ = true;
     }
-    if (!background_color_applied_) {
+    if (!background_color_applied_ &&
+        physics_scene_->deferred_instantiator_.has_background_color())
+    {
         physics_scene_->deferred_instantiator_.apply_background_color(
             *standard_render_logic_,
             *post_processing_logic_);

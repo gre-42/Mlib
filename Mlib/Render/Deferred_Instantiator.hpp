@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <unordered_map>
 
 namespace Mlib {
@@ -40,6 +41,7 @@ public:
         RenderLogics& render_logics,
         Scene& scene,
         SelectedCameras& cameras) const;
+    bool has_background_color() const;
     void set_background_color(
         const FixedArray<float, 3>& background_color);
     void apply_background_color(
@@ -49,6 +51,7 @@ private:
     std::unordered_map<DanglingPtr<SceneNode>, ImposterInfoAndDestructionToken> infos_;
     std::optional<FixedArray<float, 3>> background_color_;
     bool imposters_created_;
+    mutable FastMutex background_color_mutex_;
 };
 
 }
