@@ -6,6 +6,7 @@
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Dangling_Map.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
@@ -302,7 +303,7 @@ public:
     std::string name_;
     std::string asset_id_;
     IDamageable* damageable_;
-    std::set<DanglingBaseClassPtr<RigidBodyVehicle>> passengers_;
+    DanglingMap<DanglingBaseClassPtr<RigidBodyVehicle>> passengers_;
     float door_distance_;
     DanglingBaseClassPtr<AnimationStateUpdater> animation_state_updater_;
     Drivers drivers_;

@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -12,17 +13,19 @@ SceneVehicle::SceneVehicle(
     const DanglingRef<SceneNode>& scene_node,
     const DanglingBaseClassRef<RigidBodyVehicle>& rb)
     : delete_node_mutex_{ delete_node_mutex }
+    , on_scene_node_destroyed_{ scene_node->on_destroy, CURRENT_SOURCE_LOCATION }
     , on_rigid_body_destroyed_{ rb->on_destroy, CURRENT_SOURCE_LOCATION }
     , scene_node_name_{ std::move(scene_node_name) }
-    , scene_node_{ scene_node }
+    , scene_node_{ scene_node.ptr().set_loc(CURRENT_SOURCE_LOCATION) }
     , rb_{ rb.ptr().set_loc(CURRENT_SOURCE_LOCATION) }
 {
-    on_rigid_body_destroyed_.add(
-        [this](){ rb_ = nullptr; global_object_pool.remove(this); },
-        CURRENT_SOURCE_LOCATION);
+    on_scene_node_destroyed_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    on_rigid_body_destroyed_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
 SceneVehicle::~SceneVehicle() {
+    scene_node_ = nullptr;
+    rb_ = nullptr;
     on_destroy.clear();
 }
 
@@ -80,12 +83,12 @@ const VariableAndHash<std::string>& SceneVehicle::scene_node_name() const {
     return scene_node_name_;
 }
 
-const DanglingRef<SceneNode>& SceneVehicle::scene_node() {
-    return scene_node_;
+DanglingRef<SceneNode> SceneVehicle::scene_node() {
+    return *scene_node_;
 }
 
-const DanglingRef<const SceneNode>& SceneVehicle::scene_node() const {
-    return scene_node_;
+DanglingRef<const SceneNode> SceneVehicle::scene_node() const {
+    return *scene_node_;
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> SceneVehicle::rb() {

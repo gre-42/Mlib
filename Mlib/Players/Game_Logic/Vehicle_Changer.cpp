@@ -133,7 +133,10 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         ap->create_vehicle_internals(a_role_old);
     }
     if (!ap->rigid_body()->is_avatar()) {
-        if (!ap->rigid_body()->passengers_.insert(a.get_primary_scene_vehicle()->rb().ptr()).second) {
+        if (!ap->rigid_body()->passengers_.try_emplace(
+            a.get_primary_scene_vehicle()->rb().set_loc(CURRENT_SOURCE_LOCATION).ptr(),
+            CURRENT_SOURCE_LOCATION).second)
+        {
             THROW_OR_ABORT("Passenger already exists");
         }
     }

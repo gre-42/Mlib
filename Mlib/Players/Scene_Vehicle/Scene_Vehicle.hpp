@@ -18,7 +18,7 @@ enum class ExternalsMode;
 enum class ControlSource;
 struct InternalsMode;
 
-class SceneVehicle final: public virtual DestructionNotifier, public virtual DanglingBaseClass {
+class SceneVehicle final: public virtual DanglingBaseClass, public virtual DestructionNotifier {
     SceneVehicle(const SceneVehicle&) = delete;
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
@@ -62,15 +62,16 @@ public:
         const CreateRoleExternals& create_vehicle_internals);
     VariableAndHash<std::string>& scene_node_name();
     const VariableAndHash<std::string>& scene_node_name() const;
-    const DanglingRef<SceneNode>& scene_node();
-    const DanglingRef<const SceneNode>& scene_node() const;
+    DanglingRef<SceneNode> scene_node();
+    DanglingRef<const SceneNode> scene_node() const;
     DanglingBaseClassRef<RigidBodyVehicle> rb();
     DanglingBaseClassRef<const RigidBodyVehicle> rb() const;
 private:
     DeleteNodeMutex& delete_node_mutex_;
+    DestructionFunctionsRemovalTokens on_scene_node_destroyed_;
     DestructionFunctionsRemovalTokens on_rigid_body_destroyed_;
     VariableAndHash<std::string> scene_node_name_;
-    DanglingRef<SceneNode> scene_node_;
+    DanglingPtr<SceneNode> scene_node_;
     DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     CreateVehicleExternals create_vehicle_externals_;
     CreateRoleExternals create_vehicle_internals_;

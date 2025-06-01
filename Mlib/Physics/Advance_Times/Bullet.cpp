@@ -162,7 +162,7 @@ void Bullet::cause_damage(RigidBodyVehicle& rigid_body, float amount) {
     rigid_body.damageable_->damage(amount);
     if (rigid_body.damageable_->health() <= 0.f) {
         notify_kill(const_cast<RigidBodyVehicle&>(rigid_body));
-        for (const auto& p : rigid_body.passengers_) {
+        for (const auto& [p, _] : rigid_body.passengers_) {
             cause_damage(*p.get(), INFINITY);
         }
     }
