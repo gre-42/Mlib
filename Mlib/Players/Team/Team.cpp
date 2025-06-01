@@ -25,7 +25,7 @@ const std::string& Team::name() const {
 
 void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     for (const auto& [_, iplayer] : rigid_body_vehicle.drivers_.players_map()) {
-        auto* player = dynamic_cast<Player*>(iplayer.get());
+        auto* player = dynamic_cast<Player*>(&iplayer.get());
         if (player == nullptr) {
             THROW_OR_ABORT("Driver is not a player");
         }

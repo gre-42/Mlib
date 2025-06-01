@@ -750,7 +750,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
             }
             current_opponent_index = players_vec.size();
         }
-        players_vec.push_back(p.get());
+        players_vec.push_back(&p.get());
     }
     auto opponent_score = [&](size_t i) {
         auto& p = *players_vec[i];
@@ -1192,7 +1192,7 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (const auto& [_, iplayer] : rigid_body_vehicle.drivers_.players_map()) {
-        Player* player = dynamic_cast<Player*>(iplayer.get());
+        Player* player = dynamic_cast<Player*>(&iplayer.get());
         if (player == nullptr) {
             THROW_OR_ABORT("Driver is not a player");
         }

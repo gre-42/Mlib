@@ -25,8 +25,14 @@ public:
     decltype(auto) end() { return elements_.end(); }
     decltype(auto) begin() const { return elements_.begin(); }
     decltype(auto) end() const { return elements_.end(); }
+    bool empty() const {
+        return elements_.empty();
+    }
+    std::size_t size() const {
+        return elements_.size();
+    }
 private:
-    std::map<T, DestructionFunctionsRemovalTokens> elements_;
+    std::map<DanglingBaseClassPtr<T>, DestructionFunctionsRemovalTokens> elements_;
 };
 
 }

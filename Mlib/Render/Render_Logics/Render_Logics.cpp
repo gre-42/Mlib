@@ -18,7 +18,7 @@ static std::map<ZorderAndId, DestructionFunctionsTokensObject<RenderLogic>>::ite
     return std::find_if(
         lst.begin(),
         lst.end(),
-        [&render_logic](auto& v){ return v.second.get() == &render_logic; });
+        [&render_logic](auto& v){ return &v.second.get() == &render_logic; });
 }
 
 RenderLogics::RenderLogics(UiFocus& ui_focus)

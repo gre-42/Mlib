@@ -33,7 +33,7 @@ void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceL
             if (a == nullptr) {
                 continue;
             }
-            if (a->get() == &advance_time) {
+            if (&a->get() == &advance_time) {
                 ++nfound;
                 a.reset();
             }

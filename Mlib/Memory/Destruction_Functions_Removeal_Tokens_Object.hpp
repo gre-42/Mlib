@@ -28,8 +28,8 @@ public:
     inline T* operator -> () const {
         return &object_.get();
     }
-    inline T* get() const {
-        return &object_.get();
+    inline T& get() const {
+        return object_.get();
     }
     inline const DanglingBaseClassRef<T>& object() const {
         return object_;

@@ -137,7 +137,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     float d_wpt = 0;
     // Avoid collisions with other players (brake).
     for (const auto& [_, p] : player_->players().players()) {
-        if (p.get() == &player_.get()) {
+        if (&p.get() == &player_.get()) {
             continue;
         }
         if (!p->has_scene_vehicle()) {

@@ -39,7 +39,11 @@ VehicleSpawner::VehicleSpawner(
     , respawn_cooldown_time_{ 0 }
 {}
 
-VehicleSpawner::~VehicleSpawner() = default;
+VehicleSpawner::~VehicleSpawner() {
+    if (!scene_vehicles_.empty()) {
+        verbose_abort("~VehicleSpawner: Scene vehicles remaining");
+    }
+}
 
 DanglingBaseClassPtr<IPlayer> VehicleSpawner::player() {
     return player_;
@@ -112,14 +116,14 @@ DanglingBaseClassRef<SceneVehicle> VehicleSpawner::get_primary_scene_vehicle() {
     if (scene_vehicles_.empty()) {
         THROW_OR_ABORT("Spawner has no scene vehicle");
     }
-    return { *scene_vehicles_.front(), CURRENT_SOURCE_LOCATION };
+    return scene_vehicles_.front().object();
 }
 
 DanglingBaseClassRef<const SceneVehicle> VehicleSpawner::get_primary_scene_vehicle() const {
     return const_cast<VehicleSpawner*>(this)->get_primary_scene_vehicle();
 }
 
-const std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>>& VehicleSpawner::get_scene_vehicles() const {
+const DanglingList<SceneVehicle>& VehicleSpawner::get_scene_vehicles() const {
     return scene_vehicles_;
 }
 
@@ -128,10 +132,7 @@ void VehicleSpawner::set_scene_vehicles(
 {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (!scene_vehicles_.empty()) {
-        THROW_OR_ABORT("Scene vehicles already set (0)");
-    }
-    if (!on_scene_vehicle_destroyed_.empty()) {
-        THROW_OR_ABORT("Scene vehicles already set (1)");
+        THROW_OR_ABORT("Scene vehicles already set");
     }
     if (scene_vehicles.empty()) {
         THROW_OR_ABORT("Scene vehicles list is empty");
@@ -147,19 +148,16 @@ void VehicleSpawner::set_scene_vehicles(
             THROW_OR_ABORT("Player received root node scheduled for deletion");
         }
     }
-    scene_vehicles_ = std::move(scene_vehicles);
-    for (auto sit = scene_vehicles_.begin(); sit != scene_vehicles_.end(); ++sit) {
-        auto tit = on_scene_vehicle_destroyed_.emplace(
-            on_scene_vehicle_destroyed_.end(),
-            (*sit)->on_destroy,
+    for (auto& l : scene_vehicles) {
+        auto res = scene_vehicles_.emplace_back(
+            DanglingBaseClassRef<SceneVehicle>{*l, CURRENT_SOURCE_LOCATION},
             CURRENT_SOURCE_LOCATION);
-        tit->add([this, sit, tit](){
-            scene_vehicles_.erase(sit);
+        l.release();
+        res->on_destroy([this](){
             if (scene_vehicles_.empty()) {
                 time_since_spawn_ = NAN;
                 time_since_deletion_ = 0.f;
             }
-            on_scene_vehicle_destroyed_.erase(tit);
         }, CURRENT_SOURCE_LOCATION);
     }
     if (has_player()) {

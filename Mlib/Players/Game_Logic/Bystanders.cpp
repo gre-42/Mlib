@@ -165,7 +165,7 @@ bool Bystanders::delete_for_vip(
         }
         if (dist2 > squared(cfg_.r_delete_far)) {
             if (!vip_->can_see(
-                *vehicle,
+                vehicle.get(),
                 cfg_.only_terrain))
             {
                 ++ndelete_votes;
@@ -176,7 +176,7 @@ bool Bystanders::delete_for_vip(
         }
         if (!spawner.get_spotted_by_vip() && (spawner.get_time_since_spawn() > cfg_.visible_after_delete_time)) {
             if (!vip_->can_see(
-                *vehicle,
+                vehicle.get(),
                 cfg_.only_terrain))
             {
                 ++ndelete_votes;
