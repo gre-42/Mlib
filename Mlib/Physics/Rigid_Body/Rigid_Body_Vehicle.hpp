@@ -302,7 +302,7 @@ public:
     std::string name_;
     std::string asset_id_;
     IDamageable* damageable_;
-    std::set<RigidBodyVehicle*> passengers_;
+    std::set<DanglingBaseClassPtr<RigidBodyVehicle>> passengers_;
     float door_distance_;
     DanglingBaseClassPtr<AnimationStateUpdater> animation_state_updater_;
     Drivers drivers_;

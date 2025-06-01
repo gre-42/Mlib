@@ -190,7 +190,7 @@ void Player::reset_node() {
             vehicle_spawner_ = nullptr;
         }
         if (next_scene_vehicle_ != nullptr) {
-            next_scene_vehicle_->get_primary_scene_vehicle().destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+            next_scene_vehicle_->get_primary_scene_vehicle()->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
             next_scene_vehicle_ = nullptr;
         }
         if (target_scene_node_ != nullptr) {
@@ -243,26 +243,21 @@ void Player::set_vehicle_spawner(
     if (desired_role.empty()) {
         THROW_OR_ABORT("Desired role is empty");
     }
-    auto& pv = spawner.get_primary_scene_vehicle();
-    if (!pv.rb().drivers_.role_exists(desired_role)) {
-        THROW_OR_ABORT("Role \"" + desired_role + "\" does not exist in vehicle \"" + pv.rb().name() + '"');
+    auto pv = spawner.get_primary_scene_vehicle();
+    if (!pv->rb()->drivers_.role_exists(desired_role)) {
+        THROW_OR_ABORT("Role \"" + desired_role + "\" does not exist in vehicle \"" + pv->rb()->name() + '"');
     }
-    if (!pv.rb().drivers_.role_is_free(desired_role)) {
-        THROW_OR_ABORT("Role \"" + desired_role + "\" is already occupied in vehicle \"" + pv.rb().name() + '"');
+    if (!pv->rb()->drivers_.role_is_free(desired_role)) {
+        THROW_OR_ABORT("Role \"" + desired_role + "\" is already occupied in vehicle \"" + pv->rb()->name() + '"');
     }
-    pv.rb().drivers_.add(desired_role, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    pv.destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+    pv->rb()->drivers_.add(desired_role, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    pv->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
     internals_mode_.role = desired_role;
-    vehicle_ = &pv;
+    vehicle_ = pv.ptr();
     vehicle_spawner_ = &spawner;
 }
 
-RigidBodyVehicle& Player::rigid_body() {
-    const Player* cthis = this;
-    return const_cast<RigidBodyVehicle&>(cthis->rigid_body());
-}
-
-const RigidBodyVehicle& Player::rigid_body() const {
+DanglingBaseClassRef<RigidBodyVehicle> Player::rigid_body() {
     std::shared_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_scene_vehicle()) {
@@ -271,9 +266,13 @@ const RigidBodyVehicle& Player::rigid_body() const {
     return vehicle_->rb();
 }
 
+DanglingBaseClassRef<const RigidBodyVehicle> Player::rigid_body() const {
+    return const_cast<Player*>(this)->rigid_body();
+}
+
 const VariableAndHash<std::string>& Player::scene_node_name() const {
     std::shared_lock lock{ mutex_ };
-    return vehicle().scene_node_name();
+    return vehicle()->scene_node_name();
 }
 
 void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
@@ -334,8 +333,8 @@ const PlayerStats& Player::stats() const {
 
 float Player::car_health() const {
     std::shared_lock lock{ mutex_ };
-    if (has_scene_vehicle() && (vehicle_->rb().damageable_ != nullptr)) {
-        return vehicle_->rb().damageable_->health();
+    if (has_scene_vehicle() && (vehicle_->rb()->damageable_ != nullptr)) {
+        return vehicle_->rb()->damageable_->health();
     } else {
         return NAN;
     }
@@ -346,7 +345,7 @@ std::string Player::vehicle_name() const {
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no scene vehicle, cannot get vehicle name");
     }
-    return vehicle_->rb().name();
+    return vehicle_->rb()->name();
 }
 
 GameMode Player::game_mode() const {
@@ -364,7 +363,7 @@ bool Player::can_see(
         THROW_OR_ABORT("Player::can_see requires rb");
     }
     return collision_query_.can_see(
-        vehicle_->rb(),
+        vehicle_->rb().get(),
         rb,
         only_terrain,
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
@@ -382,7 +381,7 @@ bool Player::can_see(
         THROW_OR_ABORT("Player::can_see requires rb");
     }
     return collision_query_.can_see(
-        vehicle_->rb(),
+        vehicle_->rb().get(),
         pos,
         only_terrain,
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
@@ -400,8 +399,8 @@ bool Player::can_see(
         THROW_OR_ABORT("Player::can_see requires vehicle");
     }
     return collision_query_.can_see(
-        vehicle_->rb(),
-        scene_vehicle.rb(),
+        vehicle_->rb().get(),
+        scene_vehicle.rb().get(),
         only_terrain,
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         time_offset);
@@ -417,7 +416,7 @@ bool Player::can_see(
         THROW_OR_ABORT("Player::can_see requires target rb");
     }
     return can_see(
-        player.vehicle(),
+        player.vehicle().get(),
         only_terrain,
         time_offset);
 }
@@ -441,11 +440,11 @@ void Player::notify_destroyed(SceneNode& destroyed_object) {
 void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if ((next_scene_vehicle_ != nullptr) &&
-        (&destroyed_object == &next_scene_vehicle_->get_primary_scene_vehicle()))
+        (&destroyed_object == &next_scene_vehicle_->get_primary_scene_vehicle().get()))
     {
         next_scene_vehicle_ = nullptr;
     }
-    if (&destroyed_object == vehicle_) {
+    if (&destroyed_object == vehicle_.get()) {
         vehicle_ = nullptr;
         vehicle_spawner_ = nullptr;
         reset_node();
@@ -460,7 +459,7 @@ void Player::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
     if (vehicle_spawner_ == nullptr) {
         verbose_abort("Player::notify_destroyed: Vehicle spawner is null");
     }
-    if (&destroyed_object != &rigid_body()) {
+    if (&destroyed_object != &rigid_body().get()) {
         verbose_abort("Player::notify_destroyed: Unexpected rigid body vehicle");
     }
     if (destroyed_object.drivers_.try_get(internals_mode_.role).get() != this) {
@@ -501,7 +500,7 @@ void Player::increment_external_forces(
         if (countdown_active) {
             car_movement.step_on_brakes();
             car_movement.steer(0.f);
-            vehicle_->rb().vehicle_controller().apply();
+            vehicle_->rb()->vehicle_controller().apply();
             return;
         }
     }
@@ -531,7 +530,7 @@ bool Player::unstuck() {
     if (!has_scene_vehicle()) {
         return false;
     }
-    if ((sum(squared(vehicle_->rb().rbp_.v_com_)) > squared(stuck_velocity_)) ||
+    if ((sum(squared(vehicle_->rb()->rbp_.v_com_)) > squared(stuck_velocity_)) ||
         (unstuck_start_ != std::chrono::steady_clock::time_point()))
     {
         stuck_start_ = std::chrono::steady_clock::now();
@@ -552,8 +551,8 @@ bool Player::unstuck() {
             // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
                 car_movement.drive_backwards();
-                vehicle_->rb().vehicle_controller().steer(0, 1.f);
-                vehicle_->rb().vehicle_controller().apply();
+                vehicle_->rb()->vehicle_controller().steer(0, 1.f);
+                vehicle_->rb()->vehicle_controller().apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
                 // std::scoped_lock lock{ mutex_ };
                 // scene_.delete_root_node(vehicle_.scene_node_name);
@@ -601,7 +600,7 @@ bool Player::has_gun_node() const {
 }
 
 Inventory& Player::inventory() {
-    return rigid_body().inventory_;
+    return rigid_body()->inventory_;
 }
 
 const Inventory& Player::inventory() const {
@@ -642,7 +641,7 @@ std::optional<std::string> Player::best_weapon_in_inventory() const {
     }
     const auto& inventy = inventory();
     ScenePos distance_to_target = std::sqrt(sum(squared(
-        target_rb_->rbp_.abs_position() - rigid_body().rbp_.abs_position())));
+        target_rb_->rbp_.abs_position() - rigid_body()->rbp_.abs_position())));
     float best_score = -INFINITY;
     std::optional<std::string> best_weapon_name;
     for (const auto& [name, info] : wc.weapon_infos()) {
@@ -678,20 +677,19 @@ bool Player::has_scene_vehicle() const {
 
 bool Player::has_vehicle_controller() const {
     std::shared_lock lock{ mutex_ };
-    return rigid_body().has_vehicle_controller();
+    return rigid_body()->has_vehicle_controller();
 }
 
 const Gun& Player::gun() const {
+    return const_cast<Player*>(this)->gun();
+}
+
+Gun& Player::gun() {
     std::shared_lock lock{ mutex_ };
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Gun node not set");
     }
     return get_gun(*controlled_.gun_node);
-}
-
-Gun& Player::gun() {
-    const Player* p = this;
-    return const_cast<Gun&>(p->gun());
 }
 
 bool Player::is_pedestrian() const {
@@ -768,7 +766,7 @@ DanglingPtr<SceneNode> Player::target_scene_node() const {
     return target_scene_node_;
 }
 
-const RigidBodyVehicle* Player::target_rb() const {
+DanglingBaseClassPtr<const RigidBodyVehicle> Player::target_rb() const {
     std::shared_lock lock{ mutex_ };
     return target_rb_;
 }
@@ -805,7 +803,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
         if (!p.has_scene_vehicle()) {
             return -(ScenePos)INFINITY;
         }
-        if (!can_see(p.rigid_body())) {
+        if (!can_see(p.rigid_body().get())) {
             return -(ScenePos)INFINITY;
         }
         switch (strategy) {
@@ -824,7 +822,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
             }
         }
         case OpponentSelectionStrategy::BEST: {
-            auto dist_squared = sum(squared(players_vec[i]->rigid_body().rbp_.abs_position() - this->rigid_body().rbp_.abs_position()));
+            auto dist_squared = sum(squared(players_vec[i]->rigid_body()->rbp_.abs_position() - this->rigid_body()->rbp_.abs_position()));
             if (i == current_opponent_index) {
                 dist_squared *= squared(select_opponent_hysteresis_factor_);
             }
@@ -900,7 +898,7 @@ void Player::set_opponent(Player& opponent) {
     }
     target_id_ = opponent.vehicle_->scene_node_name();
     target_scene_node_ = opponent.vehicle_->scene_node().ptr();
-    target_rb_ = &opponent.vehicle_->rb();
+    target_rb_ = opponent.vehicle_->rb().ptr();
     target_scene_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
@@ -917,7 +915,7 @@ DanglingRef<const SceneNode> Player::scene_node() const {
 }
 
 bool Player::scene_node_scheduled_for_deletion() const {
-    return scene_.root_node_scheduled_for_deletion(vehicle().scene_node_name());
+    return scene_.root_node_scheduled_for_deletion(vehicle()->scene_node_name());
 }
 
 VehicleSpawner* Player::next_scene_vehicle() {
@@ -929,11 +927,7 @@ const std::string& Player::next_role() const {
     return next_role_;
 }
 
-SceneVehicle& Player::vehicle() {
-    return const_cast<SceneVehicle&>(static_cast<const Player*>(this)->vehicle());
-}
-
-const SceneVehicle& Player::vehicle() const {
+DanglingBaseClassRef<SceneVehicle> Player::vehicle() {
     std::shared_lock lock{ mutex_ };
     if (vehicle_ == nullptr) {
         THROW_OR_ABORT("Vehicle is null");
@@ -941,16 +935,19 @@ const SceneVehicle& Player::vehicle() const {
     return *vehicle_;
 }
 
-VehicleSpawner& Player::vehicle_spawner() {
-    const Player* p = this;
-    return const_cast<VehicleSpawner&>(p->vehicle_spawner());
+DanglingBaseClassRef<const SceneVehicle> Player::vehicle() const {
+    return const_cast<Player*>(this)->vehicle();
 }
 
-const VehicleSpawner& Player::vehicle_spawner() const {
+VehicleSpawner& Player::vehicle_spawner() {
     if (vehicle_spawner_ == nullptr) {
         THROW_OR_ABORT("Player has no vehicle spawner");
     }
     return *vehicle_spawner_;
+}
+
+const VehicleSpawner& Player::vehicle_spawner() const {
+    return const_cast<Player*>(this)->vehicle_spawner();
 }
 
 void Player::select_next_vehicle() {
@@ -961,7 +958,7 @@ void Player::select_next_vehicle() {
     ScenePos closest_distance2 = INFINITY;
     auto clear_next_scene_vehicle = [this](){
         if (next_scene_vehicle_ != nullptr) {
-            next_scene_vehicle_->get_primary_scene_vehicle().destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+            next_scene_vehicle_->get_primary_scene_vehicle()->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
             next_scene_vehicle_ = nullptr;
         }
     };
@@ -973,8 +970,8 @@ void Player::select_next_vehicle() {
         if (vehicle_spawner_ == s.get()) {
             continue;
         }
-        auto& v = s->get_primary_scene_vehicle();
-        const auto* free_role = v.rb().drivers_.first_free_role();
+        auto v = s->get_primary_scene_vehicle();
+        const auto* free_role = v->rb()->drivers_.first_free_role();
         if (free_role == nullptr) {
             continue;
         }
@@ -982,13 +979,13 @@ void Player::select_next_vehicle() {
             clear_next_scene_vehicle();
             next_scene_vehicle_ = s.get();
             next_role_ = *free_role;
-            v.destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+            v->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
         };
         if (s->has_player() && (&s->get_player().get() == this)) {
             set_next_scene_vehicle();
             break;
         }
-        ScenePos dist2 = sum(squared(v.rb().rbp_.abs_position() - vehicle_->rb().rbp_.abs_position()));
+        ScenePos dist2 = sum(squared(v->rb()->rbp_.abs_position() - vehicle_->rb()->rbp_.abs_position()));
         if (dist2 < closest_distance2) {
             set_next_scene_vehicle();
             closest_distance2 = dist2;
@@ -1121,7 +1118,7 @@ void Player::set_role(const std::string& role) {
 
 void Player::change_role() {
     std::scoped_lock lock{ mutex_ };
-    auto* new_role = rigid_body().drivers_.next_free_role(internals_mode_.role);
+    auto* new_role = rigid_body()->drivers_.next_free_role(internals_mode_.role);
     if (new_role == nullptr) {
         return;
     }

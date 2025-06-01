@@ -80,8 +80,8 @@ void SingleWaypoint::move_to_waypoint(
     if (!player_->has_scene_vehicle()) {
         return;
     }
-    auto& rb = player_->rigid_body();
-    if (any(rb.move_to(
+    auto rb = player_->rigid_body();
+    if (any(rb->move_to(
         AiWaypoint{
             waypoint_,                  // position_of_destination
             fixed_zeros<float, 3>(),    // velocity_of_destination

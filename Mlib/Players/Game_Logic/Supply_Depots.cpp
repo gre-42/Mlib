@@ -84,17 +84,17 @@ void SupplyDepots::handle_supply_depots(float dt) {
         if (!player->has_scene_vehicle()) {
             continue;
         }
-        auto& rb = player->rigid_body();
+        auto rb = player->rigid_body();
         visit_supply_depots(
-            rb.rbp_.abs_position().casted<CompressedScenePos>(),
+            rb->rbp_.abs_position().casted<CompressedScenePos>(),
             [&rb](SupplyDepot& supply_depot)
             {
                 for (const auto& [item_type, navail] : supply_depot.supplies) {
-                    if (!rb.inventory_.knows_item_type(item_type)) {
+                    if (!rb->inventory_.knows_item_type(item_type)) {
                         continue;
                     }
-                    uint32_t free = rb.inventory_.nfree(item_type);
-                    rb.inventory_.add(item_type, std::min(free, navail));
+                    uint32_t free = rb->inventory_.nfree(item_type);
+                    rb->inventory_.add(item_type, std::min(free, navail));
                 }
                 supply_depot.time_since_last_visit = 0.f;
                 auto& style = supply_depot.node->color_style(VariableAndHash<std::string>{""});

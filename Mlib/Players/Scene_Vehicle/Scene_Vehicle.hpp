@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
@@ -16,7 +17,7 @@ enum class ExternalsMode;
 enum class ControlSource;
 struct InternalsMode;
 
-class SceneVehicle {
+class SceneVehicle: public virtual DanglingBaseClass {
     SceneVehicle(const SceneVehicle&) = delete;
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
@@ -38,7 +39,7 @@ public:
         DeleteNodeMutex& delete_node_mutex,
         VariableAndHash<std::string> scene_node_name,
         const DanglingRef<SceneNode>& scene_node,
-        RigidBodyVehicle& rb);
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb);
     ~SceneVehicle();
     void create_vehicle_externals(
         uint32_t user_id,
@@ -62,14 +63,14 @@ public:
     const VariableAndHash<std::string>& scene_node_name() const;
     const DanglingRef<SceneNode>& scene_node();
     const DanglingRef<const SceneNode>& scene_node() const;
-    RigidBodyVehicle& rb();
-    const RigidBodyVehicle& rb() const;
+    DanglingBaseClassRef<RigidBodyVehicle> rb();
+    DanglingBaseClassRef<const RigidBodyVehicle> rb() const;
     DestructionObservers<const SceneVehicle&> destruction_observers;
 private:
     DeleteNodeMutex& delete_node_mutex_;
     VariableAndHash<std::string> scene_node_name_;
     DanglingRef<SceneNode> scene_node_;
-    RigidBodyVehicle& rb_;
+    DanglingBaseClassRef<RigidBodyVehicle> rb_;
     CreateVehicleExternals create_vehicle_externals_;
     CreateRoleExternals create_vehicle_internals_;
 };

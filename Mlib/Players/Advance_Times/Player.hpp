@@ -137,16 +137,16 @@ public:
     void set_select_opponent_hysteresis_factor(ScenePos factor);
     void reset_node();
     void set_vehicle_spawner(VehicleSpawner& spawner, const std::string& desired_role);
-    RigidBodyVehicle& rigid_body();
-    const RigidBodyVehicle& rigid_body() const;
+    DanglingBaseClassRef<RigidBodyVehicle> rigid_body();
+    DanglingBaseClassRef<const RigidBodyVehicle> rigid_body() const;
     DanglingRef<SceneNode> scene_node();
     DanglingRef<const SceneNode> scene_node() const;
     bool scene_node_scheduled_for_deletion() const;
     VehicleSpawner* next_scene_vehicle();
     const std::string& next_role() const;
     const VariableAndHash<std::string>& scene_node_name() const;
-    SceneVehicle& vehicle();
-    const SceneVehicle& vehicle() const;
+    DanglingBaseClassRef<SceneVehicle> vehicle();
+    DanglingBaseClassRef<const SceneVehicle> vehicle() const;
     VehicleSpawner& vehicle_spawner();
     const VehicleSpawner& vehicle_spawner() const;
     void set_gun_node(DanglingRef<SceneNode> gun_node);
@@ -207,7 +207,7 @@ public:
     Players& players();
     bool ramming() const;
     DanglingPtr<SceneNode> target_scene_node() const;
-    const RigidBodyVehicle* target_rb() const;
+    DanglingBaseClassPtr<const RigidBodyVehicle> target_rb() const;
     void set_behavior(
         float stuck_velocity,
         float stuck_duration,
@@ -274,12 +274,12 @@ private:
     std::string user_name_;
     std::string id_;
     std::string team_;
-    SceneVehicle* vehicle_;
+    DanglingBaseClassPtr<SceneVehicle> vehicle_;
     VehicleSpawner* vehicle_spawner_;
     PlayerControlled controlled_;
     std::optional<VariableAndHash<std::string>> target_id_;
     DanglingPtr<SceneNode> target_scene_node_;
-    RigidBodyVehicle* target_rb_;
+    DanglingBaseClassPtr<RigidBodyVehicle> target_rb_;
     PlayerStats stats_;
     GameMode game_mode_;
     std::chrono::steady_clock::time_point stuck_start_;

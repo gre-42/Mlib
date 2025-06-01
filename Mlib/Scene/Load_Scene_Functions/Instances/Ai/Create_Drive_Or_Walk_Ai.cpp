@@ -61,6 +61,6 @@ void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_intersect_angle) * degrees),
         std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_angle) * degrees),
         args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_distance) * meters);
-    player->rigid_body().add_autopilot({ *ai, CURRENT_SOURCE_LOCATION });
+    player->rigid_body()->add_autopilot({ *ai, CURRENT_SOURCE_LOCATION });
     global_object_pool.add(std::move(ai), CURRENT_SOURCE_LOCATION);
 }

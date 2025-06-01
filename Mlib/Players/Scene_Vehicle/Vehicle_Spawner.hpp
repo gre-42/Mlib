@@ -64,8 +64,8 @@ public:
     DanglingBaseClassRef<Player> get_player();
     
     bool has_scene_vehicle() const;
-    SceneVehicle& get_primary_scene_vehicle();
-    const SceneVehicle& get_primary_scene_vehicle() const;
+    DanglingBaseClassRef<SceneVehicle> get_primary_scene_vehicle();
+    DanglingBaseClassRef<const SceneVehicle> get_primary_scene_vehicle() const;
     const std::list<std::unique_ptr<SceneVehicle>>& get_scene_vehicles() const;
     void set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>&& scene_vehicle);
     

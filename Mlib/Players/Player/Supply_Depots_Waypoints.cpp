@@ -57,7 +57,7 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
         player_.single_waypoint().set_waypoint(waypoint_positions_.at(predecessor_id), predecessor_id);
         return true;
     } else {
-        auto p = player_.rigid_body().rbp_.abs_position().casted<CompressedScenePos>();
+        auto p = player_.rigid_body()->rbp_.abs_position().casted<CompressedScenePos>();
         auto compute_ttotal_distance = [this, &p](size_t waypoint_id) {
             // g_beacons.push_back(
             //     Beacon{

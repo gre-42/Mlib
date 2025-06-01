@@ -548,9 +548,9 @@ void KeyBindings::increment_external_forces(
             if (k->player->scene_node_scheduled_for_deletion()) {
                 continue;
             }
-            auto& rb = k->player->rigid_body();
-            rb.plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
-            rb.plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
+            auto rb = k->player->rigid_body();
+            rb->plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
+            rb->plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
         }
     }
     for (auto& k : plane_controller_key_bindings_) {
@@ -566,21 +566,21 @@ void KeyBindings::increment_external_forces(
             1.f,
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& rb = k->player->rigid_body();
+            auto rb = k->player->rigid_body();
             if (k->turbine_power.has_value()) {
-                rb.plane_controller().accelerate(*k->turbine_power, alpha);
+                rb->plane_controller().accelerate(*k->turbine_power, alpha);
             }
             if (k->brake.has_value()) {
-                rb.plane_controller().brake(*k->brake, alpha);
+                rb->plane_controller().brake(*k->brake, alpha);
             }
             if (k->pitch.has_value()) {
-                rb.plane_controller().pitch(alpha * (*k->pitch), alpha);
+                rb->plane_controller().pitch(alpha * (*k->pitch), alpha);
             }
             if (k->yaw.has_value()) {
-                rb.plane_controller().yaw(alpha * (*k->yaw), alpha);
+                rb->plane_controller().yaw(alpha * (*k->yaw), alpha);
             }
             if (k->roll.has_value()) {
-                rb.plane_controller().roll(alpha * (*k->roll), alpha);
+                rb->plane_controller().roll(alpha * (*k->roll), alpha);
             }
         }
     }
@@ -589,8 +589,8 @@ void KeyBindings::increment_external_forces(
             if (k->player->scene_node_scheduled_for_deletion()) {
                 continue;
             }
-            auto& rb = k->player->rigid_body();
-            rb.plane_controller().apply();
+            auto rb = k->player->rigid_body();
+            rb->plane_controller().apply();
         }
     }
     // Weapon inventory

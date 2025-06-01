@@ -57,7 +57,7 @@ void PathfindingWaypoints::select_next_waypoint() {
         if (waypoints_->way_points.points.size() > 30'000) {
             lwarn() << "Refusing to add beacons, number of points is " << waypoints_->way_points.points.size() << " > 30,000";
         } else {
-            auto pp = player_.rigid_body().rbp_.abs_position().casted<CompressedScenePos>();
+            auto pp = player_.rigid_body()->rbp_.abs_position().casted<CompressedScenePos>();
             for (const auto& p : waypoints_->way_points.points) {
                 if (sum(squared(p.position - pp)) > squared(200 * meters)) {
                     continue;
@@ -70,8 +70,8 @@ void PathfindingWaypoints::select_next_waypoint() {
     if (!player_.has_scene_vehicle()) {
         return;
     }
-    FixedArray<float, 3> z3 = player_.rigid_body().rbp_.abs_z();
-    FixedArray<ScenePos, 3> pos3 = player_.rigid_body().rbp_.abs_position();
+    FixedArray<float, 3> z3 = player_.rigid_body()->rbp_.abs_z();
+    FixedArray<ScenePos, 3> pos3 = player_.rigid_body()->rbp_.abs_position();
     if (!player_.single_waypoint_.has_waypoint()) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;

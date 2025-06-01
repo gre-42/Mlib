@@ -8,7 +8,7 @@ SceneVehicle::SceneVehicle(
     DeleteNodeMutex& delete_node_mutex,
     VariableAndHash<std::string> scene_node_name,
     const DanglingRef<SceneNode>& scene_node,
-    RigidBodyVehicle& rb)
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb)
     : destruction_observers{ *this }
     , delete_node_mutex_{ delete_node_mutex }
     , scene_node_name_{ std::move(scene_node_name) }
@@ -82,10 +82,10 @@ const DanglingRef<const SceneNode>& SceneVehicle::scene_node() const {
     return scene_node_;
 }
 
-RigidBodyVehicle& SceneVehicle::rb() {
+DanglingBaseClassRef<RigidBodyVehicle> SceneVehicle::rb() {
     return rb_;
 }
 
-const RigidBodyVehicle& SceneVehicle::rb() const {
+DanglingBaseClassRef<const RigidBodyVehicle> SceneVehicle::rb() const {
     return rb_;
 }

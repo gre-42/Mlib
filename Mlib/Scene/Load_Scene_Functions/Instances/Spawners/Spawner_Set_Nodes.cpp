@@ -49,7 +49,11 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto name = VariableAndHash<std::string>{prefix + suffix};
         DanglingRef<SceneNode> node = scene.get_node(name, DP_LOC);
         auto& rb = get_rigid_body_vehicle(node);
-        vehicles.push_back(std::make_unique<SceneVehicle>(delete_node_mutex, name, node, rb));
+        vehicles.push_back(std::make_unique<SceneVehicle>(
+            delete_node_mutex,
+            name,
+            node,
+            DanglingBaseClassRef<RigidBodyVehicle>{ rb, CURRENT_SOURCE_LOCATION }));
     }
     vehicle_spawners
         .get(args.arguments.at<std::string>(KnownArgs::spawner))

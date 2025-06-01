@@ -44,7 +44,7 @@ VehicleSpawner::~VehicleSpawner() = default;
 
 void VehicleSpawner::notify_destroyed(const RigidBodyVehicle& rigid_body_vehicle) {
     size_t ndeleted = scene_vehicles_.remove_if([&rigid_body_vehicle](const std::unique_ptr<SceneVehicle>& v){
-        return &v->rb() == &rigid_body_vehicle;
+        return &v->rb().get() == &rigid_body_vehicle;
     });
     if (ndeleted != 1) {
         verbose_abort("Could not delete exactly one vehicle");
@@ -122,16 +122,15 @@ bool VehicleSpawner::has_scene_vehicle() const {
     return !scene_vehicles_.empty();
 }
 
-SceneVehicle& VehicleSpawner::get_primary_scene_vehicle() {
-    const VehicleSpawner* cthis = this;
-    return const_cast<SceneVehicle&>(cthis->get_primary_scene_vehicle());
-}
-
-const SceneVehicle& VehicleSpawner::get_primary_scene_vehicle() const {
+DanglingBaseClassRef<SceneVehicle> VehicleSpawner::get_primary_scene_vehicle() {
     if (scene_vehicles_.empty()) {
         THROW_OR_ABORT("Spawner has no scene vehicle");
     }
-    return *scene_vehicles_.front();
+    return { *scene_vehicles_.front(), CURRENT_SOURCE_LOCATION };
+}
+
+DanglingBaseClassRef<const SceneVehicle> VehicleSpawner::get_primary_scene_vehicle() const {
+    return const_cast<VehicleSpawner*>(this)->get_primary_scene_vehicle();
 }
 
 const std::list<std::unique_ptr<SceneVehicle>>& VehicleSpawner::get_scene_vehicles() const {
@@ -159,7 +158,7 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
     }
     scene_vehicles_ = std::move(scene_vehicles);
     for (const auto& v : scene_vehicles_) {
-        v->rb().destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+        v->rb()->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
     }
     if (has_player()) {
         player_->set_vehicle_spawner(*this, role_);
@@ -170,6 +169,7 @@ bool VehicleSpawner::try_spawn(
     const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
     const GeometrySpawnArguments& geometry)
 {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (!try_spawn_vehicle_) {
         THROW_OR_ABORT("Vehicle spawner not initialized");
     }
@@ -202,7 +202,7 @@ bool VehicleSpawner::try_spawn(
         if (scene_vehicles_.empty()) {
             verbose_abort("Scene vehicles not set after spawning");
         }
-        if (has_player() && (&player_->vehicle() != &get_primary_scene_vehicle())) {
+        if (has_player() && (&player_->vehicle().get() != &get_primary_scene_vehicle().get())) {
             verbose_abort("Player vehicle not set correctly after spawning");
         }
         notify_spawn();
@@ -211,8 +211,9 @@ bool VehicleSpawner::try_spawn(
 }
 
 void VehicleSpawner::delete_vehicle() {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     while (has_scene_vehicle()) {
-        auto n = get_primary_scene_vehicle().scene_node_name();
+        auto n = get_primary_scene_vehicle()->scene_node_name();
         scene_.delete_root_node(n);
     }
 }

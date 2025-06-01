@@ -35,10 +35,10 @@ void VehicleChanger::change_vehicles() {
         if (!p->has_scene_vehicle()) {
             continue;
         }
-        if (next_vehicle->get_primary_scene_vehicle().scene_node().ptr() == p->scene_node().ptr()) {
+        if (next_vehicle->get_primary_scene_vehicle()->scene_node().ptr() == p->scene_node().ptr()) {
             THROW_OR_ABORT("Next scene node equals current node");
         }
-        auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle().scene_node());
+        auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle()->scene_node());
         auto* other_player = next_rb.drivers_.try_get(p->next_role()).get();
         if (other_player == nullptr) {
             enter_vehicle(*s, *next_vehicle);
@@ -86,28 +86,28 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
     if (!a.has_player()) {
         THROW_OR_ABORT("Vehicle spawner has no player");
     }
-    auto& b_rb = b.get_primary_scene_vehicle().rb();
-    if (b_rb.is_avatar() && (&a.get_primary_scene_vehicle() != &b.get_primary_scene_vehicle())) {
+    auto b_rb = b.get_primary_scene_vehicle()->rb();
+    if (b_rb->is_avatar() && (&a.get_primary_scene_vehicle().get() != &b.get_primary_scene_vehicle().get())) {
         THROW_OR_ABORT("Can only enter the initial avatar");
     }
     auto ap = a.get_player();
-    if (&ap->vehicle() == &b.get_primary_scene_vehicle()) {
+    if (&ap->vehicle().get() == &b.get_primary_scene_vehicle().get()) {
         THROW_OR_ABORT("Entering the same vehicle");
     }
-    auto& a_rb_old = ap->rigid_body();
-    if (a_rb_old.is_avatar()) {
-        a_rb_old.deactivate_avatar();
-    } else if (a_rb_old.passengers_.erase(&a.get_primary_scene_vehicle().rb()) != 1) {
+    auto a_rb_old = ap->rigid_body();
+    if (a_rb_old->is_avatar()) {
+        a_rb_old->deactivate_avatar();
+    } else if (a_rb_old->passengers_.erase(a.get_primary_scene_vehicle()->rb().ptr()) != 1) {
         THROW_OR_ABORT("Could not find passenger to be deleted");
     }
-    if (b_rb.is_activated_avatar()) {
+    if (b_rb->is_activated_avatar()) {
         THROW_OR_ABORT("Destination avatar is not deactivated");
     }
-    if (b_rb.is_deactivated_avatar()) {
-        if (std::isnan(a_rb_old.door_distance_)) {
+    if (b_rb->is_deactivated_avatar()) {
+        if (std::isnan(a_rb_old->door_distance_)) {
             THROW_OR_ABORT("Door distance not set");
         }
-        auto a_trafo = a_rb_old.rbp_.abs_transformation();
+        auto a_trafo = a_rb_old->rbp_.abs_transformation();
         FixedArray<float, 3> a_dir = (std::abs(a_trafo.R(0, 1)) > 0.9f)
             ? a_trafo.R.column(2)
             : a_trafo.R.column(0);
@@ -116,13 +116,13 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         // Subtract PI/2 because we want to set the angle in z-direction,
         // while the angle computed by atan2 is measured along the x-direction.
         float angle = std::atan2(-a_dir(2), a_dir(0)) - float(M_PI / 2.);
-        b_rb.rbp_.set_pose(
+        b_rb->rbp_.set_pose(
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, angle, 0.f}),
-            a_trafo.t + (a_rb_old.door_distance_ * a_dir).casted<ScenePos>());
-        b_rb.rbp_.v_com_ = 0.f;
-        b_rb.rbp_.w_ = 0.f;
-        b.get_primary_scene_vehicle().scene_node()->invalidate_transformation_history();
-        b_rb.activate_avatar();
+            a_trafo.t + (a_rb_old->door_distance_ * a_dir).casted<ScenePos>());
+        b_rb->rbp_.v_com_ = 0.f;
+        b_rb->rbp_.w_ = 0.f;
+        b.get_primary_scene_vehicle()->scene_node()->invalidate_transformation_history();
+        b_rb->activate_avatar();
     }
     ExternalsMode a_ec_old = ap->externals_mode();
     auto a_role_old = ap->internals_mode();
@@ -132,8 +132,8 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
     if (!a_role_old.role.empty()) {
         ap->create_vehicle_internals(a_role_old);
     }
-    if (!ap->rigid_body().is_avatar()) {
-        if (!ap->rigid_body().passengers_.insert(&a.get_primary_scene_vehicle().rb()).second) {
+    if (!ap->rigid_body()->is_avatar()) {
+        if (!ap->rigid_body()->passengers_.insert(a.get_primary_scene_vehicle()->rb().ptr()).second) {
             THROW_OR_ABORT("Passenger already exists");
         }
     }

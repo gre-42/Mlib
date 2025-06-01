@@ -104,7 +104,7 @@ void Spawner::respawn_all_players() {
             continue;
         }
         while (p->has_scene_vehicle()) {
-            auto node_name = p->get_primary_scene_vehicle().scene_node_name();
+            auto node_name = p->get_primary_scene_vehicle()->scene_node_name();
             scene_.delete_root_node(node_name);
         }
         ++ndelete_;
@@ -152,7 +152,7 @@ bool Spawner::try_spawn_player_during_match(VehicleSpawner& spawner) {
     for (auto& [_, p] : vehicle_spawners_.spawners()) {
         if (p->has_scene_vehicle()) {
             for (const auto& v : p->get_scene_vehicles()) {
-                auto pos = v->rb().rbp_.abs_position();
+                auto pos = v->rb()->rbp_.abs_position();
                 spawn_points_bvh_singular_->visit(
                     AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
                         pos.casted<CompressedScenePos>(),
