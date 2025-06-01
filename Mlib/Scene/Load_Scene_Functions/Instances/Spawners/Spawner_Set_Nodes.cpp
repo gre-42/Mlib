@@ -5,6 +5,7 @@
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
@@ -44,12 +45,13 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
         .rp;
     auto prefixes = vars.database.at<std::vector<std::string>>("node_prefixes");
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
-    std::list<std::unique_ptr<SceneVehicle>> vehicles;
+    std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>> vehicles;
     for (const auto& prefix : prefixes) {
         auto name = VariableAndHash<std::string>{prefix + suffix};
         DanglingRef<SceneNode> node = scene.get_node(name, DP_LOC);
         auto& rb = get_rigid_body_vehicle(node);
-        vehicles.push_back(std::make_unique<SceneVehicle>(
+        vehicles.push_back(global_object_pool.create_unique<SceneVehicle>(
+            CURRENT_SOURCE_LOCATION,
             delete_node_mutex,
             name,
             node,

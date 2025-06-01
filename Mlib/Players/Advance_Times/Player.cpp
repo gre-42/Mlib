@@ -256,7 +256,7 @@ void Player::set_vehicle_spawner(
     on_vehicle_destroyed_.set(pv->on_destroy, CURRENT_SOURCE_LOCATION);
     on_vehicle_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
     internals_mode_.role = desired_role;
-    vehicle_ = pv.ptr();
+    vehicle_ = pv.ptr().set_loc(CURRENT_SOURCE_LOCATION);
     vehicle_spawner_ = &spawner;
 }
 
@@ -856,7 +856,7 @@ void Player::set_opponent(Player& opponent) {
     }
     target_id_ = opponent.vehicle_->scene_node_name();
     target_scene_node_ = opponent.vehicle_->scene_node().ptr();
-    target_rb_ = opponent.vehicle_->rb().ptr();
+    target_rb_ = opponent.vehicle_->rb().ptr().set_loc(CURRENT_SOURCE_LOCATION);
     on_target_scene_node_cleared_.set(target_scene_node_->on_clear, CURRENT_SOURCE_LOCATION);
     on_target_scene_node_cleared_.add([this](){ clear_opponent(); }, CURRENT_SOURCE_LOCATION);
     on_target_rigid_body_destroyed_.set(target_rb_->on_destroy, CURRENT_SOURCE_LOCATION);

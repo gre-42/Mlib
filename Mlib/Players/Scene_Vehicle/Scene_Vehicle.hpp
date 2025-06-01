@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
@@ -67,9 +68,10 @@ public:
     DanglingBaseClassRef<const RigidBodyVehicle> rb() const;
 private:
     DeleteNodeMutex& delete_node_mutex_;
+    DestructionFunctionsRemovalTokens on_rigid_body_destroyed_;
     VariableAndHash<std::string> scene_node_name_;
     DanglingRef<SceneNode> scene_node_;
-    DanglingBaseClassRef<RigidBodyVehicle> rb_;
+    DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     CreateVehicleExternals create_vehicle_externals_;
     CreateRoleExternals create_vehicle_internals_;
 };

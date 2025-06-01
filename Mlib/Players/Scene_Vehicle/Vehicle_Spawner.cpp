@@ -1,5 +1,4 @@
 #include "Vehicle_Spawner.hpp"
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -120,17 +119,19 @@ DanglingBaseClassRef<const SceneVehicle> VehicleSpawner::get_primary_scene_vehic
     return const_cast<VehicleSpawner*>(this)->get_primary_scene_vehicle();
 }
 
-const std::list<std::unique_ptr<SceneVehicle>>& VehicleSpawner::get_scene_vehicles() const {
+const std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>>& VehicleSpawner::get_scene_vehicles() const {
     return scene_vehicles_;
 }
 
-void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>&& scene_vehicles) {
+void VehicleSpawner::set_scene_vehicles(
+    std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>>&& scene_vehicles)
+{
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (!scene_vehicles_.empty()) {
-        THROW_OR_ABORT("Scene vehicles already set");
+        THROW_OR_ABORT("Scene vehicles already set (0)");
     }
-    if (!on_rigid_body_vehicle_destroyed_.empty()) {
-        THROW_OR_ABORT("Rigid body vehicles already set");
+    if (!on_scene_vehicle_destroyed_.empty()) {
+        THROW_OR_ABORT("Scene vehicles already set (1)");
     }
     if (scene_vehicles.empty()) {
         THROW_OR_ABORT("Scene vehicles list is empty");
@@ -148,9 +149,9 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
     }
     scene_vehicles_ = std::move(scene_vehicles);
     for (auto sit = scene_vehicles_.begin(); sit != scene_vehicles_.end(); ++sit) {
-        auto tit = on_rigid_body_vehicle_destroyed_.emplace(
-            on_rigid_body_vehicle_destroyed_.end(),
-            (*sit)->rb()->on_destroy,
+        auto tit = on_scene_vehicle_destroyed_.emplace(
+            on_scene_vehicle_destroyed_.end(),
+            (*sit)->on_destroy,
             CURRENT_SOURCE_LOCATION);
         tit->add([this, sit, tit](){
             scene_vehicles_.erase(sit);
@@ -158,7 +159,7 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
                 time_since_spawn_ = NAN;
                 time_since_deletion_ = 0.f;
             }
-            on_rigid_body_vehicle_destroyed_.erase(tit);
+            on_scene_vehicle_destroyed_.erase(tit);
         }, CURRENT_SOURCE_LOCATION);
     }
     if (has_player()) {

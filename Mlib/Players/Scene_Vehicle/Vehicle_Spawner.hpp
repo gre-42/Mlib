@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <chrono>
@@ -62,8 +63,8 @@ public:
     bool has_scene_vehicle() const;
     DanglingBaseClassRef<SceneVehicle> get_primary_scene_vehicle();
     DanglingBaseClassRef<const SceneVehicle> get_primary_scene_vehicle() const;
-    const std::list<std::unique_ptr<SceneVehicle>>& get_scene_vehicles() const;
-    void set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>&& scene_vehicle);
+    const std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>>& get_scene_vehicles() const;
+    void set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>>&& scene_vehicle);
     
     void set_spawn_vehicle(
         TrySpawnVehicle try_spawn_vehicle,
@@ -82,8 +83,8 @@ private:
     void notify_spawn();
     Scene& scene_;
     TrySpawnVehicle try_spawn_vehicle_;
-    std::list<std::unique_ptr<SceneVehicle>> scene_vehicles_;
-    std::list<DestructionFunctionsRemovalTokens> on_rigid_body_vehicle_destroyed_;
+    std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>> scene_vehicles_;
+    std::list<DestructionFunctionsRemovalTokens> on_scene_vehicle_destroyed_;
     DanglingBaseClassPtr<Player> player_;
     std::string role_;
     DestructionFunctionsRemovalTokens on_player_destroy_;

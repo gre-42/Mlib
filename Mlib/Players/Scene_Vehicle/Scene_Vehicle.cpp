@@ -1,4 +1,6 @@
 #include "Scene_Vehicle.hpp"
+#include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -10,10 +12,15 @@ SceneVehicle::SceneVehicle(
     const DanglingRef<SceneNode>& scene_node,
     const DanglingBaseClassRef<RigidBodyVehicle>& rb)
     : delete_node_mutex_{ delete_node_mutex }
+    , on_rigid_body_destroyed_{ rb->on_destroy, CURRENT_SOURCE_LOCATION }
     , scene_node_name_{ std::move(scene_node_name) }
     , scene_node_{ scene_node }
-    , rb_{ rb }
-{}
+    , rb_{ rb.ptr().set_loc(CURRENT_SOURCE_LOCATION) }
+{
+    on_rigid_body_destroyed_.add(
+        [this](){ rb_ = nullptr; global_object_pool.remove(this); },
+        CURRENT_SOURCE_LOCATION);
+}
 
 SceneVehicle::~SceneVehicle() {
     on_destroy.clear();
@@ -82,9 +89,9 @@ const DanglingRef<const SceneNode>& SceneVehicle::scene_node() const {
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> SceneVehicle::rb() {
-    return rb_;
+    return *rb_;
 }
 
 DanglingBaseClassRef<const RigidBodyVehicle> SceneVehicle::rb() const {
-    return rb_;
+    return *rb_;
 }
