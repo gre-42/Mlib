@@ -9,15 +9,14 @@ SceneVehicle::SceneVehicle(
     VariableAndHash<std::string> scene_node_name,
     const DanglingRef<SceneNode>& scene_node,
     const DanglingBaseClassRef<RigidBodyVehicle>& rb)
-    : destruction_observers{ *this }
-    , delete_node_mutex_{ delete_node_mutex }
+    : delete_node_mutex_{ delete_node_mutex }
     , scene_node_name_{ std::move(scene_node_name) }
     , scene_node_{ scene_node }
     , rb_{ rb }
 {}
 
 SceneVehicle::~SceneVehicle() {
-    destruction_observers.clear();
+    on_destroy.clear();
 }
 
 void SceneVehicle::create_vehicle_externals(

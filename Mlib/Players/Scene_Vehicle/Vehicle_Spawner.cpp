@@ -42,19 +42,6 @@ VehicleSpawner::VehicleSpawner(
 
 VehicleSpawner::~VehicleSpawner() = default;
 
-void VehicleSpawner::notify_destroyed(const RigidBodyVehicle& rigid_body_vehicle) {
-    size_t ndeleted = scene_vehicles_.remove_if([&rigid_body_vehicle](const std::unique_ptr<SceneVehicle>& v){
-        return &v->rb().get() == &rigid_body_vehicle;
-    });
-    if (ndeleted != 1) {
-        verbose_abort("Could not delete exactly one vehicle");
-    }
-    if (scene_vehicles_.empty()) {
-        time_since_spawn_ = NAN;
-        time_since_deletion_ = 0.f;
-    }
-}
-
 DanglingBaseClassPtr<IPlayer> VehicleSpawner::player() {
     return player_;
 }
@@ -142,6 +129,9 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
     if (!scene_vehicles_.empty()) {
         THROW_OR_ABORT("Scene vehicles already set");
     }
+    if (!on_rigid_body_vehicle_destroyed_.empty()) {
+        THROW_OR_ABORT("Rigid body vehicles already set");
+    }
     if (scene_vehicles.empty()) {
         THROW_OR_ABORT("Scene vehicles list is empty");
     }
@@ -157,8 +147,19 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
         }
     }
     scene_vehicles_ = std::move(scene_vehicles);
-    for (const auto& v : scene_vehicles_) {
-        v->rb()->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+    for (auto sit = scene_vehicles_.begin(); sit != scene_vehicles_.end(); ++sit) {
+        auto tit = on_rigid_body_vehicle_destroyed_.emplace(
+            on_rigid_body_vehicle_destroyed_.end(),
+            (*sit)->rb()->on_destroy,
+            CURRENT_SOURCE_LOCATION);
+        tit->add([this, sit, tit](){
+            scene_vehicles_.erase(sit);
+            if (scene_vehicles_.empty()) {
+                time_since_spawn_ = NAN;
+                time_since_deletion_ = 0.f;
+            }
+            on_rigid_body_vehicle_destroyed_.erase(tit);
+        }, CURRENT_SOURCE_LOCATION);
     }
     if (has_player()) {
         player_->set_vehicle_spawner(*this, role_);

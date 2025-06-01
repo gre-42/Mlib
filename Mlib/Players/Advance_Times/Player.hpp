@@ -6,7 +6,6 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Physics/Ai/Skill_Map.hpp>
@@ -93,9 +92,6 @@ struct PlayerControlled {
 
 class Player final:
     public IPlayer,
-    public DestructionObserver<SceneNode&>,
-    public DestructionObserver<const SceneVehicle&>,
-    public DestructionObserver<const RigidBodyVehicle&>,
     public IAdvanceTime,
     public IExternalForceProvider,
     public virtual DanglingBaseClass
@@ -240,10 +236,6 @@ public:
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
     virtual DestructionFunctions& on_destroy_player() override;
     virtual DestructionFunctions& on_clear_vehicle() override;
-    // DestructionObserver
-    virtual void notify_destroyed(SceneNode& destroyed_object) override;
-    virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
-    virtual void notify_destroyed(const RigidBodyVehicle& destroyed_object) override;
     // IAdvanceTime
     virtual void advance_time(float dt, const StaticWorld& world) override;
     // IExternalForceProvider
@@ -266,6 +258,11 @@ private:
     const Gun& gun() const;
     Gun& gun();
     DestructionFunctions on_clear_vehicle_;
+    DestructionFunctionsRemovalTokens on_vehicle_destroyed_;
+    DestructionFunctionsRemovalTokens on_next_vehicle_destroyed_;
+    DestructionFunctionsRemovalTokens on_target_scene_node_cleared_;
+    DestructionFunctionsRemovalTokens on_target_rigid_body_destroyed_;
+    DestructionFunctionsRemovalTokens on_gun_node_destroyed_;
     Scene& scene_;
     CollisionQuery& collision_query_;
     VehicleSpawners& vehicle_spawners_;
@@ -297,7 +294,9 @@ private:
     VehicleSpawner* next_scene_vehicle_;
     bool reset_vehicle_to_last_checkpoint_requested_;
     std::string next_role_;
-    std::map<DanglingPtr<const SceneNode>, VariableAndHash<std::string>> dependent_nodes_;
+    std::map<
+        VariableAndHash<std::string>,
+        DestructionFunctionsRemovalTokens> dependent_nodes_;
     ExternalsMode externals_mode_;
     InternalsMode internals_mode_;
     SingleWaypoint single_waypoint_;

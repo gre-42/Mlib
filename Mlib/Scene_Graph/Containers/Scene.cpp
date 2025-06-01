@@ -273,16 +273,20 @@ void Scene::try_delete_node(const VariableAndHash<std::string>& name) {
 
 void Scene::delete_node(const VariableAndHash<std::string>& name) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    DanglingPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
-    if (!node->shutting_down()) {
-        if (node->has_parent()) {
-            DanglingRef<SceneNode> parent = node->parent();
-            node = nullptr;
-            parent->remove_child(name);
-        } else {
-            node = nullptr;
-            delete_root_node(name);
+    try {
+        DanglingPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
+        if (!node->shutting_down()) {
+            if (node->has_parent()) {
+                DanglingRef<SceneNode> parent = node->parent();
+                node = nullptr;
+                parent->remove_child(name);
+            } else {
+                node = nullptr;
+                delete_root_node(name);
+            }
         }
+    } catch (const std::exception& e) {
+        verbose_abort("Could not delete node with name \"" + *name + "\": " + e.what());
     }
 }
 

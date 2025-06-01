@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <chrono>
@@ -28,7 +27,7 @@ enum class SpawnVehicleAlreadySetBehavior {
 
 SpawnVehicleAlreadySetBehavior spawn_vehicle_already_set_behavior_from_string(const std::string& s);
 
-class VehicleSpawner final : public ISpawner, public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
+class VehicleSpawner final : public ISpawner, public virtual DanglingBaseClass {
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:
@@ -42,9 +41,6 @@ public:
         std::string suffix,
         std::string team_name);
     ~VehicleSpawner();
-
-    // DestructionObserver
-    virtual void notify_destroyed(const RigidBodyVehicle& rigid_body_vehicle) override;
 
     // ISpawner
     virtual DanglingBaseClassPtr<IPlayer> player() override;
@@ -87,6 +83,7 @@ private:
     Scene& scene_;
     TrySpawnVehicle try_spawn_vehicle_;
     std::list<std::unique_ptr<SceneVehicle>> scene_vehicles_;
+    std::list<DestructionFunctionsRemovalTokens> on_rigid_body_vehicle_destroyed_;
     DanglingBaseClassPtr<Player> player_;
     std::string role_;
     DestructionFunctionsRemovalTokens on_player_destroy_;
