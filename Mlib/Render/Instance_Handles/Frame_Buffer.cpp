@@ -70,7 +70,8 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         config_.color_format,
         config_.with_mipmaps,
         config_.wrap_s,
-        config_.wrap_t);
+        config_.wrap_t,
+        1);     // layers
     if (config.nsamples_msaa == 1) {
         CHK(glBindTexture(GL_TEXTURE_2D, texture_color_->handle<GLuint>()));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
@@ -104,7 +105,8 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
             MipmapMode::NO_MIPMAPS,
             FixedArray<WrapMode, 2>{
                 wrap_mode_from_native(config_.wrap_s),
-                wrap_mode_from_native(config_.wrap_t)});
+                wrap_mode_from_native(config_.wrap_t)},
+            1);     // layers
         if (config.nsamples_msaa == 1) {
             CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_->handle<GLuint>()));
             CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));

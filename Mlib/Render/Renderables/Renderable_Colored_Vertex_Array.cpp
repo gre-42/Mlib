@@ -314,6 +314,11 @@ UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calcul
     }
 }
 
+struct IdAndTexture {
+    size_t id;
+    const ITextureHandle& texture;
+};
+
 void RenderableColoredVertexArray::render_cva(
     const std::shared_ptr<ColoredVertexArray<float>>& cva,
     const UUVector<OffsetAndQuaternion<float, float>>& absolute_bone_transformations,
@@ -480,42 +485,59 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     std::vector<BlendMapTextureAndId> blended_textures_color(cva->material.textures_color.size());
-    std::unordered_map<ColormapPtr, size_t> texture_ids_color;
-    std::unordered_map<ColormapPtr, size_t> texture_ids_specular;
-    std::unordered_map<ColormapPtr, size_t> texture_ids_normal;
+    std::unordered_map<ColormapPtr, IdAndTexture> texture_ids_color;
+    std::unordered_map<ColormapPtr, IdAndTexture> texture_ids_specular;
+    std::unordered_map<ColormapPtr, IdAndTexture> texture_ids_normal;
     for (size_t i = 0; i < blended_textures_color.size(); ++i) {
         const auto& c = cva->material.textures_color[i];
         auto& b = blended_textures_color[i];
         if (!c.texture_descriptor.color.filename->empty()) {
-            auto it = texture_ids_color.try_emplace(c.texture_descriptor.color, texture_ids_color.size());
-            b.id_color = it.first->second;
+            const auto& texture = secondary_rendering_resources_.contains_texture(c.texture_descriptor.color)
+                ? *secondary_rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
+                : *rcva_->rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
+            auto it = texture_ids_color.try_emplace(c.texture_descriptor.color, texture_ids_color.size(), texture);
+            b.id_color = it.first->second.id;
+            b.tex_color = &texture;
         } else {
             b.id_color = SIZE_MAX;
+            b.tex_color = nullptr;
         }
         if (!c.texture_descriptor.specular.filename->empty()) {
-            auto it = texture_ids_specular.try_emplace(c.texture_descriptor.specular, texture_ids_specular.size());
-            b.id_specular = it.first->second;
+            const auto& texture = *rcva_->rendering_resources_.get_texture(c.texture_descriptor.specular);
+            auto it = texture_ids_specular.try_emplace(c.texture_descriptor.specular, texture_ids_specular.size(), texture);
+            b.id_specular = it.first->second.id;
+            b.tex_specular = &texture;
         } else {
             b.id_specular = SIZE_MAX;
+            b.tex_specular = nullptr;
         }
         if (!c.texture_descriptor.normal.filename->empty()) {
-            auto it = texture_ids_normal.try_emplace(c.texture_descriptor.normal, texture_ids_normal.size());
-            b.id_normal = it.first->second;
+            const auto& texture = *rcva_->rendering_resources_.get_texture(c.texture_descriptor.normal);
+            auto it = texture_ids_normal.try_emplace(c.texture_descriptor.normal, texture_ids_normal.size(), texture);
+            b.id_normal = it.first->second.id;
+            b.tex_normal = &texture;
         } else {
             b.id_normal = SIZE_MAX;
+            b.tex_normal = nullptr;
         }
         b.ops = &c;
     }
     std::vector<BlendMapTextureAndId> blended_textures_alpha(cva->material.textures_alpha.size());
-    std::unordered_map<ColormapPtr, size_t> texture_ids_alpha;
+    std::unordered_map<ColormapPtr, IdAndTexture> texture_ids_alpha;
     for (size_t i = 0; i < blended_textures_alpha.size(); ++i) {
         const auto& c = cva->material.textures_alpha[i];
         auto& b = blended_textures_alpha[i];
         assert_true(!c.texture_descriptor.color.filename->empty());
-        auto it = texture_ids_alpha.try_emplace(c.texture_descriptor.color, texture_ids_alpha.size());
-        b.id_color = it.first->second;
+        const auto& texture = secondary_rendering_resources_.contains_texture(c.texture_descriptor.color)
+            ? *secondary_rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
+            : *rcva_->rendering_resources_.get_texture(c.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
+        auto it = texture_ids_alpha.try_emplace(c.texture_descriptor.color, texture_ids_alpha.size(), texture);
+        b.id_color = it.first->second.id;
         b.id_specular = SIZE_MAX;
         b.id_normal = SIZE_MAX;
+        b.tex_color = &texture;
+        b.tex_specular = nullptr;
+        b.tex_normal = nullptr;
         b.ops = &c;
     }
     auto check_sanity_common = [&cva](const std::vector<BlendMapTexture>& textures){
@@ -606,10 +628,11 @@ void RenderableColoredVertexArray::render_cva(
                 assert_true(!blended_textures_color.empty());
                 auto& b = blended_textures_color[0];
                 assert_true(b.id_color == 0);
+                assert_true(b.tex_color != nullptr);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
                 blended_textures_color = { b };
-                texture_ids_color = {{ b.ops->texture_descriptor.color, 0 }};
+                texture_ids_color = {{ b.ops->texture_descriptor.color, {0, *b.tex_color} }};
 #pragma GCC diagnostic pop
             }
             texture_ids_specular.clear();
@@ -1121,26 +1144,18 @@ void RenderableColoredVertexArray::render_cva(
     };
     if (tic.ntextures_color != 0) {
         for (const auto& [c, i] : texture_ids_color) {
-            LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + c->filename + '"');
-            const auto& texture = secondary_rendering_resources_.contains_texture(*c)
-                ? *secondary_rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB)
-                : *rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c->filename + '"');
-            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
+            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i.id))));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
-            setup_texture(texture, texture_layer_properties);
+            setup_texture(i.texture, texture_layer_properties);
         }
     }
     if (tic.ntextures_alpha != 0) {
         for (const auto& [c, i] : texture_ids_alpha) {
-            LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + c->filename + '"');
-            const auto& texture = secondary_rendering_resources_.contains_texture(*c)
-                ? *secondary_rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB)
-                : *rcva_->rendering_resources_.get_texture(*c, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + c->filename + '"');
-            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_alpha(i))));
+            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_alpha(i.id))));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
-            setup_texture(texture, TextureLayerProperties::NONE);
+            setup_texture(i.texture, TextureLayerProperties::NONE);
         }
     }
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
@@ -1195,9 +1210,8 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_normal != 0) {
         for (const auto& [c, i] : texture_ids_normal) {
             assert_true(!c->filename->empty());
-            const auto& texture = *rcva_->rendering_resources_.get_texture(*c);
-            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
-            setup_texture(texture, texture_layer_properties);
+            CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i.id))));
+            setup_texture(i.texture, texture_layer_properties);
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind skidmark texture");

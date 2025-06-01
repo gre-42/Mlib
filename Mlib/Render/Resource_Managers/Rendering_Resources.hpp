@@ -140,6 +140,12 @@ struct FlippedTextureData {
     FlipMode flip_mode;
 };
 
+struct InitializedTexture {
+    GLuint handle;
+    TextureType type;
+    uint32_t layers;
+};
+
 class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
     RenderingResources& operator = (const RenderingResources&) = delete;
@@ -248,7 +254,7 @@ private:
     void preload(const ColormapWithModifiers& color, TextureRole role) const;
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
-    std::pair<GLuint, TextureType> initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role, float aniso) const;
+    InitializedTexture initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role, float aniso) const;
     std::shared_ptr<ITextureHandle> initialize_dds_texture(const ColormapWithModifiers& name, float aniso) const;
     void add_auto_texture_atlas(
         const ColormapWithModifiers& name,

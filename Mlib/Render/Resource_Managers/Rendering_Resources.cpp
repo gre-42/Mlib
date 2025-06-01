@@ -997,7 +997,8 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
         nchannels2format(integral_cast<size_t>(nchannels)),
         mip_level_count != 0,
         wrap_s,
-        wrap_t);
+        wrap_t,
+        1);     // layers
 }
 
 std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
@@ -1044,8 +1045,8 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     WARN(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
     aniso = std::min({ aniso, (float)color.anisotropic_filtering_level, (float)max_anisotropic_filtering_level_ });
 
-    auto make_shared_texture = [&](GLuint handle) {
-        return std::make_shared<Texture>(handle, color.color_mode, color.mipmap_mode, color.wrap_modes);
+    auto make_shared_texture = [&](GLuint handle, uint32_t layers) {
+        return std::make_shared<Texture>(handle, color.color_mode, color.mipmap_mode, color.wrap_modes, layers);
         };
     std::shared_ptr<ITextureHandle> texture;
 
@@ -1067,16 +1068,17 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
                     aptr->tiles.at(integral_cast<size_t>(layer)),
                     integral_to_float<float>(width) / integral_to_float<float>(aptr->width),
                     integral_to_float<float>(height) / integral_to_float<float>(aptr->height));
-            }));
+            }),
+            integral_cast<uint32_t>(aptr->tiles.size()));
     } else {
         if (preloaded_texture_dds_data_.contains(color)) {
             texture = initialize_dds_texture(color, aniso);
         } else if (cubemap_descriptors_.contains(color.filename)) {
-            texture = make_shared_texture(get_cubemap_unsafe(color.filename));
+            texture = make_shared_texture(get_cubemap_unsafe(color.filename), 1);
         } else {
             auto t = initialize_non_dds_texture(color, role, aniso);
-            texture = make_shared_texture(t.first);
-            add(texture_types_, color, t.second);
+            texture = make_shared_texture(t.handle, t.layers);
+            add(texture_types_, color, t.type);
         }
     }
 
@@ -1780,7 +1782,10 @@ void RenderingResources::add_texture(
     }
 }
 
-std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(const ColormapWithModifiers& color, TextureRole role, float aniso) const
+InitializedTexture RenderingResources::initialize_non_dds_texture(
+    const ColormapWithModifiers& color,
+    TextureRole role,
+    float aniso) const
 {
     if (role == TextureRole::COLOR_FROM_DB) {
         return initialize_non_dds_texture(colormap(color), TextureRole::COLOR, aniso);
@@ -1837,7 +1842,7 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
         return texture;
     };
-    auto generate_texture_array = [&color, &aniso, &chk_type](const std::vector<std::shared_ptr<StbInfo<uint8_t>>>& data) -> std::pair<GLuint, TextureType>
+    auto generate_texture_array = [&color, &aniso, &chk_type](const std::vector<std::shared_ptr<StbInfo<uint8_t>>>& data) -> InitializedTexture
     {
         if (data.empty()) {
             THROW_OR_ABORT("Texture array is empty");
@@ -1888,7 +1893,10 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
             CHK(glGenerateMipmap(target));
         }
         CHK(glBindTexture(target, 0));
-        return { texture, chk_type(target == GL_TEXTURE_2D_ARRAY ? TextureType::TEXTURE_2D_ARRAY : TextureType::TEXTURE_3D) };
+        return {
+            texture,
+            chk_type(target == GL_TEXTURE_2D_ARRAY ? TextureType::TEXTURE_2D_ARRAY : TextureType::TEXTURE_3D),
+            integral_cast<uint32_t>(data.size()) };
     };
 
     if (auto it = get_or_extract<EXTRACT_PROCESSED>(preloaded_processed_texture_data_, color); it != nullptr) {
@@ -1951,7 +1959,8 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
         generate_texture,
         color_mode_from_channels(image.get_components()),
         MipmapMode::WITH_MIPMAPS,
-        color.wrap_modes);
+        color.wrap_modes,
+        1);     // layers
 
     BindTextureGuard btg{ GL_TEXTURE_2D, handle->handle<GLuint>() };
 

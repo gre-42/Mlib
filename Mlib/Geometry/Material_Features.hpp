@@ -6,6 +6,7 @@
 
 namespace Mlib {
 
+class ITextureHandle;
 struct BlendMapTexture;
 struct ColormapWithModifiers;
 struct Material;
@@ -14,6 +15,9 @@ class FixedArray;
 
 struct BlendMapTextureAndId {
     const BlendMapTexture* ops;
+    const ITextureHandle* tex_color;
+    const ITextureHandle* tex_specular;
+    const ITextureHandle* tex_normal;
     size_t id_color;
     size_t id_specular;
     size_t id_normal;

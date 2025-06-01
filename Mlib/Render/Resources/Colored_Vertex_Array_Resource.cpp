@@ -774,7 +774,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 return
                     "array_texture_blend(textures_color[" + std::to_string(t.id_color) +
                     "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed), " +
-                    std::to_string(t->texture_descriptor.color.layers - 1) + ")";
+                    std::to_string(t.tex_color->layers() - 1) + ")";
             } else {
                 return
                     "texture(textures_color[" + std::to_string(t.id_color) +
@@ -803,7 +803,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 return
                     "array_texture_blend(texture_normalmap[" + std::to_string(t.id_normal) +
                     "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed), " +
-                    std::to_string(t->texture_descriptor.normal.layers - 1) + ")";
+                    std::to_string(t.tex_normal->layers() - 1) + ")";
             } else {
                 return
                     "texture(texture_normalmap[" + std::to_string(t.id_normal) +

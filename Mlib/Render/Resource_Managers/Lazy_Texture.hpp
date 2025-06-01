@@ -23,6 +23,7 @@ public:
     virtual ColorMode color_mode() const override;
     virtual MipmapMode mipmap_mode() const override;
     virtual WrapMode wrap_modes(size_t i) const override;
+    virtual uint32_t layers() const override;
 private:
     void deallocate();
     ITextureHandle& texture();

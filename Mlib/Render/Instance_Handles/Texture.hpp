@@ -16,24 +16,28 @@ public:
 		GenerateTexture,
 		ColorMode color_mode,
 		MipmapMode mipmap_mode,
-		FixedArray<WrapMode, 2> wrap_modes);
+		FixedArray<WrapMode, 2> wrap_modes,
+		uint32_t layers);
 	Texture(
 		GLuint handle,
 		ColorMode color_mode,
 		MipmapMode mipmap_mode,
-		FixedArray<WrapMode, 2> wrap_modes);
+		FixedArray<WrapMode, 2> wrap_modes,
+		uint32_t layers);
 	Texture(
 		GenerateTexture,
 		GLenum format,
 		bool with_mipmaps,
 		GLint wrap_s,
-		GLint wrap_t);
+		GLint wrap_t,
+		uint32_t layers);
 	Texture(
 		GLuint handle,
 		GLenum format,
 		bool with_mipmaps,
 		GLint wrap_s,
-		GLint wrap_t);
+		GLint wrap_t,
+		uint32_t layers);
 	Texture(Texture&& other) noexcept;
 	~Texture();
 	virtual uint32_t handle32() const override;
@@ -44,12 +48,14 @@ public:
 	virtual ColorMode color_mode() const override;
 	virtual MipmapMode mipmap_mode() const override;
 	virtual WrapMode wrap_modes(size_t i) const override;
+	virtual uint32_t layers() const override;
 private:
 	void deallocate();
 	GLuint handle_;
 	ColorMode color_mode_;
 	MipmapMode mipmap_mode_;
 	FixedArray<WrapMode, 2> wrap_modes_;
+	uint32_t layers_;
 	DeallocationToken deallocation_token_;
 };
 

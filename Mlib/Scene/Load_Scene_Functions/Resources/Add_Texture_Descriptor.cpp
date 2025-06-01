@@ -45,7 +45,6 @@ DECLARE_ARGUMENT(saturate);
 DECLARE_ARGUMENT(multiply_with_alpha);
 DECLARE_ARGUMENT(mipmap_mode);
 DECLARE_ARGUMENT(depth_interpolation);
-DECLARE_ARGUMENT(layers);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(wrap_mode_s);
 DECLARE_ARGUMENT(wrap_mode_t);
@@ -70,14 +69,12 @@ struct RegisterJsonUserFunction {
     auto rotate = args.arguments.at<int>(KnownArgs::rotate, 0);
     auto depth_interpolation = interpolation_mode_from_string(
         args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest"));
-    auto layers = args.arguments.at<uint32_t>(KnownArgs::layers, 1);
     auto normal = ColormapWithModifiers{
         .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::normal).path},
         .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
         .color_mode = ColorMode::RGB,
         .mipmap_mode = mipmap_mode,
         .depth_interpolation = depth_interpolation,
-        .layers = layers,
         .anisotropic_filtering_level = anisotropic_filtering_level,
         .wrap_modes = wrap_modes,
         .rotate = rotate}.compute_hash();
@@ -135,7 +132,6 @@ struct RegisterJsonUserFunction {
                 .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
                 .mipmap_mode = mipmap_mode,
                 .depth_interpolation = depth_interpolation,
-                .layers = layers,
                 .anisotropic_filtering_level = anisotropic_filtering_level,
                 .wrap_modes = wrap_modes,
                 .rotate = rotate}.compute_hash(),

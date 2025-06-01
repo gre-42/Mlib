@@ -59,6 +59,10 @@ WrapMode LazyTexture::wrap_modes(size_t i) const {
 	return colormap_.wrap_modes(i);
 }
 
+uint32_t LazyTexture::layers() const {
+	return texture().layers();
+}
+
 ITextureHandle& LazyTexture::texture() {
 	if (texture_ == nullptr) {
 		texture_ = rendering_resources_.get_texture(colormap_, role_, CallerType::RENDER);
