@@ -629,11 +629,9 @@ void RenderableColoredVertexArray::render_cva(
                 auto& b = blended_textures_color[0];
                 assert_true(b.id_color == 0);
                 assert_true(b.tex_color != nullptr);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-                blended_textures_color = { b };
-                texture_ids_color = {{ b.ops->texture_descriptor.color, {0, *b.tex_color} }};
-#pragma GCC diagnostic pop
+                blended_textures_color.resize(1);
+                texture_ids_color.clear();
+                texture_ids_color.try_emplace(b.ops->texture_descriptor.color, 0, *b.tex_color);
             }
             texture_ids_specular.clear();
             texture_ids_normal.clear();

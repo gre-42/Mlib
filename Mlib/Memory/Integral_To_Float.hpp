@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <concepts>
 #include <string>
