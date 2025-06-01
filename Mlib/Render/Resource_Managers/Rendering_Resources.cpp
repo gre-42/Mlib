@@ -974,13 +974,16 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
         CullFaceMode::CULL,
         ContinuousBlendMode::NONE,
         vertically_flipped_quad_vertices };
+    auto mlc = (mipmap_mode == MipmapMode::NO_MIPMAPS)
+        ? 0
+        : (mip_level_count == 0)
+            ? integral_cast<GLsizei>(log2(std::max(width, height)))
+            : mip_level_count;
     GLuint texture = render_to_texture_2d(
         width,
         height,
         // https://stackoverflow.com/questions/9572414/how-many-mipmaps-does-a-texture-have-in-opengl
-        (mip_level_count == 0)
-        ? integral_cast<GLsizei>(log2(std::max(width, height)))
-        : mip_level_count,
+        mlc,
         aniso,
         nchannels2sized_internal_format(integral_cast<size_t>(nchannels)),
         [&logic](GLsizei width, GLsizei height)
@@ -995,7 +998,7 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
     return std::make_shared<Texture>(
         texture,
         nchannels2format(integral_cast<size_t>(nchannels)),
-        mip_level_count != 0,
+        mlc,
         wrap_s,
         wrap_t,
         1);     // layers
@@ -1958,13 +1961,15 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
     auto handle = std::make_shared<Texture>(
         generate_texture,
         color_mode_from_channels(image.get_components()),
-        MipmapMode::WITH_MIPMAPS,
+        color.mipmap_mode,
         color.wrap_modes,
         1);     // layers
 
     BindTextureGuard btg{ GL_TEXTURE_2D, handle->handle<GLuint>() };
 
-    if (image.get_num_mipmaps() == 0) {
+    if ((image.get_num_mipmaps() == 0) ||
+        (color.mipmap_mode == MipmapMode::NO_MIPMAPS))
+    {
         // if (descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
         //     CHK(glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE));
         // }
@@ -2047,17 +2052,18 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
             }
         }
     }
-    TextureSizeAndMipmaps original_texture{
-        .handle = handle,
-        .width = integral_cast<GLsizei>(image.get_width()),
-        .height = integral_cast<GLsizei>(image.get_height()),
-        .nchannels = integral_cast<GLsizei>(image.get_components()),
-        .mip_level_count = integral_cast<GLsizei>(image.get_num_mipmaps()),
-        .wrap_s = wrap_mode_to_native(color.wrap_modes(0)),
-        .wrap_t = wrap_mode_to_native(color.wrap_modes(1))};
     if (data->flip_mode == FlipMode::NONE) {
-        return original_texture.handle;
+        return handle;
     } else if (data->flip_mode == FlipMode::VERTICAL) {
+        TextureSizeAndMipmaps original_texture{
+            .handle = handle,
+            .width = integral_cast<GLsizei>(image.get_width()),
+            .height = integral_cast<GLsizei>(image.get_height()),
+            .nchannels = integral_cast<GLsizei>(image.get_components()),
+            .mipmap_mode = color.mipmap_mode,
+            .mip_level_count = integral_cast<GLsizei>(image.get_num_mipmaps()),
+            .wrap_s = wrap_mode_to_native(color.wrap_modes(0)),
+            .wrap_t = wrap_mode_to_native(color.wrap_modes(1))};
         return original_texture.flipped_vertically(aniso);
     } else {
         THROW_OR_ABORT("Unsupported flip mode");

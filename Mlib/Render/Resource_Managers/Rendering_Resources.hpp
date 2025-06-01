@@ -48,6 +48,7 @@ struct TextureSizeAndMipmaps {
     GLsizei width;
     GLsizei height;
     GLsizei nchannels;
+    MipmapMode mipmap_mode;
     GLsizei mip_level_count;
     GLint wrap_s;
     GLint wrap_t;
