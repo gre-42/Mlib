@@ -1396,14 +1396,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 }
             }
             if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
-                char c;
-                switch (t->role) {
-                    case BlendMapRole::DETAIL_MASK_R: c = 'r'; break;
-                    case BlendMapRole::DETAIL_MASK_G: c = 'g'; break;
-                    case BlendMapRole::DETAIL_MASK_B: c = 'b'; break;
-                    case BlendMapRole::DETAIL_MASK_A: c = 'a'; break;
-                    default: THROW_OR_ABORT("Unknown detail mask");
-                }
+                char c = [&t](){
+                    switch (t->role) {
+                        case BlendMapRole::DETAIL_MASK_R: return 'r';
+                        case BlendMapRole::DETAIL_MASK_G: return 'g';
+                        case BlendMapRole::DETAIL_MASK_B: return 'b';
+                        case BlendMapRole::DETAIL_MASK_A: return 'a';
+                    }
+                    THROW_OR_ABORT("Unknown detail mask");
+                }();
                 sstr << "            float w = " << sample_color(i) << '.' << c << ';' << std::endl;
                 if (t->reduction == BlendMapReductionOperation::TIMES) {
                     sstr << "            weight *= w;" << std::endl;
