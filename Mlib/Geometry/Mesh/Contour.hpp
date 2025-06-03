@@ -34,6 +34,36 @@ std::list<std::list<FixedArray<TPos, 3>>> find_contours(
     const std::list<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     ContourDetectionStrategy strategy);
 
+template <class TPoint, class TNeighborsMap>
+std::list<std::list<TPoint>> find_neighbor_contours(TNeighborsMap& neighbors)
+{
+    std::list<std::list<TPoint>> result;
+    while(!neighbors.empty()) {
+        std::list<TPoint> contour;
+        auto v0 = neighbors.begin()->first;
+        auto v = v0;
+        while(neighbors.find(v) != neighbors.end()) {
+            contour.push_back(v);
+            // assert(asdf.find(v) == asdf.end());
+            // asdf.insert(v);
+            auto old_v = v;
+            v = neighbors.at(v);
+            neighbors.erase(old_v);
+        }
+        // Get around comparison-operator ambiguity.
+        const TPoint& vv = v;
+        const TPoint& vv0 = v0;
+        if (any(vv != vv0)) {
+            // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
+            // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, contour, {});
+            THROW_OR_ABORT("Contour is not closed");
+        }
+        neighbors.erase(v);
+        result.push_back(contour);
+    }
+    return result;
+}
+
 static const auto make_orderable_default = []<class T>(const T& v) {
     return v;
 };

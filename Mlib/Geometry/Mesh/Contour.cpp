@@ -91,31 +91,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
             safe_insert_neighbor(2, 0);
         }
         // std::unordered_set<O> asdf;
-        std::list<std::list<FixedArray<TPos, 3>>> result;
-        while(!neighbors.empty()) {
-            std::list<FixedArray<TPos, 3>> contour;
-            auto v0 = neighbors.begin()->first;
-            auto v = v0;
-            while(neighbors.find(v) != neighbors.end()) {
-                contour.push_back(v);
-                // assert(asdf.find(v) == asdf.end());
-                // asdf.insert(v);
-                auto old_v = v;
-                v = neighbors.at(v);
-                neighbors.erase(old_v);
-            }
-            // Get around comparison-operator ambiguity.
-            const FixedArray<TPos, 3>& vv = v;
-            const FixedArray<TPos, 3>& vv0 = v0;
-            if (any(vv != vv0)) {
-                // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
-                // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, contour, {});
-                THROW_OR_ABORT("Contour is not closed");
-            }
-            neighbors.erase(v);
-            result.push_back(contour);
-        }
-        return result;
+        return find_neighbor_contours<FixedArray<TPos, 3>>(neighbors);
     } else if (strategy == ContourDetectionStrategy::EDGE_NEIGHBOR) {
         std::unordered_map<std::pair<O, O>, O> edge_neighbors;
         std::unordered_map<std::pair<O, O>, std::pair<O, O>> parent_edges;

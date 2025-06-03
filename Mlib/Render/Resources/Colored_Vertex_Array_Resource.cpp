@@ -1402,8 +1402,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                         case BlendMapRole::DETAIL_MASK_G: return 'g';
                         case BlendMapRole::DETAIL_MASK_B: return 'b';
                         case BlendMapRole::DETAIL_MASK_A: return 'a';
+                        default: THROW_OR_ABORT("Unknown detail mask");
                     }
-                    THROW_OR_ABORT("Unknown detail mask");
                 }();
                 sstr << "            float w = " << sample_color(i) << '.' << c << ';' << std::endl;
                 if (t->reduction == BlendMapReductionOperation::TIMES) {

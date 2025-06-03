@@ -21,6 +21,9 @@
 #include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Height_Contours.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
@@ -809,6 +812,27 @@ void test_touching_holes() {
     // plot_tris("/tmp/tris_test.obj", result);
 }
 
+void test_height_contours() {
+    auto triangles = load_obj<CompressedScenePos>(
+        "Data/box.obj",
+        LoadMeshConfig<CompressedScenePos>{
+            .blend_mode = BlendMode::OFF,
+            .cull_faces_default = true,
+            .cull_faces_alpha = true,
+            .occluded_pass = ExternalRenderPassType::NONE,
+            .occluder_pass = ExternalRenderPassType::NONE,
+            .magnifying_interpolation_mode = InterpolationMode::NEAREST,
+            .aggregate_mode = AggregateMode::NONE,
+            .transformation_mode = TransformationMode::ALL,
+            .period_world = INFINITY,
+            .apply_static_lighting = false,
+            .laplace_ao_strength = 0.f,
+            .dynamically_lighted = false,
+            .physics_material = PhysicsMaterial::ATTR_VISIBLE,
+            .werror = true});
+    height_contours(triangles, (CompressedScenePos)0.1f);
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -853,6 +877,7 @@ int main(int argc, const char** argv) {
         test_ray_sphere_intersection();
         test_distance_polygon_aabb();
         test_plane_shift();
+        test_height_contours();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;
