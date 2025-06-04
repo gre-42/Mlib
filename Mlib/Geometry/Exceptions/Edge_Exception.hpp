@@ -3,6 +3,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 namespace p2t {
 

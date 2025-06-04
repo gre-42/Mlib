@@ -1,16 +1,16 @@
-#include "Triangulate_Terrain_Or_Ceilings.hpp"
+#include "Triangulate_Water.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Entity_List.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 
 using namespace Mlib;
 
-void Mlib::triangulate_terrain_or_ceilings(
-    TerrainTypeTriangleList& tl_terrain,
+void Mlib::triangulate_water(
+    WaterTypeTriangleList& tl_water,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<CompressedScenePos, 2>>& bounding_contour,
-    const std::list<RegionWithMargin<TerrainType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
-    const std::list<RegionWithMargin<TerrainType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<ColoredVertex<CompressedScenePos>, 3>>>>& hole_triangles,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
     float scale,
     float triangulation_scale,
     float uv_scale,
@@ -20,14 +20,12 @@ void Mlib::triangulate_terrain_or_ceilings(
     const std::string& contour_triangles_filename,
     const std::string& contour_filename,
     const std::string& triangle_filename,
-    TerrainType bounding_terrain_type,
-    TerrainType default_terrain_type,
-    const std::set<TerrainType>& excluded_terrain_types,
-    ContourDetectionStrategy contour_detection_strategy,
-    const std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos>& garden_margin)
+    WaterType bounding_water_type,
+    WaterType default_water_type,
+    ContourDetectionStrategy contour_detection_strategy)
 {
     triangulate_entity_list(
-        tl_terrain,
+        tl_water,
         bounding_info,
         steiner_points,
         bounding_contour,
@@ -42,9 +40,9 @@ void Mlib::triangulate_terrain_or_ceilings(
         contour_triangles_filename,
         contour_filename,
         triangle_filename,
-        bounding_terrain_type,
-        default_terrain_type,
-        excluded_terrain_types,
+        bounding_water_type,
+        default_water_type,
+        { WaterType::HOLE },            // excluded_entitities
         contour_detection_strategy,
-        garden_margin);
+        {});                            // garden_margin
 }

@@ -89,6 +89,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Way_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Water.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
