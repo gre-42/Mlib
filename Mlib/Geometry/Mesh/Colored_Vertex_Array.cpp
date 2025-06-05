@@ -202,7 +202,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector(uv1),
         std::vector(cweight),
-        UUVector<FixedArray<float, 3>>(alpha),
+        std::vector(alpha),
         std::vector(interiormap_uvmaps));
 }
 
@@ -250,7 +250,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector(uv1),
         std::vector(cweight),
-        UUVector<FixedArray<float, 3>>(alpha),
+        std::vector(alpha),
         std::vector(interiormap_uvmaps));
 }
 
@@ -297,7 +297,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transl
         UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector(uv1),
         std::vector(cweight),
-        UUVector<FixedArray<float, 3>>(alpha),
+        std::vector(alpha),
         std::vector(interiormap_uvmaps));
 }
 
@@ -675,6 +675,7 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
     ostr << "  #lines = " << lines.size() << ' ';
     ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << ' ';
     ostr << "  #continuous_triangle_texture_layers = " << continuous_triangle_texture_layers.size() << ' ';
+    ostr << "  #alpha = " << alpha.size() << ' ';
     ostr << "  #interiormap_uvmaps = " << interiormap_uvmaps.size() << ' ';
     ostr << "  #discrete_triangle_texture_layers = " << discrete_triangle_texture_layers.size() << '\n';
 }

@@ -5,7 +5,8 @@ namespace Mlib {
 
 enum class WaterType {
     UNDEFINED,
-    HOLE
+    STEEP_HOLE,
+    SHALLOW_HOLE
 };
 
 WaterType water_type_from_string(const std::string& wt);

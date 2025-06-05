@@ -59,7 +59,7 @@ struct WaterConfiguration {
     AxisAlignedBoundingBox<CompressedScenePos, 2> aabb = uninitialized;
     FixedArray<CompressedScenePos, 2> cell_size = uninitialized;
     CompressedScenePos duplicate_distance;
-    CompressedScenePos height;
+    UFixedArray<CompressedScenePos, 2> heights;
     CoastConfiguration coast;
     bool holes_from_terrain;
 };

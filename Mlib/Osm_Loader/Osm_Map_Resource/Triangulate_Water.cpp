@@ -12,14 +12,17 @@ using namespace Mlib;
 void Mlib::find_coast_contours(
     std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& contours,
     const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& terrain_lists,
-    CompressedScenePos water_height)
+    const FixedArray<CompressedScenePos, 2>& water_heights)
 {
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> terrain;
     for (const auto& triangles : terrain_lists) {
         terrain.emplace_back(triangles->triangle_array());
     }
-    for (const auto& c : height_contours(terrain, water_height)) {
-        contours.emplace_back(WaterType::HOLE, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+    for (const auto& c : height_contours(terrain, water_heights(0))) {
+        contours.emplace_back(WaterType::UNDEFINED, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+    }
+    for (const auto& c : height_contours(terrain, water_heights(1))) {
+        contours.emplace_back(WaterType::SHALLOW_HOLE, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
     }
 }
 
@@ -102,9 +105,9 @@ void Mlib::triangulate_water(
         triangle_filename,
         bounding_water_type,
         default_water_type,
-        { WaterType::HOLE },            // excluded_entitities
+        { WaterType::SHALLOW_HOLE, WaterType::STEEP_HOLE }, // excluded_entitities
         contour_detection_strategy,
-        {});                            // garden_margin
+        {});                                                // garden_margin
 }
 
 void Mlib::set_water_alpha(
@@ -116,7 +119,9 @@ void Mlib::set_water_alpha(
     ScenePos steepness = 1. / (ScenePos)coast_width;
     WayBvh way_bvh;
     for (const auto& c : region_contours) {
-        way_bvh.add_path(c.geometry);
+        if (c.hole_type == WaterType::SHALLOW_HOLE) {
+            way_bvh.add_path(c.geometry);
+        }
     }
     for (auto& [_, x] : tl_water.map()) {
         if (!x->alpha.empty()) {

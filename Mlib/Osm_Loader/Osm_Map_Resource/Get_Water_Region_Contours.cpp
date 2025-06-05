@@ -16,7 +16,7 @@ std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2
         const auto& tags = w.second.tags;
         WaterType terrain_type;
         if (auto it = tags.find("water_region"); (it != tags.end()) && (it->second == "hole")) {
-            terrain_type = WaterType::HOLE;
+            terrain_type = WaterType::STEEP_HOLE;
         } else {
             continue;
         }

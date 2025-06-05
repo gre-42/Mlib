@@ -28,7 +28,7 @@ DECLARE_ARGUMENT(animation_duration);
 DECLARE_ARGUMENT(aabb);
 DECLARE_ARGUMENT(cell_size);
 DECLARE_ARGUMENT(duplicate_distance);
-DECLARE_ARGUMENT(height);
+DECLARE_ARGUMENT(heights);
 DECLARE_ARGUMENT(coast);
 DECLARE_ARGUMENT(holes_from_terrain);
 }
@@ -41,7 +41,7 @@ void Mlib::from_json(const nlohmann::json& j, WaterConfiguration& water) {
     water.aabb = jv.at<DefaultUnitialized<AxisAlignedBoundingBox<CompressedScenePos, 2>>>(WaterArgs::aabb);
     water.cell_size = jv.at<UFixedArray<CompressedScenePos, 2>>(WaterArgs::cell_size);
     water.duplicate_distance = jv.at<CompressedScenePos>(WaterArgs::duplicate_distance);
-    water.height = jv.at<CompressedScenePos>(WaterArgs::height);
+    water.heights = jv.at<UFixedArray<CompressedScenePos, 2>>(WaterArgs::heights);
     water.coast = jv.at<CoastConfiguration>(WaterArgs::coast);
     water.holes_from_terrain = jv.at<bool>(WaterArgs::holes_from_terrain);
 }

@@ -428,6 +428,9 @@ OsmTriangleLists::OsmTriangleLists(
         tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList<CompressedScenePos>>(
             "water" + name_suffix,
             Material{
+                .blend_mode = (config.water->coast.width == (CompressedScenePos)0.f)
+                    ? BlendMode::OFF
+                    : BlendMode::CONTINUOUS,
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(config.water->texture)},
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(RawShading::DEFAULT, config),

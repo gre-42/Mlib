@@ -1243,7 +1243,7 @@ OsmMapResource::OsmMapResource(
             config.zonemap_jitter,
             config.zonemap_step_size,
             config.scale,
-            config.water->height);
+            config.water->heights(1));
     }
 
     if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
@@ -1373,7 +1373,7 @@ OsmMapResource::OsmMapResource(
                 find_coast_contours(
                     water_contours,
                     osm_triangle_lists.tls_wo_subtraction_and_water(),
-                    config.water->height);
+                    config.water->heights);
             } catch (const EdgeException<CompressedScenePos>& e) {
                 if (auto fn = try_getenv("OSM_WATER_TERRAIN_FILENAME"); fn.has_value()) {
                     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> terrain;
@@ -1395,7 +1395,7 @@ OsmMapResource::OsmMapResource(
                 config.water->aabb,
                 config.water->cell_size,
                 config.water->duplicate_distance,
-                config.water->height);
+                config.water->heights(1));
         }
         fg.update("Triangulate water");
         try {
@@ -1414,7 +1414,7 @@ OsmMapResource::OsmMapResource(
                 config.triangulation_scale,
                 1 / 100.f,              // uv_scale
                 1.f,                    // uv_period
-                config.water->height,
+                config.water->heights(1),
                 terrain_color,
                 getenv_default("WATER_CONTOUR_TRIANGLES_FILENAME", ""),
                 getenv_default("WATER_CONTOUR_FILENAME", ""),
@@ -1437,7 +1437,7 @@ OsmMapResource::OsmMapResource(
             set_water_alpha(
                 osm_triangle_lists.tl_water,
                 water_contours,
-                (CompressedScenePos)std::sqrt(sum(squared(config.water->cell_size))),
+                (CompressedScenePos)(3. * std::sqrt(sum(squared(config.water->cell_size)))),
                 config.water->coast.width);
         }
         tls_all = osm_triangle_lists.tls_wo_subtraction_w_water();

@@ -33,7 +33,7 @@ class HeterogeneousResource;
 void find_coast_contours(
     std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& contours,
     const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& terrain_lists,
-    CompressedScenePos water_height);
+    const FixedArray<CompressedScenePos, 2>& water_heights);
 
 void add_water_steiner_points(
     std::list<SteinerPointInfo>& steiner_points,

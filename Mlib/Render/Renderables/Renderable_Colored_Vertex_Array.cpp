@@ -560,7 +560,8 @@ void RenderableColoredVertexArray::render_cva(
             if (i == 0) {
                 auto alpha_required =
                     (cva->material.blend_mode != BlendMode::OFF) &&
-                    !any(cva->material.blend_mode & BlendMode::ADD_MASK);
+                    !any(cva->material.blend_mode & BlendMode::ADD_MASK) &&
+                    cva->alpha.empty();
                 if (!alpha_required && !any(t.texture_descriptor.color.color_mode & ColorMode::RGB)) {
                     THROW_OR_ABORT("Opaque material's color texture \"" + *t.texture_descriptor.color.filename + "\" was not loaded as RGB");
                 }

@@ -15,6 +15,7 @@ template <class TPos>
 struct Clustered {
     std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     std::list<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
+    std::list<FixedArray<float, 3>> alpha;
     std::list<FixedArray<float, 4>> interiormap_uvmaps;
 };
 
@@ -31,6 +32,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::split_meshes(
         {
             THROW_OR_ABORT("split_meshes: discrete_triangle_texture_layers size mismatch");
         }
+        if (!cva->alpha.empty() &&
+            (cva->alpha.size() != cva->triangles.size()))
+        {
+            THROW_OR_ABORT("merge_meshes: alpha size mismatch");
+        }
         if (!cva->interiormap_uvmaps.empty() &&
             (cva->interiormap_uvmaps.size() != cva->triangles.size()))
         {
@@ -43,6 +49,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::split_meshes(
             cluster.triangles.push_back(tri);
             if (!cva->discrete_triangle_texture_layers.empty()) {
                 cluster.discrete_triangle_texture_layers.push_back(cva->discrete_triangle_texture_layers[i]);
+            }
+            if (!cva->alpha.empty()) {
+                cluster.alpha.push_back(cva->alpha[i]);
             }
             if (!cva->interiormap_uvmaps.empty()) {
                 cluster.interiormap_uvmaps.push_back(cva->interiormap_uvmaps[i]);
@@ -62,7 +71,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::split_meshes(
                 UUVector<FixedArray<uint8_t, 3>>(c.discrete_triangle_texture_layers.begin(), c.discrete_triangle_texture_layers.end()),
                 std::vector<UUVector<FixedArray<float, 3, 2>>>{},
                 std::vector<UUVector<FixedArray<float, 3>>>{},
-                UUVector<FixedArray<float, 3>>{},
+                UUVector<FixedArray<float, 3>>(c.alpha.begin(), c.alpha.end()),
                 UUVector<FixedArray<float, 4>>(c.interiormap_uvmaps.begin(), c.interiormap_uvmaps.end())));
             if (ccva->material.aggregate_mode != AggregateMode::NODE_TRIANGLES) {
                 THROW_OR_ABORT("split_meshes: aggregate mode is not \"NODE_TRIANGLES\"");

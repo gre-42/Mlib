@@ -6,8 +6,10 @@ using namespace Mlib;
 WaterType Mlib::water_type_from_string(const std::string& wt) {
     if (wt == "undefined") {
         return WaterType::UNDEFINED;
-    } else if (wt == "hole") {
-        return WaterType::HOLE;
+    } else if (wt == "steep_hole") {
+        return WaterType::STEEP_HOLE;
+    } else if (wt == "shallow_hole") {
+        return WaterType::SHALLOW_HOLE;
     } else {
         THROW_OR_ABORT("Unknown water type");
     }
@@ -16,8 +18,10 @@ WaterType Mlib::water_type_from_string(const std::string& wt) {
 std::string Mlib::water_type_to_string(WaterType wt) {
     if (wt == WaterType::UNDEFINED) {
         return "undefined";
-    } else if (wt == WaterType::HOLE) {
-        return "hole";
+    } else if (wt == WaterType::STEEP_HOLE) {
+        return "steep_hole";
+    } else if (wt == WaterType::SHALLOW_HOLE) {
+        return "shallow_hole";
     } else {
         THROW_OR_ABORT("Unknown water type");
     }
