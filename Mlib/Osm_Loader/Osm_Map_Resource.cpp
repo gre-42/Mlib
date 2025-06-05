@@ -1375,7 +1375,16 @@ OsmMapResource::OsmMapResource(
                     osm_triangle_lists.tls_wo_subtraction_and_water(),
                     config.water->height);
             } catch (const EdgeException<CompressedScenePos>& e) {
-                handle_edge_exception(e, "Could find coast contour");
+                if (auto fn = try_getenv("OSM_WATER_TERRAIN_FILENAME"); fn.has_value()) {
+                    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> terrain;
+                    for (const auto& triangles : osm_triangle_lists.tls_wo_subtraction_and_water()) {
+                        terrain.emplace_back(triangles->triangle_array());
+                    }
+                    save_obj(*fn, terrain, {}, {});
+                    handle_edge_exception(e, "Could find coast contour, debug image saved");
+                } else {
+                    handle_edge_exception(e, "Could find coast contour, consider setting the \"OSM_WATER_TERRAIN_FILENAME\" variable");
+                }
             }
         }
         std::list<SteinerPointInfo> water_steiner_points;

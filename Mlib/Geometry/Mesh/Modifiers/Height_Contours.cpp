@@ -16,16 +16,6 @@ std::list<std::list<FixedArray<CompressedScenePos, 2>>> Mlib::height_contours(
 {
     auto h = funpack(height);
     std::map<OrderableFixedArray<CompressedScenePos, 2>, FixedArray<CompressedScenePos, 2>> neighbors;
-    auto add_neighbor = [&neighbors](
-        const FixedArray<CompressedScenePos, 2>& v0,
-        const FixedArray<CompressedScenePos, 2>& v1)
-    {
-        // linfo() << "Add neighbor " << v0 << " -> " << v1;
-        auto res = neighbors.try_emplace(OrderableFixedArray<CompressedScenePos, 2>{v0}, v1);
-        if (!res.second && any(res.first->second != v1)) {
-            THROW_OR_ABORT2((EdgeException{v0, v1, "Vertex has multiple neighbors"}));
-        }
-    };
     for (const auto& cva : cvas) {
         for (const auto& t : cva->triangles) {
             // linfo() << "triangle";
@@ -34,18 +24,7 @@ std::list<std::list<FixedArray<CompressedScenePos, 2>>> Mlib::height_contours(
                 t(1).position,
                 t(2).position}));
             auto ln = FixedArray<ScenePos, 2>{n(1), -n(0)};
-            auto add_edge = [&](
-                const FixedArray<CompressedScenePos, 2>& v0,
-                const FixedArray<CompressedScenePos, 2>& v1)
-            {
-                auto d = v1 - v0;
-                auto dir = dot0d(ln, funpack(d));
-                if ((std::abs(dir) < 1e-12) || (dir < 0)) {
-                    add_neighbor(v0, v1);
-                } else {
-                    add_neighbor(v1, v0);
-                }
-            };
+            // linfo() << "n " << n;
             std::optional<FixedArray<CompressedScenePos, 2>> p0;
             for (size_t i = 0; i < 3; ++i) {
                 const auto& a = t(i).position;
@@ -57,6 +36,7 @@ std::list<std::list<FixedArray<CompressedScenePos, 2>>> Mlib::height_contours(
                         continue;
                     }
                 }
+                // linfo() << h << " - " << a << " - " << b;
                 auto p1 = [&]() -> FixedArray<CompressedScenePos, 2> {
                     auto a2 = FixedArray<CompressedScenePos, 2>{a(0), a(1)};
                     auto b2 = FixedArray<CompressedScenePos, 2>{b(0), b(1)};
@@ -69,7 +49,31 @@ std::list<std::list<FixedArray<CompressedScenePos, 2>>> Mlib::height_contours(
                         return lerp(b2, a2, funpack(height - b(2)) / (-dh));
                     }
                 }();
-                if (p0.has_value()) {
+                auto add_neighbor = [&](
+                    const FixedArray<CompressedScenePos, 2>& v0,
+                    const FixedArray<CompressedScenePos, 2>& v1)
+                {
+                    // linfo() << "Add neighbor " << v0 << " -> " << v1;
+                    auto res = neighbors.try_emplace(OrderableFixedArray<CompressedScenePos, 2>{v0}, v1);
+                    if (!res.second && any(res.first->second != v1)) {
+                        // THROW_OR_ABORT2((EdgeException{v0, v1, "Vertex has multiple neighbors"}));
+                        THROW_OR_ABORT2((EdgeException{a, b, "Vertex has multiple neighbors"}));
+                    }
+                };
+                auto add_edge = [&](
+                    const FixedArray<CompressedScenePos, 2>& v0,
+                    const FixedArray<CompressedScenePos, 2>& v1)
+                {
+                    auto d = v1 - v0;
+                    auto dir = dot0d(ln, funpack(d));
+                    // linfo() << "dir " << dir << " - " << ln << " - " << d << " - " << a << " - " << b;
+                    if ((std::abs(dir) < 1e-12) || (dir < 0)) {
+                        add_neighbor(v0, v1);
+                    } else {
+                        add_neighbor(v1, v0);
+                    }
+                };
+                if (p0.has_value() && any(*p0 != p1)) {
                     add_edge(*p0, p1);
                 }
                 p0 = p1;
