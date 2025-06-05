@@ -207,7 +207,10 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                         } else {
                             THROW_OR_ABORT("Aggregate=instances_sorted_continuously requires single precision (material: " + t->material.identifier() + ')');
                         }
-                    } else {
+                    } else if (
+                        (t->material.aggregate_mode != AggregateMode::NODE_OBJECT) &&
+                        (t->material.aggregate_mode != AggregateMode::NODE_TRIANGLES))
+                    {
                         THROW_OR_ABORT("Unknown aggregate mode");
                     }
                     if ((t->material.continuous_blending_z_order == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) ||

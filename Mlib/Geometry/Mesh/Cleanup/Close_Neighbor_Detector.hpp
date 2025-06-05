@@ -19,7 +19,8 @@ public:
     {}
     bool contains_neighbor(
         const FixedArray<TData, tndim>& p,
-        const TData& distance, DuplicateRule duplicate_rule)
+        const TData& distance,
+        DuplicateRule duplicate_rule)
     {
         bool res = bvh_.has_neighbor2(p, distance, [&](const auto& n) -> funpack_t<TData> {
             auto dist2 = sum(squared(p - n));

@@ -424,14 +424,16 @@ OsmTriangleLists::OsmTriangleLists(
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
-    tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList<CompressedScenePos>>(
-        "water" + name_suffix,
-        Material{
-            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.water_texture)},
-            .aggregate_mode = AggregateMode::ONCE,
-            .shading = material_shading(RawShading::DEFAULT, config),
-            .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
+    if (config.water.has_value()) {
+        tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList<CompressedScenePos>>(
+            "water" + name_suffix,
+            Material{
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(config.water->texture)},
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
+                .shading = material_shading(RawShading::DEFAULT, config),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
+            Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
+    }
 }
 
 OsmTriangleLists::~OsmTriangleLists() = default;

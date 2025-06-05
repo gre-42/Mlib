@@ -25,6 +25,9 @@ inline std::function<FixedArray<TPos, 3>(const FixedArray<ColoredVertex<TPos>, 3
     const FixedArray<TWidth, 3>& width)
 {
     return [width](const FixedArray<ColoredVertex<TPos>, 3>& triangle){
+        if (any(width == (TWidth)0.f)) {
+            THROW_OR_ABORT("Cluster width is zero (1)");
+        }
         auto m = [](const ColoredVertex<TPos>& e){ return &e.position; };
         auto s = BoundingSphere<TPos, 3>::from_iterator(
             MappedIterator{triangle.flat_begin(), m},

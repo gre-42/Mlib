@@ -111,7 +111,7 @@ bool TtyRenderableHider::is_visible(const std::string& name) {
         if (available_names_.contains(name)) {
             return result;
         } else if (!capacity_ok()) {
-            lwarn() << "Too many renderables";
+            lwarn(LogFlags::SUPPRESS_DUPLICATES) << "Too many renderables";
             return result;
         }
     }

@@ -49,7 +49,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::split_meshes(
             }
         }
         for (const auto& [_, c] : clusters) {
-            result.emplace_back(std::make_shared<ColoredVertexArray<TPos>>(
+            auto& ccva = result.emplace_back(std::make_shared<ColoredVertexArray<TPos>>(
                 cva->name,
                 cva->material,
                 cva->morphology,
@@ -64,6 +64,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::split_meshes(
                 std::vector<UUVector<FixedArray<float, 3>>>{},
                 UUVector<FixedArray<float, 3>>{},
                 UUVector<FixedArray<float, 4>>(c.interiormap_uvmaps.begin(), c.interiormap_uvmaps.end())));
+            if (ccva->material.aggregate_mode != AggregateMode::NODE_TRIANGLES) {
+                THROW_OR_ABORT("split_meshes: aggregate mode is not \"NODE_TRIANGLES\"");
+            }
+            ccva->material.aggregate_mode = AggregateMode::NODE_OBJECT;
         }
     }
     return result;

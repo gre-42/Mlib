@@ -1,5 +1,6 @@
 #include "Set_Animation_State.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Json/Chrono.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -12,19 +13,6 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
-
-namespace nlohmann
-{
-template <typename Rep, typename Period>
-struct adl_serializer<std::chrono::duration<Rep, Period>>
-{
-static void from_json(const nlohmann::json& j, std::chrono::duration<Rep, Period>& duration)
-{
-    duration = std::chrono::duration_cast<std::chrono::duration<Rep, Period>>(
-        std::chrono::duration<double>{j.get<double>()});
-}
-};
-}
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
@@ -69,7 +57,6 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
         } else {
             animation_loop_end = NAN;
         }
-        std::map<std::string, std::string> reflection_maps;
         node->set_animation_state(
             std::unique_ptr<AnimationState>(new AnimationState{
                 .periodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animation_loop_name, VariableAndHash<std::string>()),

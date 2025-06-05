@@ -42,7 +42,8 @@ public:
         UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
         UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
         UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {},
-        UUVector<FixedArray<float, 4>>&& interiormap_uvmaps = {});
+        UUList<FixedArray<float, 3>>&& alpha = {},
+        UUList<FixedArray<float, 4>>&& interiormap_uvmaps = {});
     void draw_triangle_with_normals(
         const FixedArray<TPos, 3>& p00,
         const FixedArray<TPos, 3>& p10,
@@ -186,6 +187,7 @@ public:
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
+        archive(alpha);
         archive(interiormap_uvmaps);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
@@ -200,7 +202,8 @@ public:
         UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
-        UUVector<FixedArray<float, 4>> interiormap_uvmaps;
+        UUList<FixedArray<float, 3>> alpha;
+        UUList<FixedArray<float, 4>> interiormap_uvmaps;
 
         archive(name);
         archive(material);
@@ -208,6 +211,7 @@ public:
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
+        archive(alpha);
         archive(interiormap_uvmaps);
 
         construct(
@@ -217,6 +221,7 @@ public:
             std::move(quads),
             std::move(triangles),
             std::move(triangle_bone_weights),
+            std::move(alpha),
             std::move(interiormap_uvmaps));
     }
     GroupAndName name;
@@ -226,7 +231,8 @@ public:
     UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
     UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
-    UUVector<FixedArray<float, 4>> interiormap_uvmaps;
+    UUList<FixedArray<float, 3>> alpha;
+    UUList<FixedArray<float, 4>> interiormap_uvmaps;
 };
 
 }

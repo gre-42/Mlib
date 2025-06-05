@@ -9,6 +9,7 @@
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <chrono>
 #include <list>
 
 namespace p2t {
@@ -103,6 +104,7 @@ public:
         archive(scale_);
         archive(building_cluster_width_);
         archive(max_imposter_texture_size_);
+        archive(water_animation_duration_);
         archive(spawn_points_);
         archive(way_points_);
         archive(normalization_matrix_);
@@ -138,6 +140,7 @@ private:
     double scale_;
     float building_cluster_width_;
     uint32_t max_imposter_texture_size_;
+    std::chrono::steady_clock::duration water_animation_duration_;
     std::list<SpawnPoint> spawn_points_;
     WayPointSandboxes way_points_;
     TransformationMatrix<double, double, 2> normalization_matrix_;

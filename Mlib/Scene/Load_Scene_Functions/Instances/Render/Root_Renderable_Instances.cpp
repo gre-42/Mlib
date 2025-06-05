@@ -20,6 +20,8 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(transformation);
+DECLARE_ARGUMENT(object_cluster_width);
+DECLARE_ARGUMENT(triangle_cluster_width);
 DECLARE_ARGUMENT(resource);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
@@ -51,6 +53,8 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
             .instance_name = VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) },
             .absolute_model_matrix = absolute_model_matrix,
             .scene = scene,
+            .object_cluster_width = args.arguments.at<ScenePos>(KnownArgs::object_cluster_width, 0.f),
+            .triangle_cluster_width = args.arguments.at<ScenePos>(KnownArgs::triangle_cluster_width, 0.f),
             .renderable_resource_filter = RenderableResourceFilter {
                 .cva_filter = {
                     .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),

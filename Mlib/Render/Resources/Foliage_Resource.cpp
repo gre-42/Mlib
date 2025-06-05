@@ -74,10 +74,14 @@ void FoliageResource::instantiate_root_renderables(const RootInstantiationOption
         .instance_name = options.instance_name,
         .scene_node = node.ref(DP_LOC),
         .renderable_resource_filter = options.renderable_resource_filter});
+    auto node_name = VariableAndHash<std::string>{*options.instance_name + "_foliage_world"};
     options.scene.auto_add_root_node(
-        VariableAndHash<std::string>{*options.instance_name + "_foliage_world"},
+        node_name,
         std::move(node),
         RenderingDynamics::STATIC);
+    if (options.instantiated_nodes != nullptr) {
+        options.instantiated_nodes->emplace_back(std::move(node_name));
+    }
 }
 
 std::list<SpawnPoint> FoliageResource::get_spawn_points() const {

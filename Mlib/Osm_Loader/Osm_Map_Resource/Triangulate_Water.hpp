@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <list>
 #include <map>
+#include <memory>
 
 namespace Mlib {
 
@@ -16,20 +17,31 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
-enum class TerrainType;
 enum class WaterType;
 template <class EntityType>
 class EntityTypeTriangleList;
-using TerrainTypeTriangleList = EntityTypeTriangleList<TerrainType>;
 using WaterTypeTriangleList = EntityTypeTriangleList<WaterType>;
 enum class ContourDetectionStrategy;
 template <class TRegionType, class TGeometry>
 struct RegionWithMargin;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
+template <class TData, size_t tndim>
+class AxisAlignedBoundingBox;
+class HeterogeneousResource;
 
-std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>
-    find_coast_contours(const TerrainTypeTriangleList& tl_terrain);
+void find_coast_contours(
+    std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& contours,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& terrain_lists,
+    CompressedScenePos water_height);
+
+void add_water_steiner_points(
+    std::list<SteinerPointInfo>& steiner_points,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& contours,
+    const AxisAlignedBoundingBox<CompressedScenePos, 2>& bounds,
+    const FixedArray<CompressedScenePos, 2>& cell_size,
+    CompressedScenePos duplicate_distance,
+    CompressedScenePos water_height);
 
 void triangulate_water(
     WaterTypeTriangleList& tl_water,
@@ -53,6 +65,8 @@ void triangulate_water(
 
 void set_water_alpha(
     WaterTypeTriangleList& tl_water,
-    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours);
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
+    CompressedScenePos max_dist,
+    CompressedScenePos coast_width);
 
 }

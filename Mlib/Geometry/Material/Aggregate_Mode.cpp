@@ -32,6 +32,10 @@ std::string Mlib::aggregate_mode_to_string(AggregateMode aggregate_mode) {
         return "instances_once";
     case AggregateMode::INSTANCES_SORTED_CONTINUOUSLY:
         return "instances_sorted";
+    case AggregateMode::NODE_OBJECT:
+        return "node_object";
+    case AggregateMode::NODE_TRIANGLES:
+        return "node_triangles";
     case AggregateMode::OBJECT_MASK:
         return "object_mask";
     case AggregateMode::INSTANCES_MASK:

@@ -108,6 +108,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -123,6 +124,7 @@
 #include <Mlib/Threads/Thread_Top.hpp>
 #include <cereal/access.hpp>
 #include <cereal/archives/binary.hpp>
+#include <cereal/types/chrono.hpp>
 #include <cereal/types/list.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
@@ -153,6 +155,7 @@ OsmMapResource::OsmMapResource(
     , scale_{ config.scale }
     , building_cluster_width_{ config.building_cluster_width }
     , max_imposter_texture_size_{ config.max_imposter_texture_size }
+    , water_animation_duration_{ config.water.has_value() ? config.water->animation_duration : std::chrono::steady_clock::duration{0} }
     , normalization_matrix_{ uninitialized }
     , triangulation_normalization_matrix_{ uninitialized }
     , terrain_styles_{ config.triangle_sampler_resource_config }
@@ -715,7 +718,7 @@ OsmMapResource::OsmMapResource(
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = (building_cluster_width_ == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
-                    : AggregateMode::NONE,
+                    : AggregateMode::NODE_OBJECT,
                 .draw_distance_noperations = 1000},
             get_building_morphology[BuildingDetailType::COMBINED],
             buildings,
@@ -743,7 +746,7 @@ OsmMapResource::OsmMapResource(
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = (building_cluster_width_ == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
-                    : AggregateMode::NONE,
+                    : AggregateMode::NODE_OBJECT,
                 .shading = material_shading(RawShading::ROOF, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Material{
@@ -751,7 +754,7 @@ OsmMapResource::OsmMapResource(
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = (building_cluster_width_ == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
-                    : AggregateMode::NONE,
+                    : AggregateMode::NODE_OBJECT,
                 .shading = material_shading(RawShading::ROOF, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             get_building_morphology,
@@ -1223,6 +1226,9 @@ OsmMapResource::OsmMapResource(
         if (std::isnan(config.zonemap_width) || std::isnan(config.zonemap_height)) {
             THROW_OR_ABORT("zonemap width or height not set");
         }
+        if (!config.water.has_value()) {
+            THROW_OR_ABORT("Zonemap requires water height");
+        }
         add_trees_to_zonemap(
             *hri_.bri,
             rnc,
@@ -1237,7 +1243,7 @@ OsmMapResource::OsmMapResource(
             config.zonemap_jitter,
             config.zonemap_step_size,
             config.scale,
-            config.water_height);
+            config.water->height);
     }
 
     if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
@@ -1359,23 +1365,47 @@ OsmMapResource::OsmMapResource(
     TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_all;
-    if (!config.water_texture->empty()) {
+    if (config.water.has_value()) {
         std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
             get_water_region_contours(nodes, ways);
+        if (config.water->holes_from_terrain) {
+            try {
+                find_coast_contours(
+                    water_contours,
+                    osm_triangle_lists.tls_wo_subtraction_and_water(),
+                    config.water->height);
+            } catch (const EdgeException<CompressedScenePos>& e) {
+                handle_edge_exception(e, "Could find coast contour");
+            }
+        }
+        std::list<SteinerPointInfo> water_steiner_points;
+        if (all(config.water->cell_size != (CompressedScenePos)0.f)) {
+            add_water_steiner_points(
+                water_steiner_points,
+                water_contours,
+                config.water->aabb,
+                config.water->cell_size,
+                config.water->duplicate_distance,
+                config.water->height);
+        }
         fg.update("Triangulate water");
         try {
             triangulate_water(
                 osm_triangle_lists.tl_water,
-                bounding_info,
-                {},                     // steiner_points
-                map_outer_contour,
+                BoundingInfo{
+                    config.water->aabb.min,
+                    config.water->aabb.max,
+                    (CompressedScenePos)100.f,
+                    (CompressedScenePos)50.f},
+                water_steiner_points,
+                {},                     // bounding_contour
                 {},                     // hole_triangles
                 water_contours,
                 config.scale,
                 config.triangulation_scale,
                 1 / 100.f,              // uv_scale
                 1.f,                    // uv_period
-                config.water_height,
+                config.water->height,
                 terrain_color,
                 getenv_default("WATER_CONTOUR_TRIANGLES_FILENAME", ""),
                 getenv_default("WATER_CONTOUR_FILENAME", ""),
@@ -1393,6 +1423,13 @@ OsmMapResource::OsmMapResource(
             handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException<CompressedScenePos>& e) {
             handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        }
+        if (config.water->coast.width != (CompressedScenePos)0.f) {
+            set_water_alpha(
+                osm_triangle_lists.tl_water,
+                water_contours,
+                (CompressedScenePos)std::sqrt(sum(squared(config.water->cell_size))),
+                config.water->coast.width);
         }
         tls_all = osm_triangle_lists.tls_wo_subtraction_w_water();
     } else {
@@ -1835,7 +1872,36 @@ std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> OsmMa
 
 void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
 {
-    hri_.instantiate_root_renderables(options);
+    {
+        std::list<VariableAndHash<std::string>> instantiated_nodes;
+        hri_.instantiate_root_renderables(RootInstantiationOptions{
+            .rendering_resources = options.rendering_resources,
+            .imposters = options.imposters,
+            .supply_depots = options.supply_depots,
+            .instantiated_nodes = &instantiated_nodes,
+            .instance_name = options.instance_name,
+            .absolute_model_matrix = options.absolute_model_matrix,
+            .scene = options.scene,
+            .max_imposter_texture_size = options.max_imposter_texture_size,
+            .object_cluster_width = options.object_cluster_width,
+            .triangle_cluster_width = options.triangle_cluster_width,
+            .renderable_resource_filter = options.renderable_resource_filter});
+        if (water_animation_duration_ != std::chrono::steady_clock::duration{0}) {
+            for (const auto& n : instantiated_nodes) {
+                options.scene.get_node(n, CURRENT_SOURCE_LOCATION)->set_animation_state(
+                    std::unique_ptr<AnimationState>(new AnimationState{
+                        .periodic_reference_time{
+                            std::chrono::steady_clock::now(),
+                            water_animation_duration_}}),
+                    AnimationStateAlreadyExistsBehavior::THROW);
+            }
+        }
+        if (options.instantiated_nodes != nullptr) {
+            options.instantiated_nodes->splice(
+                options.instantiated_nodes->end(),
+                std::move(instantiated_nodes));
+        }
+    }
     if (building_cluster_width_ == 0.f) {
         for (const auto& [i, b] : enumerate(buildings_)) {
             auto center = b->aabb().data().center();

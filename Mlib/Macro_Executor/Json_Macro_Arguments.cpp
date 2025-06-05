@@ -142,25 +142,37 @@ void JsonMacroArguments::insert_json(std::string_view key, nlohmann::json j) {
     j_[key] = std::move(j);
 }
 
-void JsonMacroArguments::set_fpathes(const std::function<std::list<std::string>(const std::filesystem::path& f)>& fpathes) {
+void JsonMacroArguments::set_fpathes(std::function<std::list<std::string>(const std::filesystem::path& f)> fpathes) {
     if (fpathes_) {
         THROW_OR_ABORT("fpathes already set");
     }
-    fpathes_ = fpathes;
+    fpathes_ = std::move(fpathes);
 }
 
-void JsonMacroArguments::set_fpath(const std::function<FPath(const std::filesystem::path& f)>& fpath) {
+void JsonMacroArguments::set_fpath(std::function<FPath(const std::filesystem::path& f)> fpath) {
     if (fpath_) {
         THROW_OR_ABORT("fpath already set");
     }
-    fpath_ = fpath;
+    fpath_ = std::move(fpath);
 }
 
-void JsonMacroArguments::set_spath(const std::function<std::string(const std::filesystem::path& f)>& spath) {
+void JsonMacroArguments::set_spath(std::function<std::string(const std::filesystem::path& f)> spath) {
     if (spath_) {
         THROW_OR_ABORT("spath already set");
     }
-    spath_ = spath;
+    spath_ = std::move(spath);
+}
+
+std::list<std::string> JsonMacroArguments::fpathes(const std::filesystem::path& f) const {
+    return fpathes_(f);
+}
+
+FPath JsonMacroArguments::fpath(const std::filesystem::path& f) const {
+    return fpath_(f);
+}
+
+std::string JsonMacroArguments::spath(const std::filesystem::path& f) const {
+    return spath_(f);
 }
 
 std::string JsonMacroArguments::path(std::string_view name) const {

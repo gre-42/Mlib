@@ -1,8 +1,68 @@
 #include "Triangulate_Water.hpp"
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Cleanup/Close_Neighbor_Detector.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Height_Contours.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Entity_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
+#include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 
 using namespace Mlib;
+
+void Mlib::find_coast_contours(
+    std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& contours,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& terrain_lists,
+    CompressedScenePos water_height)
+{
+    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> terrain;
+    for (const auto& triangles : terrain_lists) {
+        terrain.emplace_back(triangles->triangle_array());
+    }
+    for (const auto& c : height_contours(terrain, water_height)) {
+        contours.emplace_back(WaterType::HOLE, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+    }
+}
+
+void Mlib::add_water_steiner_points(
+    std::list<SteinerPointInfo>& steiner_points,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& contours,
+    const AxisAlignedBoundingBox<CompressedScenePos, 2>& bounds,
+    const FixedArray<CompressedScenePos, 2>& cell_size,
+    CompressedScenePos duplicate_distance,
+    CompressedScenePos water_height)
+{
+    CloseNeighborDetector<CompressedScenePos, 2> close_neighbor_detector{{(CompressedScenePos)10., (CompressedScenePos)10.}, 10};
+    for (const auto& s : steiner_points) {
+        if (close_neighbor_detector.contains_neighbor(
+            {s.position(0), s.position(1)},
+            duplicate_distance,
+            DuplicateRule::IS_NEIGHBOR))
+        {
+            THROW_OR_ABORT("Unexpected duplicate in steiner points");
+        }
+    }
+    for (const auto& c : contours) {
+        for (const auto& p : c.geometry) {
+            close_neighbor_detector.contains_neighbor(
+                p,
+                duplicate_distance,
+                DuplicateRule::IS_NEIGHBOR);
+        }
+    }
+    for (CompressedScenePos x = bounds.min(0); x < bounds.max(0); x += cell_size(0)) {
+        for (CompressedScenePos y = bounds.min(1); y < bounds.max(1); y += cell_size(1)) {
+            if (!close_neighbor_detector.contains_neighbor(
+                {x, y},
+                duplicate_distance,
+                DuplicateRule::IS_NEIGHBOR))
+            {
+                steiner_points.emplace_back(
+                    FixedArray<CompressedScenePos, 3>{x, y, water_height},
+                    SteinerPointType::WATER);
+            }
+        }
+    }
+}
 
 void Mlib::triangulate_water(
     WaterTypeTriangleList& tl_water,
@@ -45,4 +105,39 @@ void Mlib::triangulate_water(
         { WaterType::HOLE },            // excluded_entitities
         contour_detection_strategy,
         {});                            // garden_margin
+}
+
+void Mlib::set_water_alpha(
+    WaterTypeTriangleList& tl_water,
+    const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& region_contours,
+    CompressedScenePos max_dist,
+    CompressedScenePos coast_width)
+{
+    ScenePos steepness = 1. / (ScenePos)coast_width;
+    WayBvh way_bvh;
+    for (const auto& c : region_contours) {
+        way_bvh.add_path(c.geometry);
+    }
+    for (auto& [_, x] : tl_water.map()) {
+        if (!x->alpha.empty()) {
+            THROW_OR_ABORT("Water already has alpha values");
+        }
+        for (auto& t : x->triangles) {
+            auto& a = x->alpha.emplace_back(uninitialized);
+            for (size_t i = 0; i < 3; ++i) {
+                FixedArray<ScenePos, 2> dir = uninitialized;
+                CompressedScenePos distance;
+                if (way_bvh.nearest_way(
+                    {t(i).position(0), t(i).position(1)},
+                    max_dist,
+                    dir,
+                    distance))
+                {
+                    a(i) = (float)(steepness * (ScenePos)distance);
+                } else {
+                    a(i) = 1.f;
+                }
+            }
+        }
+    }
 }

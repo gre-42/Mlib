@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Mesh/Contour_Detection_Strategy.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -20,10 +21,12 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <list>
 #include <map>
+#include <nlohmann/json_fwd.hpp>
 #include <set>
 #include <string>
 #include <vector>
@@ -43,6 +46,25 @@ struct RoadStyle {
     std::vector<VariableAndHash<std::string>> textures;
     float uvx;
 };
+
+struct CoastConfiguration {
+    CompressedScenePos width;
+};
+
+void from_json(const nlohmann::json& j, CoastConfiguration& water);
+
+struct WaterConfiguration {
+    VariableAndHash<std::string> texture;
+    std::chrono::steady_clock::duration animation_duration;
+    AxisAlignedBoundingBox<CompressedScenePos, 2> aabb = uninitialized;
+    FixedArray<CompressedScenePos, 2> cell_size = uninitialized;
+    CompressedScenePos duplicate_distance;
+    CompressedScenePos height;
+    CoastConfiguration coast;
+    bool holes_from_terrain;
+};
+
+void from_json(const nlohmann::json& j, WaterConfiguration& water);
 
 struct OsmResourceConfig {
     OsmResourceConfig(const OsmResourceConfig&) = delete;
@@ -110,8 +132,7 @@ struct OsmResourceConfig {
     Map<RoadType, VariableAndHash<std::string>> street_bumps_central_resource_names;
     Map<RoadType, VariableAndHash<std::string>> street_bumps_endpoint0_resource_names;
     Map<RoadType, VariableAndHash<std::string>> street_bumps_endpoint1_resource_names;
-    VariableAndHash<std::string> water_texture;
-    CompressedScenePos water_height = (CompressedScenePos)0.f;
+    std::optional<WaterConfiguration> water;
     std::vector<ParsedResourceName> tree_resource_names;
     std::vector<ParsedResourceName> grass_resource_names;
     TriangleSamplerResourceConfig triangle_sampler_resource_config;

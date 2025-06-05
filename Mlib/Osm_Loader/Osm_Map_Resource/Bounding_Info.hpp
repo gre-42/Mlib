@@ -17,6 +17,11 @@ struct BoundingInfo {
         const std::map<std::string, Node>& nodes,
         CompressedScenePos border_width,
         CompressedScenePos segment_length);
+    BoundingInfo(
+        const FixedArray<CompressedScenePos, 2>& boundary_min,
+        const FixedArray<CompressedScenePos, 2>& boundary_max,
+        CompressedScenePos border_width,
+        CompressedScenePos segment_length);
     FixedArray<CompressedScenePos, 2> boundary_min;
     FixedArray<CompressedScenePos, 2> boundary_max;
     CompressedScenePos border_width;

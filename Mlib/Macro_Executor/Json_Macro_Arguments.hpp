@@ -30,9 +30,12 @@ public:
     void merge(const JsonMacroArguments& other, std::string_view prefix="");
     void insert_json(const nlohmann::json& j, const std::set<std::string>& except = {});
     void insert_json(std::string_view key, nlohmann::json j);
-    void set_fpathes(const std::function<std::list<std::string>(const std::filesystem::path& f)>& fpathes);
-    void set_fpath(const std::function<FPath(const std::filesystem::path& f)>& fpath);
-    void set_spath(const std::function<std::string(const std::filesystem::path& f)>& spath);
+    void set_fpathes(std::function<std::list<std::string>(const std::filesystem::path& f)> fpathes);
+    void set_fpath(std::function<FPath(const std::filesystem::path& f)> fpath);
+    void set_spath(std::function<std::string(const std::filesystem::path& f)> spath);
+    std::list<std::string> fpathes(const std::filesystem::path& f) const;
+    FPath fpath(const std::filesystem::path& f) const;
+    std::string spath(const std::filesystem::path& f) const;
     std::string get_multiline_string() const;
     std::string at_multiline_string(std::string_view name) const;
     std::string at_multiline_string(std::string_view name, std::string_view default_) const;

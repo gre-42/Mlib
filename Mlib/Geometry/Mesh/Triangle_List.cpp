@@ -27,13 +27,15 @@ TriangleList<TPos>::TriangleList(
     UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
-    UUVector<FixedArray<float, 4>>&& interiormap_uvmaps)
+    UUList<FixedArray<float, 3>>&& alpha,
+    UUList<FixedArray<float, 4>>&& interiormap_uvmaps)
     : name{ std::move(name) }
     , material{ material }
     , morphology{ morphology }
     , quads{ std::move(quads) }
     , triangles{ std::move(triangles) }
     , triangle_bone_weights{ std::move(triangle_bone_weights) }
+    , alpha{ std::move(alpha) }
     , interiormap_uvmaps{ std::move(interiormap_uvmaps) }
 {}
 
@@ -750,8 +752,8 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         UUVector<FixedArray<uint8_t, 3>>{},
         std::vector<UUVector<FixedArray<float, 3, 2>>>{},
         std::vector<UUVector<FixedArray<float, 3>>>{},
-        UUVector<FixedArray<float, 3>>{},
-        std::vector(interiormap_uvmaps));
+        std::vector(alpha.begin(), alpha.end()),
+        std::vector(interiormap_uvmaps.begin(), interiormap_uvmaps.end()));
 }
 
 namespace Mlib {

@@ -71,6 +71,8 @@ void CompoundResource::instantiate_root_renderables(const RootInstantiationOptio
                 .instance_name = VariableAndHash{ *options.instance_name + "_compound_" + std::to_string(i) },
                 .absolute_model_matrix = options.absolute_model_matrix,
                 .scene = options.scene,
+                .object_cluster_width = options.object_cluster_width,
+                .triangle_cluster_width = options.triangle_cluster_width,
                 .renderable_resource_filter = options.renderable_resource_filter});
     }
 }

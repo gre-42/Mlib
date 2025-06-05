@@ -28,3 +28,14 @@ BoundingInfo::BoundingInfo(
         }
     }
 }
+
+BoundingInfo::BoundingInfo(
+    const FixedArray<CompressedScenePos, 2>& boundary_min,
+    const FixedArray<CompressedScenePos, 2>& boundary_max,
+    CompressedScenePos border_width,
+    CompressedScenePos segment_length)
+    : boundary_min{ boundary_min }
+    , boundary_max{ boundary_max }
+    , border_width{ border_width }
+    , segment_length { segment_length }
+{}

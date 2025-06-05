@@ -64,24 +64,16 @@ void HeterogeneousResource::instantiate_root_renderables(const RootInstantiation
     bri->instantiate_root_renderables(scene_node_resources_, options);
 
     if (!acvas->scvas.empty() || !acvas->dcvas.empty()) {
-        auto node = make_unique_scene_node(
-            options.absolute_model_matrix.t,
-            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
-            options.absolute_model_matrix.get_scale(),
-            PoseInterpolationMode::DISABLED);
-        instantiate_child_renderable(ChildInstantiationOptions{
-            .rendering_resources = options.rendering_resources,
-            .instance_name = VariableAndHash{ *options.instance_name + "_hri_arrays" },
-            .scene_node = node.ref(DP_LOC),
-            .renderable_resource_filter = options.renderable_resource_filter});
-        options.scene.auto_add_root_node(
-            VariableAndHash<std::string>{*options.instance_name + "_hri_world"},
-            std::move(node),
-            RenderingDynamics::STATIC);
+        rcva().instantiate_root_renderables(options);
     }
 }
 
 void HeterogeneousResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const {
+    
+    rcva().instantiate_child_renderable(options);
+}
+
+ColoredVertexArrayResource& HeterogeneousResource::rcva() const {
     do {
         {
             std::shared_lock lock{ rcva_mutex_ };
@@ -94,7 +86,7 @@ void HeterogeneousResource::instantiate_child_renderable(const ChildInstantiatio
             rcva_ = std::make_shared<ColoredVertexArrayResource>(acvas);
         }
     } while (false);
-    rcva_->instantiate_child_renderable(options);
+    return *rcva_;
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_arrays(

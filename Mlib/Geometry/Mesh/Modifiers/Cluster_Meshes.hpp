@@ -26,6 +26,9 @@ inline std::function<FixedArray<TPos, 3>(const ColoredVertexArray<TPos>&)> cva_t
     const FixedArray<TWidth, 3>& width)
 {
     return [width](const ColoredVertexArray<TPos>& cva){
+        if (any(width == (TWidth)0.f)) {
+            THROW_OR_ABORT("Cluster width is zero (0)");
+        }
         return point_to_grid_center(cva.aabb().data().center(), width);
     };
 }

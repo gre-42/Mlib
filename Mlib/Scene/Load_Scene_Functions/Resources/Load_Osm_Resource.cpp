@@ -131,8 +131,7 @@ DECLARE_ARGUMENT(street_bumps_endpoint1_resource_name);
 DECLARE_ARGUMENT(path_bumps_central_resource_name);
 DECLARE_ARGUMENT(path_bumps_endpoint0_resource_name);
 DECLARE_ARGUMENT(path_bumps_endpoint1_resource_name);
-DECLARE_ARGUMENT(water_texture);
-DECLARE_ARGUMENT(water_height);
+DECLARE_ARGUMENT(water);
 DECLARE_ARGUMENT(trashcan_resource_names);
 DECLARE_ARGUMENT(trashcan_distances);
 DECLARE_ARGUMENT(tree_resource_names);
@@ -680,11 +679,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::path_bumps_endpoint1_resource_name)) {
             config.street_bumps_endpoint1_resource_names[RoadType::PATH] = args.arguments.at<std::string>(KnownArgs::path_bumps_endpoint1_resource_name);
         }
-        if (args.arguments.contains(KnownArgs::water_texture)) {
-            config.water_texture = args.arguments.path_or_variable(KnownArgs::water_texture).path;
-        }
-        if (args.arguments.contains(KnownArgs::water_height)) {
-            config.water_height = fixed_from_meters(args.arguments.at<ScenePos>(KnownArgs::water_height));
+        if (args.arguments.contains(KnownArgs::water)) {
+            config.water = args.arguments.at<WaterConfiguration>(KnownArgs::water);
+            config.water->texture = VariableAndHash<std::string>{ args.arguments.fpath(*config.water->texture).path };
         }
         if (args.arguments.contains_non_null(KnownArgs::waysides_surface)) {
             config.waysides_surface = args.arguments.at<std::vector<WaysideResourceNamesSurface>>(KnownArgs::waysides_surface);

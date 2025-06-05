@@ -79,6 +79,7 @@ public:
     std::unique_ptr<BatchResourceInstantiator> bri;
     std::shared_ptr<AnimatedColoredVertexArrays> acvas;
 private:
+    ColoredVertexArrayResource& rcva() const;
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
     mutable SafeAtomicRecursiveSharedMutex rcva_mutex_;
     const SceneNodeResources& scene_node_resources_;

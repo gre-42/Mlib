@@ -37,7 +37,7 @@ void Mlib::draw_ceilings(
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
             .aggregate_mode = (config.building_cluster_width == 0)
                 ? AggregateMode::SORTED_CONTINUOUSLY
-                : AggregateMode::NONE,
+                : AggregateMode::NODE_OBJECT,
             .shading = material_shading(RawShading::CEILING, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         morphology,

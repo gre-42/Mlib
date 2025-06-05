@@ -26,7 +26,11 @@ std::list<MeshAndPosition<TPos>> Mlib::cluster_meshes(
     size_t i = 0;
     for (const auto& [center, cvas] : clustered) {
         for (const auto& [m, grouped_cvas] : group_meshes_by_material(cvas)) {
-            result.emplace_back(merge_meshes(grouped_cvas, prefix + std::to_string(i), m.material, m.morphology), center);
+            auto& res = result.emplace_back(merge_meshes(grouped_cvas, prefix + std::to_string(i), m.material, m.morphology), center);
+            if (res.cva->material.aggregate_mode != AggregateMode::NODE_OBJECT) {
+                THROW_OR_ABORT("cluster_meshes: aggregate mode is not \"NODE_OBJECT\"");
+            }
+            res.cva->material.aggregate_mode = AggregateMode::NONE;
             ++i;
         }
     }
