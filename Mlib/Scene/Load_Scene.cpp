@@ -42,7 +42,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Minimap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Pixel_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Texture.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Thread_Top.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Visual_Node_Status_3rd.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Instantiate_Grass.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Invalidate_Aggregate_Renderers.hpp>
@@ -321,7 +320,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SaveToObjFile::key, SaveToObjFile::json_user_function);
             register_json_user_function(SceneToPixelRegion::key, SceneToPixelRegion::json_user_function);
             register_json_user_function(SceneToTexture::key, SceneToTexture::json_user_function);
-            register_json_user_function(ThreadTop::key, ThreadTop::json_user_function);
             register_json_user_function(SetBackgroundColor::key, SetBackgroundColor::json_user_function);
             register_json_user_function(FitCanvasToRenderables::key, FitCanvasToRenderables::json_user_function);
             register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
