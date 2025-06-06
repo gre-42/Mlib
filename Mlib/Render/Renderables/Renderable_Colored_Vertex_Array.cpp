@@ -1348,7 +1348,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva glBindVertexArray");
     {
         // AperiodicLagFinder lag_finder{ "draw " + cva->name + ": ", std::chrono::milliseconds{5} };
-        MaterialRenderConfigGuard mrcf{ cva->material };
+        MaterialRenderConfigGuard mrcf{ cva->material, render_pass.internal };
         if (has_instances) {
             if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
                 instances->copy_in_progress())

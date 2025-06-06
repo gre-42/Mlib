@@ -152,11 +152,9 @@ THREAD_LOCAL(RenderConfigGuard*) RenderConfigGuard::current_ = nullptr;
 
 RenderConfigGuard::RenderConfigGuard(
     const RenderConfig& render_config,
-    ExternalRenderPassType external_render_pass_type,
-    InternalRenderPass internal_render_pass)
+    ExternalRenderPassType external_render_pass_type)
     : render_config_{ render_config }
     , external_render_pass_type_{ external_render_pass_type }
-    , internal_render_pass_{ internal_render_pass }
 {
     if (current_ != nullptr) {
         THROW_OR_ABORT("Detected recursive application of render config");
@@ -172,7 +170,10 @@ RenderConfigGuard::~RenderConfigGuard() {
 
 THREAD_LOCAL(bool) MaterialRenderConfigGuard::applied_ = false;
 
-MaterialRenderConfigGuard::MaterialRenderConfigGuard(const Material& material) {
+MaterialRenderConfigGuard::MaterialRenderConfigGuard(
+    const Material& material,
+    InternalRenderPass internal_render_pass)
+{
     if (applied_) {
         THROW_OR_ABORT("Detected recursive application of material render config");
     }
@@ -182,7 +183,7 @@ MaterialRenderConfigGuard::MaterialRenderConfigGuard(const Material& material) {
     applied_ = true;
     RenderConfigGuard::current_->render_config_.apply_material(
         RenderConfigGuard::current_->external_render_pass_type_,
-        RenderConfigGuard::current_->internal_render_pass_,
+        internal_render_pass,
         material);
 }
 

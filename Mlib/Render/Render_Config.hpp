@@ -74,13 +74,11 @@ class RenderConfigGuard {
 public:
     RenderConfigGuard(
         const RenderConfig& render_config,
-        ExternalRenderPassType external_render_pass_type,
-        InternalRenderPass internal_render_pass);
+        ExternalRenderPassType external_render_pass_type);
     ~RenderConfigGuard();
 private:
     const RenderConfig& render_config_;
     ExternalRenderPassType external_render_pass_type_;
-    InternalRenderPass internal_render_pass_;
     static THREAD_LOCAL(RenderConfigGuard*) current_;
 };
 
@@ -88,7 +86,9 @@ class MaterialRenderConfigGuard {
     MaterialRenderConfigGuard(const MaterialRenderConfigGuard&) = delete;
     MaterialRenderConfigGuard& operator = (const MaterialRenderConfigGuard&) = delete;
 public:
-    explicit MaterialRenderConfigGuard(const Material& material);
+    explicit MaterialRenderConfigGuard(
+        const Material& material,
+        InternalRenderPass internal_render_pass);
     ~MaterialRenderConfigGuard();
 private:
     static THREAD_LOCAL(bool) applied_;

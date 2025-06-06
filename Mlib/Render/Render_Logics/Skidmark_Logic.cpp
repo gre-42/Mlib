@@ -127,7 +127,7 @@ void SkidmarkLogic::render_without_setup(
         }
         {
             ViewportGuard vg{ texture_width_, texture_height_ };
-            RenderConfigGuard rcg{ render_config, ExternalRenderPassType::STANDARD, InternalRenderPass::BLENDED_LATE };
+            RenderConfigGuard rcg{ render_config, ExternalRenderPassType::STANDARD };
             particle_renderer_.render(
                 vp,
                 bi.model,

@@ -106,7 +106,7 @@ void StandardRenderLogic::render_with_setup(
             frame_id,
             setup);
 
-        RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass, InternalRenderPass::INITIAL };
+        RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
         RenderSceneThreadGuard rstg{ scene_ };
 
         scene_.render(
