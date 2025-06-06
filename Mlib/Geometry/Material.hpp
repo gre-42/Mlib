@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
+#include <Mlib/Geometry/Material/Blending_Pass_Type.hpp>
 #include <Mlib/Geometry/Material/Depth_Func.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
@@ -48,6 +49,7 @@ struct Material {
     // Third element to support sorting.
     DepthFunc depth_func = DepthFunc::LESS;
     bool depth_test = true;
+    BlendingPassType blending_pass = BlendingPassType::LATE;
     std::vector<BlendMapTexture> textures_color;
     std::vector<BlendMapTexture> textures_alpha;
     float period_world = 0.f;
@@ -96,6 +98,7 @@ struct Material {
         archive(continuous_blending_z_order);
         archive(depth_func);
         archive(depth_test);
+        archive(blending_pass);
         archive(textures_color);
         archive(textures_alpha);
         archive(period_world);

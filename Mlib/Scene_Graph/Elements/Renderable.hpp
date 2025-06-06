@@ -30,8 +30,9 @@ struct SceneGraphConfig;
 struct AnimationState;
 struct ColorStyle;
 struct ExternalRenderPass;
-enum class PhysicsMaterial: uint32_t;
+enum class BlendingPassType;
 enum class ExternalRenderPassType;
+enum class PhysicsMaterial: uint32_t;
 enum class RenderingStrategies;
 class SceneNode;
 class SmallInstancesQueues;
@@ -42,7 +43,7 @@ public:
     virtual PhysicsMaterial physics_attributes() const = 0;
     virtual RenderingStrategies rendering_strategies() const = 0;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const = 0;
-    virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const = 0;
+    virtual BlendingPassType required_blending_passes(ExternalRenderPassType render_pass) const = 0;
     virtual int continuous_blending_z_order() const;
     virtual void render(
         const FixedArray<ScenePos, 4, 4>& mvp,

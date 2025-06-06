@@ -168,7 +168,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
 #endif
-    requires_blending_pass_ = false;
+    required_blending_passes_ = BlendingPassType::NONE;
     auto add_cvas = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
     {
         for (const auto& [i, t] : enumerate(cvas)) {
@@ -222,7 +222,10 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                         if (any(t->material.blend_mode & BlendMode::ANY_CONTINUOUS) &&
                             (t->material.aggregate_mode == AggregateMode::NONE))
                         {
-                            requires_blending_pass_ = true;
+                            if (!any(t->material.blending_pass)) {
+                                THROW_OR_ABORT("Blended material has no blending pass");
+                            }
+                            required_blending_passes_ |= t->material.blending_pass;
                             if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
                                 continuous_blending_z_order_ = t->material.continuous_blending_z_order;
                             } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
@@ -348,11 +351,18 @@ void RenderableColoredVertexArray::render_cva(
     // }
     // This check passes because the arrays are filtered in the constructor.
     assert_true((cva->material.aggregate_mode == AggregateMode::NONE) || (rcva_->instances_ != nullptr));
-    if (render_pass.internal == InternalRenderPass::INITIAL && any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
-        // lerr() << ", skipped (0)";
-        return;
-    }
-    if (render_pass.internal == InternalRenderPass::BLENDED && !any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
+    if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
+        if (render_pass.internal == InternalRenderPass::INITIAL) {
+            // lerr() << ", skipped (0)";
+            return;
+        }
+        if ((render_pass.internal == InternalRenderPass::BLENDED_EARLY) && !any(cva->material.blending_pass & BlendingPassType::EARLY)) {
+            return;
+        }
+        if ((render_pass.internal == InternalRenderPass::BLENDED_LATE) && !any(cva->material.blending_pass & BlendingPassType::LATE)) {
+            return;
+        }
+    } else if (any(render_pass.internal & InternalRenderPass::ANY_BLENDED)) {
         // lerr() << ", skipped (1)";
         return;
     }
@@ -1503,14 +1513,16 @@ bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType r
     return true;
 }
 
-bool RenderableColoredVertexArray::requires_blending_pass(ExternalRenderPassType render_pass) const {
-    if (!requires_blending_pass_) {
-        return false;
+BlendingPassType RenderableColoredVertexArray::required_blending_passes(ExternalRenderPassType render_pass) const {
+    if (!any(required_blending_passes_)) {
+        return BlendingPassType::NONE;
     }
-    if (any(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
-        return required_occluder_passes_.contains(render_pass);
+    if (any(render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) &&
+        !required_occluder_passes_.contains(render_pass))
+    {
+        return BlendingPassType::NONE;
     }
-    return true;
+    return required_blending_passes_;
 }
 
 int RenderableColoredVertexArray::continuous_blending_z_order() const {

@@ -64,7 +64,7 @@ void VisualMovableCircularLogger::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("VisualMovableCircularLogger::render");
-    RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
+    RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass, InternalRenderPass::BLENDED_LATE };
     if (ew_->result_may_have_changed()) {
         tick_text_.set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }

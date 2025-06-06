@@ -58,9 +58,9 @@ bool RenderableTriangleSampler::requires_render_pass(ExternalRenderPassType rend
     return false;
 }
 
-bool RenderableTriangleSampler::requires_blending_pass(ExternalRenderPassType render_pass) const
+BlendingPassType RenderableTriangleSampler::required_blending_passes(ExternalRenderPassType render_pass) const
 {
-    return false;
+    return BlendingPassType::NONE;
 }
 
 void RenderableTriangleSampler::append_sorted_instances_to_queue(

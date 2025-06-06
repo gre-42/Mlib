@@ -27,7 +27,7 @@ public:
     virtual PhysicsMaterial physics_attributes() const override;
     virtual RenderingStrategies rendering_strategies() const override;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
-    virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
+    virtual BlendingPassType required_blending_passes(ExternalRenderPassType render_pass) const override;
     virtual int continuous_blending_z_order() const override;
     virtual void render(
         const FixedArray<ScenePos, 4, 4>& mvp,
@@ -106,7 +106,7 @@ private:
     std::list<std::shared_ptr<ColoredVertexArray<float>>> sphysics_;
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dphysics_;
     std::unordered_set<ExternalRenderPassType> required_occluder_passes_;
-    bool requires_blending_pass_;
+    BlendingPassType required_blending_passes_;
     int continuous_blending_z_order_;
     RenderingResources& secondary_rendering_resources_;
     ExtremalAxisAlignedBoundingBox<CompressedScenePos, 3> aabb_;

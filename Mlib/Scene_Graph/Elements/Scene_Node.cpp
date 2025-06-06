@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Material/Blending_Pass_Type.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Iterator/Un_Guarded_Iterator.hpp>
@@ -15,6 +16,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
+#include <Mlib/Scene_Graph/Containers/List_Of_Blended.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -998,7 +1000,7 @@ void SceneNode::render(
     const IDynamicLights* dynamic_lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
-    std::list<Blended>& blended,
+    ListsOfBlended& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
@@ -1062,8 +1064,18 @@ void SceneNode::render(
                     estate.get(),
                     r->style(ecolor_styles, n));
             }
-            if ((*r)->requires_blending_pass(external_render_pass.pass)) {
-                blended.emplace_back(
+            auto bp = (*r)->required_blending_passes(external_render_pass.pass);
+            if (any(bp & BlendingPassType::EARLY)) {
+                blended.early.list.emplace_back(
+                    r,
+                    n,
+                    mvp,
+                    m,
+                    estate,
+                    ecolor_styles);
+            }
+            if (any(bp & BlendingPassType::LATE)) {
+                blended.late.list.emplace_back(
                     r,
                     n,
                     mvp,

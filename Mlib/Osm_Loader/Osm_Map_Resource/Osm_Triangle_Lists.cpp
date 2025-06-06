@@ -431,6 +431,9 @@ OsmTriangleLists::OsmTriangleLists(
                 .blend_mode = (config.water->coast.width == (CompressedScenePos)0.f)
                     ? BlendMode::OFF
                     : BlendMode::CONTINUOUS,
+                .blending_pass = (config.water->coast.width == (CompressedScenePos)0.f)
+                    ? BlendingPassType::NONE
+                    : BlendingPassType::EARLY,
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(config.water->texture)},
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(RawShading::DEFAULT, config),

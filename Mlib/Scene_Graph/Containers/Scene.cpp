@@ -10,13 +10,12 @@
 #include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
+#include <Mlib/Scene_Graph/Containers/List_Of_Blended.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Blended.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
-#include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
-#include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
@@ -490,7 +489,7 @@ void Scene::render(
     assert_this_thread_is_render_thread();
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
-    std::list<Blended> blended;
+    ListsOfBlended blended;
     std::list<const ColorStyle*> color_styles;
     {
         for (const auto& s : color_styles_.shared()) {
@@ -671,7 +670,18 @@ void Scene::render(
                     // AperiodicLagFinder lag_finder{ "large instances: ", std::chrono::milliseconds{5} };
                     large_instances_renderer->render_instances(vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass);
                 }
-
+                {
+                    // AperiodicLagFinder lag_finder{ "blended early: ", std::chrono::milliseconds{5} };
+                    LOG_INFO("Scene::render early blended");
+                    blended.early.render(
+                        dynamic_lights_,
+                        iv,
+                        lights,
+                        skidmarks,
+                        scene_graph_config,
+                        render_config,
+                        { external_render_pass, InternalRenderPass::BLENDED_EARLY });
+                }
                 std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer = IAggregateRenderer::small_sorted_aggregate_renderer();
                 if (small_sorted_aggregate_renderer != nullptr) {
                     // Contains continuous alpha and must therefore be rendered late.
@@ -805,27 +815,16 @@ void Scene::render(
         }
     }
     {
-        // AperiodicLagFinder lag_finder{ "blended: ", std::chrono::milliseconds{5} };
-        // Contains continuous alpha and must therefore be rendered late.
-        LOG_INFO("Scene::render blended");
-        blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
-        for (const auto& b : blended) {
-            DynamicStyle dynamic_style{ dynamic_lights_ != nullptr
-                ? dynamic_lights_->get_color(b.m.t)
-                : fixed_zeros<float, 3>() };
-            b.renderable().render(
-                b.mvp,
-                b.m,
-                iv,
-                &dynamic_style,
-                lights,
-                skidmarks,
-                scene_graph_config,
-                render_config,
-                { external_render_pass, InternalRenderPass::BLENDED },
-                b.animation_state.get(),
-                b.color_style);
-        }
+        // AperiodicLagFinder lag_finder{ "blended late: ", std::chrono::milliseconds{5} };
+        LOG_INFO("Scene::render late blended");
+        blended.late.render(
+            dynamic_lights_,
+            iv,
+            lights,
+            skidmarks,
+            scene_graph_config,
+            render_config,
+            { external_render_pass, InternalRenderPass::BLENDED_LATE });
     }
 }
 

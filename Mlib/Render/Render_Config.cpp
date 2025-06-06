@@ -1,7 +1,9 @@
 #include "Render_Config.hpp"
 #include <Mlib/Features.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 
 using namespace Mlib;
 
@@ -55,6 +57,7 @@ void RenderConfig::apply(ExternalRenderPassType external_render_pass_type) const
 
 void RenderConfig::apply_material(
     ExternalRenderPassType external_render_pass_type,
+    InternalRenderPass internal_render_pass,
     const Material& material) const
 {
     if ((cull_faces != BoolRenderOption::OFF) && material.cull_faces) {
@@ -102,7 +105,9 @@ void RenderConfig::apply_material(
                     } else {
                         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
                     }
-                    CHK(glDepthMask(GL_FALSE));
+                    if (internal_render_pass != InternalRenderPass::BLENDED_EARLY) {
+                        CHK(glDepthMask(GL_FALSE));
+                    }
                     break;
                 default:
                     THROW_OR_ABORT("Unknown blend_mode in material: " + material.identifier());
@@ -147,9 +152,11 @@ THREAD_LOCAL(RenderConfigGuard*) RenderConfigGuard::current_ = nullptr;
 
 RenderConfigGuard::RenderConfigGuard(
     const RenderConfig& render_config,
-    ExternalRenderPassType external_render_pass_type)
-: render_config_{ render_config },
-  external_render_pass_type_{ external_render_pass_type }
+    ExternalRenderPassType external_render_pass_type,
+    InternalRenderPass internal_render_pass)
+    : render_config_{ render_config }
+    , external_render_pass_type_{ external_render_pass_type }
+    , internal_render_pass_{ internal_render_pass }
 {
     if (current_ != nullptr) {
         THROW_OR_ABORT("Detected recursive application of render config");
@@ -173,7 +180,10 @@ MaterialRenderConfigGuard::MaterialRenderConfigGuard(const Material& material) {
         THROW_OR_ABORT("Material render guard without render guard");
     }
     applied_ = true;
-    RenderConfigGuard::current_->render_config_.apply_material(RenderConfigGuard::current_->external_render_pass_type_, material);
+    RenderConfigGuard::current_->render_config_.apply_material(
+        RenderConfigGuard::current_->external_render_pass_type_,
+        RenderConfigGuard::current_->internal_render_pass_,
+        material);
 }
 
 MaterialRenderConfigGuard::~MaterialRenderConfigGuard() {

@@ -26,7 +26,7 @@ public:
     virtual PhysicsMaterial physics_attributes() const override;
     virtual RenderingStrategies rendering_strategies() const override;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
-    virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
+    virtual BlendingPassType required_blending_passes(ExternalRenderPassType render_pass) const override;
     virtual ScenePos max_center_distance2(BillboardId billboard_id) const override;
     virtual void render(
         const FixedArray<ScenePos, 4, 4>& mvp,

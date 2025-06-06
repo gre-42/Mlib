@@ -26,10 +26,12 @@ struct ExternalRenderPass {
 enum class InternalRenderPass {
     NONE = 0,
     INITIAL = 1 << 0,
-    BLENDED = 1 << 1,
-    AGGREGATE = 1 << 2,
-    PARTICLES = 1 << 3,
-    PRELOADED = AGGREGATE | PARTICLES
+    BLENDED_EARLY = 1 << 1,
+    BLENDED_LATE = 1 << 2,
+    AGGREGATE = 1 << 3,
+    PARTICLES = 1 << 4,
+    PRELOADED = AGGREGATE | PARTICLES,
+    ANY_BLENDED = BLENDED_EARLY | BLENDED_LATE
 };
 
 inline InternalRenderPass operator&(InternalRenderPass a, InternalRenderPass b) {

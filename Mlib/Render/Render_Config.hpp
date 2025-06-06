@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <string>
@@ -7,6 +6,8 @@
 namespace Mlib {
 
 struct Material;
+enum class ExternalRenderPassType;
+enum class InternalRenderPass;
 
 struct NoCopy {
     NoCopy() = default;
@@ -31,6 +32,7 @@ struct RenderConfig {
 
     void apply_material(
         ExternalRenderPassType external_render_pass_type,
+        InternalRenderPass internal_render_pass,
         const Material& material) const;
     void unapply_material() const;
 
@@ -72,11 +74,13 @@ class RenderConfigGuard {
 public:
     RenderConfigGuard(
         const RenderConfig& render_config,
-        ExternalRenderPassType external_render_pass_type);
+        ExternalRenderPassType external_render_pass_type,
+        InternalRenderPass internal_render_pass);
     ~RenderConfigGuard();
 private:
     const RenderConfig& render_config_;
     ExternalRenderPassType external_render_pass_type_;
+    InternalRenderPass internal_render_pass_;
     static THREAD_LOCAL(RenderConfigGuard*) current_;
 };
 

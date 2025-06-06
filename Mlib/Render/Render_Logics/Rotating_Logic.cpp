@@ -190,7 +190,7 @@ void RotatingLogic::render_with_setup(
         bn->set_relative_pose(pose.t, matrix_2_tait_bryan_angles(pose.R / scale), scale, std::nullopt);
     }
 
-    RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
+    RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass, InternalRenderPass::INITIAL };
 
     // make sure we clear the framebuffer's content
     CHK(glClearColor(

@@ -1,4 +1,5 @@
 #include "Particle_Renderer.hpp"
+#include <Mlib/Geometry/Material/Blending_Pass_Type.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Creator.hpp>
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
@@ -60,8 +61,8 @@ bool ParticleRenderer::requires_render_pass(ExternalRenderPassType render_pass) 
     return false;
 }
 
-bool ParticleRenderer::requires_blending_pass(ExternalRenderPassType render_pass) const {
-    return true;
+BlendingPassType ParticleRenderer::required_blending_passes(ExternalRenderPassType render_pass) const {
+    return BlendingPassType::LATE;
 }
 
 void ParticleRenderer::render(

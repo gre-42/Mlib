@@ -31,6 +31,7 @@ class ExtremalAxisAlignedBoundingBox;
 template <class TPos, size_t tndim>
 class ExtremalBoundingSphere;
 
+struct ListsOfBlended;
 struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
@@ -255,7 +256,7 @@ public:
         const IDynamicLights* dynamic_lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
-        std::list<Blended>& blended,
+        ListsOfBlended& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
