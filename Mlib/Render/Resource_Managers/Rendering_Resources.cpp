@@ -1906,20 +1906,20 @@ InitializedTexture RenderingResources::initialize_non_dds_texture(
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture: " << color;
         }
-        return { generate_texture((*it)->data(), (*it)->width, (*it)->height, (*it)->nrChannels), TextureType::TEXTURE_2D };
+        return { generate_texture((*it)->data(), (*it)->width, (*it)->height, (*it)->nrChannels), TextureType::TEXTURE_2D, 1 };
     } else if (auto it = get_or_extract<EXTRACT_PROCESSED>(preloaded_processed_texture_array_data_, color); it != nullptr) {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture array: " << color;
         }
         if (it->size() == 1) {
             const auto& data = *((*it)[0]);
-            return { generate_texture(data.data(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
+            return { generate_texture(data.data(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D), 1 };
         } else {
             return generate_texture_array(*it);
         }
     } else if (auto it = get_or_extract<EXTRACT_RAW>(preloaded_raw_texture_data_, color); it != nullptr) {
         auto si = stb_load8(*color.filename, FlipMode::NONE, &it->data, IncorrectDatasizeBehavior::CONVERT);
-        return { generate_texture(si.data(), si.width, si.height, si.nrChannels), chk_type(TextureType::TEXTURE_2D) };
+        return { generate_texture(si.data(), si.width, si.height, si.nrChannels), chk_type(TextureType::TEXTURE_2D), 1 };
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Could not find preloaded texture: " << color;
@@ -1928,13 +1928,13 @@ InitializedTexture RenderingResources::initialize_non_dds_texture(
             auto sis = get_texture_array_data(color, role, FlipMode::VERTICAL);
             if (it->nlayers == 1) {
                 const auto& data = *sis[0];
-                return { generate_texture(data.data(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
+                return { generate_texture(data.data(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D), 1 };
             } else {
                 return generate_texture_array(sis);
             }
         } else {
             auto si = get_texture_data(color, role, FlipMode::VERTICAL);
-            return { generate_texture(si->data(), si->width, si->height, si->nrChannels), chk_type(TextureType::TEXTURE_2D) };
+            return { generate_texture(si->data(), si->width, si->height, si->nrChannels), chk_type(TextureType::TEXTURE_2D), 1 };
         }
     }
 }

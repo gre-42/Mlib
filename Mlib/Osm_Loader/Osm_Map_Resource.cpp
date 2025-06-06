@@ -1365,7 +1365,7 @@ OsmMapResource::OsmMapResource(
     TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_all;
-    if (config.water.has_value()) {
+    if (config.water.has_value() && config.water->generate_tiles) {
         std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
             get_water_region_contours(nodes, ways);
         if (config.water->holes_from_terrain) {

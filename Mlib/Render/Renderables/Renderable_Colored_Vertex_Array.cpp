@@ -839,15 +839,24 @@ void RenderableColoredVertexArray::render_cva(
             TextureLayerProperties::COLOR |
             TextureLayerProperties::NORMAL));
     }
-    if ((animation_state != nullptr) && animation_state->periodic_reference_time.active()) {
+    auto has_animated_textures =
+        (animation_state != nullptr) &&
+        animation_state->periodic_reference_time.active() &&
+        any(cva->morphology.physics_material & (
+            PhysicsMaterial::ATTR_ANIMATED_COLOR | PhysicsMaterial::ATTR_ANIMATED_NORMAL));
+    if (has_animated_textures) {
         if (any(texture_layer_properties)) {
             THROW_OR_ABORT("Detected continuous texture layers in both, renderable and animation");
         }
         add(texture_layer_properties, (
             TextureLayerProperties::CONTINUOUS |
-            TextureLayerProperties::UNIFORM |
-            TextureLayerProperties::COLOR |
-            TextureLayerProperties::NORMAL));
+            TextureLayerProperties::UNIFORM));
+        if (any(cva->morphology.physics_material & PhysicsMaterial::ATTR_ANIMATED_COLOR)) {
+            add(texture_layer_properties, TextureLayerProperties::COLOR);
+        }
+        if (any(cva->morphology.physics_material & PhysicsMaterial::ATTR_ANIMATED_NORMAL)) {
+            add(texture_layer_properties, TextureLayerProperties::NORMAL);
+        }
     }
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
@@ -942,10 +951,8 @@ void RenderableColoredVertexArray::render_cva(
         }
         CHK(glUniform1f(rp.uv_offset_u_location, uv_offset_u));
     }
-    if ((animation_state != nullptr) && animation_state->periodic_reference_time.active()) {
-        if (!any(texture_layer_properties & TextureLayerProperties::UNIFORM)) {
-            THROW_OR_ABORT("Periodic reference time active, but no uniform texture layer configured");
-        }
+    if (has_animated_textures) {
+        assert_true(animation_state != nullptr);
         CHK(glUniform1f(
             rp.texture_layer_location_uniform,
             animation_state->periodic_reference_time.phase01(render_pass.external.time)));
@@ -1153,6 +1160,12 @@ void RenderableColoredVertexArray::render_cva(
             : (disc || mip2)
                 ? GL_TEXTURE_2D_ARRAY
                 : GL_TEXTURE_2D;
+        if ((target == GL_TEXTURE_2D) && (h.layers() != 1)) {
+            THROW_OR_ABORT("2D texture does not have exactly one layer, but " + std::to_string(h.layers()));
+        }
+        if ((target != GL_TEXTURE_2D) && (h.layers() < 2)) {
+            THROW_OR_ABORT("3D texture or texture array has less than two layers, but " + std::to_string(h.layers()));
+        }
         ActiveTextureGuard atg{ integral_cast<GLenum>(GL_TEXTURE0 + texture_unit) };
         CHK(glBindTexture(target, h.handle<GLuint>()));
         setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.mipmap_mode(), target);
@@ -1160,10 +1173,14 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_color != 0) {
         for (const auto& [c, i] : texture_ids_color) {
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
-            setup_texture(
-                tic.id_color(i.id),
-                i.texture,
-                texture_layer_properties);
+            try {
+                setup_texture(
+                    tic.id_color(i.id),
+                    i.texture,
+                    texture_layer_properties);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Texture \"" + *c->filename + "\": " + e.what());
+            }
         }
     }
     if (tic.ntextures_alpha != 0) {

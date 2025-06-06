@@ -61,6 +61,7 @@ struct WaterConfiguration {
     CompressedScenePos duplicate_distance;
     UFixedArray<CompressedScenePos, 2> heights;
     CoastConfiguration coast;
+    bool generate_tiles;
     bool holes_from_terrain;
 };
 

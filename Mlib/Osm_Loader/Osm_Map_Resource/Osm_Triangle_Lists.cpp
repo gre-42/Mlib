@@ -132,7 +132,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .contains_skidmarks = true,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material(config.terrain_materials, tt) }));
@@ -147,7 +147,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .contains_skidmarks = true,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
@@ -162,7 +162,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .contains_skidmarks = true,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material(config.terrain_materials, tt) }));
@@ -438,7 +438,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
+            Morphology{ .physics_material = BASE_WATER_MATERIAL }));
     }
 }
 

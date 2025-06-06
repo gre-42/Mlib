@@ -30,6 +30,7 @@ DECLARE_ARGUMENT(cell_size);
 DECLARE_ARGUMENT(duplicate_distance);
 DECLARE_ARGUMENT(heights);
 DECLARE_ARGUMENT(coast);
+DECLARE_ARGUMENT(generate_tiles);
 DECLARE_ARGUMENT(holes_from_terrain);
 }
 
@@ -43,6 +44,7 @@ void Mlib::from_json(const nlohmann::json& j, WaterConfiguration& water) {
     water.duplicate_distance = jv.at<CompressedScenePos>(WaterArgs::duplicate_distance);
     water.heights = jv.at<UFixedArray<CompressedScenePos, 2>>(WaterArgs::heights);
     water.coast = jv.at<CoastConfiguration>(WaterArgs::coast);
+    water.generate_tiles = jv.at<bool>(WaterArgs::generate_tiles);
     water.holes_from_terrain = jv.at<bool>(WaterArgs::holes_from_terrain);
 }
 

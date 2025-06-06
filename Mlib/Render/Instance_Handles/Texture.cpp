@@ -44,6 +44,9 @@ Texture::Texture(
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); })
 }
 {
+    if (layers == 0) {
+        THROW_OR_ABORT("Number of texture layers is zero");
+    }
     CHK(glGenTextures(1, &handle_));
 }
 
@@ -59,7 +62,11 @@ Texture::Texture(
     , wrap_modes_{ wrap_modes }
     , layers_{ layers }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
-{}
+{
+    if (layers == 0) {
+        THROW_OR_ABORT("Number of texture layers is zero");
+    }
+}
 
 Texture::Texture(
     GenerateTexture,
