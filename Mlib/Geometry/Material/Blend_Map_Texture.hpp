@@ -35,17 +35,28 @@ inline BlendMapRole operator + (BlendMapRole a, uint32_t b) {
 BlendMapRole blend_map_role_from_string(std::string_view s);
 
 enum class BlendMapUvSource: uint32_t {
-    VERTICAL0,
-    VERTICAL1,
-    VERTICAL2,
-    VERTICAL3,
-    VERTICAL4,
+    NONE = 0,
+    VERTICAL0 = 0,              // 00000
+    VERTICAL1 = 1,              // 00001
+    VERTICAL2 = 2,              // 00010
+    VERTICAL3 = 3,              // 00011
+    VERTICAL4 = 4,              // 00100
     VERTICAL_LAST = VERTICAL4,
-    HORIZONTAL
+    HORIZONTAL_XZ = 1 << 3,     // 01000
+    HORIZONTAL_XY = 1 << 4,     // 10000
+    ANY_HORIZONTAL = HORIZONTAL_XZ | HORIZONTAL_XY
 };
 
 inline uint32_t operator - (BlendMapUvSource a, BlendMapUvSource b) {
     return (uint32_t)a - (uint32_t)b;
+}
+
+inline bool any(BlendMapUvSource b) {
+    return b != BlendMapUvSource::NONE;
+}
+
+inline BlendMapUvSource operator & (BlendMapUvSource a, BlendMapUvSource b) {
+    return (BlendMapUvSource)((uint32_t)a & (uint32_t)b);
 }
 
 BlendMapUvSource blend_map_uv_source_from_string(std::string_view s);

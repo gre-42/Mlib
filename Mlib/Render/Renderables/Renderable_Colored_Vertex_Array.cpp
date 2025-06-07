@@ -1542,8 +1542,11 @@ BlendingPassType RenderableColoredVertexArray::required_blending_passes(External
 }
 
 int RenderableColoredVertexArray::continuous_blending_z_order() const {
+    if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED) {
+        THROW_OR_ABORT("Undefined z order");
+    }
     if (continuous_blending_z_order_ == CONTINUOUS_BLENDING_Z_ORDER_CONFLICTING) {
-        THROW_OR_ABORT("Conflicting z_orders");
+        THROW_OR_ABORT("Conflicting z orders");
     }
     return continuous_blending_z_order_;
 }

@@ -29,7 +29,8 @@ BlendMapUvSource Mlib::blend_map_uv_source_from_string(std::string_view s) {
         {"vertical2"sv, BlendMapUvSource::VERTICAL2},
         {"vertical3"sv, BlendMapUvSource::VERTICAL3},
         {"vertical4"sv, BlendMapUvSource::VERTICAL4},
-        {"horizontal"sv, BlendMapUvSource::HORIZONTAL}
+        {"horizontal_xz"sv, BlendMapUvSource::HORIZONTAL_XZ},
+        {"horizontal_xy"sv, BlendMapUvSource::HORIZONTAL_XY}
     };
     auto it = m.find(s);
     if (it == m.end()) {

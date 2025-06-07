@@ -301,8 +301,11 @@ static GenShaderText vertex_shader_text_gen{[](
                 sstr << "vTexCoord" << id;
                 break;
             }
-            case BlendMapUvSource::HORIZONTAL:
+            case BlendMapUvSource::HORIZONTAL_XZ:
                 sstr << "(vPosInstance.xz + horizontal_detailmap_remainder)";
+                break;
+            case BlendMapUvSource::HORIZONTAL_XY:
+                sstr << "(vPosInstance.xy + horizontal_detailmap_remainder)";
                 break;
             default:
                 THROW_OR_ABORT("Unknown blend-map UV source");
@@ -562,7 +565,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vPosInstance = vPosInstance + instancePosition;" << std::endl;
     }
     for (const auto& [t, i] : uv_map) {
-        if ((t.uv_source == BlendMapUvSource::HORIZONTAL) || (nbillboard_ids == 0)) {
+        if (any(t.uv_source & BlendMapUvSource::ANY_HORIZONTAL) || (nbillboard_ids == 0)) {
             sstr << "    tex_coord" << i << " = " << tex_coords(t) << ";" << std::endl;
         } else {
             sstr << "    tex_coord" << i << " = " << tex_coords(t)

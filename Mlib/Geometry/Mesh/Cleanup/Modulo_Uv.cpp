@@ -27,7 +27,7 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
     lcm_local_args(0).reserve(textures.size());
     lcm_local_args(1).reserve(textures.size());
     for (const auto& t : textures) {
-        if (t->uv_source == BlendMapUvSource::HORIZONTAL) {
+        if (any(t->uv_source & BlendMapUvSource::ANY_HORIZONTAL)) {
             if (t->scale(0) != t->scale(1)) {
                 THROW_OR_ABORT("Horizontal UV-coordinates require isotropic scaling. Material: " + cva.material.identifier());
             }

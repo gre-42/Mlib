@@ -576,7 +576,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .normal = {}},
                         .scale = 0.5f,
                         .role = BlendMapRole::DETAIL_COLOR,
-                        .uv_source = BlendMapUvSource::HORIZONTAL});
+                        .uv_source = BlendMapUvSource::HORIZONTAL_XZ});
                 } else if (
                     (material->useDetail.value_or_default() != 0.f) &&
                     (material->detailUVMultiplier.value_or_default() != 0.f) &&
@@ -665,7 +665,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .role = BlendMapRole::DETAIL_COLOR,
                             .uv_source = any(attrs & MetaAttributes::ATTR_VERTICAL)
                                 ? BlendMapUvSource::VERTICAL0
-                                : BlendMapUvSource::HORIZONTAL});
+                                : BlendMapUvSource::HORIZONTAL_XZ});
                     }
                 } else {
                     if (!material->txDiffuse->empty()) {

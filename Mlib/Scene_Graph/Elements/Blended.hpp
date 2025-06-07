@@ -32,7 +32,7 @@ public:
     }
     const ColorStyle* color_style;
     inline std::pair<int, ScenePos> sorting_key() const {
-        return { z_order, mvp(2, 3) };
+        return { z_order, -mvp(2, 3) };
     }
 private:
     int z_order;

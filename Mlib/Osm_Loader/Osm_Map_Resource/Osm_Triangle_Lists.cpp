@@ -200,7 +200,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .contains_skidmarks = true,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(pmit->second, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second }));
@@ -210,7 +210,10 @@ OsmTriangleLists::OsmTriangleLists(
         if (pmit == config.street_materials.end()) {
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(road_properties.type) + '"');
         }
-        bool blend = config.blend_street.contains(road_properties.type) && config.blend_street.at(road_properties.type) && (road_properties.type != RoadType::WALL);
+        bool blend =
+            config.blend_street.contains(road_properties.type) &&
+            config.blend_street.at(road_properties.type) &&
+            (road_properties.type != RoadType::WALL);
         {
             auto alpha_texture_names = config.street_alpha_textures.contains(road_properties.type)
                 ? config.street_alpha_textures.at(road_properties.type)
@@ -235,6 +238,7 @@ OsmTriangleLists::OsmTriangleLists(
                             .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                             .continuous_blending_z_order = 1,
                             .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
+                            .blending_pass = blend ? BlendingPassType::EARLY : BlendingPassType::NONE,
                             .textures_color = textures_color,
                             .textures_alpha = textures_alpha,
                             .reflection_map = (rit != config.street_reflection_map.end())
@@ -247,7 +251,7 @@ OsmTriangleLists::OsmTriangleLists(
                             // .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             // depth-func==equal requires aggregation, because the terrain is also aggregated.
-                            .aggregate_mode = AggregateMode::ONCE,
+                            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                             .shading = material_shading(
                                 (road_properties.type != RoadType::WALL) ? pmit->second : PhysicsMaterial::SURFACE_BASE_STONE,
                                 config),
@@ -279,6 +283,7 @@ OsmTriangleLists::OsmTriangleLists(
                 Material{
                     .blend_mode = BlendMode::CONTINUOUS,
                     .depth_func = DepthFunc::EQUAL,
+                    .blending_pass = BlendingPassType::EARLY,
                     .textures_color = textures_color,
                     .textures_alpha = textures_alpha,
                     .dirt_texture = config.street_dirt_texture,
@@ -287,7 +292,7 @@ OsmTriangleLists::OsmTriangleLists(
                     // .wrap_mode_s = (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                     // depth-func==equal requires aggregation, because the terrain is also aggregated.
-                    .aggregate_mode = AggregateMode::ONCE,
+                    .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                     .shading = material_shading(RawShading::MUD, config),
                     // .reflect_only_y = true,
                     .draw_distance_noperations = 1000}.compute_color_mode(),
@@ -313,7 +318,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 // .wrap_mode_s = curb_wrap_mode_s,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading((config.extrude_curb_amount == (CompressedScenePos)0. && tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second })); // mixed_texture: terrain_texture
@@ -333,7 +338,7 @@ OsmTriangleLists::OsmTriangleLists(
                     : VariableAndHash<std::string>{},
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading((tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second })); // mixed_texture: terrain_texture
@@ -354,7 +359,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 // .wrap_mode_s = curb_wrap_mode_s,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second }));
@@ -365,11 +370,12 @@ OsmTriangleLists::OsmTriangleLists(
             .blend_mode = BlendMode::CONTINUOUS,
             .continuous_blending_z_order = 2,
             .depth_func = DepthFunc::EQUAL,
+            .blending_pass = BlendingPassType::EARLY,
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.racing_line_texture)},
             // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
             // .wrap_mode_t = WrapMode::REPEAT,
             // depth-func==equal requires aggregation, because the terrain is also aggregated.
-            .aggregate_mode = AggregateMode::ONCE,
+            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE });
@@ -383,7 +389,7 @@ OsmTriangleLists::OsmTriangleLists(
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.air_support_texture)},
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
-            .aggregate_mode = AggregateMode::ONCE,
+            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
@@ -393,7 +399,7 @@ OsmTriangleLists::OsmTriangleLists(
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
-            .aggregate_mode = AggregateMode::ONCE,
+            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
@@ -403,7 +409,7 @@ OsmTriangleLists::OsmTriangleLists(
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
-            .aggregate_mode = AggregateMode::ONCE,
+            .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });

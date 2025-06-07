@@ -18,7 +18,7 @@ void ListOfBlended::render(
     const RenderConfig& render_config,
     const RenderPass& render_pass)
 {
-    list.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
+    list.sort([](Blended& a, Blended& b){ return a.sorting_key() < b.sorting_key(); });
     for (const auto& b : list) {
         DynamicStyle dynamic_style{ dynamic_lights != nullptr
             ? dynamic_lights->get_color(b.m.t)

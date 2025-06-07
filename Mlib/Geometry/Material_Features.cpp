@@ -57,7 +57,7 @@ bool Mlib::fragments_depend_on_normal(const std::vector<BlendMapTextureAndId>& t
 bool Mlib::has_horizontal_detailmap(const std::vector<BlendMapTextureAndId>& textures)
 {
     for (const auto& t : textures) {
-        if (t.ops->uv_source == BlendMapUvSource::HORIZONTAL) {
+        if (any(t.ops->uv_source & BlendMapUvSource::ANY_HORIZONTAL)) {
             return true;
         }
     }

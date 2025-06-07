@@ -436,7 +436,7 @@ OsmMapResource::OsmMapResource(
             Material{
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
                 .draw_distance_noperations = 1000},
             Morphology{ .physics_material = PhysicsMaterial::NONE },
@@ -456,7 +456,7 @@ OsmMapResource::OsmMapResource(
                 Material{
                     .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLOBS,
                     .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                    .aggregate_mode = AggregateMode::ONCE,
+                    .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                     .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
                     .draw_distance_noperations = 1000},
                 Morphology{ .physics_material = PhysicsMaterial::NONE },
