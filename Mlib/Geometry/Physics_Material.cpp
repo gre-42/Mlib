@@ -76,6 +76,7 @@ static std::string physics_material_modifiers_to_string(PhysicsMaterial p) {
         { PhysicsMaterial::ATTR_SLIPPERY, "attr_slippery" },
         { PhysicsMaterial::ATTR_ANIMATED_COLOR, "attr_animated_color" },
         { PhysicsMaterial::ATTR_ANIMATED_NORMAL, "attr_animated_normal" },
+        { PhysicsMaterial::ATTR_LIQUID, "attr_liquid" },
         { PhysicsMaterial::OBJ_ALIGNMENT_PLANE, "obj_alignment_plane" },
         { PhysicsMaterial::OBJ_CHASSIS, "obj_chassis" },
         { PhysicsMaterial::OBJ_TIRE_LINE, "obj_tire_line" },

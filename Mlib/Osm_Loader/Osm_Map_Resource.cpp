@@ -1569,7 +1569,8 @@ OsmMapResource::OsmMapResource(
                 !way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND].empty())
             {
                 auto filter = ColoredVertexArrayFilter{
-                    .included_tags = PhysicsMaterial::ATTR_COLLIDE
+                    .included_tags = PhysicsMaterial::ATTR_COLLIDE,
+                    .excluded_tags = PhysicsMaterial::ATTR_LIQUID
                 };
                 auto navigation_acvas = config.navmesh_resource->empty()
                     ? get_arrays(filter)
