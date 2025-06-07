@@ -1192,6 +1192,16 @@ bool RenderingResources::contains_texture_descriptor(const VariableAndHash<std::
 
 TextureDescriptor RenderingResources::get_texture_descriptor(const VariableAndHash<std::string>& name) const {
     LOG_FUNCTION("RenderingResources::get_texture_descriptor " + *name);
+    if (auto it = manual_atlas_tile_descriptors_.try_get(name); it != nullptr) {
+        return TextureDescriptor{
+            .color = ColormapWithModifiers{
+                .filename = name,
+                .color_mode = it->color_mode,
+                .mipmap_mode = it->mipmap_mode,
+                .depth_interpolation = it->depth_interpolation,
+            }.compute_hash()
+        };
+    }
     return texture_descriptors_.get(name);
 }
 
@@ -1244,7 +1254,7 @@ std::vector<std::shared_ptr<StbInfo<uint8_t>>> RenderingResources::get_texture_a
         for (const auto& [source, target] : it->tiles) {
             const auto* si = source_images.try_get(source.name);
             if (si == nullptr) {
-                auto it = source_images.try_emplace(source.name, get_texture_data(source.name, role, flip_mode));
+                auto it = source_images.try_emplace(source.name, get_texture_data(source.name, TextureRole::COLOR_FROM_DB, flip_mode));
                 if (!it.second) {
                     verbose_abort("Could not cache \"" + *source.name.filename + '"');
                 }

@@ -23,7 +23,8 @@ void Mlib::from_json(const nlohmann::json& j, CoastConfiguration& water) {
 
 namespace WaterArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(texture);
+DECLARE_ARGUMENT(textures_color);
+DECLARE_ARGUMENT(textures_alpha);
 DECLARE_ARGUMENT(animation_duration);
 DECLARE_ARGUMENT(aabb);
 DECLARE_ARGUMENT(cell_size);
@@ -37,7 +38,8 @@ DECLARE_ARGUMENT(holes_from_terrain);
 void Mlib::from_json(const nlohmann::json& j, WaterConfiguration& water) {
     JsonView jv{ j };
     jv.validate(WaterArgs::options);
-    water.texture = jv.at<VariableAndHash<std::string>>(WaterArgs::texture);
+    water.textures_color = jv.at<std::vector<VariableAndHash<std::string>>>(WaterArgs::textures_color);
+    water.textures_alpha = jv.at<std::vector<VariableAndHash<std::string>>>(WaterArgs::textures_alpha);
     water.animation_duration = jv.at<std::chrono::steady_clock::duration>(WaterArgs::animation_duration);
     water.aabb = jv.at<DefaultUnitialized<AxisAlignedBoundingBox<CompressedScenePos, 2>>>(WaterArgs::aabb);
     water.cell_size = jv.at<UFixedArray<CompressedScenePos, 2>>(WaterArgs::cell_size);

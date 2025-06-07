@@ -778,7 +778,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         const auto& t = textures_color.at(i);
         assert_true(t.id_color != SIZE_MAX);
         assert_true(t.tex_color != nullptr);
-        if (any(texture_layer_properties & TextureLayerProperties::COLOR)) {
+        if (any(texture_layer_properties)) {
             if (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
                 return "array_texture_blend_color" + std::to_string(i) + "(texture_layer_fs_transformed)";
             } else {
@@ -805,7 +805,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         const auto& t = textures_color.at(i);
         assert_true(t.id_normal != SIZE_MAX);
         assert_true(t.tex_normal != nullptr);
-        if (any(texture_layer_properties & TextureLayerProperties::NORMAL)) {
+        if (any(texture_layer_properties)) {
             if (t->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
                 return "array_texture_blend_normal" + std::to_string(i) + "(texture_layer_fs_transformed)";
             } else {
@@ -833,7 +833,17 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         const auto& t = textures_alpha.at(i);
         assert_true(t.id_color != SIZE_MAX);
         assert_true(t.tex_color != nullptr);
-        return "texture(textures_alpha[" + std::to_string(t.id_color) + "], " + tex_coords(*t) + ')';
+        if (any(texture_layer_properties)) {
+            if (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
+                return "array_texture_blend_alpha" + std::to_string(i) + "(texture_layer_fs_transformed)";
+            } else {
+                return
+                    "texture(textures_alpha[" + std::to_string(t.id_color) +
+                    "], vec3(" + tex_coords(*t) + ", texture_layer_fs_transformed))";
+            }
+        } else {
+            return "texture(textures_alpha[" + std::to_string(t.id_color) + "], " + tex_coords(*t) + ')';
+        }
     };
     std::stringstream sstr;
     sstr << std::scientific;
@@ -858,8 +868,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (!textures_color.empty()) {
-        auto cont = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::COLOR);
-        auto disc = all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::COLOR);
+        auto cont = any(texture_layer_properties & TextureLayerProperties::CONTINUOUS);
+        auto disc = any(texture_layer_properties & TextureLayerProperties::DISCRETE);
         auto mip2 = (textures_color[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         if (cont || disc) {
             for (const auto& t : textures_color) {
@@ -881,7 +891,27 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform lowp " << sampler_type << " textures_color[" << ntextures_color << "];" << std::endl;
     }
     if (!textures_alpha.empty()) {
-        sstr << "uniform sampler2D textures_alpha[" << ntextures_alpha << "];" << std::endl;
+        auto cont = any(texture_layer_properties & TextureLayerProperties::CONTINUOUS);
+        auto disc = any(texture_layer_properties & TextureLayerProperties::DISCRETE);
+        auto mip2 = (textures_alpha[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        if (cont || disc) {
+            for (const auto& t : textures_alpha) {
+                auto cmip2 = (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+                if (cmip2 != mip2) {
+                    THROW_OR_ABORT("Unsupported mipmap modes in texture \"" + *t->texture_descriptor.color.filename + '"');
+                }
+            }
+        } else if (mip2) {
+            THROW_OR_ABORT(
+                "Alpha: 2D mipmaps require a texture layer: \"" +
+                *textures_alpha[0]->texture_descriptor.color.filename + '"');
+        }
+        const char* sampler_type = (cont && !mip2)
+            ? "sampler3D"
+            : (disc || mip2)
+                ? "sampler2DArray"
+                : "sampler2D";
+        sstr << "uniform lowp " << sampler_type << " textures_alpha[" << ntextures_alpha << "];" << std::endl;
     }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
@@ -924,8 +954,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "in vec3 bitangent;" << std::endl;
     }
     if (has_normalmap) {
-        auto cont = all(texture_layer_properties, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::NORMAL);
-        auto disc = all(texture_layer_properties, TextureLayerProperties::DISCRETE | TextureLayerProperties::NORMAL);
+        auto cont = any(texture_layer_properties & TextureLayerProperties::CONTINUOUS);
+        auto disc = any(texture_layer_properties & TextureLayerProperties::DISCRETE);
         auto mip2 = (textures_color[0]->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
         if (cont || disc) {
             for (const auto& t : textures_color) {
@@ -1047,6 +1077,24 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
                 sstr << "    vec4 top = texture(texture_normalmap[" << t.id_normal << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
                 sstr << "    vec4 bottom = texture(texture_normalmap[" << t.id_normal << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
+                sstr << "    return mix(top, bottom, frac);" << std::endl;
+                sstr << "}" << std::endl;
+            }
+        }
+    }
+    if (!textures_alpha.empty()) {
+        auto mip2_alpha = (textures_alpha[0]->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D);
+        if (mip2_alpha) {
+            for (const auto& [i, t] : enumerate(textures_alpha)) {
+                if (t->texture_descriptor.color.filename->empty()) {
+                    continue;
+                }
+                sstr << "vec4 array_texture_blend_alpha" << i << "(in float z) {" << std::endl;
+                sstr << "    float layers = " << t.tex_color->layers() << ".0;" << std::endl;
+                sstr << "    float frac = fract(z * (layers - 1.0));" << std::endl;
+                sstr << "    float fz = floor(z * (layers - 1.0));" << std::endl;
+                sstr << "    vec4 top = texture(textures_alpha[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz));" << std::endl;
+                sstr << "    vec4 bottom = texture(textures_alpha[" << t.id_color << "], vec3(" << tex_coord << uv_map[*t] << ", fz + 1.0));" << std::endl;
                 sstr << "    return mix(top, bottom, frac);" << std::endl;
                 sstr << "}" << std::endl;
             }
@@ -1292,7 +1340,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (textures_color.size() == 1) {
         sstr << "    vec4 texture_color_ambient_diffuse = " << sample_color(0) << ';' << std::endl;
-        sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
+        if (textures_alpha.empty()) {
+            sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
+        }
     } else if (textures_color.size() > 1) {
         if (textures_color[0]->role == BlendMapRole::SUMMAND) {
             sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, " << sample_color(0) << ".a);" << std::endl;
@@ -1330,7 +1380,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
         if (target == ReductionTarget::ALPHA) {
-            sstr << "    texture_color_ambient_diffuse.a = 0.0;" << std::endl;
+            if (has_alpha) {
+                sstr << "    texture_color_ambient_diffuse.a = clamp(alpha_fac, 0.0, 1.0);" << std::endl;
+            } else {
+                sstr << "    texture_color_ambient_diffuse.a = 0.0;" << std::endl;
+            }
         }
         if (alpha_distances == default_linear_distances) {
             if (fog_distances != default_step_distances) {
@@ -1463,6 +1517,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     case BlendMapReductionOperation::PLUS:     rop = '+'; break;
                     case BlendMapReductionOperation::MINUS:    rop = '-'; break;
                     case BlendMapReductionOperation::TIMES:    rop = '*'; break;
+                    case BlendMapReductionOperation::FEATHER:  rop = '?'; break;
                     case BlendMapReductionOperation::BLEND:    rop = '+'; break;
                     case BlendMapReductionOperation::COLORIZE: rop = '?'; break;
                     default: THROW_OR_ABORT("Unknown blendmap reduction type");
@@ -1484,7 +1539,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                             sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= final_weight * bcolor.rgb;" << std::endl;
                         }
                     } else if (target == ReductionTarget::ALPHA) {
-                        sstr << "            texture_color_ambient_diffuse.a " << rop << "= final_weight * intensity + " << t->plus << ";" << std::endl;
+                        if (t->reduction == BlendMapReductionOperation::FEATHER) {
+                            sstr << "            float h = (0.5 - abs(texture_color_ambient_diffuse.a - 0.5)) * 2.0;" << std::endl;
+                            sstr << "            h = clamp(h, 0.0, 1.0);" << std::endl;
+                            sstr << "            float intens = clamp((intensity + " << + t->plus << ") * " << t->discreteness << ", 0.0, 1.0);" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse.a = mix(texture_color_ambient_diffuse.a, intens, h);" << std::endl;
+                        } else {
+                            sstr << "            texture_color_ambient_diffuse.a " << rop << "= final_weight * intensity + " << t->plus << ";" << std::endl;
+                        }
                     } else {
                         THROW_OR_ABORT("Unknown reduction target (1)");
                     }
@@ -1595,7 +1657,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         sstr << "    }" << std::endl;
     }
-    if (has_lightmap_depth) {
+    if (has_lightmap_depth && !light_shadow_indices.empty()) {
         for (size_t i : light_shadow_indices) {
             assert_true(i < lights.size());
             sstr << "    {" << std::endl;
@@ -1619,7 +1681,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    }" << std::endl;
         }
     }
-    if (!has_lightmap_depth) {
+    if (!has_lightmap_depth && !light_shadow_indices.empty()) {
         for (size_t i : light_shadow_indices) {
             assert_true(i < lights.size());
             sstr << "    {" << std::endl;

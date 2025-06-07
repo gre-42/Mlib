@@ -16,7 +16,6 @@ static const auto BASE_WATER_MATERIAL =
     PhysicsMaterial::ATTR_VISIBLE |
     PhysicsMaterial::ATTR_COLLIDE |
     PhysicsMaterial::ATTR_CONCAVE |
-    PhysicsMaterial::ATTR_ANIMATED_COLOR |
-    PhysicsMaterial::ATTR_ANIMATED_NORMAL;
+    PhysicsMaterial::ATTR_ANIMATED_TEXTURES;
 
 }

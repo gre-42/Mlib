@@ -681,7 +681,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::water)) {
             config.water = args.arguments.at<WaterConfiguration>(KnownArgs::water);
-            config.water->texture = VariableAndHash<std::string>{ args.arguments.fpath(*config.water->texture).path };
+            for (auto& t : config.water->textures_color) {
+                t = VariableAndHash<std::string>{ args.arguments.fpath(*t).path };
+            }
+            for (auto& t : config.water->textures_alpha) {
+                t = VariableAndHash<std::string>{ args.arguments.fpath(*t).path };
+            }
         }
         if (args.arguments.contains_non_null(KnownArgs::waysides_surface)) {
             config.waysides_surface = args.arguments.at<std::vector<WaysideResourceNamesSurface>>(KnownArgs::waysides_surface);

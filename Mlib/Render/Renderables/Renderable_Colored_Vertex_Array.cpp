@@ -811,23 +811,17 @@ void RenderableColoredVertexArray::render_cva(
     if (si.has_discrete_triangle_texture_layers()) {
         add(texture_layer_properties, (
             TextureLayerProperties::DISCRETE |
-            TextureLayerProperties::VERTEX |
-            TextureLayerProperties::COLOR |
-            TextureLayerProperties::NORMAL));
+            TextureLayerProperties::VERTEX));
     }
     if (has_discrete_atlas_texture_layer) {
         add(texture_layer_properties, (
             TextureLayerProperties::DISCRETE |
-            TextureLayerProperties::ATLAS |
-            TextureLayerProperties::COLOR |
-            TextureLayerProperties::NORMAL));
+            TextureLayerProperties::ATLAS));
     }
     if (si.has_continuous_triangle_texture_layers()) {
         add(texture_layer_properties, (
             TextureLayerProperties::CONTINUOUS |
-            TextureLayerProperties::VERTEX |
-            TextureLayerProperties::COLOR |
-            TextureLayerProperties::NORMAL));
+            TextureLayerProperties::VERTEX));
     }
     if ((instances != nullptr) && instances->has_continuous_texture_layer()) {
         if (any(texture_layer_properties)) {
@@ -835,15 +829,12 @@ void RenderableColoredVertexArray::render_cva(
         }
         add(texture_layer_properties, (
             TextureLayerProperties::CONTINUOUS |
-            TextureLayerProperties::VERTEX |
-            TextureLayerProperties::COLOR |
-            TextureLayerProperties::NORMAL));
+            TextureLayerProperties::VERTEX));
     }
     auto has_animated_textures =
         (animation_state != nullptr) &&
         animation_state->periodic_reference_time.active() &&
-        any(cva->morphology.physics_material & (
-            PhysicsMaterial::ATTR_ANIMATED_COLOR | PhysicsMaterial::ATTR_ANIMATED_NORMAL));
+        any(cva->morphology.physics_material & PhysicsMaterial::ATTR_ANIMATED_TEXTURES);
     if (has_animated_textures) {
         if (any(texture_layer_properties)) {
             THROW_OR_ABORT("Detected continuous texture layers in both, renderable and animation");
@@ -851,12 +842,6 @@ void RenderableColoredVertexArray::render_cva(
         add(texture_layer_properties, (
             TextureLayerProperties::CONTINUOUS |
             TextureLayerProperties::UNIFORM));
-        if (any(cva->morphology.physics_material & PhysicsMaterial::ATTR_ANIMATED_COLOR)) {
-            add(texture_layer_properties, TextureLayerProperties::COLOR);
-        }
-        if (any(cva->morphology.physics_material & PhysicsMaterial::ATTR_ANIMATED_NORMAL)) {
-            add(texture_layer_properties, TextureLayerProperties::NORMAL);
-        }
     }
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
@@ -1152,9 +1137,9 @@ void RenderableColoredVertexArray::render_cva(
         const ITextureHandle& h,
         TextureLayerProperties tlp)
     {
-        auto cont = all(tlp, TextureLayerProperties::CONTINUOUS | TextureLayerProperties::COLOR);
-            auto disc = all(tlp, TextureLayerProperties::DISCRETE | TextureLayerProperties::COLOR);
-            auto mip2 = (h.mipmap_mode() == MipmapMode::WITH_MIPMAPS_2D);
+        auto cont = any(tlp & TextureLayerProperties::CONTINUOUS);
+        auto disc = any(tlp & TextureLayerProperties::DISCRETE);
+        auto mip2 = (h.mipmap_mode() == MipmapMode::WITH_MIPMAPS_2D);
         GLenum target = (cont && !mip2)
             ? GL_TEXTURE_3D
             : (disc || mip2)

@@ -9,12 +9,9 @@ enum class TextureLayerProperties {
     DISCRETE = 1 << 0,
     CONTINUOUS = 1 << 1,
 
-    COLOR = 1 << 2,
-    NORMAL = 1 << 3,
-
-    VERTEX = 1 << 4,
-    ATLAS = 1 << 5,
-    UNIFORM = 1 << 6
+    VERTEX = 1 << 2,
+    ATLAS = 1 << 3,
+    UNIFORM = 1 << 4
 };
 
 inline TextureLayerProperties operator & (TextureLayerProperties a, TextureLayerProperties b) {
