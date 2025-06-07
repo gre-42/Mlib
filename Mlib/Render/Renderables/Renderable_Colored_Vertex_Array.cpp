@@ -1170,27 +1170,25 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glBindTexture(target, h.handle<GLuint>()));
         setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.mipmap_mode(), target);
     };
-    if (tic.ntextures_color != 0) {
-        for (const auto& [c, i] : texture_ids_color) {
-            LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
-            try {
-                setup_texture(
-                    tic.id_color(i.id),
-                    i.texture,
-                    texture_layer_properties);
-            } catch (const std::runtime_error& e) {
-                throw std::runtime_error("Texture \"" + *c->filename + "\": " + e.what());
-            }
+    assert_true(tic.ntextures_color == texture_ids_color.size());
+    for (const auto& [c, i] : texture_ids_color) {
+        LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
+        try {
+            setup_texture(
+                tic.id_color(i.id),
+                i.texture,
+                texture_layer_properties);
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Texture \"" + *c->filename + "\": " + e.what());
         }
     }
-    if (tic.ntextures_alpha != 0) {
-        for (const auto& [c, i] : texture_ids_alpha) {
-            LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
-            setup_texture(
-                tic.id_alpha(i.id),
-                i.texture,
-                TextureLayerProperties::NONE);
-        }
+    assert_true(tic.ntextures_alpha == texture_ids_alpha.size());
+    for (const auto& [c, i] : texture_ids_alpha) {
+        LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + c->filename + '"');
+        setup_texture(
+            tic.id_alpha(i.id),
+            i.texture,
+            TextureLayerProperties::NONE);
     }
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light color textures");
@@ -1280,6 +1278,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind dirtmap texture");
     if (tic.ntextures_dirt != 0) {
+        assert_true(tic.ntextures_dirt == 2);
         const auto& mname = dirtmap_name;
         {
             const auto& dirtmap_vp = secondary_rendering_resources_.get_vp(mname);

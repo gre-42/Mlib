@@ -773,6 +773,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     auto sample_color = [&](size_t i)
     {
         const auto& t = textures_color.at(i);
+        assert_true(t.id_color != SIZE_MAX);
+        assert_true(t.tex_color != nullptr);
         if (any(texture_layer_properties & TextureLayerProperties::COLOR)) {
             if (t->texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
                 return "array_texture_blend_color" + std::to_string(i) + "(texture_layer_fs_transformed)";
@@ -791,14 +793,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             THROW_OR_ABORT("Specular maps not supported for blended textures");
         }
         const auto& t = textures_color.at(0);
-        if (t.id_specular != 0) {
-            THROW_OR_ABORT("Specular ID not zero");
-        }
+        assert_true(t.id_specular == 0);
+        assert_true(t.tex_specular != nullptr);
         return "texture(texture_specularmap, " + tex_coords(*t) + ')';
     };
     auto sample_normalmap_ = [&](size_t i)
     {
         const auto& t = textures_color.at(i);
+        assert_true(t.id_normal != SIZE_MAX);
+        assert_true(t.tex_normal != nullptr);
         if (any(texture_layer_properties & TextureLayerProperties::NORMAL)) {
             if (t->texture_descriptor.normal.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
                 return "array_texture_blend_normal" + std::to_string(i) + "(texture_layer_fs_transformed)";
@@ -813,6 +816,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     };
     auto normalmap_coords = [&](size_t i) {
         const auto& t = textures_color.at(i);
+        assert_true(t.id_normal != SIZE_MAX);
+        assert_true(t.tex_normal != nullptr);
         std::stringstream sstr;
         if (any(t->texture_descriptor.normal.color_mode & ColorMode::AGR_NORMAL)) {
             sstr << "(2.0 * " << sample_normalmap_(i) << ".agr - 1.0)";
@@ -823,6 +828,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     };
     auto sample_alpha = [&](size_t i) {
         const auto& t = textures_alpha.at(i);
+        assert_true(t.id_color != SIZE_MAX);
+        assert_true(t.tex_color != nullptr);
         return "texture(textures_alpha[" + std::to_string(t.id_color) + "], " + tex_coords(*t) + ')';
     };
     std::stringstream sstr;
