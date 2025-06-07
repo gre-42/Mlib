@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Close_Neighbor_Detector.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Height_Contours.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Triangulate_Entity_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
@@ -18,11 +19,21 @@ void Mlib::find_coast_contours(
     for (const auto& triangles : terrain_lists) {
         terrain.emplace_back(triangles->triangle_array());
     }
-    for (const auto& c : height_contours(terrain, water_heights(0))) {
-        contours.emplace_back(WaterType::UNDEFINED, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+    for (auto& c : height_contours(terrain, water_heights(0))) {
+        if (compute_area_ccw(c, 1.) > 0) {
+            contours.emplace_back(WaterType::UNDEFINED, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+        } else {
+            c.reverse();
+            contours.emplace_back(WaterType::UNDEFINED, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+        }
     }
-    for (const auto& c : height_contours(terrain, water_heights(1))) {
-        contours.emplace_back(WaterType::SHALLOW_HOLE, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+    for (auto& c : height_contours(terrain, water_heights(1))) {
+        if (compute_area_ccw(c, 1.) > 0) {
+            contours.emplace_back(WaterType::SHALLOW_HOLE, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+        } else {
+            c.reverse();
+            contours.emplace_back(WaterType::SHALLOW_LAKE, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);
+        }
     }
 }
 
@@ -119,7 +130,7 @@ void Mlib::set_water_alpha(
     ScenePos steepness = 1. / (ScenePos)coast_width;
     WayBvh way_bvh;
     for (const auto& c : region_contours) {
-        if (c.hole_type == WaterType::SHALLOW_HOLE) {
+        if (c.hole_type != WaterType::UNDEFINED) {
             way_bvh.add_path(c.geometry);
         }
     }

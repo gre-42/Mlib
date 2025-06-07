@@ -441,22 +441,24 @@ OsmTriangleLists::OsmTriangleLists(
         for (const VariableAndHash<std::string>& texture : config.water->textures_alpha) {
             blend_textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
-        tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList<CompressedScenePos>>(
-            "water" + name_suffix,
-            Material{
-                .blend_mode = (config.water->coast.width == (CompressedScenePos)0.f)
-                    ? BlendMode::OFF
-                    : BlendMode::CONTINUOUS,
-                .blending_pass = (config.water->coast.width == (CompressedScenePos)0.f)
-                    ? BlendingPassType::NONE
-                    : BlendingPassType::EARLY,
-                .textures_color = blend_textures_color,
-                .textures_alpha = blend_textures_alpha,
-                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
-                .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                .shading = material_shading(RawShading::DEFAULT, config),
-                .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_WATER_MATERIAL }));
+        for (const auto& wt : { WaterType::SHALLOW_LAKE, WaterType::UNDEFINED }) {
+            tl_water.insert(wt, std::make_shared<TriangleList<CompressedScenePos>>(
+                "water" + name_suffix,
+                Material{
+                    .blend_mode = (config.water->coast.width == (CompressedScenePos)0.f)
+                        ? BlendMode::OFF
+                        : BlendMode::CONTINUOUS,
+                    .blending_pass = (config.water->coast.width == (CompressedScenePos)0.f)
+                        ? BlendingPassType::NONE
+                        : BlendingPassType::EARLY,
+                    .textures_color = blend_textures_color,
+                    .textures_alpha = blend_textures_alpha,
+                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
+                    .aggregate_mode = AggregateMode::NODE_TRIANGLES,
+                    .shading = material_shading(RawShading::DEFAULT, config),
+                    .draw_distance_noperations = 1000}.compute_color_mode(),
+                Morphology{ .physics_material = BASE_WATER_MATERIAL }));
+        }
     }
 }
 

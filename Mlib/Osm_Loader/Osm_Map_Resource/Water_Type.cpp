@@ -10,6 +10,8 @@ WaterType Mlib::water_type_from_string(const std::string& wt) {
         return WaterType::STEEP_HOLE;
     } else if (wt == "shallow_hole") {
         return WaterType::SHALLOW_HOLE;
+    } else if (wt == "shallow_lake") {
+        return WaterType::SHALLOW_LAKE;
     } else {
         THROW_OR_ABORT("Unknown water type");
     }
@@ -22,6 +24,8 @@ std::string Mlib::water_type_to_string(WaterType wt) {
         return "steep_hole";
     } else if (wt == WaterType::SHALLOW_HOLE) {
         return "shallow_hole";
+    } else if (wt == WaterType::SHALLOW_LAKE) {
+        return "shallow_lake";
     } else {
         THROW_OR_ABORT("Unknown water type");
     }
