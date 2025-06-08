@@ -432,13 +432,13 @@ OsmTriangleLists::OsmTriangleLists(
     entrances[EntranceType::BRIDGE];
     if (config.water.has_value()) {
         std::vector<BlendMapTexture> blend_textures_color;
-        blend_textures_color.reserve(config.water->textures_color.size());
-        for (const VariableAndHash<std::string>& texture : config.water->textures_color) {
+        blend_textures_color.reserve(config.water->textures.color.size());
+        for (const VariableAndHash<std::string>& texture : config.water->textures.color) {
             blend_textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         std::vector<BlendMapTexture> blend_textures_alpha;
-        blend_textures_alpha.reserve(config.water->textures_alpha.size());
-        for (const VariableAndHash<std::string>& texture : config.water->textures_alpha) {
+        blend_textures_alpha.reserve(config.water->textures.alpha.size());
+        for (const VariableAndHash<std::string>& texture : config.water->textures.alpha) {
             blend_textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         for (const auto& wt : { WaterType::SHALLOW_LAKE, WaterType::UNDEFINED }) {

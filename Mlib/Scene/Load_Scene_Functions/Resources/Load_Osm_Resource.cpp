@@ -681,10 +681,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::water)) {
             config.water = args.arguments.at<WaterConfiguration>(KnownArgs::water);
-            for (auto& t : config.water->textures_color) {
+            for (auto& t : config.water->textures.color) {
                 t = VariableAndHash<std::string>{ args.arguments.fpath(*t).path };
             }
-            for (auto& t : config.water->textures_alpha) {
+            for (auto& t : config.water->textures.alpha) {
                 t = VariableAndHash<std::string>{ args.arguments.fpath(*t).path };
             }
         }

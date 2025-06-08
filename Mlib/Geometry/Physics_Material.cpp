@@ -19,6 +19,7 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"attr_contains_skidmarks", PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS},
         {"attr_slippery", PhysicsMaterial::ATTR_SLIPPERY},
         {"attr_animated_textures", PhysicsMaterial::ATTR_ANIMATED_TEXTURES},
+        {"attr_liquid", PhysicsMaterial::ATTR_LIQUID},
         {"obj_alignment_plane", PhysicsMaterial::OBJ_ALIGNMENT_PLANE},
         {"obj_chassis", PhysicsMaterial::OBJ_CHASSIS},
         {"obj_tire_line", PhysicsMaterial::OBJ_TIRE_LINE},

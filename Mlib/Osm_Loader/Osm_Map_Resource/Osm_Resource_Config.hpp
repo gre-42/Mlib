@@ -53,9 +53,15 @@ struct CoastConfiguration {
 
 void from_json(const nlohmann::json& j, CoastConfiguration& water);
 
+struct WaterTextureConfiguration {
+    std::vector<VariableAndHash<std::string>> color;
+    std::vector<VariableAndHash<std::string>> alpha;
+};
+
+void from_json(const nlohmann::json& j, WaterTextureConfiguration& textures);
+
 struct WaterConfiguration {
-    std::vector<VariableAndHash<std::string>> textures_color;
-    std::vector<VariableAndHash<std::string>> textures_alpha;
+    WaterTextureConfiguration textures;
     std::chrono::steady_clock::duration animation_duration;
     AxisAlignedBoundingBox<CompressedScenePos, 2> aabb = uninitialized;
     FixedArray<CompressedScenePos, 2> cell_size = uninitialized;
