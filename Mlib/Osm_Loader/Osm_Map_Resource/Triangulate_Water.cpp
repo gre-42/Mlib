@@ -130,7 +130,7 @@ void Mlib::set_water_alpha(
     ScenePos steepness = 1. / (ScenePos)coast_width;
     WayBvh way_bvh;
     for (const auto& c : region_contours) {
-        if (c.hole_type != WaterType::UNDEFINED) {
+        if (any(c.hole_type & WaterType::ANY_SHALLOW)) {
             way_bvh.add_path(c.geometry);
         }
     }
