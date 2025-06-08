@@ -50,8 +50,40 @@ void Mlib::apply_heightmap_and_smoothen(
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors)
 {
     FunctionGuard fg{ "Apply heightmap and smoothen" };
-    if (config.heightmap.empty() && config.street_edge_smoothness == 0 && config.terrain_edge_smoothness == 0) {
+    if (config.heightmap.empty() &&
+        (config.street_edge_smoothness == 0) &&
+        (config.terrain_edge_smoothness == 0))
+    {
         return;
+    }
+
+    std::map<CompressedScenePos*, CompressedScenePos> psharp_heights;
+    {
+        std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos> sharp_heights;
+        for (const auto& [_, w] : ways) {
+            auto it = w.tags.find("sharp_height");
+            if (it == w.tags.end()) {
+                continue;
+            }
+            auto sharp_height = (CompressedScenePos)safe_stod(it->second);
+            for (const auto& n : w.nd) {
+                const auto& pos = nodes.at(n).position;
+                sharp_heights.try_emplace(OrderableFixedArray{pos}, sharp_height);
+            }
+        }
+        if (!sharp_heights.empty()) {
+            for (auto& l : osm_triangle_lists.tls_smooth()) {
+                for (auto& t : l->triangles) {
+                    for (auto& v : t.flat_iterable()) {
+                        auto it = sharp_heights.find(OrderableFixedArray<CompressedScenePos, 2>{
+                            v.position(0), v.position(1)});
+                        if (it != sharp_heights.end()) {
+                            psharp_heights[&v.position(2)] = it->second;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     auto get_smoothed_vertices = [&](
@@ -280,5 +312,8 @@ void Mlib::apply_heightmap_and_smoothen(
             //     save_obj("/tmp/tls_smoothed.obj", IndexedFaceSet<float, size_t>{tcp});
             // }
         }
+    }
+    for (auto& [p, h] : psharp_heights) {
+        *p = h;
     }
 }

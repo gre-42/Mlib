@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     }
 
     ButtonStates bs;
-    while(true) {
+    while (true) {
         bs.update_gamepad_state();
         bs.print();
         bs.print(

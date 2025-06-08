@@ -11,7 +11,11 @@ class FixedArray;
 template <class TPos>
 class ColoredVertexArray;
 
-std::list<std::list<FixedArray<CompressedScenePos, 2>>> height_contours(
+std::list<std::list<FixedArray<CompressedScenePos, 2>>> height_contours_by_edge(
+    const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
+    CompressedScenePos height);
+
+std::list<std::list<FixedArray<CompressedScenePos, 2>>> height_contours_by_vertex(
     const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
     CompressedScenePos height);
 
