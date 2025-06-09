@@ -830,7 +830,7 @@ void test_height_contours() {
             .dynamically_lighted = false,
             .physics_material = PhysicsMaterial::ATTR_VISIBLE,
             .werror = true});
-    height_contours(triangles, (CompressedScenePos)0.1f);
+    height_contours_by_vertex(triangles, (CompressedScenePos)0.1f);
 }
 
 int main(int argc, const char** argv) {

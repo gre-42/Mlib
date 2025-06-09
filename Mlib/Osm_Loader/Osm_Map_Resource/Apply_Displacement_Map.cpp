@@ -44,7 +44,11 @@ void Mlib::apply_displacement_map(
                 auto d = (scale * (min_displacement + displacement) * (v.normal * distance_2_z_scale(float(dist / scale))).casted<double>())
                     .casted<CompressedScenePos>();
                 v.position += d;
-                displacements.try_emplace(OrderableFixedArray{pt}, v.position);
+                if (auto it = displacements.try_emplace(OrderableFixedArray{pt}, v.position); !it.second) {
+                    if (any(v.position != it.first->second)) {
+                        THROW_OR_ABORT((std::stringstream() << "Conflicting displacements (0): " << it.first->second << " | " << v.position).str());
+                    }
+                }
                 auto bit = vertex_instances_map.extract(OrderableFixedArray{pt});
                 if (!bit.empty()) {
                     for (auto& p : bit.mapped()) {

@@ -12,13 +12,9 @@ using namespace Mlib;
 
 void Mlib::find_coast_contours(
     std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& contours,
-    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& terrain_lists,
+    const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& terrain,
     const FixedArray<CompressedScenePos, 2>& water_heights)
 {
-    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> terrain;
-    for (const auto& triangles : terrain_lists) {
-        terrain.emplace_back(triangles->triangle_array());
-    }
     for (auto& c : height_contours_by_edge(terrain, water_heights(0))) {
         if (compute_area_ccw(c, 1.) > 0) {
             contours.emplace_back(WaterType::UNDEFINED, WaterType::UNDEFINED, (CompressedScenePos)0.f, c);

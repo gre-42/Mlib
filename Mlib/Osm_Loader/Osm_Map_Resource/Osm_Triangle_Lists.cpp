@@ -620,6 +620,7 @@ std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::t
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
+    res.insert(res.end(), tls_buildings_ground.begin(), tls_buildings_ground.end());
     return res;
 }
 

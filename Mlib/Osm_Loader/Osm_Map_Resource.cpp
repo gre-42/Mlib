@@ -695,11 +695,29 @@ OsmMapResource::OsmMapResource(
             config.displacementmap_distance_2_z_scale,
             config.scale);
     } else {
-        for (const auto& l : osm_triangle_lists.tls_smoothed()) {
+        auto lsts = osm_triangle_lists.tls_smoothed();
+        for (const auto& l : lsts) {
             for (const auto& t : l->triangles) {
                 for (const auto& v : t.flat_iterable()) {
                     auto v2 = OrderableFixedArray<CompressedScenePos, 2>(v.position(0), v.position(1));
-                    displacements.try_emplace(v2, v.position);
+                    if (auto it = displacements.try_emplace(v2, v.position); !it.second) {
+                        if (any(v.position != it.first->second)) {
+                            for (const auto& n_l : lsts) {
+                                for (const auto& n_t : n_l->triangles) {
+                                    for (const auto& n_v : n_t.flat_iterable()) {
+                                        auto n_v2 = OrderableFixedArray<CompressedScenePos, 2>(n_v.position(0), n_v.position(1));
+                                        if ((&n_v != &v) && (n_v2 == v2)) {
+                                            THROW_OR_ABORT((std::stringstream() <<
+                                                "Conflicting displacements (1): " <<
+                                                it.first->second << " == " << n_v.position << " | " << v.position <<
+                                                ". List 0: " << n_l->name << ", list 1: " << l->name).str());
+                                        }
+                                    }
+                                }
+                            }
+                            verbose_abort("Conflicting displacements (1): internal error");
+                        }
+                    }
                 }
             }
         }
@@ -1369,18 +1387,20 @@ OsmMapResource::OsmMapResource(
         std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
             get_water_region_contours(nodes, ways);
         if (config.water->holes_from_terrain) {
+            auto lst = osm_triangle_lists.tls_wo_subtraction_and_water();
+            for (const auto& l : tls_buildings) {
+                if (l->morphology.center_distances2(1) == INFINITY) {
+                    lst.push_back(l);
+                }
+            }
             try {
                 find_coast_contours(
                     water_contours,
-                    osm_triangle_lists.tls_wo_subtraction_and_water(),
+                    lst,
                     config.water->heights);
             } catch (const EdgeException<CompressedScenePos>& e) {
                 if (auto fn = try_getenv("OSM_WATER_TERRAIN_FILENAME"); fn.has_value()) {
-                    std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> terrain;
-                    for (const auto& triangles : osm_triangle_lists.tls_wo_subtraction_and_water()) {
-                        terrain.emplace_back(triangles->triangle_array());
-                    }
-                    save_obj(*fn, terrain, {}, {});
+                    save_obj(*fn, lst, {}, {});
                     handle_edge_exception(e, "Could find coast contour, debug image saved");
                 } else {
                     handle_edge_exception(e, "Could find coast contour, consider setting the \"OSM_WATER_TERRAIN_FILENAME\" variable");

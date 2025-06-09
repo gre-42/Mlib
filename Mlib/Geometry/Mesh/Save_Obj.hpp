@@ -13,6 +13,8 @@ namespace Mlib {
 
 template <class TPos>
 class ColoredVertexArray;
+template <class TPos>
+class TriangleList;
 struct Material;
 
 template <class TDir, class TPos, class TIndex>
@@ -84,6 +86,13 @@ void save_obj(
     const std::string& filename,
     const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
     const std::function<std::string(const ColoredVertexArray<TPos>&)>& material_name = {},
+    const std::function<ObjMaterial(const Material&)>& convert_material = {});
+
+template <class TPos>
+void save_obj(
+    const std::string& filename,
+    const std::list<std::shared_ptr<TriangleList<TPos>>>& cvas,
+    const std::function<std::string(const TriangleList<TPos>&)>& material_name = {},
     const std::function<ObjMaterial(const Material&)>& convert_material = {});
 
 }

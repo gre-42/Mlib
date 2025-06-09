@@ -87,8 +87,15 @@ void Mlib::draw_buildings_ceiling_or_ground(
             outline.emplace_back(v.indented);
         }
         outline = removed_duplicates(outline);
+        auto prefix = [&](){
+            switch (tpe) {
+                case DrawBuildingPartType::CEILING: return "ceiling_";
+                case DrawBuildingPartType::GROUND: return "building_ground_";
+            }
+            THROW_OR_ABORT("Unknown building part type");
+        }();
         auto& tl = tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
-            "ceilings_" + std::to_string(mid++),
+            prefix + std::to_string(mid++),
             material,
             morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
         auto tl_undefined = std::make_shared<TriangleList<CompressedScenePos>>(
