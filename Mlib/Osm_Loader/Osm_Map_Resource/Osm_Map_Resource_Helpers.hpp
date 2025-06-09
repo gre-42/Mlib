@@ -2,8 +2,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
-#include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp_Fwd.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Elements.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -49,16 +49,6 @@ static const FixedArray<float, 3> roof_color{1.f, 1.f, 1.f };
 static const std::set<std::string> excluded_highway_tags = {};
 static const std::set<std::string> included_barriers = {"wall", "guard_rail", "fence"};
 static const std::set<std::string> excluded_buildings = {"roof"};
-
-struct Node {
-    FixedArray<CompressedScenePos, 2> position;
-    Map<std::string, std::string> tags;
-};
-
-struct Way {
-    std::list<std::string> nd;
-    Map<std::string, std::string> tags;
-};
 
 void draw_node(
     UUVector<FixedArray<ColoredVertex<CompressedScenePos>, 3>>& triangles,
