@@ -70,6 +70,7 @@ struct WaterConfiguration {
     CoastConfiguration coast;
     bool generate_tiles;
     bool holes_from_terrain;
+    float yangle;
 };
 
 void from_json(const nlohmann::json& j, WaterConfiguration& water);
@@ -83,6 +84,7 @@ struct OsmResourceConfig {
     std::string heightmap;
     std::string heightmap_mask;
     size_t heightmap_extension = 0;
+    size_t heightmap_dilation = 0;
     std::string displacementmap;
     double displacementmap_min = 0;
     double displacementmap_uv_scale = 1;

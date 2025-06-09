@@ -1414,6 +1414,7 @@ OsmMapResource::OsmMapResource(
                 water_contours,
                 config.water->aabb,
                 config.water->cell_size,
+                config.water->yangle,
                 config.water->duplicate_distance,
                 config.water->heights(1));
         }
@@ -1425,7 +1426,7 @@ OsmMapResource::OsmMapResource(
                     config.water->aabb.min,
                     config.water->aabb.max,
                     (CompressedScenePos)100.f,
-                    (CompressedScenePos)50.f},
+                    (CompressedScenePos)500.f},
                 water_steiner_points,
                 {},                     // bounding_contour
                 {},                     // hole_triangles
@@ -1447,6 +1448,8 @@ OsmMapResource::OsmMapResource(
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException<CompressedScenePos>& e) {
+            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const EdgeException<double>& e) {
             handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const p2t::EdgeException& e) {
             handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");

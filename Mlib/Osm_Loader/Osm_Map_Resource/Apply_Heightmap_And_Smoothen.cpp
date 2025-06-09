@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Images/Filters/Maximum_Filter.hpp>
 #include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
@@ -144,6 +145,9 @@ void Mlib::apply_heightmap_and_smoothen(
     std::optional<HeightSampler> height_sampler;
     if (!config.heightmap.empty()) {
         Array<double> heightmap = config.height_scale * load_heightmap_from_file<double>(config.heightmap);
+        if (config.heightmap_dilation != 0) {
+            heightmap = maximum_filter(heightmap, config.heightmap_dilation);
+        }
         Array<bool> heightmap_mask;
         if (!config.heightmap_mask.empty()) {
             heightmap_mask = PgmImage::load_from_file(config.heightmap_mask).casted<bool>();

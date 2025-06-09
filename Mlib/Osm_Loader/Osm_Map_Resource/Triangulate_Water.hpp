@@ -40,6 +40,7 @@ void add_water_steiner_points(
     const std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>>& contours,
     const AxisAlignedBoundingBox<CompressedScenePos, 2>& bounds,
     const FixedArray<CompressedScenePos, 2>& cell_size,
+    float yangle,
     CompressedScenePos duplicate_distance,
     CompressedScenePos water_height);
 

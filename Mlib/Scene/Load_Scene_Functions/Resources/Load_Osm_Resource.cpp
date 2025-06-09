@@ -40,6 +40,7 @@ DECLARE_ARGUMENT(cache_filename);
 DECLARE_ARGUMENT(heightmap);
 DECLARE_ARGUMENT(heightmap_mask);
 DECLARE_ARGUMENT(heightmap_extension);
+DECLARE_ARGUMENT(heightmap_dilation);
 DECLARE_ARGUMENT(grass_foliagemap);
 DECLARE_ARGUMENT(grass_foliagemap_period);
 DECLARE_ARGUMENT(street_mudmap);
@@ -397,6 +398,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::heightmap_extension)) {
             config.heightmap_extension = args.arguments.at<size_t>(KnownArgs::heightmap_extension);
+        }
+        if (args.arguments.contains(KnownArgs::heightmap_dilation)) {
+            config.heightmap_dilation = args.arguments.at<size_t>(KnownArgs::heightmap_dilation);
         }
         if (args.arguments.contains(KnownArgs::grass_foliagemap)) {
             tconfig.street_mud_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);

@@ -45,6 +45,7 @@ DECLARE_ARGUMENT(heights);
 DECLARE_ARGUMENT(coast);
 DECLARE_ARGUMENT(generate_tiles);
 DECLARE_ARGUMENT(holes_from_terrain);
+DECLARE_ARGUMENT(yangle);
 }
 
 void Mlib::from_json(const nlohmann::json& j, WaterConfiguration& water) {
@@ -59,6 +60,7 @@ void Mlib::from_json(const nlohmann::json& j, WaterConfiguration& water) {
     water.coast = jv.at<CoastConfiguration>(WaterArgs::coast);
     water.generate_tiles = jv.at<bool>(WaterArgs::generate_tiles);
     water.holes_from_terrain = jv.at<bool>(WaterArgs::holes_from_terrain);
+    water.yangle = jv.at<float>(WaterArgs::yangle) * degrees;
 }
 
 OsmResourceConfig::OsmResourceConfig()

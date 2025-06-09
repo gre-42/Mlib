@@ -583,7 +583,7 @@ void RenderableColoredVertexArray::render_cva(
     } else {
         check_sanity_common(cva->material.textures_alpha);
         if (cva->material.blend_mode == BlendMode::OFF) {
-            THROW_OR_ABORT("Blend-mode is off despite alpha texture, cva: " + cva->name.full_name());
+            THROW_OR_ABORT("Blend-mode is off despite alpha texture, cva: " + cva->name.full_name() + ", material: " + cva->material.identifier());
         }
         for (const auto& t : cva->material.textures_color) {
             if (t.texture_descriptor.color.color_mode != ColorMode::RGB) {
