@@ -36,6 +36,7 @@ std::list<std::list<FixedArray<CompressedScenePos, 2>>> height_contours_by_edge(
 class HeightContoursByVertex {
 public:
     explicit HeightContoursByVertex(CompressedScenePos height);
+    ~HeightContoursByVertex();
     void add_triangle(const FixedArray<CompressedScenePos, 3, 3>& triangle);
     std::list<std::list<FixedArray<CompressedScenePos, 2>>> get_contours_and_clear();
 private:
@@ -47,6 +48,7 @@ class HeightContoursByEdge {
     using Edge = std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>;
 public:
     explicit HeightContoursByEdge(CompressedScenePos height);
+    ~HeightContoursByEdge();
     void add_triangle(const FixedArray<CompressedScenePos, 3, 3>& triangle);
     std::list<std::list<FixedArray<CompressedScenePos, 2>>> get_contours_and_clear();
 private:

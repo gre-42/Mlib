@@ -66,6 +66,8 @@ HeightContoursByEdge::HeightContoursByEdge(CompressedScenePos height)
     : height_{ height }
 {}
 
+HeightContoursByEdge::~HeightContoursByEdge() = default;
+
 void HeightContoursByEdge::add_triangle(const FixedArray<CompressedScenePos, 3, 3>& triangle)
 {
     // linfo() << "triangle";
@@ -187,6 +189,8 @@ std::list<std::list<FixedArray<CompressedScenePos, 2>>> Mlib::height_contours_by
 HeightContoursByVertex::HeightContoursByVertex(CompressedScenePos height)
     : height_{ height }
 {}
+
+HeightContoursByVertex::~HeightContoursByVertex() = default;
 
 void HeightContoursByVertex::add_triangle(const FixedArray<CompressedScenePos, 3, 3>& triangle) {
     // linfo() << "triangle";
