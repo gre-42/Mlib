@@ -1378,9 +1378,13 @@ OsmMapResource::OsmMapResource(
         tl_mud_path_visuals_ = osm_triangle_lists.tl_street_mud_visuals[RoadType::PATH];
     }
 
-    TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
-    TriangleList<CompressedScenePos>::ambient_occlusion_by_curvature(osm_triangle_lists.tls_with_vertex_normals(), config.laplace_ambient_occlusion);
-    TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(tls_wall_barriers);
+    try {
+        TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
+        TriangleList<CompressedScenePos>::ambient_occlusion_by_curvature(osm_triangle_lists.tls_with_vertex_normals(), config.laplace_ambient_occlusion);
+        TriangleList<CompressedScenePos>::convert_triangle_to_vertex_normals(tls_wall_barriers);
+    } catch (const TriangleException<CompressedScenePos>& e) {
+        handle_triangle_exception(e, "Error processing triangle");
+    }
 
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_all;
     if (config.water.has_value() && config.water->generate_tiles) {
