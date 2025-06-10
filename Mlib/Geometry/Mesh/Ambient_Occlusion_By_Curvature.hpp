@@ -30,13 +30,12 @@ void ambient_occlusion_by_curvature(
     std::map<PV, std::pair<size_t, float>> curvatures;
     for (const FixedArray<ColoredVertex<TPos>, 3>* tp : cvl) {
         const FixedArray<ColoredVertex<TPos>, 3>& t = *tp;
-        PlaneNd<float, TPos, 3> plane{{t(0).position, t(1).position, t(2).position}};
         for (size_t i = 0; i < 3; ++i) {
-            // PlaneNd<float, TPos, 3> plane{t(i).normal, t(i).position};
             std::pair<size_t, float>& curvature = curvatures[PV{OrderableFixedArray{t(i).position}, OrderableFixedArray{t(i).normal}}];
             for (size_t j = 1; j < 3; ++j) {
-                auto n = (TPos)dot0d(funpack(t((i + j) % 3).position), plane.normal.template casted<I>()) + plane.intercept;
-                auto c = sum(squared(t((i + j) % 3).position - t(i).position)) - squared(n);
+                auto dp = t((i + j) % 3).position - t(i).position;
+                auto n = dot0d(funpack(dp), t(i).normal.template casted<I>());
+                auto c = sum(squared(dp)) - squared(n);
                 if (c < 1e-12) {
                     THROW_OR_ABORT2(TriangleException(
                         t(0).position, t(1).position, t(2).position, "Infinite curvature detected: " + std::to_string(c)));
