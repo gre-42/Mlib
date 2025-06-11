@@ -50,14 +50,21 @@ static const nlohmann::json& at(
     const nlohmann::json& globals,
     const nlohmann::json& locals)
 {
-    auto it = globals.find(s);
-    if (it == globals.end()) {
-        it = locals.find(s);
-        if (it == locals.end()) {
-            THROW_OR_ABORT("Could not find variable with name \"" + std::string{ s } + '"');
-        }
+    auto git = globals.find(s);
+    auto lit = locals.find(s);
+    if ((git == globals.end()) && (lit == locals.end())) {
+        THROW_OR_ABORT("Could not find variable: \"" + std::string{ s } + '"');
     }
-    return *it;
+    if ((git != globals.end()) && (lit != locals.end())) {
+        THROW_OR_ABORT("Found variable in both, globals and locals: \"" + std::string{ s } + '"');
+    }
+    if (git != globals.end()) {
+        return *git;
+    }
+    if (lit != locals.end()) {
+        return *lit;
+    }
+    verbose_abort("Get variable internal error");
 }
 
 static const auto sl = chr('/');

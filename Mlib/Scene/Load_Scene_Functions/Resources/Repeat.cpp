@@ -17,6 +17,6 @@ void Repeat::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     while (true) {
         lerr() << "-";
-        args.macro_line_executor(args.arguments.json(), nullptr, args.local_json_macro_arguments);
+        args.macro_line_executor(args.arguments.json(), args.local_json_macro_arguments);
     }
 }

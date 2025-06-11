@@ -34,7 +34,7 @@ void test_json() {
         global_substitutions,
         asset_references,
         true};
-    mr(mle, nullptr);
+    mr(mle);
 }
 
 void test_eval() {

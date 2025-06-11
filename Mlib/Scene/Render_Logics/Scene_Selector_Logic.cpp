@@ -166,7 +166,7 @@ void SceneSelectorLogic::merge_substitutions() const {
     const auto& element = scene_files_.at(list_view_.selected_element());
     const auto& on_before_select = element.on_before_select();
     if (!on_before_select.is_null()) {
-        ew_->execute(on_before_select, nullptr, nullptr);
+        ew_->execute(on_before_select, nullptr);
     }
 }
 

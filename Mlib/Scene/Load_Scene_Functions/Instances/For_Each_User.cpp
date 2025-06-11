@@ -26,7 +26,7 @@ void ForEachUser::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 {"user_id", i},
                 {"user_name", std::to_string(i)}
             };
-            mle.inserted_block_arguments(let)(l, nullptr, nullptr);
+            mle.inserted_block_arguments(let)(l, nullptr);
         }
     );
 }

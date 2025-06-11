@@ -49,7 +49,6 @@ public:
         nlohmann::json block_arguments) const;
     void operator () (
         const nlohmann::json& j,
-        const JsonMacroArguments* caller_args,
         JsonMacroArguments* local_json_macro_arguments) const;
     nlohmann::json eval(const std::string& expression) const;
     nlohmann::json eval(const std::string& expression, const JsonView& variables) const;

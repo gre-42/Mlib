@@ -22,5 +22,5 @@ LoadSceneJsonUserFunction SetTexturesLazy::json_user_function = [](const LoadSce
     // args.render_set_fps.set_fps.execute([mle=args.macro_line_executor, command](){mle(command, nullptr, nullptr);});
     // append_render_allocator([mle=args.macro_line_executor, command](){mle(command, nullptr, nullptr);});
     RenderingContextStack::primary_rendering_resources().set_textures_lazy(
-        [mle=args.macro_line_executor, command](){mle(command, nullptr, nullptr);});
+        [mle=args.macro_line_executor, command](){mle(command, nullptr);});
 };

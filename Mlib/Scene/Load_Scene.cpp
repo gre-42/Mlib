@@ -497,5 +497,5 @@ void LoadScene::operator()(
         external_json_macro_arguments,
         asset_references,
         verbose};
-    macro_file_executor_(lp2, nullptr);
+    macro_file_executor_(lp2);
 }

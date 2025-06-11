@@ -188,7 +188,6 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
 
 void MacroLineExecutor::operator () (
     const nlohmann::json& j,
-    const JsonMacroArguments* caller_args,
     JsonMacroArguments* local_json_macro_arguments) const
 {
     // BENCHMARK static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
@@ -212,11 +211,6 @@ void MacroLineExecutor::operator () (
 
     JsonMacroArguments merged_args{ block_arguments_ };
     // BENCHMARK times.emplace_back("merged_args", ot.elapsed());
-    if (caller_args != nullptr) {
-        // merged_args.merge(*caller_args);
-        merged_args.insert_json(caller_args->json());
-        // BENCHMARK times.emplace_back("caller_args", ot.elapsed());
-    }
     if (local_json_macro_arguments != nullptr) {
         // merged_args.merge(*local_json_macro_arguments);
         merged_args.insert_json(local_json_macro_arguments->json());
@@ -276,20 +270,13 @@ void MacroLineExecutor::operator () (
             }
             merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
             merged_args.insert_json("__APPDATA__", get_appdata_directory());
-            JsonMacroArguments args;
             PathResolver path_resolver{ search_path_, script_filename_ };
-            args.set_fpathes([path_resolver](const std::filesystem::path& path){return path_resolver.fpathes(path);});
-            args.set_fpath([path_resolver](const std::filesystem::path& path){return path_resolver.fpath(path);});
-            args.set_spath([path_resolver](const std::filesystem::path& path){return path_resolver.spath(path);});
             auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
             JsonMacroArguments let{ block_arguments_, without };
             try {
-                if (jv.contains(MacroKeys::arguments)) {
-                    args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::arguments), global_args, asset_references_));
-                }
                 // BENCHMARK times.emplace_back("args", ot.elapsed());
                 if (jv.contains(MacroKeys::let)) {
-                    let.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::let), global_args, asset_references_));
+                    let.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::let), global_args, asset_references_, SubstitutionMode::DEFAULT));
                 }
                 // BENCHMARK times.emplace_back("let", ot.elapsed());
             } catch (const std::exception& e) {
@@ -298,11 +285,22 @@ void MacroLineExecutor::operator () (
                 throw std::runtime_error(msg.str());
             }
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
-            auto j_subst_raw = merged_args.subst_and_replace(j, global_args, asset_references_);
+            auto j_subst_raw = merged_args.subst_and_replace(j, global_args, asset_references_, SubstitutionMode::DEFAULT);
             // BENCHMARK times.emplace_back("subst", ot.elapsed());
-            global_args.unlock();
             auto j_subst = JsonView{ j_subst_raw };
             if (jv.contains(MacroKeys::playback)) {
+                try {
+                    // BENCHMARK times.emplace_back("args", ot.elapsed());
+                    if (jv.contains(MacroKeys::arguments)) {
+                        let.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::arguments), global_args, asset_references_, SubstitutionMode::ARGUMENT_COMPATIBILITY));
+                    }
+                    // BENCHMARK times.emplace_back("let", ot.elapsed());
+                } catch (const std::exception& e) {
+                    std::stringstream msg;
+                    msg << "Exception while substituting variables for " << std::setw(2) << j << "\n\nException message: " << e.what();
+                    throw std::runtime_error(msg.str());
+                }
+                global_args.unlock();
                 auto name = j_subst.at<std::string>(MacroKeys::playback);
                 // BENCHMARK short_description = name;
                 auto macro_it = macro_recorder_.json_macros_.find(name);
@@ -316,7 +314,7 @@ void MacroLineExecutor::operator () (
                     let.json());
                 // BENCHMARK times.emplace_back("macro fork", ot.elapsed());
                 try {
-                    mle2(macro_it->second.content, &args, nullptr);
+                    mle2(macro_it->second.content, nullptr);
                 } catch (const std::exception& e) {
                     std::stringstream msg;
                     msg << "Exception while executing macro \"" << name << "\". Line: " << std::setw(2) << macro_it->second.content << "\n\nException message: " << e.what();
@@ -326,6 +324,20 @@ void MacroLineExecutor::operator () (
                     throw std::runtime_error(msg.str());
                 }
             } else if (jv.contains(MacroKeys::call)) {
+                JsonMacroArguments args;
+                args.set_fpathes([path_resolver](const std::filesystem::path& path){return path_resolver.fpathes(path);});
+                args.set_fpath([path_resolver](const std::filesystem::path& path){return path_resolver.fpath(path);});
+                args.set_spath([path_resolver](const std::filesystem::path& path){return path_resolver.spath(path);});
+                try {
+                    if (jv.contains(MacroKeys::arguments)) {
+                        args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::arguments), global_args, asset_references_, SubstitutionMode::DEFAULT));
+                    }
+                } catch (const std::exception& e) {
+                    std::stringstream msg;
+                    msg << "Exception while substituting variables for " << std::setw(2) << j << "\n\nException message: " << e.what();
+                    throw std::runtime_error(msg.str());
+                }
+                global_args.unlock();
                 auto name = j_subst.at<std::string>(MacroKeys::call);
                 // BENCHMARK short_description = name;
                 auto mle2 = changed_context(
@@ -358,17 +370,29 @@ void MacroLineExecutor::operator () (
                     THROW_OR_ABORT(msg.str());
                 }
             } else if (jv.contains(MacroKeys::execute)) {
+                global_args.unlock();
+                if (jv.contains(MacroKeys::arguments)) {
+                    THROW_OR_ABORT("\"execute\" does not support \"arguments\", use \"let\" instead");
+                }
                 auto mle2 = changed_context(context, let.json());
                 // BENCHMARK times.emplace_back("execute fork", ot.elapsed());
-                mle2(j_subst.at(MacroKeys::execute), caller_args, nullptr);
+                mle2(j_subst.at(MacroKeys::execute), nullptr);
             } else if (jv.contains(MacroKeys::include)) {
+                global_args.unlock();
+                if (jv.contains(MacroKeys::arguments)) {
+                    THROW_OR_ABORT("\"include\" does not support \"arguments\", use \"let\" instead");
+                }
                 auto mle2 = changed_script_filename_and_context(
                     path_resolver.spath(j_subst.at<std::string>(MacroKeys::include)),
                     context,
                     let.json());
                 // BENCHMARK times.emplace_back("include fork", ot.elapsed());
-                macro_recorder_(mle2, &args);
+                macro_recorder_(mle2);
             } else if (jv.contains(MacroKeys::declare_macro)) {
+                global_args.unlock();
+                if (jv.contains(MacroKeys::arguments)) {
+                    THROW_OR_ABORT("\"declare_macro\" does not support \"arguments\", use \"let\" instead");
+                }
                 try {
                     jv.validate(DeclareMacroArgs::options);
                 } catch (const std::runtime_error& e) {
@@ -399,7 +423,7 @@ void MacroLineExecutor::operator () (
     } else if (j.type() == nlohmann::detail::value_t::array) {
         JsonMacroArguments local_json_macro_arguments_2;
         for (const nlohmann::json& l : j) {
-            (*this)(l, caller_args, &local_json_macro_arguments_2);
+            (*this)(l, &local_json_macro_arguments_2);
         }
     } else {
         std::stringstream msg;
@@ -427,7 +451,7 @@ T MacroLineExecutor::eval(const std::string& expression, const JsonView& variabl
 template <class T>
 T MacroLineExecutor::eval(const std::string& expression) const {
     auto global_args = global_json_macro_arguments_.json_macro_arguments();
-    return Mlib::eval<T>(expression, global_args, asset_references_);
+    return Mlib::eval<T>(expression, global_args, JsonView{ block_arguments_ }, asset_references_);
 }
 
 bool MacroLineExecutor::eval(

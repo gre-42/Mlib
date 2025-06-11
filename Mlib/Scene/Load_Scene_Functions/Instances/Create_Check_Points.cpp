@@ -120,7 +120,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::deselection_emissivity, fixed_full<float, 3>(-1.f)),
         args.arguments.at<RespawnConfig>(KnownArgs::respawn_config),
         [on_finish, mle = args.macro_line_executor]() {
-            mle(on_finish, nullptr, nullptr);
+            mle(on_finish, nullptr);
         });
     auto pacenotes_filename = args.arguments.path(KnownArgs::pacenotes_filename, "");
     if (!pacenotes_filename.empty()) {

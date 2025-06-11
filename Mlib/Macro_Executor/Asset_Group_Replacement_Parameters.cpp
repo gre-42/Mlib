@@ -21,7 +21,7 @@ void AssetGroupReplacementParameters::insert_if_active(
     }
     auto mlecd = mle.changed_script_filename(filename);
     if (rp.rp.on_init != nlohmann::detail::value_t::null) {
-        mlecd(rp.rp.on_init, nullptr, nullptr);
+        mlecd(rp.rp.on_init, nullptr);
     }
     insert(std::move(rp));
 }

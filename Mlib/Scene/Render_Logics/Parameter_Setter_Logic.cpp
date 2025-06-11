@@ -135,7 +135,7 @@ void ParameterSetterLogic::render_without_setup(
         if (!f.is_null() || on_execute_) {
             if (confirm_button_.keys_pressed()) {
                 if (!f.is_null()) {
-                    ew_->execute(f, nullptr, nullptr);
+                    ew_->execute(f, nullptr);
                 }
                 if (on_execute_) {
                     on_execute_();
@@ -181,7 +181,7 @@ void ParameterSetterLogic::merge_substitutions() const {
 
     const auto& f = element.on_before_select;
     if (!f.is_null()) {
-        ew_->execute(f, nullptr, nullptr);
+        ew_->execute(f, nullptr);
     }
 }
 

@@ -75,7 +75,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
                 {LetKeys::behavior, behavior}
             };
-            macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
+            macro_line_executor.inserted_block_arguments(let)(macro, nullptr);
         }
     );
     spawner.get_primary_scene_vehicle()->set_create_vehicle_internals(
@@ -106,7 +106,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 let[LetKeys::externals_user_id] = user_id;
                 let[LetKeys::externals_user_name] = user_name;
             }
-            macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
+            macro_line_executor.inserted_block_arguments(let)(macro, nullptr);
         }
     );
 }

@@ -136,7 +136,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {"bullet_velocity", velocity / kph},
                     {"bullet_angular_velocity", angular_velocity / rpm},
                 };
-                mle.inserted_block_arguments(let)(l, nullptr, nullptr);
+                mle.inserted_block_arguments(let)(l, nullptr);
             };
     }
     global_object_pool.create<Gun>(
@@ -168,6 +168,6 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             JsonMacroArguments local_substitutions;
             local_substitutions.insert_json("muzzle_flash_suffix", muzzle_flash_suffix);
-            macro_line_executor(*macro, &local_substitutions, nullptr);
+            macro_line_executor(*macro, &local_substitutions);
         });
 }

@@ -98,7 +98,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {KnownLet::suffix, n->suffix},
                 {KnownLet::if_with_graphics, n->if_with_graphics},
                 {KnownLet::if_with_physics, n->if_with_physics} };
-            macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
+            macro_line_executor.inserted_block_arguments(let)(macro, nullptr);
             return true;
         },
         spawn_vehicle_already_set_behavior_from_string(

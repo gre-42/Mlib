@@ -22,7 +22,7 @@ void InstantiateGameLogic::execute(const LoadSceneJsonUserFunctionArgs &args) {
         [l = args.arguments.at(KnownArgs::setup_new_round),
          mle = args.macro_line_executor]()
         {
-            mle(l, nullptr, nullptr);
+            mle(l, nullptr);
         }
     );
 }

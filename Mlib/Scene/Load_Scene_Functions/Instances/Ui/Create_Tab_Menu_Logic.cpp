@@ -62,7 +62,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::function<void()> on_execute;
     if (auto ooe = args.arguments.try_at(KnownArgs::on_execute); ooe.has_value()) {
         on_execute = [macro_line_executor = args.macro_line_executor, oe=*ooe]() {
-            macro_line_executor(oe, nullptr, nullptr);
+            macro_line_executor(oe, nullptr);
             // This results in a deadlock because both "delete_node_mutex" and "delete_rigid_body_mutex" are acquired.
             // std::scoped_lock rb_lock{ delete_rigid_body_mutex };
             // macro_line_executor(reload_transient_objects, nullptr);

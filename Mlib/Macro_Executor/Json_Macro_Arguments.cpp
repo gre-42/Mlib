@@ -82,7 +82,8 @@ static nlohmann::json subst_and_replace(
     const nlohmann::json& j,
     const nlohmann::json& globals,
     const nlohmann::json& locals,
-    const AssetReferences& asset_references)
+    const AssetReferences& asset_references,
+    SubstitutionMode mode)
 {
     auto ev = [&](const std::string& s){
         return eval(s, JsonView{ globals }, JsonView{ locals }, asset_references);
@@ -90,12 +91,18 @@ static nlohmann::json subst_and_replace(
     if (j.type() == nlohmann::detail::value_t::object) {
         auto result = nlohmann::json::object();
         for (const auto& [key, value] : j.items()) {
+            if ((mode == SubstitutionMode::ARGUMENT_COMPATIBILITY) &&
+                (value.type() == nlohmann::detail::value_t::string) &&
+                (value.get<std::string>() == '%' + key))
+            {
+                continue;
+            }
             if (key.starts_with('#') ||
                 unexpanded_keys.contains(key))
             {
                 result[ev(key)] = value;
             } else {
-                result[ev(key)] = subst_and_replace(value, globals, locals, asset_references);
+                result[ev(key)] = subst_and_replace(value, globals, locals, asset_references, SubstitutionMode::DEFAULT);
             }
         }
         return result;
@@ -103,7 +110,7 @@ static nlohmann::json subst_and_replace(
     if (j.type() == nlohmann::detail::value_t::array) {
         auto result = nlohmann::json::array();
         for (const auto& value : j) {
-            result.push_back(subst_and_replace(value, globals, locals, asset_references));
+            result.push_back(subst_and_replace(value, globals, locals, asset_references, SubstitutionMode::DEFAULT));
         }
         return result;
     }
@@ -116,9 +123,10 @@ static nlohmann::json subst_and_replace(
 nlohmann::json JsonMacroArguments::subst_and_replace(
     const nlohmann::json& j,
     const nlohmann::json& globals,
-    const AssetReferences& asset_references) const
+    const AssetReferences& asset_references,
+    SubstitutionMode mode) const
 {
-    return ::subst_and_replace(j, globals, j_, asset_references);
+    return ::subst_and_replace(j, globals, j_, asset_references, mode);
 }
 
 void JsonMacroArguments::insert_json(

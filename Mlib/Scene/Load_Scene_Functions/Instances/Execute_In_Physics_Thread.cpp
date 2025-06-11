@@ -26,5 +26,5 @@ ExecuteInPhysicsThread::ExecuteInPhysicsThread(PhysicsScene& physics_scene)
 void ExecuteInPhysicsThread::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto command = args.arguments.at(KnownArgs::command);
-    physics_set_fps.execute([mle=args.macro_line_executor, command](){mle(command, nullptr, nullptr);});
+    physics_set_fps.execute([mle=args.macro_line_executor, command](){mle(command, nullptr);});
 }

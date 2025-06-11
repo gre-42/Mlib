@@ -13,9 +13,7 @@ MacroRecorder::MacroRecorder() = default;
 
 MacroRecorder::~MacroRecorder() = default;
 
-void MacroRecorder::operator()(
-    const MacroLineExecutor& macro_line_executor,
-    const JsonMacroArguments* caller_args)
+void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor)
 {
     if (macro_line_executor.script_filename_.ends_with(".scn.json")) {
         std::scoped_lock lock{ include_mutex_ };
@@ -41,13 +39,13 @@ void MacroRecorder::operator()(
         if (!ifs->eof() && ifs->fail()) {
             THROW_OR_ABORT("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
         }
-        macro_line_executor(j, caller_args, nullptr);
+        macro_line_executor(j, nullptr);
     } else if (macro_line_executor.script_filename_.ends_with(".json")) {
         auto rp = ReplacementParameterAndFilename::from_json(macro_line_executor.script_filename_);
         if (macro_line_executor.verbose_) {
             linfo() << "Processing JSON macro \"" << rp.rp.on_execute << '"';
         }
-        macro_line_executor(rp.rp.on_execute, nullptr, nullptr);
+        macro_line_executor(rp.rp.on_execute, nullptr);
     } else {
         THROW_OR_ABORT("Unknown script file extension: \"" + macro_line_executor.script_filename_ + '"');
     }

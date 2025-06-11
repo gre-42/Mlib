@@ -142,7 +142,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             let["PUNCH_ANGLE_PITCH"] = rotation(0) / degrees;
             let["PUNCH_ANGLE_YAW"] = rotation(1) / degrees;
         }
-        macro_line_executor.inserted_block_arguments(let)(func, nullptr, nullptr);
+        macro_line_executor.inserted_block_arguments(let)(func, nullptr);
     };
     auto node_hider = std::make_unique<NodeHiderWithEvent>(
         node_to_hide,
@@ -163,7 +163,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (!on_destroy.has_value()) {
                 return;
             }
-            macro_line_executor(*on_destroy, nullptr, nullptr);
+            macro_line_executor(*on_destroy, nullptr);
         },
         [
             on_hide_or_update,

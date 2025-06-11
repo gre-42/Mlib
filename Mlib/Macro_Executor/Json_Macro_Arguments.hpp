@@ -18,6 +18,11 @@ namespace Mlib {
 struct FPath;
 class AssetReferences;
 
+enum class SubstitutionMode {
+    DEFAULT,
+    ARGUMENT_COMPATIBILITY
+};
+
 class JsonMacroArguments: public JsonView {
 public:
     JsonMacroArguments();
@@ -85,7 +90,8 @@ public:
     nlohmann::json subst_and_replace(
         const nlohmann::json& j,
         const nlohmann::json& globals,
-        const AssetReferences& asset_references) const;
+        const AssetReferences& asset_references,
+        SubstitutionMode mode) const;
     JsonMacroArguments as_child(const nlohmann::json& j) const;
     inline nlohmann::json&& move_json() {
         return std::move(j_);

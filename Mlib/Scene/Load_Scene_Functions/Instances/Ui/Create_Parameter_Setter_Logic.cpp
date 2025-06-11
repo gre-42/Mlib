@@ -105,7 +105,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         if (rps.size() == 1) {
             const auto& rp = rps.front();
             if (!rp.on_before_select.is_null()) {
-                args.macro_line_executor(rp.on_before_select, nullptr, nullptr);
+                args.macro_line_executor(rp.on_before_select, nullptr);
             }
             return;
         }
@@ -125,7 +125,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
     std::function<void()> on_execute;
     if (auto ooe = args.arguments.try_at(KnownArgs::on_execute); ooe.has_value()) {
         on_execute = [mle=args.macro_line_executor, oe=*ooe]() {
-            mle(oe, nullptr, nullptr);
+            mle(oe, nullptr);
         };
     }
     auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
@@ -152,7 +152,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         user_id,
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]() {
             if (on_change.has_value() ) {
-                mle(*on_change, nullptr, nullptr);
+                mle(*on_change, nullptr);
             }
         },
         on_execute);

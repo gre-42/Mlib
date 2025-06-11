@@ -47,10 +47,9 @@ public:
     }
     inline void execute(
         const nlohmann::json& j,
-        const JsonMacroArguments* caller_args,
         JsonMacroArguments* local_json_macro_arguments) const
     {
-        mle_(j, caller_args, local_json_macro_arguments);
+        mle_(j, local_json_macro_arguments);
     }
 private:
     MacroLineExecutor mle_;

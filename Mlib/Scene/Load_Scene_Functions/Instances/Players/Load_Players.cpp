@@ -208,7 +208,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         std::move(let)
                     }
                 };
-                args.macro_line_executor(line, nullptr, nullptr);
+                args.macro_line_executor(line, nullptr);
             } else {
                 nlohmann::json line{
                     {
@@ -234,7 +234,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         }
                     }
                 };
-                args.macro_line_executor(line, nullptr, nullptr);
+                args.macro_line_executor(line, nullptr);
             }
         }
     } catch (const nlohmann::detail::exception& e) {

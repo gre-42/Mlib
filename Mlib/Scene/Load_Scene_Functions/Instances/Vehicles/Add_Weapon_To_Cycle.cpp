@@ -62,7 +62,7 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
                     { "ammo_type", ammo_type },
                     { "bullet_type", bullet_type },
                     { "cool_down", cool_down }};
-                macro_line_executor.inserted_block_arguments(let)(create, nullptr, nullptr);
+                macro_line_executor.inserted_block_arguments(let)(create, nullptr);
             },
             .ammo_type = ammo_type,
             .bullet_properties = args.bullet_property_db.get(args.arguments.at<std::string>(KnownArgs::bullet_type)),
