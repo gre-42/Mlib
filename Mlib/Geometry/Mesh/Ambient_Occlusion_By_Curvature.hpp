@@ -42,7 +42,7 @@ void ambient_occlusion_by_curvature(
                 }
                 auto ta = std::sqrt(c);
                 ++curvature.first;
-                curvature.second += float((I)n / (I)ta);
+                curvature.second += float(n / ta);
             }
         }
     }
