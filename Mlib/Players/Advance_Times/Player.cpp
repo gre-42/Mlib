@@ -51,11 +51,22 @@ GameMode Mlib::game_mode_from_string(const std::string& game_mode) {
         {"ramming", GameMode::RAMMING},
         {"team_deathmatch", GameMode::TEAM_DEATHMATCH},
         {"rally", GameMode::RALLY},
-        {"bystander", GameMode::BYSTANDER},
     };
     auto it = m.find(game_mode);
     if (it == m.end()) {
         THROW_OR_ABORT("Unknown game mode: \"" + game_mode + '"');
+    }
+    return it->second;
+}
+
+PlayerRole Mlib::player_role_from_string(const std::string& role) {
+    static const std::map<std::string, PlayerRole> m{
+        {"competitor", PlayerRole::COMPETITOR},
+        {"bystander", PlayerRole::BYSTANDER},
+    };
+    auto it = m.find(role);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown player role: \"" + role + '"');
     }
     return it->second;
 }
@@ -98,6 +109,7 @@ Player::Player(
     std::string id,
     std::string team,
     GameMode game_mode,
+    PlayerRole player_role,
     UnstuckMode unstuck_mode,
     std::string behavior,
     DrivingDirection driving_direction,
@@ -124,6 +136,7 @@ Player::Player(
     , target_scene_node_{ nullptr }
     , target_rb_{ nullptr }
     , game_mode_{ game_mode }
+    , player_role_{ player_role }
     , unstuck_mode_{ unstuck_mode }
     , behavior_{ std::move(behavior) }
     , stuck_velocity_{ NAN }
@@ -355,6 +368,11 @@ std::string Player::vehicle_name() const {
 GameMode Player::game_mode() const {
     std::shared_lock lock{ mutex_ };
     return game_mode_;
+}
+
+PlayerRole Player::player_role() const {
+    std::shared_lock lock{ mutex_ };
+    return player_role_;
 }
 
 bool Player::can_see(

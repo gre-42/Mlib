@@ -162,7 +162,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
         if (any(config & ScoreBoardConfiguration::PLAYER)) {
             for (const auto &pname: team->players()) {
                 auto p = get_player(pname, CURRENT_SOURCE_LOCATION);
-                if (p->game_mode() == GameMode::BYSTANDER) {
+                if (p->player_role() == PlayerRole::BYSTANDER) {
                     continue;
                 }
                 static const VariableAndHash<std::string> Player{ "Player" };

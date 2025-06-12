@@ -225,7 +225,7 @@ void Bystanders::handle_bystanders() {
             if (spawner.has_player() && (&player.get() == vip_.get())) {
                 return;
             }
-            if (player->game_mode() != GameMode::BYSTANDER) {
+            if (player->player_role() != PlayerRole::BYSTANDER) {
                 return;
             }
         }

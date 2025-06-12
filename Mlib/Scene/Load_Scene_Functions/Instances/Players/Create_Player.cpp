@@ -23,6 +23,7 @@ DECLARE_ARGUMENT(user_name);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(game_mode);
+DECLARE_ARGUMENT(player_role);
 DECLARE_ARGUMENT(unstuck_mode);
 DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(driving_direction);
@@ -60,6 +61,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::team),
         game_mode_from_string(args.arguments.at<std::string>(KnownArgs::game_mode)),
+        player_role_from_string(args.arguments.at<std::string>(KnownArgs::player_role)),
         unstuck_mode_from_string(args.arguments.at<std::string>(KnownArgs::unstuck_mode)),
         args.arguments.at<std::string>(KnownArgs::behavior),
         driving_direction_from_string(args.arguments.at<std::string>(KnownArgs::driving_direction)),

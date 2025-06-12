@@ -60,11 +60,17 @@ class VehicleSpawners;
 enum class GameMode {
     RAMMING,
     TEAM_DEATHMATCH,
-    RALLY,
-    BYSTANDER,
+    RALLY
 };
 
 GameMode game_mode_from_string(const std::string& game_mode);
+
+enum class PlayerRole {
+    COMPETITOR,
+    BYSTANDER
+};
+
+PlayerRole player_role_from_string(const std::string& role);
 
 enum class ExternalsMode;
 
@@ -119,6 +125,7 @@ public:
         std::string id,
         std::string team,
         GameMode game_mode,
+        PlayerRole player_role,
         UnstuckMode unstuck_mode,
         std::string behavior,
         DrivingDirection driving_direction,
@@ -157,6 +164,7 @@ public:
     const PlayerStats& stats() const;
     float car_health() const;
     GameMode game_mode() const;
+    PlayerRole player_role() const;
     bool can_see(
         const RigidBodyVehicle& rbi,
         bool only_terrain = false,
@@ -279,6 +287,7 @@ private:
     DanglingBaseClassPtr<RigidBodyVehicle> target_rb_;
     PlayerStats stats_;
     GameMode game_mode_;
+    PlayerRole player_role_;
     std::chrono::steady_clock::time_point stuck_start_;
     std::chrono::steady_clock::time_point unstuck_start_;
     UnstuckMode unstuck_mode_;

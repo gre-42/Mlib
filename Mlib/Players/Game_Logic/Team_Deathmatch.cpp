@@ -49,7 +49,7 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
     std::set<std::string> all_teams;
     std::set<std::string> winner_teams;
     for (const auto& [_, p] : players_.players()) {
-        if (p->game_mode() == GameMode::BYSTANDER) {
+        if (p->player_role() == PlayerRole::BYSTANDER) {
             continue;
         }
         const VariableAndHash<std::string>& node_name = p->scene_node_name();

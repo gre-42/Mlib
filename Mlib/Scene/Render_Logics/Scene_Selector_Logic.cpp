@@ -63,7 +63,11 @@ size_t SceneEntryContents::num_entries() const {
 
 bool SceneEntryContents::is_visible(size_t index) const {
     const auto& entry = scene_entries_.at(index);
-    return ew_.eval(entry.required().dynamic, entry.locals());
+    try {
+        return ew_.eval(entry.required().dynamic, entry.locals());
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("Could not evaluate dynamic visibility expression of entry \"" + entry.id() + "\": " + e.what());
+    }
 }
 
 SceneSelectorLogic::SceneSelectorLogic(
