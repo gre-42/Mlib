@@ -32,7 +32,7 @@ DECLARE_ARGUMENT(if_manual_aim);
 DECLARE_ARGUMENT(if_manual_shoot);
 DECLARE_ARGUMENT(if_manual_drive);
 DECLARE_ARGUMENT(behavior);
-DECLARE_ARGUMENT(externals_role);
+DECLARE_ARGUMENT(externals_seat);
 }
 
 const std::string SetExternalsCreator::key = "set_externals_creator";
@@ -100,7 +100,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {LetKeys::if_manual_shoot, skills.skills(ControlSource::USER).can_shoot},
                 {LetKeys::if_manual_drive, skills.skills(ControlSource::USER).can_drive},
                 {LetKeys::behavior, behavior},
-                {LetKeys::externals_role, internals_mode.role}
+                {LetKeys::externals_seat, internals_mode.seat}
             };
             if (user_id != UINT32_MAX) {
                 let[LetKeys::externals_user_id] = user_id;

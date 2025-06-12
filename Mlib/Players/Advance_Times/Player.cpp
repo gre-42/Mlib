@@ -226,36 +226,36 @@ void Player::reset_node() {
     {
         std::scoped_lock lock{ mutex_ };
         externals_mode_ = ExternalsMode::NONE;
-        internals_mode_.role.clear();
+        internals_mode_.seat.clear();
     }
 }
 
 void Player::set_vehicle_spawner(
     VehicleSpawner& spawner,
-    const std::string& desired_role)
+    const std::string& desired_seat)
 {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_spawner_ != nullptr) {
         THROW_OR_ABORT("Vehicle spawner already set");
     }
-    if (!internals_mode_.role.empty()) {
-        THROW_OR_ABORT("Old role is not empty");
+    if (!internals_mode_.seat.empty()) {
+        THROW_OR_ABORT("Old seat is not empty");
     }
-    if (desired_role.empty()) {
-        THROW_OR_ABORT("Desired role is empty");
+    if (desired_seat.empty()) {
+        THROW_OR_ABORT("Desired seat is empty");
     }
     auto pv = spawner.get_primary_scene_vehicle();
-    if (!pv->rb()->drivers_.role_exists(desired_role)) {
-        THROW_OR_ABORT("Role \"" + desired_role + "\" does not exist in vehicle \"" + pv->rb()->name() + '"');
+    if (!pv->rb()->drivers_.seat_exists(desired_seat)) {
+        THROW_OR_ABORT("Seat \"" + desired_seat + "\" does not exist in vehicle \"" + pv->rb()->name() + '"');
     }
-    if (!pv->rb()->drivers_.role_is_free(desired_role)) {
-        THROW_OR_ABORT("Role \"" + desired_role + "\" is already occupied in vehicle \"" + pv->rb()->name() + '"');
+    if (!pv->rb()->drivers_.seat_is_free(desired_seat)) {
+        THROW_OR_ABORT("Seat \"" + desired_seat + "\" is already occupied in vehicle \"" + pv->rb()->name() + '"');
     }
-    pv->rb()->drivers_.add(desired_role, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    pv->rb()->drivers_.add(desired_seat, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     on_vehicle_destroyed_.set(pv->on_destroy, CURRENT_SOURCE_LOCATION);
     on_vehicle_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
-    internals_mode_.role = desired_role;
+    internals_mode_.seat = desired_seat;
     vehicle_ = pv.ptr().set_loc(CURRENT_SOURCE_LOCATION);
     vehicle_spawner_ = &spawner;
 }
@@ -883,9 +883,9 @@ VehicleSpawner* Player::next_scene_vehicle() {
     return next_scene_vehicle_;
 }
 
-const std::string& Player::next_role() const {
+const std::string& Player::next_seat() const {
     std::shared_lock lock{ mutex_ };
-    return next_role_;
+    return next_seat_;
 }
 
 DanglingBaseClassRef<SceneVehicle> Player::vehicle() {
@@ -932,14 +932,14 @@ void Player::select_next_vehicle() {
             continue;
         }
         auto v = s->get_primary_scene_vehicle();
-        const auto* free_role = v->rb()->drivers_.first_free_role();
-        if (free_role == nullptr) {
+        const auto* free_seat = v->rb()->drivers_.first_free_seat();
+        if (free_seat == nullptr) {
             continue;
         }
         auto set_next_scene_vehicle = [&](){
             clear_next_scene_vehicle();
             next_scene_vehicle_ = s.get();
-            next_role_ = *free_role;
+            next_seat_ = *free_seat;
             on_next_vehicle_destroyed_.set(v->on_destroy, CURRENT_SOURCE_LOCATION);
             on_next_vehicle_destroyed_.add([this](){
                 next_scene_vehicle_ = nullptr;
@@ -1051,8 +1051,8 @@ void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
     if (externals_mode_ == ExternalsMode::NONE) {
         THROW_OR_ABORT("Internals set before vehicle externals");
     }
-    if (internals_mode.role.empty()) {
-        THROW_OR_ABORT("Attempt to set empty role");
+    if (internals_mode.seat.empty()) {
+        THROW_OR_ABORT("Attempt to set empty seat");
     }
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Create internals without scene vehicle");
@@ -1066,27 +1066,27 @@ void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
     internals_mode_ = internals_mode;
 }
 
-void Player::set_role(const std::string& role) {
+void Player::set_seat(const std::string& seat) {
     std::scoped_lock lock{ mutex_ };
     if (externals_mode_ == ExternalsMode::NONE) {
-        THROW_OR_ABORT("Attempt to set role before vehicle externals");
+        THROW_OR_ABORT("Attempt to set seat before vehicle externals");
     }
     if (!delete_vehicle_internals.empty()) {
         delete_vehicle_internals.clear();
     }
     InternalsMode new_mode{
-        .role = role
+        .seat = seat
     };
     create_vehicle_internals(new_mode);
 }
 
-void Player::change_role() {
+void Player::change_seat() {
     std::scoped_lock lock{ mutex_ };
-    auto* new_role = rigid_body()->drivers_.next_free_role(internals_mode_.role);
-    if (new_role == nullptr) {
+    auto* new_seat = rigid_body()->drivers_.next_free_seat(internals_mode_.seat);
+    if (new_seat == nullptr) {
         return;
     }
-    set_role(*new_role);
+    set_seat(*new_seat);
 }
 
 const Skills& Player::skills(ControlSource control_source) const {

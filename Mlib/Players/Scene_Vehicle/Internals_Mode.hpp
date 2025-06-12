@@ -4,7 +4,7 @@
 namespace Mlib {
 
 struct InternalsMode {
-    std::string role;
+    std::string seat;
 };
 
 }

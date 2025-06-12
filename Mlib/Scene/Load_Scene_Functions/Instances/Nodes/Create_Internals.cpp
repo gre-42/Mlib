@@ -11,7 +11,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
-DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(seat);
 }
 
 const std::string CreateInternals::key = "create_internals";
@@ -29,5 +29,5 @@ CreateInternals::CreateInternals(PhysicsScene& physics_scene)
 void CreateInternals::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    player->create_vehicle_internals({ args.arguments.at<std::string>(KnownArgs::role) });
+    player->create_vehicle_internals({ args.arguments.at<std::string>(KnownArgs::seat) });
 }

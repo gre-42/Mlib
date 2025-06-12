@@ -15,18 +15,18 @@ public:
 
     Drivers();
     ~Drivers();
-    void set_roles(std::vector<std::string> roles);
-    bool role_exists(const std::string& role) const;
-    bool role_is_free(const std::string& role);
-    void add(std::string role, DanglingBaseClassRef<IPlayer> player, SourceLocation loc);
-    DanglingBaseClassPtr<IPlayer> try_get(const std::string& role) const;
+    void set_seats(std::vector<std::string> seats);
+    bool seat_exists(const std::string& seat) const;
+    bool seat_is_free(const std::string& seat);
+    void add(std::string seat, DanglingBaseClassRef<IPlayer> player, SourceLocation loc);
+    DanglingBaseClassPtr<IPlayer> try_get(const std::string& seat) const;
     void clear();
-    const std::string* first_free_role() const;
-    const std::string* next_free_role(const std::string& current_role) const;
+    const std::string* first_free_seat() const;
+    const std::string* next_free_seat(const std::string& current_seat) const;
     const PlayersMap& players_map() const;
 private:
-    std::vector<std::string> roles_;
-    std::set<std::string> roles_set_;
+    std::vector<std::string> seats_;
+    std::set<std::string> seats_set_;
     PlayersMap players_;
 };
 

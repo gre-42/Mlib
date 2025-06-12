@@ -39,7 +39,7 @@ DECLARE_ARGUMENT(spawned_vehicle);
 DECLARE_ARGUMENT(game_mode);
 DECLARE_ARGUMENT(unstuck_mode);
 DECLARE_ARGUMENT(behavior);
-DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(seat);
 DECLARE_ARGUMENT(user);
 }
 
@@ -172,7 +172,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {"team", team},
                     {"game_mode", get(PlayerKeys::game_mode).get<std::string>()},
                     {"initial_behavior", get(PlayerKeys::behavior).get<std::string>()},
-                    {"role", get(PlayerKeys::role).get<std::string>()},
+                    {"seat", get(PlayerKeys::seat).get<std::string>()},
                     {"unstuck_mode", get(PlayerKeys::unstuck_mode).get<std::string>()},
                     {"if_human_style", true},
                     {"if_car_body_renderable_style", true},

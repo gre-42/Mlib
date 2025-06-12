@@ -454,7 +454,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 OutOfRangeBehavior::CLAMP},
                 physics_engine);
 
-        rb.drivers_.set_roles({ "driver" });
+        rb.drivers_.set_seats({ "driver" });
         };
     if (if_with_physics) {
         create_physics();

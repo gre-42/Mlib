@@ -39,7 +39,7 @@ void VehicleChanger::change_vehicles() {
             THROW_OR_ABORT("Next scene node equals current node");
         }
         auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle()->scene_node());
-        auto* other_player = next_rb.drivers_.try_get(p->next_role()).get();
+        auto* other_player = next_rb.drivers_.try_get(p->next_seat()).get();
         if (other_player == nullptr) {
             enter_vehicle(*s, *next_vehicle);
         } else {
@@ -55,8 +55,8 @@ void VehicleChanger::change_vehicles() {
 void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     ExternalsMode b_ec_old = b.externals_mode();
     ExternalsMode a_ec_old = a.externals_mode();
-    InternalsMode b_role_old = b.internals_mode();
-    InternalsMode a_role_old = a.internals_mode();
+    InternalsMode b_seat_old = b.internals_mode();
+    InternalsMode a_seat_old = a.internals_mode();
 
     VehicleSpawner& b_spawner = b.vehicle_spawner();
     VehicleSpawner& a_spawner = a.vehicle_spawner();
@@ -64,21 +64,21 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     b.reset_node();
     a.reset_node();
 
-    b.set_vehicle_spawner(a_spawner, b.next_role());
-    a.set_vehicle_spawner(b_spawner, a.next_role());
+    b.set_vehicle_spawner(a_spawner, b.next_seat());
+    a.set_vehicle_spawner(b_spawner, a.next_seat());
 
     if (a_ec_old != ExternalsMode::NONE) {
         a.create_vehicle_externals(a_ec_old);
     }
-    if (!a_role_old.role.empty()) {
-        a.create_vehicle_internals(a_role_old);
+    if (!a_seat_old.seat.empty()) {
+        a.create_vehicle_internals(a_seat_old);
     }
 
     if (b_ec_old != ExternalsMode::NONE) {
         b.create_vehicle_externals(b_ec_old);
     }
-    if (!b_role_old.role.empty()) {
-        b.create_vehicle_internals(b_role_old);
+    if (!b_seat_old.seat.empty()) {
+        b.create_vehicle_internals(b_seat_old);
     }
 }
 
@@ -125,12 +125,12 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         b_rb->activate_avatar();
     }
     ExternalsMode a_ec_old = ap->externals_mode();
-    auto a_role_old = ap->internals_mode();
+    auto a_seat_old = ap->internals_mode();
     ap->reset_node();
-    ap->set_vehicle_spawner(b, ap->next_role());
+    ap->set_vehicle_spawner(b, ap->next_seat());
     ap->create_vehicle_externals(a_ec_old);
-    if (!a_role_old.role.empty()) {
-        ap->create_vehicle_internals(a_role_old);
+    if (!a_seat_old.seat.empty()) {
+        ap->create_vehicle_internals(a_seat_old);
     }
     if (!ap->rigid_body()->is_avatar()) {
         if (!ap->rigid_body()->passengers_.try_emplace(

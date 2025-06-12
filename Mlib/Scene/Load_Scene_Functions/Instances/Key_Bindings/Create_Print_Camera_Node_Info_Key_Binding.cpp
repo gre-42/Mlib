@@ -14,7 +14,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(user_id);
 DECLARE_ARGUMENT(id);
-DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(seat);
 }
 
 const std::string CreatePrintCameraNodeInfoKeyBinding::key = "create_print_camera_node_info_key_binding";
@@ -41,7 +41,7 @@ void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctio
             args.key_configurations,
             args.arguments.at<uint32_t>(KnownArgs::user_id),
             args.arguments.at<std::string>(KnownArgs::id),
-            args.arguments.at<std::string>(KnownArgs::role)},
+            args.arguments.at<std::string>(KnownArgs::seat)},
         .geographic_mapping = scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}),
         .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy, CURRENT_SOURCE_LOCATION } }}));
     kb.on_destroy_key_bindings.add([&kbs=key_bindings, &kb]() {

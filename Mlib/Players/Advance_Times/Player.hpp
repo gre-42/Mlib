@@ -132,14 +132,14 @@ public:
     void set_can_select_opponent(ControlSource control_source, bool value);
     void set_select_opponent_hysteresis_factor(ScenePos factor);
     void reset_node();
-    void set_vehicle_spawner(VehicleSpawner& spawner, const std::string& desired_role);
+    void set_vehicle_spawner(VehicleSpawner& spawner, const std::string& desired_seat);
     DanglingBaseClassRef<RigidBodyVehicle> rigid_body();
     DanglingBaseClassRef<const RigidBodyVehicle> rigid_body() const;
     DanglingRef<SceneNode> scene_node();
     DanglingRef<const SceneNode> scene_node() const;
     bool scene_node_scheduled_for_deletion() const;
     VehicleSpawner* next_scene_vehicle();
-    const std::string& next_role() const;
+    const std::string& next_seat() const;
     const VariableAndHash<std::string>& scene_node_name() const;
     DanglingBaseClassRef<SceneVehicle> vehicle();
     DanglingBaseClassRef<const SceneVehicle> vehicle() const;
@@ -197,8 +197,8 @@ public:
     void append_dependent_node(VariableAndHash<std::string> node_name);
     void create_vehicle_externals(ExternalsMode externals_mode);
     void create_vehicle_internals(const InternalsMode& internals_mode);
-    void set_role(const std::string& ui);
-    void change_role();
+    void set_seat(const std::string& ui);
+    void change_seat();
     const Skills& skills(ControlSource control_source) const;
     Players& players();
     bool ramming() const;
@@ -293,7 +293,7 @@ private:
     DeleteNodeMutex& delete_node_mutex_;
     VehicleSpawner* next_scene_vehicle_;
     bool reset_vehicle_to_last_checkpoint_requested_;
-    std::string next_role_;
+    std::string next_seat_;
     std::map<
         VariableAndHash<std::string>,
         DestructionFunctionsRemovalTokens> dependent_nodes_;

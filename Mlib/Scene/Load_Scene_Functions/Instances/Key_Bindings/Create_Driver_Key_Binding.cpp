@@ -16,7 +16,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(user_id);
 DECLARE_ARGUMENT(id);
-DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(seat);
 
 DECLARE_ARGUMENT(player);
 
@@ -42,7 +42,7 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.key_configurations,
             args.arguments.at<uint32_t>(KnownArgs::user_id),
             args.arguments.at<std::string>(KnownArgs::id),
-            args.arguments.at<std::string>(KnownArgs::role)},
+            args.arguments.at<std::string>(KnownArgs::seat)},
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_player_delete_vehicle_internals.add(
         [&kbs=key_bindings, &kb](){
