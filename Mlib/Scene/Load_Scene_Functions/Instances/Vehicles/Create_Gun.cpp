@@ -166,8 +166,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (!macro.has_value()) {
                 return;
             }
-            JsonMacroArguments local_substitutions;
-            local_substitutions.insert_json("muzzle_flash_suffix", muzzle_flash_suffix);
-            macro_line_executor(*macro, &local_substitutions);
+            auto mle = macro_line_executor.inserted_block_arguments({{"muzzle_flash_suffix", muzzle_flash_suffix}});
+            mle(*macro, nullptr);
         });
 }
