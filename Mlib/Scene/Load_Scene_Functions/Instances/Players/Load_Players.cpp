@@ -194,10 +194,17 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
                     {"mute", false}
                 };
-                if (auto user = player.try_at(PlayerKeys::user); user.has_value()) {
+                if (*controller == "pc") {
+                    auto user = player.try_at(PlayerKeys::user);
+                    if (!user.has_value()) {
+                        THROW_OR_ABORT("\"pc\" controller requires \"user\"");
+                    }
                     let["user_id"] = user->at("id");
                     let["user_name"] = user->at("name");
+                } else if (*controller != "npc") {
+                    THROW_OR_ABORT("Unknown controller: \"" + *controller + "\". Known controllers: \"pc\", \"npc\"");
                 }
+                
                 nlohmann::json line{
                     {
                         MacroKeys::playback,

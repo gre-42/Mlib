@@ -23,17 +23,25 @@ enum class SubstitutionMode {
     ARGUMENT_COMPATIBILITY
 };
 
+namespace Filter {
+constexpr struct With {} with;
+constexpr struct Without {} without;
+}
+
 class JsonMacroArguments: public JsonView {
 public:
     JsonMacroArguments();
     JsonMacroArguments(const JsonMacroArguments& other);
     JsonMacroArguments(JsonMacroArguments&& other) noexcept;
     explicit JsonMacroArguments(nlohmann::json j);
-    JsonMacroArguments(const nlohmann::json& j, const std::set<std::string>& except);
+    JsonMacroArguments(const nlohmann::json& j, Filter::With, const std::set<std::string>& with);
+    JsonMacroArguments(const nlohmann::json& j, Filter::Without, const std::set<std::string>& without);
     ~JsonMacroArguments();
     void set(std::string_view key, nlohmann::json value);
     void merge(const JsonMacroArguments& other, std::string_view prefix="");
-    void insert_json(const nlohmann::json& j, const std::set<std::string>& except = {});
+    void insert_json(const nlohmann::json& j);
+    void insert_json(const nlohmann::json& j, Filter::With, const std::set<std::string>& with);
+    void insert_json(const nlohmann::json& j, Filter::Without, const std::set<std::string>& without);
     void insert_json(std::string_view key, nlohmann::json j);
     void set_fpathes(std::function<std::list<std::string>(const std::filesystem::path& f)> fpathes);
     void set_fpath(std::function<FPath(const std::filesystem::path& f)> fpath);

@@ -137,7 +137,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
 }
 
 MacroLineExecutor MacroLineExecutor::inserted_block_arguments(
-    nlohmann::json block_arguments) const
+    const nlohmann::json& block_arguments) const
 {
     JsonMacroArguments let{ block_arguments_ };
     let.insert_json(block_arguments);
@@ -271,24 +271,32 @@ void MacroLineExecutor::operator () (
             merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
             merged_args.insert_json("__APPDATA__", get_appdata_directory());
             PathResolver path_resolver{ search_path_, script_filename_ };
-            auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
-            JsonMacroArguments let{ block_arguments_, without };
-            try {
-                // BENCHMARK times.emplace_back("args", ot.elapsed());
-                if (jv.contains(MacroKeys::let)) {
-                    let.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::let), global_args, asset_references_, SubstitutionMode::DEFAULT));
+            auto insert_let = [&](JsonMacroArguments& let){
+                try {
+                    // BENCHMARK times.emplace_back("args", ot.elapsed());
+                    if (jv.contains(MacroKeys::let)) {
+                        let.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::let), global_args, asset_references_, SubstitutionMode::DEFAULT));
+                    }
+                    // BENCHMARK times.emplace_back("let", ot.elapsed());
+                } catch (const std::exception& e) {
+                    std::stringstream msg;
+                    msg << "Exception while substituting variables for (0) " << std::setw(2) << j << "\n\nException message: " << e.what();
+                    throw std::runtime_error(msg.str());
                 }
-                // BENCHMARK times.emplace_back("let", ot.elapsed());
-            } catch (const std::exception& e) {
-                std::stringstream msg;
-                msg << "Exception while substituting variables for " << std::setw(2) << j << "\n\nException message: " << e.what();
-                throw std::runtime_error(msg.str());
-            }
+            };
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
-            auto j_subst_raw = merged_args.subst_and_replace(j, global_args, asset_references_, SubstitutionMode::DEFAULT);
+            // auto j_subst_raw = merged_args.subst_and_replace(j, global_args, asset_references_, SubstitutionMode::DEFAULT);
             // BENCHMARK times.emplace_back("subst", ot.elapsed());
-            auto j_subst = JsonView{ j_subst_raw };
+            auto jv = JsonView{ j };
             if (jv.contains(MacroKeys::playback)) {
+                if (jv.contains(MacroKeys::with)) {
+                    std::stringstream msg;
+                    msg << "\"with\" not supported for \"playback\": " << std::setw(2) << j;
+                    THROW_OR_ABORT(msg.str());
+                }
+                auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
+                JsonMacroArguments let{ block_arguments_, Filter::without, without };
+                insert_let(let);
                 try {
                     // BENCHMARK times.emplace_back("args", ot.elapsed());
                     if (jv.contains(MacroKeys::arguments)) {
@@ -297,21 +305,34 @@ void MacroLineExecutor::operator () (
                     // BENCHMARK times.emplace_back("let", ot.elapsed());
                 } catch (const std::exception& e) {
                     std::stringstream msg;
-                    msg << "Exception while substituting variables for " << std::setw(2) << j << "\n\nException message: " << e.what();
+                    msg << "Exception while substituting variables for (1) " << std::setw(2) << j << "\n\nException message: " << e.what();
                     throw std::runtime_error(msg.str());
                 }
+                auto name = Mlib::eval<std::string>(
+                    jv.at<std::string>(MacroKeys::playback),
+                    global_args,
+                    merged_args,
+                    asset_references_);
                 global_args.unlock();
-                auto name = j_subst.at<std::string>(MacroKeys::playback);
                 // BENCHMARK short_description = name;
                 auto macro_it = macro_recorder_.json_macros_.find(name);
                 if (macro_it == macro_recorder_.json_macros_.end()) {
                     THROW_OR_ABORT("No JSON macro with name " + name + " exists");
                 }
-                let.insert_json(macro_it->second.block_arguments, without);
+                try {
+                    let.insert_json(macro_it->second.block_arguments, Filter::without, without);
+                } catch (const std::exception& e) {
+                    std::stringstream msg;
+                    msg << "Exception while merging \"let\" variables of macro \"" << name << "\". Line: " << std::setw(2) << macro_it->second.content << "\n\nException message: " << e.what();
+                    if (verbose_) {
+                        linfo() << msg.str();
+                    }
+                    throw std::runtime_error(msg.str());
+                }
                 auto mle2 = changed_script_filename_and_context(
                     macro_it->second.filename,
                     context,
-                    let.json());
+                    let.move_json());
                 // BENCHMARK times.emplace_back("macro fork", ot.elapsed());
                 try {
                     mle2(macro_it->second.content, nullptr);
@@ -324,6 +345,14 @@ void MacroLineExecutor::operator () (
                     throw std::runtime_error(msg.str());
                 }
             } else if (jv.contains(MacroKeys::call)) {
+                if (jv.contains(MacroKeys::with)) {
+                    std::stringstream msg;
+                    msg << "\"with\" not supported for \"call\": " << std::setw(2) << j;
+                    THROW_OR_ABORT(msg.str());
+                }
+                auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
+                JsonMacroArguments let{ block_arguments_, Filter::without, without };
+                insert_let(let);
                 JsonMacroArguments args;
                 args.set_fpathes([path_resolver](const std::filesystem::path& path){return path_resolver.fpathes(path);});
                 args.set_fpath([path_resolver](const std::filesystem::path& path){return path_resolver.fpath(path);});
@@ -334,15 +363,15 @@ void MacroLineExecutor::operator () (
                     }
                 } catch (const std::exception& e) {
                     std::stringstream msg;
-                    msg << "Exception while substituting variables for " << std::setw(2) << j << "\n\nException message: " << e.what();
+                    msg << "Exception while substituting variables for (2) " << std::setw(2) << j << "\n\nException message: " << e.what();
                     throw std::runtime_error(msg.str());
                 }
                 global_args.unlock();
-                auto name = j_subst.at<std::string>(MacroKeys::call);
+                auto name = jv.at<std::string>(MacroKeys::call);
                 // BENCHMARK short_description = name;
                 auto mle2 = changed_context(
                     context,
-                    let.json());
+                    let.move_json());
                 // BENCHMARK times.emplace_back("call fork", ot.elapsed());
                 bool success;
                 try {
@@ -370,25 +399,49 @@ void MacroLineExecutor::operator () (
                     THROW_OR_ABORT(msg.str());
                 }
             } else if (jv.contains(MacroKeys::execute)) {
+                if (jv.contains(MacroKeys::with)) {
+                    std::stringstream msg;
+                    msg << "\"with\" not supported for \"execute\": " << std::setw(2) << j;
+                    THROW_OR_ABORT(msg.str());
+                }
+                auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
+                JsonMacroArguments let{ block_arguments_, Filter::without, without };
+                insert_let(let);
                 global_args.unlock();
                 if (jv.contains(MacroKeys::arguments)) {
                     THROW_OR_ABORT("\"execute\" does not support \"arguments\", use \"let\" instead");
                 }
                 auto mle2 = changed_context(context, let.json());
                 // BENCHMARK times.emplace_back("execute fork", ot.elapsed());
-                mle2(j_subst.at(MacroKeys::execute), nullptr);
+                mle2(jv.at(MacroKeys::execute), nullptr);
             } else if (jv.contains(MacroKeys::include)) {
+                if (jv.contains(MacroKeys::with)) {
+                    std::stringstream msg;
+                    msg << "\"with\" not supported for \"include\": " << std::setw(2) << j;
+                    THROW_OR_ABORT(msg.str());
+                }
+                auto without = jv.at<std::set<std::string>>(MacroKeys::without, std::set<std::string>());
+                JsonMacroArguments let{ block_arguments_, Filter::without, without };
+                insert_let(let);
                 global_args.unlock();
                 if (jv.contains(MacroKeys::arguments)) {
                     THROW_OR_ABORT("\"include\" does not support \"arguments\", use \"let\" instead");
                 }
                 auto mle2 = changed_script_filename_and_context(
-                    path_resolver.spath(j_subst.at<std::string>(MacroKeys::include)),
+                    path_resolver.spath(jv.at<std::string>(MacroKeys::include)),
                     context,
                     let.json());
                 // BENCHMARK times.emplace_back("include fork", ot.elapsed());
                 macro_recorder_(mle2);
             } else if (jv.contains(MacroKeys::declare_macro)) {
+                if (jv.contains(MacroKeys::without)) {
+                    std::stringstream msg;
+                    msg << "\"without\" not supported for \"declare_macro\": " << std::setw(2) << j;
+                    THROW_OR_ABORT(msg.str());
+                }
+                auto with = jv.at<std::set<std::string>>(MacroKeys::with, std::set<std::string>());
+                JsonMacroArguments let{ block_arguments_, Filter::with, with };
+                insert_let(let);
                 global_args.unlock();
                 if (jv.contains(MacroKeys::arguments)) {
                     THROW_OR_ABORT("\"declare_macro\" does not support \"arguments\", use \"let\" instead");

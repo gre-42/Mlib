@@ -45,7 +45,8 @@ JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
 
 JsonMacroArguments::JsonMacroArguments(
     const nlohmann::json& j,
-    const std::set<std::string>& except)
+    Filter::With,
+    const std::set<std::string>& with)
     : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
     , j_(nlohmann::json::object())
 {
@@ -53,7 +54,24 @@ JsonMacroArguments::JsonMacroArguments(
         THROW_OR_ABORT("JSON is not of type object");
     }
     for (const auto& [k, v] : j.items()) {
-        if (!except.contains(k)) {
+        if (with.contains(k)) {
+            j_[k] = v;
+        }
+    }
+}
+
+JsonMacroArguments::JsonMacroArguments(
+    const nlohmann::json& j,
+    Filter::Without,
+    const std::set<std::string>& without)
+    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
+    , j_(nlohmann::json::object())
+{
+    if (j.type() != nlohmann::detail::value_t::object) {
+        THROW_OR_ABORT("JSON is not of type object");
+    }
+    for (const auto& [k, v] : j.items()) {
+        if (!without.contains(k)) {
             j_[k] = v;
         }
     }
@@ -129,15 +147,41 @@ nlohmann::json JsonMacroArguments::subst_and_replace(
     return ::subst_and_replace(j, globals, j_, asset_references, mode);
 }
 
-void JsonMacroArguments::insert_json(
-    const nlohmann::json& j,
-    const std::set<std::string>& except)
+void JsonMacroArguments::insert_json(const nlohmann::json& j)
 {
     if (j.type() != nlohmann::detail::value_t::object) {
         THROW_OR_ABORT("Cannot insert non-object type");
     }
     for (const auto& [key, value] : j.items()) {
-        if (!except.contains(key)) {
+        insert_json(key, value);
+    }
+}
+
+void JsonMacroArguments::insert_json(
+    const nlohmann::json& j,
+    Filter::With,
+    const std::set<std::string>& with)
+{
+    if (j.type() != nlohmann::detail::value_t::object) {
+        THROW_OR_ABORT("Cannot insert non-object type");
+    }
+    for (const auto& [key, value] : j.items()) {
+        if (with.contains(key)) {
+            insert_json(key, value);
+        }
+    }
+}
+
+void JsonMacroArguments::insert_json(
+    const nlohmann::json& j,
+    Filter::Without,
+    const std::set<std::string>& without)
+{
+    if (j.type() != nlohmann::detail::value_t::object) {
+        THROW_OR_ABORT("Cannot insert non-object type");
+    }
+    for (const auto& [key, value] : j.items()) {
+        if (!without.contains(key)) {
             insert_json(key, value);
         }
     }
