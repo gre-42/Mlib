@@ -59,7 +59,7 @@ public:
         }
         return res;
     }
-    FixedArray<T, 2> velocity(const FixedArray<size_t, 2>& coords) const {
+    FixedArray<T, 2> momentum(const FixedArray<size_t, 2>& coords) const {
         const auto& dirs = TModel::discrete_velocity_directions;
         auto result = fixed_zeros<T, 2>();
         for (size_t v = 0; v < ndirections; ++v) {
@@ -153,10 +153,10 @@ private:
         for (size_t x = 0; x < subdomain_size_(0); ++x) {
             for (size_t y = 0; y < subdomain_size_(1); ++y) {
                 auto dens = density({x, y});
-                auto vel = velocity({x, y});
+                auto mv = momentum({x, y});
                 density_field_(x, y) = dens;
-                velocity_field_(0, x, y) = vel(0) / dens;
-                velocity_field_(1, x, y) = vel(1) / dens;
+                velocity_field_(0, x, y) = mv(0) / dens;
+                velocity_field_(1, x, y) = mv(1) / dens;
             }
         }
     }
