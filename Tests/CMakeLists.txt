@@ -1,6 +1,7 @@
 add_subdirectory(Array)
 add_subdirectory(Bmp)
 add_subdirectory(Box_Filter)
+add_subdirectory(Cfd)
 add_subdirectory(Floating_Point_Exceptions)
 add_subdirectory(Geography)
 add_subdirectory(Geometry)
