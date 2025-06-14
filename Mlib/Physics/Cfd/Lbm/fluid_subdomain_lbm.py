@@ -37,9 +37,7 @@ class field2d():
         for b in range(res[0]):
             fm = []
             for a in range(res[1]):
-                fm.append([0, 0, 0,
-                           0, 1, 0,
-                           0, 0, 0])
+                fm.append(weights[:])
             self.field.append(fm[:])
         self.res = res
     # this visualize the simulation, can only be used in a terminal
