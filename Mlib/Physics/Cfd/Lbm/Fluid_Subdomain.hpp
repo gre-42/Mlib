@@ -34,12 +34,11 @@ class FluidSubdomain {
     constexpr static const T speed_of_sound2 = squared(speed_of_sound);
     constexpr static const T speed_of_sound4 = squared(speed_of_sound2);
     constexpr static const T time_relaxation_constant = (T)0.55;
-    constexpr static const size_t temp_field_id_ = 0;
-    constexpr static const size_t good_field_id_ = 1;
 public:
     explicit FluidSubdomain(const FixedArray<size_t, 2>& subdomain_size)
         : subdomain_size_{ subdomain_size }
-        , velocity_magnitudes_fields_{ArrayShape{2, ndirections, subdomain_size(0), subdomain_size(1)}}
+        , good_velocity_magnitudes_field_{ArrayShape{ndirections, subdomain_size(0), subdomain_size(1)}}
+        , temp_velocity_magnitudes_field_{ArrayShape{ndirections, subdomain_size(0), subdomain_size(1)}}
         , velocity_field_{ArrayShape{2, subdomain_size(0), subdomain_size(1)}}
         , density_field_{ArrayShape{subdomain_size(0), subdomain_size(1)}}
     {
@@ -47,16 +46,16 @@ public:
             THROW_OR_ABORT("Subdomain size cannot be zero");
         }
         for (size_t dir = 0; dir < ndirections; ++dir) {
+            good_velocity_magnitudes_field_[dir] = TModel::weights[dir];
             // This is only necessary for the boundary values
-            velocity_magnitudes_fields_[temp_field_id_][dir] = TModel::weights[dir];
-            velocity_magnitudes_fields_[good_field_id_][dir] = TModel::weights[dir];
+            temp_velocity_magnitudes_field_[dir] = TModel::weights[dir];
         }
         calculate_macroscopic_variables();
     }
     T density(const FixedArray<size_t, 2>& coords) const {
         T res = (T)0;
         for (size_t v = 0; v < ndirections; ++v) {
-            res += velocity_magnitudes_fields_(good_field_id_, v, coords(0), coords(1));
+            res += good_velocity_magnitudes_field_(v, coords(0), coords(1));
         }
         return res;
     }
@@ -64,7 +63,7 @@ public:
         const auto& dirs = TModel::discrete_velocity_directions;
         auto result = fixed_zeros<T, 2>();
         for (size_t v = 0; v < ndirections; ++v) {
-            result += (dirs[v].template casted<T>()) * velocity_magnitudes_fields_(good_field_id_, v, coords(0), coords(1));
+            result += (dirs[v].template casted<T>()) * good_velocity_magnitudes_field_(v, coords(0), coords(1));
         }
         return result;
     }
@@ -115,7 +114,7 @@ private:
                 auto dens = density_field({x, y});
                 auto vel2 = sum(squared(flow_velocity));
                 for (size_t v = 0; v < ndirections; ++v) {
-                    auto velocity_v = velocity_magnitudes_fields_(good_field_id_, v, x, y);
+                    auto velocity_v = good_velocity_magnitudes_field_(v, x, y);
                     auto first_term = velocity_v;
                     // the flow velocity
                     auto dotted = dot0d(flow_velocity, dirs[v].template casted<T>());
@@ -126,10 +125,10 @@ private:
                     if ((x == 0) || (x == subdomain_size_(0) - 1) ||
                         (y == 0) || (y == subdomain_size_(1) - 1))
                     {
-                        velocity_magnitudes_fields_(temp_field_id_, v, x, y) = equilibrium;
+                        temp_velocity_magnitudes_field_(v, x, y) = equilibrium;
                     } else {
                         auto second_term = (equilibrium - velocity_v) / time_relaxation_constant;
-                        velocity_magnitudes_fields_(temp_field_id_, v, x, y) = first_term + second_term;
+                        temp_velocity_magnitudes_field_(v, x, y) = first_term + second_term;
                     }
                 }
             }
@@ -143,7 +142,7 @@ private:
                 for (size_t y = 1; y < subdomain_size_(1) - 1; ++y) {
                     size_t source_x = x - dir(0);
                     size_t source_y = y - dir(1);
-                    velocity_magnitudes_fields_(good_field_id_, v, x, y) = velocity_magnitudes_fields_(temp_field_id_, v, source_x, source_y);
+                    good_velocity_magnitudes_field_(v, x, y) = temp_velocity_magnitudes_field_(v, source_x, source_y);
                 }
             }
         }
@@ -160,7 +159,8 @@ private:
         }
     }
     FixedArray<size_t, 2> subdomain_size_;
-    Array<T> velocity_magnitudes_fields_;
+    Array<T> good_velocity_magnitudes_field_;
+    Array<T> temp_velocity_magnitudes_field_;
     Array<T> velocity_field_;
     Array<T> density_field_;
 };
