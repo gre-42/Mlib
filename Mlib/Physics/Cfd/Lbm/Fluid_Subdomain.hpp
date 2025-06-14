@@ -138,11 +138,13 @@ private:
         const auto& dirs = TModel::discrete_velocity_directions;
         for (size_t v = 0; v < ndirections; ++v) {
             const auto& dir = dirs[v];
+            auto good = good_velocity_magnitudes_field_[v];
+            auto temp = temp_velocity_magnitudes_field_[v];
             for (size_t x = 1; x < subdomain_size_(0) - 1; ++x) {
                 for (size_t y = 1; y < subdomain_size_(1) - 1; ++y) {
                     size_t source_x = x - dir(0);
                     size_t source_y = y - dir(1);
-                    good_velocity_magnitudes_field_(v, x, y) = temp_velocity_magnitudes_field_(v, source_x, source_y);
+                    good(x, y) = temp(source_x, source_y);
                 }
             }
         }
