@@ -104,6 +104,12 @@ public:
             ostr << '\n';
         }
     }
+    inline FixedArray<size_t, 2> size() const {
+        return subdomain_size_;
+    }
+    inline size_t size(size_t axis) const {
+        return subdomain_size_(axis);
+    }
 private:
     void collide() {
         const auto& dirs = TModel::discrete_velocity_directions;
