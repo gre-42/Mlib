@@ -4,7 +4,7 @@
 using namespace Mlib;
 
 ElapsedGuard::ElapsedGuard()
-: start_time_{std::chrono::steady_clock::now()}
+    : start_time_{std::chrono::steady_clock::now()}
 {}
 
 ElapsedGuard::~ElapsedGuard() {
