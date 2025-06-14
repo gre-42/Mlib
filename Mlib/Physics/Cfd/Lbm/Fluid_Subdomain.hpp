@@ -7,9 +7,9 @@
 namespace Mlib {
 
 static const std::array<FixedArray<int, 2>, 9> discrete_velocity_directions_d2q9 = {
-    FixedArray<int, 2>{-1, 1}, FixedArray<int, 2>{0, 1}, FixedArray<int, 2>{1, 1},
-    FixedArray<int, 2>{-1, 0}, FixedArray<int, 2>{0, 0}, FixedArray<int, 2>{1, 0},
-    FixedArray<int, 2>{-1, -1}, FixedArray<int, 2>{0, -1}, FixedArray<int, 2>{1, -1}};
+    FixedArray<int, 2>{1, -1}, FixedArray<int, 2>{1, 0}, FixedArray<int, 2>{1, 1},
+    FixedArray<int, 2>{0, -1}, FixedArray<int, 2>{0, 0}, FixedArray<int, 2>{0, 1},
+    FixedArray<int, 2>{-1, -1}, FixedArray<int, 2>{-1, 0}, FixedArray<int, 2>{-1, 1}};
     
 template <class T>
 struct LbmModelD2Q9 {
@@ -34,10 +34,12 @@ class FluidSubdomain {
     constexpr static const T speed_of_sound2 = squared(speed_of_sound);
     constexpr static const T speed_of_sound4 = squared(speed_of_sound2);
     constexpr static const T time_relaxation_constant = (T)0.55;
+    constexpr static const size_t temp_field_id_ = 0;
+    constexpr static const size_t good_field_id_ = 1;
 public:
     explicit FluidSubdomain(const FixedArray<size_t, 2>& subdomain_size)
         : subdomain_size_{ subdomain_size }
-        , velocity_magnitudes_field_{ArrayShape{ndirections, subdomain_size(0), subdomain_size(1)}}
+        , velocity_magnitudes_fields_{ArrayShape{2, ndirections, subdomain_size(0), subdomain_size(1)}}
         , velocity_field_{ArrayShape{2, subdomain_size(0), subdomain_size(1)}}
         , density_field_{ArrayShape{subdomain_size(0), subdomain_size(1)}}
     {
@@ -45,14 +47,16 @@ public:
             THROW_OR_ABORT("Subdomain size cannot be zero");
         }
         for (size_t dir = 0; dir < ndirections; ++dir) {
-            velocity_magnitudes_field_[dir] = TModel::weights[dir];
+            // This is only necessary for the boundary values
+            velocity_magnitudes_fields_[temp_field_id_][dir] = TModel::weights[dir];
+            velocity_magnitudes_fields_[good_field_id_][dir] = TModel::weights[dir];
         }
         calculate_macroscopic_variables();
     }
     T density(const FixedArray<size_t, 2>& coords) const {
         T res = (T)0;
-        for (size_t dir = 0; dir < ndirections; ++dir) {
-            res += velocity_magnitudes_field_(dir, coords(0), coords(1));
+        for (size_t v = 0; v < ndirections; ++v) {
+            res += velocity_magnitudes_fields_(good_field_id_, v, coords(0), coords(1));
         }
         return res;
     }
@@ -60,7 +64,7 @@ public:
         const auto& dirs = TModel::discrete_velocity_directions;
         auto result = fixed_zeros<T, 2>();
         for (size_t v = 0; v < ndirections; ++v) {
-            result += (dirs[v].template casted<T>()) * velocity_magnitudes_field_(v, coords(0), coords(1));
+            result += (dirs[v].template casted<T>()) * velocity_magnitudes_fields_(good_field_id_, v, coords(0), coords(1));
         }
         return result;
     }
@@ -87,28 +91,25 @@ public:
         const auto& weights = TModel::weights;
         for (size_t x = 0; x < subdomain_size_(0); ++x) {
             for (size_t y = 0; y < subdomain_size_(1); ++y) {
-                if (x == 20 && y == 7) {
-                    linfo() << "h";
-                }
                 auto flow_velocity = velocity_field({x, y});
                 auto dens = density_field({x, y});
                 auto vel2 = sum(squared(flow_velocity));
                 for (size_t v = 0; v < ndirections; ++v) {
-                    auto velocity_v = velocity_magnitudes_field_(v, x, y);
+                    auto velocity_v = velocity_magnitudes_fields_(good_field_id_, v, x, y);
                     auto first_term = velocity_v;
                     // the flow velocity
                     auto dotted = dot0d(flow_velocity, dirs[v].template casted<T>());
                     // the taylor expainsion of equilibrium term
-                    auto taylor = 1 + (dotted / speed_of_sound2) + (squared(dotted)/(2 * speed_of_sound4)) -
-                        (vel2 / (2*speed_of_sound2));
+                    auto taylor = 1 + (dotted / speed_of_sound2) + (squared(dotted) / (2 * speed_of_sound4)) -
+                        (vel2 / (2 * speed_of_sound2));
                     auto equilibrium = dens * taylor * weights[v];
                     if ((x == 0) || (x == subdomain_size_(0) - 1) ||
                         (y == 0) || (y == subdomain_size_(1) - 1))
                     {
-                        velocity_magnitudes_field_(v, x, y) = equilibrium;
+                        velocity_magnitudes_fields_(temp_field_id_, v, x, y) = equilibrium;
                     } else {
                         auto second_term = (equilibrium - velocity_v) / time_relaxation_constant;
-                        velocity_magnitudes_field_(v, x, y) = first_term + second_term;
+                        velocity_magnitudes_fields_(temp_field_id_, v, x, y) = first_term + second_term;
                     }
                 }
             }
@@ -116,12 +117,13 @@ public:
     }
     void stream() {
         const auto& dirs = TModel::discrete_velocity_directions;
-        for (size_t x = 1; x < subdomain_size_(0) - 1; ++x) {
-            for (size_t y = 1; y < subdomain_size_(1) - 1; ++y) {
-                for (size_t v = 0; v < ndirections; ++v) {
-                    auto source_x = x - dirs[v](0);
-                    auto source_y = y - dirs[v](1);
-                    velocity_magnitudes_field_(v, x, y) = velocity_magnitudes_field_(v, source_x, source_y);
+        for (size_t v = 0; v < ndirections; ++v) {
+            const auto& dir = dirs[v];
+            for (size_t x = 1; x < subdomain_size_(0) - 1; ++x) {
+                for (size_t y = 1; y < subdomain_size_(1) - 1; ++y) {
+                    size_t source_x = x - dir(0);
+                    size_t source_y = y - dir(1);
+                    velocity_magnitudes_fields_(good_field_id_, v, x, y) = velocity_magnitudes_fields_(temp_field_id_, v, source_x, source_y);
                 }
             }
         }
@@ -129,10 +131,11 @@ public:
     void calculate_macroscopic_variables() {
         for (size_t x = 0; x < subdomain_size_(0); ++x) {
             for (size_t y = 0; y < subdomain_size_(1); ++y) {
-                density_field_(x, y) = density({x, y});
+                auto dens = density({x, y});
                 auto vel = velocity({x, y});
-                velocity_field_(0, x, y) = vel(0);
-                velocity_field_(1, x, y) = vel(1);
+                density_field_(x, y) = dens;
+                velocity_field_(0, x, y) = vel(0) / dens;
+                velocity_field_(1, x, y) = vel(1) / dens;
             }
         }
     }
@@ -143,16 +146,16 @@ public:
             for (size_t x = 0; x < subdomain_size_(0); ++x) {
                 auto flow_momentum = momentum_field({x, y});
                 ostr << "\033[38;2;" <<
-                    (int)std::round(offset + scale * flow_momentum(0)) << ';' <<
-                    (int)std::round(offset + scale * flow_momentum(1)) <<
-                    ";0m█";
+                    (int)std::round(std::clamp<T>(offset + scale * flow_momentum(1), 0, 255)) << ';' <<
+                    (int)std::round(std::clamp<T>(offset + scale * flow_momentum(0), 0, 255)) <<
+                    ";0m██";
             }
             ostr << '\n';
         }
     }
 private:
     FixedArray<size_t, 2> subdomain_size_;
-    Array<T> velocity_magnitudes_field_;
+    Array<T> velocity_magnitudes_fields_;
     Array<T> velocity_field_;
     Array<T> density_field_;
 };

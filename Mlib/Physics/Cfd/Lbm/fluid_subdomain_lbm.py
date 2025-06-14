@@ -64,7 +64,7 @@ class field2d():
 
 
 # resolution of the simulation
-res = [35, 70]
+res = [20, 70]
 a = field2d(res)
 # the velocity field
 
@@ -113,11 +113,9 @@ speed_of_sound = 1/math.sqrt(3)
 time_relaxation_constant = 0.55
 # solve
 for s in range(max_steps):
-    for y in range(res[0] - 20):
-        velocity_field[y + 10][res[1] //
-                               2][0] = math.sin(s * omega) * center_velocity[0]
-        velocity_field[y + 10][res[1] //
-                               2][1] = math.sin(s * omega) * center_velocity[1]
+    for y in range(5, 11):
+        velocity_field[y][res[1] // 2][0] = math.cos(s * omega) * center_velocity[0]
+        velocity_field[y][res[1] // 2][1] = math.cos(s * omega) * center_velocity[1]
         # density_field[res[0]//2][res[1]//2] = 1 + \
         #    math.sin(s * omega) * center_density
     # collision step
@@ -150,8 +148,8 @@ for s in range(max_steps):
         for x in range(1, res[1] - 1):
             for v in range(9):
                 # target, the lattice point this iteration is solving
-                source_y = y-discrete_velocity_vectors[v][1]
-                source_x = x-discrete_velocity_vectors[v][0]
+                source_y = y-discrete_velocity_vectors[v][0]
+                source_x = x-discrete_velocity_vectors[v][1]
                 # peiodic boundary
                 a.field[y][x][v] = df.field[source_y][source_x][v]
     # calculate macroscopic variables
