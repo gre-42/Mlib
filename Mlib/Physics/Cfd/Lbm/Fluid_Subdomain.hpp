@@ -86,6 +86,26 @@ public:
         velocity_field_(0, coords(0), coords(1)) = value(0);
         velocity_field_(1, coords(0), coords(1)) = value(1);
     }
+    void iterate() {
+        collide();
+        stream();
+        calculate_macroscopic_variables();
+    }
+    void print(std::ostream& ostr) const {
+        T offset = 127;
+        T scale = 127;
+        for (size_t y = 0; y < subdomain_size_(1); ++y) {
+            for (size_t x = 0; x < subdomain_size_(0); ++x) {
+                auto flow_momentum = momentum_field({x, y});
+                ostr << "\033[38;2;" <<
+                    (int)std::round(std::clamp<T>(offset + scale * flow_momentum(1), 0, 255)) << ';' <<
+                    (int)std::round(std::clamp<T>(offset + scale * flow_momentum(0), 0, 255)) <<
+                    ";0m██";
+            }
+            ostr << '\n';
+        }
+    }
+private:
     void collide() {
         const auto& dirs = TModel::discrete_velocity_directions;
         const auto& weights = TModel::weights;
@@ -139,21 +159,6 @@ public:
             }
         }
     }
-    void print(std::ostream& ostr) const {
-        T offset = 127;
-        T scale = 127;
-        for (size_t y = 0; y < subdomain_size_(1); ++y) {
-            for (size_t x = 0; x < subdomain_size_(0); ++x) {
-                auto flow_momentum = momentum_field({x, y});
-                ostr << "\033[38;2;" <<
-                    (int)std::round(std::clamp<T>(offset + scale * flow_momentum(1), 0, 255)) << ';' <<
-                    (int)std::round(std::clamp<T>(offset + scale * flow_momentum(0), 0, 255)) <<
-                    ";0m██";
-            }
-            ostr << '\n';
-        }
-    }
-private:
     FixedArray<size_t, 2> subdomain_size_;
     Array<T> velocity_magnitudes_fields_;
     Array<T> velocity_field_;

@@ -16,9 +16,7 @@ void test_fluid_subdomain() {
         for (size_t y = 5; y < 10; ++y) {
             cfd.set_velocity_field({35u, y}, std::cos((T)i * omega) * center_velocity);
         }
-        cfd.collide();
-        cfd.stream();
-        cfd.calculate_macroscopic_variables();
+        cfd.iterate();
         cfd.print(lout().ref());
     }
     {
@@ -27,9 +25,7 @@ void test_fluid_subdomain() {
             for (size_t y = 5; y < 10; ++y) {
                 cfd.set_velocity_field({35u, y}, std::cos((T)i * omega) * center_velocity);
             }
-            cfd.collide();
-            cfd.stream();
-            cfd.calculate_macroscopic_variables();
+            cfd.iterate();
         }
     }
 }
