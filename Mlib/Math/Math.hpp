@@ -1175,7 +1175,7 @@ TData prod(const BaseDenseArray<TDerived, TData>& a) {
 }
 
 template <class T>
-inline auto squared(const T& a) {
+constexpr inline auto squared(const T& a) {
     auto fa = funpack(a);
     return fa * fa;
 }

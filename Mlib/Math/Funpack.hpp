@@ -6,40 +6,40 @@
 namespace Mlib {
 
 template <class TInt, std::intmax_t denominator>
-inline auto funpack(const Array<FixedPointNumber<TInt, denominator>>& a) {
+constexpr inline auto funpack(const Array<FixedPointNumber<TInt, denominator>>& a) {
     using I = intermediate_float<TInt>;
     return a.template casted<I>();
 }
 
 template <std::floating_point TFloat, size_t... tshape>
-inline const auto& funpack(const Array<TFloat>& a) {
+constexpr inline const auto& funpack(const Array<TFloat>& a) {
     return a;
 }
 
 template <class TInt, std::intmax_t denominator, size_t... tshape>
-inline auto funpack(const FixedArray<FixedPointNumber<TInt, denominator>, tshape...>& a) {
+constexpr inline auto funpack(const FixedArray<FixedPointNumber<TInt, denominator>, tshape...>& a) {
     using I = intermediate_float<TInt>;
     return a.template casted<I>();
 }
 
 template <std::floating_point TFloat, size_t... tshape>
-inline const auto& funpack(const FixedArray<TFloat, tshape...>& a) {
+constexpr inline const auto& funpack(const FixedArray<TFloat, tshape...>& a) {
     return a;
 }
 
 template <class TInt, std::intmax_t denominator>
-inline auto funpack(const FixedPointNumber<TInt, denominator>& a) {
+constexpr inline auto funpack(const FixedPointNumber<TInt, denominator>& a) {
     using I = intermediate_float<TInt>;
     return (I)a;
 }
 
 template <std::floating_point F>
-inline auto funpack(const F& f) {
+constexpr inline auto funpack(const F& f) {
     return f;
 }
 
 template <std::integral I>
-inline auto funpack(const I& i) {
+constexpr inline auto funpack(const I& i) {
     return i;
 }
 
