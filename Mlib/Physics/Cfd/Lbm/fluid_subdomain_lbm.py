@@ -106,7 +106,7 @@ for dummy_variable in range(res[0]):
 #density_field[res[0]//2][res[1]//2] = 2
 #density_field[res[0]//2-5][res[1]//2] = 2
 # maximum solving steps
-max_steps = 1200
+max_steps = 50
 # the speed of sound, specifically 1/sqrt(3) ~ 0.57
 speed_of_sound = 1/math.sqrt(3)
 # time relaxation constant

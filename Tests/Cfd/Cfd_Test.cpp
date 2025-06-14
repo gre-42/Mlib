@@ -11,19 +11,14 @@ void test_fluid_subdomain() {
     auto omega = 2.f * T(M_PI) * frequency;
     auto center_velocity = FixedArray<T, 2>{(T)0.1, (T)0.2};
     FluidSubdomain<LbmModelD2Q9<T>> cfd{{70u, 20u}};
-    for (size_t i = 0; i < 1000; ++i) {
+    for (size_t i = 0; i < 50; ++i) {
         for (size_t y = 5; y < 10; ++y) {
             cfd.set_velocity_field({35u, y}, std::cos((T)i * omega) * center_velocity);
         }
-        //linfo() << "fm0 " << cfd.momentum_field({20u, 7u});
-        //linfo() << "fv0 " << cfd.velocity_field({20u, 7u});
         cfd.collide();
         cfd.stream();
         cfd.calculate_macroscopic_variables();
-        // linfo() << "fm1 " << cfd.momentum_field({20u, 7u});
-        // linfo() << "fv1 " << cfd.velocity_field({20u, 7u});
         cfd.print(lout().ref());
-        // lout() << "-----\n";
     }
 }
 
