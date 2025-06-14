@@ -24,11 +24,6 @@ struct LbmModelD2Q9 {
 
     constexpr static const std::array<FixedArray<int, 2>, ndirections>& discrete_velocity_directions =
         discrete_velocity_directions_d2q9;
-    
-    constexpr static const T initial_velocities[ndirections] = {
-        0, 0, 0,
-        0, 1, 0,
-        0, 0, 0};
 };
 
 template <class TModel>
@@ -50,7 +45,7 @@ public:
             THROW_OR_ABORT("Subdomain size cannot be zero");
         }
         for (size_t dir = 0; dir < ndirections; ++dir) {
-            velocity_magnitudes_field_[dir] = TModel::initial_velocities[dir];
+            velocity_magnitudes_field_[dir] = TModel::weights[dir];
         }
         calculate_macroscopic_variables();
     }
@@ -107,8 +102,8 @@ public:
                     auto taylor = 1 + (dotted / speed_of_sound2) + (squared(dotted)/(2 * speed_of_sound4)) -
                         (vel2 / (2*speed_of_sound2));
                     auto equilibrium = dens * taylor * weights[v];
-                    if ((y == 0) || (y == subdomain_size_(1) - 1) ||
-                        (x == 0) || (x == subdomain_size_(0) - 1))
+                    if ((x == 0) || (x == subdomain_size_(0) - 1) ||
+                        (y == 0) || (y == subdomain_size_(1) - 1))
                     {
                         velocity_magnitudes_field_(v, x, y) = equilibrium;
                     } else {
