@@ -81,7 +81,7 @@ a = field2d(res)
 frequency = 1 / 8
 omega = 2 * math.pi * frequency
 # center_density = 0.5
-center_velocity = [0.1, 0.05]
+center_velocity = [0.2, 0.1]
 # center_density = 0.3
 
 
@@ -105,8 +105,8 @@ for dummy_variable in range(res[0]):
         dummy_list.append(1)
     density_field.append(dummy_list[:])
 # set initial condition
-density_field[res[0]//2][res[1]//2] = 2
-density_field[res[0]//2-5][res[1]//2] = 2
+#density_field[res[0]//2][res[1]//2] = 2
+#density_field[res[0]//2-5][res[1]//2] = 2
 # maximum solving steps
 max_steps = 1200
 # the speed of sound, specifically 1/sqrt(3) ~ 0.57
@@ -117,9 +117,9 @@ time_relaxation_constant = 0.55
 for s in range(max_steps):
     for y in range(res[0] - 20):
         velocity_field[y + 10][res[1] //
-                               2][0] += math.sin(s * omega) * center_velocity[0]
+                               2][0] = math.sin(s * omega) * center_velocity[0]
         velocity_field[y + 10][res[1] //
-                               2][1] += math.sin(s * omega) * center_velocity[1]
+                               2][1] = math.sin(s * omega) * center_velocity[1]
         # density_field[res[0]//2][res[1]//2] = 1 + \
         #    math.sin(s * omega) * center_density
     # collision step
@@ -152,10 +152,10 @@ for s in range(max_steps):
         for x in range(1, res[1] - 1):
             for v in range(9):
                 # target, the lattice point this iteration is solving
-                target_y = y-discrete_velocity_vectors[v][1]
-                target_x = x-discrete_velocity_vectors[v][0]
+                source_y = y-discrete_velocity_vectors[v][1]
+                source_x = x-discrete_velocity_vectors[v][0]
                 # peiodic boundary
-                a.field[y][x][v] = df.field[target_y][target_x][v]
+                a.field[y][x][v] = df.field[source_y][source_x][v]
     # calculate macroscopic variables
     for y in range(res[0]):
         for x in range(res[1]):
