@@ -1181,8 +1181,9 @@ constexpr inline auto squared(const T& a) {
 }
 
 template <class T>
-inline T cubed(const T& a) {
-    return a * a * a;
+constexpr inline auto cubed(const T& a) {
+    auto fa = funpack(a);
+    return fa * fa * fa;
 }
 
 template <class TData>
