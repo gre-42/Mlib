@@ -3,6 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Cfd/Lbm/Fluid_Subdomain.hpp>
 #include <Mlib/Time/Elapsed_Guard.hpp>
+#include <Mlib/Time/Sleep.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -20,7 +21,9 @@ void test_fluid_subdomain() {
             cfd.set_velocity_field({x, y}, std::cos((T)i * omega) * center_velocity);
         }
         cfd.iterate();
-        cfd.print(lout().ref());
+        cfd.print_momentum(lout().ref());
+        cfd.print_density(lout().ref());
+        sleep_for(std::chrono::milliseconds(15));
     }
     {
         ElapsedGuard eg;

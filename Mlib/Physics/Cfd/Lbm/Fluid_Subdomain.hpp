@@ -1,8 +1,12 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Stats/Clamped.hpp>
 #include <cmath>
 #include <ostream>
+
+// Based on: https://en.wikipedia.org/wiki/lattice_boltzmann_methods
 
 namespace Mlib {
 
@@ -90,7 +94,7 @@ public:
         stream();
         calculate_macroscopic_variables();
     }
-    void print(std::ostream& ostr) const {
+    void print_momentum(std::ostream& ostr) const {
         T offset = 127;
         T scale = 127;
         for (size_t y = 0; y < subdomain_size_(1); ++y) {
@@ -100,6 +104,25 @@ public:
                     (int)std::round(std::clamp<T>(offset + scale * flow_momentum(1), 0, 255)) << ';' <<
                     (int)std::round(std::clamp<T>(offset + scale * flow_momentum(0), 0, 255)) <<
                     ";0m██";
+            }
+            ostr << '\n';
+        }
+    }
+    void print_density(
+        std::ostream& ostr,
+        T min = 0.8f,
+        T max = 1.2f,
+        const FixedArray<T, 3>& color0 = FixedArray<T, 3>{0.f, 0.f, 0.5f},
+        const FixedArray<T, 3>& color1 = FixedArray<T, 3>{0.f, 0.f, 1.f}) const
+    {
+        for (size_t y = 0; y < subdomain_size_(1); ++y) {
+            for (size_t x = 0; x < subdomain_size_(0); ++x) {
+                auto dens = density_field({x, y});
+                auto c = round(clamped(
+                    lerp(color0, color1, std::clamp<T>((dens - min) / (max - min), 0, 1)),
+                    fixed_zeros<T, 3>(),
+                    fixed_ones<T, 3>()) * 255.f).template casted<unsigned int>();
+                ostr << "\033[38;2;" << c(0) << ';' << c(1) << ';' << c(2) << "m██";
             }
             ostr << '\n';
         }
