@@ -107,6 +107,7 @@ public:
             }
             ostr << '\n';
         }
+        ostr << "\033[0;00m";
     }
     void print_density(
         std::ostream& ostr,
@@ -126,6 +127,7 @@ public:
             }
             ostr << '\n';
         }
+        ostr << "\033[0;00m";
     }
     inline FixedArray<size_t, 2> size() const {
         return subdomain_size_;
