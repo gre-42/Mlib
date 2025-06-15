@@ -60,6 +60,7 @@ void Lowpass::render(
             rp.lowpass_offset_location = rp.get_uniform_location("offset");
         }
     }
+    notify_rendering(CURRENT_SOURCE_LOCATION);
     for (auto&& [axis, rp] : enumerate(rp_.flat_iterable())) {
         rp.use();
         float offset;
