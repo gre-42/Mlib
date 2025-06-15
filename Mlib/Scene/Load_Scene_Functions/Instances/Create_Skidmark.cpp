@@ -43,17 +43,18 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
         .texture = nullptr,
         .vp = fixed_nans<ScenePos, 4, 4>()
         });
-    auto& o = object_pool.create<SkidmarkLogic>(
+    auto o = object_pool.create_unique<SkidmarkLogic>(
         CURRENT_SOURCE_LOCATION,
         node,
         skidmark,
         *skidmark_particles.particle_renderer,
         args.arguments.at<int>(KnownArgs::texture_width),
         args.arguments.at<int>(KnownArgs::texture_height));
-    o.on_skidmark_node_clear.add([&p=object_pool, &o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
+    o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
-        { o, CURRENT_SOURCE_LOCATION },
+        { *o, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
     node->add_skidmark(skidmark);
+    o.release();
 }

@@ -38,7 +38,7 @@ SkidmarkLogic::SkidmarkLogic(
     : on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , fbs_{ uninitialized }
     , skidmark_node_{ skidmark_node }
-    , skidmark_{ skidmark }
+    , skidmark_{ std::move(skidmark) }
     , particle_renderer_{ particle_renderer }
     , texture_width_{ texture_width }
     , texture_height_{ texture_height }

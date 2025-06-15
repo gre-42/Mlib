@@ -1649,13 +1649,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (!skidmarks.empty()) {
         sstr << "    vec3 skidmark_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
-        sstr << "    {" << std::endl;
         for (const auto& [i, _]: enumerate(skidmarks)) {
-            sstr << "        {" << std::endl;
-            sstr << "            skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
-            sstr << "        }" << std::endl;
+            sstr << "    skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
         }
-        sstr << "    }" << std::endl;
     }
     if (has_lightmap_depth && !light_shadow_indices.empty()) {
         for (size_t i : light_shadow_indices) {
