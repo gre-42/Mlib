@@ -2,6 +2,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Physics/Cfd/Lbm/D2q9.hpp>
 #include <Mlib/Stats/Clamped.hpp>
 #include <cmath>
 #include <ostream>
@@ -9,26 +10,6 @@
 // Based on: https://en.wikipedia.org/wiki/lattice_boltzmann_methods
 
 namespace Mlib {
-
-static const std::array<FixedArray<int, 2>, 9> discrete_velocity_directions_d2q9 = {
-    FixedArray<int, 2>{1, -1}, FixedArray<int, 2>{1, 0}, FixedArray<int, 2>{1, 1},
-    FixedArray<int, 2>{0, -1}, FixedArray<int, 2>{0, 0}, FixedArray<int, 2>{0, 1},
-    FixedArray<int, 2>{-1, -1}, FixedArray<int, 2>{-1, 0}, FixedArray<int, 2>{-1, 1}};
-    
-template <class T>
-struct LbmModelD2Q9 {
-    using type = T;
-
-    static const size_t ndirections = 9;
-
-    constexpr static const T weights[ndirections] = {
-        (T)1 / 36, (T)1 / 9, (T)1 / 36,
-        (T)1 / 9, (T)4 / 9, (T)1 / 9,
-        (T)1 / 36, (T)1 / 9, (T)1 / 36};
-
-    constexpr static const std::array<FixedArray<int, 2>, ndirections>& discrete_velocity_directions =
-        discrete_velocity_directions_d2q9;
-};
 
 template <class TModel>
 class FluidSubdomain {
@@ -41,8 +22,8 @@ class FluidSubdomain {
 public:
     explicit FluidSubdomain(const FixedArray<size_t, 2>& subdomain_size)
         : subdomain_size_{ subdomain_size }
-        , good_velocity_magnitudes_field_{ArrayShape{ndirections, subdomain_size(0), subdomain_size(1)}}
-        , temp_velocity_magnitudes_field_{ArrayShape{ndirections, subdomain_size(0), subdomain_size(1)}}
+        , good_momentum_magnitudes_field_{ArrayShape{ndirections, subdomain_size(0), subdomain_size(1)}}
+        , temp_momentum_magnitudes_field_{ArrayShape{ndirections, subdomain_size(0), subdomain_size(1)}}
         , velocity_field_{ArrayShape{2, subdomain_size(0), subdomain_size(1)}}
         , density_field_{ArrayShape{subdomain_size(0), subdomain_size(1)}}
     {
@@ -50,16 +31,16 @@ public:
             THROW_OR_ABORT("Subdomain size cannot be zero");
         }
         for (size_t dir = 0; dir < ndirections; ++dir) {
-            good_velocity_magnitudes_field_[dir] = TModel::weights[dir];
+            good_momentum_magnitudes_field_[dir] = TModel::weights[dir];
             // This is only necessary for the boundary values
-            temp_velocity_magnitudes_field_[dir] = TModel::weights[dir];
+            temp_momentum_magnitudes_field_[dir] = TModel::weights[dir];
         }
         calculate_macroscopic_variables();
     }
     T density(const FixedArray<size_t, 2>& coords) const {
         T res = (T)0;
         for (size_t v = 0; v < ndirections; ++v) {
-            res += good_velocity_magnitudes_field_(v, coords(0), coords(1));
+            res += good_momentum_magnitudes_field_(v, coords(0), coords(1));
         }
         return res;
     }
@@ -67,7 +48,7 @@ public:
         const auto& dirs = TModel::discrete_velocity_directions;
         auto result = fixed_zeros<T, 2>();
         for (size_t v = 0; v < ndirections; ++v) {
-            result += (dirs[v].template casted<T>()) * good_velocity_magnitudes_field_(v, coords(0), coords(1));
+            result += (dirs[v].template casted<T>()) * good_momentum_magnitudes_field_(v, coords(0), coords(1));
         }
         return result;
     }
@@ -145,7 +126,7 @@ private:
                 auto dens = density_field({x, y});
                 auto vel2 = sum(squared(flow_velocity));
                 for (size_t v = 0; v < ndirections; ++v) {
-                    auto velocity_v = good_velocity_magnitudes_field_(v, x, y);
+                    auto velocity_v = good_momentum_magnitudes_field_(v, x, y);
                     auto first_term = velocity_v;
                     // the flow velocity
                     auto dotted = dot0d(flow_velocity, dirs[v].template casted<T>());
@@ -156,10 +137,10 @@ private:
                     if ((x == 0) || (x == subdomain_size_(0) - 1) ||
                         (y == 0) || (y == subdomain_size_(1) - 1))
                     {
-                        temp_velocity_magnitudes_field_(v, x, y) = equilibrium;
+                        temp_momentum_magnitudes_field_(v, x, y) = equilibrium;
                     } else {
                         auto second_term = (equilibrium - velocity_v) / time_relaxation_constant;
-                        temp_velocity_magnitudes_field_(v, x, y) = first_term + second_term;
+                        temp_momentum_magnitudes_field_(v, x, y) = first_term + second_term;
                     }
                 }
             }
@@ -169,8 +150,8 @@ private:
         const auto& dirs = TModel::discrete_velocity_directions;
         for (size_t v = 0; v < ndirections; ++v) {
             const auto& dir = dirs[v];
-            auto good = good_velocity_magnitudes_field_[v];
-            auto temp = temp_velocity_magnitudes_field_[v];
+            auto good = good_momentum_magnitudes_field_[v];
+            auto temp = temp_momentum_magnitudes_field_[v];
             for (size_t x = 1; x < subdomain_size_(0) - 1; ++x) {
                 for (size_t y = 1; y < subdomain_size_(1) - 1; ++y) {
                     size_t source_x = x - dir(0);
@@ -192,8 +173,8 @@ private:
         }
     }
     FixedArray<size_t, 2> subdomain_size_;
-    Array<T> good_velocity_magnitudes_field_;
-    Array<T> temp_velocity_magnitudes_field_;
+    Array<T> good_momentum_magnitudes_field_;
+    Array<T> temp_momentum_magnitudes_field_;
     Array<T> velocity_field_;
     Array<T> density_field_;
 };

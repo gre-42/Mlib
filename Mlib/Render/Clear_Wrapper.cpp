@@ -1,5 +1,6 @@
 #include "Clear_Wrapper.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Logic.hpp>
 
 using namespace Mlib;
@@ -33,6 +34,7 @@ void Mlib::clear_color(const FixedArray<float, 4>& color, ClearBackend backend) 
         }
         clear_logic->clear_color(color);
     } else {
+        notify_rendering(CURRENT_SOURCE_LOCATION);
         CHK(glClearColor(color(0), color(1), color(2), color(3)));
         CHK(glClear(GL_COLOR_BUFFER_BIT));
     }
@@ -44,6 +46,7 @@ void Mlib::clear_depth(ClearBackend backend) {
         }
         clear_logic->clear_depth();
     } else {
+        notify_rendering(CURRENT_SOURCE_LOCATION);
         CHK(glClear(GL_DEPTH_BUFFER_BIT));
     }
 }
@@ -54,6 +57,7 @@ void Mlib::clear_color_and_depth(const FixedArray<float, 4>& color, ClearBackend
         }
         clear_logic->clear_color_and_depth(color);
     } else {
+        notify_rendering(CURRENT_SOURCE_LOCATION);
         CHK(glClearColor(color(0), color(1), color(2), color(3)));
         CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     }

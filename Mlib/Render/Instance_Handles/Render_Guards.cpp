@@ -44,7 +44,7 @@ RenderToFrameBufferGuard::RenderToFrameBufferGuard(std::shared_ptr<IFrameBuffer>
     if (!fb->is_configured()) {
         THROW_OR_ABORT("Frame buffer has not been configured");
     }
-    last_frame_buffer = fb;
+    last_frame_buffer = std::move(fb);
 }
 
 RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
