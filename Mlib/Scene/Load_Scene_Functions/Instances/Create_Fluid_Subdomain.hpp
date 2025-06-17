@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-class CreateSkidmark: public LoadRenderableSceneInstanceFunction {
+class CreateFluidSubdomain: public LoadRenderableSceneInstanceFunction {
 public:
-    explicit CreateSkidmark(RenderableScene& renderable_scene);
+    explicit CreateFluidSubdomain(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 
