@@ -76,6 +76,7 @@ void FluidSubdomainLogic::deallocate() {
     good_momentum_magnitude_fields_ = nullptr;
     temp_momentum_magnitude_fields_ = nullptr;
     density_and_velocity_field_ = nullptr;
+    skidmark_field_ = nullptr;
 }
 
 void FluidSubdomainLogic::render_moving_node(
@@ -98,6 +99,7 @@ void FluidSubdomainLogic::render_moving_node(
             .width = texture_width_,
             .height = texture_height_,
             .color_internal_format = GL_R16F,
+            .color_format = GL_RED,
             .color_type = GL_FLOAT,
             .depth_kind = FrameBufferChannelKind::NONE,
             .nsamples_msaa = 1
@@ -106,6 +108,7 @@ void FluidSubdomainLogic::render_moving_node(
             .width = texture_width_,
             .height = texture_height_,
             .color_internal_format = GL_RGB16F,
+            .color_format = GL_RGB,
             .color_type = GL_FLOAT,
             .depth_kind = FrameBufferChannelKind::NONE,
             .nsamples_msaa = 1
@@ -133,7 +136,7 @@ void FluidSubdomainLogic::render_moving_node(
         initialize_momentum_magnitude_fields();
         calculate_macroscopic_variables();
     }
-    if (velocity_dt_ != std::chrono::steady_clock::duration{}) {
+    if (velocity_dt_ != std::chrono::steady_clock::duration{0}) {
         auto vmax = 50 * kph;
         auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_) / kph;
         auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
@@ -143,7 +146,7 @@ void FluidSubdomainLogic::render_moving_node(
         } else {
             v2 /= vmax;
         }
-        set_velocity_vector(v2);
+        set_velocity_vector(v2 * 0.2f);
     }
     iterate();
     skidmark_->texture = skidmark_field_->texture_color();
@@ -225,7 +228,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
 
     notify_rendering(CURRENT_SOURCE_LOCATION);
     for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-        CHK(glUniform1i(rp.good_momentum_magnitudes_fields(v), 0));
+        CHK(glUniform1i(rp.good_momentum_magnitudes_fields(v), v));
         auto vi = integral_cast<GLenum>(GL_TEXTURE0 + v);
         CHK(glActiveTexture(vi));
         CHK(glBindTexture(GL_TEXTURE_2D, good_momentum_magnitude_fields_(v)->texture_color()->handle<GLuint>()));
@@ -244,7 +247,7 @@ void FluidSubdomainLogic::collide() {
             const auto& weight = FluidDomainLbmModel::weights[v];
             std::stringstream sstr;
             sstr << SHADER_VER << FRAGMENT_PRECISION;
-            sstr << "out float temp_momentum_magnitudes_field;" << std::endl;
+            sstr << "out float temp_momentum_magnitude_field;" << std::endl;
             sstr << "in vec2 TexCoords;" << std::endl;
             sstr << "uniform sampler2D density_and_velocity_field;" << std::endl;
             sstr << "uniform sampler2D good_momentum_magnitudes_field;" << std::endl;
@@ -267,10 +270,10 @@ void FluidSubdomainLogic::collide() {
             sstr << "    if ((TexCoords.x == 0.0) || (TexCoords.x == 1.0) ||" << std::endl;
             sstr << "        (TexCoords.y == 0.0) || (TexCoords.y == 1.0))" << std::endl;
             sstr << "    {" << std::endl;
-            sstr << "        temp_momentum_magnitudes_field = equilibrium;" << std::endl;
+            sstr << "        temp_momentum_magnitude_field = equilibrium;" << std::endl;
             sstr << "    } else {" << std::endl;
             sstr << "        float second_term = (equilibrium - velocity_v) / time_relaxation_constant;" << std::endl;
-            sstr << "        temp_momentum_magnitudes_field = first_term + second_term;" << std::endl;
+            sstr << "        temp_momentum_magnitude_field = first_term + second_term;" << std::endl;
             sstr << "    }" << std::endl;
             sstr << "}" << std::endl;
             rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
