@@ -1541,7 +1541,7 @@ FixedArray<float, 3> SceneNode::velocity(
     std::shared_lock lock{ pose_mutex_ };
     auto p0 = absolute_model_matrix(LockingStrategy::NO_LOCK, time - dt);
     auto p1 = absolute_model_matrix(LockingStrategy::NO_LOCK, time + dt);
-    return (p1.t - p0.t).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count()* seconds);
+    return (p1.t - p0.t).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count() * seconds);
 }
 
 void SceneNode::set_absolute_pose(
