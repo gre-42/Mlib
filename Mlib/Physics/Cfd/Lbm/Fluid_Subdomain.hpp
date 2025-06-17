@@ -137,7 +137,8 @@ private:
                     if ((x == 0) || (x == subdomain_size_(0) - 1) ||
                         (y == 0) || (y == subdomain_size_(1) - 1))
                     {
-                        temp_momentum_magnitudes_field_(v, x, y) = equilibrium;
+                        // temp_momentum_magnitudes_field_(v, x, y) = equilibrium;
+                        temp_momentum_magnitudes_field_(v, x, y) = weights[v];
                     } else {
                         auto second_term = (equilibrium - velocity_v) / time_relaxation_constant;
                         temp_momentum_magnitudes_field_(v, x, y) = first_term + second_term;

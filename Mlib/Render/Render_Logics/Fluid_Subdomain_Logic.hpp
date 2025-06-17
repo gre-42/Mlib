@@ -32,7 +32,7 @@ public:
     GLint inner_velocity = -1;
     GLint inner_min = -1;
     GLint inner_max = -1;
-    FixedArray<GLint, FluidDomainLbmModel::ndirections> good_momentum_magnitudes_fields;
+    FixedArray<GLint, FluidDomainLbmModel::ndirections> good_momentum_magnitude_fields;
 };
 
 struct CollideRenderProgram: public RenderProgram {
@@ -42,7 +42,7 @@ public:
     CollideRenderProgram();
     ~CollideRenderProgram();
     GLint density_and_velocity_field = -1;
-    GLint good_momentum_magnitudes_field = -1;
+    GLint good_momentum_magnitude_field = -1;
     GLint speed_of_sound2 = -1;
     GLint speed_of_sound4 = -1;
     GLint time_relaxation_constant = -1;
@@ -54,7 +54,7 @@ struct StreamRenderProgram: public RenderProgram {
 public:
     StreamRenderProgram();
     ~StreamRenderProgram();
-    GLint temp_momentum_magnitudes_field = -1;
+    GLint temp_momentum_magnitude_field = -1;
 };
 
 struct SkidmarkRenderProgram: public RenderProgram {

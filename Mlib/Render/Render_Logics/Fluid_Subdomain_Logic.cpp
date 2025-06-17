@@ -35,7 +35,7 @@ static const float IOFFSET = 1.f;
 }
 
 MacroscopicRenderProgram::MacroscopicRenderProgram()
-    : good_momentum_magnitudes_fields(-1)
+    : good_momentum_magnitude_fields(-1)
 {}
 
 MacroscopicRenderProgram::~MacroscopicRenderProgram() = default;
@@ -195,7 +195,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
         sstr << "uniform vec2 inner_min;" << std::endl;
         sstr << "uniform vec2 inner_max;" << std::endl;
         for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-            sstr << "uniform sampler2D good_momentum_magnitudes_field" << v << ';' << std::endl;
+            sstr << "uniform sampler2D good_momentum_magnitude_field" << v << ';' << std::endl;
         }
         sstr << "void main() {" << std::endl;
         sstr << "    float dens = 0.0;" << std::endl;
@@ -203,7 +203,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
         for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
             const auto& dir = FluidDomainLbmModel::discrete_velocity_directions[v];
             sstr << "    {" << std::endl;
-            sstr << "        float m = texture(good_momentum_magnitudes_field" << v << ", TexCoords).r;" << std::endl;
+            sstr << "        float m = texture(good_momentum_magnitude_field" << v << ", TexCoords).r;" << std::endl;
             sstr << "        dens += m;" << std::endl;
             sstr << "        mv += m * vec2(" << dir(0) << ", " << dir(1) << ");" << std::endl;
             sstr << "    }" << std::endl;
@@ -220,8 +220,8 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
         rp.inner_min = rp.get_uniform_location("inner_min");
         rp.inner_max = rp.get_uniform_location("inner_max");
         for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-            rp.good_momentum_magnitudes_fields(v) = rp.get_uniform_location(
-                ("good_momentum_magnitudes_field" + std::to_string(v)).c_str());
+            rp.good_momentum_magnitude_fields(v) = rp.get_uniform_location(
+                ("good_momentum_magnitude_field" + std::to_string(v)).c_str());
         }
     }
     rp.use();
@@ -237,7 +237,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
 
     notify_rendering(CURRENT_SOURCE_LOCATION);
     for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-        CHK(glUniform1i(rp.good_momentum_magnitudes_fields(v), v));
+        CHK(glUniform1i(rp.good_momentum_magnitude_fields(v), v));
         auto vi = integral_cast<GLenum>(GL_TEXTURE0 + v);
         CHK(glActiveTexture(vi));
         CHK(glBindTexture(GL_TEXTURE_2D, good_momentum_magnitude_fields_(v)->texture_color()->handle<GLuint>()));
@@ -259,7 +259,7 @@ void FluidSubdomainLogic::collide() {
             sstr << "out float temp_momentum_magnitude_field;" << std::endl;
             sstr << "in vec2 TexCoords;" << std::endl;
             sstr << "uniform sampler2D density_and_velocity_field;" << std::endl;
-            sstr << "uniform sampler2D good_momentum_magnitudes_field;" << std::endl;
+            sstr << "uniform sampler2D good_momentum_magnitude_field;" << std::endl;
             sstr << "uniform float speed_of_sound2;" << std::endl;
             sstr << "uniform float speed_of_sound4;" << std::endl;
             sstr << "uniform float time_relaxation_constant;" << std::endl;
@@ -268,7 +268,7 @@ void FluidSubdomainLogic::collide() {
             sstr << "    vec2 flow_velocity = dv.yz * " << Vel::ISCALE << " + " << Vel::IOFFSET << ";" << std::endl;
             sstr << "    float dens = dv.x * " << Dens::ISCALE << ';' << std::endl;
             sstr << "    float vel2 = dot(flow_velocity, flow_velocity);" << std::endl;
-            sstr << "    float velocity_v = texture(good_momentum_magnitudes_field, TexCoords).r;" << std::endl;
+            sstr << "    float velocity_v = texture(good_momentum_magnitude_field, TexCoords).r;" << std::endl;
             sstr << "    float first_term = velocity_v;" << std::endl;
             sstr << "    // the flow velocity" << std::endl;
             sstr << "    float dotted = dot(flow_velocity, vec2(" << dirs(0) << ", " << dirs(1) << "));" << std::endl;
@@ -279,7 +279,8 @@ void FluidSubdomainLogic::collide() {
             sstr << "    if ((TexCoords.x < 0.05) || (TexCoords.x > 0.95) ||" << std::endl;
             sstr << "        (TexCoords.y < 0.05) || (TexCoords.y > 0.95))" << std::endl;
             sstr << "    {" << std::endl;
-            sstr << "        temp_momentum_magnitude_field = equilibrium;" << std::endl;
+            // sstr << "        temp_momentum_magnitude_field = equilibrium;" << std::endl;
+            sstr << "        temp_momentum_magnitude_field = " << weight << ';' << std::endl;
             sstr << "    } else {" << std::endl;
             sstr << "        float second_term = (equilibrium - velocity_v) / time_relaxation_constant;" << std::endl;
             sstr << "        temp_momentum_magnitude_field = first_term + second_term;" << std::endl;
@@ -287,7 +288,7 @@ void FluidSubdomainLogic::collide() {
             sstr << "}" << std::endl;
             rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
             rp.density_and_velocity_field = rp.get_uniform_location("density_and_velocity_field");
-            rp.good_momentum_magnitudes_field = rp.get_uniform_location("good_momentum_magnitudes_field");
+            rp.good_momentum_magnitude_field = rp.get_uniform_location("good_momentum_magnitude_field");
             rp.speed_of_sound2 = rp.get_uniform_location("speed_of_sound2");
             rp.speed_of_sound4 = rp.get_uniform_location("speed_of_sound4");
             rp.time_relaxation_constant = rp.get_uniform_location("time_relaxation_constant");
@@ -303,7 +304,7 @@ void FluidSubdomainLogic::collide() {
         CHK(glUniform1i(rp.density_and_velocity_field, 0));
         CHK(glActiveTexture(GL_TEXTURE0 + 0));
         CHK(glBindTexture(GL_TEXTURE_2D, density_and_velocity_field_->texture_color()->handle<GLuint>()));
-        CHK(glUniform1i(rp.good_momentum_magnitudes_field, 1));
+        CHK(glUniform1i(rp.good_momentum_magnitude_field, 1));
         CHK(glActiveTexture(GL_TEXTURE0 + 1));
         CHK(glBindTexture(GL_TEXTURE_2D, good_momentum_magnitude_fields_(v)->texture_color()->handle<GLuint>()));
         va().bind();
@@ -321,28 +322,28 @@ void FluidSubdomainLogic::stream() {
             const auto& dir = dirs[v];
             std::stringstream sstr;
             sstr << SHADER_VER << FRAGMENT_PRECISION;
-            sstr << "out float good_momentum_magnitudes_field;" << std::endl;
+            sstr << "out float good_momentum_magnitude_field;" << std::endl;
             sstr << "in vec2 TexCoords;" << std::endl;
-            sstr << "uniform sampler2D temp_momentum_magnitudes_field;" << std::endl;
+            sstr << "uniform sampler2D temp_momentum_magnitude_field;" << std::endl;
             sstr << "void main() {" << std::endl;
             sstr << "    if ((TexCoords.x < 0.05) || (TexCoords.x > 0.95) ||" << std::endl;
             sstr << "        (TexCoords.y < 0.05) || (TexCoords.y > 0.95))" << std::endl;
             sstr << "    {" << std::endl;
-            sstr << "        good_momentum_magnitudes_field = texture(temp_momentum_magnitudes_field, TexCoords).r;" << std::endl;
+            sstr << "        good_momentum_magnitude_field = texture(temp_momentum_magnitude_field, TexCoords).r;" << std::endl;
             sstr << "    } else {" << std::endl;
-            sstr << "        good_momentum_magnitudes_field = texture(temp_momentum_magnitudes_field, TexCoords - vec2(" <<
+            sstr << "        good_momentum_magnitude_field = texture(temp_momentum_magnitude_field, TexCoords - vec2(" <<
                 dir(0) / (float)texture_width_ << ", " << dir(1) / (float)texture_height_ << ")).r;" << std::endl;
             sstr << "    }" << std::endl;
             sstr << "}" << std::endl;
             rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
-            rp.temp_momentum_magnitudes_field = rp.get_uniform_location("temp_momentum_magnitudes_field");
+            rp.temp_momentum_magnitude_field = rp.get_uniform_location("temp_momentum_magnitude_field");
         }
         rp.use();
         ViewportGuard vg{ texture_width_, texture_height_ };
         RenderToFrameBufferGuard rfg{ good_momentum_magnitude_fields_(v) };
 
         notify_rendering(CURRENT_SOURCE_LOCATION);
-        CHK(glUniform1i(rp.temp_momentum_magnitudes_field, 0));
+        CHK(glUniform1i(rp.temp_momentum_magnitude_field, 0));
         CHK(glActiveTexture(GL_TEXTURE0 + 0));
         CHK(glBindTexture(GL_TEXTURE_2D, temp_momentum_magnitude_fields_(v)->texture_color()->handle<GLuint>()));
         va().bind();
