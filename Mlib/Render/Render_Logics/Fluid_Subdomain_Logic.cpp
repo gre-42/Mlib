@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
@@ -133,8 +134,16 @@ void FluidSubdomainLogic::render_moving_node(
         calculate_macroscopic_variables();
     }
     if (velocity_dt_ != std::chrono::steady_clock::duration{}) {
-        auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_);
-        set_velocity_vector({v3(0), v3(2)});
+        auto vmax = 50 * kph;
+        auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_) / kph;
+        auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
+        auto l = std::sqrt(sum(squared(v2)));
+        if (l > vmax) {
+            v2 /= l;
+        } else {
+            v2 /= vmax;
+        }
+        set_velocity_vector(v2);
     }
     iterate();
     skidmark_->texture = skidmark_field_->texture_color();
