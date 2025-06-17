@@ -31,7 +31,7 @@ namespace Vel {
 static const float SCALE = 0.5f;
 static const float OFFSET = 0.5f;
 static const float ISCALE = 2.f;
-static const float IOFFSET = 1.f;
+static const float IOFFSET = -1.f;
 }
 
 MacroscopicRenderProgram::MacroscopicRenderProgram()
