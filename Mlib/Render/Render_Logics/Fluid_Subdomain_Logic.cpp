@@ -22,8 +22,17 @@
 
 using namespace Mlib;
 
+namespace Dens {
 static const float SCALE = 0.5f;
-static const float ISCALE = 1.f / SCALE;
+static const float ISCALE = 2.f;
+}
+
+namespace Vel {
+static const float SCALE = 0.5f;
+static const float OFFSET = 0.5f;
+static const float ISCALE = 2.f;
+static const float IOFFSET = 1.f;
+}
 
 MacroscopicRenderProgram::MacroscopicRenderProgram()
     : good_momentum_magnitudes_fields(-1)
@@ -186,7 +195,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
         sstr << "uniform vec2 inner_min;" << std::endl;
         sstr << "uniform vec2 inner_max;" << std::endl;
         for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-            sstr << "uniform sampler2D good_momentum_magnitudes_field" << v << ";" << std::endl;
+            sstr << "uniform sampler2D good_momentum_magnitudes_field" << v << ';' << std::endl;
         }
         sstr << "void main() {" << std::endl;
         sstr << "    float dens = 0.0;" << std::endl;
@@ -199,11 +208,11 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
             sstr << "        mv += m * vec2(" << dir(0) << ", " << dir(1) << ");" << std::endl;
             sstr << "    }" << std::endl;
         }
-        sstr << "    density_and_velocity_field.x = dens * " << SCALE << ";" << std::endl;
+        sstr << "    density_and_velocity_field.x = dens * " << Dens::SCALE << ';' << std::endl;
         sstr << "    if (all(greaterThan(TexCoords, inner_min)) && all(lessThan(TexCoords, inner_max))) {" << std::endl;
-        sstr << "        density_and_velocity_field.yz = inner_velocity;" << std::endl;
+        sstr << "        density_and_velocity_field.yz = inner_velocity * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
         sstr << "    } else {" << std::endl;
-        sstr << "        density_and_velocity_field.yz = mv / dens;" << std::endl;
+        sstr << "        density_and_velocity_field.yz = mv / dens * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
         sstr << "    }" << std::endl;
         sstr << "}" << std::endl;
         rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
@@ -256,8 +265,8 @@ void FluidSubdomainLogic::collide() {
             sstr << "uniform float time_relaxation_constant;" << std::endl;
             sstr << "void main() {" << std::endl;
             sstr << "    vec3 dv = texture(density_and_velocity_field, TexCoords).xyz;" << std::endl;
-            sstr << "    vec2 flow_velocity = dv.yz;" << std::endl;
-            sstr << "    float dens = dv.x * " << ISCALE << ";" << std::endl;
+            sstr << "    vec2 flow_velocity = dv.yz * " << Vel::ISCALE << " + " << Vel::IOFFSET << ";" << std::endl;
+            sstr << "    float dens = dv.x * " << Dens::ISCALE << ';' << std::endl;
             sstr << "    float vel2 = dot(flow_velocity, flow_velocity);" << std::endl;
             sstr << "    float velocity_v = texture(good_momentum_magnitudes_field, TexCoords).r;" << std::endl;
             sstr << "    float first_term = velocity_v;" << std::endl;
@@ -266,9 +275,9 @@ void FluidSubdomainLogic::collide() {
             sstr << "    // the taylor expainsion of equilibrium term" << std::endl;
             sstr << "    float taylor = 1 + (dotted / speed_of_sound2) + ((dotted * dotted) / (2 * speed_of_sound4)) -" << std::endl;
             sstr << "        (vel2 / (2 * speed_of_sound2));" << std::endl;
-            sstr << "    float equilibrium = dens * taylor * " << weight << ";" << std::endl;
-            sstr << "    if ((TexCoords.x == 0.0) || (TexCoords.x == 1.0) ||" << std::endl;
-            sstr << "        (TexCoords.y == 0.0) || (TexCoords.y == 1.0))" << std::endl;
+            sstr << "    float equilibrium = dens * taylor * " << weight << ';' << std::endl;
+            sstr << "    if ((TexCoords.x < 0.05) || (TexCoords.x > 0.95) ||" << std::endl;
+            sstr << "        (TexCoords.y < 0.05) || (TexCoords.y > 0.95))" << std::endl;
             sstr << "    {" << std::endl;
             sstr << "        temp_momentum_magnitude_field = equilibrium;" << std::endl;
             sstr << "    } else {" << std::endl;
@@ -316,8 +325,8 @@ void FluidSubdomainLogic::stream() {
             sstr << "in vec2 TexCoords;" << std::endl;
             sstr << "uniform sampler2D temp_momentum_magnitudes_field;" << std::endl;
             sstr << "void main() {" << std::endl;
-            sstr << "    if ((TexCoords.x == 0.0) || (TexCoords.x == 1.0) ||" << std::endl;
-            sstr << "        (TexCoords.y == 0.0) || (TexCoords.y == 1.0))" << std::endl;
+            sstr << "    if ((TexCoords.x < 0.05) || (TexCoords.x > 0.95) ||" << std::endl;
+            sstr << "        (TexCoords.y < 0.05) || (TexCoords.y > 0.95))" << std::endl;
             sstr << "    {" << std::endl;
             sstr << "        good_momentum_magnitudes_field = texture(temp_momentum_magnitudes_field, TexCoords).r;" << std::endl;
             sstr << "    } else {" << std::endl;
