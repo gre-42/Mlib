@@ -58,13 +58,27 @@ Array<float> Mlib::color_to_array(
     int nchannels,
     FlipMode flip_mode)
 {
+    GLenum format;
+    switch (nchannels) {
+    case 1:
+        format = GL_RED;
+        break;
+    case 3:
+        format = GL_RGB;
+        break;
+    case 4:
+        format = GL_RGBA;
+        break;
+    default:
+        THROW_OR_ABORT("color_to_array: Unsupported number of channels (" + std::to_string(nchannels) + ')');
+    };
     Array<float> res{ ArrayShape{
         integral_cast<size_t>(height),
         integral_cast<size_t>(width),
         integral_cast<size_t>(nchannels)} };
     CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, frame_buffer));
     DestructionGuard g{[](){CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));}};
-    CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, res.flat_begin()));
+    CHK(glReadPixels(0, 0, width, height, format, GL_FLOAT, res.flat_begin()));
     // Unbinding is done by the "DestructionGuard" above.
     if (any(flip_mode & FlipMode::HORIZONTAL)) {
         res.ref() = reverted_axis(res, 1);
