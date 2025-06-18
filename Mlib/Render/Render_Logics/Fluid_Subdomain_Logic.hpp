@@ -97,6 +97,7 @@ public:
 
     void set_velocity_vector(const FixedArray<SceneDir, 2>& velocity_vector);
     void set_velocity_region(const AxisAlignedBoundingBox<float, 2>& velocity_region);
+    void save_debug_images(const std::string& prefix);
 
     DestructionFunctionsRemovalTokens on_skidmark_node_clear;
 private:
@@ -106,7 +107,6 @@ private:
     void collide();
     void stream();
     void calculate_skidmark_field();
-    void save_debug_images();
     void deallocate();
     MacroscopicRenderProgram macroscopic_render_program_;
     FixedArray<CollideRenderProgram, FluidDomainLbmModel::ndirections> collide_render_programs_;

@@ -171,11 +171,11 @@ void FluidSubdomainLogic::iterate() {
     calculate_skidmark_field();
 }
 
-void FluidSubdomainLogic::save_debug_images() {
-    StbImage3(density_and_velocity_field_->color_to_stb_image(3)).save_to_file("/tmp/density_and_velocity.png");
+void FluidSubdomainLogic::save_debug_images(const std::string& prefix) {
+    StbImage3(density_and_velocity_field_->color_to_stb_image(3)).save_to_file(prefix + "density_and_velocity.png");
     for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-        StbImage1(good_momentum_magnitude_fields_(v)->color_to_stb_image(1)).save_to_file("/tmp/good_" + std::to_string(v) + ".png");
-        StbImage1(temp_momentum_magnitude_fields_(v)->color_to_stb_image(1)).save_to_file("/tmp/temp_" + std::to_string(v) + ".png");
+        StbImage1(good_momentum_magnitude_fields_(v)->color_to_stb_image(1)).save_to_file(prefix + "good_" + std::to_string(v) + ".png");
+        StbImage1(temp_momentum_magnitude_fields_(v)->color_to_stb_image(1)).save_to_file(prefix + "temp_" + std::to_string(v) + ".png");
     }
 }
 
