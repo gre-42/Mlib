@@ -249,6 +249,8 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     TextureBinder tb;
     for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
         tb.bind(rp.good_momentum_magnitude_fields(v), *good_momentum_magnitude_fields_(v)->texture_color());
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     }
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -311,7 +313,11 @@ void FluidSubdomainLogic::collide() {
         CHK(glUniform1fv(rp.time_relaxation_constant, 1, &time_relaxation_constant));
         TextureBinder tb;
         tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color());
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         tb.bind(rp.good_momentum_magnitude_field, *good_momentum_magnitude_fields_(v)->texture_color());
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -369,6 +375,8 @@ void FluidSubdomainLogic::stream() {
         notify_rendering(CURRENT_SOURCE_LOCATION);
         TextureBinder tb;
         tb.bind(rp.temp_momentum_magnitude_field, *temp_momentum_magnitude_fields_(v)->texture_color());
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -398,6 +406,8 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     TextureBinder tb;
     tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color());
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
