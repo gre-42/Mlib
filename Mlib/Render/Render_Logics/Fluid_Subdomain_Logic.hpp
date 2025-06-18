@@ -106,6 +106,7 @@ private:
     void collide();
     void stream();
     void calculate_skidmark_field();
+    void save_debug_images();
     void deallocate();
     MacroscopicRenderProgram macroscopic_render_program_;
     FixedArray<CollideRenderProgram, FluidDomainLbmModel::ndirections> collide_render_programs_;

@@ -16,6 +16,9 @@ StbInfo<uint8_t> Mlib::download_as_stb_image(
 {
     GLenum format;
     switch (nchannels) {
+    case 1:
+        format = GL_RED;
+        break;
     case 3:
         format = GL_RGB;
         break;

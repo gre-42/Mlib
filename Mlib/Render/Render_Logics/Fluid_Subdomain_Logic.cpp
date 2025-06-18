@@ -1,6 +1,8 @@
 #include "Fluid_Subdomain_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
+#include <Mlib/Images/StbImage1.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -20,6 +22,7 @@
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <stb_cpp/stb_image_load.hpp>
 
 using namespace Mlib;
 
@@ -166,6 +169,14 @@ void FluidSubdomainLogic::iterate() {
     stream();
     calculate_macroscopic_variables();
     calculate_skidmark_field();
+}
+
+void FluidSubdomainLogic::save_debug_images() {
+    StbImage3(density_and_velocity_field_->color_to_stb_image(3)).save_to_file("/tmp/density_and_velocity.png");
+    for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
+        StbImage1(good_momentum_magnitude_fields_(v)->color_to_stb_image(1)).save_to_file("/tmp/good_" + std::to_string(v) + ".png");
+        StbImage1(temp_momentum_magnitude_fields_(v)->color_to_stb_image(1)).save_to_file("/tmp/temp_" + std::to_string(v) + ".png");
+    }
 }
 
 void FluidSubdomainLogic::initialize_momentum_magnitude_fields() {

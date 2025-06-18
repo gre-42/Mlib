@@ -52,7 +52,8 @@ void CreateFluidSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<DefaultUnitialized<AxisAlignedBoundingBox<float, 2>>>(KnownArgs::velocity_region),
         args.arguments.at<int>(KnownArgs::texture_width),
         args.arguments.at<int>(KnownArgs::texture_height),
-        args.arguments.at<std::chrono::steady_clock::duration>(KnownArgs::velocity_dt));
+        args.arguments.at_non_null<std::chrono::steady_clock::duration>(
+            KnownArgs::velocity_dt, std::chrono::steady_clock::duration{0}));
     o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { *o, CURRENT_SOURCE_LOCATION },
