@@ -9,6 +9,7 @@
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Binder.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -110,7 +111,10 @@ void FluidSubdomainLogic::render_moving_node(
             .color_internal_format = GL_R16F,
             .color_format = GL_RED,
             .color_type = GL_FLOAT,
+            .color_filter_type = GL_NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
+            .wrap_s = GL_CLAMP_TO_EDGE,
+            .wrap_t = GL_CLAMP_TO_EDGE,
             .nsamples_msaa = 1
         };
         auto rgb_cfg = FrameBufferConfig{
@@ -119,7 +123,10 @@ void FluidSubdomainLogic::render_moving_node(
             .color_internal_format = GL_RGB16F,
             .color_format = GL_RGB,
             .color_type = GL_FLOAT,
+            .color_filter_type = GL_NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
+            .wrap_s = GL_CLAMP_TO_EDGE,
+            .wrap_t = GL_CLAMP_TO_EDGE,
             .nsamples_msaa = 1
         };
         // auto rgba_cfg = FrameBufferConfig{
@@ -236,11 +243,9 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     RenderToFrameBufferGuard rfg{ density_and_velocity_field_ };
 
     notify_rendering(CURRENT_SOURCE_LOCATION);
+    TextureBinder tb;
     for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-        CHK(glUniform1i(rp.good_momentum_magnitude_fields(v), v));
-        auto vi = integral_cast<GLenum>(GL_TEXTURE0 + v);
-        CHK(glActiveTexture(vi));
-        CHK(glBindTexture(GL_TEXTURE_2D, good_momentum_magnitude_fields_(v)->texture_color()->handle<GLuint>()));
+        tb.bind(rp.good_momentum_magnitude_fields(v), *good_momentum_magnitude_fields_(v)->texture_color());
     }
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -301,12 +306,9 @@ void FluidSubdomainLogic::collide() {
         CHK(glUniform1fv(rp.speed_of_sound2, 1, &speed_of_sound2));
         CHK(glUniform1fv(rp.speed_of_sound4, 1, &speed_of_sound4));
         CHK(glUniform1fv(rp.time_relaxation_constant, 1, &time_relaxation_constant));
-        CHK(glUniform1i(rp.density_and_velocity_field, 0));
-        CHK(glActiveTexture(GL_TEXTURE0 + 0));
-        CHK(glBindTexture(GL_TEXTURE_2D, density_and_velocity_field_->texture_color()->handle<GLuint>()));
-        CHK(glUniform1i(rp.good_momentum_magnitude_field, 1));
-        CHK(glActiveTexture(GL_TEXTURE0 + 1));
-        CHK(glBindTexture(GL_TEXTURE_2D, good_momentum_magnitude_fields_(v)->texture_color()->handle<GLuint>()));
+        TextureBinder tb;
+        tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color());
+        tb.bind(rp.good_momentum_magnitude_field, *good_momentum_magnitude_fields_(v)->texture_color());
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -343,9 +345,8 @@ void FluidSubdomainLogic::stream() {
         RenderToFrameBufferGuard rfg{ good_momentum_magnitude_fields_(v) };
 
         notify_rendering(CURRENT_SOURCE_LOCATION);
-        CHK(glUniform1i(rp.temp_momentum_magnitude_field, 0));
-        CHK(glActiveTexture(GL_TEXTURE0 + 0));
-        CHK(glBindTexture(GL_TEXTURE_2D, temp_momentum_magnitude_fields_(v)->texture_color()->handle<GLuint>()));
+        TextureBinder tb;
+        tb.bind(rp.temp_momentum_magnitude_field, *temp_momentum_magnitude_fields_(v)->texture_color());
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -373,9 +374,8 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
     RenderToFrameBufferGuard rfg{ skidmark_field_ };
 
     notify_rendering(CURRENT_SOURCE_LOCATION);
-    CHK(glUniform1i(rp.density_and_velocity_field, 0));
-    CHK(glActiveTexture(GL_TEXTURE0 + 0));
-    CHK(glBindTexture(GL_TEXTURE_2D, density_and_velocity_field_->texture_color()->handle<GLuint>()));
+    TextureBinder tb;
+    tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color());
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
