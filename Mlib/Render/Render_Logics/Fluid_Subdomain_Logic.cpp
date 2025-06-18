@@ -104,13 +104,25 @@ void FluidSubdomainLogic::render_moving_node(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("SkidmarkLogic received wrong rendering");
     }
+    if (velocity_dt_ != std::chrono::steady_clock::duration{0}) {
+        auto vmax = 50 * kph;
+        auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_) / kph;
+        auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
+        auto l = std::sqrt(sum(squared(v2)));
+        if (l > vmax) {
+            v2 /= l;
+        } else {
+            v2 /= vmax;
+        }
+        set_velocity_vector(v2 * 0.2f);
+    }
     if (density_and_velocity_field_ == nullptr) {
         auto gray_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
             .color_internal_format = GL_R16F,
             .color_format = GL_RED,
-            .color_type = GL_FLOAT,
+            .color_type =  GL_HALF_FLOAT,
             .color_filter_type = GL_NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = GL_CLAMP_TO_EDGE,
@@ -122,21 +134,13 @@ void FluidSubdomainLogic::render_moving_node(
             .height = texture_height_,
             .color_internal_format = GL_RGB16F,
             .color_format = GL_RGB,
-            .color_type = GL_FLOAT,
+            .color_type =  GL_HALF_FLOAT,
             .color_filter_type = GL_NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = GL_CLAMP_TO_EDGE,
             .wrap_t = GL_CLAMP_TO_EDGE,
             .nsamples_msaa = 1
         };
-        // auto rgba_cfg = FrameBufferConfig{
-        //     .width = texture_width_,
-        //     .height = texture_height_,
-        //     .color_internal_format = GL_RGBA16F,
-        //     .color_type = GL_FLOAT,
-        //     .depth_kind = FrameBufferChannelKind::NONE,
-        //     .nsamples_msaa = 1
-        // };
         for (auto& f : good_momentum_magnitude_fields_.flat_iterable()) {
             f = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
             f->configure(gray_cfg);
@@ -151,18 +155,6 @@ void FluidSubdomainLogic::render_moving_node(
         skidmark_field_->configure(rgb_cfg);
         initialize_momentum_magnitude_fields();
         calculate_macroscopic_variables();
-    }
-    if (velocity_dt_ != std::chrono::steady_clock::duration{0}) {
-        auto vmax = 50 * kph;
-        auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_) / kph;
-        auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
-        auto l = std::sqrt(sum(squared(v2)));
-        if (l > vmax) {
-            v2 /= l;
-        } else {
-            v2 /= vmax;
-        }
-        set_velocity_vector(v2 * 0.2f);
     }
     iterate();
     skidmark_->texture = skidmark_field_->texture_color();
