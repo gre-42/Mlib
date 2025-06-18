@@ -314,22 +314,41 @@ void FluidSubdomainLogic::stream() {
         if (!rp.allocated()) {
             const auto& dirs = FluidDomainLbmModel::discrete_velocity_directions;
             const auto& dir = dirs[v];
-            std::stringstream sstr;
-            sstr << SHADER_VER << FRAGMENT_PRECISION;
-            sstr << "out float good_momentum_magnitude_field;" << std::endl;
-            sstr << "in vec2 TexCoords;" << std::endl;
-            sstr << "uniform sampler2D temp_momentum_magnitude_field;" << std::endl;
-            sstr << "void main() {" << std::endl;
-            sstr << "    if ((TexCoords.x < 0.05) || (TexCoords.x > 0.95) ||" << std::endl;
-            sstr << "        (TexCoords.y < 0.05) || (TexCoords.y > 0.95))" << std::endl;
-            sstr << "    {" << std::endl;
-            sstr << "        good_momentum_magnitude_field = texture(temp_momentum_magnitude_field, TexCoords).r;" << std::endl;
-            sstr << "    } else {" << std::endl;
-            sstr << "        good_momentum_magnitude_field = texture(temp_momentum_magnitude_field, TexCoords - vec2(" <<
-                dir(0) / (float)texture_width_ << ", " << dir(1) / (float)texture_height_ << ")).r;" << std::endl;
+
+            std::stringstream vs;
+            vs << SHADER_VER << std::endl;
+            vs << "layout (location = 0) in vec2 aPos;" << std::endl;
+            vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
+            vs << std::endl;
+            vs << "out vec2 TexCoords0;" << std::endl;
+            vs << "out vec2 TexCoords1;" << std::endl;
+            vs << std::endl;
+            vs << "void main()" << std::endl;
+            vs << "{" << std::endl;
+            vs << "    TexCoords0 = aTexCoords;" << std::endl;
+            vs << "    TexCoords1 = aTexCoords - vec2(" <<
+                dir(0) / (float)texture_width_ << ", " << dir(1) / (float)texture_height_ << ");" << std::endl;
+            vs << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);" << std::endl;
+            vs << "}" << std::endl;
+
+            std::stringstream fs;
+            fs << SHADER_VER << FRAGMENT_PRECISION;
+            fs << "out float good_momentum_magnitude_field;" << std::endl;
+            fs << "in vec2 TexCoords0;" << std::endl;
+            fs << "in vec2 TexCoords1;" << std::endl;
+            fs << "uniform sampler2D temp_momentum_magnitude_field;" << std::endl;
+            fs << "void main() {" << std::endl;
+            fs << "    if ((TexCoords0.x < 0.05) || (TexCoords0.x > 0.95) ||" << std::endl;
+            fs << "        (TexCoords0.y < 0.05) || (TexCoords0.y > 0.95))" << std::endl;
+            fs << "    {" << std::endl;
+            fs << "        good_momentum_magnitude_field = texture(temp_momentum_magnitude_field, TexCoords0).r;" << std::endl;
+            fs << "    } else {" << std::endl;
+            fs << "        good_momentum_magnitude_field = texture(temp_momentum_magnitude_field, TexCoords1).r;" << std::endl;
+            fs << "    }" << std::endl;
+            fs << "}" << std::endl;
             sstr << "    }" << std::endl;
             sstr << "}" << std::endl;
-            rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
+            rp.allocate(vs.str().c_str(), fs.str().c_str());
             rp.temp_momentum_magnitude_field = rp.get_uniform_location("temp_momentum_magnitude_field");
         }
         rp.use();
