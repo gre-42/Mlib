@@ -275,7 +275,7 @@ void FluidSubdomainLogic::collide() {
             sstr << "uniform float time_relaxation_constant;" << std::endl;
             sstr << "void main() {" << std::endl;
             sstr << "    vec3 dv = texture(density_and_velocity_field, TexCoords).xyz;" << std::endl;
-            sstr << "    vec2 flow_velocity = dv.yz * " << Vel::ISCALE << " + " << Vel::IOFFSET << ";" << std::endl;
+            sstr << "    vec2 flow_velocity = dv.yz * " << Vel::ISCALE << " + " << Vel::IOFFSET << ';' << std::endl;
             sstr << "    float dens = dv.x * " << Dens::ISCALE << ';' << std::endl;
             sstr << "    float vel2 = dot(flow_velocity, flow_velocity);" << std::endl;
             sstr << "    float velocity_v = texture(good_momentum_magnitude_field, TexCoords).r;" << std::endl;
