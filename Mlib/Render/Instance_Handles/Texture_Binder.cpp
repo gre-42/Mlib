@@ -1,6 +1,8 @@
 #include "Texture_Binder.hpp"
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -9,6 +11,9 @@ TextureBinder::TextureBinder(GLint first_slot)
 {}
 
 void TextureBinder::bind(GLint uniform, const ITextureHandle& handle) {
+    if (uniform < 0) {
+        THROW_OR_ABORT("Uniform ID is negative");
+    }
     CHK(glUniform1i(uniform, slot_));
     CHK(glActiveTexture(GL_TEXTURE0 + slot_));
     if (handle.layers() > 1) {
