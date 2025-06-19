@@ -7,6 +7,20 @@
 
 using namespace Mlib;
 
+GLenum nchannels_to_format(int nchannels) {
+    switch (nchannels) {
+    case 1:
+        return GL_RED;
+    case 2:
+        return GL_RG;
+    case 3:
+        return GL_RGB;
+    case 4:
+        return GL_RGBA;
+    };
+    THROW_OR_ABORT("download_as_stb_image: Unsupported number of channels (" + std::to_string(nchannels) + ')');
+}
+
 StbInfo<uint8_t> Mlib::download_as_stb_image(
     GLuint frame_buffer,
     GLsizei width,
@@ -14,20 +28,8 @@ StbInfo<uint8_t> Mlib::download_as_stb_image(
     int nchannels,
     FlipMode flip_mode)
 {
-    GLenum format;
-    switch (nchannels) {
-    case 1:
-        format = GL_RED;
-        break;
-    case 3:
-        format = GL_RGB;
-        break;
-    case 4:
-        format = GL_RGBA;
-        break;
-    default:
-        THROW_OR_ABORT("download_as_stb_image: Unsupported number of channels (" + std::to_string(nchannels) + ')');
-    };
+    GLenum format = nchannels_to_format(nchannels);
+
     Array<uint8_t> res{ ArrayShape{
         integral_cast<size_t>(height),
         integral_cast<size_t>(width),
@@ -58,20 +60,8 @@ Array<float> Mlib::color_to_array(
     int nchannels,
     FlipMode flip_mode)
 {
-    GLenum format;
-    switch (nchannels) {
-    case 1:
-        format = GL_RED;
-        break;
-    case 3:
-        format = GL_RGB;
-        break;
-    case 4:
-        format = GL_RGBA;
-        break;
-    default:
-        THROW_OR_ABORT("color_to_array: Unsupported number of channels (" + std::to_string(nchannels) + ')');
-    };
+    GLenum format = nchannels_to_format(nchannels);
+
     Array<float> res{ ArrayShape{
         integral_cast<size_t>(height),
         integral_cast<size_t>(width),
