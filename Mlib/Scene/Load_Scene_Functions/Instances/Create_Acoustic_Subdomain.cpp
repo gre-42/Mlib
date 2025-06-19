@@ -24,7 +24,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(texture_width);
 DECLARE_ARGUMENT(texture_height);
-DECLARE_ARGUMENT(velocity_vector);
+DECLARE_ARGUMENT(directional_velocity);
+DECLARE_ARGUMENT(radial_velocity);
 DECLARE_ARGUMENT(velocity_region);
 DECLARE_ARGUMENT(angular_velocity);
 DECLARE_ARGUMENT(velocity_dt);
@@ -32,7 +33,7 @@ DECLARE_ARGUMENT(c);
 DECLARE_ARGUMENT(dt);
 DECLARE_ARGUMENT(dx);
 DECLARE_ARGUMENT(intensity_normalization);
-DECLARE_ARGUMENT(reference_inner_velocity);
+DECLARE_ARGUMENT(reference_inner_directional_velocity);
 DECLARE_ARGUMENT(maximum_inner_velocity);
 }
 
@@ -53,7 +54,8 @@ void CreateAcousticSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION,
         node,
         skidmark,
-        args.arguments.at<UFixedArray<SceneDir, 2>>(KnownArgs::velocity_vector),
+        args.arguments.at<UFixedArray<SceneDir, 2>>(KnownArgs::directional_velocity),
+        args.arguments.at<float>(KnownArgs::radial_velocity),
         args.arguments.at<float>(KnownArgs::angular_velocity) * degrees,
         args.arguments.at<DefaultUnitialized<AxisAlignedBoundingBox<float, 2>>>(KnownArgs::velocity_region),
         args.arguments.at<int>(KnownArgs::texture_width),
@@ -64,7 +66,7 @@ void CreateAcousticSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::dt),
         args.arguments.at<float>(KnownArgs::dx),
         args.arguments.at<float>(KnownArgs::intensity_normalization),
-        args.arguments.at<float>(KnownArgs::reference_inner_velocity) * kph,
+        args.arguments.at<float>(KnownArgs::reference_inner_directional_velocity) * kph,
         args.arguments.at<float>(KnownArgs::maximum_inner_velocity));
     o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(

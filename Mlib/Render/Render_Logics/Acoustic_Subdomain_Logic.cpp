@@ -44,7 +44,8 @@ AcousticSkidmarkRenderProgram::~AcousticSkidmarkRenderProgram() = default;
 AcousticSubdomainLogic::AcousticSubdomainLogic(
     DanglingRef<SceneNode> skidmark_node,
     std::shared_ptr<Skidmark> skidmark,
-    const FixedArray<SceneDir, 2>& velocity_vector,
+    const FixedArray<SceneDir, 2>& directional_velocity,
+    float radial_velocity,
     float angular_velocity,
     const AxisAlignedBoundingBox<float, 2>& velocity_region,
     int texture_width,
@@ -54,13 +55,14 @@ AcousticSubdomainLogic::AcousticSubdomainLogic(
     float dt,
     float dx,
     float intensity_normalization,
-    float reference_inner_velocity,
+    float reference_inner_directional_velocity,
     float maximum_inner_velocity)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , velocity_fields_{ uninitialized }
     , skidmark_{ std::move(skidmark) }
-    , velocity_vector_{ velocity_vector }
+    , directional_velocity_{ directional_velocity }
+    , radial_velocity_{ radial_velocity }
     , angular_velocity_{ angular_velocity }
     , angle_{ 0.f }
     , velocity_region_{ velocity_region }
@@ -71,7 +73,7 @@ AcousticSubdomainLogic::AcousticSubdomainLogic(
     , dt_{ dt }
     , dx_{ dx }
     , intensity_normalization_{ intensity_normalization }
-    , reference_inner_velocity_{ reference_inner_velocity }
+    , reference_inner_directional_velocity_{ reference_inner_directional_velocity }
     , maximum_inner_velocity_{ maximum_inner_velocity }
     , i012_{ 0 }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
@@ -107,12 +109,12 @@ void AcousticSubdomainLogic::render_moving_node(
         auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_);
         auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
         auto l = std::sqrt(sum(squared(v2)));
-        if (l > reference_inner_velocity_) {
+        if (l > reference_inner_directional_velocity_) {
             v2 /= l;
         } else {
-            v2 /= reference_inner_velocity_;
+            v2 /= reference_inner_directional_velocity_;
         }
-        set_velocity_vector(v2 * maximum_inner_velocity_);
+        set_directional_velocity(v2 * maximum_inner_velocity_);
     }
     if (skidmark_field_ == nullptr) {
         auto rg_cfg = FrameBufferConfig{
@@ -209,9 +211,11 @@ void AcousticSubdomainLogic::collide_and_stream() {
                 fs << "in vec2 TexCoords" << dim << h << ';' << std::endl;
             }
         }
-        fs << "uniform vec2 inner_velocity;" << std::endl;
+        fs << "uniform vec2 inner_directional_velocity;" << std::endl;
+        fs << "uniform float inner_radial_velocity;" << std::endl;
         fs << "uniform vec2 inner_min;" << std::endl;
         fs << "uniform vec2 inner_max;" << std::endl;
+        fs << "uniform vec2 inner_center;" << std::endl;
         fs << "uniform float idx_c_dt_2;" << std::endl;
         fs << "uniform float intensity_normalization;" << std::endl;
         for (size_t t = 0; t < 2; ++t) {
@@ -219,7 +223,12 @@ void AcousticSubdomainLogic::collide_and_stream() {
         }
         fs << "void main() {" << std::endl;
         fs << "    if (all(greaterThan(TexCoords0, inner_min)) && all(lessThan(TexCoords0, inner_max))) {" << std::endl;
-        fs << "        u_2 = inner_velocity;" << std::endl;
+        fs << "        u_2 = inner_directional_velocity;" << std::endl;
+        fs << "        vec2 radial_vector = TexCoords0 - inner_center;" << std::endl;
+        fs << "        float l = length(radial_vector);" << std::endl;
+        fs << "        if (l > 1e-6) {" << std::endl;
+        fs << "            u_2 += (inner_radial_velocity / l) * radial_vector;" << std::endl;
+        fs << "        }" << std::endl;
         fs << "    } else {" << std::endl;
         for (size_t t = 0; t < 2; ++t) {
             fs << "        vec2 u_" << t << " = texture(velocity_field" << t << ", TexCoords0).rg * " << Vel::ISCALE << " + " << Vel::IOFFSET << ';' << std::endl;
@@ -239,7 +248,8 @@ void AcousticSubdomainLogic::collide_and_stream() {
         // lraw() << vs.str();
         // lraw() << fs.str();
         rp.allocate(vs.str().c_str(), fs.str().c_str());
-        rp.inner_velocity = rp.get_uniform_location("inner_velocity");
+        rp.inner_directional_velocity = rp.get_uniform_location("inner_directional_velocity");
+        rp.inner_radial_velocity = rp.get_uniform_location("inner_radial_velocity");
         rp.inner_min = rp.get_uniform_location("inner_min");
         rp.inner_max = rp.get_uniform_location("inner_max");
         rp.idx_c_dt_2 = rp.get_uniform_location("idx_c_dt_2");
@@ -253,9 +263,11 @@ void AcousticSubdomainLogic::collide_and_stream() {
     {
         angle_ = std::fmod(angle_ + angular_velocity_, (float)(2 * M_PI));
         std::scoped_lock lock{ velocity_mutex_ };
-        CHK(glUniform2fv(rp.inner_velocity, 1, (velocity_vector_ * std::sin(angle_)).flat_begin()));
+        CHK(glUniform2fv(rp.inner_directional_velocity, 1, directional_velocity_.flat_begin()));
+        CHK(glUniform1f(rp.inner_radial_velocity, radial_velocity_ * std::sin(angle_)));
         CHK(glUniform2fv(rp.inner_min, 1, velocity_region_.min.flat_begin()));
         CHK(glUniform2fv(rp.inner_max, 1, velocity_region_.max.flat_begin()));
+        CHK(glUniform2fv(rp.inner_center, 1, velocity_region_.center().flat_begin()));
     }
     CHK(glUniform1f(rp.idx_c_dt_2, squared(c_ * dt_ / dx_)));
     CHK(glUniform1f(rp.intensity_normalization, intensity_normalization_));
@@ -308,9 +320,14 @@ void AcousticSubdomainLogic::calculate_skidmark_field() {
     CHK(glActiveTexture(GL_TEXTURE0));
 }
 
-void AcousticSubdomainLogic::set_velocity_vector(const FixedArray<SceneDir, 2>& velocity_vector) {
+void AcousticSubdomainLogic::set_directional_velocity(const FixedArray<SceneDir, 2>& directional_velocity) {
     std::scoped_lock lock{ velocity_mutex_ };
-    velocity_vector_ = velocity_vector;
+    directional_velocity_ = directional_velocity;
+}
+
+void AcousticSubdomainLogic::set_radial_velocity(SceneDir radial_velocity) {
+    std::scoped_lock lock{ velocity_mutex_ };
+    radial_velocity_ = radial_velocity;
 }
 
 void AcousticSubdomainLogic::set_velocity_region(const AxisAlignedBoundingBox<float, 2>& velocity_region) {
