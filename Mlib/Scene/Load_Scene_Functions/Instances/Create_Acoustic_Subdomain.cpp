@@ -64,7 +64,7 @@ void CreateAcousticSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::dt),
         args.arguments.at<float>(KnownArgs::dx),
         args.arguments.at<float>(KnownArgs::intensity_normalization),
-        args.arguments.at<float>(KnownArgs::reference_inner_velocity),
+        args.arguments.at<float>(KnownArgs::reference_inner_velocity) * kph,
         args.arguments.at<float>(KnownArgs::maximum_inner_velocity));
     o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(

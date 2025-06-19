@@ -31,6 +31,8 @@ DECLARE_ARGUMENT(velocity_dt);
 DECLARE_ARGUMENT(speed_of_sound);
 DECLARE_ARGUMENT(time_relaxation_constant);
 DECLARE_ARGUMENT(density_normalization);
+DECLARE_ARGUMENT(reference_inner_velocity);
+DECLARE_ARGUMENT(maximum_inner_velocity);
 }
 
 CreateFluidSubdomain::CreateFluidSubdomain(RenderableScene& renderable_scene) 
@@ -59,7 +61,9 @@ void CreateFluidSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
             KnownArgs::velocity_dt, std::chrono::steady_clock::duration{0}),
         args.arguments.at<float>(KnownArgs::speed_of_sound, 1.1f),
         args.arguments.at<float>(KnownArgs::time_relaxation_constant, 0.55f),
-        args.arguments.at<float>(KnownArgs::density_normalization, 0.99f));
+        args.arguments.at<float>(KnownArgs::density_normalization, 0.99f),
+        args.arguments.at<float>(KnownArgs::reference_inner_velocity, 50.f) * kph,
+        args.arguments.at<float>(KnownArgs::maximum_inner_velocity, 0.2f));
     o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { *o, CURRENT_SOURCE_LOCATION },

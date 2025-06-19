@@ -31,6 +31,7 @@ public:
     GLint inner_min = -1;
     GLint inner_max = -1;
     GLint idx_c_dt_2 = -1;
+    GLint intensity_normalization = -1;
     FixedArray<GLint, 3> velocity_fields;
 };
 
