@@ -28,6 +28,8 @@ DECLARE_ARGUMENT(velocity_vector);
 DECLARE_ARGUMENT(velocity_region);
 DECLARE_ARGUMENT(angular_velocity);
 DECLARE_ARGUMENT(velocity_dt);
+DECLARE_ARGUMENT(speed_of_sound);
+DECLARE_ARGUMENT(time_relaxation_constant);
 }
 
 CreateFluidSubdomain::CreateFluidSubdomain(RenderableScene& renderable_scene) 
@@ -53,7 +55,9 @@ void CreateFluidSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<int>(KnownArgs::texture_width),
         args.arguments.at<int>(KnownArgs::texture_height),
         args.arguments.at_non_null<std::chrono::steady_clock::duration>(
-            KnownArgs::velocity_dt, std::chrono::steady_clock::duration{0}));
+            KnownArgs::velocity_dt, std::chrono::steady_clock::duration{0}),
+        args.arguments.at<float>(KnownArgs::speed_of_sound, 1.1f),
+        args.arguments.at<float>(KnownArgs::time_relaxation_constant, 0.55f));
     o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { *o, CURRENT_SOURCE_LOCATION },

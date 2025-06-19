@@ -67,10 +67,6 @@ public:
 };
 
 class FluidSubdomainLogic final: public MovingNodeLogic, private GenericPostProcessingLogic {
-    constexpr static const float speed_of_sound = 1.f / std::sqrt(3.f);
-    constexpr static const float speed_of_sound2 = squared(speed_of_sound);
-    constexpr static const float speed_of_sound4 = squared(speed_of_sound2);
-    constexpr static const float time_relaxation_constant = 0.55f;
 public:
     FluidSubdomainLogic(
         DanglingRef<SceneNode> skidmark_node,
@@ -80,7 +76,10 @@ public:
         const AxisAlignedBoundingBox<float, 2>& velocity_region,
         int texture_width,
         int texture_height,
-        std::chrono::steady_clock::duration velocity_dt);
+        std::chrono::steady_clock::duration velocity_dt,
+        float speed_of_sound = 1.1f,
+        float time_relaxation_constant = 0.55f,
+        float density_normalization = 0.99f);
     virtual ~FluidSubdomainLogic();
 
     virtual void render_moving_node(
@@ -125,6 +124,11 @@ private:
     int texture_width_;
     int texture_height_;
     std::chrono::steady_clock::duration velocity_dt_;
+    float speed_of_sound_;
+    float speed_of_sound2_;
+    float speed_of_sound4_;
+    float time_relaxation_constant_;
+    float density_normalization_;
     std::shared_ptr<FillWithTextureLogic> old_render_texture_logic_;
     DeallocationToken deallocation_token_;
 };

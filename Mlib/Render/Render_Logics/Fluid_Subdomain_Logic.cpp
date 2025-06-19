@@ -61,7 +61,10 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     const AxisAlignedBoundingBox<float, 2>& velocity_region,
     int texture_width,
     int texture_height,
-    std::chrono::steady_clock::duration velocity_dt)
+    std::chrono::steady_clock::duration velocity_dt,
+    float speed_of_sound,
+    float time_relaxation_constant,
+    float density_normalization)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , collide_render_programs_{ uninitialized }
@@ -76,6 +79,11 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     , texture_width_{ texture_width }
     , texture_height_{ texture_height }
     , velocity_dt_{ velocity_dt }
+    , speed_of_sound_{ speed_of_sound / std::sqrt(3.f) }
+    , speed_of_sound2_{ squared(speed_of_sound_) }
+    , speed_of_sound4_{ squared(speed_of_sound2_) }
+    , time_relaxation_constant_{ time_relaxation_constant }
+    , density_normalization_{ density_normalization }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
 
@@ -109,7 +117,7 @@ void FluidSubdomainLogic::render_moving_node(
     }
     if (velocity_dt_ != std::chrono::steady_clock::duration{0}) {
         auto vmax = 50 * kph;
-        auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_) / kph;
+        auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_);
         auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
         auto l = std::sqrt(sum(squared(v2)));
         if (l > vmax) {
@@ -218,13 +226,15 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
             sstr << "        mv += m * vec2(" << dir(0) << ", " << dir(1) << ");" << std::endl;
             sstr << "    }" << std::endl;
         }
-        sstr << "    density_and_velocity_field.x = dens * " << Dens::SCALE << ';' << std::endl;
+        sstr << "    density_and_velocity_field.x = (1 + (dens - 1) * " << density_normalization_ << ") * " << Dens::SCALE << ';' << std::endl;
         sstr << "    if (all(greaterThan(TexCoords, inner_min)) && all(lessThan(TexCoords, inner_max))) {" << std::endl;
         sstr << "        density_and_velocity_field.yz = inner_velocity * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
         sstr << "    } else {" << std::endl;
         sstr << "        density_and_velocity_field.yz = mv / dens * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
         sstr << "    }" << std::endl;
         sstr << "}" << std::endl;
+        // linfo() << "--------- calculate_macroscopic_variables -----------";
+        // lraw() << sstr.str();
         rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
         rp.inner_velocity = rp.get_uniform_location("inner_velocity");
         rp.inner_min = rp.get_uniform_location("inner_min");
@@ -286,8 +296,8 @@ void FluidSubdomainLogic::collide() {
             sstr << "    float taylor = 1 + (dotted / speed_of_sound2) + ((dotted * dotted) / (2 * speed_of_sound4)) -" << std::endl;
             sstr << "        (vel2 / (2 * speed_of_sound2));" << std::endl;
             sstr << "    float equilibrium = dens * taylor * " << weight << ';' << std::endl;
-            sstr << "    if ((TexCoords.x < 0.05) || (TexCoords.x > 0.95) ||" << std::endl;
-            sstr << "        (TexCoords.y < 0.05) || (TexCoords.y > 0.95))" << std::endl;
+            sstr << "    if ((TexCoords.x == 0.0) || (TexCoords.x == 1.0) ||" << std::endl;
+            sstr << "        (TexCoords.y == 0.0) || (TexCoords.y == 1.0))" << std::endl;
             sstr << "    {" << std::endl;
             // sstr << "        temp_momentum_magnitude_field = equilibrium;" << std::endl;
             sstr << "        temp_momentum_magnitude_field = " << weight << ';' << std::endl;
@@ -296,6 +306,8 @@ void FluidSubdomainLogic::collide() {
             sstr << "        temp_momentum_magnitude_field = first_term + second_term;" << std::endl;
             sstr << "    }" << std::endl;
             sstr << "}" << std::endl;
+            // linfo() << "--------- collide " << v << " -----------";
+            // lraw() << sstr.str();
             rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
             rp.density_and_velocity_field = rp.get_uniform_location("density_and_velocity_field");
             rp.good_momentum_magnitude_field = rp.get_uniform_location("good_momentum_magnitude_field");
@@ -308,9 +320,9 @@ void FluidSubdomainLogic::collide() {
         RenderToFrameBufferGuard rfg{ temp_momentum_magnitude_fields_(v) };
 
         notify_rendering(CURRENT_SOURCE_LOCATION);
-        CHK(glUniform1fv(rp.speed_of_sound2, 1, &speed_of_sound2));
-        CHK(glUniform1fv(rp.speed_of_sound4, 1, &speed_of_sound4));
-        CHK(glUniform1fv(rp.time_relaxation_constant, 1, &time_relaxation_constant));
+        CHK(glUniform1fv(rp.speed_of_sound2, 1, &speed_of_sound2_));
+        CHK(glUniform1fv(rp.speed_of_sound4, 1, &speed_of_sound4_));
+        CHK(glUniform1fv(rp.time_relaxation_constant, 1, &time_relaxation_constant_));
         TextureBinder tb;
         tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color());
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
@@ -355,16 +367,18 @@ void FluidSubdomainLogic::stream() {
             fs << "in vec2 TexCoords1;" << std::endl;
             fs << "uniform sampler2D temp_momentum_magnitude_field;" << std::endl;
             fs << "void main() {" << std::endl;
-            fs << "    if ((TexCoords0.x < 0.05) || (TexCoords0.x > 0.95) ||" << std::endl;
-            fs << "        (TexCoords0.y < 0.05) || (TexCoords0.y > 0.95))" << std::endl;
+            fs << "    if ((TexCoords0.x == 0.0) || (TexCoords0.x == 1.0) ||" << std::endl;
+            fs << "        (TexCoords0.y == 0.0) || (TexCoords0.y == 1.0))" << std::endl;
             fs << "    {" << std::endl;
             fs << "        good_momentum_magnitude_field = texture(temp_momentum_magnitude_field, TexCoords0).r;" << std::endl;
             fs << "    } else {" << std::endl;
             fs << "        good_momentum_magnitude_field = texture(temp_momentum_magnitude_field, TexCoords1).r;" << std::endl;
             fs << "    }" << std::endl;
             fs << "}" << std::endl;
-            sstr << "    }" << std::endl;
-            sstr << "}" << std::endl;
+            // linfo() << "--------- stream vs " << v << " -----------";
+            // lraw() << vs.str();
+            // linfo() << "--------- stream fs " << v << " -----------";
+            // lraw() << fs.str();
             rp.allocate(vs.str().c_str(), fs.str().c_str());
             rp.temp_momentum_magnitude_field = rp.get_uniform_location("temp_momentum_magnitude_field");
         }
@@ -393,9 +407,12 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
         sstr << "in vec2 TexCoords;" << std::endl;
         sstr << "uniform sampler2D density_and_velocity_field;" << std::endl;
         sstr << "void main() {" << std::endl;
-        sstr << "    float alpha = clamp((texture(density_and_velocity_field, TexCoords).r * " << ISCALE << " - 0.7) / 0.6, 0.0, 1.0);" << std::endl;
-        sstr << "    skidmark_field.rgb = vec3(1.0, 0.0, alpha);" << std::endl;
+        sstr << "    float alpha = clamp((texture(density_and_velocity_field, TexCoords).r * " << Dens::ISCALE << " - 0.7) / 0.6, 0.0, 1.0);" << std::endl;
+        // sstr << "    float alpha = texture(density_and_velocity_field, TexCoords).r;" << std::endl;
+        sstr << "    skidmark_field.rgb = vec3(0, 1 - alpha, alpha);" << std::endl;
         sstr << "}" << std::endl;
+        // linfo() << "--------- calculate_skidmark_field -----------";
+        // lraw() << sstr.str();
         rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
         rp.density_and_velocity_field = rp.get_uniform_location("density_and_velocity_field");
     }
