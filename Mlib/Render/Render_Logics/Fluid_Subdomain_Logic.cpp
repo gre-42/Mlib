@@ -63,7 +63,9 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     std::chrono::steady_clock::duration velocity_dt,
     float speed_of_sound,
     float time_relaxation_constant,
-    float density_normalization)
+    float density_normalization,
+    float reference_inner_velocity,
+    float maximum_inner_velocity)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , collide_render_programs_{ uninitialized }
@@ -83,6 +85,8 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     , speed_of_sound4_{ squared(speed_of_sound2_) }
     , time_relaxation_constant_{ time_relaxation_constant }
     , density_normalization_{ density_normalization }
+    , reference_inner_velocity_{ reference_inner_velocity }
+    , maximum_inner_velocity_{ maximum_inner_velocity }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
 
@@ -115,16 +119,15 @@ void FluidSubdomainLogic::render_moving_node(
         THROW_OR_ABORT("SkidmarkLogic received wrong rendering");
     }
     if (velocity_dt_ != std::chrono::steady_clock::duration{0}) {
-        auto vmax = 50 * kph;
         auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_);
         auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
         auto l = std::sqrt(sum(squared(v2)));
-        if (l > vmax) {
+        if (l > reference_inner_velocity_) {
             v2 /= l;
         } else {
-            v2 /= vmax;
+            v2 /= reference_inner_velocity_;
         }
-        set_velocity_vector(v2 * 0.2f);
+        set_velocity_vector(v2 * maximum_inner_velocity_);
     }
     if (density_and_velocity_field_ == nullptr) {
         auto gray_cfg = FrameBufferConfig{
