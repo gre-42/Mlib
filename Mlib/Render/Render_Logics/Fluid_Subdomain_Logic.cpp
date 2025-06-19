@@ -20,7 +20,6 @@
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
-#include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 
@@ -50,8 +49,8 @@ CollideRenderProgram::~CollideRenderProgram() = default;
 StreamRenderProgram::StreamRenderProgram() = default;
 StreamRenderProgram::~StreamRenderProgram() = default;
 
-SkidmarkRenderProgram::SkidmarkRenderProgram() = default;
-SkidmarkRenderProgram::~SkidmarkRenderProgram() = default;
+FluidSkidmarkRenderProgram::FluidSkidmarkRenderProgram() = default;
+FluidSkidmarkRenderProgram::~FluidSkidmarkRenderProgram() = default;
 
 FluidSubdomainLogic::FluidSubdomainLogic(
     DanglingRef<SceneNode> skidmark_node,
@@ -345,7 +344,7 @@ void FluidSubdomainLogic::stream() {
             const auto& dir = dirs[v];
 
             std::stringstream vs;
-            vs << SHADER_VER << std::endl;
+            vs << SHADER_VER;
             vs << "layout (location = 0) in vec2 aPos;" << std::endl;
             vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
             vs << std::endl;

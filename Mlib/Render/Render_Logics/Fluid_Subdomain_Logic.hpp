@@ -19,7 +19,6 @@ namespace Mlib {
 class FrameBuffer;
 class SceneNode;
 class FillWithTextureLogic;
-class IParticleRenderer;
 struct Skidmark;
 using FluidDomainLbmModel = LbmModelD2Q9<float>;
 
@@ -57,12 +56,12 @@ public:
     GLint temp_momentum_magnitude_field = -1;
 };
 
-struct SkidmarkRenderProgram: public RenderProgram {
-    SkidmarkRenderProgram(const SkidmarkRenderProgram&) = delete;
-    SkidmarkRenderProgram& operator = (const SkidmarkRenderProgram&) = delete;
+struct FluidSkidmarkRenderProgram: public RenderProgram {
+    FluidSkidmarkRenderProgram(const FluidSkidmarkRenderProgram&) = delete;
+    FluidSkidmarkRenderProgram& operator = (const FluidSkidmarkRenderProgram&) = delete;
 public:
-    SkidmarkRenderProgram();
-    ~SkidmarkRenderProgram();
+    FluidSkidmarkRenderProgram();
+    ~FluidSkidmarkRenderProgram();
     GLint density_and_velocity_field = -1;
 };
 
@@ -114,7 +113,7 @@ private:
     FixedArray<std::shared_ptr<FrameBuffer>, FluidDomainLbmModel::ndirections> temp_momentum_magnitude_fields_;
     std::shared_ptr<FrameBuffer> density_and_velocity_field_;
     std::shared_ptr<FrameBuffer> skidmark_field_;
-    SkidmarkRenderProgram skidmark_render_program_;
+    FluidSkidmarkRenderProgram skidmark_render_program_;
     std::shared_ptr<Skidmark> skidmark_;
     mutable FastMutex velocity_mutex_;
     FixedArray<SceneDir, 2> velocity_vector_;
@@ -129,7 +128,6 @@ private:
     float speed_of_sound4_;
     float time_relaxation_constant_;
     float density_normalization_;
-    std::shared_ptr<FillWithTextureLogic> old_render_texture_logic_;
     DeallocationToken deallocation_token_;
 };
 
