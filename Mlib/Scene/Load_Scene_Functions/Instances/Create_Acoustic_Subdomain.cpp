@@ -35,6 +35,7 @@ DECLARE_ARGUMENT(dx);
 DECLARE_ARGUMENT(intensity_normalization);
 DECLARE_ARGUMENT(reference_inner_directional_velocity);
 DECLARE_ARGUMENT(maximum_inner_velocity);
+DECLARE_ARGUMENT(velocity_limitation);
 }
 
 CreateAcousticSubdomain::CreateAcousticSubdomain(RenderableScene& renderable_scene) 
@@ -67,7 +68,8 @@ void CreateAcousticSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::dx),
         args.arguments.at<float>(KnownArgs::intensity_normalization),
         args.arguments.at<float>(KnownArgs::reference_inner_directional_velocity) * kph,
-        args.arguments.at<float>(KnownArgs::maximum_inner_velocity));
+        args.arguments.at<float>(KnownArgs::maximum_inner_velocity),
+        args.arguments.at<VelocityLimitation>(KnownArgs::velocity_limitation));
     o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { *o, CURRENT_SOURCE_LOCATION },

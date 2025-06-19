@@ -12,6 +12,7 @@
 #include <Mlib/Scene_Precision.hpp>
 #include <chrono>
 #include <cmath>
+#include <nlohmann/json_fwd.hpp>
 #include <string>
 
 namespace Mlib {
@@ -20,6 +21,23 @@ class FrameBuffer;
 class SceneNode;
 class FillWithTextureLogic;
 struct Skidmark;
+
+struct VelocityLimitation {
+    float v_max = 0.3f;
+    float falloff = 0.8f;
+};
+
+void from_json(const nlohmann::json& j, VelocityLimitation& l);
+
+struct OffsetRenderProgram: public RenderProgram {
+    OffsetRenderProgram(const OffsetRenderProgram&) = delete;
+    OffsetRenderProgram& operator = (const OffsetRenderProgram&) = delete;
+public:
+    OffsetRenderProgram();
+    ~OffsetRenderProgram();
+    GLint offset = -1;
+    GLint field = -1;
+};
 
 struct AcousticRenderProgram: public RenderProgram {
     AcousticRenderProgram(const AcousticRenderProgram&) = delete;
@@ -63,7 +81,8 @@ public:
         float dx = 0.1f,
         float intensity_normalization = 0.99f,
         float reference_inner_directional_velocity = 50 * kph,
-        float maximum_inner_velocity = 0.2f);
+        float maximum_inner_velocity = 0.2f,
+        const VelocityLimitation& velocity_limitation = VelocityLimitation{});
     virtual ~AcousticSubdomainLogic();
 
     virtual void render_moving_node(
@@ -85,13 +104,16 @@ public:
 
     DestructionFunctionsRemovalTokens on_skidmark_node_clear;
 private:
-    void iterate();
+    void iterate(const FixedArray<float, 2>& offset);
+    void apply_offset(const FixedArray<float, 2>& offset);
     void initialize_velocity_fields();
     void collide_and_stream();
     void calculate_skidmark_field();
     void deallocate();
+    OffsetRenderProgram offset_render_program_;
     AcousticRenderProgram acoustic_render_program_;
     FixedArray<std::shared_ptr<FrameBuffer>, 3> velocity_fields_;
+    std::shared_ptr<FrameBuffer> temp_velocity_field_;
     std::shared_ptr<FrameBuffer> skidmark_field_;
     AcousticSkidmarkRenderProgram skidmark_render_program_;
     std::shared_ptr<Skidmark> skidmark_;
@@ -110,6 +132,7 @@ private:
     float intensity_normalization_;
     float reference_inner_directional_velocity_;
     float maximum_inner_velocity_;
+    VelocityLimitation velocity_limitation_;
     size_t i012_;
     DeallocationToken deallocation_token_;
 };

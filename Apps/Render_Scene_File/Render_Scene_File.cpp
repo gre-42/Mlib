@@ -322,6 +322,8 @@ int main(int argc, char** argv) {
         "    [--black_lightmap_height <height>]\n"
         "    [--scene_skidmarks_width <width>]\n"
         "    [--scene_skidmarks_height <height>]\n"
+        "    [--scene_waves_width <width>]\n"
+        "    [--scene_waves_height <height>]\n"
         "    [--fullscreen]\n"
         "    [--no_double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
@@ -436,6 +438,8 @@ int main(int argc, char** argv) {
          "--black_lightmap_height",
          "--scene_skidmarks_width",
          "--scene_skidmarks_height",
+         "--scene_waves_width",
+         "--scene_waves_height",
          "--static_radius",
          "--bvh_max_size",
          "--physics_dt",
@@ -614,6 +618,8 @@ int main(int argc, char** argv) {
                 {"black_lightmap_height", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
                 {"scene_skidmarks_width", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
                 {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))},
+                {"scene_waves_width", safe_stoi(args.named_value("--scene_waves_width", "256"))},
+                {"scene_waves_height", safe_stoi(args.named_value("--scene_waves_height", "256"))},
                 {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))}};
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }

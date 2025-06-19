@@ -361,6 +361,8 @@ void android_main(android_app* app) {
         "    [--black_lightmap_height <height>]\n"
         "    [--scene_skidmarks_width <width>]\n"
         "    [--scene_skidmarks_height <height>]\n"
+        "    [--scene_waves_width <width>]\n"
+        "    [--scene_waves_height <height>]\n"
         "    [--fullscreen]\n"
         "    [--no_double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
@@ -466,6 +468,8 @@ void android_main(android_app* app) {
          "--black_lightmap_height",
          "--scene_skidmarks_width",
          "--scene_skidmarks_height",
+         "--scene_waves_width",
+         "--scene_waves_height",
          "--static_radius",
          "--bvh_max_size",
          "--physics_dt",
@@ -589,6 +593,42 @@ void android_main(android_app* app) {
             .ui_focuses = ui_focuses};
         WindowLogic window_logic;
         MenuLogic menu_logic{menu_user_object};
+
+        {
+            auto record_track_basename = args.try_named_value("--record_track_basename");
+            nlohmann::json j{
+                {"primary_scene_fly", args.has_named("--fly")},
+                {"primary_scene_rotate", args.has_named("--rotate")},
+                {"primary_scene_depth_fog", !args.has_named("--no_depth_fog")},
+                {"primary_scene_low_pass", args.has_named("--low_pass")},
+                {"primary_scene_high_pass", args.has_named("--high_pass")},
+                {"primary_scene_bloom_iterations", FixedArray<unsigned int, 2>{
+                    safe_stou(args.named_value("--bloom_x", "3")),
+                    safe_stou(args.named_value("--bloom_y", "3"))}},
+                {"primary_scene_bloom_thresholds", fixed_full<float, 3>(
+                    safe_stof(args.named_value("--bloom_threshold", "1")))},
+                {"primary_scene_with_skybox", true},
+                {"primary_scene_with_flying_logic", true},
+                {"primary_scene_save_playback", args.has_named("--save_playback")},
+                {"far_plane", safe_stof(args.named_value("--far_plane", "10000"))},
+                {"record_track_basename", (record_track_basename == nullptr)
+                    ? nlohmann::json()
+                    : nlohmann::json(*record_track_basename)},
+                {"if_devel", args.has_named("--devel_mode")},
+                {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
+                {"if_android", true},
+                {"flavor", AUi::GetFlavor()},
+                {"scene_lightmap_width", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
+                {"scene_lightmap_height", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
+                {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
+                {"black_lightmap_height", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
+                {"scene_skidmarks_width", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
+                {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))},
+                {"scene_waves_width", safe_stoi(args.named_value("--scene_waves_width", "256"))},
+                {"scene_waves_height", safe_stoi(args.named_value("--scene_waves_height", "256"))},
+                {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))}};
+            external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
+        }
         // Declared as first class to let destructors of other classes succeed.
         SceneRenderer scene_renderer{
             render_config,
@@ -648,39 +688,7 @@ void android_main(android_app* app) {
             LayoutConstraints layout_constraints;
             LockableKeyConfigurations key_configurations;
             LockableKeyDescriptions key_descriptions;
-            {
-                auto record_track_basename = args.try_named_value("--record_track_basename");
-                nlohmann::json j{
-                    {"primary_scene_fly", args.has_named("--fly")},
-                    {"primary_scene_rotate", args.has_named("--rotate")},
-                    {"primary_scene_depth_fog", !args.has_named("--no_depth_fog")},
-                    {"primary_scene_low_pass", args.has_named("--low_pass")},
-                    {"primary_scene_high_pass", args.has_named("--high_pass")},
-                    {"primary_scene_bloom_iterations", FixedArray<unsigned int, 2>{
-                        safe_stou(args.named_value("--bloom_x", "3")),
-                        safe_stou(args.named_value("--bloom_y", "3"))}},
-                    {"primary_scene_bloom_thresholds", fixed_full<float, 3>(
-                        safe_stof(args.named_value("--bloom_threshold", "1")))},
-                    {"primary_scene_with_skybox", true},
-                    {"primary_scene_with_flying_logic", true},
-                    {"primary_scene_save_playback", args.has_named("--save_playback")},
-                    {"far_plane", safe_stof(args.named_value("--far_plane", "10000"))},
-                    {"record_track_basename", (record_track_basename == nullptr)
-                        ? nlohmann::json()
-                        : nlohmann::json(*record_track_basename)},
-                    {"if_devel", args.has_named("--devel_mode")},
-                    {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
-                    {"if_android", true},
-                    {"flavor", AUi::GetFlavor()},
-                    {"scene_lightmap_width", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
-                    {"scene_lightmap_height", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
-                    {"black_lightmap_width", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
-                    {"black_lightmap_height", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
-                    {"scene_skidmarks_width", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
-                    {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))},
-                    {"user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))}};
-                external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
-            }
+            
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
             // In case of an exception in the main thread, destruction of "load_scene" must therefore happen

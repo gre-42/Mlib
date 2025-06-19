@@ -1,8 +1,10 @@
 #include "Acoustic_Subdomain_Logic.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -25,12 +27,28 @@
 
 using namespace Mlib;
 
+namespace VelocityLimitationArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(v_max);
+DECLARE_ARGUMENT(falloff);
+}
+
+void Mlib::from_json(const nlohmann::json& j, VelocityLimitation& l) {
+    JsonView jv{ j };
+    jv.validate(VelocityLimitationArgs::options);
+    l.v_max = jv.at<float>(VelocityLimitationArgs::v_max);
+    l.falloff = jv.at<float>(VelocityLimitationArgs::falloff);
+}
+
 namespace Vel {
 static const float SCALE = 0.5f;
 static const float OFFSET = 0.5f;
 static const float ISCALE = 2.f;
 static const float IOFFSET = -1.f;
 }
+
+OffsetRenderProgram::OffsetRenderProgram() = default;
+OffsetRenderProgram::~OffsetRenderProgram() = default;
 
 AcousticRenderProgram::AcousticRenderProgram()
     : velocity_fields(-1)
@@ -56,7 +74,8 @@ AcousticSubdomainLogic::AcousticSubdomainLogic(
     float dx,
     float intensity_normalization,
     float reference_inner_directional_velocity,
-    float maximum_inner_velocity)
+    float maximum_inner_velocity,
+    const VelocityLimitation& velocity_limitation)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , velocity_fields_{ uninitialized }
@@ -75,6 +94,7 @@ AcousticSubdomainLogic::AcousticSubdomainLogic(
     , intensity_normalization_{ intensity_normalization }
     , reference_inner_directional_velocity_{ reference_inner_directional_velocity }
     , maximum_inner_velocity_{ maximum_inner_velocity }
+    , velocity_limitation_{ velocity_limitation }
     , i012_{ 0 }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
@@ -87,6 +107,7 @@ AcousticSubdomainLogic::~AcousticSubdomainLogic() {
 void AcousticSubdomainLogic::deallocate() {
     // skidmark_->texture = nullptr;
     velocity_fields_ = nullptr;
+    temp_velocity_field_ = nullptr;
     skidmark_field_ = nullptr;
 }
 
@@ -145,16 +166,19 @@ void AcousticSubdomainLogic::render_moving_node(
             f = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
             f->configure(rg_cfg);
         }
+        temp_velocity_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+        temp_velocity_field_->configure(rg_cfg);
         skidmark_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
         skidmark_field_->configure(rgb_cfg);
         initialize_velocity_fields();
     }
-    iterate();
+    iterate(offset.has_value() ? *offset : fixed_zeros<float, 2>());
     skidmark_->texture = skidmark_field_->texture_color();
     skidmark_->vp = vp;
 }
 
-void AcousticSubdomainLogic::iterate() {
+void AcousticSubdomainLogic::iterate(const FixedArray<float, 2>& offset) {
+    apply_offset(offset);
     collide_and_stream();
     calculate_skidmark_field();
     i012_ = (i012_ + 1) % 3;
@@ -172,6 +196,60 @@ void AcousticSubdomainLogic::initialize_velocity_fields() {
         RenderToFrameBufferGuard rfg{ velocity_fields_(v) };
         ViewportGuard vg{ texture_width_, texture_height_ };
         clear_color({ 0.f, 0.f, 1.f, 1.f });
+    }
+}
+
+void AcousticSubdomainLogic::apply_offset(const FixedArray<float, 2>& offset) {
+    auto& rp = offset_render_program_;
+    if (!rp.allocated()) {
+        std::stringstream vs;
+        vs << SHADER_VER;
+        vs << "layout (location = 0) in vec2 aPos;" << std::endl;
+        vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
+        vs << std::endl;
+        vs << "out vec2 TexCoords0;" << std::endl;
+        vs << "uniform vec2 offset;" << std::endl;
+        vs << std::endl;
+        vs << "void main()" << std::endl;
+        vs << "{" << std::endl;
+        vs << "    TexCoords0 = aTexCoords - offset;" << std::endl;
+        vs << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);" << std::endl;
+        vs << "}" << std::endl;
+        
+        std::stringstream fs;
+        fs << SHADER_VER << FRAGMENT_PRECISION;
+        fs << "out vec2 result;" << std::endl;
+        fs << "in vec2 TexCoords0;" << std::endl;
+        fs << "uniform sampler2D field;" << std::endl;
+        fs << "void main() {" << std::endl;
+        fs << "    result = texture(field, TexCoords0).rg;" << std::endl;
+        fs << "}" << std::endl;
+        // linfo() << "--------- apply_offset -----------";
+        // lraw() << vs.str();
+        // lraw() << fs.str();
+        rp.allocate(vs.str().c_str(), fs.str().c_str());
+        rp.offset = rp.get_uniform_location("offset");
+        rp.field = rp.get_uniform_location("field");
+    }
+    rp.use();
+    CHK(glUniform2fv(rp.offset, 1, offset.flat_begin()));
+    ViewportGuard vg{ texture_width_, texture_height_ };
+
+    for (auto& f : velocity_fields_.flat_iterable()) {
+        {
+            RenderToFrameBufferGuard rfg{ temp_velocity_field_ };
+
+            notify_rendering(CURRENT_SOURCE_LOCATION);
+            TextureBinder tb;
+            tb.bind(rp.field, *f->texture_color());
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+            va().bind();
+            CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+            CHK(glBindVertexArray(0));
+            CHK(glActiveTexture(GL_TEXTURE0));
+        }
+        std::swap(temp_velocity_field_, f);
     }
 }
 
@@ -222,12 +300,12 @@ void AcousticSubdomainLogic::collide_and_stream() {
             fs << "uniform sampler2D velocity_field" << t << ';' << std::endl;
         }
         fs << "void main() {" << std::endl;
+        fs << "    vec2 radial_vector = TexCoords0 - inner_center;" << std::endl;
+        fs << "    float rlen = length(radial_vector);" << std::endl;
         fs << "    if (all(greaterThan(TexCoords0, inner_min)) && all(lessThan(TexCoords0, inner_max))) {" << std::endl;
         fs << "        u_2 = inner_directional_velocity;" << std::endl;
-        fs << "        vec2 radial_vector = TexCoords0 - inner_center;" << std::endl;
-        fs << "        float l = length(radial_vector);" << std::endl;
-        fs << "        if (l > 1e-6) {" << std::endl;
-        fs << "            u_2 += (inner_radial_velocity / l) * radial_vector;" << std::endl;
+        fs << "        if (rlen > 1e-6) {" << std::endl;
+        fs << "            u_2 += (inner_radial_velocity / rlen) * radial_vector;" << std::endl;
         fs << "        }" << std::endl;
         fs << "    } else {" << std::endl;
         for (size_t t = 0; t < 2; ++t) {
@@ -242,6 +320,14 @@ void AcousticSubdomainLogic::collide_and_stream() {
         fs << "        u_2 = Lu * idx_c_dt_2 + 2 * u_1 - u_0;" << std::endl;
         fs << "        u_2 *= intensity_normalization;" << std::endl;
         fs << "    }" << std::endl;
+        float vm = velocity_limitation_.v_max;
+        float fo = velocity_limitation_.falloff;
+        float rn = 1 - fo;
+        fs << "    float max_len = " << vm << " * max(1.0 - max(2.0 * rlen - " << fo << ", 0.0) / " << rn << ", 0.0);" << std::endl;
+        fs << "    float len = length(u_2);" << std::endl;
+        fs << "    if (len > max_len) {" << std::endl;
+        fs << "        u_2 *= max_len / len;" << std::endl;
+        fs << "    }" << std::endl;
         fs << "    u_2 = u_2 * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
         fs << "}" << std::endl;
         // linfo() << "--------- collide_and_stream -----------";
@@ -252,6 +338,7 @@ void AcousticSubdomainLogic::collide_and_stream() {
         rp.inner_radial_velocity = rp.get_uniform_location("inner_radial_velocity");
         rp.inner_min = rp.get_uniform_location("inner_min");
         rp.inner_max = rp.get_uniform_location("inner_max");
+        rp.inner_center = rp.get_uniform_location("inner_center");
         rp.idx_c_dt_2 = rp.get_uniform_location("idx_c_dt_2");
         rp.intensity_normalization = rp.get_uniform_location("intensity_normalization");
         for (size_t t = 0; t < 2; ++t) {
