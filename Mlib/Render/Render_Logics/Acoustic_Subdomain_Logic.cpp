@@ -253,32 +253,37 @@ void AcousticSubdomainLogic::apply_offset(const FixedArray<float, 2>& offset) {
     }
 }
 
+std::string AcousticSubdomainLogic::diff_vertex_shader() const {
+    std::stringstream vs;
+    vs << SHADER_VER;
+    vs << "layout (location = 0) in vec2 aPos;" << std::endl;
+    vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
+    vs << std::endl;
+    vs << "out vec2 TexCoords0;" << std::endl;
+    for (int dim = 0; dim < 2; ++dim) {
+        for (int h = 0; h < 2; ++h) {
+            vs << "out vec2 TexCoords" << dim << h << ';' << std::endl;
+        }
+    }
+    vs << std::endl;
+    vs << "void main()" << std::endl;
+    vs << "{" << std::endl;
+    vs << "    TexCoords0 = aTexCoords;" << std::endl;
+    for (int h = 0; h < 2; ++h) {
+        vs << "    TexCoords0" << h << " = aTexCoords + vec2(" <<
+            (h * 2 - 1) / (float)texture_width_ << ", 0.0);" << std::endl;
+        vs << "    TexCoords1" << h << " = aTexCoords + vec2(0.0, " <<
+            (h * 2 - 1) / (float)texture_height_ << ");" << std::endl;
+    }
+    vs << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);" << std::endl;
+    vs << "}" << std::endl;
+    return vs.str();
+}
+
 void AcousticSubdomainLogic::collide_and_stream() {
     auto& rp = acoustic_render_program_;
     if (!rp.allocated()) {
-        std::stringstream vs;
-        vs << SHADER_VER;
-        vs << "layout (location = 0) in vec2 aPos;" << std::endl;
-        vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
-        vs << std::endl;
-        vs << "out vec2 TexCoords0;" << std::endl;
-        for (int dim = 0; dim < 2; ++dim) {
-            for (int h = 0; h < 2; ++h) {
-                vs << "out vec2 TexCoords" << dim << h << ';' << std::endl;
-            }
-        }
-        vs << std::endl;
-        vs << "void main()" << std::endl;
-        vs << "{" << std::endl;
-        vs << "    TexCoords0 = aTexCoords;" << std::endl;
-        for (int h = 0; h < 2; ++h) {
-            vs << "    TexCoords0" << h << " = aTexCoords + vec2(" <<
-                (h * 2 - 1) / (float)texture_width_ << ", 0.0);" << std::endl;
-            vs << "    TexCoords1" << h << " = aTexCoords + vec2(0.0, " <<
-                (h * 2 - 1) / (float)texture_height_ << ");" << std::endl;
-        }
-        vs << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);" << std::endl;
-        vs << "}" << std::endl;
+        auto vs = diff_vertex_shader();
         
         std::stringstream fs;
         fs << SHADER_VER << FRAGMENT_PRECISION;
@@ -333,7 +338,7 @@ void AcousticSubdomainLogic::collide_and_stream() {
         // linfo() << "--------- collide_and_stream -----------";
         // lraw() << vs.str();
         // lraw() << fs.str();
-        rp.allocate(vs.str().c_str(), fs.str().c_str());
+        rp.allocate(vs.c_str(), fs.str().c_str());
         rp.inner_directional_velocity = rp.get_uniform_location("inner_directional_velocity");
         rp.inner_radial_velocity = rp.get_uniform_location("inner_radial_velocity");
         rp.inner_min = rp.get_uniform_location("inner_min");
@@ -377,19 +382,31 @@ void AcousticSubdomainLogic::collide_and_stream() {
 void AcousticSubdomainLogic::calculate_skidmark_field() {
     auto& rp = skidmark_render_program_;
     if (!rp.allocated()) {
-        std::stringstream sstr;
-        sstr << SHADER_VER << FRAGMENT_PRECISION;
-        sstr << "out vec3 skidmark_field;" << std::endl;
-        sstr << "in vec2 TexCoords;" << std::endl;
-        sstr << "uniform sampler2D velocity_field;" << std::endl;
-        sstr << "void main() {" << std::endl;
-        sstr << "    vec2 alpha = texture(velocity_field, TexCoords).rg;" << std::endl;
-        sstr << "    vec2 vel = alpha * " << Vel::ISCALE << " + " << Vel::IOFFSET << ';' << std::endl;
-        sstr << "    skidmark_field.rgb = vec3(alpha.x, alpha.y, 50 * length(vel));" << std::endl;
-        sstr << "}" << std::endl;
+        auto vs = diff_vertex_shader();
+
+        std::stringstream fs;
+        fs << SHADER_VER << FRAGMENT_PRECISION;
+        fs << "out vec3 skidmark_field;" << std::endl;
+        fs << "in vec2 TexCoords00;" << std::endl;
+        fs << "in vec2 TexCoords01;" << std::endl;
+        fs << "in vec2 TexCoords10;" << std::endl;
+        fs << "in vec2 TexCoords11;" << std::endl;
+        fs << "uniform sampler2D velocity_field;" << std::endl;
+        fs << "void main() {" << std::endl;
+        // fs << "    vec2 alpha = texture(velocity_field, TexCoords0).rg;" << std::endl;
+        // fs << "    vec2 vel = alpha * " << Vel::ISCALE << " + " << Vel::IOFFSET << ';' << std::endl;
+        // fs << "    skidmark_field.rgb = vec3(0.0, 0.0, 100 * dot(vel, vel));" << std::endl;
+        fs << "    float div =" << std::endl;
+        fs << "        texture(velocity_field, TexCoords01).r -" << std::endl;
+        fs << "        texture(velocity_field, TexCoords00).r +" << std::endl;
+        fs << "        texture(velocity_field, TexCoords11).g -" << std::endl;
+        fs << "        texture(velocity_field, TexCoords10).g;" << std::endl;
+        fs << "    div = div * " << Vel::ISCALE << ';' << std::endl;
+        fs << "    skidmark_field.rgb = vec3(0.0, 0.0, 2 * div + 0.5);" << std::endl;
+        fs << "}" << std::endl;
         // linfo() << "--------- calculate_skidmark_field -----------";
-        // lraw() << sstr.str();
-        rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
+        // lraw() << fs.str();
+        rp.allocate(vs.c_str(), fs.str().c_str());
         rp.velocity_field = rp.get_uniform_location("velocity_field");
     }
     rp.use();

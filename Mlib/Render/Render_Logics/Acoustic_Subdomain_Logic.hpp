@@ -104,6 +104,7 @@ public:
 
     DestructionFunctionsRemovalTokens on_skidmark_node_clear;
 private:
+    std::string diff_vertex_shader() const;
     void iterate(const FixedArray<float, 2>& offset);
     void apply_offset(const FixedArray<float, 2>& offset);
     void initialize_velocity_fields();
