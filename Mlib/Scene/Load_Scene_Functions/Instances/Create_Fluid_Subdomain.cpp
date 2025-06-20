@@ -1,6 +1,7 @@
 #include "Create_Fluid_Subdomain.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box_Json.hpp>
+#include <Mlib/Geometry/Intersection/Interval_Json.hpp>
 #include <Mlib/Json/Chrono.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -34,6 +35,7 @@ DECLARE_ARGUMENT(time_relaxation_constant);
 DECLARE_ARGUMENT(density_normalization);
 DECLARE_ARGUMENT(reference_inner_velocity);
 DECLARE_ARGUMENT(maximum_inner_velocity);
+DECLARE_ARGUMENT(visual_density);
 }
 
 CreateFluidSubdomain::CreateFluidSubdomain(RenderableScene& renderable_scene) 
@@ -65,7 +67,8 @@ void CreateFluidSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::time_relaxation_constant, 0.55f),
         args.arguments.at<float>(KnownArgs::density_normalization, 0.99f),
         args.arguments.at<float>(KnownArgs::reference_inner_velocity, 50.f) * kph,
-        args.arguments.at<float>(KnownArgs::maximum_inner_velocity, 0.2f));
+        args.arguments.at<float>(KnownArgs::maximum_inner_velocity, 0.2f),
+        args.arguments.at<Interval<float>>(KnownArgs::visual_density, Interval<float>{0.7f, 1.3f}));
     o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { *o, CURRENT_SOURCE_LOCATION },

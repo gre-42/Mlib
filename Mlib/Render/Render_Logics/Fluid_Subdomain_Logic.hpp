@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
@@ -65,6 +66,7 @@ struct FluidSkidmarkRenderProgram: public RenderProgram {
 public:
     FluidSkidmarkRenderProgram();
     ~FluidSkidmarkRenderProgram();
+    Interval<GLint> visual_density = { -1, -1 };
     GLint density_and_velocity_field = -1;
 };
 
@@ -84,7 +86,8 @@ public:
         float time_relaxation_constant = 0.55f,
         float density_normalization = 0.99f,
         float reference_inner_directional_velocity = 50 * kph,
-        float maximum_inner_velocity = 0.2f);
+        float maximum_inner_velocity = 0.2f,
+        const Interval<float>& visual_density = {0.7f, 1.3f});
     virtual ~FluidSubdomainLogic();
 
     virtual void render_moving_node(
@@ -138,6 +141,7 @@ private:
     float density_normalization_;
     float reference_inner_directional_velocity_;
     float maximum_inner_velocity_;
+    Interval<float> visual_density_;
     DeallocationToken deallocation_token_;
 };
 

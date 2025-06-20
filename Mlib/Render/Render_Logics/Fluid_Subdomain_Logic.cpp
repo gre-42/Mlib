@@ -66,7 +66,8 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     float time_relaxation_constant,
     float density_normalization,
     float reference_inner_directional_velocity,
-    float maximum_inner_velocity)
+    float maximum_inner_velocity,
+    const Interval<float>& visual_density)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , collide_render_programs_{ uninitialized }
@@ -89,6 +90,7 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     , density_normalization_{ density_normalization }
     , reference_inner_directional_velocity_{ reference_inner_directional_velocity }
     , maximum_inner_velocity_{ maximum_inner_velocity }
+    , visual_density_{ visual_density }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
 
@@ -421,15 +423,20 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
         sstr << SHADER_VER << FRAGMENT_PRECISION;
         sstr << "out vec3 skidmark_field;" << std::endl;
         sstr << "in vec2 TexCoords;" << std::endl;
+        sstr << "uniform float min_density;" << std::endl;
+        sstr << "uniform float max_density;" << std::endl;
         sstr << "uniform sampler2D density_and_velocity_field;" << std::endl;
         sstr << "void main() {" << std::endl;
-        sstr << "    float alpha = clamp((texture(density_and_velocity_field, TexCoords).r * " << Dens::ISCALE << " - 0.7) / 0.6, 0.0, 1.0);" << std::endl;
+        sstr << "    float alpha = clamp((texture(density_and_velocity_field, TexCoords).r * " <<
+            Dens::ISCALE << " - min_density) / (max_density - min_density), 0.0, 1.0);" << std::endl;
         // sstr << "    float alpha = texture(density_and_velocity_field, TexCoords).r;" << std::endl;
         sstr << "    skidmark_field.rgb = vec3(0, 1 - alpha, alpha);" << std::endl;
         sstr << "}" << std::endl;
         // linfo() << "--------- calculate_skidmark_field -----------";
         // lraw() << sstr.str();
         rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
+        rp.visual_density.min = rp.get_uniform_location("min_density");
+        rp.visual_density.max = rp.get_uniform_location("max_density");
         rp.density_and_velocity_field = rp.get_uniform_location("density_and_velocity_field");
     }
     rp.use();
@@ -437,6 +444,8 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
     RenderToFrameBufferGuard rfg{ skidmark_field_ };
 
     notify_rendering(CURRENT_SOURCE_LOCATION);
+    CHK(glUniform1f(rp.visual_density.min, visual_density_.min));
+    CHK(glUniform1f(rp.visual_density.max, visual_density_.max));
     TextureBinder tb;
     tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color());
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
