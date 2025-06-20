@@ -5,16 +5,18 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 ContactSmokeGenerator::ContactSmokeGenerator(
     SmokeParticleGenerator& air_smoke_particle_generator,
-    SmokeParticleGenerator& skidmark_smoke_particle_generator)
+    SmokeParticleGenerator& skidmark_smoke_particle_generator,
+    SmokeParticleGenerator& sea_wave_smoke_particle_generator)
     : air_smoke_particle_generator_{ air_smoke_particle_generator }
     , skidmark_smoke_particle_generator_{ skidmark_smoke_particle_generator }
+    , sea_wave_smoke_particle_generator_{ sea_wave_smoke_particle_generator }
 {}
 
 ContactSmokeGenerator::~ContactSmokeGenerator() {
@@ -70,11 +72,13 @@ void ContactSmokeGenerator::notify_contact(
         std::pair<size_t, size_t> key{ c.tire_id1, i };
         if (auto tstgit = tstg.find(key); tstgit == tstg.end()) {
             auto& pgen = [&]() -> SmokeParticleGenerator& {
-                switch (smoke_info.particle.substrate) {
-                    case ParticleSubstrate::AIR: return air_smoke_particle_generator_;
-                    case ParticleSubstrate::SKIDMARK: return skidmark_smoke_particle_generator_;
+                switch (smoke_info.particle.type) {
+                    case ParticleType::SMOKE: return air_smoke_particle_generator_;
+                    case ParticleType::SKIDMARK: return skidmark_smoke_particle_generator_;
+                    case ParticleType::WATER_WAVE: THROW_OR_ABORT("Water waves do not require a contact smoke generator");
+                    case ParticleType::SEA_SPRAY: return sea_wave_smoke_particle_generator_;
                 };
-                THROW_OR_ABORT("Unknoen particle substrate");
+                THROW_OR_ABORT("Unknoen particle type");
             }();
             if (!tstg.try_emplace(key, pgen).second)
             {
@@ -98,7 +102,7 @@ void ContactSmokeGenerator::notify_contact(
             smoke_info.particle,
             1.f / f,
             smoke_info.smoke_particle_instance_prefix,
-            ParticleType::INSTANCE);
+            ParticleContainer::INSTANCE);
     }
 }
 

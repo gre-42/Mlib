@@ -405,7 +405,8 @@ void AcousticSubdomainLogic::calculate_skidmark_field() {
         fs << "        texture(velocity_field, TexCoords11).g -" << std::endl;
         fs << "        texture(velocity_field, TexCoords10).g;" << std::endl;
         fs << "    div = div * " << Vel::ISCALE << ';' << std::endl;
-        fs << "    skidmark_field.rgb = vec3(0.0, 0.0, skidmark_strength * div + 0.5);" << std::endl;
+        fs << "    float color = skidmark_strength * div + 0.5;" << std::endl;
+        fs << "    skidmark_field.rgb = vec3(color, color, color);" << std::endl;
         fs << "}" << std::endl;
         // linfo() << "--------- calculate_skidmark_field -----------";
         // lraw() << fs.str();

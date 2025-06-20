@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -48,6 +49,7 @@ void CreateFluidSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
     auto node = scene.get_node(node_name, DP_LOC);
     auto skidmark = std::make_shared<Skidmark>(Skidmark{
+        .particle_type = ParticleType::WATER_WAVE,
         .texture = nullptr,
         .vp = fixed_nans<ScenePos, 4, 4>()
         });

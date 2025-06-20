@@ -17,7 +17,7 @@
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -121,7 +121,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         if (engine_exhausts->empty()) {
             THROW_OR_ABORT("Engine exhaust array is empty");
         }
-        auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleSubstrate::AIR);
+        auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE);
         node->add_renderable(
             VariableAndHash<std::string>{"exhaust_particles"},
             particle_renderer);

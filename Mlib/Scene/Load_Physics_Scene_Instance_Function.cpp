@@ -13,6 +13,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(PhysicsScene&
     , particle_resources{ physics_scene.particle_resources_ }
     , air_particles{ physics_scene.air_particles_ }
     , skidmark_particles{ physics_scene.skidmark_particles_ }
+    , sea_spray_particles{ physics_scene.sea_spray_particles_ }
     , trail_renderer{ *physics_scene.trail_renderer_ }
     , dynamic_lights{ *physics_scene.dynamic_lights_ }
     , vehicle_spawners{ physics_scene.vehicle_spawners_ }

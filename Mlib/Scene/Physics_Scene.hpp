@@ -96,6 +96,7 @@ public:
     Scene scene_;
     SceneParticles air_particles_;
     SceneParticles skidmark_particles_;
+    SceneParticles sea_spray_particles_;
     ContactSmokeGenerator contact_smoke_generator_;
     std::function<bool()> paused_;
     EventEmitter paused_changed_;

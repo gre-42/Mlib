@@ -51,6 +51,7 @@
 #include <Mlib/Scene_Graph/Instantiation/IInstantiation_Reference.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -1649,8 +1650,32 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (!skidmarks.empty()) {
         sstr << "    vec3 skidmark_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
-        for (const auto& [i, _]: enumerate(skidmarks)) {
-            sstr << "    skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
+        sstr << "    vec3 water_wave_fac = vec3(0.0, 0.0, 0.0);" << std::endl;
+        sstr << "    vec3 sea_spray_color = vec3(0.0, 0.0, 0.0);" << std::endl;
+        size_t nwater_waves = 0;
+        for (const auto& [i, s]: enumerate(skidmarks)) {
+            [&](){
+                switch (s.second->particle_type) {
+                case ParticleType::SMOKE:
+                    THROW_OR_ABORT("Smoke does not require a skidmark");
+                case ParticleType::SKIDMARK:
+                    sstr << "    skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
+                    return;
+                case ParticleType::WATER_WAVE:
+                    sstr << "    water_wave_fac += texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb;" << std::endl;
+                    ++nwater_waves;
+                    return;
+                case ParticleType::SEA_SPRAY:
+                    sstr << "    sea_spray_color = max(sea_spray_color, texture(texture_skidmarks[" << i << "], proj_coords01_skidmarks[" << i << "]).rgb);" << std::endl;
+                    return;
+                }
+                THROW_OR_ABORT("Unknown particle type");
+            }();
+        }
+        if (nwater_waves == 0) {
+            sstr << "    water_wave_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
+        } else {
+            sstr << "    water_wave_fac *= 2.0 / " << nwater_waves << ".0;" << std::endl;
         }
     }
     if (has_lightmap_depth && !light_shadow_indices.empty()) {
@@ -1769,8 +1794,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_brightness_emissive_ambient_diffuse += dynamic_emissive;" << std::endl;
     }
     if (!skidmarks.empty()) {
-        sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac;" << std::endl;
-        sstr << "    frag_brightness_specular *= skidmark_fac;" << std::endl;
+        sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac * water_wave_fac;" << std::endl;
+        sstr << "    frag_brightness_specular *= skidmark_fac * water_wave_fac;" << std::endl;
+        sstr << "    frag_brightness_emissive_ambient_diffuse = max(frag_brightness_emissive_ambient_diffuse, sea_spray_color);" << std::endl;
     }
     if (textures_color.empty() && has_dirtmap) {
         THROW_OR_ABORT("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");

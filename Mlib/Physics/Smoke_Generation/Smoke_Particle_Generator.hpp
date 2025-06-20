@@ -17,7 +17,7 @@ class IParticleRenderer;
 template <class T>
 class VariableAndHash;
 
-enum class ParticleType {
+enum class ParticleContainer {
     NODE,
     INSTANCE
 };
@@ -37,7 +37,7 @@ public:
         const FixedArray<float, 3>& velocity,
         float air_resistance,
         float animation_duration,
-        ParticleType particle_type);
+        ParticleContainer particle_container);
     void generate_child(
         DanglingRef<SceneNode> parent,
         const VariableAndHash<std::string>& resource_name,

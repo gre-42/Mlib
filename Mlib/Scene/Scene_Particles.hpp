@@ -11,7 +11,7 @@ class Scene;
 class ParticleResources;
 template <class T>
 class VariableAndHash;
-enum class ParticleSubstrate;
+enum class ParticleType;
 
 struct SceneParticles {
     SceneParticles(
@@ -20,7 +20,7 @@ struct SceneParticles {
         ParticleResources& particle_resources,
         Scene& scene,
         const VariableAndHash<std::string>& node_name,
-        ParticleSubstrate substrate);
+        ParticleType particle_type);
     ~SceneParticles();
     std::shared_ptr<IParticleRenderer> particle_renderer;
     SmokeParticleGenerator smoke_particle_generator;

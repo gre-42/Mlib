@@ -43,6 +43,7 @@
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -1247,8 +1248,31 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-        float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
-        CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
+        [&](){
+            switch (s.second->particle_type) {
+            case ParticleType::SMOKE:
+                THROW_OR_ABORT("Smoke particles do not require a skidmark texture");
+            case ParticleType::SKIDMARK:
+                {
+                    float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
+                    CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
+                    return;
+                }
+            case ParticleType::WATER_WAVE:
+                {
+                    float borderColor[] = { 0.5f, 0.5f, 0.5f, 1.f};
+                    CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
+                    return;
+                }
+            case ParticleType::SEA_SPRAY:
+                {
+                    float borderColor[] = { 0.f, 0.f, 0.f, 1.f};
+                    CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
+                    return;
+                }
+            }
+            THROW_OR_ABORT("Unknown particle type");
+        }();
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {

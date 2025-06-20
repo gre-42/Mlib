@@ -4,7 +4,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 
 using namespace Mlib;
 
@@ -14,12 +14,13 @@ SceneParticles::SceneParticles(
     ParticleResources& particle_resources,
     Scene& scene,
     const VariableAndHash<std::string>& node_name,
-    ParticleSubstrate substrate)
-    : particle_renderer{ std::make_shared<ParticleRenderer>(particle_resources, substrate) }
+    ParticleType particle_type)
+    : particle_renderer{ std::make_shared<ParticleRenderer>(particle_resources, particle_type) }
     , smoke_particle_generator{ rendering_resources, scene_node_resources, *particle_renderer, scene }
 {
-    switch (substrate) {
-        case ParticleSubstrate::AIR: {
+    switch (particle_type) {
+        case ParticleType::SMOKE:
+        case ParticleType::SEA_SPRAY: {
             auto node = make_unique_scene_node(PoseInterpolationMode::DISABLED);
             node->add_renderable(
                 VariableAndHash<std::string>{ "particles" },
@@ -30,10 +31,12 @@ SceneParticles::SceneParticles(
                 RenderingDynamics::STATIC,
                 RenderingStrategies::OBJECT);
         }
-        case ParticleSubstrate::SKIDMARK:
+        case ParticleType::SKIDMARK:
             return;
+        case ParticleType::WATER_WAVE:
+            THROW_OR_ABORT("Water waves do not require scene particles");
     }
-    THROW_OR_ABORT("Unknown particle substrate");
+    THROW_OR_ABORT("Unknown particle type");
 }
 
 SceneParticles::~SceneParticles() = default;

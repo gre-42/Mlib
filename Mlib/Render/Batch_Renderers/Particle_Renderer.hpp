@@ -8,11 +8,11 @@ namespace Mlib {
 
 class ParticleResources;
 class ParticlesInstance;
-enum class ParticleSubstrate;
+enum class ParticleType;
 
 class ParticleRenderer : public IParticleRenderer {
 public:
-    explicit ParticleRenderer(ParticleResources& resources, ParticleSubstrate substrate);
+    explicit ParticleRenderer(ParticleResources& resources, ParticleType particle_type);
     virtual ~ParticleRenderer() override;
 
     // IParticleRenderer
@@ -42,7 +42,7 @@ public:
         const ColorStyle* color_style) const override;
 
 private:
-    ParticleSubstrate substrate_;
+    ParticleType particle_type_;
     ParticleResources& resources_;
     ThreadsafeDefaultMap<std::shared_ptr<ParticlesInstance>> instances_;
     ThreadsafeDefaultMap<std::unique_ptr<IParticleCreator>> instantiators_;

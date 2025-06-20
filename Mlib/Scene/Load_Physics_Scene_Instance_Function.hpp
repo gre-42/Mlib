@@ -55,6 +55,7 @@ protected:
     ParticleResources& particle_resources;
     SceneParticles& air_particles;
     SceneParticles& skidmark_particles;
+    SceneParticles& sea_spray_particles;
     ITrailRenderer& trail_renderer;
     DynamicLights& dynamic_lights;
     VehicleSpawners& vehicle_spawners;

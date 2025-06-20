@@ -33,9 +33,9 @@ void SmokeParticleGenerator::generate_root(
     const FixedArray<float, 3>& velocity,
     float air_resistance,
     float animation_duration,
-    ParticleType particle_type)
+    ParticleContainer particle_container)
 {
-    if (particle_type == ParticleType::NODE) {
+    if (particle_container == ParticleContainer::NODE) {
         auto node = make_unique_scene_node(
             position,
             rotation,
@@ -59,7 +59,7 @@ void SmokeParticleGenerator::generate_root(
                 .interpolation_mode = PoseInterpolationMode::DISABLED,
                 .renderable_resource_filter = RenderableResourceFilter{}});
         scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
-    } else if (particle_type == ParticleType::INSTANCE) {
+    } else if (particle_container == ParticleContainer::INSTANCE) {
         particle_renderer_.get_instantiator(resource_name).add_particle(
             TransformationMatrix<float, ScenePos, 3>{
                 tait_bryan_angles_2_matrix(rotation),

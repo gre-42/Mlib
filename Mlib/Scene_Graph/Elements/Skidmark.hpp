@@ -6,7 +6,10 @@
 
 namespace Mlib {
 
+enum class ParticleType;
+
 struct Skidmark {
+    ParticleType particle_type;
     std::shared_ptr<ITextureHandle> texture;
     FixedArray<ScenePos, 4, 4> vp;
     size_t shading_hash() const;

@@ -23,7 +23,7 @@ void ParticleTrailGenerator::maybe_generate(
     const ParticleDescriptor& trail,
     float particle_generation_dt,
     const std::string& instance_prefix,
-    ParticleType particle_type)
+    ParticleContainer particle_container)
 {
     if (trail_lifetime_ > particle_generation_dt) {
         trail_lifetime_ = 0.f;
@@ -35,6 +35,6 @@ void ParticleTrailGenerator::maybe_generate(
             velocity,
             trail.air_resistance,
             trail.animation_duration,
-            particle_type);
+            particle_container);
     }
 }

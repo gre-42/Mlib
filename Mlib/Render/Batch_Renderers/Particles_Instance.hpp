@@ -22,7 +22,7 @@ struct Skidmark;
 struct SceneGraphConfig;
 struct RenderConfig;
 struct RenderedSceneDescriptor;
-enum class ParticleSubstrate;
+enum class ParticleType;
 struct StaticWorld;
 
 class ParticlesInstance {
@@ -34,10 +34,10 @@ public:
         const std::shared_ptr<ColoredVertexArray<float>>& triangles,
         size_t max_num_instances,
         const RenderableResourceFilter& filter,
-        ParticleSubstrate substrate);
+        ParticleType particle_type);
     ~ParticlesInstance();
 
-    ParticleSubstrate substrate() const;
+    ParticleType particle_type() const;
 
     size_t num_billboard_atlas_components() const;
 
@@ -66,7 +66,7 @@ private:
     std::shared_ptr<ColoredVertexArrayResource> cvar_;
     std::unique_ptr<RenderableColoredVertexArray> rcva_;
     RenderableResourceFilter filter_;
-    ParticleSubstrate substrate_;
+    ParticleType particle_type_;
     mutable FastMutex mutex_;
 };
 

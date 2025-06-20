@@ -7,15 +7,17 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Clear_On_Update.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
 
-static ClearOnUpdate get_clear_on_update(ParticleSubstrate substrate) {
-    switch (substrate) {
-        case ParticleSubstrate::AIR: return ClearOnUpdate::NO;
-        case ParticleSubstrate::SKIDMARK: return ClearOnUpdate::YES;
+static ClearOnUpdate get_clear_on_update(ParticleType particle_type) {
+    switch (particle_type) {
+        case ParticleType::SMOKE: return ClearOnUpdate::NO;
+        case ParticleType::SKIDMARK: return ClearOnUpdate::YES;
+        case ParticleType::WATER_WAVE: THROW_OR_ABORT("Water waves do not require a particles instance");
+        case ParticleType::SEA_SPRAY: return ClearOnUpdate::YES;
     }
     THROW_OR_ABORT("Unknown particle substrate");
 }
@@ -24,24 +26,24 @@ ParticlesInstance::ParticlesInstance(
     const std::shared_ptr<ColoredVertexArray<float>>& triangles,
     size_t max_num_instances,
     const RenderableResourceFilter& filter,
-    ParticleSubstrate substrate)
+    ParticleType particle_type)
     : offset_((ScenePos)NAN)
     , dynamic_instance_buffers_{ std::make_shared<DynamicInstanceBuffers>(
         triangles->material.transformation_mode,
         max_num_instances,
         integral_cast<BillboardId>(triangles->material.billboard_atlas_instances.size()),
         get_has_per_instance_continuous_texture_layer(*triangles),
-        get_clear_on_update(substrate)) }
+        get_clear_on_update(particle_type)) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(triangles, dynamic_instance_buffers_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }
     , filter_{ filter }
-    , substrate_{ substrate }
+    , particle_type_{ particle_type }
 {}
 
 ParticlesInstance::~ParticlesInstance() = default;
 
-ParticleSubstrate ParticlesInstance::substrate() const {
-    return substrate_;
+ParticleType ParticlesInstance::particle_type() const {
+    return particle_type_;
 }
 
 size_t ParticlesInstance::num_billboard_atlas_components() const {

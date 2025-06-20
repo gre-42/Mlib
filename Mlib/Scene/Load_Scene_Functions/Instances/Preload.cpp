@@ -12,7 +12,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Thread_Top.hpp>
@@ -69,15 +69,20 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {
                         for (const auto& s : c->smoke_infos) {
-                            switch (s.particle.substrate) {
-                                case ParticleSubstrate::AIR:
+                            switch (s.particle.type) {
+                                case ParticleType::SMOKE:
                                     air_particles.particle_renderer->preload(s.particle.resource_name);
                                     break;
-                                case ParticleSubstrate::SKIDMARK:
+                                case ParticleType::SKIDMARK:
                                     skidmark_particles.particle_renderer->preload(s.particle.resource_name);
                                     break;
+                                case ParticleType::WATER_WAVE:
+                                    THROW_OR_ABORT("Water waves do not require particle preloading");
+                                case ParticleType::SEA_SPRAY:
+                                    sea_spray_particles.particle_renderer->preload(s.particle.resource_name);
+                                    break;
                                 default:
-                                    THROW_OR_ABORT("Unknown substrate: " + std::to_string((int)s.particle.substrate));
+                                    THROW_OR_ABORT("Unknown particle type: " + std::to_string((int)s.particle.type));
                             }
                         }
                         // RenderingContextStack::primary_scene_node_resources().preload_single(

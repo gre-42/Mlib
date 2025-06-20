@@ -4,7 +4,7 @@
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <mutex>
 
@@ -12,15 +12,15 @@ using namespace Mlib;
 
 ParticleRenderer::ParticleRenderer(
     ParticleResources& resources,
-    ParticleSubstrate substrate)
-    : substrate_{ substrate }
+    ParticleType particle_type)
+    : particle_type_{ particle_type }
     , resources_{ resources }
-    , instances_{ [&resources, substrate](const VariableAndHash<std::string>& name) {
+    , instances_{ [&resources, particle_type](const VariableAndHash<std::string>& name) {
         auto res = resources.instantiate_particles_instance(name);
-        if (res->substrate() != substrate) {
+        if (res->particle_type() != particle_type) {
             THROW_OR_ABORT(
-                "Particle with substrate \"" + particle_substrate_to_string(res->substrate()) +
-                "\" instantiated by \"" + particle_substrate_to_string(substrate) + '"');
+                "Particle with type \"" + particle_type_to_string(res->particle_type()) +
+                "\" instantiated by \"" + particle_type_to_string(particle_type) + '"');
         }
         return res;
       } }
@@ -79,10 +79,10 @@ void ParticleRenderer::render(
     const ColorStyle* color_style) const
 {
     for (const auto& [_, instance] : instances_.shared()) {
-        if (instance->substrate() != substrate_) {
+        if (instance->particle_type() != particle_type_) {
             THROW_OR_ABORT(
-                "Particle with substrate \"" + particle_substrate_to_string(instance->substrate()) +
-                "\" rendered by \"" + particle_substrate_to_string(substrate_) + '"');
+                "Particle with substrate \"" + particle_type_to_string(instance->particle_type()) +
+                "\" rendered by \"" + particle_type_to_string(particle_type_) + '"');
         }
         instance->render(
             mvp,

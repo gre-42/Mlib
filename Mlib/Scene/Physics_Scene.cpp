@@ -5,7 +5,7 @@
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 
 using namespace Mlib;
 
@@ -54,17 +54,25 @@ PhysicsScene::PhysicsScene(
         particle_resources,
         scene_,
         VariableAndHash<std::string>{ "global_air_particles" },
-        ParticleSubstrate::AIR}
+        ParticleType::SMOKE}
     , skidmark_particles_{
         scene_node_resources,
         rendering_resources_,
         particle_resources,
         scene_,
         VariableAndHash<std::string>{ "global_skidmark_particles" },
-        ParticleSubstrate::SKIDMARK}
+        ParticleType::SKIDMARK}
+    , sea_spray_particles_{
+        scene_node_resources,
+        rendering_resources_,
+        particle_resources,
+        scene_,
+        VariableAndHash<std::string>{ "global_sea_spray_particles" },
+        ParticleType::SEA_SPRAY}
     , contact_smoke_generator_{
         air_particles_.smoke_particle_generator,
-        skidmark_particles_.smoke_particle_generator }
+        skidmark_particles_.smoke_particle_generator,
+        sea_spray_particles_.smoke_particle_generator }
     , paused_{ [this]() {
         return (usage_counter_.count() == 0);
       } }

@@ -44,7 +44,7 @@ void EngineExhaust::notify_rotation(
             particle_.particle,
             particle_.generation_dt,
             "exhaust",
-            ParticleType::INSTANCE);
+            ParticleContainer::INSTANCE);
     }
 }
 

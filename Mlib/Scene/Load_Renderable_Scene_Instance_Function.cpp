@@ -12,6 +12,7 @@ LoadRenderableSceneInstanceFunction::LoadRenderableSceneInstanceFunction(Rendera
     , particle_resources{ renderable_scene.physics_scene_->particle_resources_ }
     , air_particles{ renderable_scene.physics_scene_->air_particles_ }
     , skidmark_particles{ renderable_scene.physics_scene_->skidmark_particles_ }
+    , sea_spray_particles{ renderable_scene.physics_scene_->sea_spray_particles_ }
     , trail_renderer{ *renderable_scene.physics_scene_->trail_renderer_ }
     , dynamic_lights{ *renderable_scene.physics_scene_->dynamic_lights_ }
     , vehicle_spawners{ renderable_scene.physics_scene_->vehicle_spawners_ }

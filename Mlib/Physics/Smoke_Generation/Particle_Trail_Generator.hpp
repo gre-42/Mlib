@@ -10,7 +10,7 @@ struct ParticleDescriptor;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class SmokeParticleGenerator;
-enum class ParticleType;
+enum class ParticleContainer;
 template <class T>
 class VariableAndHash;
 
@@ -26,7 +26,7 @@ public:
         const ParticleDescriptor& trail,
         float particle_generation_dt,
         const std::string& instance_prefix,
-        ParticleType particle_type);
+        ParticleContainer particle_container);
 private:
     SmokeParticleGenerator& smoke_generator_;
     float trail_lifetime_;

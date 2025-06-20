@@ -5,13 +5,13 @@
 
 namespace Mlib {
 
-enum class ParticleSubstrate;
+enum class ParticleType;
 
 struct ParticleDescriptor {
     VariableAndHash<std::string> resource_name;
     float air_resistance;
     float animation_duration;
-    ParticleSubstrate substrate;
+    ParticleType type;
 };
 
 void from_json(const nlohmann::json& j, ParticleDescriptor& item);
