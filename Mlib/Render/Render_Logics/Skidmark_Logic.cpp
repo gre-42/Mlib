@@ -1,5 +1,6 @@
 #include "Skidmark_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
@@ -87,7 +88,21 @@ void SkidmarkLogic::render_moving_node(
         RenderToFrameBufferGuard rfg{ fbs_(new_fbs_id) };
         {
             ViewportGuard vg{ texture_width_, texture_height_ };
-            clear_color({ 1.f, 1.f, 1.f, 1.f });
+            [&](){
+                switch (skidmark_->particle_type) {
+                case ParticleType::SMOKE:
+                    THROW_OR_ABORT("Smoke does not require a skidmark logic");
+                case ParticleType::SKIDMARK:
+                    clear_color({ 1.f, 1.f, 1.f, 1.f });
+                    return;
+                case ParticleType::WATER_WAVE:
+                    THROW_OR_ABORT("Water wave does not require a skidmark logic");
+                case ParticleType::SEA_SPRAY:
+                    clear_color({ 0.f, 0.f, 0.f, 1.f });
+                    return;
+                }
+                THROW_OR_ABORT("Unknown particle type");
+            }();
         }
         if (fbs_(old_fbs_id_) != nullptr) {
             assert_true(offset.has_value());

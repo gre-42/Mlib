@@ -53,21 +53,21 @@ PhysicsScene::PhysicsScene(
         rendering_resources_,
         particle_resources,
         scene_,
-        VariableAndHash<std::string>{ "global_air_particles" },
+        VariableAndHash<std::string>{ "global_air_particles" }, // node name
         ParticleType::SMOKE}
     , skidmark_particles_{
         scene_node_resources,
         rendering_resources_,
         particle_resources,
         scene_,
-        VariableAndHash<std::string>{ "global_skidmark_particles" },
+        VariableAndHash<std::string>{}, // node name
         ParticleType::SKIDMARK}
     , sea_spray_particles_{
         scene_node_resources,
         rendering_resources_,
         particle_resources,
         scene_,
-        VariableAndHash<std::string>{ "global_sea_spray_particles" },
+        VariableAndHash<std::string>{}, // node name
         ParticleType::SEA_SPRAY}
     , contact_smoke_generator_{
         air_particles_.smoke_particle_generator,

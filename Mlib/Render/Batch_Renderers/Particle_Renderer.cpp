@@ -15,19 +15,20 @@ ParticleRenderer::ParticleRenderer(
     ParticleType particle_type)
     : particle_type_{ particle_type }
     , resources_{ resources }
-    , instances_{ [&resources, particle_type](const VariableAndHash<std::string>& name) {
-        auto res = resources.instantiate_particles_instance(name);
-        if (res->particle_type() != particle_type) {
+    , instances_{ [this](const VariableAndHash<std::string>& name) {
+        auto res = resources_.instantiate_particles_instance(name);
+        if (res->particle_type() != particle_type_) {
             THROW_OR_ABORT(
+                "Error instantiating \"" + *name + "\": "
                 "Particle with type \"" + particle_type_to_string(res->particle_type()) +
-                "\" instantiated by \"" + particle_type_to_string(particle_type) + '"');
+                "\" instantiated by \"" + particle_type_to_string(particle_type_) + '"');
         }
         return res;
       } }
-    , instantiators_{ [this, &resources](const VariableAndHash<std::string>& name) {
-        return resources.instantiate_particle_creator(
+    , instantiators_{ [this](const VariableAndHash<std::string>& name) {
+        return resources_.instantiate_particle_creator(
             name,
-            *instances_.get(resources.get_instance_for_creator(name)));
+            *instances_.get(resources_.get_instance_for_creator(name)));
       } }
 {}
 

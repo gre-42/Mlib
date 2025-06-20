@@ -20,7 +20,10 @@ SceneParticles::SceneParticles(
 {
     switch (particle_type) {
         case ParticleType::SMOKE:
-        case ParticleType::SEA_SPRAY: {
+        {
+            if (node_name->empty()) {
+                THROW_OR_ABORT("Smoke particles require a node name");
+            }
             auto node = make_unique_scene_node(PoseInterpolationMode::DISABLED);
             node->add_renderable(
                 VariableAndHash<std::string>{ "particles" },
@@ -30,8 +33,13 @@ SceneParticles::SceneParticles(
                 std::move(node),
                 RenderingDynamics::STATIC,
                 RenderingStrategies::OBJECT);
+            return;
         }
         case ParticleType::SKIDMARK:
+        case ParticleType::SEA_SPRAY:
+            if (!node_name->empty()) {
+                THROW_OR_ABORT("Skidmark and sea spray particles do not require a node name");
+            }
             return;
         case ParticleType::WATER_WAVE:
             THROW_OR_ABORT("Water waves do not require scene particles");
