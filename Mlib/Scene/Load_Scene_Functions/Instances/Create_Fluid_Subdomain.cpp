@@ -24,7 +24,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(texture_width);
 DECLARE_ARGUMENT(texture_height);
-DECLARE_ARGUMENT(velocity_vector);
+DECLARE_ARGUMENT(directional_velocity);
+DECLARE_ARGUMENT(radial_velocity);
 DECLARE_ARGUMENT(velocity_region);
 DECLARE_ARGUMENT(angular_velocity);
 DECLARE_ARGUMENT(velocity_dt);
@@ -52,7 +53,8 @@ void CreateFluidSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION,
         node,
         skidmark,
-        args.arguments.at<UFixedArray<SceneDir, 2>>(KnownArgs::velocity_vector),
+        args.arguments.at<UFixedArray<SceneDir, 2>>(KnownArgs::directional_velocity),
+        args.arguments.at<float>(KnownArgs::radial_velocity),
         args.arguments.at<float>(KnownArgs::angular_velocity) * degrees,
         args.arguments.at<DefaultUnitialized<AxisAlignedBoundingBox<float, 2>>>(KnownArgs::velocity_region),
         args.arguments.at<int>(KnownArgs::texture_width),

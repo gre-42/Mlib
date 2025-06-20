@@ -55,7 +55,8 @@ FluidSkidmarkRenderProgram::~FluidSkidmarkRenderProgram() = default;
 FluidSubdomainLogic::FluidSubdomainLogic(
     DanglingRef<SceneNode> skidmark_node,
     std::shared_ptr<Skidmark> skidmark,
-    const FixedArray<SceneDir, 2>& velocity_vector,
+    const FixedArray<SceneDir, 2>& directional_velocity,
+    float radial_velocity,
     float angular_velocity,
     const AxisAlignedBoundingBox<float, 2>& velocity_region,
     int texture_width,
@@ -64,7 +65,7 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     float speed_of_sound,
     float time_relaxation_constant,
     float density_normalization,
-    float reference_inner_velocity,
+    float reference_inner_directional_velocity,
     float maximum_inner_velocity)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
@@ -73,7 +74,8 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     , good_momentum_magnitude_fields_{ uninitialized }
     , temp_momentum_magnitude_fields_{ uninitialized }
     , skidmark_{ std::move(skidmark) }
-    , velocity_vector_{ velocity_vector }
+    , directional_velocity_{ directional_velocity }
+    , radial_velocity_{ radial_velocity }
     , angular_velocity_{ angular_velocity }
     , angle_{ 0.f }
     , velocity_region_{ velocity_region }
@@ -85,7 +87,7 @@ FluidSubdomainLogic::FluidSubdomainLogic(
     , speed_of_sound4_{ squared(speed_of_sound2_) }
     , time_relaxation_constant_{ time_relaxation_constant }
     , density_normalization_{ density_normalization }
-    , reference_inner_velocity_{ reference_inner_velocity }
+    , reference_inner_directional_velocity_{ reference_inner_directional_velocity }
     , maximum_inner_velocity_{ maximum_inner_velocity }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
@@ -122,12 +124,12 @@ void FluidSubdomainLogic::render_moving_node(
         auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_);
         auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
         auto l = std::sqrt(sum(squared(v2)));
-        if (l > reference_inner_velocity_) {
+        if (l > reference_inner_directional_velocity_) {
             v2 /= l;
         } else {
-            v2 /= reference_inner_velocity_;
+            v2 /= reference_inner_directional_velocity_;
         }
-        set_velocity_vector(v2 * maximum_inner_velocity_);
+        set_directional_velocity(v2 * maximum_inner_velocity_);
     }
     if (density_and_velocity_field_ == nullptr) {
         auto gray_cfg = FrameBufferConfig{
@@ -207,40 +209,50 @@ void FluidSubdomainLogic::initialize_momentum_magnitude_fields() {
 void FluidSubdomainLogic::calculate_macroscopic_variables() {
     auto& rp = macroscopic_render_program_;
     if (!rp.allocated()) {
-        std::stringstream sstr;
-        sstr << SHADER_VER << FRAGMENT_PRECISION;
-        sstr << "out vec3 density_and_velocity_field;" << std::endl;
-        sstr << "in vec2 TexCoords;" << std::endl;
-        sstr << "uniform vec2 inner_velocity;" << std::endl;
-        sstr << "uniform vec2 inner_min;" << std::endl;
-        sstr << "uniform vec2 inner_max;" << std::endl;
+        std::stringstream fs;
+        fs << SHADER_VER << FRAGMENT_PRECISION;
+        fs << "out vec3 density_and_velocity_field;" << std::endl;
+        fs << "in vec2 TexCoords;" << std::endl;
+        fs << "uniform vec2 inner_directional_velocity;" << std::endl;
+        fs << "uniform float inner_radial_velocity;" << std::endl;
+        fs << "uniform vec2 inner_min;" << std::endl;
+        fs << "uniform vec2 inner_max;" << std::endl;
+        fs << "uniform vec2 inner_center;" << std::endl;
         for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-            sstr << "uniform sampler2D good_momentum_magnitude_field" << v << ';' << std::endl;
+            fs << "uniform sampler2D good_momentum_magnitude_field" << v << ';' << std::endl;
         }
-        sstr << "void main() {" << std::endl;
-        sstr << "    float dens = 0.0;" << std::endl;
-        sstr << "    vec2 mv = vec2(0.0, 0.0);" << std::endl;
+        fs << "void main() {" << std::endl;
+        fs << "    vec2 radial_vector = TexCoords - inner_center;" << std::endl;
+        fs << "    float rlen = length(radial_vector);" << std::endl;
+        fs << "    float dens = 0.0;" << std::endl;
+        fs << "    vec2 mv = vec2(0.0, 0.0);" << std::endl;
         for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
             const auto& dir = FluidDomainLbmModel::discrete_velocity_directions[v];
-            sstr << "    {" << std::endl;
-            sstr << "        float m = texture(good_momentum_magnitude_field" << v << ", TexCoords).r;" << std::endl;
-            sstr << "        dens += m;" << std::endl;
-            sstr << "        mv += m * vec2(" << dir(0) << ", " << dir(1) << ");" << std::endl;
-            sstr << "    }" << std::endl;
+            fs << "    {" << std::endl;
+            fs << "        float m = texture(good_momentum_magnitude_field" << v << ", TexCoords).r;" << std::endl;
+            fs << "        dens += m;" << std::endl;
+            fs << "        mv += m * vec2(" << dir(0) << ", " << dir(1) << ");" << std::endl;
+            fs << "    }" << std::endl;
         }
-        sstr << "    density_and_velocity_field.x = (1 + (dens - 1) * " << density_normalization_ << ") * " << Dens::SCALE << ';' << std::endl;
-        sstr << "    if (all(greaterThan(TexCoords, inner_min)) && all(lessThan(TexCoords, inner_max))) {" << std::endl;
-        sstr << "        density_and_velocity_field.yz = inner_velocity * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
-        sstr << "    } else {" << std::endl;
-        sstr << "        density_and_velocity_field.yz = mv / dens * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
-        sstr << "    }" << std::endl;
-        sstr << "}" << std::endl;
+        fs << "    density_and_velocity_field.x = (1 + (dens - 1) * " << density_normalization_ << ") * " << Dens::SCALE << ';' << std::endl;
+        fs << "    if (all(greaterThan(TexCoords, inner_min)) && all(lessThan(TexCoords, inner_max))) {" << std::endl;
+        fs << "        vec2 inner_velocity = inner_directional_velocity;" << std::endl;
+        fs << "        if (rlen > 1e-6) {" << std::endl;
+        fs << "            inner_velocity += (inner_radial_velocity / rlen) * radial_vector;" << std::endl;
+        fs << "        }" << std::endl;
+        fs << "        density_and_velocity_field.yz = inner_velocity * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
+        fs << "    } else {" << std::endl;
+        fs << "        density_and_velocity_field.yz = mv / dens * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
+        fs << "    }" << std::endl;
+        fs << "}" << std::endl;
         // linfo() << "--------- calculate_macroscopic_variables -----------";
-        // lraw() << sstr.str();
-        rp.allocate(simple_vertex_shader_text_, sstr.str().c_str());
-        rp.inner_velocity = rp.get_uniform_location("inner_velocity");
+        // lraw() << fs.str();
+        rp.allocate(simple_vertex_shader_text_, fs.str().c_str());
+        rp.inner_directional_velocity = rp.get_uniform_location("inner_directional_velocity");
+        rp.inner_radial_velocity = rp.get_uniform_location("inner_radial_velocity");
         rp.inner_min = rp.get_uniform_location("inner_min");
         rp.inner_max = rp.get_uniform_location("inner_max");
+        rp.inner_center = rp.get_uniform_location("inner_center");
         for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
             rp.good_momentum_magnitude_fields(v) = rp.get_uniform_location(
                 ("good_momentum_magnitude_field" + std::to_string(v)).c_str());
@@ -250,9 +262,11 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     {
         angle_ = std::fmod(angle_ + angular_velocity_, (float)(2 * M_PI));
         std::scoped_lock lock{ velocity_mutex_ };
-        CHK(glUniform2fv(rp.inner_velocity, 1, (velocity_vector_ * std::sin(angle_)).flat_begin()));
+        CHK(glUniform2fv(rp.inner_directional_velocity, 1, directional_velocity_.flat_begin()));
+        CHK(glUniform1f(rp.inner_radial_velocity, radial_velocity_ * std::sin(angle_)));
         CHK(glUniform2fv(rp.inner_min, 1, velocity_region_.min.flat_begin()));
         CHK(glUniform2fv(rp.inner_max, 1, velocity_region_.max.flat_begin()));
+        CHK(glUniform2fv(rp.inner_center, 1, velocity_region_.center().flat_begin()));
     }
     ViewportGuard vg{ texture_width_, texture_height_ };
     RenderToFrameBufferGuard rfg{ density_and_velocity_field_ };
@@ -433,9 +447,14 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
     CHK(glActiveTexture(GL_TEXTURE0));
 }
 
-void FluidSubdomainLogic::set_velocity_vector(const FixedArray<SceneDir, 2>& velocity_vector) {
+void FluidSubdomainLogic::set_directional_velocity(const FixedArray<SceneDir, 2>& directional_velocity) {
     std::scoped_lock lock{ velocity_mutex_ };
-    velocity_vector_ = velocity_vector;
+    directional_velocity_ = directional_velocity;
+}
+
+void FluidSubdomainLogic::set_radial_velocity(SceneDir radial_velocity) {
+    std::scoped_lock lock{ velocity_mutex_ };
+    radial_velocity_ = radial_velocity;
 }
 
 void FluidSubdomainLogic::set_velocity_region(const AxisAlignedBoundingBox<float, 2>& velocity_region) {

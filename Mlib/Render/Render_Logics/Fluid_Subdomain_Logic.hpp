@@ -29,9 +29,11 @@ struct MacroscopicRenderProgram: public RenderProgram {
 public:
     MacroscopicRenderProgram();
     ~MacroscopicRenderProgram();
-    GLint inner_velocity = -1;
+    GLint inner_directional_velocity = -1;
+    GLint inner_radial_velocity = -1;
     GLint inner_min = -1;
     GLint inner_max = -1;
+    GLint inner_center = -1;
     FixedArray<GLint, FluidDomainLbmModel::ndirections> good_momentum_magnitude_fields;
 };
 
@@ -71,7 +73,8 @@ public:
     FluidSubdomainLogic(
         DanglingRef<SceneNode> skidmark_node,
         std::shared_ptr<Skidmark> skidmark,
-        const FixedArray<SceneDir, 2>& velocity_vector,
+        const FixedArray<SceneDir, 2>& directional_velocity,
+        float radial_velocity,
         float angular_velocity,
         const AxisAlignedBoundingBox<float, 2>& velocity_region,
         int texture_width,
@@ -80,7 +83,7 @@ public:
         float speed_of_sound = 1.1f,
         float time_relaxation_constant = 0.55f,
         float density_normalization = 0.99f,
-        float reference_inner_velocity = 50 * kph,
+        float reference_inner_directional_velocity = 50 * kph,
         float maximum_inner_velocity = 0.2f);
     virtual ~FluidSubdomainLogic();
 
@@ -96,7 +99,8 @@ public:
         const std::optional<FixedArray<float, 2>>& offset) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void set_velocity_vector(const FixedArray<SceneDir, 2>& velocity_vector);
+    void set_directional_velocity(const FixedArray<SceneDir, 2>& directional_velocity);
+    void set_radial_velocity(float radial_velocity);
     void set_velocity_region(const AxisAlignedBoundingBox<float, 2>& velocity_region);
     void save_debug_images(const std::string& prefix);
 
@@ -119,7 +123,8 @@ private:
     FluidSkidmarkRenderProgram skidmark_render_program_;
     std::shared_ptr<Skidmark> skidmark_;
     mutable FastMutex velocity_mutex_;
-    FixedArray<SceneDir, 2> velocity_vector_;
+    FixedArray<SceneDir, 2> directional_velocity_;
+    float radial_velocity_;
     float angular_velocity_;
     float angle_;
     AxisAlignedBoundingBox<float, 2> velocity_region_;
@@ -131,7 +136,7 @@ private:
     float speed_of_sound4_;
     float time_relaxation_constant_;
     float density_normalization_;
-    float reference_inner_velocity_;
+    float reference_inner_directional_velocity_;
     float maximum_inner_velocity_;
     DeallocationToken deallocation_token_;
 };
