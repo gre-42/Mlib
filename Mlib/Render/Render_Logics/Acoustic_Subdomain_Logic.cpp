@@ -75,7 +75,8 @@ AcousticSubdomainLogic::AcousticSubdomainLogic(
     float intensity_normalization,
     float reference_inner_directional_velocity,
     float maximum_inner_velocity,
-    const VelocityLimitation& velocity_limitation)
+    const VelocityLimitation& velocity_limitation,
+    float skidmark_strength)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , velocity_fields_{ uninitialized }
@@ -95,6 +96,7 @@ AcousticSubdomainLogic::AcousticSubdomainLogic(
     , reference_inner_directional_velocity_{ reference_inner_directional_velocity }
     , maximum_inner_velocity_{ maximum_inner_velocity }
     , velocity_limitation_{ velocity_limitation }
+    , skidmark_strength_{ skidmark_strength }
     , i012_{ 0 }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
@@ -391,6 +393,7 @@ void AcousticSubdomainLogic::calculate_skidmark_field() {
         fs << "in vec2 TexCoords01;" << std::endl;
         fs << "in vec2 TexCoords10;" << std::endl;
         fs << "in vec2 TexCoords11;" << std::endl;
+        fs << "uniform float skidmark_strength;" << std::endl;
         fs << "uniform sampler2D velocity_field;" << std::endl;
         fs << "void main() {" << std::endl;
         // fs << "    vec2 alpha = texture(velocity_field, TexCoords0).rg;" << std::endl;
@@ -402,11 +405,12 @@ void AcousticSubdomainLogic::calculate_skidmark_field() {
         fs << "        texture(velocity_field, TexCoords11).g -" << std::endl;
         fs << "        texture(velocity_field, TexCoords10).g;" << std::endl;
         fs << "    div = div * " << Vel::ISCALE << ';' << std::endl;
-        fs << "    skidmark_field.rgb = vec3(0.0, 0.0, 2 * div + 0.5);" << std::endl;
+        fs << "    skidmark_field.rgb = vec3(0.0, 0.0, skidmark_strength * div + 0.5);" << std::endl;
         fs << "}" << std::endl;
         // linfo() << "--------- calculate_skidmark_field -----------";
         // lraw() << fs.str();
         rp.allocate(vs.c_str(), fs.str().c_str());
+        rp.skidmark_strength = rp.get_uniform_location("skidmark_strength");
         rp.velocity_field = rp.get_uniform_location("velocity_field");
     }
     rp.use();
@@ -414,6 +418,7 @@ void AcousticSubdomainLogic::calculate_skidmark_field() {
     RenderToFrameBufferGuard rfg{ skidmark_field_ };
 
     notify_rendering(CURRENT_SOURCE_LOCATION);
+    CHK(glUniform1f(rp.skidmark_strength, skidmark_strength_));
     TextureBinder tb;
     tb.bind(rp.velocity_field, *velocity_fields_(i012_)->texture_color());
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));

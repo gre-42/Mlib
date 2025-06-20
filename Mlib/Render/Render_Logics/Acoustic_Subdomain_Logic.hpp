@@ -61,6 +61,7 @@ struct AcousticSkidmarkRenderProgram: public RenderProgram {
 public:
     AcousticSkidmarkRenderProgram();
     ~AcousticSkidmarkRenderProgram();
+    GLint skidmark_strength = -1;
     GLint velocity_field = -1;
 };
 
@@ -82,7 +83,8 @@ public:
         float intensity_normalization = 0.99f,
         float reference_inner_directional_velocity = 50 * kph,
         float maximum_inner_velocity = 0.2f,
-        const VelocityLimitation& velocity_limitation = VelocityLimitation{});
+        const VelocityLimitation& velocity_limitation = VelocityLimitation{},
+        float skidmark_strength = 1.f);
     virtual ~AcousticSubdomainLogic();
 
     virtual void render_moving_node(
@@ -134,6 +136,7 @@ private:
     float reference_inner_directional_velocity_;
     float maximum_inner_velocity_;
     VelocityLimitation velocity_limitation_;
+    float skidmark_strength_;
     size_t i012_;
     DeallocationToken deallocation_token_;
 };
