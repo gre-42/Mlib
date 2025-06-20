@@ -1796,7 +1796,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!skidmarks.empty()) {
         sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac * water_wave_fac;" << std::endl;
         sstr << "    frag_brightness_specular *= skidmark_fac * water_wave_fac;" << std::endl;
-        sstr << "    frag_brightness_emissive_ambient_diffuse = max(frag_brightness_emissive_ambient_diffuse, sea_spray_color);" << std::endl;
     }
     if (textures_color.empty() && has_dirtmap) {
         THROW_OR_ABORT("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
@@ -1821,6 +1820,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color = texture_color_ambient_diffuse * vec4(color, 1.0);" << std::endl;
     } else {
         sstr << "    frag_color = vec4(color, alpha_fac);" << std::endl;
+    }
+    if (!skidmarks.empty()) {
+        sstr << "    frag_color.rgb = max(frag_color.rgb, sea_spray_color);" << std::endl;
     }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
     if ((fresnel.exponent != 0.f) || has_specularmap) {
