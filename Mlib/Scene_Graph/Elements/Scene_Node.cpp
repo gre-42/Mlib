@@ -35,7 +35,7 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Modifier.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IRelative_Movable.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Unlock_Guard.hpp>
@@ -1003,12 +1003,12 @@ void SceneNode::render(
     ListsOfBlended& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass,
+    const RenderedSceneDescriptor& frame_id,
     const std::shared_ptr<const AnimationState>& animation_state,
     const std::list<const ColorStyle*>& color_styles,
     SceneNodeVisibility visibility) const
 {
-    auto child_m = relative_model_matrix(external_render_pass.time);
+    auto child_m = relative_model_matrix(frame_id.external_render_pass.time);
     std::shared_lock lock{ mutex_ };
     if (state_ == SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Cannot render detached node");
@@ -1017,7 +1017,7 @@ void SceneNode::render(
         for (const auto& nh : avail) {
             // Note that the INodeHider may depend on this function being called,
             // so there should not be any additional check above this line.
-            if (nh->node_shall_be_hidden(camera_node, external_render_pass)) {
+            if (nh->node_shall_be_hidden(camera_node, frame_id.external_render_pass)) {
                 visibility = SceneNodeVisibility::INVISIBLE;
             }
         }
@@ -1025,8 +1025,8 @@ void SceneNode::render(
     if (auto avail = node_hiders_.find(nullptr); avail != node_hiders_.end()) {
         visit_node_hider(avail->second);
     }
-    if (external_render_pass.renderable_scene != nullptr) {
-        if (auto avail = node_hiders_.find(external_render_pass.renderable_scene); avail != node_hiders_.end()) {
+    if (frame_id.external_render_pass.renderable_scene != nullptr) {
+        if (auto avail = node_hiders_.find(frame_id.external_render_pass.renderable_scene); avail != node_hiders_.end()) {
             visit_node_hider(avail->second);
         }
     }
@@ -1050,7 +1050,7 @@ void SceneNode::render(
             : dynamic_lights->get_color(m.t) };
         for (const auto& [n, r] : renderables_) {
             OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
-            if ((*r)->requires_render_pass(external_render_pass.pass)) {
+            if ((*r)->requires_render_pass(frame_id.external_render_pass.pass)) {
                 (*r)->render(
                     mvp,
                     m,
@@ -1060,11 +1060,11 @@ void SceneNode::render(
                     skidmarks,
                     scene_graph_config,
                     render_config,
-                    { external_render_pass, InternalRenderPass::INITIAL },
+                    { frame_id, InternalRenderPass::INITIAL },
                     estate.get(),
                     r->style(ecolor_styles, n));
             }
-            auto bp = (*r)->required_blending_passes(external_render_pass.pass);
+            auto bp = (*r)->required_blending_passes(frame_id.external_render_pass.pass);
             if (any(bp & BlendingPassType::EARLY)) {
                 blended.early.list.emplace_back(
                     r,
@@ -1098,7 +1098,7 @@ void SceneNode::render(
             blended,
             render_config,
             scene_graph_config,
-            external_render_pass,
+            frame_id,
             estate,
             ecolor_styles,
             visibility);

@@ -10,11 +10,11 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -110,7 +110,7 @@ void SkidmarkLogic::render_moving_node(
                 skidmarks,
                 scene_graph_config,
                 render_config,
-                { frame_id.external_render_pass, InternalRenderPass::PARTICLES },
+                { frame_id, InternalRenderPass::PARTICLES },
                 nullptr,    // animation_state
                 nullptr);   // color_style
         }

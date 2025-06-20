@@ -12,7 +12,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

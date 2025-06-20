@@ -51,6 +51,7 @@ class IDynamicLights;
 struct Light;
 struct Skidmark;
 enum class ExternalRenderPassType;
+struct RenderedSceneDescriptor;
 struct ExternalRenderPass;
 template <class TPos>
 class ColoredVertexArray;
@@ -259,7 +260,7 @@ public:
         ListsOfBlended& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass,
+        const RenderedSceneDescriptor& frame_id,
         const std::shared_ptr<const AnimationState>& animation_state,
         const std::list<const ColorStyle*>& color_styles,
         SceneNodeVisibility visibility = SceneNodeVisibility::VISIBLE) const;

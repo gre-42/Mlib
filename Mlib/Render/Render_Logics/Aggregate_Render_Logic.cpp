@@ -5,9 +5,9 @@
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <mutex>
 
 using namespace Mlib;

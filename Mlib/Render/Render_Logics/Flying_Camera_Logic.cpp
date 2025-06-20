@@ -8,7 +8,6 @@
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -16,6 +15,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

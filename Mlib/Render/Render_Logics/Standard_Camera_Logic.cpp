@@ -6,10 +6,10 @@
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 

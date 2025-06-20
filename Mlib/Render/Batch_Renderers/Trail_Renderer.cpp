@@ -41,7 +41,7 @@ void TrailRenderer::render(
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
-    const ExternalRenderPass& external_render_pass) const
+    const RenderedSceneDescriptor& frame_id) const
 {
     for (const auto& [_, instance] : instances_.shared()) {
         instance->render(
@@ -51,6 +51,6 @@ void TrailRenderer::render(
             skidmarks,
             scene_graph_config,
             render_config,
-            external_render_pass);
+            frame_id);
     }
 }

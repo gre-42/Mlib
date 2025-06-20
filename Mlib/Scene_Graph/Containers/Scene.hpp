@@ -32,7 +32,7 @@ class IRenderableScene;
 class ITrailRenderer;
 class IDynamicLights;
 struct SceneGraphConfig;
-struct ExternalRenderPass;
+struct RenderedSceneDescriptor;
 struct RenderConfig;
 struct ColorStyle;
 class Renderable;
@@ -126,7 +126,7 @@ public:
         const DanglingPtr<const SceneNode>& camera_node,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass,
+        const RenderedSceneDescriptor& frame_id,
         const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;}) const;
     void move(float dt, std::chrono::steady_clock::time_point time);
     void append_physics_to_queue(

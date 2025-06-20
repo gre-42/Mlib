@@ -4,9 +4,9 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 
 using namespace Mlib;
 

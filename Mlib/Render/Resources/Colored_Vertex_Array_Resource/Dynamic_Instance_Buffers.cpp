@@ -31,6 +31,7 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
     , gl_num_instances_{ 0 }
     , transformation_mode_{ transformation_mode }
     , clear_on_update_{ clear_on_update }
+    , latest_update_time_id_{ RENDER_TIME_ID_END }
 {
     if (num_billboard_atlas_components > 0) {
         animation_times_.resize(max_num_instances);
@@ -179,8 +180,12 @@ bool DynamicInstanceBuffers::copy_in_progress() const {
 void DynamicInstanceBuffers::wait() const {
 }
 
-void DynamicInstanceBuffers::update()
+void DynamicInstanceBuffers::update(RenderTimeId time_id)
 {
+    if ((clear_on_update_ == ClearOnUpdate::YES) && (time_id == latest_update_time_id_)) {
+        return;
+    }
+    latest_update_time_id_ = time_id;
     gl_num_instances_ = integral_cast<GLsizei>(tmp_num_instances_);
     if (tmp_num_instances_ == 0) {
         return;

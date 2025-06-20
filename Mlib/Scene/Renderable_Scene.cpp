@@ -14,11 +14,11 @@
 #include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 

@@ -14,7 +14,7 @@ struct Light;
 struct Skidmark;
 struct RenderConfig;
 struct SceneGraphConfig;
-struct ExternalRenderPass;
+struct RenderedSceneDescriptor;
 class ITrailStorage;
 struct StaticWorld;
 template <class T>
@@ -33,7 +33,7 @@ public:
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass) const = 0;
+        const RenderedSceneDescriptor& frame_id) const = 0;
 };
 
 }

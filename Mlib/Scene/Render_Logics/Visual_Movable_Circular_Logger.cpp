@@ -7,11 +7,11 @@
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 

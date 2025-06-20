@@ -12,9 +12,9 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_image_load.hpp>

@@ -32,7 +32,6 @@ class PhysicsScene;
 class SceneNodeResources;
 class ParticleResources;
 class TrailResources;
-class IParticleRenderer;
 class ITrailRenderer;
 class DynamicLights;
 class SurfaceContactDb;

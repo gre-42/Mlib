@@ -19,6 +19,7 @@ struct SceneGraphConfig;
 class IAggregateRenderer;
 struct ColorStyle;
 struct ExternalRenderPass;
+struct RenderedSceneDescriptor;
 enum class TaskLocation;
 class BackgroundLoop;
 
@@ -61,7 +62,7 @@ public:
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass,
+        const RenderedSceneDescriptor& frame_id,
         const std::list<const ColorStyle*>& color_styles) const = 0;
     virtual FixedArray<ScenePos, 3> offset() const = 0;
     static BackgroundLoop* small_aggregate_bg_worker();

@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
 

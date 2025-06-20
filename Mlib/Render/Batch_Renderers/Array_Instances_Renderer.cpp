@@ -8,7 +8,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <unordered_map>
 
@@ -93,7 +93,7 @@ void ArrayInstancesRenderer::render_instances(
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
-    const ExternalRenderPass& external_render_pass) const
+    const RenderedSceneDescriptor& frame_id) const
 {
     std::unique_lock lock_guard{ mutex_ };
     if (!is_initialized_) {
@@ -121,7 +121,7 @@ void ArrayInstancesRenderer::render_instances(
         skidmarks,
         scene_graph_config,
         render_config,
-        { external_render_pass, InternalRenderPass::AGGREGATE },
+        { frame_id, InternalRenderPass::AGGREGATE },
         nullptr,    // animation_state
         nullptr);   // color_style
 }

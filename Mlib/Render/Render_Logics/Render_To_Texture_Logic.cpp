@@ -12,10 +12,10 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 
 using namespace Mlib;
 

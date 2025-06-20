@@ -43,7 +43,8 @@
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -345,7 +346,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_FUNCTION("render_cva");
     LOG_INFO("RenderableColoredVertexArray::render_cva " + cva->identifier());
     TIME_GUARD_DECLARE(time_guard, "render_cva", cva->identifier());
-    // lerr() << external_render_pass_type_to_string(render_pass.external.pass) << " " << cva->identifier();
+    // lerr() << external_render_pass_type_to_string(render_pass.rsd.external_render_pass.pass) << " " << cva->identifier();
     // if (rcva_->instances_ != nullptr) {
     //     lerr() << ", #inst: " << rcva_->instances_->at(cva.get())->num_instances();
     // }
@@ -367,7 +368,7 @@ void RenderableColoredVertexArray::render_cva(
         return;
     }
     // This is now done in the VisibilityCheck class.
-    // if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_pass == OccluderType::OFF) {
+    // if (render_pass.rsd.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE && render_pass.rsd.external_render_pass.black_node_name.empty() && cva->material.occluder_pass == OccluderType::OFF) {
     //     return;
     // }
     std::shared_ptr<IInstanceBuffers> instances;
@@ -375,13 +376,13 @@ void RenderableColoredVertexArray::render_cva(
     VisibilityCheck vc{ mvp_f };
     if (rcva_->instances_ == nullptr) {
         FrustumVisibilityCheck fvc{vc};
-        if (!fvc.is_visible(cva->name.full_name(), cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, render_pass.external.pass, cva->aabb()))
+        if (!fvc.is_visible(cva->name.full_name(), cva->material, cva->morphology, BILLBOARD_ID_NONE, scene_graph_config, render_pass.rsd.external_render_pass.pass, cva->aabb()))
         {
             // lerr() << ", skipped (2)";
             return;
         }
     } else {
-        if (!instances_are_visible(cva->material, render_pass.external.pass)) {
+        if (!instances_are_visible(cva->material, render_pass.rsd.external_render_pass.pass)) {
             return;
         }
         instances = rcva_->instances_->at(cva.get());
@@ -397,7 +398,7 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
     std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> filtered_skidmarks;
-    bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
+    bool is_lightmap = any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
     FixedArray<float, 3> fog_emissive = fixed_zeros<float, 3>();
     FixedArray<float, 3> emissive = fixed_zeros<float, 3>();
     FixedArray<float, 3> ambient = fixed_zeros<float, 3>();
@@ -760,7 +761,7 @@ void RenderableColoredVertexArray::render_cva(
         THROW_OR_ABORT("reorient_uv0 requires disabled face culling");
     }
     bool reorient_uv0 = cva->material.reorient_uv0 && (tic.ntextures_color != 0);
-    bool has_dynamic_emissive = cva->material.dynamically_lighted && !any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK);
+    bool has_dynamic_emissive = cva->material.dynamically_lighted && !any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK);
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     assert_true(cva->material.number_of_frames > 0);
     Hasher texture_modifiers_hash;
@@ -845,10 +846,10 @@ void RenderableColoredVertexArray::render_cva(
     }
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
-            .render_pass = render_pass.external.pass,
+            .render_pass = render_pass.rsd.external_render_pass.pass,
             .skidmarks_hash = skidmarks_hash,
             .nbones = rcva_->triangles_res_->bone_indices.size(),
-            .blend_mode = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
+            .blend_mode = any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
                 ? BlendMode::CONTINUOUS
                 : cva->material.blend_mode,
             .alpha_distances = alpha_distances_common,
@@ -940,7 +941,7 @@ void RenderableColoredVertexArray::render_cva(
         assert_true(animation_state != nullptr);
         CHK(glUniform1f(
             rp.texture_layer_location_uniform,
-            animation_state->periodic_reference_time.phase01(render_pass.external.time)));
+            animation_state->periodic_reference_time.phase01(render_pass.rsd.external_render_pass.time)));
     }
     if (!cva->material.billboard_atlas_instances.empty()) {
         size_t n = cva->material.billboard_atlas_instances.size();
@@ -1120,7 +1121,7 @@ void RenderableColoredVertexArray::render_cva(
         } else {
             CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         }
-        if (any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+        if (any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
             CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
             if (cva->material.magnifying_interpolation_mode == InterpolationMode::NEAREST) {
@@ -1319,7 +1320,7 @@ void RenderableColoredVertexArray::render_cva(
             texture,
             TextureLayerProperties::NONE);
     }
-    if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
+    if ((render_pass.rsd.external_render_pass.pass != ExternalRenderPassType::DIRTMAP) &&
         !is_lightmap &&
         (cva->material.draw_distance_noperations > 0) &&
         (
@@ -1418,7 +1419,7 @@ void RenderableColoredVertexArray::render(
     const ColorStyle* color_style) const
 {
     LOG_FUNCTION("RenderableColoredVertexArray::render");
-    if (render_pass.external.pass == ExternalRenderPassType::DIRTMAP) {
+    if (render_pass.rsd.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         return;
     }
     #ifdef DEBUG

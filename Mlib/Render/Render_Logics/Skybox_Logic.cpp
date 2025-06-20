@@ -6,10 +6,10 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version_3_0.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

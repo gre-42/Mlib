@@ -2,7 +2,7 @@
 #include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
 

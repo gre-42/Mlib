@@ -21,7 +21,7 @@ struct Light;
 struct Skidmark;
 struct SceneGraphConfig;
 struct RenderConfig;
-struct ExternalRenderPass;
+struct RenderedSceneDescriptor;
 enum class ParticleSubstrate;
 struct StaticWorld;
 
@@ -58,7 +58,7 @@ public:
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass) const;
+        const RenderedSceneDescriptor& frame_id) const;
 
 private:
     FixedArray<ScenePos, 3> offset_;

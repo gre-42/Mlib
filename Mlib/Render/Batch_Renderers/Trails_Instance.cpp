@@ -6,7 +6,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Animated_Texture_Layer.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
 
@@ -101,13 +101,13 @@ void TrailsInstance::render(
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
-    const ExternalRenderPass& external_render_pass) const
+    const RenderedSceneDescriptor& frame_id) const
 {
     FixedArray<ScenePos, 3> offset = uninitialized;
     {
         // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
         std::scoped_lock lock{ mutex_ };
-        dynamic_vertex_buffers_->update(external_render_pass.time);
+        dynamic_vertex_buffers_->update(frame_id.external_render_pass.time);
         offset = offset_;
     }
     if (dynamic_vertex_buffers_->ntriangles() == 0) {
@@ -126,7 +126,7 @@ void TrailsInstance::render(
         skidmarks,
         scene_graph_config,
         render_config,
-        { external_render_pass, InternalRenderPass::PARTICLES },
+        { frame_id, InternalRenderPass::PARTICLES },
         nullptr,        // animation_state,
         nullptr);       // color_style
 }

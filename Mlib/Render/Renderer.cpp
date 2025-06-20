@@ -10,12 +10,12 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
@@ -62,7 +62,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
 {
     try {
         GlContextGuard gcg{ window_ };
-        size_t time_id = 0;
+        RenderTimeId time_id = 0;
         // PeriodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{ 100 }};
         set_fps_.tick(std::chrono::steady_clock::time_point());
         while (continue_rendering())
@@ -132,9 +132,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 TIME_GUARD_DECLARE(time_guard, "execute_render_gc", "execute_render_gc");
                 execute_render_gc();
             }
-            if (render_config_.motion_interpolation) {
-                time_id = (time_id + 1) % 4;
-            }
+            time_id = (time_id + 1) % RENDER_TIME_ID_END;
             #ifdef BENCHMARK_RENDERING_ENABLED
             static size_t ii = 0;
             if (ii++ % 600 == 0) {

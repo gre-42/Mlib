@@ -6,6 +6,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position_YAngles.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Rotation_Quaternion.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
+#include <Mlib/Scene_Graph/Render_Time_Id.hpp>
 #include <string>
 #include <vector>
 
@@ -51,7 +52,7 @@ public:
     // IInstanceBuffers
     virtual bool copy_in_progress() const override;
     virtual void wait() const override;
-    void update();
+    void update(RenderTimeId time_id);
     virtual void bind(
         GLuint instance_attribute_index,
         GLuint rotation_quaternion_attribute_index,
@@ -76,6 +77,7 @@ private:
     std::vector<float> animation_times_;
     std::vector<const BillboardSequence*> billboard_sequences_;
     ClearOnUpdate clear_on_update_;
+    RenderTimeId latest_update_time_id_;
 };
 
 }

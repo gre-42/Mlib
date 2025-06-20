@@ -17,7 +17,7 @@ struct SceneGraphConfig;
 struct TransformedColoredVertexArray;
 class IInstancesRenderer;
 enum class ExternalRenderPassType;
-struct ExternalRenderPass;
+struct RenderedSceneDescriptor;
 enum class TaskLocation;
 class BackgroundLoop;
 
@@ -61,13 +61,13 @@ public:
         const std::list<TransformedColoredVertexArray> &sorted_aggregate_queue,
         TaskLocation task_location) = 0;
     virtual void render_instances(
-        const FixedArray<ScenePos, 4, 4> &vp,
-        const TransformationMatrix<float, ScenePos, 3> &iv,
+        const FixedArray<ScenePos, 4, 4>& vp,
+        const TransformationMatrix<float, ScenePos, 3>& iv,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
-        const SceneGraphConfig &scene_graph_config,
-        const RenderConfig &render_config,
-        const ExternalRenderPass &external_render_pass) const = 0;
+        const SceneGraphConfig& scene_graph_config,
+        const RenderConfig& render_config,
+        const RenderedSceneDescriptor& frame_id) const = 0;
     virtual FixedArray<ScenePos, 3> offset() const = 0;
     static BackgroundLoop* small_instances_bg_worker();
     static BackgroundLoop* large_instances_bg_worker();

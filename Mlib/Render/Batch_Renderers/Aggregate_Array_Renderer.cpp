@@ -15,7 +15,7 @@
 #include <Mlib/Render/Yield.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <map>
 
@@ -356,7 +356,7 @@ void AggregateArrayRenderer::render_aggregates(
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
-    const ExternalRenderPass& external_render_pass,
+    const RenderedSceneDescriptor& frame_id,
     const std::list<const ColorStyle*>& color_styles) const
 {
     std::unique_lock lock_guard{ mutex_ };
@@ -391,7 +391,7 @@ void AggregateArrayRenderer::render_aggregates(
         skidmarks,
         scene_graph_config,
         render_config,
-        { external_render_pass, InternalRenderPass::AGGREGATE },
+        { frame_id, InternalRenderPass::AGGREGATE },
         nullptr,    // animation_state
         &r_style);  // color_style
 }

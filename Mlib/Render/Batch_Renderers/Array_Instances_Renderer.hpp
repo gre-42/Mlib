@@ -29,7 +29,7 @@ public:
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass) const override;
+        const RenderedSceneDescriptor& frame_id) const override;
     virtual FixedArray<ScenePos, 3> offset() const override;
 
 private:

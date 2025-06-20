@@ -5,7 +5,7 @@
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
-#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -91,7 +91,7 @@ void ParticleRenderer::render(
             skidmarks,
             scene_graph_config,
             render_config,
-            render_pass.external);
+            render_pass.rsd);
     }
 }
 

@@ -42,9 +42,4 @@ inline bool any(InternalRenderPass a) {
     return a != InternalRenderPass::NONE;
 }
 
-struct RenderPass {
-    const ExternalRenderPass external;
-    const InternalRenderPass internal;
-};
-
 }

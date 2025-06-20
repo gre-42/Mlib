@@ -42,7 +42,6 @@
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Window_Logic.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
@@ -57,6 +56,7 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>

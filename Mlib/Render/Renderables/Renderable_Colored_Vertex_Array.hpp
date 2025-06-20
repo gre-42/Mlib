@@ -15,6 +15,7 @@ class ColoredVertexArrayResource;
 struct RenderableResourceFilter;
 class RenderingResources;
 enum class ExternalRenderPassType;
+struct RenderPass;
 
 class RenderableColoredVertexArray final: public Renderable
 {

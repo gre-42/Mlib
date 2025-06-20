@@ -5,8 +5,8 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstddef>
 #include <sstream>

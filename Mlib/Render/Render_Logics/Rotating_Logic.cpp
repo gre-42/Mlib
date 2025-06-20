@@ -15,7 +15,7 @@
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/linmath.hpp>
@@ -201,7 +201,7 @@ void RotatingLogic::render_with_setup(
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     DanglingPtr<const SceneNode> cn_ptr = cn.ptr();
-    scene_.render(vp, bi.model, cn_ptr, render_config, scene_graph_config, frame_id.external_render_pass);
+    scene_.render(vp, bi.model, cn_ptr, render_config, scene_graph_config, frame_id);
 }
 
 void RotatingLogic::print(std::ostream& ostr, size_t depth) const {

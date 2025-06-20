@@ -27,7 +27,6 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Imposter_Parameters.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
@@ -40,6 +39,7 @@
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IRenderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
