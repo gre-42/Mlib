@@ -37,6 +37,8 @@ public:
         const std::optional<FixedArray<float, 2>>& offset) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    void save_debug_image(const std::string& filename) const;
+
     DestructionFunctionsRemovalTokens on_skidmark_node_clear;
 private:
     void deallocate();

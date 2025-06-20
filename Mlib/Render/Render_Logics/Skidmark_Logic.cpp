@@ -1,7 +1,7 @@
 #include "Skidmark_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
@@ -15,8 +15,10 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <stb_cpp/stb_image_load.hpp>
 
 using namespace Mlib;
 
@@ -136,6 +138,14 @@ void SkidmarkLogic::render_moving_node(
     }
     skidmark_->texture = fbs_(new_fbs_id)->texture_color();
     skidmark_->vp = vp;
+}
+
+void SkidmarkLogic::save_debug_image(const std::string& filename) const {
+    auto fb = fbs_(old_fbs_id_);
+    if (fb == nullptr) {
+        THROW_OR_ABORT("SkidmarkLogic::save_debug_image: Not yet rendered");
+    }
+    StbImage3(fb->color_to_stb_image(3)).save_to_file(filename);
 }
 
 void SkidmarkLogic::print(std::ostream& ostr, size_t depth) const {
