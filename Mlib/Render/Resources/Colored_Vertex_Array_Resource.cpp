@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Interior_Texture_Set.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Material_Features.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
@@ -51,7 +52,6 @@
 #include <Mlib/Scene_Graph/Instantiation/IInstantiation_Reference.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -1656,6 +1656,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         for (const auto& [i, s]: enumerate(skidmarks)) {
             [&](){
                 switch (s.second->particle_type) {
+                case ParticleType::NONE:
+                    THROW_OR_ABORT("Particle type \"none\" does not require a skidmark");
                 case ParticleType::SMOKE:
                     THROW_OR_ABORT("Smoke does not require a skidmark");
                 case ParticleType::SKIDMARK:
@@ -2299,7 +2301,7 @@ void ColoredVertexArrayResource::modify_physics_material_tags(
                 cva->morphology.physics_material |= add;
                 cva->morphology.physics_material &= ~remove;
                 if (any(add & PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS)) {
-                    cva->material.contains_skidmarks = true;
+                    cva->material.skidmarks |= ParticleType::SKIDMARK;
                 }
             }
         }

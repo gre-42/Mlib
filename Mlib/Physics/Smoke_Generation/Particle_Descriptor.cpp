@@ -1,8 +1,8 @@
 #include "Particle_Descriptor.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <map>
 
 namespace ParticleDescriptorArgs {

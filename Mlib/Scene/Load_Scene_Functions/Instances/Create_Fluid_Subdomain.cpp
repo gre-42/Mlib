@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box_Json.hpp>
 #include <Mlib/Geometry/Intersection/Interval_Json.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Json/Chrono.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -16,7 +17,6 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

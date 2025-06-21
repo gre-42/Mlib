@@ -1,6 +1,7 @@
 #include "Skidmark_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
@@ -15,7 +16,6 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stb_cpp/stb_image_load.hpp>
@@ -92,6 +92,8 @@ void SkidmarkLogic::render_moving_node(
             ViewportGuard vg{ texture_width_, texture_height_ };
             [&](){
                 switch (skidmark_->particle_type) {
+                case ParticleType::NONE:
+                    THROW_OR_ABORT("Particle type \"none\" does not require a skidmark logic");
                 case ParticleType::SMOKE:
                     THROW_OR_ABORT("Smoke does not require a skidmark logic");
                 case ParticleType::SKIDMARK:

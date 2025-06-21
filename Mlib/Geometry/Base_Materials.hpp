@@ -10,12 +10,11 @@ static const auto BASE_INVISIBLE_TERRAIN_MATERIAL =
 
 static const auto BASE_VISIBLE_TERRAIN_MATERIAL = BASE_INVISIBLE_TERRAIN_MATERIAL | PhysicsMaterial::ATTR_VISIBLE;
 
-static const auto BASE_WATER_MATERIAL =
-    PhysicsMaterial::SURFACE_BASE_WATER |
-    PhysicsMaterial::ATTR_LIQUID |
-    PhysicsMaterial::ATTR_VISIBLE |
+static const auto META_WATER_MATERIAL =
     PhysicsMaterial::ATTR_COLLIDE |
     PhysicsMaterial::ATTR_CONCAVE |
-    PhysicsMaterial::ATTR_ANIMATED_TEXTURES;
+    PhysicsMaterial::ATTR_LIQUID |
+    PhysicsMaterial::ATTR_ANIMATED_TEXTURES |
+    PhysicsMaterial::ATTR_VISIBLE;
 
 }

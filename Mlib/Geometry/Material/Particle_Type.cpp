@@ -6,6 +6,7 @@ using namespace Mlib;
 
 ParticleType Mlib::particle_type_from_string(const std::string& s) {
     static std::map<std::string, ParticleType> m{
+        {"none", ParticleType::NONE},
         {"smoke", ParticleType::SMOKE},
         {"skidmark", ParticleType::SKIDMARK},
         {"water_wave", ParticleType::WATER_WAVE},
@@ -20,6 +21,8 @@ ParticleType Mlib::particle_type_from_string(const std::string& s) {
 
 std::string Mlib::particle_type_to_string(ParticleType s) {
     switch (s) {
+    case ParticleType::NONE:
+        return "none";
     case ParticleType::SMOKE:
         return "smoke";
     case ParticleType::SKIDMARK:

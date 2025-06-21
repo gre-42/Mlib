@@ -5,6 +5,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Colors.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Skidmarks.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
@@ -36,6 +37,18 @@ static Shading terrain_type_specularity(
         return material_shading(pm, config);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Error determining specularity for terrain type \"" + to_string(terrain_type) + "\": " + e.what());
+    }
+}
+
+static ParticleType terrain_type_skidmarks(
+    const std::map<TerrainType, PhysicsMaterial>& m,
+    TerrainType terrain_type)
+{
+    auto pm = physics_material(m, terrain_type);
+    try {
+        return material_skidmarks(pm);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("Error determining skidmark configuration for terrain type \"" + to_string(terrain_type) + "\": " + e.what());
     }
 }
 
@@ -130,7 +143,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
-                .contains_skidmarks = true,
+                .skidmarks = terrain_type_skidmarks(config.terrain_materials, tt),
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
@@ -145,7 +158,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
-                .contains_skidmarks = true,
+                .skidmarks = terrain_type_skidmarks(config.terrain_materials, tt),
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
@@ -160,7 +173,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
-                .contains_skidmarks = true,
+                .skidmarks = terrain_type_skidmarks(config.terrain_materials, tt),
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
@@ -198,7 +211,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = config.street_dirt_texture,
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-                .contains_skidmarks = true,
+                .skidmarks = material_skidmarks(pmit->second),
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(pmit->second, config),
@@ -229,6 +242,7 @@ OsmTriangleLists::OsmTriangleLists(
                 textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             auto rit = config.street_reflection_map.find(road_properties.type);
+            auto physics_material = (road_properties.type != RoadType::WALL) ? pmit->second : PhysicsMaterial::SURFACE_BASE_STONE;
             tl_street.append(StyledRoadEntry{
                 .road_properties = road_properties,
                 .styled_road = StyledRoad{
@@ -247,17 +261,15 @@ OsmTriangleLists::OsmTriangleLists(
                             .dirt_texture = config.street_dirt_texture,
                             .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                             .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-                            .contains_skidmarks = true,
+                            .skidmarks = material_skidmarks(physics_material),
                             // .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             // depth-func==equal requires aggregation, because the terrain is also aggregated.
                             .aggregate_mode = AggregateMode::NODE_TRIANGLES,
-                            .shading = material_shading(
-                                (road_properties.type != RoadType::WALL) ? pmit->second : PhysicsMaterial::SURFACE_BASE_STONE,
-                                config),
+                            .shading = material_shading(physics_material, config),
                             // .reflect_only_y = true,
                             .draw_distance_noperations = 1000}.compute_color_mode(),
-                        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second }),
+                        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material }),
                     .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
         }
         if (blend &&
@@ -317,7 +329,7 @@ OsmTriangleLists::OsmTriangleLists(
                     : VariableAndHash<std::string>{},
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-                .contains_skidmarks = true,
+                .skidmarks = material_skidmarks(pmit->second),
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading((config.extrude_curb_amount == (CompressedScenePos)0. && tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
@@ -339,7 +351,7 @@ OsmTriangleLists::OsmTriangleLists(
                     : VariableAndHash<std::string>{},
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::LIGHTMAP_BLOBS,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-                .contains_skidmarks = true,
+                .skidmarks = material_skidmarks(pmit->second),
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading((tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
@@ -455,11 +467,12 @@ OsmTriangleLists::OsmTriangleLists(
                         : BlendingPassType::EARLY,
                     .textures_color = blend_textures_color,
                     .textures_alpha = blend_textures_alpha,
+                    .skidmarks = material_skidmarks(PhysicsMaterial::SURFACE_BASE_WATER),
                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                     .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                     .shading = material_shading(RawShading::DEFAULT, config),
                     .draw_distance_noperations = 1000}.compute_color_mode(),
-                Morphology{ .physics_material = BASE_WATER_MATERIAL }));
+                Morphology{ .physics_material = META_WATER_MATERIAL | PhysicsMaterial::SURFACE_BASE_WATER }));
         }
     }
 }

@@ -1,10 +1,10 @@
 #include "Contact_Smoke_Generator.hpp"
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -72,6 +72,7 @@ void ContactSmokeGenerator::notify_contact(
         if (auto tstgit = tstg.find(key); tstgit == tstg.end()) {
             auto& pgen = [&]() -> SmokeParticleGenerator& {
                 switch (smoke_info.particle.type) {
+                    case ParticleType::NONE: THROW_OR_ABORT("Particle type \"none\" does not require a contact smoke generator");
                     case ParticleType::SMOKE: return air_smoke_particle_generator_;
                     case ParticleType::SKIDMARK: return skidmark_smoke_particle_generator_;
                     case ParticleType::WATER_WAVE: THROW_OR_ABORT("Water waves do not require a contact smoke generator");

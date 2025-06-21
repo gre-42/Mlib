@@ -5,6 +5,7 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
@@ -61,7 +62,6 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>

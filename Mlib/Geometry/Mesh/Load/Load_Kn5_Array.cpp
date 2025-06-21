@@ -420,14 +420,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     THROW_OR_ABORT("Surface material already set");
                 }
                 tl.morphology.physics_material |= PhysicsMaterial::SURFACE_BASE_TARMAC;
-                tl.material.contains_skidmarks = true;
+                tl.material.skidmarks |= ParticleType::SKIDMARK;
             }
             if (any(attrs & MetaAttributes::SURFACE_GRAVEL)) {
                 if (any(tl.morphology.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
                 tl.morphology.physics_material |= PhysicsMaterial::SURFACE_BASE_GRAVEL;
-                tl.material.contains_skidmarks = true;
+                tl.material.skidmarks |= ParticleType::SKIDMARK;
             }
             if (any(attrs & MetaAttributes::SURFACE_GRASS)) {
                 if (any(tl.morphology.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {

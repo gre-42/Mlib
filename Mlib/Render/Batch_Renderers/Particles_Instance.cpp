@@ -1,4 +1,5 @@
 #include "Particles_Instance.hpp"
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/Batch_Renderers/Infer_Shader_Properties.hpp>
@@ -7,13 +8,13 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Clear_On_Update.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
 
 static ClearOnUpdate get_clear_on_update(ParticleType particle_type) {
     switch (particle_type) {
+        case ParticleType::NONE: THROW_OR_ABORT("Partice type \"none\" does not require a particles instance");
         case ParticleType::SMOKE: return ClearOnUpdate::NO;
         case ParticleType::SKIDMARK: return ClearOnUpdate::YES;
         case ParticleType::WATER_WAVE: THROW_OR_ABORT("Water waves do not require a particles instance");

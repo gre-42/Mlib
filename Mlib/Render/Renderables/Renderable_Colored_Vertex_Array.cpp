@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Material/Interior_Texture_Set.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Material_Features.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -43,7 +44,6 @@
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -496,8 +496,13 @@ void RenderableColoredVertexArray::render_cva(
             black_shadow_indices.clear();
             lightmap_indices.clear();
         }
-        if (cva->material.contains_skidmarks && (!no_light_active || any(emissive != 0.f))) {
-            filtered_skidmarks = std::vector(skidmarks.begin(), skidmarks.end());
+        if (any(cva->material.skidmarks) && (!no_light_active || any(emissive != 0.f))) {
+            filtered_skidmarks.reserve(skidmarks.size());
+            for (const auto& s : skidmarks) {
+                if (any(cva->material.skidmarks & s.second->particle_type)) {
+                    filtered_skidmarks.push_back(s);
+                }
+            }
         }
     }
     std::vector<BlendMapTextureAndId> blended_textures_color(cva->material.textures_color.size());
@@ -1250,6 +1255,8 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
         [&](){
             switch (s.second->particle_type) {
+            case ParticleType::NONE:
+                THROW_OR_ABORT("Particle type \"none\" does not require a skidmark texture");
             case ParticleType::SMOKE:
                 THROW_OR_ABORT("Smoke particles do not require a skidmark texture");
             case ParticleType::SKIDMARK:

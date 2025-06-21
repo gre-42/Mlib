@@ -1,11 +1,11 @@
 #include "Physics_Scene.hpp"
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 
 using namespace Mlib;
 

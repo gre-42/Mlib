@@ -1,5 +1,6 @@
 #include "Create_Generic_Car.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -30,7 +31,6 @@
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 

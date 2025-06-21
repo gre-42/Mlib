@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Material/Depth_Func.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
@@ -60,7 +61,7 @@ struct Material {
     std::vector<float> continuous_layer_y;
     ExternalRenderPassType occluded_pass = ExternalRenderPassType::NONE;
     ExternalRenderPassType occluder_pass = ExternalRenderPassType::NONE;
-    bool contains_skidmarks = false;
+    ParticleType skidmarks = ParticleType::NONE;
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     AggregateMode aggregate_mode = AggregateMode::NONE;
@@ -109,7 +110,7 @@ struct Material {
         archive(continuous_layer_y);
         archive(occluded_pass);
         archive(occluder_pass);
-        archive(contains_skidmarks);
+        archive(skidmarks);
         archive(alpha_distances);
         archive(magnifying_interpolation_mode);
         archive(aggregate_mode);

@@ -1,10 +1,10 @@
 #include "Particle_Renderer.hpp"
 #include <Mlib/Geometry/Material/Blending_Pass_Type.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Creator.hpp>
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <mutex>
 

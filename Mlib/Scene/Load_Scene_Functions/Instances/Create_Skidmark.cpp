@@ -1,5 +1,6 @@
 #include "Create_Skidmark.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -12,7 +13,6 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -42,6 +42,8 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
         });
     auto& particle_renderer = [&]() -> auto& {
         switch (particle_type) {
+        case ParticleType::NONE:
+            THROW_OR_ABORT("Particle type \"none\" does not require a skidmark logic");
         case ParticleType::SMOKE:
             THROW_OR_ABORT("Smoke particles do not require a skidmark logic");
         case ParticleType::SKIDMARK:

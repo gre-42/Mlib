@@ -1,6 +1,7 @@
 #include "Create_Engine.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
@@ -17,7 +18,6 @@
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Type.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
