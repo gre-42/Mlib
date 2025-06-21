@@ -10,6 +10,7 @@ enum class VehicleType {
     HELICOPTER,
     MISSILE,
     PLANE,
+    SHIP,
     SKATEBOARD
 };
 

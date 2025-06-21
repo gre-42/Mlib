@@ -11,6 +11,7 @@ VehicleType Mlib::vehicle_type_from_string(const std::string& s) {
         { "helicopter", VehicleType::HELICOPTER },
         { "missile", VehicleType::MISSILE},
         { "plane", VehicleType::PLANE },
+        { "ship", VehicleType::SHIP },
         { "skateboard", VehicleType::SKATEBOARD }};
     auto it = m.find(s);
     if (it == m.end()) {

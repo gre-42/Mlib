@@ -209,7 +209,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {
                         MacroKeys::playback,
                         (jv.at(ToplevelKeys::library).get<std::string>() + ".create_player_and_" +
-                            vars.database.at<std::string>("class") +
+                            vars.database.at<std::string>("vehicle_class") +
                             "_for_" + *controller)
                     },
                     {
@@ -223,7 +223,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {
                         MacroKeys::playback,
                         (jv.at(ToplevelKeys::library).get<std::string>() + ".create_spawner_and_" +
-                            vars.database.at<std::string>("class"))
+                            vars.database.at<std::string>("vehicle_class"))
                     },
                     {
                         MacroKeys::let,

@@ -17,6 +17,7 @@
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
@@ -54,6 +55,7 @@ DECLARE_ARGUMENT(mute);
 
 namespace KnownDb {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(vehicle_class);
 DECLARE_ARGUMENT(max_tire_angle);
 DECLARE_ARGUMENT(tire_angle_velocities);
 DECLARE_ARGUMENT(tire_angles);
@@ -150,6 +152,8 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
     const auto& wdb = args.asset_references["wheels"].at(wheels).rp.database;
     auto parent = VH{"car_node" + tesuffix};
 
+    auto class_ = vehicle_type_from_string(vdb.at<std::string>(KnownDb::vehicle_class));
+
     auto wheel_left_front_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_0);
     auto wheel_left_front_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_1);
     auto wheel_right_front_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_front_mount_0);
@@ -165,15 +169,19 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
     create_child_node("dynamic", parent, VH{"wheel_right_rear_node" + tesuffix}, wheel_right_rear_mount_0.casted<ScenePos>());
 
     if (if_with_graphics) {
-        create_child_node("dynamic", VH{"wheel_right_front_node" + tesuffix}, VH{"wheel_right_front_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
-        create_child_node("dynamic", VH{"wheel_right_rear_node" + tesuffix}, VH{"wheel_right_rear_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+        if (class_ != VehicleType::SHIP) {
+            create_child_node("dynamic", VH{"wheel_right_front_node" + tesuffix}, VH{"wheel_right_front_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+            create_child_node("dynamic", VH{"wheel_right_rear_node" + tesuffix}, VH{"wheel_right_rear_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+        }
         auto create_graphics = [&](const std::string& suffix, const std::string& decimate){
             child_renderable_instance("main" + suffix, parent, VH{name + "/main" + decimate});
 
-            child_renderable_instance("wheel" + suffix, VH{"wheel_left_front_node" + tesuffix}, VH{name + "/wheel_front" + decimate});
-            child_renderable_instance("wheel" + suffix, VH{"wheel_right_front_node_visual" + tesuffix}, VH{name + "/wheel_front" + decimate});
-            child_renderable_instance("wheel" + suffix, VH{"wheel_left_rear_node" + tesuffix}, VH{name + "/wheel_rear" + decimate});
-            child_renderable_instance("wheel" + suffix, VH{"wheel_right_rear_node_visual" + tesuffix}, VH{name + "/wheel_rear" + decimate});
+            if (class_ != VehicleType::SHIP) {
+                child_renderable_instance("wheel" + suffix, VH{"wheel_left_front_node" + tesuffix}, VH{name + "/wheel_front" + decimate});
+                child_renderable_instance("wheel" + suffix, VH{"wheel_right_front_node_visual" + tesuffix}, VH{name + "/wheel_front" + decimate});
+                child_renderable_instance("wheel" + suffix, VH{"wheel_left_rear_node" + tesuffix}, VH{name + "/wheel_rear" + decimate});
+                child_renderable_instance("wheel" + suffix, VH{"wheel_right_rear_node_visual" + tesuffix}, VH{name + "/wheel_rear" + decimate});
+            }
             };
         create_graphics(tesuffix, tedecimate);
         create_graphics("_lowres" + tesuffix, "_lowres");
