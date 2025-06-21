@@ -5,12 +5,20 @@
 
 namespace Mlib {
 
+enum class ParticleRotation {
+    EMITTER,
+    RANDOM_YANGLE
+};
+
+ParticleRotation particle_rotation_from_string(const std::string& s);
+
 enum class ParticleType;
 
 struct ParticleDescriptor {
     VariableAndHash<std::string> resource_name;
     float air_resistance;
     float animation_duration;
+    ParticleRotation rotation;
     ParticleType type;
 };
 

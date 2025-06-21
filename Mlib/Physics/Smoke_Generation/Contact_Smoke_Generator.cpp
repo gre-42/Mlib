@@ -1,5 +1,4 @@
 #include "Contact_Smoke_Generator.hpp"
-#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -56,7 +55,7 @@ void ContactSmokeGenerator::notify_contact(
             c.o1.get_tire_radius(c.tire_id1));
     auto dvel_a = std::sqrt(sum(squared(v0 - v1_a)));
     auto dvel_s = std::sqrt(sum(squared(v0 - v1_s)));
-    for (const auto& [i, smoke_info] : enumerate(c.surface_contact_info->smoke_infos)) {
+    for (const auto& smoke_info : c.surface_contact_info->smoke_infos) {
         const auto& af = smoke_info.vehicle_velocity.smoke_particle_frequency;
         const auto& sf = smoke_info.tire_velocity.smoke_particle_frequency;
         auto f =
@@ -69,7 +68,7 @@ void ContactSmokeGenerator::notify_contact(
         if (tstg.empty()) {
             c.o1.destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION }, ObserverAlreadyExistsBehavior::IGNORE);
         }
-        std::pair<size_t, size_t> key{ c.tire_id1, i };
+        std::pair<size_t, const SurfaceSmokeInfo*> key{ c.tire_id1, &smoke_info };
         if (auto tstgit = tstg.find(key); tstgit == tstg.end()) {
             auto& pgen = [&]() -> SmokeParticleGenerator& {
                 switch (smoke_info.particle.type) {

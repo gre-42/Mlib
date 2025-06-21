@@ -15,6 +15,7 @@ class FixedArray;
 class SmokeParticleGenerator;
 class RigidBodyVehicle;
 struct IntersectionScene;
+struct SurfaceSmokeInfo;
 
 class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
 public:
@@ -35,7 +36,7 @@ private:
     SmokeParticleGenerator& air_smoke_particle_generator_;
     SmokeParticleGenerator& skidmark_smoke_particle_generator_;
     SmokeParticleGenerator& sea_wave_smoke_particle_generator_;
-    std::unordered_map<RigidBodyVehicle*, std::map<std::pair<size_t, size_t>, ParticleTrailGenerator>> tire_smoke_trail_generators_;
+    std::unordered_map<RigidBodyVehicle*, std::map<std::pair<size_t, const SurfaceSmokeInfo*>, ParticleTrailGenerator>> tire_smoke_trail_generators_;
 };
 
 }

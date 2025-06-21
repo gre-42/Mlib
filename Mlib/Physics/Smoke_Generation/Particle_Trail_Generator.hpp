@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -30,6 +31,7 @@ public:
 private:
     SmokeParticleGenerator& smoke_generator_;
     float trail_lifetime_;
+    FastUniformRandomNumberGenerator<float> yangle_rng_;
 };
 
 }
