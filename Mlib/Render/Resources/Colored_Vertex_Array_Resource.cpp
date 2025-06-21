@@ -1824,7 +1824,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color = vec4(color, alpha_fac);" << std::endl;
     }
     if (!skidmarks.empty()) {
-        sstr << "    frag_color.rgb = max(frag_color.rgb, sea_spray_color);" << std::endl;
+        sstr << "    frag_color.rgb += 0.4 * sea_spray_color;" << std::endl;
     }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
     if ((fresnel.exponent != 0.f) || has_specularmap) {
