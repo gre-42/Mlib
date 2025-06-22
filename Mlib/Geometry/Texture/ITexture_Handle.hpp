@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -41,6 +42,7 @@ public:
     virtual ColorMode color_mode() const = 0;
     virtual MipmapMode mipmap_mode() const = 0;
     virtual WrapMode wrap_modes(size_t i) const = 0;
+    virtual FixedArray<float, 4> border_color() const = 0;
     virtual uint32_t layers() const = 0;
 };
 

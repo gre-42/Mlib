@@ -35,11 +35,13 @@ Texture::Texture(
     ColorMode color_mode,
     MipmapMode mipmap_mode,
     FixedArray<WrapMode, 2> wrap_modes,
+    const FixedArray<float, 4>& border_color,
     uint32_t layers)
     : handle_{ (GLuint)-1 }
     , color_mode_{ color_mode }
     , mipmap_mode_{ mipmap_mode }
     , wrap_modes_{ wrap_modes }
+    , border_color_{ border_color }
     , layers_{ layers }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); })
 }
@@ -55,11 +57,13 @@ Texture::Texture(
     ColorMode color_mode,
     MipmapMode mipmap_mode,
     FixedArray<WrapMode, 2> wrap_modes,
+    const FixedArray<float, 4>& border_color,
     uint32_t layers)
     : handle_{ check_handle(handle) }
     , color_mode_{ color_mode }
     , mipmap_mode_{ mipmap_mode }
     , wrap_modes_{ wrap_modes }
+    , border_color_{ border_color }
     , layers_{ layers }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
@@ -74,12 +78,14 @@ Texture::Texture(
     bool with_mipmaps,
     GLint wrap_s,
 	GLint wrap_t,
+    const FixedArray<float, 4>& border_color,
     uint32_t layers)
     : Texture{
         generate_texture,
         format_to_color_mode(format),
         with_mipmaps ? MipmapMode::WITH_MIPMAPS : MipmapMode::NO_MIPMAPS,
         { wrap_mode_from_native(wrap_s), wrap_mode_from_native(wrap_t) },
+        border_color,
         layers }
 {}
 
@@ -89,12 +95,14 @@ Texture::Texture(
     bool with_mipmaps,
     GLint wrap_s,
 	GLint wrap_t,
+    const FixedArray<float, 4>& border_color,
     uint32_t layers)
     : Texture{
         handle,
         format_to_color_mode(format),
         with_mipmaps ? MipmapMode::WITH_MIPMAPS : MipmapMode::NO_MIPMAPS,
         { wrap_mode_from_native(wrap_s), wrap_mode_from_native(wrap_t) },
+        border_color,
         layers }
 {}
 
@@ -103,6 +111,7 @@ Texture::Texture(Texture&& other) noexcept
     , color_mode_{ other.color_mode_ }
     , mipmap_mode_{ other.mipmap_mode_ }
     , wrap_modes_{ other.wrap_modes_ }
+    , border_color_{ other.border_color_ }
     , layers_{ other.layers_ }
     , deallocation_token_{ std::move(other.deallocation_token_) }
 {
@@ -150,6 +159,10 @@ MipmapMode Texture::mipmap_mode() const {
 WrapMode Texture::wrap_modes(size_t i) const {
     assert_true(i < 2);
     return wrap_modes_(i);
+}
+
+FixedArray<float, 4> Texture::border_color() const {
+    return border_color_;
 }
 
 uint32_t Texture::layers() const {

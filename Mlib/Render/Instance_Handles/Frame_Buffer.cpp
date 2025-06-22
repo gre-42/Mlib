@@ -71,6 +71,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         config_.with_mipmaps,
         config_.wrap_s,
         config_.wrap_t,
+        config_.border_color,
         1);     // layers
     if (config.nsamples_msaa == 1) {
         CHK(glBindTexture(GL_TEXTURE_2D, texture_color_->handle<GLuint>()));
@@ -106,6 +107,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
             FixedArray<WrapMode, 2>{
                 wrap_mode_from_native(config_.wrap_s),
                 wrap_mode_from_native(config_.wrap_t)},
+            config_.border_color,
             1);     // layers
         if (config.nsamples_msaa == 1) {
             CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_->handle<GLuint>()));

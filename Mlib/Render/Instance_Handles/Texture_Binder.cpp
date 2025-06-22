@@ -28,7 +28,12 @@ void TextureBinder::bind(GLint uniform, const ITextureHandle& handle) {
         target = GL_TEXTURE_2D;
     }
     CHK(glBindTexture(target, handle.handle<GLuint>()));
-    CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap_mode_to_native(handle.wrap_modes(0))));
-    CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap_mode_to_native(handle.wrap_modes(1))));
+    auto w0 = handle.wrap_modes(0);
+    auto w1 = handle.wrap_modes(1);
+    CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap_mode_to_native(w0)));
+    CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap_mode_to_native(w1)));
+    if ((w0 == WrapMode::CLAMP_TO_BORDER) || (w1 == WrapMode::CLAMP_TO_BORDER)) {
+        CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, handle.border_color().flat_begin()));
+    }
     ++slot_;
 }

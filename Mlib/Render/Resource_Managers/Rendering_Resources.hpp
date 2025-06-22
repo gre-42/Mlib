@@ -52,6 +52,7 @@ struct TextureSizeAndMipmaps {
     GLsizei mip_level_count;
     GLint wrap_s;
     GLint wrap_t;
+    FixedArray<float, 4> border_color;
     std::shared_ptr<ITextureHandle> flipped_vertically(float aniso) const;
 };
 

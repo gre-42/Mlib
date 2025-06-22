@@ -69,10 +69,28 @@ void SkidmarkLogic::render_moving_node(
     if (fbs_(new_fbs_id) == nullptr) {
         fbs_(new_fbs_id) = std::make_unique<FrameBuffer>(CURRENT_SOURCE_LOCATION);
     }
+    auto border_color = [&]() -> OrderableFixedArray<float, 4> {
+        switch (skidmark_->particle_type) {
+        case ParticleType::NONE:
+            THROW_OR_ABORT("Particle type \"none\" does not require a skidmark logic");
+        case ParticleType::SMOKE:
+            THROW_OR_ABORT("Smoke does not require a skidmark logic");
+        case ParticleType::SKIDMARK:
+            return { 1.f, 1.f, 1.f, 1.f };
+        case ParticleType::WATER_WAVE:
+            THROW_OR_ABORT("Water wave does not require a skidmark logic");
+        case ParticleType::SEA_SPRAY:
+            return { 0.f, 0.f, 0.f, 1.f };
+        }
+        THROW_OR_ABORT("Unknown particle type");
+    }();
     fbs_(new_fbs_id)->configure({
         .width = texture_width_,
         .height = texture_height_,
         .depth_kind = FrameBufferChannelKind::NONE,
+        .wrap_s = GL_CLAMP_TO_BORDER,
+        .wrap_t = GL_CLAMP_TO_BORDER,
+        .border_color = border_color,
         .nsamples_msaa = 1});
     {
         if (fbs_(old_fbs_id_) != nullptr) {
@@ -90,23 +108,7 @@ void SkidmarkLogic::render_moving_node(
         RenderToFrameBufferGuard rfg{ fbs_(new_fbs_id) };
         {
             ViewportGuard vg{ texture_width_, texture_height_ };
-            [&](){
-                switch (skidmark_->particle_type) {
-                case ParticleType::NONE:
-                    THROW_OR_ABORT("Particle type \"none\" does not require a skidmark logic");
-                case ParticleType::SMOKE:
-                    THROW_OR_ABORT("Smoke does not require a skidmark logic");
-                case ParticleType::SKIDMARK:
-                    clear_color({ 1.f, 1.f, 1.f, 1.f });
-                    return;
-                case ParticleType::WATER_WAVE:
-                    THROW_OR_ABORT("Water wave does not require a skidmark logic");
-                case ParticleType::SEA_SPRAY:
-                    clear_color({ 0.f, 0.f, 0.f, 1.f });
-                    return;
-                }
-                THROW_OR_ABORT("Unknown particle type");
-            }();
+            clear_color(border_color);
         }
         if (fbs_(old_fbs_id_) != nullptr) {
             assert_true(offset.has_value());

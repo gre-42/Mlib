@@ -1117,11 +1117,15 @@ void RenderableColoredVertexArray::render_cva(
     auto setup_bound_texture = [&cva, &render_pass](
         WrapMode wrap_mode_s,
         WrapMode wrap_mode_t,
+        const FixedArray<float, 4>& border_color,
         MipmapMode mipmap_mode,
         GLenum target)
     {
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap_mode_to_native(wrap_mode_s)));
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap_mode_to_native(wrap_mode_t)));
+        if ((wrap_mode_s == WrapMode::CLAMP_TO_BORDER) || (wrap_mode_t == WrapMode::CLAMP_TO_BORDER)) {
+            CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color.flat_begin()));
+        }
         if (mipmap_mode != MipmapMode::NO_MIPMAPS) {
             CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
         } else {
@@ -1160,7 +1164,7 @@ void RenderableColoredVertexArray::render_cva(
         }
         ActiveTextureGuard atg{ integral_cast<GLenum>(GL_TEXTURE0 + texture_unit) };
         CHK(glBindTexture(target, h.handle<GLuint>()));
-        setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.mipmap_mode(), target);
+        setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.border_color(), h.mipmap_mode(), target);
     };
     assert_true(tic.ntextures_color == texture_ids_color.size());
     for (const auto& [c, i] : texture_ids_color) {
@@ -1247,39 +1251,10 @@ void RenderableColoredVertexArray::render_cva(
         auto mvp_skidmark = dot2d(skidmark.vp, m.affine());
         CHK(glUniformMatrix4fv(rp.mvp_skidmarks_locations.at(i), 1, GL_TRUE, mvp_skidmark.casted<float>().flat_begin()));
 
+        auto& h = *skidmark.texture;
         ActiveTextureGuard atg{ integral_cast<GLenum>(GL_TEXTURE0 + tic.id_skidmark(i)) };
         CHK(glBindTexture(GL_TEXTURE_2D, skidmark.texture->handle<GLuint>()));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-        [&](){
-            switch (s.second->particle_type) {
-            case ParticleType::NONE:
-                THROW_OR_ABORT("Particle type \"none\" does not require a skidmark texture");
-            case ParticleType::SMOKE:
-                THROW_OR_ABORT("Smoke particles do not require a skidmark texture");
-            case ParticleType::SKIDMARK:
-                {
-                    float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
-                    CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
-                    return;
-                }
-            case ParticleType::WATER_WAVE:
-                {
-                    float borderColor[] = { 0.5f, 0.5f, 0.5f, 1.f};
-                    CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
-                    return;
-                }
-            case ParticleType::SEA_SPRAY:
-                {
-                    float borderColor[] = { 0.f, 0.f, 0.f, 1.f};
-                    CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
-                    return;
-                }
-            }
-            THROW_OR_ABORT("Unknown particle type");
-        }();
+        setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.border_color(), h.mipmap_mode(), GL_TEXTURE_2D);
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {

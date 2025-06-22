@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
@@ -28,6 +29,7 @@ struct FrameBufferConfig {
     FrameBufferChannelKind depth_kind = FrameBufferChannelKind::ATTACHMENT;
     GLint wrap_s = GL_REPEAT;
     GLint wrap_t = GL_REPEAT;
+    OrderableFixedArray<float, 4> border_color = {1.f, 0.f, 1.f, 1.f};
     bool with_mipmaps = false;
     int nsamples_msaa = 1;
     auto operator <=> (const FrameBufferConfig&) const = default;

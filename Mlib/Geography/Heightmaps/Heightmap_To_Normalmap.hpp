@@ -11,7 +11,7 @@ Array<T> heightmap_to_normalmap(const Array<T>& heightmap, const T& d) {
         THROW_OR_ABORT("Heightmap is not 2D");
     }
     auto normalmap = Array<T>(ArrayShape{3, heightmap.shape(0), heightmap.shape(1)});
-    normalmap.row_range(0, 2) = central_gradient_filter(heightmap) * (T(1) / (2 * d));
+    normalmap.row_range(0, 2) = -central_gradient_filter(heightmap) * (T(1) / (2 * d));
     normalmap[2] = T(1);
     auto fac = T(1) / sqrt(sum(squared(normalmap), 0));
     for (size_t i = 0; i < 3; ++i) {

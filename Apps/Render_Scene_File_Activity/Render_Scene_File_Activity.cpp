@@ -628,8 +628,8 @@ void android_main(android_app* app) {
                 {"black_lightmap_height", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
                 {"scene_skidmarks_width", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
                 {"scene_skidmarks_height", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))},
-                {"scene_water_waves_width", safe_stoi(args.named_value("--scene_water_waves_width", "256"))},
-                {"scene_water_waves_height", safe_stoi(args.named_value("--scene_water_waves_height", "256"))},
+                {"scene_water_waves_width", safe_stoi(args.named_value("--scene_water_waves_width", "512"))},
+                {"scene_water_waves_height", safe_stoi(args.named_value("--scene_water_waves_height", "512"))},
                 {"scene_sea_spray_width", safe_stoi(args.named_value("--scene_sea_spray_width", "2048"))},
                 {"scene_sea_spray_height", safe_stoi(args.named_value("--scene_sea_spray_height", "2048"))},
                 {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))}};

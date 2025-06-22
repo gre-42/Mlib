@@ -59,6 +59,10 @@ WrapMode LazyTexture::wrap_modes(size_t i) const {
 	return colormap_.wrap_modes(i);
 }
 
+FixedArray<float, 4> LazyTexture::border_color() const {
+	return colormap_.border_color;
+}
+
 uint32_t LazyTexture::layers() const {
 	return texture().layers();
 }

@@ -1001,6 +1001,7 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
         mlc,
         wrap_s,
         wrap_t,
+        border_color,
         1);     // layers
 }
 
@@ -1049,7 +1050,7 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     aniso = std::min({ aniso, (float)color.anisotropic_filtering_level, (float)max_anisotropic_filtering_level_ });
 
     auto make_shared_texture = [&](GLuint handle, uint32_t layers) {
-        return std::make_shared<Texture>(handle, color.color_mode, color.mipmap_mode, color.wrap_modes, layers);
+        return std::make_shared<Texture>(handle, color.color_mode, color.mipmap_mode, color.wrap_modes, color.border_color, layers);
         };
     std::shared_ptr<ITextureHandle> texture;
 
@@ -1973,6 +1974,7 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
         color_mode_from_channels(image.get_components()),
         color.mipmap_mode,
         color.wrap_modes,
+        color.border_color,
         1);     // layers
 
     BindTextureGuard btg{ GL_TEXTURE_2D, handle->handle<GLuint>() };
@@ -2073,7 +2075,8 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
             .mipmap_mode = color.mipmap_mode,
             .mip_level_count = integral_cast<GLsizei>(image.get_num_mipmaps()),
             .wrap_s = wrap_mode_to_native(color.wrap_modes(0)),
-            .wrap_t = wrap_mode_to_native(color.wrap_modes(1))};
+            .wrap_t = wrap_mode_to_native(color.wrap_modes(1)),
+            .border_color = color.border_color};
         return original_texture.flipped_vertically(aniso);
     } else {
         THROW_OR_ABORT("Unsupported flip mode");

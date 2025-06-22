@@ -26,12 +26,22 @@
 
 using namespace Mlib;
 
+namespace Wind {
+static const float SCALE = 0.5f;
+static const float OFFSET = 0.5f;
+static const float ISCALE = 2.f;
+static const float IOFFSET = -1.f;
+}
+
 namespace Pres {
 static const float SCALE = 0.5f;
 static const float OFFSET = 0.5f;
 static const float ISCALE = 2.f;
 static const float IOFFSET = -1.f;
 }
+
+AcousticPressureWindRenderProgram::AcousticPressureWindRenderProgram() = default;
+AcousticPressureWindRenderProgram::~AcousticPressureWindRenderProgram() = default;
 
 AcousticPressureRenderProgram::AcousticPressureRenderProgram()
     : pressure_fields(-1)
@@ -46,8 +56,11 @@ AcousticPressureSubdomainLogic::AcousticPressureSubdomainLogic(
     DanglingRef<SceneNode> skidmark_node,
     std::shared_ptr<Skidmark> skidmark,
     float inner_pressure,
-    float angular_velocity,
+    float inner_angular_velocity,
     const AxisAlignedBoundingBox<float, 2>& inner_region,
+    float wind_amplitude,
+    float wind_angular_velocity,
+    std::shared_ptr<ITextureHandle> wind_texture,
     int texture_width,
     int texture_height,
     float c,
@@ -55,16 +68,21 @@ AcousticPressureSubdomainLogic::AcousticPressureSubdomainLogic(
     float dx,
     float intensity_normalization,
     const BoundaryLimitation& boundary_limitation,
+    Periodicity periodicity,
     float skidmark_strength)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , pressure_fields_{ uninitialized }
-    , offset_pressure_renderer_{ 1 }
+    , wind_texture_{ std::move(wind_texture) }
+    , offset_grayscale_renderer_{ 1 }
     , skidmark_{ std::move(skidmark) }
     , inner_pressure_{ inner_pressure }
-    , angular_velocity_{ angular_velocity }
-    , angle_{ 0.f }
+    , inner_angular_velocity_{ inner_angular_velocity }
+    , inner_angle_{ 0.f }
     , inner_region_{ inner_region }
+    , wind_amplitude_{ wind_amplitude }
+    , wind_angular_velocity_{ wind_angular_velocity }
+    , wind_angle_{ 0.f }
     , texture_width_{ texture_width }
     , texture_height_{ texture_height }
     , c_{ c }
@@ -72,6 +90,7 @@ AcousticPressureSubdomainLogic::AcousticPressureSubdomainLogic(
     , dx_{ dx }
     , intensity_normalization_{ intensity_normalization }
     , boundary_limitation_{ boundary_limitation }
+    , periodicity_{ periodicity }
     , skidmark_strength_{ skidmark_strength }
     , i012_{ 0 }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
@@ -85,6 +104,8 @@ AcousticPressureSubdomainLogic::~AcousticPressureSubdomainLogic() {
 void AcousticPressureSubdomainLogic::deallocate() {
     // skidmark_->texture = nullptr;
     pressure_fields_ = nullptr;
+    wind_field_ = nullptr;
+    temp_wind_field_ = nullptr;
     temp_pressure_field_ = nullptr;
     skidmark_field_ = nullptr;
 }
@@ -105,7 +126,7 @@ void AcousticPressureSubdomainLogic::render_moving_node(
         THROW_OR_ABORT("SkidmarkLogic received wrong rendering");
     }
     if (skidmark_field_ == nullptr) {
-        auto r_cfg = FrameBufferConfig{
+        auto pressure_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
             .color_internal_format = GL_R16F,
@@ -113,31 +134,48 @@ void AcousticPressureSubdomainLogic::render_moving_node(
             .color_type =  GL_HALF_FLOAT,
             .color_filter_type = GL_NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
-            .wrap_s = GL_CLAMP_TO_EDGE,
-            .wrap_t = GL_CLAMP_TO_EDGE,
+            .wrap_s = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_EDGE : GL_REPEAT,
+            .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_EDGE : GL_REPEAT,
             .nsamples_msaa = 1
         };
-        auto rgb_cfg = FrameBufferConfig{
+        auto skidmark_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
-            .color_internal_format = GL_RGB16F,
+            .color_internal_format = GL_RGB,
             .color_format = GL_RGB,
+            .color_type = GL_UNSIGNED_BYTE,
+            .color_filter_type = GL_NEAREST,
+            .depth_kind = FrameBufferChannelKind::NONE,
+            .wrap_s = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_BORDER : GL_REPEAT,
+            .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_BORDER : GL_REPEAT,
+            .border_color = { 0.5f, 0.5f, 0.5f, 1.f},
+            .nsamples_msaa = 1
+        };
+        auto wind_cfg = FrameBufferConfig{
+            .width = texture_width_,
+            .height = texture_height_,
+            .color_internal_format = GL_R16F,
+            .color_format = GL_RED,
             .color_type =  GL_HALF_FLOAT,
             .color_filter_type = GL_NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
-            .wrap_s = GL_CLAMP_TO_EDGE,
-            .wrap_t = GL_CLAMP_TO_EDGE,
+            .wrap_s = GL_REPEAT,
+            .wrap_t = GL_REPEAT,
             .nsamples_msaa = 1
         };
         for (auto& f : pressure_fields_.flat_iterable()) {
             f = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-            f->configure(r_cfg);
+            f->configure(pressure_cfg);
         }
+        wind_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+        wind_field_->configure(wind_cfg);
+        temp_wind_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+        temp_wind_field_->configure(wind_cfg);
         temp_pressure_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-        temp_pressure_field_->configure(r_cfg);
+        temp_pressure_field_->configure(pressure_cfg);
         skidmark_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-        skidmark_field_->configure(rgb_cfg);
-        initialize_pressure_fields();
+        skidmark_field_->configure(skidmark_cfg);
+        initialize_fields();
     }
     iterate(offset.has_value() ? *offset : fixed_zeros<float, 2>());
     skidmark_->texture = skidmark_field_->texture_color();
@@ -156,25 +194,60 @@ void AcousticPressureSubdomainLogic::save_debug_images(const std::string& prefix
     for (size_t v = 0; v < 3; ++v) {
         StbImage1(pressure_fields_(v)->color_to_stb_image(1)).save_to_file(prefix + "pressure_" + std::to_string(v) + ".png");
     }
+    StbImage1(wind_field_->color_to_stb_image(1)).save_to_file(prefix + "wind.png");
 }
 
-void AcousticPressureSubdomainLogic::initialize_pressure_fields() {
+void AcousticPressureSubdomainLogic::initialize_fields() {
     for (size_t v = 0; v < 3; ++v) {
         RenderToFrameBufferGuard rfg{ pressure_fields_(v) };
         ViewportGuard vg{ texture_width_, texture_height_ };
         clear_color({ 0.f, 1.f, 1.f, 1.f });
     }
+    {
+        auto& rp = wind_render_program_;
+        if (!rp.allocated()) {
+            std::stringstream fs;
+            fs << SHADER_VER << FRAGMENT_PRECISION;
+            fs << "out float wind_amplitude;" << std::endl;
+            fs << "in vec2 TexCoords;" << std::endl;
+            fs << "uniform sampler2D wind_texture;" << std::endl;
+            fs << "void main() {" << std::endl;
+            fs << "    wind_amplitude = texture(wind_texture, TexCoords).r;" << std::endl;
+            fs << "}" << std::endl;
+            rp.allocate(simple_vertex_shader_text_, fs.str().c_str());
+            rp.wind_texture = rp.get_uniform_location("wind_texture");
+        }
+        rp.use();
+        ViewportGuard vg{ texture_width_, texture_height_ };
+        RenderToFrameBufferGuard rfg{ wind_field_ };
+
+        notify_rendering(CURRENT_SOURCE_LOCATION);
+        TextureBinder tb;
+        tb.bind(rp.wind_texture, *wind_texture_);
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        va().bind();
+        CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+        CHK(glBindVertexArray(0));
+        CHK(glActiveTexture(GL_TEXTURE0));
+    }
 }
 
 void AcousticPressureSubdomainLogic::apply_offset(const FixedArray<float, 2>& offset) {
     for (auto& f : pressure_fields_.flat_iterable()) {
-        offset_pressure_renderer_.apply_offset(
+        offset_grayscale_renderer_.apply_offset(
             offset,
             texture_width_,
             texture_height_,
             f,
             temp_pressure_field_);
     }
+    offset_grayscale_renderer_.apply_offset(
+        offset,
+        texture_width_,
+        texture_height_,
+        wind_field_,
+        temp_wind_field_); 
 }
 
 void AcousticPressureSubdomainLogic::collide_and_stream() {
@@ -197,9 +270,11 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         fs << "uniform vec2 inner_center;" << std::endl;
         fs << "uniform float idx_c_dt_2;" << std::endl;
         fs << "uniform float intensity_normalization;" << std::endl;
+        fs << "uniform float wind_amplitude;" << std::endl;
         for (size_t t = 0; t < 2; ++t) {
             fs << "uniform sampler2D pressure_field" << t << ';' << std::endl;
         }
+        fs << "uniform sampler2D wind_field;" << std::endl;
         fs << "void main() {" << std::endl;
         for (size_t t = 0; t < 2; ++t) {
             fs << "    float p_" << t << " = texture(pressure_field" << t << ", TexCoords0).r * " << Pres::ISCALE << " + " << Pres::IOFFSET << ';' << std::endl;
@@ -211,19 +286,26 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         }
         fs << "    float Lp = p_00 + p_01 + p_10 + p_11 - 4 * p_1;" << std::endl;
         fs << "    p_2 = Lp * idx_c_dt_2 + 2 * p_1 - p_0;" << std::endl;
-        fs << "    vec2 radial_vector = TexCoords0 - inner_center;" << std::endl;
-        fs << "    float rlen = length(radial_vector);" << std::endl;
         fs << "    if (all(greaterThan(TexCoords0, inner_min)) && all(lessThan(TexCoords0, inner_max))) {" << std::endl;
         fs << "        p_2 += inner_pressure;" << std::endl;
         fs << "    }" << std::endl;
+        fs << "    float local_wind = texture(wind_field, TexCoords0).r * " << Wind::ISCALE << " + " << Wind::IOFFSET << ';' << std::endl;
+        // fs << "    local_wind = sign(local_wind) * pow(abs(local_wind), 4);" << std::endl;
+        // fs << "    p_2 += 0.005 * (wind_amplitude * local_wind - p_2);" << std::endl;
+        fs << "    p_2 += wind_amplitude * local_wind;" << std::endl;
         fs << "    p_2 *= intensity_normalization;" << std::endl;
         float pm = boundary_limitation_.max;
-        float fo = boundary_limitation_.falloff;
-        float rn = 1 - fo;
-        fs << "    float max_len = " << pm << " * max(1.0 - max(2.0 * rlen - " << fo << ", 0.0) / " << rn << ", 0.0);" << std::endl;
-        fs << "    float len = abs(p_2);" << std::endl;
-        fs << "    if (len > max_len) {" << std::endl;
-        fs << "        p_2 *= max_len / len;" << std::endl;
+        if (boundary_limitation_.falloff != 1.f) {
+            float fo = boundary_limitation_.falloff;
+            float rn = 1 - fo;
+            fs << "    vec2 radial_vector = TexCoords0 - inner_center;" << std::endl;
+            fs << "    float rlen = length(radial_vector);" << std::endl;
+            fs << "    float max_len = " << pm << " * max(1.0 - max(2.0 * rlen - " << fo << ", 0.0) / " << rn << ", 0.0);" << std::endl;
+        } else {
+            fs << "    float max_len = " << pm << ';' << std::endl;
+        }
+        fs << "    if (abs(p_2) > max_len) {" << std::endl;
+        fs << "        p_2 = sign(p_2) * max_len;" << std::endl;
         fs << "    }" << std::endl;
         fs << "    p_2 = p_2 * " << Pres::SCALE << " + " << Pres::OFFSET << ';' << std::endl;
         fs << "}" << std::endl;
@@ -234,23 +316,31 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         rp.inner_pressure = rp.get_uniform_location("inner_pressure");
         rp.inner_min = rp.get_uniform_location("inner_min");
         rp.inner_max = rp.get_uniform_location("inner_max");
-        rp.inner_center = rp.get_uniform_location("inner_center");
+        if (boundary_limitation_.falloff != 1.f) {
+            rp.inner_center = rp.get_uniform_location("inner_center");
+        }
         rp.idx_c_dt_2 = rp.get_uniform_location("idx_c_dt_2");
         rp.intensity_normalization = rp.get_uniform_location("intensity_normalization");
+        rp.wind_amplitude = rp.get_uniform_location("wind_amplitude");
+        rp.wind_field = rp.get_uniform_location("wind_field");
         for (size_t t = 0; t < 2; ++t) {
             rp.pressure_fields(t) = rp.get_uniform_location(
                 ("pressure_field" + std::to_string(t)).c_str());
         }
     }
     rp.use();
+    inner_angle_ = std::fmod(inner_angle_ + inner_angular_velocity_, (float)(2 * M_PI));
+    wind_angle_ = std::fmod(wind_angle_ + wind_angular_velocity_, (float)(2 * M_PI));
     {
-        angle_ = std::fmod(angle_ + angular_velocity_, (float)(2 * M_PI));
         std::scoped_lock lock{ inner_mutex_ };
-        CHK(glUniform1f(rp.inner_pressure, inner_pressure_ * std::sin(angle_)));
+        CHK(glUniform1f(rp.inner_pressure, inner_pressure_ * std::sin(inner_angle_)));
         CHK(glUniform2fv(rp.inner_min, 1, inner_region_.min.flat_begin()));
         CHK(glUniform2fv(rp.inner_max, 1, inner_region_.max.flat_begin()));
-        CHK(glUniform2fv(rp.inner_center, 1, inner_region_.center().flat_begin()));
+        if (boundary_limitation_.falloff != 1.f) {
+            CHK(glUniform2fv(rp.inner_center, 1, inner_region_.center().flat_begin()));
+        }
     }
+    CHK(glUniform1f(rp.wind_amplitude, wind_amplitude_ * std::sin(wind_angle_)));
     CHK(glUniform1f(rp.idx_c_dt_2, squared(c_ * dt_ / dx_)));
     CHK(glUniform1f(rp.intensity_normalization, intensity_normalization_));
     ViewportGuard vg{ texture_width_, texture_height_ };
@@ -263,6 +353,7 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     }
+    tb.bind(rp.wind_field, *wind_field_->texture_color());
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));

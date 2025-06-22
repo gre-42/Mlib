@@ -45,6 +45,7 @@ struct ColormapWithModifiers {
     InterpolationMode depth_interpolation = InterpolationMode::NEAREST;
     unsigned int anisotropic_filtering_level = 0;
     OrderableFixedArray<WrapMode, 2> wrap_modes = { WrapMode::REPEAT, WrapMode::REPEAT };
+    OrderableFixedArray<float, 4> border_color = {1.f, 0.f, 1.f, 1.f};
     int rotate = 0;
     CachedHash hash;
     ColormapWithModifiers& compute_hash();

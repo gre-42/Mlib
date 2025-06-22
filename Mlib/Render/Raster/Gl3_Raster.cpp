@@ -202,6 +202,7 @@ void Gl3Raster::allocate_dxt(const RasterConfig& cfg) {
         bool(format_ & Raster::MIPMAP),
         GL_REPEAT,
         GL_REPEAT,
+        FixedArray<float, 4>{1.f, 0.f, 1.f, 1.f},
         1);     // layers
     {
         BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
@@ -427,6 +428,7 @@ void Gl3Raster::create_texture()
         bool(format_ & Raster::MIPMAP),
         GL_REPEAT,
         GL_REPEAT,
+        FixedArray<float, 4>{1.f, 0.f, 1.f, 1.f},
         1);     // layers
     BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
     CHK(glTexImage2D(

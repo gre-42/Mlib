@@ -8,6 +8,8 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Acoustic_Pressure_Subdomain_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
@@ -26,12 +28,16 @@ DECLARE_ARGUMENT(texture_width);
 DECLARE_ARGUMENT(texture_height);
 DECLARE_ARGUMENT(inner_pressure);
 DECLARE_ARGUMENT(inner_region);
-DECLARE_ARGUMENT(angular_velocity);
+DECLARE_ARGUMENT(inner_angular_velocity);
+DECLARE_ARGUMENT(wind_amplitude);
+DECLARE_ARGUMENT(wind_angular_velocity);
+DECLARE_ARGUMENT(wind_texture);
 DECLARE_ARGUMENT(c);
 DECLARE_ARGUMENT(dt);
 DECLARE_ARGUMENT(dx);
 DECLARE_ARGUMENT(intensity_normalization);
 DECLARE_ARGUMENT(pressure_limitation);
+DECLARE_ARGUMENT(periodicity);
 DECLARE_ARGUMENT(skidmark_strength);
 }
 
@@ -54,8 +60,16 @@ void CreateAcousticPressureSubdomain::execute(const LoadSceneJsonUserFunctionArg
         node,
         skidmark,
         args.arguments.at<float>(KnownArgs::inner_pressure),
-        args.arguments.at<float>(KnownArgs::angular_velocity) * degrees,
+        args.arguments.at<float>(KnownArgs::inner_angular_velocity) * degrees,
         args.arguments.at<DefaultUnitialized<AxisAlignedBoundingBox<float, 2>>>(KnownArgs::inner_region),
+        args.arguments.at<float>(KnownArgs::wind_amplitude),
+        args.arguments.at<float>(KnownArgs::wind_angular_velocity) * degrees,
+        RenderingContextStack::primary_rendering_resources().get_texture_lazy(
+            ColormapWithModifiers{
+                .filename = VariableAndHash{ args.arguments.path_or_variable(KnownArgs::wind_texture).path },
+                .color_mode = ColorMode::GRAYSCALE
+            }.compute_hash(),
+            TextureRole::COLOR_FROM_DB),
         args.arguments.at<int>(KnownArgs::texture_width),
         args.arguments.at<int>(KnownArgs::texture_height),
         args.arguments.at<float>(KnownArgs::c),
@@ -63,6 +77,7 @@ void CreateAcousticPressureSubdomain::execute(const LoadSceneJsonUserFunctionArg
         args.arguments.at<float>(KnownArgs::dx),
         args.arguments.at<float>(KnownArgs::intensity_normalization),
         args.arguments.at<BoundaryLimitation>(KnownArgs::pressure_limitation),
+        periodicity_from_string(args.arguments.at<std::string>(KnownArgs::periodicity)),
         args.arguments.at<float>(KnownArgs::skidmark_strength));
     o->on_skidmark_node_clear.add([&p=object_pool, &o=*o](){ p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
