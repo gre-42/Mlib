@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-class CreateAcousticSubdomain: public LoadRenderableSceneInstanceFunction {
+class CreateAcousticVelocitySubdomain: public LoadRenderableSceneInstanceFunction {
 public:
-    explicit CreateAcousticSubdomain(RenderableScene& renderable_scene);
+    explicit CreateAcousticVelocitySubdomain(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

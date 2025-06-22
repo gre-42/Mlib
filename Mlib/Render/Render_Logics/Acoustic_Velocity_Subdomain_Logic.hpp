@@ -9,6 +9,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Moving_Node_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Offset_Renderer.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <chrono>
 #include <cmath>
@@ -28,16 +29,6 @@ struct VelocityLimitation {
 };
 
 void from_json(const nlohmann::json& j, VelocityLimitation& l);
-
-struct OffsetRenderProgram: public RenderProgram {
-    OffsetRenderProgram(const OffsetRenderProgram&) = delete;
-    OffsetRenderProgram& operator = (const OffsetRenderProgram&) = delete;
-public:
-    OffsetRenderProgram();
-    ~OffsetRenderProgram();
-    GLint offset = -1;
-    GLint field = -1;
-};
 
 struct AcousticRenderProgram: public RenderProgram {
     AcousticRenderProgram(const AcousticRenderProgram&) = delete;
@@ -65,9 +56,9 @@ public:
     GLint velocity_field = -1;
 };
 
-class AcousticSubdomainLogic final: public MovingNodeLogic, private GenericPostProcessingLogic {
+class AcousticVelocitySubdomainLogic final: public MovingNodeLogic, private GenericPostProcessingLogic {
 public:
-    AcousticSubdomainLogic(
+    AcousticVelocitySubdomainLogic(
         DanglingRef<SceneNode> skidmark_node,
         std::shared_ptr<Skidmark> skidmark,
         const FixedArray<SceneDir, 2>& directional_velocity,
@@ -85,7 +76,7 @@ public:
         float maximum_inner_velocity = 0.2f,
         const VelocityLimitation& velocity_limitation = VelocityLimitation{},
         float skidmark_strength = 1.f);
-    virtual ~AcousticSubdomainLogic();
+    virtual ~AcousticVelocitySubdomainLogic();
 
     virtual void render_moving_node(
         const LayoutConstraintParameters& lx,
@@ -113,9 +104,9 @@ private:
     void collide_and_stream();
     void calculate_skidmark_field();
     void deallocate();
-    OffsetRenderProgram offset_render_program_;
     AcousticRenderProgram acoustic_render_program_;
     FixedArray<std::shared_ptr<FrameBuffer>, 3> velocity_fields_;
+    OffsetRenderer offset_velocity_renderer_;
     std::shared_ptr<FrameBuffer> temp_velocity_field_;
     std::shared_ptr<FrameBuffer> skidmark_field_;
     AcousticSkidmarkRenderProgram skidmark_render_program_;

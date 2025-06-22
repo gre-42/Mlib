@@ -1,4 +1,4 @@
-#include "Acoustic_Subdomain_Logic.hpp"
+#include "Acoustic_Velocity_Subdomain_Logic.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
@@ -47,9 +47,6 @@ static const float ISCALE = 2.f;
 static const float IOFFSET = -1.f;
 }
 
-OffsetRenderProgram::OffsetRenderProgram() = default;
-OffsetRenderProgram::~OffsetRenderProgram() = default;
-
 AcousticRenderProgram::AcousticRenderProgram()
     : velocity_fields(-1)
 {}
@@ -59,7 +56,7 @@ AcousticRenderProgram::~AcousticRenderProgram() = default;
 AcousticSkidmarkRenderProgram::AcousticSkidmarkRenderProgram() = default;
 AcousticSkidmarkRenderProgram::~AcousticSkidmarkRenderProgram() = default;
 
-AcousticSubdomainLogic::AcousticSubdomainLogic(
+AcousticVelocitySubdomainLogic::AcousticVelocitySubdomainLogic(
     DanglingRef<SceneNode> skidmark_node,
     std::shared_ptr<Skidmark> skidmark,
     const FixedArray<SceneDir, 2>& directional_velocity,
@@ -80,6 +77,7 @@ AcousticSubdomainLogic::AcousticSubdomainLogic(
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , velocity_fields_{ uninitialized }
+    , offset_velocity_renderer_{ 2 }
     , skidmark_{ std::move(skidmark) }
     , directional_velocity_{ directional_velocity }
     , radial_velocity_{ radial_velocity }
@@ -101,19 +99,19 @@ AcousticSubdomainLogic::AcousticSubdomainLogic(
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
 
-AcousticSubdomainLogic::~AcousticSubdomainLogic() {
+AcousticVelocitySubdomainLogic::~AcousticVelocitySubdomainLogic() {
     on_destroy.clear();
     deallocate();
 }
 
-void AcousticSubdomainLogic::deallocate() {
+void AcousticVelocitySubdomainLogic::deallocate() {
     // skidmark_->texture = nullptr;
     velocity_fields_ = nullptr;
     temp_velocity_field_ = nullptr;
     skidmark_field_ = nullptr;
 }
 
-void AcousticSubdomainLogic::render_moving_node(
+void AcousticVelocitySubdomainLogic::render_moving_node(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -179,21 +177,21 @@ void AcousticSubdomainLogic::render_moving_node(
     skidmark_->vp = vp;
 }
 
-void AcousticSubdomainLogic::iterate(const FixedArray<float, 2>& offset) {
+void AcousticVelocitySubdomainLogic::iterate(const FixedArray<float, 2>& offset) {
     apply_offset(offset);
     collide_and_stream();
     calculate_skidmark_field();
     i012_ = (i012_ + 1) % 3;
 }
 
-void AcousticSubdomainLogic::save_debug_images(const std::string& prefix) {
+void AcousticVelocitySubdomainLogic::save_debug_images(const std::string& prefix) {
     StbImage3(skidmark_field_->color_to_stb_image(3)).save_to_file(prefix + "skidmark.png");
     for (size_t v = 0; v < 3; ++v) {
         StbImage1(velocity_fields_(v)->color_to_stb_image(2)).save_to_file(prefix + "velocity_" + std::to_string(v) + ".png");
     }
 }
 
-void AcousticSubdomainLogic::initialize_velocity_fields() {
+void AcousticVelocitySubdomainLogic::initialize_velocity_fields() {
     for (size_t v = 0; v < 3; ++v) {
         RenderToFrameBufferGuard rfg{ velocity_fields_(v) };
         ViewportGuard vg{ texture_width_, texture_height_ };
@@ -201,61 +199,18 @@ void AcousticSubdomainLogic::initialize_velocity_fields() {
     }
 }
 
-void AcousticSubdomainLogic::apply_offset(const FixedArray<float, 2>& offset) {
-    auto& rp = offset_render_program_;
-    if (!rp.allocated()) {
-        std::stringstream vs;
-        vs << SHADER_VER;
-        vs << "layout (location = 0) in vec2 aPos;" << std::endl;
-        vs << "layout (location = 1) in vec2 aTexCoords;" << std::endl;
-        vs << std::endl;
-        vs << "out vec2 TexCoords0;" << std::endl;
-        vs << "uniform vec2 offset;" << std::endl;
-        vs << std::endl;
-        vs << "void main()" << std::endl;
-        vs << "{" << std::endl;
-        vs << "    TexCoords0 = aTexCoords - offset;" << std::endl;
-        vs << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);" << std::endl;
-        vs << "}" << std::endl;
-        
-        std::stringstream fs;
-        fs << SHADER_VER << FRAGMENT_PRECISION;
-        fs << "out vec2 result;" << std::endl;
-        fs << "in vec2 TexCoords0;" << std::endl;
-        fs << "uniform sampler2D field;" << std::endl;
-        fs << "void main() {" << std::endl;
-        fs << "    result = texture(field, TexCoords0).rg;" << std::endl;
-        fs << "}" << std::endl;
-        // linfo() << "--------- apply_offset -----------";
-        // lraw() << vs.str();
-        // lraw() << fs.str();
-        rp.allocate(vs.str().c_str(), fs.str().c_str());
-        rp.offset = rp.get_uniform_location("offset");
-        rp.field = rp.get_uniform_location("field");
-    }
-    rp.use();
-    CHK(glUniform2fv(rp.offset, 1, offset.flat_begin()));
-    ViewportGuard vg{ texture_width_, texture_height_ };
-
+void AcousticVelocitySubdomainLogic::apply_offset(const FixedArray<float, 2>& offset) {
     for (auto& f : velocity_fields_.flat_iterable()) {
-        {
-            RenderToFrameBufferGuard rfg{ temp_velocity_field_ };
-
-            notify_rendering(CURRENT_SOURCE_LOCATION);
-            TextureBinder tb;
-            tb.bind(rp.field, *f->texture_color());
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-            va().bind();
-            CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
-            CHK(glBindVertexArray(0));
-            CHK(glActiveTexture(GL_TEXTURE0));
-        }
-        std::swap(temp_velocity_field_, f);
+        offset_velocity_renderer_.apply_offset(
+            offset,
+            texture_width_,
+            texture_height_,
+            f,
+            temp_velocity_field_);
     }
 }
 
-std::string AcousticSubdomainLogic::diff_vertex_shader() const {
+std::string AcousticVelocitySubdomainLogic::diff_vertex_shader() const {
     std::stringstream vs;
     vs << SHADER_VER;
     vs << "layout (location = 0) in vec2 aPos;" << std::endl;
@@ -282,7 +237,7 @@ std::string AcousticSubdomainLogic::diff_vertex_shader() const {
     return vs.str();
 }
 
-void AcousticSubdomainLogic::collide_and_stream() {
+void AcousticVelocitySubdomainLogic::collide_and_stream() {
     auto& rp = acoustic_render_program_;
     if (!rp.allocated()) {
         auto vs = diff_vertex_shader();
@@ -381,7 +336,7 @@ void AcousticSubdomainLogic::collide_and_stream() {
     CHK(glActiveTexture(GL_TEXTURE0));
 }
 
-void AcousticSubdomainLogic::calculate_skidmark_field() {
+void AcousticVelocitySubdomainLogic::calculate_skidmark_field() {
     auto& rp = skidmark_render_program_;
     if (!rp.allocated()) {
         auto vs = diff_vertex_shader();
@@ -430,21 +385,21 @@ void AcousticSubdomainLogic::calculate_skidmark_field() {
     CHK(glActiveTexture(GL_TEXTURE0));
 }
 
-void AcousticSubdomainLogic::set_directional_velocity(const FixedArray<SceneDir, 2>& directional_velocity) {
+void AcousticVelocitySubdomainLogic::set_directional_velocity(const FixedArray<SceneDir, 2>& directional_velocity) {
     std::scoped_lock lock{ velocity_mutex_ };
     directional_velocity_ = directional_velocity;
 }
 
-void AcousticSubdomainLogic::set_radial_velocity(SceneDir radial_velocity) {
+void AcousticVelocitySubdomainLogic::set_radial_velocity(SceneDir radial_velocity) {
     std::scoped_lock lock{ velocity_mutex_ };
     radial_velocity_ = radial_velocity;
 }
 
-void AcousticSubdomainLogic::set_velocity_region(const AxisAlignedBoundingBox<float, 2>& velocity_region) {
+void AcousticVelocitySubdomainLogic::set_velocity_region(const AxisAlignedBoundingBox<float, 2>& velocity_region) {
     std::scoped_lock lock{ velocity_mutex_ };
     velocity_region_ = velocity_region;
 }
 
-void AcousticSubdomainLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "AcousticSubdomainLogic";
+void AcousticVelocitySubdomainLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "AcousticVelocitySubdomainLogic";
 }

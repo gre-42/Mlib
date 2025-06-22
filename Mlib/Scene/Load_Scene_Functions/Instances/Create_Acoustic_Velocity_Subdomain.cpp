@@ -1,4 +1,4 @@
-#include "Create_Acoustic_Subdomain.hpp"
+#include "Create_Acoustic_Velocity_Subdomain.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box_Json.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
@@ -7,7 +7,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Render/Render_Logics/Acoustic_Subdomain_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Acoustic_Velocity_Subdomain_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -40,11 +40,11 @@ DECLARE_ARGUMENT(velocity_limitation);
 DECLARE_ARGUMENT(skidmark_strength);
 }
 
-CreateAcousticSubdomain::CreateAcousticSubdomain(RenderableScene& renderable_scene) 
+CreateAcousticVelocitySubdomain::CreateAcousticVelocitySubdomain(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateAcousticSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateAcousticVelocitySubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
@@ -54,7 +54,7 @@ void CreateAcousticSubdomain::execute(const LoadSceneJsonUserFunctionArgs& args)
         .texture = nullptr,
         .vp = fixed_nans<ScenePos, 4, 4>()
         });
-    auto o = object_pool.create_unique<AcousticSubdomainLogic>(
+    auto o = object_pool.create_unique<AcousticVelocitySubdomainLogic>(
         CURRENT_SOURCE_LOCATION,
         node,
         skidmark,
@@ -88,11 +88,11 @@ namespace {
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "create_acoustic_subdomain",
+            "create_acoustic_velocity_subdomain",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                CreateAcousticSubdomain(args.renderable_scene()).execute(args);
+                CreateAcousticVelocitySubdomain(args.renderable_scene()).execute(args);
             });
     }
 } obj;
