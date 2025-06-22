@@ -480,7 +480,7 @@ void Player::increment_external_forces(
         }
     }
     bool unstucking = false;
-    if (game_mode_ == GameMode::RALLY) {
+    if ((game_mode_ == GameMode::RALLY) && (player_role_ == PlayerRole::COMPETITOR)) {
         if (playback_waypoints_.has_waypoints()) {
             playback_waypoints_.select_next_waypoint();
         }
