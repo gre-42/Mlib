@@ -40,12 +40,16 @@ void OffsetRenderer::apply_offset(
         
         std::stringstream fs;
         {
-            if (ndim_ > 4) {
+            if ((ndim_ < 1) || (ndim_ > 4)) {
                 THROW_OR_ABORT("OffsetRenderer: Number of dimensions out of bounds");
             }
             const char* coords = "rgba";
             fs << SHADER_VER << FRAGMENT_PRECISION;
-            fs << "out vec" << ndim_ << " result;" << std::endl;
+            if (ndim_ == 1) {
+                fs << "out float result;" << std::endl;
+            } else {
+                fs << "out vec" << ndim_ << " result;" << std::endl;
+            }
             fs << "in vec2 TexCoords0;" << std::endl;
             fs << "uniform sampler2D field;" << std::endl;
             fs << "void main() {" << std::endl;

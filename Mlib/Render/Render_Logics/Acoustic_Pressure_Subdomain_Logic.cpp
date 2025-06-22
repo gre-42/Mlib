@@ -1,4 +1,4 @@
-#include "Acoustic_Velocity_Subdomain_Logic.hpp"
+#include "Acoustic_Pressure_Subdomain_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Images/StbImage1.hpp>
@@ -26,78 +26,70 @@
 
 using namespace Mlib;
 
-namespace Vel {
+namespace Pres {
 static const float SCALE = 0.5f;
 static const float OFFSET = 0.5f;
 static const float ISCALE = 2.f;
 static const float IOFFSET = -1.f;
 }
 
-AcousticVelocityRenderProgram::AcousticVelocityRenderProgram()
-    : velocity_fields(-1)
+AcousticPressureRenderProgram::AcousticPressureRenderProgram()
+    : pressure_fields(-1)
 {}
 
-AcousticVelocityRenderProgram::~AcousticVelocityRenderProgram() = default;
+AcousticPressureRenderProgram::~AcousticPressureRenderProgram() = default;
 
-AcousticVelocitySkidmarkRenderProgram::AcousticVelocitySkidmarkRenderProgram() = default;
-AcousticVelocitySkidmarkRenderProgram::~AcousticVelocitySkidmarkRenderProgram() = default;
+AcousticPressureSkidmarkRenderProgram::AcousticPressureSkidmarkRenderProgram() = default;
+AcousticPressureSkidmarkRenderProgram::~AcousticPressureSkidmarkRenderProgram() = default;
 
-AcousticVelocitySubdomainLogic::AcousticVelocitySubdomainLogic(
+AcousticPressureSubdomainLogic::AcousticPressureSubdomainLogic(
     DanglingRef<SceneNode> skidmark_node,
     std::shared_ptr<Skidmark> skidmark,
-    const FixedArray<SceneDir, 2>& directional_velocity,
-    float radial_velocity,
+    float inner_pressure,
     float angular_velocity,
-    const AxisAlignedBoundingBox<float, 2>& velocity_region,
+    const AxisAlignedBoundingBox<float, 2>& inner_region,
     int texture_width,
     int texture_height,
-    std::chrono::steady_clock::duration velocity_dt,
     float c,
     float dt,
     float dx,
     float intensity_normalization,
-    float reference_inner_directional_velocity,
-    float maximum_inner_velocity,
     const BoundaryLimitation& boundary_limitation,
     float skidmark_strength)
     : MovingNodeLogic{ skidmark_node }
     , on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
-    , velocity_fields_{ uninitialized }
-    , offset_velocity_renderer_{ 2 }
+    , pressure_fields_{ uninitialized }
+    , offset_pressure_renderer_{ 1 }
     , skidmark_{ std::move(skidmark) }
-    , directional_velocity_{ directional_velocity }
-    , radial_velocity_{ radial_velocity }
+    , inner_pressure_{ inner_pressure }
     , angular_velocity_{ angular_velocity }
     , angle_{ 0.f }
-    , velocity_region_{ velocity_region }
+    , inner_region_{ inner_region }
     , texture_width_{ texture_width }
     , texture_height_{ texture_height }
-    , velocity_dt_{ velocity_dt }
     , c_{ c }
     , dt_{ dt }
     , dx_{ dx }
     , intensity_normalization_{ intensity_normalization }
-    , reference_inner_directional_velocity_{ reference_inner_directional_velocity }
-    , maximum_inner_velocity_{ maximum_inner_velocity }
     , boundary_limitation_{ boundary_limitation }
     , skidmark_strength_{ skidmark_strength }
     , i012_{ 0 }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
 
-AcousticVelocitySubdomainLogic::~AcousticVelocitySubdomainLogic() {
+AcousticPressureSubdomainLogic::~AcousticPressureSubdomainLogic() {
     on_destroy.clear();
     deallocate();
 }
 
-void AcousticVelocitySubdomainLogic::deallocate() {
+void AcousticPressureSubdomainLogic::deallocate() {
     // skidmark_->texture = nullptr;
-    velocity_fields_ = nullptr;
-    temp_velocity_field_ = nullptr;
+    pressure_fields_ = nullptr;
+    temp_pressure_field_ = nullptr;
     skidmark_field_ = nullptr;
 }
 
-void AcousticVelocitySubdomainLogic::render_moving_node(
+void AcousticPressureSubdomainLogic::render_moving_node(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -112,23 +104,12 @@ void AcousticVelocitySubdomainLogic::render_moving_node(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("SkidmarkLogic received wrong rendering");
     }
-    if (velocity_dt_ != std::chrono::steady_clock::duration{0}) {
-        auto v3 = skidmark_node_->velocity(frame_id.external_render_pass.time, velocity_dt_);
-        auto v2 = FixedArray<SceneDir, 2>{v3(0), v3(2)};
-        auto l = std::sqrt(sum(squared(v2)));
-        if (l > reference_inner_directional_velocity_) {
-            v2 /= l;
-        } else {
-            v2 /= reference_inner_directional_velocity_;
-        }
-        set_directional_velocity(v2 * maximum_inner_velocity_);
-    }
     if (skidmark_field_ == nullptr) {
-        auto rg_cfg = FrameBufferConfig{
+        auto r_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
-            .color_internal_format = GL_RGB16F,
-            .color_format = GL_RGB,
+            .color_internal_format = GL_R16F,
+            .color_format = GL_RED,
             .color_type =  GL_HALF_FLOAT,
             .color_filter_type = GL_NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
@@ -148,144 +129,137 @@ void AcousticVelocitySubdomainLogic::render_moving_node(
             .wrap_t = GL_CLAMP_TO_EDGE,
             .nsamples_msaa = 1
         };
-        for (auto& f : velocity_fields_.flat_iterable()) {
+        for (auto& f : pressure_fields_.flat_iterable()) {
             f = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-            f->configure(rg_cfg);
+            f->configure(r_cfg);
         }
-        temp_velocity_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-        temp_velocity_field_->configure(rg_cfg);
+        temp_pressure_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
+        temp_pressure_field_->configure(r_cfg);
         skidmark_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
         skidmark_field_->configure(rgb_cfg);
-        initialize_velocity_fields();
+        initialize_pressure_fields();
     }
     iterate(offset.has_value() ? *offset : fixed_zeros<float, 2>());
     skidmark_->texture = skidmark_field_->texture_color();
     skidmark_->vp = vp;
 }
 
-void AcousticVelocitySubdomainLogic::iterate(const FixedArray<float, 2>& offset) {
+void AcousticPressureSubdomainLogic::iterate(const FixedArray<float, 2>& offset) {
     apply_offset(offset);
     collide_and_stream();
     calculate_skidmark_field();
     i012_ = (i012_ + 1) % 3;
 }
 
-void AcousticVelocitySubdomainLogic::save_debug_images(const std::string& prefix) {
+void AcousticPressureSubdomainLogic::save_debug_images(const std::string& prefix) {
     StbImage3(skidmark_field_->color_to_stb_image(3)).save_to_file(prefix + "skidmark.png");
     for (size_t v = 0; v < 3; ++v) {
-        StbImage1(velocity_fields_(v)->color_to_stb_image(2)).save_to_file(prefix + "velocity_" + std::to_string(v) + ".png");
+        StbImage1(pressure_fields_(v)->color_to_stb_image(1)).save_to_file(prefix + "pressure_" + std::to_string(v) + ".png");
     }
 }
 
-void AcousticVelocitySubdomainLogic::initialize_velocity_fields() {
+void AcousticPressureSubdomainLogic::initialize_pressure_fields() {
     for (size_t v = 0; v < 3; ++v) {
-        RenderToFrameBufferGuard rfg{ velocity_fields_(v) };
+        RenderToFrameBufferGuard rfg{ pressure_fields_(v) };
         ViewportGuard vg{ texture_width_, texture_height_ };
-        clear_color({ 0.f, 0.f, 1.f, 1.f });
+        clear_color({ 0.f, 1.f, 1.f, 1.f });
     }
 }
 
-void AcousticVelocitySubdomainLogic::apply_offset(const FixedArray<float, 2>& offset) {
-    for (auto& f : velocity_fields_.flat_iterable()) {
-        offset_velocity_renderer_.apply_offset(
+void AcousticPressureSubdomainLogic::apply_offset(const FixedArray<float, 2>& offset) {
+    for (auto& f : pressure_fields_.flat_iterable()) {
+        offset_pressure_renderer_.apply_offset(
             offset,
             texture_width_,
             texture_height_,
             f,
-            temp_velocity_field_);
+            temp_pressure_field_);
     }
 }
 
-void AcousticVelocitySubdomainLogic::collide_and_stream() {
+void AcousticPressureSubdomainLogic::collide_and_stream() {
     auto& rp = acoustic_render_program_;
     if (!rp.allocated()) {
         auto vs = diff_vertex_shader(texture_width_, texture_height_);
         
         std::stringstream fs;
         fs << SHADER_VER << FRAGMENT_PRECISION;
-        fs << "out vec2 u_2;" << std::endl;
+        fs << "out float p_2;" << std::endl;
         fs << "in vec2 TexCoords0;" << std::endl;
         for (int dim = 0; dim < 2; ++dim) {
             for (int h = 0; h < 2; ++h) {
                 fs << "in vec2 TexCoords" << dim << h << ';' << std::endl;
             }
         }
-        fs << "uniform vec2 inner_directional_velocity;" << std::endl;
-        fs << "uniform float inner_radial_velocity;" << std::endl;
+        fs << "uniform float inner_pressure;" << std::endl;
         fs << "uniform vec2 inner_min;" << std::endl;
         fs << "uniform vec2 inner_max;" << std::endl;
         fs << "uniform vec2 inner_center;" << std::endl;
         fs << "uniform float idx_c_dt_2;" << std::endl;
         fs << "uniform float intensity_normalization;" << std::endl;
         for (size_t t = 0; t < 2; ++t) {
-            fs << "uniform sampler2D velocity_field" << t << ';' << std::endl;
+            fs << "uniform sampler2D pressure_field" << t << ';' << std::endl;
         }
         fs << "void main() {" << std::endl;
-        fs << "    vec2 radial_vector = TexCoords0 - inner_center;" << std::endl;
-        fs << "    float rlen = length(radial_vector);" << std::endl;
-        fs << "    if (all(greaterThan(TexCoords0, inner_min)) && all(lessThan(TexCoords0, inner_max))) {" << std::endl;
-        fs << "        u_2 = inner_directional_velocity;" << std::endl;
-        fs << "        if (rlen > 1e-6) {" << std::endl;
-        fs << "            u_2 += (inner_radial_velocity / rlen) * radial_vector;" << std::endl;
-        fs << "        }" << std::endl;
-        fs << "    } else {" << std::endl;
         for (size_t t = 0; t < 2; ++t) {
-            fs << "        vec2 u_" << t << " = texture(velocity_field" << t << ", TexCoords0).rg * " << Vel::ISCALE << " + " << Vel::IOFFSET << ';' << std::endl;
+            fs << "    float p_" << t << " = texture(pressure_field" << t << ", TexCoords0).r * " << Pres::ISCALE << " + " << Pres::IOFFSET << ';' << std::endl;
         }
         for (int dim = 0; dim < 2; ++dim) {
             for (int h = 0; h < 2; ++h) {
-                fs << "        vec2 u_" << dim << h << " = texture(velocity_field1, TexCoords" << dim << h << ").rg * " << Vel::ISCALE << " + " << Vel::IOFFSET << ';' << std::endl;
+                fs << "    float p_" << dim << h << " = texture(pressure_field1, TexCoords" << dim << h << ").r * " << Pres::ISCALE << " + " << Pres::IOFFSET << ';' << std::endl;
             }
         }
-        fs << "        vec2 Lu = u_00 + u_01 + u_10 + u_11 - 4 * u_1;" << std::endl;
-        fs << "        u_2 = Lu * idx_c_dt_2 + 2 * u_1 - u_0;" << std::endl;
-        fs << "        u_2 *= intensity_normalization;" << std::endl;
+        fs << "    float Lp = p_00 + p_01 + p_10 + p_11 - 4 * p_1;" << std::endl;
+        fs << "    p_2 = Lp * idx_c_dt_2 + 2 * p_1 - p_0;" << std::endl;
+        fs << "    vec2 radial_vector = TexCoords0 - inner_center;" << std::endl;
+        fs << "    float rlen = length(radial_vector);" << std::endl;
+        fs << "    if (all(greaterThan(TexCoords0, inner_min)) && all(lessThan(TexCoords0, inner_max))) {" << std::endl;
+        fs << "        p_2 += inner_pressure;" << std::endl;
         fs << "    }" << std::endl;
-        float vm = boundary_limitation_.max;
+        fs << "    p_2 *= intensity_normalization;" << std::endl;
+        float pm = boundary_limitation_.max;
         float fo = boundary_limitation_.falloff;
         float rn = 1 - fo;
-        fs << "    float max_len = " << vm << " * max(1.0 - max(2.0 * rlen - " << fo << ", 0.0) / " << rn << ", 0.0);" << std::endl;
-        fs << "    float len = length(u_2);" << std::endl;
+        fs << "    float max_len = " << pm << " * max(1.0 - max(2.0 * rlen - " << fo << ", 0.0) / " << rn << ", 0.0);" << std::endl;
+        fs << "    float len = abs(p_2);" << std::endl;
         fs << "    if (len > max_len) {" << std::endl;
-        fs << "        u_2 *= max_len / len;" << std::endl;
+        fs << "        p_2 *= max_len / len;" << std::endl;
         fs << "    }" << std::endl;
-        fs << "    u_2 = u_2 * " << Vel::SCALE << " + " << Vel::OFFSET << ';' << std::endl;
+        fs << "    p_2 = p_2 * " << Pres::SCALE << " + " << Pres::OFFSET << ';' << std::endl;
         fs << "}" << std::endl;
         // linfo() << "--------- collide_and_stream -----------";
         // lraw() << vs.str();
         // lraw() << fs.str();
         rp.allocate(vs.c_str(), fs.str().c_str());
-        rp.inner_directional_velocity = rp.get_uniform_location("inner_directional_velocity");
-        rp.inner_radial_velocity = rp.get_uniform_location("inner_radial_velocity");
+        rp.inner_pressure = rp.get_uniform_location("inner_pressure");
         rp.inner_min = rp.get_uniform_location("inner_min");
         rp.inner_max = rp.get_uniform_location("inner_max");
         rp.inner_center = rp.get_uniform_location("inner_center");
         rp.idx_c_dt_2 = rp.get_uniform_location("idx_c_dt_2");
         rp.intensity_normalization = rp.get_uniform_location("intensity_normalization");
         for (size_t t = 0; t < 2; ++t) {
-            rp.velocity_fields(t) = rp.get_uniform_location(
-                ("velocity_field" + std::to_string(t)).c_str());
+            rp.pressure_fields(t) = rp.get_uniform_location(
+                ("pressure_field" + std::to_string(t)).c_str());
         }
     }
     rp.use();
     {
         angle_ = std::fmod(angle_ + angular_velocity_, (float)(2 * M_PI));
-        std::scoped_lock lock{ velocity_mutex_ };
-        CHK(glUniform2fv(rp.inner_directional_velocity, 1, directional_velocity_.flat_begin()));
-        CHK(glUniform1f(rp.inner_radial_velocity, radial_velocity_ * std::sin(angle_)));
-        CHK(glUniform2fv(rp.inner_min, 1, velocity_region_.min.flat_begin()));
-        CHK(glUniform2fv(rp.inner_max, 1, velocity_region_.max.flat_begin()));
-        CHK(glUniform2fv(rp.inner_center, 1, velocity_region_.center().flat_begin()));
+        std::scoped_lock lock{ inner_mutex_ };
+        CHK(glUniform1f(rp.inner_pressure, inner_pressure_ * std::sin(angle_)));
+        CHK(glUniform2fv(rp.inner_min, 1, inner_region_.min.flat_begin()));
+        CHK(glUniform2fv(rp.inner_max, 1, inner_region_.max.flat_begin()));
+        CHK(glUniform2fv(rp.inner_center, 1, inner_region_.center().flat_begin()));
     }
     CHK(glUniform1f(rp.idx_c_dt_2, squared(c_ * dt_ / dx_)));
     CHK(glUniform1f(rp.intensity_normalization, intensity_normalization_));
     ViewportGuard vg{ texture_width_, texture_height_ };
-    RenderToFrameBufferGuard rfg{ velocity_fields_(i012_) };
+    RenderToFrameBufferGuard rfg{ pressure_fields_(i012_) };
 
     notify_rendering(CURRENT_SOURCE_LOCATION);
     TextureBinder tb;
     for (size_t t = 0; t < 2; ++t) {
-        tb.bind(rp.velocity_fields(t), *velocity_fields_((i012_ + 1 + t) % 3)->texture_color());
+        tb.bind(rp.pressure_fields(t), *pressure_fields_((i012_ + 1 + t) % 3)->texture_color());
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     }
@@ -295,38 +269,26 @@ void AcousticVelocitySubdomainLogic::collide_and_stream() {
     CHK(glActiveTexture(GL_TEXTURE0));
 }
 
-void AcousticVelocitySubdomainLogic::calculate_skidmark_field() {
+void AcousticPressureSubdomainLogic::calculate_skidmark_field() {
     auto& rp = skidmark_render_program_;
     if (!rp.allocated()) {
-        auto vs = diff_vertex_shader(texture_width_, texture_height_);
-
         std::stringstream fs;
         fs << SHADER_VER << FRAGMENT_PRECISION;
         fs << "out vec3 skidmark_field;" << std::endl;
-        fs << "in vec2 TexCoords00;" << std::endl;
-        fs << "in vec2 TexCoords01;" << std::endl;
-        fs << "in vec2 TexCoords10;" << std::endl;
-        fs << "in vec2 TexCoords11;" << std::endl;
+        fs << "in vec2 TexCoords;" << std::endl;
         fs << "uniform float skidmark_strength;" << std::endl;
-        fs << "uniform sampler2D velocity_field;" << std::endl;
+        fs << "uniform sampler2D pressure_field;" << std::endl;
         fs << "void main() {" << std::endl;
-        // fs << "    vec2 alpha = texture(velocity_field, TexCoords0).rg;" << std::endl;
-        // fs << "    vec2 vel = alpha * " << Vel::ISCALE << " + " << Vel::IOFFSET << ';' << std::endl;
-        // fs << "    skidmark_field.rgb = vec3(0.0, 0.0, 100 * dot(vel, vel));" << std::endl;
-        fs << "    float div =" << std::endl;
-        fs << "        texture(velocity_field, TexCoords01).r -" << std::endl;
-        fs << "        texture(velocity_field, TexCoords00).r +" << std::endl;
-        fs << "        texture(velocity_field, TexCoords11).g -" << std::endl;
-        fs << "        texture(velocity_field, TexCoords10).g;" << std::endl;
-        fs << "    div = div * " << Vel::ISCALE << ';' << std::endl;
-        fs << "    float color = skidmark_strength * div + 0.5;" << std::endl;
+        fs << "    float p = texture(pressure_field, TexCoords).r;" << std::endl;
+        fs << "    p = p * " << Pres::ISCALE << " + " << Pres::IOFFSET << ';' << std::endl;
+        fs << "    float color = skidmark_strength * p + 0.5;" << std::endl;
         fs << "    skidmark_field.rgb = vec3(color, color, color);" << std::endl;
         fs << "}" << std::endl;
         // linfo() << "--------- calculate_skidmark_field -----------";
         // lraw() << fs.str();
-        rp.allocate(vs.c_str(), fs.str().c_str());
+        rp.allocate(simple_vertex_shader_text_, fs.str().c_str());
         rp.skidmark_strength = rp.get_uniform_location("skidmark_strength");
-        rp.velocity_field = rp.get_uniform_location("velocity_field");
+        rp.pressure_field = rp.get_uniform_location("pressure_field");
     }
     rp.use();
     ViewportGuard vg{ texture_width_, texture_height_ };
@@ -335,7 +297,7 @@ void AcousticVelocitySubdomainLogic::calculate_skidmark_field() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     CHK(glUniform1f(rp.skidmark_strength, skidmark_strength_));
     TextureBinder tb;
-    tb.bind(rp.velocity_field, *velocity_fields_(i012_)->texture_color());
+    tb.bind(rp.pressure_field, *pressure_fields_(i012_)->texture_color());
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     va().bind();
@@ -344,21 +306,16 @@ void AcousticVelocitySubdomainLogic::calculate_skidmark_field() {
     CHK(glActiveTexture(GL_TEXTURE0));
 }
 
-void AcousticVelocitySubdomainLogic::set_directional_velocity(const FixedArray<SceneDir, 2>& directional_velocity) {
-    std::scoped_lock lock{ velocity_mutex_ };
-    directional_velocity_ = directional_velocity;
+void AcousticPressureSubdomainLogic::set_inner_pressure(SceneDir inner_pressure) {
+    std::scoped_lock lock{ inner_mutex_ };
+    inner_pressure_ = inner_pressure;
 }
 
-void AcousticVelocitySubdomainLogic::set_radial_velocity(SceneDir radial_velocity) {
-    std::scoped_lock lock{ velocity_mutex_ };
-    radial_velocity_ = radial_velocity;
+void AcousticPressureSubdomainLogic::set_inner_region(const AxisAlignedBoundingBox<float, 2>& inner_region) {
+    std::scoped_lock lock{ inner_mutex_ };
+    inner_region_ = inner_region;
 }
 
-void AcousticVelocitySubdomainLogic::set_velocity_region(const AxisAlignedBoundingBox<float, 2>& velocity_region) {
-    std::scoped_lock lock{ velocity_mutex_ };
-    velocity_region_ = velocity_region;
-}
-
-void AcousticVelocitySubdomainLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "AcousticVelocitySubdomainLogic";
+void AcousticPressureSubdomainLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "AcousticPressureSubdomainLogic";
 }
