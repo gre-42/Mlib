@@ -9,4 +9,4 @@
 	url = https://github.com/madler/zlib.git
 [submodule "eve"]
 	path = eve
-	url = https://github.com/jfalcou/eve.git
+	url = https://github.com/gre-42/eve.git
