@@ -70,6 +70,7 @@ public:
         const AxisAlignedBoundingBox<float, 2>& inner_region,
         float wind_amplitude,
         float wind_angular_velocity,
+        float wind_cutoff,
         std::shared_ptr<ITextureHandle> wind_texture,
         int texture_width,
         int texture_height,
@@ -124,6 +125,7 @@ private:
     AxisAlignedBoundingBox<float, 2> inner_region_;
     float wind_amplitude_;
     float wind_angular_velocity_;
+    float wind_cutoff_;
     float wind_angle_;
     int texture_width_;
     int texture_height_;

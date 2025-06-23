@@ -31,6 +31,7 @@ DECLARE_ARGUMENT(inner_region);
 DECLARE_ARGUMENT(inner_angular_velocity);
 DECLARE_ARGUMENT(wind_amplitude);
 DECLARE_ARGUMENT(wind_angular_velocity);
+DECLARE_ARGUMENT(wind_cutoff);
 DECLARE_ARGUMENT(wind_texture);
 DECLARE_ARGUMENT(c);
 DECLARE_ARGUMENT(dt);
@@ -64,6 +65,7 @@ void CreateAcousticPressureSubdomain::execute(const LoadSceneJsonUserFunctionArg
         args.arguments.at<DefaultUnitialized<AxisAlignedBoundingBox<float, 2>>>(KnownArgs::inner_region),
         args.arguments.at<float>(KnownArgs::wind_amplitude),
         args.arguments.at<float>(KnownArgs::wind_angular_velocity) * degrees,
+        args.arguments.at<float>(KnownArgs::wind_cutoff),
         RenderingContextStack::primary_rendering_resources().get_texture_lazy(
             ColormapWithModifiers{
                 .filename = VariableAndHash{ args.arguments.path_or_variable(KnownArgs::wind_texture).path },

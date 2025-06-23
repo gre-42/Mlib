@@ -60,6 +60,7 @@ AcousticPressureSubdomainLogic::AcousticPressureSubdomainLogic(
     const AxisAlignedBoundingBox<float, 2>& inner_region,
     float wind_amplitude,
     float wind_angular_velocity,
+    float wind_cutoff,
     std::shared_ptr<ITextureHandle> wind_texture,
     int texture_width,
     int texture_height,
@@ -82,6 +83,7 @@ AcousticPressureSubdomainLogic::AcousticPressureSubdomainLogic(
     , inner_region_{ inner_region }
     , wind_amplitude_{ wind_amplitude }
     , wind_angular_velocity_{ wind_angular_velocity }
+    , wind_cutoff_{ wind_cutoff }
     , wind_angle_{ 0.f }
     , texture_width_{ texture_width }
     , texture_height_{ texture_height }
@@ -250,6 +252,10 @@ void AcousticPressureSubdomainLogic::apply_offset(const FixedArray<float, 2>& of
         temp_wind_field_); 
 }
 
+static float rectangle(float v, float a) {
+    return sign(v) * (std::abs(v) > a);
+}
+
 void AcousticPressureSubdomainLogic::collide_and_stream() {
     auto& rp = acoustic_render_program_;
     if (!rp.allocated()) {
@@ -340,7 +346,7 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
             CHK(glUniform2fv(rp.inner_center, 1, inner_region_.center().flat_begin()));
         }
     }
-    CHK(glUniform1f(rp.wind_amplitude, wind_amplitude_ * std::sin(wind_angle_)));
+    CHK(glUniform1f(rp.wind_amplitude, wind_amplitude_ * rectangle(std::sin(wind_angle_), wind_cutoff_)));
     CHK(glUniform1f(rp.idx_c_dt_2, squared(c_ * dt_ / dx_)));
     CHK(glUniform1f(rp.intensity_normalization, intensity_normalization_));
     ViewportGuard vg{ texture_width_, texture_height_ };
