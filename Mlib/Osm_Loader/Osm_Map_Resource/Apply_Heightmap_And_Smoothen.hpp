@@ -14,7 +14,7 @@ template <class TPos>
 class TriangleList;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
-template <class TData, size_t... tshape>
+template <typename TData, size_t... tshape>
 class FixedArray;
 struct Node;
 struct Way;
