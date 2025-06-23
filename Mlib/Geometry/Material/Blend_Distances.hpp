@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array_Hash.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 
@@ -114,8 +115,6 @@ template <>
 struct std::hash<Mlib::SquaredStepDistances>
 {
     std::size_t operator() (const Mlib::SquaredStepDistances& a) const {
-        Mlib::Hasher hasher{ 0xc0febabe };
-        hasher.combine(Mlib::OrderableFixedArray{a.distances2_});
-        return hasher;
+        return Mlib::fixed_array_hash(a.distances2_);
     }
 };
