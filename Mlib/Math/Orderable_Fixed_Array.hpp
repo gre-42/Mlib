@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Array/Fixed_Array_Hash.hpp>
 #include <Mlib/Default_Uninitialized.hpp>
 #include <Mlib/Hash.hpp>
 #include <Mlib/Math/Math.hpp>
@@ -69,10 +70,6 @@ template <class TData, size_t... tshape>
 struct std::hash<Mlib::OrderableFixedArray<TData, tshape...>>
 {
     std::size_t operator() (const Mlib::OrderableFixedArray<TData, tshape...>& a) const {
-        Mlib::Hasher hasher{ 0xc0febabe };
-        for (const auto& v : a.flat_iterable()) {
-            hasher.combine(v);
-        }
-        return hasher;
+        return Mlib::fixed_array_hash(a);
     }
 };
