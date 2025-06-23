@@ -4,8 +4,8 @@
 
 namespace Mlib {
 
-template <class TData, size_t tlength>
-std::size_t fixed_array_hash(const FixedArray<TData, tlength>& s) noexcept
+template <typename TData, size_t... tshape>
+std::size_t fixed_array_hash(const FixedArray<TData, tshape...>& s) noexcept
 {
     Hasher hasher;
     for (const auto& v : s.flat_iterable()) {
