@@ -16,19 +16,19 @@ public:
     inline SquaredStepDistances& operator += (float radius);
     inline float operator () (size_t i) const;
     inline bool operator < (const SquaredStepDistances& rhs) const {
-        return OrderableFixedArray{distances2_} < OrderableFixedArray{rhs.distances2_};
+        return orderable() < rhs.orderable();
     }
     inline bool operator == (const SquaredStepDistances& rhs) const {
-        return OrderableFixedArray{distances2_} == OrderableFixedArray{rhs.distances2_};
+        return orderable() == rhs.orderable();
     }
     inline bool operator != (const SquaredStepDistances& rhs) const {
-        return OrderableFixedArray{distances2_} != OrderableFixedArray{rhs.distances2_};
+        return orderable() != rhs.orderable();
     }
     inline bool operator > (const SquaredStepDistances& rhs) const {
-        return OrderableFixedArray{distances2_} > OrderableFixedArray{rhs.distances2_};
+        return orderable() > rhs.orderable();
     }
     inline std::strong_ordering operator <=> (const SquaredStepDistances& rhs) const {
-        return OrderableFixedArray{distances2_} <=> OrderableFixedArray{rhs.distances2_};
+        return orderable() <=> rhs.orderable();
     }
     template <class Archive>
     void serialize(Archive& archive) {
@@ -36,6 +36,9 @@ public:
     }
 private:
     inline explicit SquaredStepDistances(const FixedArray<float, 2>& d1);
+    inline OrderableFixedArray<float, 2> orderable() const {
+        return OrderableFixedArray<float, 2>(distances2_);
+    }
     FixedArray<float, 2> distances2_;
 };
 
