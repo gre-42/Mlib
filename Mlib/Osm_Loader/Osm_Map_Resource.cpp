@@ -1014,15 +1014,15 @@ OsmMapResource::OsmMapResource(
         for (const auto& l : osm_triangle_lists.tl_terrain->map()) {
             for (const auto& t : l.second->triangles) {
                 for (const auto& v : t.flat_iterable()) {
-                    terrain_vertices.insert(OrderableFixedArray{v.position});
+                    terrain_vertices.insert(OrderableFixedArray(v.position));
                 }
             }
         }
         for (const auto& l : osm_triangle_lists.tls_street()) {
             for (const auto& t : l->triangles) {
                 for (const auto& v : t.flat_iterable()) {
-                    if (terrain_vertices.contains(OrderableFixedArray{v.position})) {
-                        boundary_vertices.insert(OrderableFixedArray{v.position});
+                    if (terrain_vertices.contains(OrderableFixedArray(v.position))) {
+                        boundary_vertices.insert(OrderableFixedArray(v.position));
                     }
                 }
             }
@@ -1109,9 +1109,9 @@ OsmMapResource::OsmMapResource(
         // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
         std::set<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*> triangles_to_delete;
         for (const auto& t : air_or_osm.tl_air_support->triangles) {
-            if (boundary_vertices.contains(OrderableFixedArray{t(0).position}) ||
-                boundary_vertices.contains(OrderableFixedArray{t(1).position}) ||
-                boundary_vertices.contains(OrderableFixedArray{t(2).position}))
+            if (boundary_vertices.contains(OrderableFixedArray(t(0).position)) ||
+                boundary_vertices.contains(OrderableFixedArray(t(1).position)) ||
+                boundary_vertices.contains(OrderableFixedArray(t(2).position)))
             {
                 triangles_to_delete.insert(&t);
             }

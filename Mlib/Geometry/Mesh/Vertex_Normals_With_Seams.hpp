@@ -30,7 +30,7 @@ public:
         const FixedArray<TPos, 3>& position,
         const FixedArray<TNormal, 3>& normal)
     {
-        normals_[OrderableFixedArray{ position }].push_back(normal);
+        normals_[OrderableFixedArray(position)].push_back(normal);
     }
     FixedArray<TNormal, 3> get_normal(
         const FixedArray<TPos, 3>& position,
@@ -38,7 +38,7 @@ public:
         const TNormal& seam_threshold)
     {
         FixedArray<TNormal, 3> result((TNormal)0);
-        for (const auto& n : normals_.at(OrderableFixedArray{ position })) {
+        for (const auto& n : normals_.at(OrderableFixedArray(position))) {
             if (dot0d(n, reference_normal) > seam_threshold) {
                 result += n;
             }

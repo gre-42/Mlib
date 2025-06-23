@@ -67,7 +67,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
             auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
             if (displacements != nullptr) {
                 for (const auto& v : sw.outline) {
-                    auto it = displacements->find(OrderableFixedArray{v.orig.position()});
+                    auto it = displacements->find(OrderableFixedArray(v.orig.position()));
                     if (it == displacements->end()) {
                         lerr() << "Building " + bu.id + ": could not determine displacement";
                         max_height = std::numeric_limits<CompressedScenePos>::lowest();

@@ -25,14 +25,14 @@ public:
     }
 private:
     inline size_t key() const {
-        if (OrderableFixedArray{collision_ridge_sphere.edge[0]} > OrderableFixedArray{collision_ridge_sphere.edge[1]}) {
+        if (OrderableFixedArray(collision_ridge_sphere.edge[0]) > OrderableFixedArray(collision_ridge_sphere.edge[1])) {
             return hash_combine(
-                OrderableFixedArray{collision_ridge_sphere.edge[0]},
-                OrderableFixedArray{collision_ridge_sphere.edge[1]});
+                OrderableFixedArray(collision_ridge_sphere.edge[0]),
+                OrderableFixedArray(collision_ridge_sphere.edge[1]));
         } else {
             return hash_combine(
-                OrderableFixedArray{collision_ridge_sphere.edge[1]},
-                OrderableFixedArray{collision_ridge_sphere.edge[0]});
+                OrderableFixedArray(collision_ridge_sphere.edge[1]),
+                OrderableFixedArray(collision_ridge_sphere.edge[0]));
         }
     }
 };

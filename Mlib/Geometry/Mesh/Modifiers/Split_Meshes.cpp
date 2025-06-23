@@ -45,7 +45,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::split_meshes(
         std::unordered_map<OrderableFixedArray<TPos, 3>, Clustered<TPos>> clusters;
         for (const auto& [i, tri] : enumerate(cva->triangles)) {
             auto center = get_cluster_center(*tri);
-            auto& cluster = clusters[OrderableFixedArray{center}];
+            auto& cluster = clusters[OrderableFixedArray(center)];
             cluster.triangles.push_back(tri);
             if (!cva->discrete_triangle_texture_layers.empty()) {
                 cluster.discrete_triangle_texture_layers.push_back(cva->discrete_triangle_texture_layers[i]);

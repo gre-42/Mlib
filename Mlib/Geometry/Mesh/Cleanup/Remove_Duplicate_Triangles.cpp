@@ -14,9 +14,9 @@ void Mlib::remove_duplicate_triangles(ColoredVertexArray<TPos>& cva) {
     std::set<std::tuple<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>> first_triangles;
     for (const auto& tri : cva.triangles) {
         if (!first_triangles.emplace(
-            OrderableFixedArray{tri(0).position},
-            OrderableFixedArray{tri(1).position},
-            OrderableFixedArray{tri(2).position}).second)
+            tri(0).position,
+            tri(1).position,
+            tri(2).position).second)
         {
             linfo() << "Found duplicate triangle";
             continue;

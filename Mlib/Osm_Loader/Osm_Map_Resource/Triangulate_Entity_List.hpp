@@ -106,12 +106,12 @@ void triangulate_entity_list(
                     DuplicateRule::NO_NEIGHBOR))
                 {
                     if (!contour_triangles_filename.empty()) {
-                        plot_tris(contour_triangles_filename + to_string(hole.hole_type) + ".current.obj", hole.geometry, { OrderableFixedArray{v.position} });
+                        plot_tris(contour_triangles_filename + to_string(hole.hole_type) + ".current.obj", hole.geometry, { OrderableFixedArray(v.position) });
                         for (const auto& hole1 : hole_triangles) {
                             plot_tris(
                                 contour_triangles_filename + to_string(hole1.hole_type) + ".other.obj",
                                 hole1.geometry,
-                                { OrderableFixedArray{v.position} });
+                                { OrderableFixedArray(v.position) });
                         }
                     }
                     auto exception = PointException<CompressedScenePos, 2>{
@@ -147,7 +147,7 @@ void triangulate_entity_list(
             ncontours += cs2.geometry.size();
         } catch (const EdgeException<CompressedScenePos>& ex) {
             if (!contour_triangles_filename.empty()) {
-                plot_tris(contour_triangles_filename, hole.geometry, { OrderableFixedArray{ex.a}, OrderableFixedArray{ex.b} });
+                plot_tris(contour_triangles_filename, hole.geometry, { OrderableFixedArray(ex.a), OrderableFixedArray(ex.b) });
             }
             throw;
         }

@@ -134,7 +134,7 @@ bool triangulate_point(
     float largest_cos_in_triangle,
     float triangle_search_eps)
 {
-    triangulated_points.insert(OrderableFixedArray{ central_point.t });
+    triangulated_points.insert(OrderableFixedArray(central_point.t));
     TransformationMatrix<float, float, 3> projection = central_point.inverted();
 
     // Determine steiner points.

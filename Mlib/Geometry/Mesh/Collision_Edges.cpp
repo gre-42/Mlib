@@ -7,14 +7,14 @@ using namespace Mlib;
 std::pair<OrderableFixedArray<CompressedScenePos, 3>, OrderableFixedArray<CompressedScenePos, 3>>
     OrderableEdgeSphere::key() const
 {
-    if (OrderableFixedArray{collision_line_sphere.line[0]} > OrderableFixedArray{collision_line_sphere.line[1]}) {
+    if (OrderableFixedArray(collision_line_sphere.line[0]) > OrderableFixedArray(collision_line_sphere.line[1])) {
         return std::make_pair(
-            OrderableFixedArray{collision_line_sphere.line[0]},
-            OrderableFixedArray{collision_line_sphere.line[1]});
+            OrderableFixedArray(collision_line_sphere.line[0]),
+            OrderableFixedArray(collision_line_sphere.line[1]));
     } else {
         return std::make_pair(
-            OrderableFixedArray{collision_line_sphere.line[1]},
-            OrderableFixedArray{collision_line_sphere.line[0]});
+            OrderableFixedArray(collision_line_sphere.line[1]),
+            OrderableFixedArray(collision_line_sphere.line[0]));
     }
 }
 

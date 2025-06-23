@@ -94,20 +94,20 @@ void OsmRectangle2D::draw_z0(
     // b, 01 >-->-->-->-->--> c, 11
 
     if (with_b_height_binding) {
-        node_height_bindings[OrderableFixedArray{cs.s[0][0]}] = b;
-        node_height_bindings[OrderableFixedArray{cs.s[0][1]}] = b;
+        node_height_bindings[OrderableFixedArray(cs.s[0][0])] = b;
+        node_height_bindings[OrderableFixedArray(cs.s[0][1])] = b;
     }
     if (with_c_height_binding) {
-        node_height_bindings[OrderableFixedArray{cs.s[1][0]}] = c;
-        node_height_bindings[OrderableFixedArray{cs.s[1][1]}] = c;
+        node_height_bindings[OrderableFixedArray(cs.s[1][0])] = c;
+        node_height_bindings[OrderableFixedArray(cs.s[1][1])] = c;
     }
     if (b_entrance_type != EntranceType::NONE) {
-        entrances[b_entrance_type].insert(OrderableFixedArray{cs.s[0][0]});
-        entrances[b_entrance_type].insert(OrderableFixedArray{cs.s[0][1]});
+        entrances[b_entrance_type].insert(OrderableFixedArray(cs.s[0][0]));
+        entrances[b_entrance_type].insert(OrderableFixedArray(cs.s[0][1]));
     }
     if (c_entrance_type != EntranceType::NONE) {
-        entrances[c_entrance_type].insert(OrderableFixedArray{cs.s[1][0]});
-        entrances[c_entrance_type].insert(OrderableFixedArray{cs.s[1][1]});
+        entrances[c_entrance_type].insert(OrderableFixedArray(cs.s[1][0]));
+        entrances[c_entrance_type].insert(OrderableFixedArray(cs.s[1][1]));
     }
 
     {

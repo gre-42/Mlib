@@ -19,7 +19,7 @@ void Mlib::delete_backfacing_triangles(
         std::set<OrderableFixedArray<CompressedScenePos, 3>> crossed_nodes;
         for (const auto& t : deleted_triangles) {
             for (const auto& v : t.flat_iterable()) {
-                crossed_nodes.insert(OrderableFixedArray{v.position});
+                crossed_nodes.insert(OrderableFixedArray(v.position));
             }
         }
         std::list<const FixedArray<ColoredVertex<CompressedScenePos>, 3>*> good_triangles;

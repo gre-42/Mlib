@@ -19,7 +19,7 @@ using namespace Mlib;
 // std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> Mlib::gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points) {
 //     std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map;
 //     for (auto& p : steiner_points) {
-//         if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
+//         if (!steiner_point_map.insert({OrderableFixedArray(p.position), &p}).second) {
 //             THROW_OR_ABORT("Could not generate steiner point map");
 //         }
 //     }
@@ -29,7 +29,7 @@ using namespace Mlib;
 // std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> Mlib::gen_const_steiner_point_map(const std::list<SteinerPointInfo>& steiner_points) {
 //     std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> steiner_point_map;
 //     for (auto& p : steiner_points) {
-//         if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
+//         if (!steiner_point_map.insert({OrderableFixedArray(p.position), &p}).second) {
 //             THROW_OR_ABORT("Could not generate const steiner point map");
 //         }
 //     }
@@ -243,15 +243,15 @@ void Mlib::raise_streets(
     std::set<OrderableFixedArray<CompressedScenePos, 3>> raised_nodes;
     for (auto& l : tls_street_wo_curb) {
         for (const auto& n : l->triangles) {
-            raised_nodes.insert(OrderableFixedArray{n(0).position});
-            raised_nodes.insert(OrderableFixedArray{n(1).position});
-            raised_nodes.insert(OrderableFixedArray{n(2).position});
+            raised_nodes.insert(OrderableFixedArray(n(0).position));
+            raised_nodes.insert(OrderableFixedArray(n(1).position));
+            raised_nodes.insert(OrderableFixedArray(n(2).position));
         }
     }
     for (auto& l : tls_ground) {
         for (auto& n : l->triangles) {
             for (auto& v : n.flat_iterable()) {
-                if (raised_nodes.find(OrderableFixedArray{v.position}) != raised_nodes.end()) {
+                if (raised_nodes.find(OrderableFixedArray(v.position)) != raised_nodes.end()) {
                     v.position(2) += (CompressedScenePos)(scale * amount);
                 }
             }

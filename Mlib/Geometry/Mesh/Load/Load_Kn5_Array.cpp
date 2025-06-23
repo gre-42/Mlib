@@ -341,14 +341,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .reflection_map = cfg.reflection_map,
                     .occluded_pass = cfg.occluded_pass,
                     .occluder_pass = cfg.occluder_pass,
-                    .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
+                    .alpha_distances = OrderableFixedArray(cfg.alpha_distances),
                     .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
                     .cull_faces = cfg.cull_faces_default,
                     .shading = {
-                        .fog_distances = OrderableFixedArray{ cfg.shading.fog_distances },
-                        .fog_ambient = OrderableFixedArray{ cfg.shading.fog_ambient }},
+                        .fog_distances = OrderableFixedArray(cfg.shading.fog_distances),
+                        .fog_ambient = OrderableFixedArray(cfg.shading.fog_ambient)},
                     .dynamically_lighted = cfg.dynamically_lighted},
                 Morphology{
                     .physics_material = cfg.physics_material,

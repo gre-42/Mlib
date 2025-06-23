@@ -22,7 +22,7 @@ void CollisionVertices::insert(const FixedArray<CompressedScenePos, 2, 3>& line)
 }
 
 void CollisionVertices::insert(const FixedArray<CompressedScenePos, 3>& vertex) {
-    vertices_.insert(OrderableFixedArray{vertex});
+    vertices_.insert(OrderableFixedArray(vertex));
 }
 
 CollisionVertices::const_iterator CollisionVertices::begin() const {

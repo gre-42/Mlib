@@ -22,11 +22,11 @@ UUVector<FixedArray<CompressedScenePos, 3>> ShortestPathIntermediatePointsCreato
     const FixedArray<CompressedScenePos, 3>& p0,
     const FixedArray<CompressedScenePos, 3>& p1) const
 {
-    auto lp0_it = poly_refs_.find(OrderableFixedArray{p0});
+    auto lp0_it = poly_refs_.find(OrderableFixedArray(p0));
     if (lp0_it == poly_refs_.end()) {
         THROW_OR_ABORT2((PointException{ p0, "Could not find poly for start" }));
     }
-    auto lp1_it = poly_refs_.find(OrderableFixedArray{p1});
+    auto lp1_it = poly_refs_.find(OrderableFixedArray(p1));
     if (lp1_it == poly_refs_.end()) {
         THROW_OR_ABORT2((PointException{ p1, "Could not find poly for end" }));
     }

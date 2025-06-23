@@ -12,13 +12,13 @@ void Mlib::remove_triangles_with_opposing_normals(ColoredVertexArray<TPos>& cva)
     std::map<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>, size_t> edges;
     for (const auto& tri : cva.triangles) {
         for (size_t i = 0; i < 3; ++i) {
-            ++edges[{OrderableFixedArray{tri(i).position}, OrderableFixedArray{tri((i + 1) % 3).position}}];
+            ++edges[{OrderableFixedArray(tri(i).position), OrderableFixedArray(tri((i + 1) % 3).position)}];
         }
     }
     std::list<FixedArray<ColoredVertex<TPos>, 3>> trimmed;
     for (const auto& tri : cva.triangles) {
         for (size_t i = 0; i < 3; ++i) {
-            if (edges.at({OrderableFixedArray{tri(i).position}, OrderableFixedArray{tri((i + 1) % 3).position}}) >= 2) {
+            if (edges.at({OrderableFixedArray(tri(i).position), OrderableFixedArray(tri((i + 1) % 3).position)}) >= 2) {
                 goto skip;
             }
         }

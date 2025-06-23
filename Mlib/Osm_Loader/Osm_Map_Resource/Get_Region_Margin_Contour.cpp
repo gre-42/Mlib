@@ -29,15 +29,15 @@ std::list<FixedArray<CompressedScenePos, 2>> Mlib::get_region_margin_contour(
         if (d == region.end()) {
             d = region.begin();
         }
-        auto a_width = garden_margin.find(OrderableFixedArray{*a});
+        auto a_width = garden_margin.find(OrderableFixedArray(*a));
         auto a_w = (a_width == garden_margin.end()
             ? width
             : a_width->second);
-        auto b_width = garden_margin.find(OrderableFixedArray{*b});
+        auto b_width = garden_margin.find(OrderableFixedArray(*b));
         auto b_w = (b_width == garden_margin.end()
             ? width
             : b_width->second);
-        auto c_width = garden_margin.find(OrderableFixedArray{*c});
+        auto c_width = garden_margin.find(OrderableFixedArray(*c));
         auto c_w = (c_width == garden_margin.end()
             ? width
             : c_width->second);

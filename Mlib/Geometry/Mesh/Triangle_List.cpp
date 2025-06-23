@@ -367,13 +367,13 @@ void TriangleList<TPos>::extrude(
     for (auto& t : tris) {
         FixedArray<ColoredVertex<TPos>, 3> t_old = *t;
         FixedArray<bool, 3> is_clamped{
-            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{ (*t)(0).position }),
-            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{ (*t)(1).position }),
-            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{ (*t)(2).position })};
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray((*t)(0).position)),
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray((*t)(1).position)),
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray((*t)(2).position))};
         FixedArray<bool, 3> not_to_connect{
-            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray{ (*t)(0).position }),
-            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray{ (*t)(1).position }),
-            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray{ (*t)(2).position })};
+            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray((*t)(0).position)),
+            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray((*t)(1).position)),
+            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray((*t)(2).position))};
         auto connect_extruded = [&](size_t a, size_t b){
             if (is_clamped(a) && is_clamped(b)) {
                 return;
@@ -638,7 +638,7 @@ void TriangleList<TPos>::smoothen_edges(
         if (m.vertices.empty()) {
             m.move_only_z = move_only_z_vertices.contains(vc);
             m.amount = 0.f;
-            auto bit = bias.find(OrderableFixedArray{ *s });
+            auto bit = bias.find(OrderableFixedArray(*s));
             m.bias = (bit != bias.end())
                 ? bit->second
                 : fixed_zeros<float, 3>();
@@ -657,8 +657,8 @@ void TriangleList<TPos>::smoothen_edges(
                     const auto& ej = t(j).position;
                     const auto& nn = t(n).position;
                     Vertex2 ei2{ ei(0), ei(1) };
-                    Edge3 esi{ OrderableFixedArray{*ej}, OrderableFixedArray{*ei} };
-                    Edge3 esj{ OrderableFixedArray{*ei}, OrderableFixedArray{*ej} };
+                    Edge3 esi{ OrderableFixedArray(*ej), OrderableFixedArray(*ei) };
+                    Edge3 esj{ OrderableFixedArray(*ei), OrderableFixedArray(*ej) };
                     auto it = adjacent_triangles.find(esj);
                     if (it == adjacent_triangles.end()) {
                         const auto at = adjacent_triangles.try_emplace(esi, AdjacentTriangles<TPos>{
