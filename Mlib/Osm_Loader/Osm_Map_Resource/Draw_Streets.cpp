@@ -610,7 +610,7 @@ void DrawStreets::draw_holes() {
                 draw_terrain_fan_hole(nodes.at(nid), hv, way_infos, crossings);
             }
             if (with_height_bindings && !nodes.at(nid).tags.contains("bind_height", "no")) {
-                node_height_bindings[OrderableFixedArray(nodes.at(nid).position)] = nid;
+                node_height_bindings[make_orderable(nodes.at(nid).position)] = nid;
             }
             // Draw corners
             if (curb_alpha_ != 1) {
@@ -1202,7 +1202,7 @@ void DrawStreets::draw_streets_draw_ways(
                     uv_scale,
                     *street_lst.triangle_list);
                 if (with_height_bindings && !node0.tags.contains("bind_height", "no")) {
-                    node_height_bindings[OrderableFixedArray(node0.position)] = node_id;
+                    node_height_bindings[make_orderable(node0.position)] = node_id;
                 }
             }
             if (node_angles1.size() > 2) {
@@ -1214,7 +1214,7 @@ void DrawStreets::draw_streets_draw_ways(
                     uv_scale,
                     *street_lst.triangle_list);
                 if (with_height_bindings && !node1.tags.contains("bind_height", "no")) {
-                    node_height_bindings[OrderableFixedArray(node1.position)] = angle_way.neighbor_id;
+                    node_height_bindings[make_orderable(node1.position)] = angle_way.neighbor_id;
                 }
             }
         }

@@ -31,7 +31,7 @@ void ambient_occlusion_by_curvature(
     for (const FixedArray<ColoredVertex<TPos>, 3>* tp : cvl) {
         const FixedArray<ColoredVertex<TPos>, 3>& t = *tp;
         for (size_t i = 0; i < 3; ++i) {
-            std::pair<size_t, float>& curvature = curvatures[PV{OrderableFixedArray(t(i).position), OrderableFixedArray(t(i).normal)}];
+            std::pair<size_t, float>& curvature = curvatures[PV{make_orderable(t(i).position), make_orderable(t(i).normal)}];
             for (size_t j = 1; j < 3; ++j) {
                 auto dp = t((i + j) % 3).position - t(i).position;
                 auto n = dot0d(funpack(dp), t(i).normal.template casted<I>());
@@ -48,7 +48,7 @@ void ambient_occlusion_by_curvature(
     }
     for (FixedArray<ColoredVertex<TPos>, 3>* tp : cvl) {
         for (ColoredVertex<TPos>& v : tp->flat_iterable()) {
-            const auto& c = curvatures.at(PV{OrderableFixedArray(v.position), OrderableFixedArray(v.normal)});
+            const auto& c = curvatures.at(PV{make_orderable(v.position), make_orderable(v.normal)});
             auto& color3 = v.color.template row_range<0, 3>();
             color3 = round(color3.template casted<float>() * minimum(
                 fixed_ones<float, 3>(),

@@ -68,8 +68,8 @@ bool Mlib::compute_edge_overlap(
             std::vector<CollisionRidgeSphere<CompressedScenePos>> ridges;
             ridges.reserve(ncorners);
             for (size_t i = 0; i < ncorners; ++i) {
-                auto a = OrderableFixedArray(corners0[i]);
-                auto b = OrderableFixedArray(corners0[(i + 1) % ncorners]);
+                auto a = make_orderable(corners0[i]);
+                auto b = make_orderable(corners0[(i + 1) % ncorners]);
                 auto it = (a < b)
                     ? c.history.ridge_map.find({a, b})
                     : c.history.ridge_map.find({b, a});

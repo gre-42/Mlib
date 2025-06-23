@@ -85,7 +85,7 @@ void Mlib::draw_roofs(
             }
             auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
             for (const auto& v : sw) {
-                auto it = displacements.find(OrderableFixedArray(v.position()));
+                auto it = displacements.find(make_orderable(v.position()));
                 if (it == displacements.end()) {
                     lwarn() << "Displacements not found for building " + bu.id;
                     max_height = std::numeric_limits<CompressedScenePos>::lowest();

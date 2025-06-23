@@ -60,7 +60,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .reflection_map = cfg.reflection_map,
             .occluded_pass = cfg.occluded_pass,
             .occluder_pass = cfg.occluder_pass,
-            .alpha_distances = OrderableFixedArray(cfg.alpha_distances),
+            .alpha_distances = make_orderable(cfg.alpha_distances),
             .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
@@ -354,7 +354,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         .filename = VariableAndHash{ p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string() },
                         .desaturate = cfg.desaturate,
                         .histogram = cfg.histogram,
-                        .lighten = OrderableFixedArray(cfg.lighten),
+                        .lighten = make_orderable(cfg.lighten),
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level }.compute_hash();
                 }

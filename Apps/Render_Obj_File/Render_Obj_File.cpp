@@ -191,7 +191,7 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
                         .filename = VariableAndHash{args.named_value("--multilayer_detail_normal" + std::to_string(i), "")},
                         .color_mode = ColorMode::RGB,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
-                .scale = multilayer_scale,
+                .scale = OrderableFixedArray<float, 2>(multilayer_scale),
                 .role = BlendMapRole::DETAIL_COLOR,
                 .uv_source = BlendMapUvSource::VERTICAL0});
             lcm_world_args.push_back(multilayer_scale);

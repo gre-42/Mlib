@@ -341,14 +341,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .reflection_map = cfg.reflection_map,
                     .occluded_pass = cfg.occluded_pass,
                     .occluder_pass = cfg.occluder_pass,
-                    .alpha_distances = OrderableFixedArray(cfg.alpha_distances),
+                    .alpha_distances = make_orderable(cfg.alpha_distances),
                     .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
                     .cull_faces = cfg.cull_faces_default,
                     .shading = {
-                        .fog_distances = OrderableFixedArray(cfg.shading.fog_distances),
-                        .fog_ambient = OrderableFixedArray(cfg.shading.fog_ambient)},
+                        .fog_distances = make_orderable(cfg.shading.fog_distances),
+                        .fog_ambient = make_orderable(cfg.shading.fog_ambient)},
                     .dynamically_lighted = cfg.dynamically_lighted},
                 Morphology{
                     .physics_material = cfg.physics_material,
@@ -516,23 +516,23 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         THROW_OR_ABORT("Unknown shader: \"" + material->shader + '"');
                     }
                 }
-                tl.material.shading.emissive = OrderableFixedArray{
+                tl.material.shading.emissive = make_orderable(
                     cfg.emissive_factor *
-                    material->ksEmissive.value_or_default()};
-                tl.material.shading.ambient = OrderableFixedArray{
+                    material->ksEmissive.value_or_default());
+                tl.material.shading.ambient = make_orderable(
                     cfg.ambient_factor *
                     material->ksAmbient.value_or_default() *
-                    lit_mult};
-                tl.material.shading.diffuse = OrderableFixedArray{
+                    lit_mult);
+                tl.material.shading.diffuse = make_orderable(
                     cfg.diffuse_factor *
                     material->diffuseMult.value_or_default() *
                     material->ksDiffuse.value_or_default() *
-                    lit_mult};
-                tl.material.shading.specular = OrderableFixedArray{
+                    lit_mult);
+                tl.material.shading.specular = make_orderable(
                     cfg.specular_factor *
                     material->ksSpecular.value_or_default() *
                     lit_mult *
-                    specular_mult};
+                    specular_mult);
                 tl.material.shading.specular_exponent = material->ksSpecularEXP.value_or_default();
                 if (tl.material.shading.specular_exponent == 0.f) {
                     tl.material.shading.specular = 0.f;
@@ -574,7 +574,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .specular = {},
                             .normal = {}},
-                        .scale = 0.5f,
+                        .scale = OrderableFixedArray<float, 2>(0.5f),
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::HORIZONTAL_XZ});
                 } else if (
@@ -606,7 +606,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .specular = {},
                             .normal = {}},
-                        .scale = material->detailUVMultiplier.value_or_default(),
+                        .scale = OrderableFixedArray<float, 2>(material->detailUVMultiplier.value_or_default()),
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::VERTICAL0});
                 } else if (
@@ -660,7 +660,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                                 .specular = {},
                                 .normal = {}},
-                            .scale = material->mult(i).value_or_default(),
+                            .scale = OrderableFixedArray<float, 2>(material->mult(i).value_or_default()),
                             .weight = 0.f,
                             .role = BlendMapRole::DETAIL_COLOR,
                             .uv_source = any(attrs & MetaAttributes::ATTR_VERTICAL)

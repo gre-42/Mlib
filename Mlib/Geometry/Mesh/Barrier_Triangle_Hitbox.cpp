@@ -115,9 +115,9 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             vertex_normals.get_normal(tri(0).position) * (-half_width),
             vertex_normals.get_normal(tri(1).position) * (-half_width),
             vertex_normals.get_normal(tri(2).position) * (-half_width),
-            contour_edges.contains({OrderableFixedArray(tri(0).position), OrderableFixedArray(tri(1).position)}),
-            contour_edges.contains({OrderableFixedArray(tri(1).position), OrderableFixedArray(tri(2).position)}),
-            contour_edges.contains({OrderableFixedArray(tri(2).position), OrderableFixedArray(tri(0).position)}));
+            contour_edges.contains({make_orderable(tri(0).position), make_orderable(tri(1).position)}),
+            contour_edges.contains({make_orderable(tri(1).position), make_orderable(tri(2).position)}),
+            contour_edges.contains({make_orderable(tri(2).position), make_orderable(tri(0).position)}));
         for (const auto& s : hitbox) {
             const auto zeros2 = fixed_zeros<float, 2>();
             if (decomposition.capacity() == decomposition.size()) {

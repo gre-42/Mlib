@@ -32,7 +32,7 @@ public:
         if (is_undefined()) {
             THROW_OR_ABORT("Height binding undefined");
         }
-        return OrderableFixedArray(value_) <=> OrderableFixedArray(v);
+        return make_orderable(value_) <=> make_orderable(v);
     }
     const FixedArray<TPos, 2>& value() const {
         return value_;

@@ -93,7 +93,7 @@ DffArrays<TPosition> Mlib::load_dff(
                     .reflection_map = cfg.reflection_map,
                     .occluded_pass = cfg.occluded_pass,
                     .occluder_pass = cfg.occluder_pass,
-                    .alpha_distances = OrderableFixedArray(cfg.alpha_distances),
+                    .alpha_distances = make_orderable(cfg.alpha_distances),
                     .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
@@ -102,10 +102,10 @@ DffArrays<TPosition> Mlib::load_dff(
                         .ambient = OrderableFixedArray<float, 3>((cfg.ambient_factor * col3) * material.surface_properties.ambient),
                         .diffuse = OrderableFixedArray<float, 3>((cfg.diffuse_factor * col3) * material.surface_properties.diffuse),
                         .specular = OrderableFixedArray<float, 3>(cfg.specular_factor * material.surface_properties.specular),
-                        .reflectance = OrderableFixedArray(cfg.shading.reflectance),
+                        .reflectance = make_orderable(cfg.shading.reflectance),
                         .fresnel = cfg.shading.fresnel,
-                        .fog_distances = OrderableFixedArray(cfg.shading.fog_distances),
-                        .fog_ambient = OrderableFixedArray(cfg.shading.fog_ambient)
+                        .fog_distances = make_orderable(cfg.shading.fog_distances),
+                        .fog_ambient = make_orderable(cfg.shading.fog_ambient)
                     },
                     .dynamically_lighted = cfg.dynamically_lighted
                 },

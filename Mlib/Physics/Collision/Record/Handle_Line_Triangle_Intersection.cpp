@@ -115,14 +115,14 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
         assert_true(c.l1.has_value());
 #pragma GCC diagnostic pop
-        auto res = c.history.raycast_intersections.try_emplace(OrderableFixedArray(c.l1->line), std::move(cc));
+        auto res = c.history.raycast_intersections.try_emplace(make_orderable(c.l1->line), std::move(cc));
         if (!res.second) {
             if (!cc.iinfo.ray_t.has_value()) {
                 THROW_OR_ABORT("l1_is_normal but ray_t not given");
             }
             if (*cc.iinfo.ray_t < *res.first->second.iinfo.ray_t) {
                 c.history.raycast_intersections.erase(res.first);
-                c.history.raycast_intersections.try_emplace(OrderableFixedArray(c.l1->line), std::move(cc));
+                c.history.raycast_intersections.try_emplace(make_orderable(c.l1->line), std::move(cc));
             }
         }
     } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&

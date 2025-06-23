@@ -128,7 +128,7 @@ void RigidBodies::add_rigid_body(
                             }
                             for (const auto& t : bases) {
                                 for (const auto& v : t.corners.row_iterable()) {
-                                    if (auto it = vertex_set.insert(OrderableFixedArray(v.template casted<ScenePos>())); it.second) {
+                                    if (auto it = vertex_set.insert(make_orderable(v.template casted<ScenePos>())); it.second) {
                                         vertex_vector.push_back(&*it.first);
                                     }
                                 }
@@ -444,8 +444,8 @@ void RigidBodies::bake_collision_ridges() const
             AxisAlignedBoundingBox<CompressedScenePos, 3>::from_points(e.collision_ridge_sphere.edge),
             rcs);
         if (cfg_.enable_ridge_map) {
-            auto a = OrderableFixedArray(e.collision_ridge_sphere.edge[0]);
-            auto b = OrderableFixedArray(e.collision_ridge_sphere.edge[1]);
+            auto a = make_orderable(e.collision_ridge_sphere.edge[0]);
+            auto b = make_orderable(e.collision_ridge_sphere.edge[1]);
             if (a < b) {
                 if (auto it = ridge_map_.try_emplace({a, b}, rcs); !it.second) {
                     std::stringstream sstr;

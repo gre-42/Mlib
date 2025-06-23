@@ -37,7 +37,7 @@ std::unique_ptr<p2t::Point> P2tPointSet::gen_point(
 }
 
 p2t::Point* P2tPointSet::operator () (const FixedArray<CompressedScenePos, 2>& c) {
-    auto p = OrderableFixedArray(c);
+    auto p = make_orderable(c);
     if (auto it = pts_.find(p); it != pts_.end()) {
         return it->second.get();
     }

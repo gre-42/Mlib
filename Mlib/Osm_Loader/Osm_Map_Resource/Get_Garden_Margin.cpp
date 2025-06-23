@@ -27,7 +27,7 @@ std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos> Mlib::g
             if (v.orig.a0 == 1) {
                 auto it = v.orig.n0.tags.find("garden_margin");
                 if (it != v.orig.n0.tags.end()) {
-                    result[OrderableFixedArray(v.orig.n0.position)] = safe_stox<CompressedScenePos>(it->second);
+                    result[make_orderable(v.orig.n0.position)] = safe_stox<CompressedScenePos>(it->second);
                 }
             } else {
                 auto it0 = v.orig.n0.tags.find("garden_margin");
@@ -37,7 +37,7 @@ std::map<OrderableFixedArray<CompressedScenePos, 2>, CompressedScenePos> Mlib::g
                 {
                     auto p0 = safe_stox<CompressedScenePos>(it0->second);
                     auto p1 = safe_stox<CompressedScenePos>(it1->second);
-                    result[OrderableFixedArray(v.orig.position())] = blend(p0, p1, v.orig.a0, v.orig.a1);
+                    result[make_orderable(v.orig.position())] = blend(p0, p1, v.orig.a0, v.orig.a1);
                 }
             }
         }

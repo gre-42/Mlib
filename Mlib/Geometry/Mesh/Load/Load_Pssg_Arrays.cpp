@@ -665,8 +665,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             .shading = {
-                                .fog_distances = OrderableFixedArray(cfg.shading.fog_distances),
-                                .fog_ambient = OrderableFixedArray(cfg.shading.fog_ambient)}
+                                .fog_distances = make_orderable(cfg.shading.fog_distances),
+                                .fog_ambient = make_orderable(cfg.shading.fog_ambient)}
                         },
                         .color_semantic = ColorSemantic::TEXTURE_WEIGHTS
                     });
@@ -783,8 +783,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             .shading = {
-                                .fog_distances = OrderableFixedArray(cfg.shading.fog_distances),
-                                .fog_ambient = OrderableFixedArray(cfg.shading.fog_ambient)}
+                                .fog_distances = make_orderable(cfg.shading.fog_distances),
+                                .fog_ambient = make_orderable(cfg.shading.fog_ambient)}
                         },
                         .color_semantic = ColorSemantic::UNUSED
                     });
@@ -830,8 +830,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             .shading = {
-                                .fog_distances = OrderableFixedArray(cfg.shading.fog_distances),
-                                .fog_ambient = OrderableFixedArray(cfg.shading.fog_ambient)}
+                                .fog_distances = make_orderable(cfg.shading.fog_distances),
+                                .fog_ambient = make_orderable(cfg.shading.fog_ambient)}
                         },
                         .color_semantic = ColorSemantic::RGBA
                     });
@@ -856,8 +856,8 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                 }}},
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             .shading = {
-                                .fog_distances = OrderableFixedArray(cfg.shading.fog_distances),
-                                .fog_ambient = OrderableFixedArray(cfg.shading.fog_ambient)}}});
+                                .fog_distances = make_orderable(cfg.shading.fog_distances),
+                                .fog_ambient = make_orderable(cfg.shading.fog_ambient)}}});
             } else if (shader_group_ref == "#batched_track.fx")
             {
                 shaders.add(

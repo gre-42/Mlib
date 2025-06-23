@@ -142,8 +142,8 @@ void Mlib::calculate_waypoint_adjacency(
             auto p0 = e.first.position();
             auto p1 = e.second.position();
             CompressedScenePos dist = (CompressedScenePos)std::sqrt(sum(squared(p0 - p1)));
-            size_t col_id_0 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray(p0)).first;
-            size_t col_id_1 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray(p1)).first;
+            size_t col_id_0 = indices_terrain_wpts.size() + indices_street_wpts.at(make_orderable(p0)).first;
+            size_t col_id_1 = indices_terrain_wpts.size() + indices_street_wpts.at(make_orderable(p1)).first;
             if (!way_points.adjacency.column(col_id_0).insert({ col_id_1, dist }).second) {
                 THROW_OR_ABORT("Could not insert waypoint (3)");
             }
@@ -189,7 +189,7 @@ void Mlib::calculate_waypoint_adjacency(
             if (!lp.has_value()) {
                 throw PointException<CompressedScenePos, 3>{ p.position, "Could not find closest point on navmesh" };
             }
-            if (!poly_refs.insert({ OrderableFixedArray(lp->position.casted<CompressedScenePos>()), lp->polyRef }).second) {
+            if (!poly_refs.insert({ make_orderable(lp->position.casted<CompressedScenePos>()), lp->polyRef }).second) {
                 // throw PointException<double, 3>{ p, "Found duplicate waypoint" };
                 lwarn() << "Found duplicate waypoint after projection onto navmesh";
             }

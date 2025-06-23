@@ -20,7 +20,7 @@ std::list<MeshAndPosition<TPos>> Mlib::cluster_meshes(
     std::unordered_map<OrderableFixedArray<TPos, 3>, std::list<std::shared_ptr<ColoredVertexArray<TPos>>>> clustered;
     for (const auto& cva : cvas) {
         auto center = get_cluster_center(*cva);
-        clustered[OrderableFixedArray(center)].push_back(cva);
+        clustered[make_orderable(center)].push_back(cva);
     }
     std::list<MeshAndPosition<TPos>> result;
     size_t i = 0;

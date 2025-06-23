@@ -36,7 +36,7 @@ void Mlib::plot_tris(
     for (const auto& t : tris) {
         bool is_highlighted = false;
         for (auto& v : t.flat_iterable()) {
-            if (highlighted_points.contains(OrderableFixedArray(v.position))) {
+            if (highlighted_points.contains(make_orderable(v.position))) {
                 is_highlighted = true;
                 break;
             }

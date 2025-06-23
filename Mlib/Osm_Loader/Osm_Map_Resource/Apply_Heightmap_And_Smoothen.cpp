@@ -69,7 +69,7 @@ void Mlib::apply_heightmap_and_smoothen(
             auto sharp_height = (CompressedScenePos)safe_stod(it->second);
             for (const auto& n : w.nd) {
                 const auto& pos = nodes.at(n).position;
-                sharp_heights.try_emplace(OrderableFixedArray(pos), sharp_height);
+                sharp_heights.try_emplace(make_orderable(pos), sharp_height);
             }
         }
         if (!sharp_heights.empty()) {
@@ -268,7 +268,7 @@ void Mlib::apply_heightmap_and_smoothen(
                         CompressedScenePos street_z;
                         if ((*height_sampler)(closest_pt, street_z)) {
                             bias.try_emplace(
-                                OrderableFixedArray(*s),
+                                make_orderable(*s),
                                 FixedArray<CompressedScenePos, 3>{
                                     (CompressedScenePos)0.,
                                     (CompressedScenePos)0.,

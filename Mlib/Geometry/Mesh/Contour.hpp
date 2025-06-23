@@ -75,7 +75,7 @@ static const auto make_orderable_default = []<class T>(const T& v) {
 };
 
 static const auto make_orderable_array = []<class T>(const T& v) {
-    return OrderableFixedArray(v);
+    return make_orderable(v);
 };
 
 template <class TPoint, class TTriangle, class TMakeOrderable = decltype(make_orderable_default)>

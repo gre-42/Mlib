@@ -49,7 +49,7 @@ void Mlib::draw_building_walls(
             BuildingDetailType::COMBINED);
         auto max_height = std::numeric_limits<CompressedScenePos>::lowest();
         for (const auto& v : outline.outline) {
-            auto it = displacements.find(OrderableFixedArray(v.orig.position()));
+            auto it = displacements.find(make_orderable(v.orig.position()));
             if (it == displacements.end()) {
                 lwarn() << "Displacements not found for building " + bu.id;
                 max_height = std::numeric_limits<CompressedScenePos>::lowest();
@@ -126,8 +126,8 @@ void Mlib::draw_building_walls(
                     length_pos = bl.facade_texture_descriptor.interior_textures.facade_edge_size(0);
                 }
                 for (const auto& we : reverse(sw)) {
-                    const auto& p0 = displacements.at(OrderableFixedArray(we.indented[0]));
-                    const auto& p1 = displacements.at(OrderableFixedArray(we.indented[1]));
+                    const auto& p0 = displacements.at(make_orderable(we.indented[0]));
+                    const auto& p1 = displacements.at(make_orderable(we.indented[1]));
                     float width = (float)std::sqrt(sum(squared(we.indented[0] - we.indented[1])));
                     float height = (bl.top - bl.bottom) * scale;
                     if ((steiner_points != nullptr) && (&bl == &*bu.levels.begin())) {
