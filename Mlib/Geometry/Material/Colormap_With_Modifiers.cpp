@@ -59,6 +59,7 @@ ColormapWithModifiers& ColormapWithModifiers::compute_hash() {
         depth_interpolation,
         anisotropic_filtering_level,
         wrap_modes,
+        border_color,
         rotate);
     return *this;
 }
