@@ -22,10 +22,10 @@ TransformationMatrix<TDir, TPos, n> Mlib::transformation_matrix_from_json(const 
     JsonView jv{ j };
     jv.validate(KnownArgs::options);
     if constexpr (n == 3) {
-        auto R = tait_bryan_angles_2_matrix(jv.at<UFixedArray<TDir, 3>>(KnownArgs::rotation) * (TDir)degrees);
+        auto R = tait_bryan_angles_2_matrix(jv.at<EFixedArray<TDir, 3>>(KnownArgs::rotation) * (TDir)degrees);
         auto scale = jv.at<TDir>(KnownArgs::scale);
         using I = funpack_t<TPos>;
-        auto position = (jv.at<UFixedArray<I, 3>>(KnownArgs::position) * (I)meters).template casted<TPos>();
+        auto position = (jv.at<EFixedArray<I, 3>>(KnownArgs::position) * (I)meters).template casted<TPos>();
         return { R * scale, position };
     } else {
         static_assert(n == 3, "Unsupported matrix dimension");

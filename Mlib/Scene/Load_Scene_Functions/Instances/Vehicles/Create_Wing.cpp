@@ -61,8 +61,8 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC);
     auto& vehicle_rb = get_rigid_body_vehicle(vehicle_node);
-    auto position = args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters;
-    auto rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees;
+    auto position = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters;
+    auto rotation = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees;
     size_t wing_id = args.arguments.at<size_t>(KnownArgs::wing_id);
     auto r = tait_bryan_angles_2_matrix<float>(rotation);
     Interp<float> fac{
@@ -75,7 +75,7 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
         jtrail_source.validate(KnownTrailSource::options);
         trail_source.emplace(
             trail_renderer.get_storage(VariableAndHash{ jtrail_source.at<std::string>(KnownTrailSource::storage) }).add_trail_extender(),
-            jtrail_source.at<UFixedArray<float, 3>>(KnownTrailSource::position) * meters,
+            jtrail_source.at<EFixedArray<float, 3>>(KnownTrailSource::position) * meters,
             jtrail_source.at<float>(KnownTrailSource::minimum_velocity) * kph);
     }
     DanglingPtr<SceneNode> angle_of_attack_node = nullptr;
@@ -96,7 +96,7 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
             LIFT_COEFF_UNITS * args.arguments.at<float>(KnownArgs::lift_c),
             ANGLE_COEFF_UNITS * args.arguments.at<float>(KnownArgs::angle_yz),
             ANGLE_COEFF_UNITS * args.arguments.at<float>(KnownArgs::angle_zz),
-            DRAG_COEFF_UNITS * args.arguments.at<UFixedArray<float, 3>>(KnownArgs::drag),
+            DRAG_COEFF_UNITS * args.arguments.at<EFixedArray<float, 3>>(KnownArgs::drag),
             0.f,
             0.f,
             std::move(trail_source)));

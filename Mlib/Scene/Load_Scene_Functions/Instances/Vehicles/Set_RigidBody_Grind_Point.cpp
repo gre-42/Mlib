@@ -35,5 +35,5 @@ void SetRigidBodyGrindPoint::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (rb.grind_state_.grind_point_.has_value()) {
         THROW_OR_ABORT("Rigid body grind point already set");
     }
-    rb.grind_state_.grind_point_ = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::position);
+    rb.grind_state_.grind_point_ = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::position);
 }

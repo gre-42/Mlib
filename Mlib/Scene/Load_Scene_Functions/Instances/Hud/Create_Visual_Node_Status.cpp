@@ -99,7 +99,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash(),
             std::move(widget),
-            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
+            args.arguments.at<EFixedArray<float, 3>>(KnownArgs::font_color),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::tick_radius)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pointer_width)),

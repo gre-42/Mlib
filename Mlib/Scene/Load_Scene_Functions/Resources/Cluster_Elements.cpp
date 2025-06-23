@@ -46,8 +46,8 @@ struct RegisterJsonUserFunction {
                     args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::resource_names),
                     scene_node_resources,
                     trafo,
-                    args.arguments.at<UFixedArray<float, 3>>(KnownArgs::width),
-                    SquaredStepDistances::from_distances(args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center_distances)),
+                    args.arguments.at<EFixedArray<float, 3>>(KnownArgs::width),
+                    SquaredStepDistances::from_distances(args.arguments.at<EFixedArray<float, 2>>(KnownArgs::center_distances)),
                     rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::rendering_dynamics)),
                     added_scene_node_resources,
                     added_instantiables);

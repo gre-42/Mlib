@@ -57,7 +57,7 @@ static void instantiate_bvh(
                 for (auto& p : t->flat_iterable()) {
                     p.position -= center;
                 }
-                vcva.push_back(t);
+                vcva.emplace_back(t);
             }
             lcvas.push_back(std::make_shared<ColoredVertexArray<float>>(
                 *name,                                                      // name

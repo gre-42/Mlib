@@ -369,16 +369,16 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                 barrier_style.validate(BS::options, "barrier style: ");
                 BarrierStyle as{
                     .texture = VariableAndHash{barrier_style.path_or_variable(BS::texture).path},
-                    .uv = barrier_style.at<UFixedArray<float, 2>>(BS::uv),
+                    .uv = barrier_style.at<EFixedArray<float, 2>>(BS::uv),
                     .depth = barrier_style.at<float>(BS::depth),
-                    .depth_color = barrier_style.at<UFixedArray<float, 3>>(BS::depth_color, fixed_ones<float, 3>()),
+                    .depth_color = barrier_style.at<EFixedArray<float, 3>>(BS::depth_color, fixed_ones<float, 3>()),
                     .blend_mode = blend_mode_from_string(barrier_style.at<std::string>(BS::blend_mode)),
                     .cull_faces = barrier_style.at<bool>(BS::cull_faces),
                     .reorient_uv0 = barrier_style.at<bool>(BS::reorient_uv0),
                     .shading = {
-                        .ambient = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::ambient),
-                        .diffuse = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::diffuse),
-                        .specular = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::specular),
+                        .ambient = barrier_style.at<EOrderableFixedArray<float, 3>>(BS::ambient),
+                        .diffuse = barrier_style.at<EOrderableFixedArray<float, 3>>(BS::diffuse),
+                        .specular = barrier_style.at<EOrderableFixedArray<float, 3>>(BS::specular),
                         .fresnel = barrier_style.at<FresnelAndAmbient>(BS::fresnel, FresnelAndAmbient{})} };
                 if (!styles.insert({barrier_style.at<std::string>(BS::name), as}).second) {
                     THROW_OR_ABORT("Duplicate barrier style");
@@ -1006,7 +1006,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.curb2_uv(1) = args.arguments.at<float>(KnownArgs::curb2_uv_y);
         }
         if (args.arguments.contains(KnownArgs::curb_color)) {
-            config.curb_color = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::curb_color);
+            config.curb_color = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::curb_color);
         }
         if (args.arguments.contains(KnownArgs::racing_line_width_x)) {
             config.racing_line_width_x = args.arguments.at<float>(KnownArgs::racing_line_width_x);
@@ -1109,19 +1109,19 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.blend_street[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = args.arguments.at<bool>(KnownArgs::blend_runway_displacement_threshold);
         }
         if (args.arguments.contains(KnownArgs::emissive_factor)) {
-            config.emissive_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor);
+            config.emissive_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissive_factor);
         }
         if (args.arguments.contains(KnownArgs::ambient_factor)) {
-            config.ambient_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor);
+            config.ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient_factor);
         }
         if (args.arguments.contains(KnownArgs::diffuse_factor)) {
-            config.diffuse_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor);
+            config.diffuse_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor);
         }
         if (args.arguments.contains(KnownArgs::specular_factor)) {
-            config.specular_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular_factor);
+            config.specular_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular_factor);
         }
         if (args.arguments.contains(KnownArgs::fresnel_ambient_factor)) {
-            config.fresnel_ambient_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient_factor);
+            config.fresnel_ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fresnel_ambient_factor);
         }
         if (args.arguments.contains(KnownArgs::displacementmap)) {
             config.displacementmap = args.arguments.path(KnownArgs::displacementmap);
@@ -1162,10 +1162,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.refine_explicit_waypoints = args.arguments.at<bool>(KnownArgs::refine_explicit_waypoints);
         }
         if (args.arguments.contains(KnownArgs::fog_distances)) {
-            config.fog_distances = args.arguments.at<UFixedArray<float, 2>>(KnownArgs::fog_distances) * meters;
+            config.fog_distances = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::fog_distances) * meters;
         }
         if (args.arguments.contains(KnownArgs::fog_ambient)) {
-            config.fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
+            config.fog_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
         }
         config.use_terrain_holes = args.arguments.at<bool>(KnownArgs::use_terrain_holes, false);
         if (args.arguments.contains(KnownArgs::building_cluster_width)) {

@@ -108,8 +108,8 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
                     MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
                 }
             },
-            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::vehicle_mount_0),
-            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::vehicle_mount_1),
+            args.arguments.at<EFixedArray<float, 3>>(KnownArgs::vehicle_mount_0),
+            args.arguments.at<EFixedArray<float, 3>>(KnownArgs::vehicle_mount_1),
             radius);
     }
 }

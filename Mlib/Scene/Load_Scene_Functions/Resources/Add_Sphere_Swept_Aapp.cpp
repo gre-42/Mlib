@@ -33,8 +33,8 @@ struct RegisterJsonUserFunction {
                 args.arguments.validate(KnownArgs::options);
                 auto material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material));
                 auto ssaabb = std::make_shared<SweptSphereAabb>(
-                    args.arguments.at<UFixedArray<CompressedScenePos, 3>>(KnownArgs::min) * meters,
-                    args.arguments.at<UFixedArray<CompressedScenePos, 3>>(KnownArgs::max) * meters,
+                    args.arguments.at<EFixedArray<CompressedScenePos, 3>>(KnownArgs::min) * meters,
+                    args.arguments.at<EFixedArray<CompressedScenePos, 3>>(KnownArgs::max) * meters,
                     args.arguments.at<CompressedScenePos>(KnownArgs::radius) * meters);
                 auto l = std::list{ TypedMesh<std::shared_ptr<IIntersectable>>{material, ssaabb} };
                 auto res = std::make_shared<IntersectableResource>(std::move(l));

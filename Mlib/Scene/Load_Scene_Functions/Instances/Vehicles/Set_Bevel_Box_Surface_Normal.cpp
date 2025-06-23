@@ -36,7 +36,7 @@ void SetBevelBoxSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args
     rb.set_surface_normal(std::make_unique<NormalOnBevelBox>(
         rb.rbp_,
         AxisAlignedBoundingBox<float, 3>::from_min_max(
-            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::min) * meters,
-            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::max) * meters),
+            args.arguments.at<EFixedArray<float, 3>>(KnownArgs::min) * meters,
+            args.arguments.at<EFixedArray<float, 3>>(KnownArgs::max) * meters),
         args.arguments.at<float>(KnownArgs::radius) * meters));
 }

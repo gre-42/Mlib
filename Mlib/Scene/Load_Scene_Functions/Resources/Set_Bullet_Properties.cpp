@@ -43,7 +43,7 @@ static void from_json(const nlohmann::json& j, BulletProperties& item) {
     item.max_lifetime = jv.at<float>(KnownBulletArgs::lifetime) * seconds;
     item.damage = jv.at<float>(KnownBulletArgs::damage);
     item.damage_radius = jv.at<float>(KnownBulletArgs::damage_radius, 0.f) * meters;
-    item.size = jv.at<UFixedArray<float, 3>>(KnownBulletArgs::size) * meters;
+    item.size = jv.at<EFixedArray<float, 3>>(KnownBulletArgs::size) * meters;
     if (auto trail = jv.try_at<ConstantParticleTrail>(KnownBulletArgs::trail)) {
         item.trail = *trail;
     }

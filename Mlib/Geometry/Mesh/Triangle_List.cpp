@@ -223,7 +223,7 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
             THROW_OR_ABORT("Triangle positions not supported for quads");
         }
-        quads.push_back({
+        quads.emplace_back(
             ColoredVertex<TPos>{
                 p00,
                 c00,
@@ -243,8 +243,7 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
                 p01,
                 c01,
                 u01,
-                n01}
-        });
+                n01});
     } else {
         THROW_OR_ABORT("Unsupported triangulation mode (0)");
     }

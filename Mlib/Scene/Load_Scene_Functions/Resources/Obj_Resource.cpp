@@ -8,6 +8,7 @@
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -63,9 +64,9 @@ public:
         }
     }
     void set_start_pose(
-        const TransformationMatrix<float, ScenePos, 3>& pose,
-        const FixedArray<float, 3>& velocity,
-        const FixedArray<float, 3>& angular_velocity,
+        const TransformationMatrix<SceneDir, ScenePos, 3>& pose,
+        const FixedArray<SceneDir, 3>& velocity,
+        const FixedArray<SceneDir, 3>& angular_velocity,
         uint32_t rank) override
     {
         nlohmann::json j{
@@ -78,7 +79,7 @@ public:
             JsonMacroArguments{{{std::to_string(rank), std::move(j)}}});
     }
     void set_checkpoints(
-        const std::vector<TransformationMatrix<float, ScenePos, 3>>& checkpoints) override
+        const std::vector<TransformationMatrix<SceneDir, ScenePos, 3>>& checkpoints) override
     {
         if (checkpoints.empty()) {
             THROW_OR_ABORT("Received no checkpoints");
@@ -90,7 +91,7 @@ public:
             global_checkpoints.push_back(
                 TrackElement{
                     .elapsed_seconds = NAN,
-                    .transformations = {OffsetAndTaitBryanAngles{c.R, c.t}}}
+                    .transformations = {UOffsetAndTaitBryanAngles<SceneDir, ScenePos, 3>{c.R, c.t}}}
                 .to_vector(geographic_mapping));
         }
         asset_references_["levels"].merge_into_database(

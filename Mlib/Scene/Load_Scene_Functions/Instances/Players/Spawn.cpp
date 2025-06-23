@@ -37,7 +37,7 @@ void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (!game_logic->spawner.try_spawn_at_spawn_point(
         vehicle_spawners.get(spawner_name),
         {
-            tait_bryan_angles_2_matrix(args.arguments.at<UFixedArray<SceneDir, 3>>(KnownArgs::rotation) * degrees),
+            tait_bryan_angles_2_matrix(args.arguments.at<EFixedArray<SceneDir, 3>>(KnownArgs::rotation) * degrees),
             parse_position(args.arguments.at(KnownArgs::position), scene_node_resources)
         }))
     {

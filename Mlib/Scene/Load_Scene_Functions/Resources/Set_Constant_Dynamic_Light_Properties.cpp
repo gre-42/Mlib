@@ -20,7 +20,7 @@ void from_json(const nlohmann::json& j, ConstantDynamicLightConfiguration& item)
     JsonView jv{ j };
     jv.validate(KnownConfigArgs::options);
 
-    item.color = jv.at<UFixedArray<float, 3>>(KnownConfigArgs::color);
+    item.color = jv.at<EFixedArray<float, 3>>(KnownConfigArgs::color);
     item.squared_distance_to_intensity = {
         jv.at_vector<ScenePos>(KnownConfigArgs::distances, [](ScenePos v) { return squared(v); }),
         jv.at<std::vector<float>>(KnownConfigArgs::intensities),

@@ -65,7 +65,7 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
             ? args.arguments.at<float>(KnownArgs::speed_cursor) * radians
             : std::optional<float>(),
         .legs_z = args.arguments.contains(KnownArgs::legs_z)
-            ? std::optional{ args.arguments.at<UFixedArray<float, 3>>(KnownArgs::legs_z) }
+            ? std::optional{ args.arguments.at<EFixedArray<float, 3>>(KnownArgs::legs_z) }
             : std::nullopt,
         .button_press{
             args.button_states,

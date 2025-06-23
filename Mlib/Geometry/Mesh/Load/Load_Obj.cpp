@@ -191,19 +191,19 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 FixedArray<float, 2> n{
                     safe_stof(match[1].str()),
                     safe_stof(match[2].str())};
-                obj_uvs.push_back(n);
+                obj_uvs.emplace_back(n);
             } else if (SMatch<4> match; regex_match(line, match, vertex_uvw_texture_reg)) {
                 FixedArray<float, 2> n{
                     safe_stof(match[1].str()),
                     safe_stof(match[2].str())};
                 // assert_true(safe_stof(match[3].str()) == 0);
-                obj_uvs.push_back(n);
+                obj_uvs.emplace_back(n);
             } else if (SMatch<4> match; regex_match(line, match, vertex_normal_reg)) {
                 FixedArray<float, 3> n{
                     safe_stof(match[1].str()),
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())};
-                obj_normals.push_back(n);
+                obj_normals.emplace_back(n);
             } else if (SMatch<3> match; regex_match(line, match, line_reg)) {
                 // FixedArray<size_t, 3> vertex_ids{
                 //     safe_stoz(match[1].str()),

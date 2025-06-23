@@ -61,9 +61,9 @@ public:
     auto get_vector(const TOperation& op) const {
         return Mlib::get_vector<TData>(j_, op);
     }
-    nlohmann::json at(const std::string_view& name) const;
+    nlohmann::json at(std::string_view name) const;
     template <class T>
-    T at(const std::string_view& name) const {
+    T at(std::string_view name) const {
         if (j_.type() == nlohmann::detail::value_t::null) {
             THROW_OR_ABORT("Attempt to retrieve value for key on null object: \"" + std::string{ name } + '"');
         }

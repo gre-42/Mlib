@@ -40,10 +40,10 @@ void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
     DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
     node->add_light(std::make_unique<Light>(Light{
-        .ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient),
-        .diffuse = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse),
-        .specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular),
-        .fresnel_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
-        .fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient),
+        .ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient),
+        .diffuse = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse),
+        .specular = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular),
+        .fresnel_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
+        .fog_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fog_ambient),
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 }

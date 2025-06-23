@@ -49,8 +49,8 @@ SquareResource::SquareResource(
 
     auto r = transformation.R / transformation.get_scale();
     UUVector<FixedArray<ColoredVertex<float>, 3>> triangles{
-        FixedArray<ColoredVertex<float>, 3>{v00.transformed(transformation, r), v11.transformed(transformation, r), v01.transformed(transformation, r)},
-        FixedArray<ColoredVertex<float>, 3>{v11.transformed(transformation, r), v00.transformed(transformation, r), v10.transformed(transformation, r)}
+        UFixedArray<ColoredVertex<float>, 3>{v00.transformed(transformation, r), v11.transformed(transformation, r), v01.transformed(transformation, r)},
+        UFixedArray<ColoredVertex<float>, 3>{v11.transformed(transformation, r), v00.transformed(transformation, r), v10.transformed(transformation, r)}
     };
 
     rva_ = std::make_shared<ColoredVertexArrayResource>(

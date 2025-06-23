@@ -60,7 +60,7 @@ private:
     FixedArray<float, 2> size_;
     HudErrorBehavior hud_error_behavior_;
     FixedArray<float, 2> offset_;
-    ExponentialSmoother<UFixedArray<float, 2>, float> smooth_offset_;
+    ExponentialSmoother<FixedArray<float, 2>, float> smooth_offset_;
     mutable bool is_visible_;
     DanglingPtr<SceneNode> exclusive_node_;
     mutable FixedArray<ScenePos, 4, 4> vp_;

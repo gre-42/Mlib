@@ -25,6 +25,6 @@ SetBackgroundColor::SetBackgroundColor(PhysicsScene& physics_scene)
 
 void SetBackgroundColor::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto background_color = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::color);
+    auto background_color = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::color);
     deferred_instantiator.set_background_color(background_color);
 }

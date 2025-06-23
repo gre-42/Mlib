@@ -2176,7 +2176,7 @@ void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const Fi
             auto r = Mlib::generate_triangle_rays(t->triangles, npoints, lengths.template casted<TPos>());
             t->lines.reserve(t->lines.size() + r.size());
             for (const auto& l : r) {
-                t->lines.push_back({
+                t->lines.emplace_back(
                     ColoredVertex<TPos>{
                         l[0],
                         Colors::WHITE,
@@ -2186,8 +2186,7 @@ void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const Fi
                         l[1],
                         Colors::WHITE,
                         {0.f, 1.f}
-                    }
-                });
+                    });
             }
             if (delete_triangles) {
                 t->triangles.clear();
@@ -2204,7 +2203,7 @@ void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, 
     }
     auto gen_ray = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
     {
-        cvas.front()->lines.push_back({
+        cvas.front()->lines.emplace_back(
             ColoredVertex<TPos>{
                 from,
                 Colors::WHITE,
@@ -2218,8 +2217,7 @@ void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, 
                 {0.f, 1.f},
                 fixed_zeros<float, 3>(),
                 fixed_zeros<float, 3>(),
-            }
-        });
+            });
     };
     if (!triangles_res_->scvas.empty()) {
         gen_ray(triangles_res_->scvas);

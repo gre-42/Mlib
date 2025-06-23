@@ -19,13 +19,13 @@ UUInterp<double, FixedArray<double, tndim>> Mlib::interpolated_contour(
 
     UUVector<FixedArray<double, tndim>> positions;
     positions.reserve(contour.size());
-    positions.push_back(funpack(contour.front()));
+    positions.emplace_back(funpack(contour.front()));
     {
         for (const auto& current_position : Iterable{ ++contour.begin(), contour.end() }) {
             distance_to_origin.push_back(
                 distance_to_origin.back() +
                 std::sqrt(sum(squared(funpack(current_position) - positions.back()))));
-            positions.push_back(funpack(current_position));
+            positions.emplace_back(funpack(current_position));
         }
     }
     return Interp<double, DefaultUnitialized<FixedArray<double, tndim>>>{ distance_to_origin, positions };

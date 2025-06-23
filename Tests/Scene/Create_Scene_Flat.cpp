@@ -58,11 +58,11 @@ void Mlib::create_scene_flat(
 
     const auto z2 = fixed_zeros<float, 2>();
     UUVector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
-        FixedArray<ColoredVertex<float>, 3>{
+        UFixedArray<ColoredVertex<float>, 3>{
             ColoredVertex<float>{{-10.f, -2.f, +10.f}, Colors::BLUE, z2, {0.f, 1.f, 0.f}},
             ColoredVertex<float>{{+10.f, -2.f, -10.f}, Colors::GREEN, z2, {0.f, 1.f, 0.f}},
             ColoredVertex<float>{{-10.f, -5.f, -10.f}, Colors::RED, z2, {0.f, 1.f, 0.f}}},
-        FixedArray<ColoredVertex<float>, 3>{
+        UFixedArray<ColoredVertex<float>, 3>{
             ColoredVertex<float>{{+10.f, -2.f, -10.f}, Colors::BLUE, z2, {0.f, 1.f, 0.f}},
             ColoredVertex<float>{{-10.f, -2.f, +10.f}, Colors::GREEN, z2, {0.f, 1.f, 0.f}},
             ColoredVertex<float>{{+10.f, -5.f, +10.f}, Colors::RED, z2, {0.f, 1.f, 0.f}}}

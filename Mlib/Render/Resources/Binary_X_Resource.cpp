@@ -50,8 +50,8 @@ BinaryXResource::BinaryXResource(
         {1.f, 1.f},
         {0.f, 0.f, 1.f}};
 
-    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00, v11, v01});
-    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11, v00, v10});
+    triangles.emplace_back(v00, v11, v01);
+    triangles.emplace_back(v11, v00, v10);
     auto triangles_0 = triangles;
     auto triangles_90 = std::move(triangles);
 

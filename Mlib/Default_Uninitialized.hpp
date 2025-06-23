@@ -12,12 +12,9 @@ public:
     DefaultUnitialized()
         : T(uninitialized)
     {}
-    DefaultUnitialized(const T& v)
-        : T(v)
-    {}
-    template<std::convertible_to<typename T::value_type>... Values>
-    DefaultUnitialized(const Values&... values)
-        : T{ values... }
+    template <class... Args>
+    explicit DefaultUnitialized(Args&&... v)
+        : T(std::forward<Args>(v)...)
     {}
     DefaultUnitialized& operator = (const T& other) {
         T& v = *this;

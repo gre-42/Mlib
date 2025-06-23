@@ -51,7 +51,7 @@ UUVector<FixedArray<CompressedScenePos, 3>> ShortestPathIntermediatePointsCreato
         UUVector<FixedArray<CompressedScenePos, 3>> result;
         result.reserve(sresult.size());
         for (const auto& v : sresult) {
-            result.push_back(v.casted<CompressedScenePos>());
+            result.emplace_back(v.casted<CompressedScenePos>());
         }
         return result;
     } catch (const EdgeException<float>& e) {

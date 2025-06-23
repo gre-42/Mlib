@@ -19,5 +19,5 @@ void Mlib::from_json(const nlohmann::json& j, FresnelAndAmbient& f) {
     f.reflectance.min = jv.at<float>(KnownArgs::min);
     f.reflectance.max = jv.at<float>(KnownArgs::max);
     f.reflectance.exponent = jv.at<float>(KnownArgs::exponent);
-    f.ambient = jv.at<UFixedArray<float, 3>>(KnownArgs::ambient, fixed_zeros<float, 3>());
+    f.ambient = jv.at<EFixedArray<float, 3>>(KnownArgs::ambient, fixed_zeros<float, 3>());
 }

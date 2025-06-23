@@ -64,7 +64,7 @@ void Mlib::import_bone_weights(
                 *wn_it = *best_weights;
                 ++wn_it;
             }
-            cva->triangle_bone_weights.push_back(wn);
+            cva->triangle_bone_weights.emplace_back(wn);
         }
     }
     dest.bone_indices = source.bone_indices;

@@ -41,6 +41,6 @@ void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& a
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower),
         followed_node,
         followed_node->get_absolute_movable(),
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::offset));
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::offset));
     linker.link_absolute_movable(follower_node, std::move(follower), CURRENT_SOURCE_LOCATION);
 }

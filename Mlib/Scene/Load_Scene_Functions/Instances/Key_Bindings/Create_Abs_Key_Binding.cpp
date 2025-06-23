@@ -67,9 +67,9 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& kb = key_bindings.add_absolute_movable_key_binding(std::unique_ptr<AbsoluteMovableKeyBinding>(new AbsoluteMovableKeyBinding{
         .node = node.ptr(),
         .force = {
-            .vector = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,
-            .position = args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position, rb.rbp_.com_.casted<ScenePos>()) * (ScenePos)meters},
-        .rotate = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotate, fixed_zeros<float, 3>()),
+            .vector = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,
+            .position = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::position, rb.rbp_.com_.casted<ScenePos>()) * (ScenePos)meters},
+        .rotate = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotate, fixed_zeros<float, 3>()),
         .car_surface_power = args.arguments.contains(KnownArgs::car_surface_power)
             ? args.arguments.at<float>(KnownArgs::car_surface_power) * W
             : std::optional<float>(),
@@ -79,7 +79,7 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at_vector_non_null_optional<float>(KnownArgs::tire_angle_velocities, from_kph),
             args.arguments.at_vector_non_null_optional<float>(KnownArgs::tire_angles, from_degrees),
             OutOfRangeBehavior::CLAMP},
-        .tires_z = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::tires_z, fixed_zeros<float, 3>()),
+        .tires_z = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::tires_z, fixed_zeros<float, 3>()),
         .wants_to_jump = args.arguments.contains(KnownArgs::wants_to_jump)
             ? args.arguments.at<bool>(KnownArgs::wants_to_jump)
             : std::optional<bool>(),

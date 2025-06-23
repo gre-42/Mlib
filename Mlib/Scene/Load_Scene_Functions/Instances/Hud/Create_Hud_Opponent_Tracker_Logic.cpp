@@ -60,7 +60,7 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
                 .color_mode = ColorMode::RGBA
             }.compute_hash(),
             TextureRole::COLOR_FROM_DB),
-        args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center),
-        args.arguments.at<UFixedArray<float, 2>>(KnownArgs::size),
+        args.arguments.at<EFixedArray<float, 2>>(KnownArgs::center),
+        args.arguments.at<EFixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
 }

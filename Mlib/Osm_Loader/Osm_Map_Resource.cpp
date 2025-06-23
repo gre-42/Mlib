@@ -1535,7 +1535,7 @@ OsmMapResource::OsmMapResource(
                                 v.position(1)},
                             max_dist))
                         {
-                            wayside_grass.triangles.push_back(tri);
+                            wayside_grass.triangles.emplace_back(tri);
                             return true;
                         }
                     }

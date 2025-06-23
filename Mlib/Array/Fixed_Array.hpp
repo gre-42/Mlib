@@ -4,6 +4,7 @@
 #include <Mlib/Array/Fixed_Array_Shape.hpp>
 #include <Mlib/Default_Nan.hpp>
 #include <Mlib/Default_Uninitialized.hpp>
+#include <Mlib/Default_Uninitialized_Element.hpp>
 #include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Iterator/Pointer_Iterable.hpp>
 #include <Mlib/Math/Conju.hpp>
@@ -30,10 +31,11 @@ template <typename TData, size_t tshape0, size_t... tshape>
 class FixedArray<TData, tshape0, tshape...>: public BaseDenseFixedArray<FixedArray<TData, tshape0, tshape...>, TData, tshape0, tshape...>
 {
 public:
-    typedef TData value_type;
+    using value_type = TData;
+    using initializer_type = FixedArray<TData, tshape...>;
 
     static consteval size_t nelements() {
-        return tshape0 * FixedArray<TData, tshape...>::nelements();
+        return tshape0 * initializer_type::nelements();
     }
     static consteval size_t nbytes() {
         return nelements() * sizeof(TData);
@@ -88,7 +90,7 @@ public:
         return result;
 #pragma GCC diagnostic pop
     }
-    template<std::convertible_to<FixedArray<TData, tshape...>>... Values>
+    template<std::convertible_to<initializer_type>... Values>
         requires (sizeof...(Values) == tshape0)
     FixedArray(const Values&... values)
         : data_{ values... }
@@ -140,18 +142,18 @@ public:
         return data_[id0].at(ids...);
     }
     // Generic [] access operators
-    const FixedArray<TData, tshape...>& operator [] (size_t id) const {
+    const initializer_type& operator [] (size_t id) const {
         assert(id < tshape0);
         return data_[id];
     }
-    FixedArray<TData, tshape...>& operator [] (size_t id) {
+    initializer_type& operator [] (size_t id) {
         assert(id < tshape0);
         return data_[id];
     }
-    constexpr PointerIterable<const FixedArray<TData, tshape...>> row_iterable() const {
+    constexpr PointerIterable<const initializer_type> row_iterable() const {
         return { row_begin(), row_end() };
     }
-    constexpr PointerIterable<FixedArray<TData, tshape...>> row_iterable() {
+    constexpr PointerIterable<initializer_type> row_iterable() {
         return { row_begin(), row_end() };
     }
     constexpr PointerIterable<const TData> flat_iterable() const {
@@ -160,16 +162,16 @@ public:
     constexpr PointerIterable<TData> flat_iterable() {
         return { flat_begin(), flat_end() };
     }
-    constexpr FixedArray<TData, tshape...>* row_begin() {
+    constexpr initializer_type* row_begin() {
         return data_ + 0;
     }
-    constexpr FixedArray<TData, tshape...>* row_end() {
+    constexpr initializer_type* row_end() {
         return data_ + tshape0;
     }
-    constexpr const FixedArray<TData, tshape...>* row_begin() const {
+    constexpr const initializer_type* row_begin() const {
         return const_cast<FixedArray*>(this)->row_begin();
     }
-    constexpr const FixedArray<TData, tshape...>* row_end() const {
+    constexpr const initializer_type* row_end() const {
         return const_cast<FixedArray*>(this)->row_end();
     }
     constexpr TData* flat_begin() {
@@ -245,7 +247,7 @@ public:
     }
     template <size_t... tnew_shape>
     constexpr FixedArray<TData, tnew_shape...>& reshaped() {
-        typedef FixedArray<TData, tnew_shape...> Result;
+        using Result = FixedArray<TData, tnew_shape...>;
         static_assert(Result::nelements() <= nelements());
         return *reinterpret_cast<Result*>(this);
     }
@@ -374,14 +376,15 @@ private:
         // (*this)(i) = v;
         set_values<i + 1>(values...);
     }
-    DefaultUnitialized<FixedArray<TData, tshape...>> data_[tshape0];
+    DefaultUnitializedElement<initializer_type> data_[tshape0];
 };
 
 template <typename TData>
 class FixedArray<TData>: public BaseDenseFixedArray<FixedArray<TData>, TData>
 {
 public:
-    typedef TData value_type;
+    using value_type = TData;
+    using initializer_type = TData;
 
     FixedArray(Uninitialized) {}
     FixedArray(const TData& v)
@@ -435,7 +438,7 @@ private:
  */
 template <typename TData, size_t tshape0, size_t... tshape>
 std::ostream& operator << (std::ostream& ostream, const FixedArray<TData, tshape0, tshape...>& a) {
-    typedef FixedArray<TData, tshape0, tshape...> A;
+    using A = FixedArray<TData, tshape0, tshape...>;
     if constexpr (A::ndim() == 1) {
         for (size_t i = 0; i < CW::length(a); ++i) {
             ostream << WriteNum(a(i)) << (i == CW::length(a) - 1 ? "" : " ");
@@ -477,5 +480,8 @@ using NFixedArray = DefaultNan<FixedArray<TData, tshape...>>;
 
 template <typename TData, size_t... tshape>
 using UFixedArray = DefaultUnitialized<FixedArray<TData, tshape...>>;
+
+template <typename TData, size_t... tshape>
+using EFixedArray = DefaultUnitializedElement<FixedArray<TData, tshape...>>;
 
 }

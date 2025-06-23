@@ -63,16 +63,16 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
     using I = funpack_t<TPos>;
     j.validate(KnownArgs::options);
     return LoadMeshConfig<TPos>{
-        .position = (j.at<UFixedArray<I, 3>>(KnownArgs::position) * (I)meters).template casted<TPos>(),
-        .rotation = j.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
-        .scale = j.at<UFixedArray<float, 3>>(KnownArgs::scale),
+        .position = (j.at<EFixedArray<I, 3>>(KnownArgs::position) * (I)meters).template casted<TPos>(),
+        .rotation = j.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
+        .scale = j.at<EFixedArray<float, 3>>(KnownArgs::scale),
         .center_distances = OrderableFixedArray<float, 2>{
-            j.at<UFixedArray<float, 2>>(
+            j.at<EFixedArray<float, 2>>(
                 KnownArgs::center_distances,
                 default_step_distances) * meters},
         .max_triangle_distance = j.at<float>(KnownArgs::max_triangle_distance, INFINITY) * meters,
         .blend_mode = blend_mode_from_string(j.at<std::string>(KnownArgs::blend_mode)),
-        .alpha_distances = j.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+        .alpha_distances = j.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         .cull_faces_default = j.at<bool>(KnownArgs::cull_faces_default, true),
         .cull_faces_alpha = j.at<bool>(KnownArgs::cull_faces_alpha, true),
         .occluded_pass = external_render_pass_type_from_string(j.at<std::string>(KnownArgs::occluded_pass)),
@@ -84,13 +84,13 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .billboard_atlas_instances = j.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {}),
         .reflection_map = VariableAndHash{ j.at_non_null<std::string>(KnownArgs::reflection_map, "") },
         .shading = j.at<Shading>(KnownArgs::shading, Shading{}),
-        .emissive_factor = j.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor, fixed_ones<float, 3>()),
-        .ambient_factor = j.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
-        .diffuse_factor = j.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
-        .specular_factor = j.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
+        .emissive_factor = j.at<EFixedArray<float, 3>>(KnownArgs::emissive_factor, fixed_ones<float, 3>()),
+        .ambient_factor = j.at<EFixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
+        .diffuse_factor = j.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
+        .specular_factor = j.at<EFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
         .desaturate = j.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = j.try_path_or_variable(KnownArgs::histogram).path,
-        .lighten = j.at<UFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
+        .lighten = j.at<EFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
         .textures = blend_map_textures_from_json(j, KnownArgs::textures),
         .period_world = j.contains(KnownArgs::period_world)
             ? j.at<float>(KnownArgs::period_world)

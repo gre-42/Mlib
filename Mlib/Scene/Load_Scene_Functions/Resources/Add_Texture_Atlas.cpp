@@ -51,9 +51,9 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto tiles = args.arguments.children(KnownArgs::images, [&](const JsonMacroArguments& a){
         // This is not in a from_json function because of the usage of "path_or_variable".
         a.validate(AtlasTileArgs::options);
-        auto source_position = a.at<UFixedArray<int, 2>>(AtlasTileArgs::source_position, fixed_zeros<int, 2>());
-        auto target_position = a.at<UFixedArray<int, 2>>(AtlasTileArgs::target_position);
-        auto texture_size = a.at<UFixedArray<int, 2>>(AtlasTileArgs::size, fixed_full<int, 2>(INT_MAX));
+        auto source_position = a.at<EFixedArray<int, 2>>(AtlasTileArgs::source_position, fixed_zeros<int, 2>());
+        auto target_position = a.at<EFixedArray<int, 2>>(AtlasTileArgs::target_position);
+        auto texture_size = a.at<EFixedArray<int, 2>>(AtlasTileArgs::size, fixed_full<int, 2>(INT_MAX));
         return ManualAtlasTileDescriptor{
             .source = {
                 .left = source_position(0),

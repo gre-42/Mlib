@@ -54,9 +54,9 @@ void Mlib::from_json(const nlohmann::json& j, WaterConfiguration& water) {
     water.textures = jv.at<WaterTextureConfiguration>(WaterArgs::textures);
     water.animation_duration = jv.at<std::chrono::steady_clock::duration>(WaterArgs::animation_duration);
     water.aabb = jv.at<DefaultUnitialized<AxisAlignedBoundingBox<CompressedScenePos, 2>>>(WaterArgs::aabb);
-    water.cell_size = jv.at<UFixedArray<CompressedScenePos, 2>>(WaterArgs::cell_size);
+    water.cell_size = jv.at<EFixedArray<CompressedScenePos, 2>>(WaterArgs::cell_size);
     water.duplicate_distance = jv.at<CompressedScenePos>(WaterArgs::duplicate_distance);
-    water.heights = jv.at<UFixedArray<CompressedScenePos, 2>>(WaterArgs::heights);
+    water.heights = jv.at<EFixedArray<CompressedScenePos, 2>>(WaterArgs::heights);
     water.coast = jv.at<CoastConfiguration>(WaterArgs::coast);
     water.generate_tiles = jv.at<bool>(WaterArgs::generate_tiles);
     water.holes_from_terrain = jv.at<bool>(WaterArgs::holes_from_terrain);

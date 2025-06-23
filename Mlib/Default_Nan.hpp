@@ -10,7 +10,7 @@ public:
     DefaultNan()
         : T(nan_initialized)
     {}
-    DefaultNan(const T& v)
+    explicit DefaultNan(const T& v)
         : T(v)
     {}
     template<std::convertible_to<typename T::value_type>... Values>

@@ -35,5 +35,5 @@ void SetRigidBodyTarget::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (any(rb.target_ != 0.f)) {
         THROW_OR_ABORT("Rigid body target already set");
     }
-    rb.target_ = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::target);
+    rb.target_ = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::target);
 }

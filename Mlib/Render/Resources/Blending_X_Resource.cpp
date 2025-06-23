@@ -53,8 +53,8 @@ BlendingXResource::BlendingXResource(
 
         UUVector<FixedArray<ColoredVertex<float>, 3>> triangles;
         triangles.reserve(2);
-        triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00, v11, v01});
-        triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11, v00, v10});
+        triangles.emplace_back(v00, v11, v01);
+        triangles.emplace_back(v11, v00, v10);
 
         rva_(i) = std::make_shared<ColoredVertexArrayResource>(
             std::make_shared<ColoredVertexArray<float>>(

@@ -45,20 +45,20 @@ UUVector<FixedArray<TPos, 3, 3>> Mlib::barrier_triangle_hitbox(
         bc_is_contour_edge * 2 +
         ca_is_contour_edge * 2);
 
-    result.push_back(FixedArray<TPos, 3, 3>{a, b, c});
+    result.emplace_back(a, b, c);
     if (ab_is_contour_edge) {
-        result.push_back(FixedArray<TPos, 3, 3>{a, A, b});
-        result.push_back(FixedArray<TPos, 3, 3>{A, B, b});
+        result.emplace_back(a, A, b);
+        result.emplace_back(A, B, b);
     }
     if (bc_is_contour_edge) {
-        result.push_back(FixedArray<TPos, 3, 3>{b, B, c});
-        result.push_back(FixedArray<TPos, 3, 3>{B, C, c});
+        result.emplace_back(b, B, c);
+        result.emplace_back(B, C, c);
     }
     if (ca_is_contour_edge) {
-        result.push_back(FixedArray<TPos, 3, 3>{c, C, a});
-        result.push_back(FixedArray<TPos, 3, 3>{C, A, a});
+        result.emplace_back(c, C, a);
+        result.emplace_back(C, A, a);
     }
-    result.push_back(FixedArray<TPos, 3, 3>{B, A, C});
+    result.emplace_back(B, A, C);
     return result;
 }
 
@@ -124,10 +124,10 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
                 THROW_OR_ABORT("create_barrier_triangle_hitboxes internal error (0)");
             }
             auto n = triangle_normal(s).template casted<float>();
-            decomposition.push_back({
+            decomposition.emplace_back(
                 ColoredVertex<TPos>{s[0].template casted<TPos>(), Colors::PURPLE, zeros2, n},
                 ColoredVertex<TPos>{s[1].template casted<TPos>(), Colors::PURPLE, zeros2, n},
-                ColoredVertex<TPos>{s[2].template casted<TPos>(), Colors::PURPLE, zeros2, n}});
+                ColoredVertex<TPos>{s[2].template casted<TPos>(), Colors::PURPLE, zeros2, n});
         }
     }
     if (decomposition.capacity() != decomposition.size()) {

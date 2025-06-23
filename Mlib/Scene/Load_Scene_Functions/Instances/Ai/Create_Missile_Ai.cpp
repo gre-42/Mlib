@@ -55,7 +55,7 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto jpid = args.arguments.child(KnownArgs::pid);
     jpid.validate(PidArgs::options);
-    auto pid = jpid.at<UFixedArray<float, 3>>(PidArgs::pid);
+    auto pid = jpid.at<EFixedArray<float, 3>>(PidArgs::pid);
     auto pid_alpha = jpid.at<float>(PidArgs::alpha);
     auto pid_controller = PidController<FixedArray<float, 3>, float>{
         pid(0) / meters,

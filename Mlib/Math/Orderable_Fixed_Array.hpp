@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Fixed_Array_Hash.hpp>
 #include <Mlib/Default_Uninitialized.hpp>
+#include <Mlib/Default_Uninitialized_Element.hpp>
 #include <Mlib/Hash.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Std_Hash.hpp>
@@ -63,6 +64,9 @@ public:
 
 template <class TData, size_t... tshape>
 using UOrderableFixedArray = DefaultUnitialized<OrderableFixedArray<TData, tshape...>>;
+
+template <class TData, size_t... tshape>
+using EOrderableFixedArray = DefaultUnitializedElement<OrderableFixedArray<TData, tshape...>>;
 
 }
 

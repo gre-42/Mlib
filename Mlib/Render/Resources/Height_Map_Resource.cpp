@@ -80,7 +80,7 @@ HeightMapResource::HeightMapResource(
                 const FixedArray<float, 3>& p2,
                 const FixedArray<float, 3>& c2) {
                 FixedArray<float, 3> normal = triangle_normal<float>({p0, p1, p2});
-                triangles.push_back(FixedArray<ColoredVertex<float>, 3>{
+                triangles.emplace_back(
                     ColoredVertex<float>{
                         p0,
                         Colors::from_rgb(c0),
@@ -95,7 +95,7 @@ HeightMapResource::HeightMapResource(
                         p2,
                         Colors::from_rgb(c2),
                         fixed_zeros<float, 2>(),
-                        normal}});
+                        normal});
             };
             add_triangle(p00, c00, p11, c11, p01, c01);
             add_triangle(p11, c11, p00, c00, p10, c10);

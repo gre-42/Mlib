@@ -154,14 +154,14 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     auto class_ = vehicle_type_from_string(vdb.at<std::string>(KnownDb::vehicle_class));
 
-    auto wheel_left_front_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_0);
-    auto wheel_left_front_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_1);
-    auto wheel_right_front_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_front_mount_0);
-    auto wheel_right_front_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_front_mount_1);
-    auto wheel_left_rear_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_rear_mount_0);
-    auto wheel_left_rear_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_left_rear_mount_1);
-    auto wheel_right_rear_mount_0 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_0);
-    auto wheel_right_rear_mount_1 = vdb.at<UFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_1);
+    auto wheel_left_front_mount_0 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_0);
+    auto wheel_left_front_mount_1 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_left_front_mount_1);
+    auto wheel_right_front_mount_0 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_right_front_mount_0);
+    auto wheel_right_front_mount_1 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_right_front_mount_1);
+    auto wheel_left_rear_mount_0 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_left_rear_mount_0);
+    auto wheel_left_rear_mount_1 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_left_rear_mount_1);
+    auto wheel_right_rear_mount_0 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_0);
+    auto wheel_right_rear_mount_1 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_1);
 
     create_child_node("dynamic", parent, VH{"wheel_left_front_node" + tesuffix}, wheel_left_front_mount_0.casted<ScenePos>());
     create_child_node("dynamic", parent, VH{"wheel_right_front_node" + tesuffix}, wheel_right_front_mount_0.casted<ScenePos>());
@@ -205,10 +205,10 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             .name = "generic_car_" + name + tesuffix,
             .asset_id = name,
             .mass = vdb.at<float>(KnownDb::mass) * kg,
-            .size = vdb.at<UFixedArray<float, 3>>(KnownDb::size) * meters,
-            .com = vdb.at<UFixedArray<float, 3>>(KnownDb::com) * meters,
-            .v = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::velocity) * kph,
-            .w = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::angular_velocity) * rpm,
+            .size = vdb.at<EFixedArray<float, 3>>(KnownDb::size) * meters,
+            .com = vdb.at<EFixedArray<float, 3>>(KnownDb::com) * meters,
+            .v = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::velocity) * kph,
+            .w = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::angular_velocity) * rpm,
             .I_rotation = fixed_zeros<float, 3>(),
             .with_penetration_limits = true,
             .geographic_coordinates = scene_node_resources.get_geographic_mapping(WORLD),

@@ -39,7 +39,7 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_node_resources);
     auto node = make_unique_scene_node(
         pos.casted<ScenePos>() * (ScenePos)meters,
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
         pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")),
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,

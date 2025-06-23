@@ -66,8 +66,8 @@ void Mlib::draw_node(
         fixed_zeros<float, 3>(),
         fixed_zeros<float, 3>()};
 
-    triangles.push_back(FixedArray<ColoredVertex<CompressedScenePos>, 3>{v00, v11, v01});
-    triangles.push_back(FixedArray<ColoredVertex<CompressedScenePos>, 3>{v11, v00, v10});
+    triangles.emplace_back(v00, v11, v01);
+    triangles.emplace_back(v11, v00, v10);
 }
 
 void Mlib::draw_nodes(

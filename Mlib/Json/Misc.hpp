@@ -44,30 +44,27 @@ T json_get(const nlohmann::json& j) {
     return j.get<T>();
 }
 
-template <class TData, size_t tsize>
-void from_json(const nlohmann::json& j, FixedArray<TData, tsize>& v) {
+template <typename TData>
+void from_json(const nlohmann::json& j, FixedArray<TData>& v) {
+    v() = json_get<TData>(j);
+}
+
+template <typename TData, size_t tsize0, size_t... tshape>
+void from_json(const nlohmann::json& j, FixedArray<TData, tsize0, tshape...>& v) {
     if (j.type() != nlohmann::detail::value_t::array) {
         THROW_OR_ABORT("JSON -> FixedArray received non-array type");
     }
-    if (j.size() != tsize) {
+    if (j.size() != tsize0) {
         THROW_OR_ABORT("JSON -> FixedArray received array of incorrect length");
     }
-    for (size_t i = 0; i < tsize; ++i) {
-        v(i) = json_get<TData>(j[i]);
+    for (size_t i = 0; i < tsize0; ++i) {
+        v[i] = j[i].get<EFixedArray<TData, tshape...>>();
     }
 }
 
-template <class TData, size_t tsize>
-void from_json(const nlohmann::json& j, OrderableFixedArray<TData, tsize>& v) {
-    if (j.type() != nlohmann::detail::value_t::array) {
-        THROW_OR_ABORT("JSON -> OrderableFixedArray received non-array type");
-    }
-    if (j.size() != tsize) {
-        THROW_OR_ABORT("JSON -> OrderableFixedArray received array of incorrect length");
-    }
-    for (size_t i = 0; i < tsize; ++i) {
-        v(i) = json_get<TData>(j[i]);
-    }
+template <typename TData, size_t... tshape>
+void from_json(const nlohmann::json& j, OrderableFixedArray<TData, tshape...>& v) {
+    v = j.get<EFixedArray<TData, tshape...>>();
 }
 
 template <class TData>

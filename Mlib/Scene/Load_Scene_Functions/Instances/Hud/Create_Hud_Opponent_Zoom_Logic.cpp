@@ -53,7 +53,7 @@ void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto cam_stream = std::make_unique<CameraStreamLogic>(
         scene,
         selected_cameras,
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::background_color),
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::background_color),
         ClearMode::DEPTH);
     object_pool.create<HudOpponentZoomLogic>(
         CURRENT_SOURCE_LOCATION,

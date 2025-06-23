@@ -55,11 +55,11 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Unsupported render pass type for \"with shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
     auto light = std::make_shared<Light>(Light{
-        .ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient),
-        .diffuse = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse),
-        .specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular),
-        .fresnel_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
-        .fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient),
+        .ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient),
+        .diffuse = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse),
+        .specular = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular),
+        .fresnel_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
+        .fog_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fog_ambient),
         .lightmap_color = nullptr,
         .lightmap_depth = nullptr,
         .shadow_render_pass = render_pass});
@@ -74,7 +74,7 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<bool>(KnownArgs::with_depth_texture),                 // with_depth_texture
         args.arguments.at<int>(KnownArgs::lightmap_width),
         args.arguments.at<int>(KnownArgs::lightmap_height),
-        args.arguments.at<UFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));
+        args.arguments.at<EFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));
     o->on_node_clear.add([&p=object_pool, &o=*o]() { p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { *o, CURRENT_SOURCE_LOCATION },

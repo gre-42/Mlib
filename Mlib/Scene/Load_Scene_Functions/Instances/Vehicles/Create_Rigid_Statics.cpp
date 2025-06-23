@@ -53,8 +53,8 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         INFINITY * kg,
         fixed_ones<float, 3>() * meters,    // size
         fixed_zeros<float, 3>() * meters,   // com
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         fixed_zeros<float, 3>() * degrees,  // I_rotation
         nullptr,                            // pl
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}));

@@ -38,8 +38,8 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
 {
     args.arguments.validate(KnownArgs::options);
 
-    auto min = args.arguments.at<UFixedArray<float, 2>>(KnownArgs::min) * meters;
-    auto max = args.arguments.at<UFixedArray<float, 2>>(KnownArgs::max) * meters;
+    auto min = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::min) * meters;
+    auto max = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::max) * meters;
     auto square = FixedArray<float, 2, 2>::init(
         min(0), min(1),
         max(0), max(1));
@@ -48,20 +48,20 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
         .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
         .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
         .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
-        .alpha_distances = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+        .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         // .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
         .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
         .shading{
-            .ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::ambient),
+            .ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::ambient),
             .diffuse = {0.f, 0.f, 0.f},
             .specular = {0.f, 0.f, 0.f}}};
     Morphology morphology{
         .physics_material = PhysicsMaterial::NONE,
         .center_distances2 = SquaredStepDistances::from_distances(
-            args.arguments.at<UFixedArray<float, 2>>(
+            args.arguments.at<EFixedArray<float, 2>>(
                 KnownArgs::center_distances,
                 FixedArray<float, 2>{0.f, INFINITY })* meters)
     };

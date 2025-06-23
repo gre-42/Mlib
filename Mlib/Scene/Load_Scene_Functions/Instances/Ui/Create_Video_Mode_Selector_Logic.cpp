@@ -68,7 +68,7 @@ void CreateVideoModeSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& 
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         focus_filter,

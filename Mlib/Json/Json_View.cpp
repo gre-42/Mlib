@@ -47,7 +47,7 @@ std::optional<nlohmann::json> JsonView::try_at_non_null(std::string_view name) c
     return *it;
 }
 
-nlohmann::json JsonView::at(const std::string_view& name) const {
+nlohmann::json JsonView::at(std::string_view name) const {
     auto it = j_.find(name);
     if (it == j_.end()) {
         THROW_OR_ABORT("Cannot find key with name \"" + std::string{ name } + "\"");

@@ -45,7 +45,7 @@ UUVector<FixedArray<TPos, 2, 3>> Mlib::generate_triangle_face_rays(
                     t(2).position };
                 auto pos = dot(bc, funpack(triangle));
                 auto normal = triangle_normal(funpack(triangle));
-                res.push_back(gen_ray(pos, normal, funpack(lengths)).template casted<TPos>());
+                res.emplace_back(gen_ray(pos, normal, funpack(lengths)).template casted<TPos>());
             }
         }
     }
@@ -65,7 +65,7 @@ UUVector<FixedArray<TPos, 2, 3>> Mlib::generate_triangle_vertex_rays(
     res.reserve(vertex_normals.vertices().size());
     for (const auto& [v, n] : vertex_normals.vertices()) {
         using I = funpack_t<TPos>;
-        res.push_back(gen_ray(funpack(v), n.template casted<I>(), funpack(lengths)).template casted<TPos>());
+        res.emplace_back(gen_ray(funpack(v), n.template casted<I>(), funpack(lengths)).template casted<TPos>());
     }
     return res;
 }

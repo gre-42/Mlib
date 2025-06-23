@@ -55,15 +55,15 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
     args.arguments.validate(KnownArgs::options);
 
     auto billboard_atlas_instances = args.arguments.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {});
-    auto min = args.arguments.at<UFixedArray<float, 2>>(KnownArgs::min) * meters;
-    auto max = args.arguments.at<UFixedArray<float, 2>>(KnownArgs::max) * meters;
+    auto min = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::min) * meters;
+    auto max = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::max) * meters;
     auto square = FixedArray<float, 2, 2>::init(
         min(0), min(1),
         max(0), max(1));
     TransformationMatrix<float, float, 3> transformation(
         tait_bryan_angles_2_matrix(
-            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees),
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::translation, fixed_zeros<float, 3>()) * meters);
+            args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees),
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::translation, fixed_zeros<float, 3>()) * meters);
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
@@ -75,7 +75,7 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         .textures_color = { primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename).path}) },
         .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
         .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
-        .alpha_distances = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+        .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         .magnifying_interpolation_mode = InterpolationMode::LINEAR,
         // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         // .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
@@ -85,17 +85,17 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         .number_of_frames = args.arguments.at<unsigned int>(KnownArgs::number_of_frames, 1),
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
         .shading{
-            .emissive = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
-            .ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::ambient),
-            .diffuse = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::diffuse, UOrderableFixedArray<float, 3>(0.f)),
-            .specular = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::specular, UOrderableFixedArray<float, 3>(0.f)),
-            .fog_distances = args.arguments.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
-            .fog_ambient= args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, UOrderableFixedArray<float, 3>(0.f))}};
+            .emissive = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
+            .ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::ambient),
+            .diffuse = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::diffuse, UOrderableFixedArray<float, 3>(0.f)),
+            .specular = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::specular, UOrderableFixedArray<float, 3>(0.f)),
+            .fog_distances = args.arguments.at<EOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
+            .fog_ambient= args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, UOrderableFixedArray<float, 3>(0.f))}};
     material.compute_color_mode();
     Morphology morphology{
         .physics_material = PhysicsMaterial::NONE,
         .center_distances2 = SquaredStepDistances::from_distances(
-            args.arguments.at<UFixedArray<float, 2>>(
+            args.arguments.at<EFixedArray<float, 2>>(
                 KnownArgs::center_distances,
                 FixedArray<float, 2>{0.f, INFINITY }) * meters),
     };

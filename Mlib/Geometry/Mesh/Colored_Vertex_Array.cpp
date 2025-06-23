@@ -124,19 +124,19 @@ UUVector<FixedArray<TPos, 3>> ColoredVertexArray<TPos>::vertices() const {
     UUVector<FixedArray<TPos, 3>> res;
     res.reserve(quads.size() * 4 + triangles.size() * 3 + lines.size() * 2);
     for (const auto& v : quads) {
-        res.push_back(v(0).position);
-        res.push_back(v(1).position);
-        res.push_back(v(2).position);
-        res.push_back(v(3).position);
+        res.emplace_back(v(0).position);
+        res.emplace_back(v(1).position);
+        res.emplace_back(v(2).position);
+        res.emplace_back(v(3).position);
     }
     for (const auto& v : triangles) {
-        res.push_back(v(0).position);
-        res.push_back(v(1).position);
-        res.push_back(v(2).position);
+        res.emplace_back(v(0).position);
+        res.emplace_back(v(1).position);
+        res.emplace_back(v(2).position);
     }
     for (const auto& v : lines) {
-        res.push_back(v(0).position);
-        res.push_back(v(1).position);
+        res.emplace_back(v(0).position);
+        res.emplace_back(v(1).position);
     }
     return res;
 }
@@ -485,7 +485,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_gri
                 if (m(1) < cos_averaged_normal_angle) {
                     continue;
                 }
-                grind_lines.push_back({ t(i), t((i + 1) % CW::length(t)) });
+                grind_lines.emplace_back(t(i), t((i + 1) % CW::length(t)));
             } else {
                 std::pair<O, O> edge1{ t((i + 1) % CW::length(t)).position, t(i).position };
                 edge_normals.insert({ edge1, n });
@@ -527,9 +527,9 @@ std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_con
     UUVector<FixedArray<ColoredVertex<TPos>, 2>> contour_edges;
     contour_edges.reserve(edges.size());
     for (const auto& e : edges) {
-        contour_edges.push_back({
+        contour_edges.emplace_back(
             ColoredVertex<TPos>{e.first},
-            ColoredVertex<TPos>{e.second}});
+            ColoredVertex<TPos>{e.second});
     }
     return std::make_shared<ColoredVertexArray>(
         name + "_contour_edges",
@@ -626,10 +626,10 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
     for (const auto& tri : triangles) {
         UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangle_as_list;
     
-        triangle_as_list.push_back({
+        triangle_as_list.emplace_back(
             ColoredVertex<TPos>{tri(0).position, Colors::PURPLE},
             ColoredVertex<TPos>{tri(1).position, Colors::PURPLE},
-            ColoredVertex<TPos>{tri(2).position, Colors::PURPLE}});
+            ColoredVertex<TPos>{tri(2).position, Colors::PURPLE});
         auto removed_attributes =
             PhysicsMaterial::ATTR_VISIBLE |
             PhysicsMaterial::ATTR_COLLIDE |

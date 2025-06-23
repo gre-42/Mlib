@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 
@@ -44,5 +45,8 @@ public:
         archive(position);
     }
 };
+
+template <class TRotation, class TPos, size_t tsize>
+using UOffsetAndTaitBryanAngles = DefaultUnitialized<OffsetAndTaitBryanAngles<TRotation, TPos, tsize>>;
 
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Uninitialized.hpp>
 #include <cmath>
+#include <optional>
 
 namespace Mlib {
 
@@ -9,37 +10,31 @@ class ExponentialSmoother {
 public:
     explicit ExponentialSmoother(const TFloat& alpha)
         : alpha_{ alpha }
-        , s_is_initialized_{ false }
     {}
     ExponentialSmoother(const TFloat& alpha, Uninitialized)
         : alpha_{ alpha }
-        , s_{ uninitialized }
-        , s_is_initialized_{ false }
     {}
     ExponentialSmoother(const TFloat& alpha, const TData& x0)
         : alpha_{ alpha }
         , s_{ x0 }
-        , s_is_initialized_{ true }
     {}
     const TData& operator () (const TData& x) {
-        if (!s_is_initialized_) {
-            s_ = x;
-            s_is_initialized_ = true;
+        if (s_.has_value()) {
+            *s_ = (1 - alpha_) * (*s_) + alpha_ * x;
         } else {
-            s_ = (1 - alpha_) * s_ + alpha_ * x;
+            s_ = x;
         }
-        return s_;
+        return *s_;
     }
     const TData& xhat() const {
-        return s_;
+        return s_.value();
     }
     void reset() {
-        s_is_initialized_ = false;
+        s_.reset();
     }
 private:
     TFloat alpha_;
-    TData s_;
-    bool s_is_initialized_;
+    std::optional<TData> s_;
 };
 
 }

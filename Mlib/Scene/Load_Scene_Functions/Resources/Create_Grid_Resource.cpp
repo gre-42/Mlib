@@ -57,20 +57,20 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
 
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
 
-    auto emissive = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
-    auto ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient);
-    auto diffuse = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse);
-    auto specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular);
+    auto emissive = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
+    auto ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient);
+    auto diffuse = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse);
+    auto specular = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular);
 
-    auto emissive_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor, FixedArray<float, 3>(1.f));
-    auto ambient_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor, FixedArray<float, 3>(1.f));
-    auto diffuse_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
-    auto specular_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
+    auto emissive_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissive_factor, FixedArray<float, 3>(1.f));
+    auto ambient_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient_factor, FixedArray<float, 3>(1.f));
+    auto diffuse_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
+    auto specular_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
     
     RenderingContextStack::primary_scene_node_resources().add_resource(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         std::make_shared<GridResource>(
-            args.arguments.at<UFixedArray<size_t, 2>>(KnownArgs::size),
+            args.arguments.at<EFixedArray<size_t, 2>>(KnownArgs::size),
             transformation_matrix_from_json<float, double, 3>(args.arguments.at(KnownArgs::location)),
             args.arguments.at<double>(KnownArgs::tile_length),
             args.arguments.at<double>(KnownArgs::scale),
@@ -84,7 +84,7 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename).path})},
                 .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
                 .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
-                .alpha_distances = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+                .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
                 // .wrap_mode_s = WrapMode::REPEAT,
                 // .wrap_mode_t = WrapMode::REPEAT,
                 .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
@@ -96,13 +96,13 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                     .diffuse = OrderableFixedArray(diffuse * diffuse_factor),
                     .specular = OrderableFixedArray(specular * specular_factor),
                     .fresnel = args.arguments.at<FresnelAndAmbient>(KnownArgs::fresnel, FresnelAndAmbient{}),
-                    .fog_distances = args.arguments.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
-                    .fog_ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(1.f)),
+                    .fog_distances = args.arguments.at<EOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
+                    .fog_ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(1.f)),
                 }}.compute_color_mode(),
             Morphology{
                 .physics_material = PhysicsMaterial::NONE,
                 .center_distances2 = SquaredStepDistances::from_distances(
-                    args.arguments.at<UFixedArray<float, 2>>(
+                    args.arguments.at<EFixedArray<float, 2>>(
                         KnownArgs::center_distances,
                         FixedArray<float, 2>{0.f, INFINITY }) * meters),
             }));

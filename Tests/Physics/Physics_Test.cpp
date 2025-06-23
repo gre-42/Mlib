@@ -223,7 +223,7 @@ void test_track_element() {
     TrackElement te{
         .elapsed_seconds = 1,
         .transformations = {
-            OffsetAndTaitBryanAngles<float, ScenePos, 3>{
+            UOffsetAndTaitBryanAngles<float, ScenePos, 3>{
                 FixedArray<float, 3>{5.f, 6.f, 7.f},
                 FixedArray<ScenePos, 3>{2.f, 3.f, 4.f}}}};
     std::stringstream sstr;

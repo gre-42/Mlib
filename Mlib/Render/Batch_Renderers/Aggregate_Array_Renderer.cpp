@@ -179,15 +179,15 @@ public:
             interiormap_uvmaps.reserve(atriangles_.size());
         }
         for (const auto& a : atriangles_) {
-            triangles.push_back(a.triangle);
+            triangles.emplace_back(a.triangle);
             if constexpr (ttexture_layer_type == TextureLayerType::CONTINUOUS) {
-                continuous_triangle_texture_layers.push_back(a.continuous_layer);
+                continuous_triangle_texture_layers.emplace_back(a.continuous_layer);
             }
             if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
-                discrete_triangle_texture_layers.push_back(a.discrete_layer);
+                discrete_triangle_texture_layers.emplace_back(a.discrete_layer);
             }
             if constexpr (ttexture_layer_type == TextureLayerType::INTERIORMAP) {
-                interiormap_uvmaps.push_back(a.interiormap_uvmap);
+                interiormap_uvmaps.emplace_back(a.interiormap_uvmap);
             }
         }
     }

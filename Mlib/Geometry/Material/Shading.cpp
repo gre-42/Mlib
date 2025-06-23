@@ -20,13 +20,13 @@ DECLARE_ARGUMENT(fog_ambient);
 void Mlib::from_json(const nlohmann::json& j, Shading& shading) {
     JsonView jv{ j };
     jv.validate(KnownArgs::options);
-    shading.emissive = jv.at<UFixedArray<float, 3>>(KnownArgs::emissive, { 0.f, 0.f, 0.f });
-    shading.ambient = jv.at<UFixedArray<float, 3>>(KnownArgs::ambient, { 1.f, 1.f, 1.f });
-    shading.diffuse = jv.at<UFixedArray<float, 3>>(KnownArgs::diffuse, { 0.8f, 0.8f, 0.8f });
-    shading.specular = jv.at<UFixedArray<float, 3>>(KnownArgs::specular, { 0.5f, 0.5f, 0.5f });
+    shading.emissive = jv.at<EFixedArray<float, 3>>(KnownArgs::emissive, { 0.f, 0.f, 0.f });
+    shading.ambient = jv.at<EFixedArray<float, 3>>(KnownArgs::ambient, { 1.f, 1.f, 1.f });
+    shading.diffuse = jv.at<EFixedArray<float, 3>>(KnownArgs::diffuse, { 0.8f, 0.8f, 0.8f });
+    shading.specular = jv.at<EFixedArray<float, 3>>(KnownArgs::specular, { 0.5f, 0.5f, 0.5f });
     shading.specular_exponent = jv.at<float>(KnownArgs::specular_exponent, 4.f);
-    shading.reflectance = jv.at<UFixedArray<float, 3>>(KnownArgs::reflectance, { 0.f, 0.f, 0.f });
+    shading.reflectance = jv.at<EFixedArray<float, 3>>(KnownArgs::reflectance, { 0.f, 0.f, 0.f });
     shading.fresnel = jv.at<FresnelAndAmbient>(KnownArgs::fresnel, FresnelAndAmbient{});
-    shading.fog_distances = jv.at<UFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances);
-    shading.fog_ambient = jv.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient, { -1.f, -1.f, -1.f });
+    shading.fog_distances = jv.at<EFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances);
+    shading.fog_ambient = jv.at<EFixedArray<float, 3>>(KnownArgs::fog_ambient, { -1.f, -1.f, -1.f });
 }

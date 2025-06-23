@@ -47,7 +47,7 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         .rp;
     auto pose0 = TranslationMatrix<ScenePos, 3>(
         rb.trailer_hitches_.get_position_male().casted<ScenePos>() -
-        vars.database.at<UFixedArray<ScenePos, 3>>("trailer_hitch_position_female"));
+        vars.database.at<EFixedArray<ScenePos, 3>>("trailer_hitch_position_female"));
     auto pose1 = rb.rbp_.abs_transformation() * pose0;
     auto node = make_unique_scene_node(
         pose1.t,

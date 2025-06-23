@@ -47,7 +47,7 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
         physics_engine.advance_times_,
         scene,
         selected_cameras,
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::offset),
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::offset),
         FixedArray<float, 3>{ grid2(0), grid2(1), 0.f },
         follower_node);
     linker.link_absolute_movable(

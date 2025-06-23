@@ -116,8 +116,8 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         delete_node_mutex,
         ui_focus.focuses,
         args.arguments.at<bool>(KnownArgs::height_changed),
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::selection_emissivity, fixed_full<float, 3>(-1.f)),
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::deselection_emissivity, fixed_full<float, 3>(-1.f)),
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::selection_emissivity, fixed_full<float, 3>(-1.f)),
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::deselection_emissivity, fixed_full<float, 3>(-1.f)),
         args.arguments.at<RespawnConfig>(KnownArgs::respawn_config),
         [on_finish, mle = args.macro_line_executor]() {
             mle(on_finish, nullptr);
@@ -146,7 +146,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             std::make_unique<ExpressionWatcher>(args.macro_line_executor),
             args.arguments.at<std::string>(KnownArgs::pacenotes_charset),
             args.arguments.path(KnownArgs::pacenotes_ttf),
-            args.arguments.at<UFixedArray<float, 3>>(KnownArgs::pacenotes_font_color),
+            args.arguments.at<EFixedArray<float, 3>>(KnownArgs::pacenotes_font_color),
             args.arguments.path(KnownArgs::pacenotes_filename),
             DanglingBaseClassRef<const CheckPoints>{ check_points, CURRENT_SOURCE_LOCATION },
             nlaps,

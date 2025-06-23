@@ -31,6 +31,6 @@ void SetNodeRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), DP_LOC);
     node->set_rotation(
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         SUCCESSOR_POSE);
 }

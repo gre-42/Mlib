@@ -51,8 +51,8 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
             }
             return nullptr;
         },
-        .translation = args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::translation, fixed_zeros<ScenePos, 3>()),
-        .rotation_axis = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),
+        .translation = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::translation, fixed_zeros<ScenePos, 3>()),
+        .rotation_axis = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),
         .velocity_press = args.arguments.at<ScenePos>(KnownArgs::velocity_press, 0.) * kph,
         .velocity_repeat = args.arguments.at<ScenePos>(KnownArgs::velocity_repeat, 0.) * kph,
         .angular_velocity_press = args.arguments.at<float>(KnownArgs::angular_velocity_press, 0.f) * radians / seconds,

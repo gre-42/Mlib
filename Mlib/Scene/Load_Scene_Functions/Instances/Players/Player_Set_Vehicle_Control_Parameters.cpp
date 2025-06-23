@@ -50,7 +50,7 @@ void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionA
     }
     if (args.arguments.contains(KnownArgs::tire_angle_pid)) {
         auto c = args.arguments.child(KnownArgs::tire_angle_pid);
-        auto pid = c.at<UFixedArray<float, 3>>(TAP::pid);
+        auto pid = c.at<EFixedArray<float, 3>>(TAP::pid);
         player->car_movement.set_tire_angle_pid(
             PidController<float, float>{
                 pid(0),

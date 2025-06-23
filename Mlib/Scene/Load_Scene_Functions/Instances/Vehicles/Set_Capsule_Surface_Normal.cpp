@@ -33,10 +33,10 @@ void SetCapsuleSurfaceNormal::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
-    FixedArray<float, 3, 3> R{ args.arguments.at<UFixedArray<UFixedArray<float, 3>, 3>>(KnownArgs::rotation) };
+    auto R = args.arguments.at<EFixedArray<float, 3, 3>>(KnownArgs::rotation);
     rb.set_surface_normal(std::make_unique<NormalOnCapsule>(
         rb.rbp_,
         TransformationMatrix<float, ScenePos, 3>{
             R,
-            args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters}));
+            args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters}));
 }

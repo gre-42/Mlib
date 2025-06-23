@@ -43,10 +43,10 @@ LoadSceneJsonUserFunction AnimatableTrails::json_user_function = [](const LoadSc
         [&snr = RenderingContextStack::primary_scene_node_resources(),
          texture = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
          shading = Shading{
-            .emissive = OrderableFixedArray(args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissive, zeros3)),
-            .ambient = OrderableFixedArray(args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient, zeros3)),
-            .diffuse = OrderableFixedArray(args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse, zeros3)),
-            .specular = OrderableFixedArray(args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular, zeros3))
+            .emissive = OrderableFixedArray(args.arguments.at<EFixedArray<float, 3>>(KnownArgs::emissive, zeros3)),
+            .ambient = OrderableFixedArray(args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient, zeros3)),
+            .diffuse = OrderableFixedArray(args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse, zeros3)),
+            .specular = OrderableFixedArray(args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular, zeros3))
          },
          times = args.arguments.at_vector<float>(KnownArgs::times, as_seconds),
          w = args.arguments.at<std::vector<float>>(KnownArgs::w),

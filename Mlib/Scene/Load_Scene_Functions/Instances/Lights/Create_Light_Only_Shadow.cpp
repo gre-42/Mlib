@@ -69,7 +69,7 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         false,                                                                  // with_depth_texture
         args.arguments.at<int>(KnownArgs::lightmap_width),
         args.arguments.at<int>(KnownArgs::lightmap_height),
-        args.arguments.at<UFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));
+        args.arguments.at<EFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));
     o->on_node_clear.add([&p=object_pool, &o=*o]() { p.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
         { *o, CURRENT_SOURCE_LOCATION },

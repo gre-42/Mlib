@@ -22,5 +22,5 @@ LoadSceneJsonUserFunction RegisterGravity::json_user_function = [](const LoadSce
     args.arguments.validate(KnownArgs::options);
     RenderingContextStack::primary_scene_node_resources().register_gravity(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::world),
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::acceleration) * meters / squared(seconds));
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::acceleration) * meters / squared(seconds));
 };

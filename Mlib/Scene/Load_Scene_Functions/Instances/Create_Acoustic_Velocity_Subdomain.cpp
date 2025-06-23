@@ -58,7 +58,7 @@ void CreateAcousticVelocitySubdomain::execute(const LoadSceneJsonUserFunctionArg
         CURRENT_SOURCE_LOCATION,
         node,
         skidmark,
-        args.arguments.at<UFixedArray<SceneDir, 2>>(KnownArgs::directional_velocity),
+        args.arguments.at<EFixedArray<SceneDir, 2>>(KnownArgs::directional_velocity),
         args.arguments.at<float>(KnownArgs::radial_velocity),
         args.arguments.at<float>(KnownArgs::angular_velocity) * degrees,
         args.arguments.at<DefaultUnitialized<AxisAlignedBoundingBox<float, 2>>>(KnownArgs::velocity_region),

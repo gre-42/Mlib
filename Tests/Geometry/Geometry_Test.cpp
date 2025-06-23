@@ -606,9 +606,11 @@ static inline std::ostream& operator << (std::ostream& ostr, TestPointFlags f) {
 }
 
 void test_subdivide_points_and_adjacency() {
-    using TPoint = PointAndFlags<FixedArray<float, 2>, TestPointFlags>;
+    using TPos = FixedArray<float, 2>;
+    using TPoint = PointAndFlags<TPos, TestPointFlags>;
+    using UPoint = DefaultUnitialized<TPoint>;
     PointsAndAdjacency<TPoint> pa;
-    pa.points = { TPoint{{0.1f, 0.2f}, TestPointFlags::A }, TPoint{{0.78f, 0.56f}, TestPointFlags::B} };
+    pa.points = { UPoint{TPos{0.1f, 0.2f}, TestPointFlags::A }, UPoint{TPos{0.78f, 0.56f}, TestPointFlags::B} };
     pa.adjacency = SparseArrayCcs<float>(2, 2);
     pa.adjacency(0, 1) = 0.4f;
     pa.adjacency(1, 0) = 0.4f;
@@ -627,12 +629,14 @@ void test_subdivide_points_and_adjacency() {
 }
 
 void test_combine_points_and_adjacency() {
-    using TPoint = PointAndFlags<FixedArray<float, 2>, TestPointFlags>;
+    using TPos = FixedArray<float, 2>;
+    using TPoint = PointAndFlags<TPos, TestPointFlags>;
+    using UPoint = DefaultUnitialized<TPoint>;
     PointsAndAdjacency<TPoint> pa;
     pa.points = {
-        TPoint{{0.1f, 0.2f}, TestPointFlags::A },
-        TPoint{{0.78f, 0.56f}, TestPointFlags::B},
-        TPoint{{0.79f, 0.56f}, TestPointFlags::C} };
+        UPoint{TPos{0.1f, 0.2f}, TestPointFlags::A },
+        UPoint{TPos{0.78f, 0.56f}, TestPointFlags::B},
+        UPoint{TPos{0.79f, 0.56f}, TestPointFlags::C} };
     pa.adjacency = SparseArrayCcs<float>(3, 3);
     pa.adjacency(0, 1) = 0.4f;
     pa.adjacency(1, 0) = 0.4f;
@@ -672,10 +676,10 @@ void test_shortest_path() {
     PointsAndAdjacency<FixedArray<double, 2>> points_and_adjacency;
     points_and_adjacency.adjacency = SparseArrayCcs<double>{ArrayShape{4, 4}};
     points_and_adjacency.points = UUVector<FixedArray<double, 2>>{
-        FixedArray<double, 2>{0., 0.},
-        FixedArray<double, 2>{1., 0.},
-        FixedArray<double, 2>{1., 1.},
-        FixedArray<double, 2>{0., 1.}};
+        UFixedArray<double, 2>{0., 0.},
+        UFixedArray<double, 2>{1., 0.},
+        UFixedArray<double, 2>{1., 1.},
+        UFixedArray<double, 2>{0., 1.}};
     points_and_adjacency.adjacency(0, 0) = 0.;
     points_and_adjacency.adjacency(1, 1) = 0.;
     points_and_adjacency.adjacency(2, 2) = 0.;

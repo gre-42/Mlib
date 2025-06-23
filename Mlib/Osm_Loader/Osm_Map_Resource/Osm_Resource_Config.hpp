@@ -125,8 +125,8 @@ struct OsmResourceConfig {
     UUInterp<float, FixedArray<float, 3>> height_colors{
         std::vector<float>{0.f, 15.f},
         UUVector<FixedArray<float, 3>>{
-            FixedArray<float, 3>{ 1.f, 1.f, 1.f },
-            FixedArray<float, 3>{ 0.8f, 0.8f, 0.8f }},
+            UFixedArray<float, 3>{ 1.f, 1.f, 1.f },
+            UFixedArray<float, 3>{ 0.8f, 0.8f, 0.8f }},
         OutOfRangeBehavior::CLAMP };
     std::vector<FacadeTexture> facade_textures;
     VariableAndHash<std::string> ceiling_texture;

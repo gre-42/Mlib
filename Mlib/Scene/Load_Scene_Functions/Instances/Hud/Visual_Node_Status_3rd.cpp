@@ -55,8 +55,8 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
-        args.arguments.at<UFixedArray<float, 2>>(KnownArgs::offset),
-        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::font_color),
+        args.arguments.at<EFixedArray<float, 2>>(KnownArgs::offset),
+        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
 }

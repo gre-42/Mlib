@@ -66,6 +66,6 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::locator_size)),
         args.arguments.at<float>(KnownArgs::pointer_reference_length),
         args.arguments.at<float>(KnownArgs::pointer_scale),
-        args.arguments.at<UFixedArray<float, 2>>(KnownArgs::pointer_size),
-        args.arguments.at<UFixedArray<double, 2>>(KnownArgs::pointer_offset));
+        args.arguments.at<EFixedArray<float, 2>>(KnownArgs::pointer_size),
+        args.arguments.at<EFixedArray<double, 2>>(KnownArgs::pointer_offset));
 }

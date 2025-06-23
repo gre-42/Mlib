@@ -143,7 +143,7 @@ void CheckPoints::advance_time(float dt) {
     te.transformations.reserve(movings_.size());
     for (const auto& m : movings_) {
         auto am = m->get_new_absolute_model_matrix();
-        te.transformations.push_back(OffsetAndTaitBryanAngles<float, ScenePos, 3>{am.R, am.t});
+        te.transformations.emplace_back(OffsetAndTaitBryanAngles<float, ScenePos, 3>{am.R, am.t});
     }
     movable_track_.push_back(te);
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.finished())) {

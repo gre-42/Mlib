@@ -75,7 +75,7 @@ public:
                         opolygon(i).uv = uv_indices.at(OrderableFixedArray(ipoly(i).uv));
                         opolygon(i).normal = normal_indices.at(OrderableFixedArray(ipoly(i).normal));
                     }
-                    opolys.push_back(opolygon);
+                    opolys.emplace_back(opolygon);
                 }
             };
             add_polygons(named_ipolys.triangles, named_opolys.triangles);
