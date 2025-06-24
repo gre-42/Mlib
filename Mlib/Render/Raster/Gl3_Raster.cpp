@@ -1,4 +1,5 @@
 #include "Gl3_Raster.hpp"
+#include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Mipmap_Level.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
@@ -200,6 +201,7 @@ void Gl3Raster::allocate_dxt(const RasterConfig& cfg) {
         generate_texture,
         native_format_,
         bool(format_ & Raster::MIPMAP),
+        InterpolationMode::LINEAR,
         GL_REPEAT,
         GL_REPEAT,
         FixedArray<float, 4>{1.f, 0.f, 1.f, 1.f},
@@ -426,6 +428,7 @@ void Gl3Raster::create_texture()
         generate_texture,
         native_format_,
         bool(format_ & Raster::MIPMAP),
+        InterpolationMode::LINEAR,
         GL_REPEAT,
         GL_REPEAT,
         FixedArray<float, 4>{1.f, 0.f, 1.f, 1.f},

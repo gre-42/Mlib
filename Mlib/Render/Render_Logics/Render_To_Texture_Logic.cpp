@@ -74,7 +74,7 @@ bool RenderToTextureLogic::render_optional_setup(
         fbs_->configure({
             .width = texture_size_(0),
             .height = texture_size_(1),
-            .color_filter_type = GL_NEAREST,
+            .color_magnifying_interpolation_mode = InterpolationMode::NEAREST,
             .depth_kind = depth_kind_,
             .nsamples_msaa = render_config.nsamples_msaa});
         {

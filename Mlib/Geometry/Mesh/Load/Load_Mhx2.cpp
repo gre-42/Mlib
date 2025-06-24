@@ -194,7 +194,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                         .desaturate = cfg.desaturate,
                         .histogram = cfg.histogram,
                         .lighten = make_orderable(cfg.lighten),
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                        .mipmap_mode = cfg.mipmap_mode,
+                        .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()}}
             },
             .shading {
@@ -225,7 +226,6 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .occluded_pass = cfg.occluded_pass,
                 .occluder_pass = cfg.occluder_pass,
                 .alpha_distances = make_orderable(cfg.alpha_distances),
-                .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                 .aggregate_mode = cfg.aggregate_mode,
                 .transformation_mode = cfg.transformation_mode,
                 .shading = m.shading}.compute_color_mode(),

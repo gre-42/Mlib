@@ -26,10 +26,10 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
                 .filename = texture,
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS_2D,
+                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .depth_interpolation = InterpolationMode::LINEAR}.compute_hash()}}},
             .continuous_layer_x = continuous_layer_x,
             .continuous_layer_y = continuous_layer_y,
-            .magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .cull_faces = false,
             .shading = shading },
         Morphology{

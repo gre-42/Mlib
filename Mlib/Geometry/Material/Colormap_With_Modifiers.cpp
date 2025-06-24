@@ -56,6 +56,7 @@ ColormapWithModifiers& ColormapWithModifiers::compute_hash() {
         color_mode,
         alpha_fac,
         mipmap_mode,
+        magnifying_interpolation_mode,
         depth_interpolation,
         anisotropic_filtering_level,
         wrap_modes,

@@ -44,6 +44,7 @@ DECLARE_ARGUMENT(height_to_normals);
 DECLARE_ARGUMENT(saturate);
 DECLARE_ARGUMENT(multiply_with_alpha);
 DECLARE_ARGUMENT(mipmap_mode);
+DECLARE_ARGUMENT(magnifying_interpolation_mode);
 DECLARE_ARGUMENT(depth_interpolation);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(wrap_mode_s);
@@ -62,6 +63,8 @@ struct RegisterJsonUserFunction {
 
     auto mipmap_mode = mipmap_mode_from_string(
         args.arguments.at<std::string>(KnownArgs::mipmap_mode, "with_mipmaps"));
+    auto magnifying_interpolation_mode = interpolation_mode_from_string(
+        args.arguments.at<std::string>(KnownArgs::magnifying_interpolation_mode, "linear"));
     auto anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level);
     auto wrap_modes = OrderableFixedArray<WrapMode, 2>{
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
@@ -74,6 +77,7 @@ struct RegisterJsonUserFunction {
         .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
         .color_mode = ColorMode::RGB,
         .mipmap_mode = mipmap_mode,
+        .magnifying_interpolation_mode = magnifying_interpolation_mode,
         .depth_interpolation = depth_interpolation,
         .anisotropic_filtering_level = anisotropic_filtering_level,
         .wrap_modes = wrap_modes,
@@ -82,6 +86,7 @@ struct RegisterJsonUserFunction {
         .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::specular).path},
         .color_mode = ColorMode::RGB,
         .mipmap_mode = mipmap_mode,
+        .magnifying_interpolation_mode = magnifying_interpolation_mode,
         .anisotropic_filtering_level = anisotropic_filtering_level,
         .wrap_modes = wrap_modes,
         .rotate = rotate}.compute_hash();
@@ -131,6 +136,7 @@ struct RegisterJsonUserFunction {
                 .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
                 .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
                 .mipmap_mode = mipmap_mode,
+                .magnifying_interpolation_mode = magnifying_interpolation_mode,
                 .depth_interpolation = depth_interpolation,
                 .anisotropic_filtering_level = anisotropic_filtering_level,
                 .wrap_modes = wrap_modes,

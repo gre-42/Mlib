@@ -158,7 +158,6 @@ void Mlib::merge_textures(
                         .textures_color = {{.texture_descriptor = {.color = merged_materials_config.texture_name}}},
                         .occluded_pass = merged_materials_config.occluded_pass,
                         .occluder_pass = merged_materials_config.occluder_pass,
-                        .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                         .aggregate_mode = merged_materials_config.aggregate_mode,
                         .cull_faces = merged_materials_config.cull_faces,
                         .shading {

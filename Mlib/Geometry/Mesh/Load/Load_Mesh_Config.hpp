@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
+#include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
@@ -36,7 +37,8 @@ struct LoadMeshConfig {
     ExternalRenderPassType occluded_pass;
     ExternalRenderPassType occluder_pass;
     unsigned int anisotropic_filtering_level = 0;
-    InterpolationMode magnifying_interpolation_mode;
+    MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
+    InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;

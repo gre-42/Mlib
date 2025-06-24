@@ -342,7 +342,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .occluded_pass = cfg.occluded_pass,
                     .occluder_pass = cfg.occluder_pass,
                     .alpha_distances = make_orderable(cfg.alpha_distances),
-                    .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
                     .cull_faces = cfg.cull_faces_default,
@@ -556,12 +555,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .color = {
                                 .filename = material->txDiffuse,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .specular = {},
                             .normal = ColormapWithModifiers{
                                 .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
@@ -571,6 +572,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .filename = material->txVariation,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .specular = {},
                             .normal = {}},
@@ -588,12 +590,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .color = {
                                 .filename = material->txDiffuse,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .specular = {},
                             .normal = {
                                 .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
@@ -603,6 +607,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .filename = material->txDetail1,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .specular = {},
                             .normal = {}},
@@ -623,12 +628,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .color = {
                                 .filename = material->txDiffuse,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .specular = {},
                             .normal = {
                                 .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                 .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .weight = material->magicMult.value_or_default(),
                         .role = BlendMapRole::DETAIL_BASE,
@@ -645,6 +652,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                     .filename = material->txMask,
                                     .color_mode = ColorMode::RGBA,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                                 .specular = {},
                                 .normal = {}},
@@ -657,6 +665,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                     .filename = material->txDetail4(i),
                                     .color_mode = ColorMode::RGB,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                                 .specular = {},
                                 .normal = {}},
@@ -674,12 +683,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .color = {
                                     .filename = material->txDiffuse,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                                 .specular = {},
                                 .normal = {
                                     .filename = material->txNormal,
                                     .color_mode = ColorMode::RGB,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}}};
                     }
                 }

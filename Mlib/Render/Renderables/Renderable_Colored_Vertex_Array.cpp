@@ -1119,6 +1119,7 @@ void RenderableColoredVertexArray::render_cva(
         WrapMode wrap_mode_t,
         const FixedArray<float, 4>& border_color,
         MipmapMode mipmap_mode,
+        InterpolationMode magnifying_interpolation_mode,
         GLenum target)
     {
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap_mode_to_native(wrap_mode_s)));
@@ -1134,9 +1135,9 @@ void RenderableColoredVertexArray::render_cva(
         if (any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
             CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
-            if (cva->material.magnifying_interpolation_mode == InterpolationMode::NEAREST) {
+            if (magnifying_interpolation_mode == InterpolationMode::NEAREST) {
                 CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-            } else if (cva->material.magnifying_interpolation_mode == InterpolationMode::LINEAR) {
+            } else if (magnifying_interpolation_mode == InterpolationMode::LINEAR) {
                 CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             } else {
                 THROW_OR_ABORT("Unknown interpolation mode");
@@ -1164,7 +1165,7 @@ void RenderableColoredVertexArray::render_cva(
         }
         ActiveTextureGuard atg{ integral_cast<GLenum>(GL_TEXTURE0 + texture_unit) };
         CHK(glBindTexture(target, h.handle<GLuint>()));
-        setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.border_color(), h.mipmap_mode(), target);
+        setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.border_color(), h.mipmap_mode(), h.magnifying_interpolation_mode(), target);
     };
     assert_true(tic.ntextures_color == texture_ids_color.size());
     for (const auto& [c, i] : texture_ids_color) {
@@ -1254,7 +1255,7 @@ void RenderableColoredVertexArray::render_cva(
         auto& h = *skidmark.texture;
         ActiveTextureGuard atg{ integral_cast<GLenum>(GL_TEXTURE0 + tic.id_skidmark(i)) };
         CHK(glBindTexture(GL_TEXTURE_2D, skidmark.texture->handle<GLuint>()));
-        setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.border_color(), h.mipmap_mode(), GL_TEXTURE_2D);
+        setup_bound_texture(h.wrap_modes(0), h.wrap_modes(1), h.border_color(), h.mipmap_mode(), h.magnifying_interpolation_mode(), GL_TEXTURE_2D);
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {

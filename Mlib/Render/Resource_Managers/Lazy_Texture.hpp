@@ -22,6 +22,7 @@ public:
     virtual bool texture_is_loaded_and_try_preload() override;
     virtual ColorMode color_mode() const override;
     virtual MipmapMode mipmap_mode() const override;
+    virtual InterpolationMode magnifying_interpolation_mode() const override;
     virtual WrapMode wrap_modes(size_t i) const override;
     virtual FixedArray<float, 4> border_color() const override;
     virtual uint32_t layers() const override;

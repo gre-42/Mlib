@@ -134,25 +134,37 @@ void FluidSubdomainLogic::render_moving_node(
         set_directional_velocity(v2 * maximum_inner_velocity_);
     }
     if (density_and_velocity_field_ == nullptr) {
-        auto gray_cfg = FrameBufferConfig{
+        auto momentum_magnitude_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
             .color_internal_format = GL_R16F,
             .color_format = GL_RED,
             .color_type =  GL_HALF_FLOAT,
-            .color_filter_type = GL_NEAREST,
+            .color_magnifying_interpolation_mode = InterpolationMode::NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = GL_CLAMP_TO_EDGE,
             .wrap_t = GL_CLAMP_TO_EDGE,
             .nsamples_msaa = 1
         };
-        auto rgb_cfg = FrameBufferConfig{
+        auto density_and_velocity_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
             .color_internal_format = GL_RGB16F,
             .color_format = GL_RGB,
             .color_type =  GL_HALF_FLOAT,
-            .color_filter_type = GL_NEAREST,
+            .color_magnifying_interpolation_mode = InterpolationMode::NEAREST,
+            .depth_kind = FrameBufferChannelKind::NONE,
+            .wrap_s = GL_CLAMP_TO_EDGE,
+            .wrap_t = GL_CLAMP_TO_EDGE,
+            .nsamples_msaa = 1
+        };
+        auto skidmark_cfg = FrameBufferConfig{
+            .width = texture_width_,
+            .height = texture_height_,
+            .color_internal_format = GL_RGB16F,
+            .color_format = GL_RGB,
+            .color_type =  GL_HALF_FLOAT,
+            .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = GL_CLAMP_TO_EDGE,
             .wrap_t = GL_CLAMP_TO_EDGE,
@@ -160,16 +172,16 @@ void FluidSubdomainLogic::render_moving_node(
         };
         for (auto& f : good_momentum_magnitude_fields_.flat_iterable()) {
             f = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-            f->configure(gray_cfg);
+            f->configure(momentum_magnitude_cfg);
         }
         for (auto& f : temp_momentum_magnitude_fields_.flat_iterable()) {
             f = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-            f->configure(gray_cfg);
+            f->configure(momentum_magnitude_cfg);
         }
         density_and_velocity_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-        density_and_velocity_field_->configure(rgb_cfg);
+        density_and_velocity_field_->configure(density_and_velocity_cfg);
         skidmark_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-        skidmark_field_->configure(rgb_cfg);
+        skidmark_field_->configure(skidmark_cfg);
         initialize_momentum_magnitude_fields();
         calculate_macroscopic_variables();
     }
@@ -276,9 +288,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     TextureBinder tb;
     for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-        tb.bind(rp.good_momentum_magnitude_fields(v), *good_momentum_magnitude_fields_(v)->texture_color());
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        tb.bind(rp.good_momentum_magnitude_fields(v), *good_momentum_magnitude_fields_(v)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
     }
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -342,12 +352,8 @@ void FluidSubdomainLogic::collide() {
         CHK(glUniform1fv(rp.speed_of_sound4, 1, &speed_of_sound4_));
         CHK(glUniform1fv(rp.time_relaxation_constant, 1, &time_relaxation_constant_));
         TextureBinder tb;
-        tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color());
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        tb.bind(rp.good_momentum_magnitude_field, *good_momentum_magnitude_fields_(v)->texture_color());
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
+        tb.bind(rp.good_momentum_magnitude_field, *good_momentum_magnitude_fields_(v)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -406,9 +412,7 @@ void FluidSubdomainLogic::stream() {
 
         notify_rendering(CURRENT_SOURCE_LOCATION);
         TextureBinder tb;
-        tb.bind(rp.temp_momentum_magnitude_field, *temp_momentum_magnitude_fields_(v)->texture_color());
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        tb.bind(rp.temp_momentum_magnitude_field, *temp_momentum_magnitude_fields_(v)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -447,9 +451,7 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
     CHK(glUniform1f(rp.visual_density.min, visual_density_.min));
     CHK(glUniform1f(rp.visual_density.max, visual_density_.max));
     TextureBinder tb;
-    tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color());
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));

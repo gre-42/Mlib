@@ -133,8 +133,8 @@ void AcousticPressureSubdomainLogic::render_moving_node(
             .height = texture_height_,
             .color_internal_format = GL_R16F,
             .color_format = GL_RED,
-            .color_type =  GL_HALF_FLOAT,
-            .color_filter_type = GL_NEAREST,
+            .color_type = GL_HALF_FLOAT,
+            .color_magnifying_interpolation_mode = InterpolationMode::NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_EDGE : GL_REPEAT,
             .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_EDGE : GL_REPEAT,
@@ -146,11 +146,11 @@ void AcousticPressureSubdomainLogic::render_moving_node(
             .color_internal_format = GL_RGB,
             .color_format = GL_RGB,
             .color_type = GL_UNSIGNED_BYTE,
-            .color_filter_type = GL_NEAREST,
+            .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_BORDER : GL_REPEAT,
             .wrap_t = (periodicity_ == Periodicity::APERIODIC) ? GL_CLAMP_TO_BORDER : GL_REPEAT,
-            .border_color = { 0.5f, 0.5f, 0.5f, 1.f},
+            .border_color = {0.5f, 0.5f, 0.5f, 1.f},
             .nsamples_msaa = 1
         };
         auto wind_cfg = FrameBufferConfig{
@@ -159,7 +159,7 @@ void AcousticPressureSubdomainLogic::render_moving_node(
             .color_internal_format = GL_R16F,
             .color_format = GL_RED,
             .color_type =  GL_HALF_FLOAT,
-            .color_filter_type = GL_NEAREST,
+            .color_magnifying_interpolation_mode = InterpolationMode::NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = GL_REPEAT,
             .wrap_t = GL_REPEAT,
@@ -225,9 +225,7 @@ void AcousticPressureSubdomainLogic::initialize_fields() {
 
         notify_rendering(CURRENT_SOURCE_LOCATION);
         TextureBinder tb;
-        tb.bind(rp.wind_texture, *wind_texture_);
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        tb.bind(rp.wind_texture, *wind_texture_, InterpolationPolicy::NEAREST_NEIGHBOR);
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -355,11 +353,9 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     TextureBinder tb;
     for (size_t t = 0; t < 2; ++t) {
-        tb.bind(rp.pressure_fields(t), *pressure_fields_((i012_ + 1 + t) % 3)->texture_color());
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        tb.bind(rp.pressure_fields(t), *pressure_fields_((i012_ + 1 + t) % 3)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
     }
-    tb.bind(rp.wind_field, *wind_field_->texture_color());
+    tb.bind(rp.wind_field, *wind_field_->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
@@ -394,9 +390,7 @@ void AcousticPressureSubdomainLogic::calculate_skidmark_field() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     CHK(glUniform1f(rp.skidmark_strength, skidmark_strength_));
     TextureBinder tb;
-    tb.bind(rp.pressure_field, *pressure_fields_(i012_)->texture_color());
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    tb.bind(rp.pressure_field, *pressure_fields_(i012_)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));

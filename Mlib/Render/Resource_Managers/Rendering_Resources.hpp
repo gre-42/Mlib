@@ -50,6 +50,7 @@ struct TextureSizeAndMipmaps {
     GLsizei nchannels;
     MipmapMode mipmap_mode;
     GLsizei mip_level_count;
+    InterpolationMode magnifying_interpolation_mode;
     GLint wrap_s;
     GLint wrap_t;
     FixedArray<float, 4> border_color;

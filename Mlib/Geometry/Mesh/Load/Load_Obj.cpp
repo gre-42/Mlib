@@ -61,7 +61,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .occluded_pass = cfg.occluded_pass,
             .occluder_pass = cfg.occluder_pass,
             .alpha_distances = make_orderable(cfg.alpha_distances),
-            .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
             .billboard_atlas_instances = cfg.billboard_atlas_instances,
@@ -355,7 +354,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         .desaturate = cfg.desaturate,
                         .histogram = cfg.histogram,
                         .lighten = make_orderable(cfg.lighten),
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                        .mipmap_mode = cfg.mipmap_mode,
+                        .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level }.compute_hash();
                 }
                 if (!current_mtl.specular_texture.empty()) {
@@ -363,7 +363,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     td.specular = ColormapWithModifiers{
                         .filename = VariableAndHash{ p.empty() ? current_mtl.specular_texture : fs::weakly_canonical(p / current_mtl.specular_texture).string() },
                         .color_mode = ColorMode::RGB,
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                        .mipmap_mode = cfg.mipmap_mode,
+                        .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
                 }
                 if (!current_mtl.bump_texture.empty()) {
@@ -371,7 +372,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     td.normal = ColormapWithModifiers{
                         .filename = VariableAndHash{ p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string() },
                         .color_mode = ColorMode::RGB,
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                        .mipmap_mode = cfg.mipmap_mode,
+                        .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
                 }
                 if (!td.color.filename->empty() || !td.specular.filename->empty() || !td.normal.filename->empty()) {

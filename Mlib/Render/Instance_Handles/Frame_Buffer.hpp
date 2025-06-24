@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
@@ -25,7 +26,7 @@ struct FrameBufferConfig {
     GLint color_internal_format = GL_RGB;
     GLenum color_format = GL_RGB;
     GLenum color_type = GL_UNSIGNED_BYTE;
-    GLint color_filter_type = GL_LINEAR;
+    InterpolationMode color_magnifying_interpolation_mode = InterpolationMode::NEAREST;
     FrameBufferChannelKind depth_kind = FrameBufferChannelKind::ATTACHMENT;
     GLint wrap_s = GL_REPEAT;
     GLint wrap_t = GL_REPEAT;

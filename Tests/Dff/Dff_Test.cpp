@@ -23,6 +23,7 @@ static void test_teapot() {
             .occluded_pass = ExternalRenderPassType::NONE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .anisotropic_filtering_level = 16,
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS,
             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .aggregate_mode = AggregateMode::NONE,
             .transformation_mode = TransformationMode::ALL,

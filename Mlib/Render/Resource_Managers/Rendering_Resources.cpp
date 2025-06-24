@@ -998,7 +998,8 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
     return std::make_shared<Texture>(
         texture,
         nchannels2format(integral_cast<size_t>(nchannels)),
-        mlc,
+        mlc != 0,
+        magnifying_interpolation_mode,
         wrap_s,
         wrap_t,
         border_color,
@@ -1050,7 +1051,14 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     aniso = std::min({ aniso, (float)color.anisotropic_filtering_level, (float)max_anisotropic_filtering_level_ });
 
     auto make_shared_texture = [&](GLuint handle, uint32_t layers) {
-        return std::make_shared<Texture>(handle, color.color_mode, color.mipmap_mode, color.wrap_modes, color.border_color, layers);
+        return std::make_shared<Texture>(
+            handle,
+            color.color_mode,
+            color.mipmap_mode,
+            color.magnifying_interpolation_mode,
+            color.wrap_modes,
+            color.border_color,
+            layers);
         };
     std::shared_ptr<ITextureHandle> texture;
 
@@ -1299,7 +1307,7 @@ std::shared_ptr<StbInfo<uint8_t>> RenderingResources::get_texture_data(
             .height = integral_cast<int>(info.size(1)),
             .color_internal_format = GL_RGBA,
             .color_format = GL_RGBA,
-            .color_filter_type = GL_NEAREST,
+            .color_magnifying_interpolation_mode = InterpolationMode::NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE});
         ViewportGuard vg{
             (float)0,
@@ -1973,6 +1981,7 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
         generate_texture,
         color_mode_from_channels(image.get_components()),
         color.mipmap_mode,
+        color.magnifying_interpolation_mode,
         color.wrap_modes,
         color.border_color,
         1);     // layers
@@ -2074,6 +2083,7 @@ std::shared_ptr<ITextureHandle> RenderingResources::initialize_dds_texture(
             .nchannels = integral_cast<GLsizei>(image.get_components()),
             .mipmap_mode = color.mipmap_mode,
             .mip_level_count = integral_cast<GLsizei>(image.get_num_mipmaps()),
+            .magnifying_interpolation_mode = color.magnifying_interpolation_mode,
             .wrap_s = wrap_mode_to_native(color.wrap_modes(0)),
             .wrap_t = wrap_mode_to_native(color.wrap_modes(1)),
             .border_color = color.border_color};

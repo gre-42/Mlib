@@ -71,9 +71,7 @@ void OffsetRenderer::apply_offset(
 
         notify_rendering(CURRENT_SOURCE_LOCATION);
         TextureBinder tb;
-        tb.bind(rp_.field, *field->texture_color());
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        tb.bind(rp_.field, *field->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));

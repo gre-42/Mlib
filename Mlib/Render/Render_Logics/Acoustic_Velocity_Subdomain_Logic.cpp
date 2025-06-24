@@ -124,25 +124,25 @@ void AcousticVelocitySubdomainLogic::render_moving_node(
         set_directional_velocity(v2 * maximum_inner_velocity_);
     }
     if (skidmark_field_ == nullptr) {
-        auto rg_cfg = FrameBufferConfig{
+        auto velocity_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
             .color_internal_format = GL_RGB16F,
             .color_format = GL_RGB,
             .color_type =  GL_HALF_FLOAT,
-            .color_filter_type = GL_NEAREST,
+            .color_magnifying_interpolation_mode = InterpolationMode::NEAREST,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = GL_CLAMP_TO_EDGE,
             .wrap_t = GL_CLAMP_TO_EDGE,
             .nsamples_msaa = 1
         };
-        auto rgb_cfg = FrameBufferConfig{
+        auto skidmark_cfg = FrameBufferConfig{
             .width = texture_width_,
             .height = texture_height_,
             .color_internal_format = GL_RGB16F,
             .color_format = GL_RGB,
             .color_type =  GL_HALF_FLOAT,
-            .color_filter_type = GL_NEAREST,
+            .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .depth_kind = FrameBufferChannelKind::NONE,
             .wrap_s = GL_CLAMP_TO_EDGE,
             .wrap_t = GL_CLAMP_TO_EDGE,
@@ -150,12 +150,12 @@ void AcousticVelocitySubdomainLogic::render_moving_node(
         };
         for (auto& f : velocity_fields_.flat_iterable()) {
             f = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-            f->configure(rg_cfg);
+            f->configure(velocity_cfg);
         }
         temp_velocity_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-        temp_velocity_field_->configure(rg_cfg);
+        temp_velocity_field_->configure(velocity_cfg);
         skidmark_field_ = std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION);
-        skidmark_field_->configure(rgb_cfg);
+        skidmark_field_->configure(skidmark_cfg);
         initialize_velocity_fields();
     }
     iterate(offset.has_value() ? *offset : fixed_zeros<float, 2>());
@@ -285,9 +285,7 @@ void AcousticVelocitySubdomainLogic::collide_and_stream() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     TextureBinder tb;
     for (size_t t = 0; t < 2; ++t) {
-        tb.bind(rp.velocity_fields(t), *velocity_fields_((i012_ + 1 + t) % 3)->texture_color());
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        tb.bind(rp.velocity_fields(t), *velocity_fields_((i012_ + 1 + t) % 3)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
     }
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -335,9 +333,7 @@ void AcousticVelocitySubdomainLogic::calculate_skidmark_field() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     CHK(glUniform1f(rp.skidmark_strength, skidmark_strength_));
     TextureBinder tb;
-    tb.bind(rp.velocity_field, *velocity_fields_(i012_)->texture_color());
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    tb.bind(rp.velocity_field, *velocity_fields_(i012_)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));

@@ -21,7 +21,8 @@ void FrameBufferConfig::print() const {
     linfo() << "  color_internal_format: " << color_internal_format;
     linfo() << "  color_format: " << color_format;
     linfo() << "  color_type: " << color_type;
-    linfo() << "  color_filter_type: " << color_filter_type;
+    linfo() << "  color_magnifying_interpolation_mode: " <<
+        interpolation_mode_to_string(color_magnifying_interpolation_mode);
     linfo() << "  depth_kind: " << (int)depth_kind;
     linfo() << "  with_mipmaps: " << (int)with_mipmaps;
     linfo() << "  nsamples_msaa: " << (int)nsamples_msaa;
@@ -69,6 +70,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         generate_texture,
         config_.color_format,
         config_.with_mipmaps,
+        config_.color_magnifying_interpolation_mode,
         config_.wrap_s,
         config_.wrap_t,
         config_.border_color,
@@ -84,8 +86,13 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, (GLenum)config.color_internal_format, config.width, config.height, GL_TRUE));
 #endif
     }
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
+    if (config.color_magnifying_interpolation_mode == InterpolationMode::LINEAR) {
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    } else {
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, config.wrap_s));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, config.wrap_t));
     if (config.nsamples_msaa == 1) {
@@ -104,6 +111,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
             generate_texture,
             ColorMode::GRAYSCALE,
             MipmapMode::NO_MIPMAPS,
+            InterpolationMode::NEAREST,
             FixedArray<WrapMode, 2>{
                 wrap_mode_from_native(config_.wrap_s),
                 wrap_mode_from_native(config_.wrap_t)},
@@ -135,8 +143,8 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
         CHK(glGenRenderbuffers(1, &depth_buffer_));
         CHK(glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer_));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         if (config.nsamples_msaa == 1) {
             CHK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, config.width, config.height)); // use a single renderbuffer object for both a depth AND stencil buffer.
         } else {

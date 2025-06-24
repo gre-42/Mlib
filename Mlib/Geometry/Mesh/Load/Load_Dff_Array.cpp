@@ -94,7 +94,6 @@ DffArrays<TPosition> Mlib::load_dff(
                     .occluded_pass = cfg.occluded_pass,
                     .occluder_pass = cfg.occluder_pass,
                     .alpha_distances = make_orderable(cfg.alpha_distances),
-                    .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
                     .cull_faces = any(ide.flags & IdeFlags::CULL) ? cfg.cull_faces_default : false,
@@ -122,7 +121,8 @@ DffArrays<TPosition> Mlib::load_dff(
                     .color = ColormapWithModifiers{
                         .filename = VariableAndHash{ filename_lower },
                         .color_mode = ColorMode::RGB | ColorMode::RGBA,
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                        .mipmap_mode = cfg.mipmap_mode,
+                        .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode
                     }.compute_hash()}} };
                 // linfo() << "Texture: " << tex->name;
             }

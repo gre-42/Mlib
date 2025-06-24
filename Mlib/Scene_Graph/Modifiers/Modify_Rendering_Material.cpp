@@ -45,7 +45,10 @@ void Mlib::modify_rendering_material(
                             cva->material.occluder_pass = *occluder_pass;
                         }
                         if (magnifying_interpolation_mode.has_value()) {
-                            cva->material.magnifying_interpolation_mode = *magnifying_interpolation_mode;
+                            for (auto& texture : cva->material.textures_color) {
+                                texture.texture_descriptor.color.magnifying_interpolation_mode = *magnifying_interpolation_mode;
+                                texture.texture_descriptor.color.compute_hash();
+                            }
                         }
                         if (histogram.has_value()) {
                             for (auto& texture : cva->material.textures_color) {

@@ -42,6 +42,7 @@ struct ColormapWithModifiers {
     ColorMode color_mode = ColorMode::UNDEFINED;
     float alpha_fac = 1.f;
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
+    InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     InterpolationMode depth_interpolation = InterpolationMode::NEAREST;
     unsigned int anisotropic_filtering_level = 0;
     OrderableFixedArray<WrapMode, 2> wrap_modes = { WrapMode::REPEAT, WrapMode::REPEAT };
@@ -83,6 +84,7 @@ struct ColormapWithModifiers {
         archive(color_mode);
         archive(alpha_fac);
         archive(mipmap_mode);
+        archive(magnifying_interpolation_mode);
         archive(depth_interpolation);
         archive(anisotropic_filtering_level);
         archive(wrap_modes);

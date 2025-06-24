@@ -10,6 +10,7 @@ namespace Mlib {
 enum class MipmapMode;
 enum class ColorMode;
 enum class WrapMode;
+enum class InterpolationMode;
 
 class ITextureHandle {
 public:
@@ -41,6 +42,7 @@ public:
     virtual bool texture_is_loaded_and_try_preload() = 0;
     virtual ColorMode color_mode() const = 0;
     virtual MipmapMode mipmap_mode() const = 0;
+    virtual InterpolationMode magnifying_interpolation_mode() const = 0;
     virtual WrapMode wrap_modes(size_t i) const = 0;
     virtual FixedArray<float, 4> border_color() const = 0;
     virtual uint32_t layers() const = 0;

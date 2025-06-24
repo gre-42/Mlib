@@ -87,6 +87,7 @@ void SkidmarkLogic::render_moving_node(
     fbs_(new_fbs_id)->configure({
         .width = texture_width_,
         .height = texture_height_,
+        .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
         .depth_kind = FrameBufferChannelKind::NONE,
         .wrap_s = GL_CLAMP_TO_BORDER,
         .wrap_t = GL_CLAMP_TO_BORDER,

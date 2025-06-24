@@ -106,24 +106,16 @@ void FillWithTextureLogic::render_wo_update_and_bind()
     rp_.use();
 
     CHK(glUniform1i(rp_.texture_location, 0));
-    if (layer_.has_value()) {
-        CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture_->handle<GLuint>()));
-        if (texture_->mipmap_mode() == MipmapMode::NO_MIPMAPS) {
-            CHK(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-            CHK(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        } else {
-            CHK(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-            CHK(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        }
+    GLenum target = layer_.has_value()
+        ? GL_TEXTURE_2D_ARRAY
+        : GL_TEXTURE_2D;
+    CHK(glBindTexture(target, texture_->handle<GLuint>()));
+    if (texture_->mipmap_mode() == MipmapMode::NO_MIPMAPS) {
+        CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     } else {
-        CHK(glBindTexture(GL_TEXTURE_2D, texture_->handle<GLuint>()));
-        if (texture_->mipmap_mode() == MipmapMode::NO_MIPMAPS) {
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        } else {
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        }
+        CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     }
 
     va().bind();

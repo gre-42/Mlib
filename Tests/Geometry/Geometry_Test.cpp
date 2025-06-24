@@ -825,7 +825,6 @@ void test_height_contours() {
             .cull_faces_alpha = true,
             .occluded_pass = ExternalRenderPassType::NONE,
             .occluder_pass = ExternalRenderPassType::NONE,
-            .magnifying_interpolation_mode = InterpolationMode::NEAREST,
             .aggregate_mode = AggregateMode::NONE,
             .transformation_mode = TransformationMode::ALL,
             .period_world = INFINITY,

@@ -7,7 +7,6 @@
 #include <Mlib/Geometry/Material/Blending_Pass_Type.hpp>
 #include <Mlib/Geometry/Material/Depth_Func.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
-#include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Material/Shading.hpp>
@@ -63,7 +62,6 @@ struct Material {
     ExternalRenderPassType occluder_pass = ExternalRenderPassType::NONE;
     ParticleType skidmarks = ParticleType::NONE;
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
-    InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     AggregateMode aggregate_mode = AggregateMode::NONE;
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
@@ -112,7 +110,6 @@ struct Material {
         archive(occluder_pass);
         archive(skidmarks);
         archive(alpha_distances);
-        archive(magnifying_interpolation_mode);
         archive(aggregate_mode);
         archive(transformation_mode);
         archive(billboard_atlas_instances);

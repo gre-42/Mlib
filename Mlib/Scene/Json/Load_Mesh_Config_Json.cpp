@@ -32,6 +32,7 @@ DECLARE_ARGUMENT(cull_faces_alpha);
 DECLARE_ARGUMENT(occluded_pass);
 DECLARE_ARGUMENT(occluder_pass);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
+DECLARE_ARGUMENT(mipamp_mode);
 DECLARE_ARGUMENT(magnifying_interpolation_mode);
 DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
@@ -78,7 +79,8 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .occluded_pass = external_render_pass_type_from_string(j.at<std::string>(KnownArgs::occluded_pass)),
         .occluder_pass = external_render_pass_type_from_string(j.at<std::string>(KnownArgs::occluder_pass)),
         .anisotropic_filtering_level = j.at<unsigned int>(KnownArgs::anisotropic_filtering_level, 0),
-        .magnifying_interpolation_mode = interpolation_mode_from_string(j.at<std::string>(KnownArgs::magnifying_interpolation_mode, "nearest")),
+        .mipmap_mode = mipmap_mode_from_string(j.at<std::string>(KnownArgs::mipamp_mode, "with_mipmaps")),
+        .magnifying_interpolation_mode = interpolation_mode_from_string(j.at<std::string>(KnownArgs::magnifying_interpolation_mode, "linear")),
         .aggregate_mode = aggregate_mode_from_string(j.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(j.at<std::string>(KnownArgs::transformation_mode)),
         .billboard_atlas_instances = j.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {}),

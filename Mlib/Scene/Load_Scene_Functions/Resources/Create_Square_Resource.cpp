@@ -76,7 +76,6 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
         .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
         .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
-        .magnifying_interpolation_mode = InterpolationMode::LINEAR,
         // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         // .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
         .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),

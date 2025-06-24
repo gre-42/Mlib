@@ -1,4 +1,5 @@
 #include "Texture_Binder.hpp"
+#include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -11,7 +12,11 @@ TextureBinder::TextureBinder(GLint first_slot)
     : slot_{ first_slot }
 {}
 
-void TextureBinder::bind(GLint uniform, const ITextureHandle& handle) {
+void TextureBinder::bind(
+    GLint uniform,
+    const ITextureHandle& handle,
+    InterpolationPolicy interpolation_policy)
+{
     if (uniform < 0) {
         THROW_OR_ABORT("Uniform ID is negative");
     }
@@ -34,6 +39,20 @@ void TextureBinder::bind(GLint uniform, const ITextureHandle& handle) {
     CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap_mode_to_native(w1)));
     if ((w0 == WrapMode::CLAMP_TO_BORDER) || (w1 == WrapMode::CLAMP_TO_BORDER)) {
         CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, handle.border_color().flat_begin()));
+    }
+    if ((interpolation_policy == InterpolationPolicy::AUTO) &&
+        (handle.magnifying_interpolation_mode() == InterpolationMode::LINEAR))
+    {
+        if (handle.mipmap_mode() == MipmapMode::NO_MIPMAPS) {
+            CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+            CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        } else {
+            CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+            CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        }
+    } else {
+        CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     }
     ++slot_;
 }
