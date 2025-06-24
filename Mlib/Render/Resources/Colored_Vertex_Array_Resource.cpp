@@ -1249,13 +1249,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "    vec2 tex_coord_flipped" << i << " = tex_coord" << i << ";" << std::endl;
                 }
             }
-            if (orthographic) {
-                sstr << "    if (dot(norm, viewDir) < 0.0) {" << std::endl;
-            } else {
-                // From: https://stackoverflow.com/questions/2523439/ipad-glsl-from-within-a-fragment-shader-how-do-i-get-the-surface-not-vertex
-                sstr << "    vec3 normalvector = cross(dFdx(FragPos), dFdy(FragPos));" << std::endl;
-                sstr << "    if (dot(norm, normalvector) < 0.0) {" << std::endl;
-            }
+            sstr << "    if (!gl_FrontFacing) {" << std::endl;
+            // if (orthographic) {
+            //     sstr << "    if (dot(norm, viewDir) < 0.0) {" << std::endl;
+            // } else {
+            //     // From: https://stackoverflow.com/questions/2523439/ipad-glsl-from-within-a-fragment-shader-how-do-i-get-the-surface-not-vertex
+            //     sstr << "    vec3 normalvector = cross(dFdx(FragPos), dFdy(FragPos));" << std::endl;
+            //     sstr << "    if (dot(norm, normalvector) < 0.0) {" << std::endl;
+            // }
             if (reorient_normals) {
                 sstr << "        norm = -norm;" << std::endl;
             }
