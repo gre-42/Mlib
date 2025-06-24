@@ -35,8 +35,8 @@ public:
 
     // Move constructor and move assignment operator
     ThreadsafeGenericMap(ThreadsafeGenericMap&& other)
-        : value_name_{ std::move(other.value_name) }
-        , key_to_string_{ std::move(other.key_to_string) }
+        : value_name_{ std::move(other.value_name_) }
+        , key_to_string_{ std::move(other.key_to_string_) }
     {
         // No need to lock this->mutex_ here
         // (in contrast to the move assignment operator below).
