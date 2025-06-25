@@ -16,6 +16,7 @@
 #include <Mlib/Hash.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Map/Ordered_Map.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/Batch_Renderers/Infer_Shader_Properties.hpp>
@@ -417,9 +418,9 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     std::vector<BlendMapTextureAndId> blended_textures_color(cva->material.textures_color.size());
-    std::unordered_map<ColormapPtr, IdAndTexture> texture_ids_color;
-    std::unordered_map<ColormapPtr, IdAndTexture> texture_ids_specular;
-    std::unordered_map<ColormapPtr, IdAndTexture> texture_ids_normal;
+    OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_color;
+    OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_specular;
+    OrderedUnorderedMap<ColormapPtr, IdAndTexture> texture_ids_normal;
     for (size_t i = 0; i < blended_textures_color.size(); ++i) {
         const auto& c = cva->material.textures_color[i];
         auto& b = blended_textures_color[i];
@@ -658,7 +659,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     bool fragments_depend_on_distance = Mlib::fragments_depend_on_distance(
         fog_distances, alpha_distances_common, blended_textures_color);
-    if ((texture_ids_color.size() == 0) && (ntextures_dirt != 0)) {
+    if (texture_ids_color.empty() && (ntextures_dirt != 0)) {
         THROW_OR_ABORT(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
             join(" ", cva->material.textures_color, [](const auto& v) { return *v.texture_descriptor.color.filename; }));

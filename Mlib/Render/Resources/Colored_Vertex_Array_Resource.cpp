@@ -26,6 +26,7 @@
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Map/Map.hpp>
+#include <Mlib/Map/Ordered_Map.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
@@ -109,7 +110,7 @@ struct UvMapKey {
 
 class NotSortedUvMap {
 public:
-    NotSortedUvMap(Map<UvMapKey, size_t>& m): m_{ m }
+    NotSortedUvMap(OrderedStandardMap<UvMapKey, size_t>& m): m_{ m }
     {}
     decltype(auto) begin() const {
         return m_.begin();
@@ -130,7 +131,7 @@ public:
         return std::strong_ordering::equal;
     }
 private:
-    Map<UvMapKey, size_t>& m_;
+    OrderedStandardMap<UvMapKey, size_t>& m_;
 };
 
 template <class T>
@@ -2418,7 +2419,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
     auto attr_idc = get_attribute_index_calculator(cva);
     auto attr_ids = attr_idc.build();
-    Map<UvMapKey, size_t> uv_map;
+    OrderedStandardMap<UvMapKey, size_t> uv_map;
     for (const auto& t : textures_color) {
         NotSortedUvMap{ uv_map }.insert(*t);
     }
@@ -2556,7 +2557,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         } else {
             // Do nothing
-            // rp->mvp_light_location = 0;
+            // rp->mvp_light_location = -1;
         }
         for (size_t i = 0; i < filtered_skidmarks.size(); ++i) {
             rp->mvp_skidmarks_locations[i] = rp->get_uniform_location(("MVP_skidmarks[" + std::to_string(i) + "]").c_str());
@@ -2564,7 +2565,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         if (any(id.texture_layer_properties & TextureLayerProperties::UNIFORM)) {
             rp->texture_layer_location_uniform = rp->get_uniform_location("texture_layer_fs");
         } else {
-            rp->texture_layer_location_uniform = 0;
+            rp->texture_layer_location_uniform = -1;
         }
         if (id.nbillboard_ids != 0) {
             rp->vertex_scale_location = rp->get_uniform_location("vertex_scale");
@@ -2573,24 +2574,24 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             if (any(id.texture_layer_properties & TextureLayerProperties::ATLAS)) {
                 rp->texture_layers_location_atlas = rp->get_uniform_location("texture_layers");
             } else {
-                rp->texture_layers_location_atlas = 0;
+                rp->texture_layers_location_atlas = -1;
             }
             if (!id.orthographic) {
                 rp->alpha_distances_location = rp->get_uniform_location("alpha_distances");
             } else {
-                rp->alpha_distances_location = 0;
+                rp->alpha_distances_location = -1;
             }
         } else {
-            rp->vertex_scale_location = 0;
-            rp->uv_scale_location = 0;
-            rp->uv_offset_location = 0;
-            rp->texture_layers_location_atlas = 0;
-            rp->alpha_distances_location = 0;
+            rp->vertex_scale_location = -1;
+            rp->uv_scale_location = -1;
+            rp->uv_offset_location = -1;
+            rp->texture_layers_location_atlas = -1;
+            rp->alpha_distances_location = -1;
         }
         if (id.has_dynamic_emissive) {
             rp->dynamic_emissive_location = rp->get_uniform_location("dynamic_emissive");
         } else {
-            rp->dynamic_emissive_location = 0;
+            rp->dynamic_emissive_location = -1;
         }
         assert(id.lightmap_indices_color.empty() || id.lightmap_indices_depth.empty());
         if (!id.lightmap_indices_color.empty()) {
@@ -2599,7 +2600,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         } else {
             // Do nothing
-            // rp->texture_lightmap_color_location = 0;
+            // rp->texture_lightmap_color_location = -1;
         }
         if (!id.lightmap_indices_depth.empty()) {
             for (size_t i : lightmap_indices) {
@@ -2607,7 +2608,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         } else {
             // Do nothing
-            // rp->texture_lightmap_depth_location = 0;
+            // rp->texture_lightmap_depth_location = -1;
         }
         if (id.ntextures_normal != 0) {
             for (const auto& r : textures_color) {
@@ -2622,16 +2623,16 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         if (id.ntextures_reflection != 0) {
             rp->texture_reflection_location = rp->get_uniform_location("texture_reflection");
         } else {
-            rp->texture_reflection_location = 0;
+            rp->texture_reflection_location = -1;
         }
         if (id.ntextures_dirt != 0) {
             rp->mvp_dirtmap_location = rp->get_uniform_location("MVP_dirtmap");
             rp->texture_dirtmap_location = rp->get_uniform_location("texture_dirtmap");
             rp->texture_dirt_location = rp->get_uniform_location("texture_dirt");
         } else {
-            rp->mvp_dirtmap_location = 0;
-            rp->texture_dirtmap_location = 0;
-            rp->texture_dirt_location = 0;
+            rp->mvp_dirtmap_location = -1;
+            rp->texture_dirtmap_location = -1;
+            rp->texture_dirt_location = -1;
         }
         if (any(id.interior_texture_set)) {
             auto n = size(id.interior_texture_set);
@@ -2639,17 +2640,17 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 rp->texture_interiormap_location(i) = rp->get_uniform_location(("texture_interior[" + std::to_string(i) + "]").c_str());
             }
         } else {
-            rp->texture_interiormap_location = 0;
+            rp->texture_interiormap_location = -1;
         }
         if (id.has_specularmap) {
             rp->texture_specularmap_location = rp->get_uniform_location("texture_specularmap");
         } else {
-            rp->texture_specularmap_location = 0;
+            rp->texture_specularmap_location = -1;
         }
         if (!id.reflectance.all_equal(0.f) || any(id.interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
             rp->r_location = rp->get_uniform_location("R");
         } else {
-            rp->r_location = 0;
+            rp->r_location = -1;
         }
         {
             bool light_dir_required = !id.diffuse.all_equal(0) || !id.specular.all_equal(0);
