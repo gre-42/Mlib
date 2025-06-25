@@ -11,6 +11,7 @@ enum class MipmapMode;
 enum class ColorMode;
 enum class WrapMode;
 enum class InterpolationMode;
+enum class TextureTarget;
 
 class ITextureHandle {
 public:
@@ -40,6 +41,7 @@ public:
     virtual uint32_t& handle32() = 0;
     virtual uint64_t& handle64() = 0;
     virtual bool texture_is_loaded_and_try_preload() = 0;
+    virtual TextureTarget target() const = 0;
     virtual ColorMode color_mode() const = 0;
     virtual MipmapMode mipmap_mode() const = 0;
     virtual InterpolationMode magnifying_interpolation_mode() const = 0;

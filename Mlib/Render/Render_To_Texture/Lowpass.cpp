@@ -6,6 +6,8 @@
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Binder.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Layer_Properties.hpp>
 #include <Mlib/Render/Shader_Version_3_0.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 
@@ -79,18 +81,14 @@ void Lowpass::render(
             ViewportGuard vg{ width, height };
             notify_rendering(CURRENT_SOURCE_LOCATION);
 
-            CHK(glUniform1i(rp.texture_color_location, 0));
+            TextureBinder tb;
+            tb.bind(rp.texture_color_location, *fbs[source_id]->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR, TextureLayerProperties::NONE);
             CHK(glUniform1f(rp.lowpass_offset_location, offset2));
             offset2 *= 2.f;
-
-            CHK(glActiveTexture(GL_TEXTURE0 + 0));
-            CHK(glBindTexture(GL_TEXTURE_2D, fbs[source_id]->texture_color()->handle<GLuint>()));
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
             CHK(glBindVertexArray(0));
-
-            CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
 }

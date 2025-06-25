@@ -12,6 +12,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Instance_Handles/Texture_Binder.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Layer_Properties.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Diff_Vertex_Shader.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -285,7 +286,11 @@ void AcousticVelocitySubdomainLogic::collide_and_stream() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     TextureBinder tb;
     for (size_t t = 0; t < 2; ++t) {
-        tb.bind(rp.velocity_fields(t), *velocity_fields_((i012_ + 1 + t) % 3)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
+        tb.bind(
+            rp.velocity_fields(t),
+            *velocity_fields_((i012_ + 1 + t) % 3)->texture_color(),
+            InterpolationPolicy::NEAREST_NEIGHBOR,
+            TextureLayerProperties::NONE);
     }
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -333,7 +338,11 @@ void AcousticVelocitySubdomainLogic::calculate_skidmark_field() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     CHK(glUniform1f(rp.skidmark_strength, skidmark_strength_));
     TextureBinder tb;
-    tb.bind(rp.velocity_field, *velocity_fields_(i012_)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
+    tb.bind(
+        rp.velocity_field,
+        *velocity_fields_(i012_)->texture_color(),
+        InterpolationPolicy::NEAREST_NEIGHBOR,
+        TextureLayerProperties::NONE);
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));

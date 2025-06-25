@@ -42,17 +42,14 @@ enum class InterpolationMode;
 enum class ColorMode;
 struct LoadedFont;
 class ITextureHandle;
+enum class TextureTarget;
 
 struct TextureSizeAndMipmaps {
     std::shared_ptr<ITextureHandle> handle;
     GLsizei width;
     GLsizei height;
     GLsizei nchannels;
-    MipmapMode mipmap_mode;
     GLsizei mip_level_count;
-    InterpolationMode magnifying_interpolation_mode;
-    GLint wrap_s;
-    GLint wrap_t;
     FixedArray<float, 4> border_color;
     std::shared_ptr<ITextureHandle> flipped_vertically(float aniso) const;
 };
@@ -124,19 +121,10 @@ enum class CallerType {
     RENDER
 };
 
-enum class TextureType {
-    TEXTURE_2D,
-    TEXTURE_2D_ARRAY,
-    TEXTURE_3D,
-    TEXTURE_CUBE_MAP
-};
-
 struct TextureSize {
     int width;
     int height;
 };
-
-std::ostream& operator << (std::ostream& ostr, TextureType texture_type);
 
 struct FlippedTextureData {
     std::vector<std::byte> data;
@@ -145,7 +133,7 @@ struct FlippedTextureData {
 
 struct InitializedTexture {
     GLuint handle;
-    TextureType type;
+    TextureTarget target;
     uint32_t layers;
 };
 
@@ -173,7 +161,7 @@ public:
         const ColormapWithModifiers& name,
         TextureRole role = TextureRole::COLOR) const;
     bool contains_texture(const ColormapWithModifiers& name) const;
-    TextureType texture_type(const ColormapWithModifiers& name, TextureRole role) const;
+    TextureTarget texture_target(const ColormapWithModifiers& name, TextureRole role) const;
     FixedArray<int, 2> texture_size(const ColormapWithModifiers& name) const;
     void add_texture(
         const ColormapWithModifiers& name,
@@ -275,7 +263,7 @@ private:
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<std::shared_ptr<StbInfo<uint8_t>>>> preloaded_processed_texture_array_data_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, FlippedTextureData> preloaded_raw_texture_data_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, FlippedTextureData> preloaded_texture_dds_data_;
-    mutable VerboseUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
+    mutable VerboseUnorderedMap<ColormapWithModifiers, TextureTarget> texture_targets_;
     mutable ThreadsafeUnorderedMap<VariableAndHash<std::string>, TextureDescriptor> texture_descriptors_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
     mutable ThreadsafeStringWithHashUnorderedMap<TextureSize> texture_sizes_;

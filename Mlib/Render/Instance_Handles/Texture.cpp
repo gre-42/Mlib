@@ -32,6 +32,7 @@ static inline GLuint check_handle(GLuint handle) {
 
 Texture::Texture(
     GenerateTexture,
+    TextureTarget target,
     ColorMode color_mode,
     MipmapMode mipmap_mode,
     InterpolationMode magnifying_interpolation_mode,
@@ -39,6 +40,7 @@ Texture::Texture(
     const FixedArray<float, 4>& border_color,
     uint32_t layers)
     : handle_{ (GLuint)-1 }
+    , target_{ target }
     , color_mode_{ color_mode }
     , mipmap_mode_{ mipmap_mode }
     , magnifying_interpolation_mode_{ magnifying_interpolation_mode }
@@ -56,6 +58,7 @@ Texture::Texture(
 
 Texture::Texture(
     GLuint handle,
+    TextureTarget target,
     ColorMode color_mode,
     MipmapMode mipmap_mode,
     InterpolationMode magnifying_interpolation_mode,
@@ -63,6 +66,7 @@ Texture::Texture(
     const FixedArray<float, 4>& border_color,
     uint32_t layers)
     : handle_{ check_handle(handle) }
+    , target_{ target }
     , color_mode_{ color_mode }
     , mipmap_mode_{ mipmap_mode }
     , magnifying_interpolation_mode_{ magnifying_interpolation_mode }
@@ -78,6 +82,7 @@ Texture::Texture(
 
 Texture::Texture(
     GenerateTexture,
+    TextureTarget target,
     GLenum format,
     bool with_mipmaps,
     InterpolationMode magnifying_interpolation_mode,
@@ -87,6 +92,7 @@ Texture::Texture(
     uint32_t layers)
     : Texture{
         generate_texture,
+        target,
         format_to_color_mode(format),
         with_mipmaps ? MipmapMode::WITH_MIPMAPS : MipmapMode::NO_MIPMAPS,
         magnifying_interpolation_mode,
@@ -97,6 +103,7 @@ Texture::Texture(
 
 Texture::Texture(
     GLuint handle,
+    TextureTarget target,
     GLenum format,
     bool with_mipmaps,
     InterpolationMode magnifying_interpolation_mode,
@@ -106,6 +113,7 @@ Texture::Texture(
     uint32_t layers)
     : Texture{
         handle,
+        target,
         format_to_color_mode(format),
         with_mipmaps ? MipmapMode::WITH_MIPMAPS : MipmapMode::NO_MIPMAPS,
         magnifying_interpolation_mode,
@@ -155,6 +163,10 @@ uint64_t& Texture::handle64() {
 
 bool Texture::texture_is_loaded_and_try_preload() {
     return true;
+}
+
+TextureTarget Texture::target() const {
+    return target_;
 }
 
 ColorMode Texture::color_mode() const {

@@ -2,6 +2,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Instance_Handles/Texture_Binder.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Layer_Properties.hpp>
 #include <Mlib/Render/Render_Logics/Offset_Renderer.hpp>
 #include <Mlib/Render/Shader_Version_3_0.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -71,7 +72,7 @@ void OffsetRenderer::apply_offset(
 
         notify_rendering(CURRENT_SOURCE_LOCATION);
         TextureBinder tb;
-        tb.bind(rp_.field, *field->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
+        tb.bind(rp_.field, *field->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR, TextureLayerProperties::NONE);
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));

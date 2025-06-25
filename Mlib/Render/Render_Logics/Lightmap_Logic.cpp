@@ -86,18 +86,27 @@ void LightmapLogic::render_without_setup(
             .external_render_pass = {frame_id.external_render_pass.user_id, render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0};
         size_t target_id = 0;
+        auto border_color = (float)!any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
         fbs_[target_id]->configure({
             .width = lightmap_width_,
             .height = lightmap_height_,
+            .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .depth_kind = with_depth_texture_
                 ? FrameBufferChannelKind::TEXTURE
                 : FrameBufferChannelKind::ATTACHMENT,
+            .wrap_s = GL_CLAMP_TO_BORDER,
+            .wrap_t = GL_CLAMP_TO_BORDER,
+            .border_color = make_orderable(fixed_full<float, 4>(border_color)),
             .nsamples_msaa = render_config.lightmap_nsamples_msaa});
         if (!with_depth_texture_) {
             fbs_[1 - target_id]->configure({
                 .width = lightmap_width_,
                 .height = lightmap_height_,
-                .depth_kind = FrameBufferChannelKind::NONE});
+                .color_magnifying_interpolation_mode = InterpolationMode::LINEAR,
+                .depth_kind = FrameBufferChannelKind::NONE,
+                .wrap_s = GL_CLAMP_TO_BORDER,
+                .wrap_t = GL_CLAMP_TO_BORDER,
+                .border_color = make_orderable(fixed_full<float, 4>(border_color))});
         }
         std::optional<RenderSetup> setup;
         {

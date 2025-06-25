@@ -1,6 +1,7 @@
 #include "Frame_Buffer.hpp"
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
+#include <Mlib/Geometry/Material/Texture_Target.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
@@ -68,6 +69,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
     // create a color attachment texture
     texture_color_ = std::make_shared<Texture>(
         generate_texture,
+        TextureTarget::TEXTURE_2D,
         config_.color_format,
         config_.with_mipmaps,
         config_.color_magnifying_interpolation_mode,
@@ -109,6 +111,7 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
         // create a depth attachment texture
         texture_depth_ = std::make_shared<Texture>(
             generate_texture,
+            TextureTarget::TEXTURE_2D,
             ColorMode::GRAYSCALE,
             MipmapMode::NO_MIPMAPS,
             InterpolationMode::NEAREST,

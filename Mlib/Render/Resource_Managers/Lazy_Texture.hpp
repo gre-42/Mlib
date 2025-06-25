@@ -20,6 +20,7 @@ public:
     virtual uint32_t& handle32() override;
     virtual uint64_t& handle64() override;
     virtual bool texture_is_loaded_and_try_preload() override;
+    virtual TextureTarget target() const override;
     virtual ColorMode color_mode() const override;
     virtual MipmapMode mipmap_mode() const override;
     virtual InterpolationMode magnifying_interpolation_mode() const override;

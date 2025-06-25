@@ -12,6 +12,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Instance_Handles/Texture_Binder.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Layer_Properties.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -288,7 +289,11 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     notify_rendering(CURRENT_SOURCE_LOCATION);
     TextureBinder tb;
     for (size_t v = 0; v < FluidDomainLbmModel::ndirections; ++v) {
-        tb.bind(rp.good_momentum_magnitude_fields(v), *good_momentum_magnitude_fields_(v)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
+        tb.bind(
+            rp.good_momentum_magnitude_fields(v),
+            *good_momentum_magnitude_fields_(v)->texture_color(),
+            InterpolationPolicy::NEAREST_NEIGHBOR,
+            TextureLayerProperties::NONE);
     }
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -352,8 +357,16 @@ void FluidSubdomainLogic::collide() {
         CHK(glUniform1fv(rp.speed_of_sound4, 1, &speed_of_sound4_));
         CHK(glUniform1fv(rp.time_relaxation_constant, 1, &time_relaxation_constant_));
         TextureBinder tb;
-        tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
-        tb.bind(rp.good_momentum_magnitude_field, *good_momentum_magnitude_fields_(v)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
+        tb.bind(
+            rp.density_and_velocity_field,
+            *density_and_velocity_field_->texture_color(),
+            InterpolationPolicy::NEAREST_NEIGHBOR,
+            TextureLayerProperties::NONE);
+        tb.bind(
+            rp.good_momentum_magnitude_field,
+            *good_momentum_magnitude_fields_(v)->texture_color(),
+            InterpolationPolicy::NEAREST_NEIGHBOR,
+            TextureLayerProperties::NONE);
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -412,7 +425,11 @@ void FluidSubdomainLogic::stream() {
 
         notify_rendering(CURRENT_SOURCE_LOCATION);
         TextureBinder tb;
-        tb.bind(rp.temp_momentum_magnitude_field, *temp_momentum_magnitude_fields_(v)->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
+        tb.bind(
+            rp.temp_momentum_magnitude_field,
+            *temp_momentum_magnitude_fields_(v)->texture_color(),
+            InterpolationPolicy::NEAREST_NEIGHBOR,
+            TextureLayerProperties::NONE);
         va().bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
         CHK(glBindVertexArray(0));
@@ -451,7 +468,11 @@ void FluidSubdomainLogic::calculate_skidmark_field() {
     CHK(glUniform1f(rp.visual_density.min, visual_density_.min));
     CHK(glUniform1f(rp.visual_density.max, visual_density_.max));
     TextureBinder tb;
-    tb.bind(rp.density_and_velocity_field, *density_and_velocity_field_->texture_color(), InterpolationPolicy::NEAREST_NEIGHBOR);
+    tb.bind(
+        rp.density_and_velocity_field,
+        *density_and_velocity_field_->texture_color(),
+        InterpolationPolicy::NEAREST_NEIGHBOR,
+        TextureLayerProperties::NONE);
     va().bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));

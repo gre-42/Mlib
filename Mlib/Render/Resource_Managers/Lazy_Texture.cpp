@@ -46,6 +46,10 @@ bool LazyTexture::texture_is_loaded_and_try_preload() {
 		rendering_resources_.texture_is_loaded_and_try_preload(colormap_, role_);
 }
 
+TextureTarget LazyTexture::target() const {
+	return texture().target();
+}
+
 ColorMode LazyTexture::color_mode() const {
 	return colormap_.color_mode;
 }
