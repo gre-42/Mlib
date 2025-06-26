@@ -16,7 +16,7 @@
 #include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Split_Meshes.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Cluster_Triangles.hpp>
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
@@ -2056,14 +2056,10 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
                 dcvas_node_triangles.push_back(cva);
             }
         }
-        auto split = split_meshes(
+        for (const auto& [i, c] : enumerate(cluster_triangles(
             dcvas_node_triangles,
             cluster_center_by_grid<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(options.triangle_cluster_width)),
-            *options.instance_name + "_split");
-        for (const auto& [i, c] : enumerate(cluster_meshes<CompressedScenePos>(
-            split,
-            cva_to_grid_center<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(options.triangle_cluster_width)),
-            *options.instance_name + "_cluster")))
+            *options.instance_name + "_split")))
         {
             auto resource_name = VariableAndHash<std::string>{*options.instance_name + std::to_string(i)};
             auto transformed = c.cva->template translated<float>(-c.position, "_centered");

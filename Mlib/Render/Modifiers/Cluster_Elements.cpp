@@ -4,9 +4,8 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Split_Meshes.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Cluster_Triangles.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -27,15 +26,11 @@ static void patch(
     std::list<VariableAndHash<std::string>>& added_scene_node_resources,
     std::list<VariableAndHash<std::string>>& added_instantiables)
 {
-    auto split = split_meshes(
+    std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
+    for (const auto& [i, c] : enumerate(cluster_triangles(
         cvas,
         cluster_center_by_grid<TPos, TWidth>(width),
-        prefix + "_split");
-    std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
-    for (const auto& [i, c] : enumerate(cluster_meshes<TPos>(
-        split,
-        cva_to_grid_center<TPos, TWidth>(width),
-        prefix + "_cluster")))
+        prefix + "_split")))
     {
         auto resource_name = VariableAndHash<std::string>{(prefix + std::to_string(i)).full_name()};
         auto transformed = c.cva->template translated<float>(-c.position, "_centered");

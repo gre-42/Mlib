@@ -13,9 +13,11 @@ struct ColoredVertex;
 template <class TPos>
 class ColoredVertexArray;
 class GroupAndName;
+template <class TPos>
+struct MeshAndPosition;
 
 template <class TPos>
-std::list<std::shared_ptr<ColoredVertexArray<TPos>>> split_meshes(
+std::list<MeshAndPosition<TPos>> cluster_triangles(
     const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
     const std::function<FixedArray<TPos, 3>(const FixedArray<ColoredVertex<TPos>, 3>&)>& get_cluster_center,
     const GroupAndName& prefix);
