@@ -1,8 +1,8 @@
 #include "Load_Pssg_Arrays.hpp"
 #include <Mlib/Array/Non_Copying_Vector.hpp>
-#include <Mlib/Geometry/Base_Materials.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
+#include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Pssg_Elements.hpp>

@@ -15,8 +15,8 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Triangles.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>

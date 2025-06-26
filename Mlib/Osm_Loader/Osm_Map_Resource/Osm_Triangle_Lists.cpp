@@ -1,11 +1,12 @@
 #include "Osm_Triangle_Lists.hpp"
-#include <Mlib/Geometry/Base_Materials.hpp>
+#include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
+#include <Mlib/Geometry/Material_Configuration/Material_Colors.hpp>
+#include <Mlib/Geometry/Material_Configuration/Material_Skidmarks.hpp>
+#include <Mlib/Geometry/Material_Configuration/Meta_Materials.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Colors.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Skidmarks.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Styled_Road.hpp>
@@ -25,6 +26,14 @@ static PhysicsMaterial physics_material(
         THROW_OR_ABORT("Could not find physics material for terrain type \"" + terrain_type_to_string(terrain_type) + '"');
     }
     return it->second;
+}
+
+static PhysicsMaterial physics_meta_material(
+    const std::map<TerrainType, PhysicsMaterial>& m,
+    TerrainType terrain_type)
+{
+    auto pm = physics_material(m, terrain_type);
+    return pm | meta_material(pm);
 }
 
 static Shading terrain_type_specularity(
@@ -147,7 +156,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material(config.terrain_materials, tt) }));
+            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_meta_material(config.terrain_materials, tt) }));
         tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + "_visuals" + name_suffix,
             Material{
@@ -175,7 +184,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material(config.terrain_materials, tt) }));
+            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_meta_material(config.terrain_materials, tt) }));
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);

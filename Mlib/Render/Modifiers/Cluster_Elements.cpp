@@ -4,8 +4,8 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Triangles.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
