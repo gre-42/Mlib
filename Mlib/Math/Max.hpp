@@ -15,7 +15,7 @@ FixedPointNumber<TInt, denominator> max(
     const FixedPointNumber<TInt, denominator>& a,
     const FixedPointNumber<TInt, denominator>& b)
 {
-    return { std::max(a.count, b.count) };
+    return FixedPointNumber<TInt, denominator>::from_count(std::max(a.count, b.count));
 }
 
 }

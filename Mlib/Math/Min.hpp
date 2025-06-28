@@ -15,7 +15,7 @@ FixedPointNumber<TInt, denominator> min(
     const FixedPointNumber<TInt, denominator>& a,
     const FixedPointNumber<TInt, denominator>& b)
 {
-    return { std::min(a.count(), b.count()) };
+    return FixedPointNumber<TInt, denominator>::from_count(std::min(a.count, b.count));
 }
 
 }
