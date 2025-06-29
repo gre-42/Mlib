@@ -1,4 +1,5 @@
 #include <map>
+#include <optional>
 #include <string>
 
 namespace Mlib {
@@ -15,7 +16,7 @@ void parse_osm_xml(
     const std::string& filename,
     double scale,
     NormalizedPointsFixed<double>& normalized_points,
-    TransformationMatrix<double, double, 2>& normalization_matrix,
+    std::optional<TransformationMatrix<double, double, 2>>& normalization_matrix,
     std::map<std::string, Node>& nodes,
     std::map<std::string, Way>& ways);
 

@@ -21,10 +21,11 @@ void Mlib::calculate_terrain_spawn_points(
     const Sample_SoloMesh* ssm)
 {
     if (!ssm != !to_meters) {
-        THROW_OR_ABORT("Inconsistent to-meters mapping an navmesh parameters");
+        THROW_OR_ABORT("Inconsistent to-meters mapping and navmesh parameters");
     }
     for (const Building& bu : spawn_lines) {
-        auto iteam = bu.way.tags.find("team");
+        auto team = bu.way.tags.get("spawn:team", "");
+        auto group = bu.way.tags.get("spawn:group", "");
         for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
             auto next = it;
             ++next;
@@ -55,7 +56,8 @@ void Mlib::calculate_terrain_spawn_points(
                     .trafo = {
                         tait_bryan_angles_2_matrix<SceneDir>({0.f, 0.f, (SceneDir)std::atan2(dir(0), -dir(1))}),
                         p3},
-                    .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
+                    .team = team,
+                    .group = group});
             }
         }
     }

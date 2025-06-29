@@ -15,6 +15,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(suffix);
 DECLARE_ARGUMENT(team);
+DECLARE_ARGUMENT(group);
 }
 
 const std::string CreateSpawner::key = "spawner_create";
@@ -38,5 +39,6 @@ void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::make_unique<VehicleSpawner>(
             scene,
             suffix.has_value() ? *suffix : '_' + name + scene.get_temporary_instance_suffix(),
-            args.arguments.at<std::string>(KnownArgs::team)));
+            args.arguments.at<std::string>(KnownArgs::team),
+            args.arguments.at<std::string>(KnownArgs::group)));
 }

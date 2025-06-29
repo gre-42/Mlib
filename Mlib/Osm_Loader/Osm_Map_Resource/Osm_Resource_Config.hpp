@@ -80,7 +80,7 @@ struct OsmResourceConfig {
     OsmResourceConfig& operator = (const OsmResourceConfig&) = delete;
     OsmResourceConfig();
     ~OsmResourceConfig();
-    std::string filename;
+    std::vector<std::string> filenames;
     std::string heightmap;
     std::string heightmap_mask;
     size_t heightmap_extension = 0;

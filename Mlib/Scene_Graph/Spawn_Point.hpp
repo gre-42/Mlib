@@ -18,12 +18,14 @@ struct SpawnPoint {
     WayPointLocation location;
     TransformationMatrix<SceneDir, CompressedScenePos, 3> trafo = uninitialized;
     std::string team;
+    std::string group;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(type);
         archive(location);
         archive(trafo);
         archive(team);
+        archive(group);
     }
 };
 

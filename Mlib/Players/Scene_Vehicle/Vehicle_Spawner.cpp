@@ -27,12 +27,14 @@ SpawnVehicleAlreadySetBehavior Mlib::spawn_vehicle_already_set_behavior_from_str
 VehicleSpawner::VehicleSpawner(
     Scene& scene,
     std::string suffix,
-    std::string team_name)
+    std::string team_name,
+    std::string group_name)
     : scene_{ scene }
     , player_{ nullptr }
     , on_player_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
     , suffix_{ std::move(suffix) }
     , team_name_{ std::move(team_name) }
+    , group_name_{ std::move(group_name) }
     , time_since_spawn_{ NAN }
     , time_since_deletion_{ 0.f }
     , spotted_by_vip_{ false }
@@ -49,15 +51,12 @@ DanglingBaseClassPtr<IPlayer> VehicleSpawner::player() {
     return player_;
 }
 
-void VehicleSpawner::set_team_name(const std::string& team_name) {
-    if (!team_name_.empty()) {
-        THROW_OR_ABORT("Team already set");
-    }
-    team_name_ = team_name;
-}
-
 std::string VehicleSpawner::get_team_name() const {
     return team_name_;
+}
+
+std::string VehicleSpawner::get_group_name() const {
+    return group_name_;
 }
 
 bool VehicleSpawner::has_player() const {

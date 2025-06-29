@@ -24,9 +24,9 @@ DECLARE_ARGUMENT(internals);
 
 namespace LetKeys {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(externals_user_id);
-DECLARE_ARGUMENT(externals_user_name);
-DECLARE_ARGUMENT(externals_player_name);
+DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(user_name);
+DECLARE_ARGUMENT(player_name);
 DECLARE_ARGUMENT(if_pc);
 DECLARE_ARGUMENT(if_manual_aim);
 DECLARE_ARGUMENT(if_manual_shoot);
@@ -69,9 +69,9 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 THROW_OR_ABORT("Invalid externals mode");
             }
             nlohmann::json let{
-                {LetKeys::externals_user_id, user_id},
-                {LetKeys::externals_user_name, user_name},
-                {LetKeys::externals_player_name, player_name},
+                {LetKeys::user_id, user_id},
+                {LetKeys::user_name, user_name},
+                {LetKeys::player_name, player_name},
                 {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
                 {LetKeys::behavior, behavior}
             };
@@ -94,7 +94,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 THROW_OR_ABORT("Invalid externals mode");
             }
             nlohmann::json let{
-                {LetKeys::externals_player_name, player_name},
+                {LetKeys::player_name, player_name},
                 {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
                 {LetKeys::if_manual_aim, skills.skills(ControlSource::USER).can_aim},
                 {LetKeys::if_manual_shoot, skills.skills(ControlSource::USER).can_shoot},
@@ -103,8 +103,8 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {LetKeys::externals_seat, internals_mode.seat}
             };
             if (user_id != UINT32_MAX) {
-                let[LetKeys::externals_user_id] = user_id;
-                let[LetKeys::externals_user_name] = user_name;
+                let[LetKeys::user_id] = user_id;
+                let[LetKeys::user_name] = user_name;
             }
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr);
         }

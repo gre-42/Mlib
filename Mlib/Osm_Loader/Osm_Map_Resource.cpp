@@ -169,13 +169,22 @@ OsmMapResource::OsmMapResource(
     FunctionGuard fg{ "OSM map resource" };
 
     fg.update("Parse OSM XML");
-    parse_osm_xml(
-        config.filename,
-        config.scale,
-        normalized_points,
-        normalization_matrix_,
-        naws.nodes,
-        naws.ways);
+    {
+        std::optional<TransformationMatrix<double, double, 2>> normalization_matrix;
+        for (const auto& layer : config.filenames) {
+            parse_osm_xml(
+                layer,
+                config.scale,
+                normalized_points,
+                normalization_matrix,
+                naws.nodes,
+                naws.ways);
+        }
+        if (!normalization_matrix.has_value()) {
+            THROW_OR_ABORT("Normalization matrix not set, OSM-file seems to be empty");
+        }
+        normalization_matrix_ = *normalization_matrix;
+    }
     triangulation_normalization_matrix_ = normalization_matrix_.pre_scaled(config.triangulation_scale);
     
     fg.update("Smoothen ways");
@@ -1631,18 +1640,9 @@ OsmMapResource::OsmMapResource(
                     config.waypoint_distance);
             }
             if (!terrain_way_point_lines.empty() ||
-                !way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND].empty())
+                !way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND].empty() ||
+                !spawn_lines.empty())
             {
-                auto filter = ColoredVertexArrayFilter{
-                    .included_tags = PhysicsMaterial::ATTR_COLLIDE,
-                    .excluded_tags = PhysicsMaterial::ATTR_LIQUID
-                };
-                auto navigation_acvas = config.navmesh_resource->empty()
-                    ? get_arrays(filter)
-                    : scene_node_resources.get_arrays(config.navmesh_resource, filter);
-                auto navigation_dcvas = navigation_acvas
-                    ->triangulate(RectangleTriangulationMode::DELAUNAY, DelaunayErrorBehavior::THROW)
-                    ->dcvas;
                 if (!config.refine_explicit_waypoints) {
                     calculate_waypoint_adjacency(
                         way_points_[JoinedWayPointSandbox::EXPLICIT_GROUND],
@@ -1670,7 +1670,24 @@ OsmMapResource::OsmMapResource(
                         config.waypoint_merge_radius,
                         config.waypoint_error_radius,
                         config.waypoint_distance);
+                    calculate_terrain_spawn_points(
+                        spawn_points_,
+                        spawn_lines,
+                        nodes,
+                        *ground_bvh,
+                        nullptr,        // to_meters
+                        nullptr);       // sample_solo_mesh
                 } else {
+                    auto filter = ColoredVertexArrayFilter{
+                        .included_tags = PhysicsMaterial::ATTR_COLLIDE,
+                        .excluded_tags = PhysicsMaterial::ATTR_LIQUID
+                    };
+                    auto navigation_acvas = config.navmesh_resource->empty()
+                        ? get_arrays(filter)
+                        : scene_node_resources.get_arrays(config.navmesh_resource, filter);
+                    auto navigation_dcvas = navigation_acvas
+                        ->triangulate(RectangleTriangulationMode::DELAUNAY, DelaunayErrorBehavior::THROW)
+                        ->dcvas;
                     // Apply the inverse rotation that is applied to the hitboxes,
                     // and divide by scale as opposed to multiplying.
                     auto rotation = tait_bryan_angles_2_matrix<float>({ -90.f * degrees, 0.f, 0.f });

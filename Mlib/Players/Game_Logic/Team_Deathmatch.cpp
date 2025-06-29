@@ -29,20 +29,34 @@ TeamDeathmatch::TeamDeathmatch(
 TeamDeathmatch::~TeamDeathmatch()
 {}
 
-void TeamDeathmatch::handle_respawn() {
-    if (objective_ == Objective::KILL_COUNT) {
-        handle_kill_count_objective();
-    } else if (objective_ == Objective::LAST_TEAM_STANDING) {
-        handle_last_team_standing_objective();
-    } else if (objective_ == Objective::NONE) {
-        // Do nothing
-    } else {
-        THROW_OR_ABORT("Unknown objective");
-    }
-}
-
 void TeamDeathmatch::set_objective(Objective objective) {
     objective_ = objective;
+}
+
+void TeamDeathmatch::handle_respawn() {
+    switch (objective_) {
+    case Objective::NONE:
+        // Do nothing
+        return;
+    case Objective::KILL_COUNT:
+        handle_kill_count_objective();
+        return;
+    case Objective::LAST_TEAM_STANDING:
+        handle_last_team_standing_objective();
+        return;
+    case Objective::PHOTOS:
+        handle_photos_objective();
+        return;
+    }
+    THROW_OR_ABORT("Unknown objective");
+}
+
+void TeamDeathmatch::respawn_individually() {
+    for (auto& [_, p] : spawners_.spawners()) {
+        if (!p->has_scene_vehicle() && (p->get_time_since_deletion() >= p->get_respawn_cooldown_time())) {
+            spawner_.try_spawn_player_during_match(*p);
+        }
+    }
 }
 
 void TeamDeathmatch::handle_last_team_standing_objective() {
@@ -88,9 +102,9 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
 }
 
 void TeamDeathmatch::handle_kill_count_objective() {
-    for (auto& [_, p] : spawners_.spawners()) {
-        if (!p->has_scene_vehicle() && (p->get_time_since_deletion() >= p->get_respawn_cooldown_time())) {
-            spawner_.try_spawn_player_during_match(*p);
-        }
-    }
+    respawn_individually();
+}
+
+void TeamDeathmatch::handle_photos_objective() {
+    respawn_individually();
 }

@@ -86,6 +86,7 @@ DECLARE_ARGUMENT(front_engine);
 DECLARE_ARGUMENT(rear_engine);
 DECLARE_ARGUMENT(engine_audio);
 DECLARE_ARGUMENT(engine_exhaust);
+DECLARE_ARGUMENT(door_distance);
 }
 
 namespace KnownAudio {
@@ -463,6 +464,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 physics_engine);
 
         rb.drivers_.set_seats({ "driver" });
+        rb.door_distance_ = vdb.at<float>(KnownDb::door_distance) * meters;
         };
     if (if_with_physics) {
         create_physics();

@@ -35,7 +35,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(filename);
+DECLARE_ARGUMENT(filenames);
 DECLARE_ARGUMENT(cache_filename);
 DECLARE_ARGUMENT(heightmap);
 DECLARE_ARGUMENT(heightmap_mask);
@@ -347,6 +347,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         return args.arguments.pathes_or_variables(name, [](const FPath& v) { return VariableAndHash{ v.path }; });
     };
 
+    auto fpathes = [&args](std::string_view name){
+        return args.arguments.pathes_or_variables(name, [](const FPath& v) {
+            if (v.is_variable) {
+                THROW_OR_ABORT("Value is a variable, not a path: \"" + v.path + '"');
+            }
+            return v.path;
+        });
+    };
+
     auto resource_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     OsmResourceConfig config;
     auto& tconfig = config.triangle_sampler_resource_config;
@@ -391,7 +400,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         auto parse_resource_name_func = [&scene_node_resources](const std::string& jma){
             return parse_resource_name(scene_node_resources, jma);
         };
-        config.filename = args.arguments.path(KnownArgs::filename);
+        config.filenames = fpathes(KnownArgs::filenames);
         cache_filename = args.arguments.path(KnownArgs::cache_filename);
         if (args.arguments.contains(KnownArgs::heightmap)) {
             config.heightmap = args.arguments.path(KnownArgs::heightmap);
@@ -599,10 +608,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::racing_line_texture)) {
             config.racing_line_texture = args.arguments.path_or_variable(KnownArgs::racing_line_texture).path;
         }
-        if (args.arguments.contains(KnownArgs::racing_line_track)) {
+        if (args.arguments.contains_non_null(KnownArgs::racing_line_track)) {
             config.racing_line_track = args.arguments.path_or_variable(KnownArgs::racing_line_track).path;
         }
-        if (args.arguments.contains(KnownArgs::racing_line_playback)) {
+        if (args.arguments.contains_non_null(KnownArgs::racing_line_playback)) {
             config.racing_line_playback = args.arguments.path_or_variable(KnownArgs::racing_line_playback).path;
         }
         if (args.arguments.contains(KnownArgs::socle_height)) {

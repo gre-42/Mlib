@@ -20,9 +20,11 @@ public:
     ~TeamDeathmatch();
     void set_objective(Objective);
 private:
+    void respawn_individually();
     void handle_respawn();
-    void handle_last_team_standing_objective();
     void handle_kill_count_objective();
+    void handle_last_team_standing_objective();
+    void handle_photos_objective();
     VehicleSpawners& spawners_;
     Players& players_;
     Spawner& spawner_;

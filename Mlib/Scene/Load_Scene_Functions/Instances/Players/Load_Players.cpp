@@ -12,8 +12,6 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 
-using json = nlohmann::json;
-
 using namespace Mlib;
 
 namespace KnownArgs {
@@ -35,7 +33,7 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(skills);
 DECLARE_ARGUMENT(controller);
-DECLARE_ARGUMENT(spawned_vehicle);
+DECLARE_ARGUMENT(spawn);
 DECLARE_ARGUMENT(game_mode);
 DECLARE_ARGUMENT(player_role);
 DECLARE_ARGUMENT(unstuck_mode);
@@ -77,6 +75,12 @@ DECLARE_ARGUMENT(yaw_error_std);
 DECLARE_ARGUMENT(pitch_error_std);
 DECLARE_ARGUMENT(error_alpha);
 DECLARE_ARGUMENT(respawn_cooldown_time);
+}
+
+namespace SpawnKeys {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(group);
+DECLARE_ARGUMENT(vehicle);
 }
 
 namespace UserKeys {
@@ -127,7 +131,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     try {
         auto filename = args.arguments.path(KnownArgs::json);
-        json j;
+        nlohmann::json j;
         {
             auto f = create_ifstream(filename);
             if (f->fail()) {
@@ -140,9 +144,9 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
         JsonView jv{ j };
         jv.validate(ToplevelKeys::options);
-        json defaults = jv.at(ToplevelKeys::defaults);
+        nlohmann::json defaults = jv.at(ToplevelKeys::defaults);
         validate(defaults, PlayerKeys::options);
-        json default_skills = defaults.at(PlayerKeys::skills);
+        nlohmann::json default_skills = defaults.at(PlayerKeys::skills);
         for (const auto& jplayer : jv.at(ToplevelKeys::players)) {
             JsonView player{jplayer};
             player.validate(PlayerKeys::options);
@@ -163,13 +167,15 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
             };
             auto team = player.at<std::string>(PlayerKeys::team);
             auto color = jv.at(ToplevelKeys::teams).at(team).at(TeamKeys::style).at(StyleKeys::color).get<UFixedArray<float, 3>>();
-            auto vehicle_name = player.at(PlayerKeys::spawned_vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
+            auto spawn_group = player.at(PlayerKeys::spawn).at(SpawnKeys::group).get<std::string>();
+            auto vehicle_name = player.at(PlayerKeys::spawn).at(SpawnKeys::vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
             const auto& vars = args.asset_references["vehicles"].at(vehicle_name).rp;
             if (auto controller = player.try_at<std::string>(PlayerKeys::controller); controller.has_value()) {
                 nlohmann::json let{
                     {"spawner_name", player.at<std::string>(PlayerKeys::name)},
                     {"player_name", player.at<std::string>(PlayerKeys::name)},
                     {"asset_id", vehicle_name},
+                    {"spawn_group", spawn_group},
                     {"team", team},
                     {"game_mode", get(PlayerKeys::game_mode).get<std::string>()},
                     {"player_role", get(PlayerKeys::player_role).get<std::string>()},
@@ -230,6 +236,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         {
                             {"spawner_name", player.at<std::string>(PlayerKeys::name)},
                             {"asset_id", vehicle_name},
+                            {"spawn_group", spawn_group},
                             {"team", team},
                             {"if_human_style", true},
                             {"if_car_body_renderable_style", true},

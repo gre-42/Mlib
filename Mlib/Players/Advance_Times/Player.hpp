@@ -58,9 +58,10 @@ class VehicleSpawner;
 class VehicleSpawners;
 
 enum class GameMode {
+    PHOTOS,
+    RALLY,
     RAMMING,
-    TEAM_DEATHMATCH,
-    RALLY
+    TEAM_DEATHMATCH
 };
 
 GameMode game_mode_from_string(const std::string& game_mode);

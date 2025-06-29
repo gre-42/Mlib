@@ -41,7 +41,8 @@ public:
     VehicleSpawner(
         Scene& scene,
         std::string suffix,
-        std::string team_name);
+        std::string team_name,
+        std::string group_name);
     ~VehicleSpawner();
 
     // ISpawner
@@ -52,8 +53,8 @@ public:
     void set_respawn_cooldown_time(float respawn_cooldown_time);
     float get_time_since_deletion() const;
 
-    void set_team_name(const std::string& team_name);
     std::string get_team_name() const;
+    std::string get_group_name() const;
     
     bool has_player() const;
     void set_player(
@@ -90,6 +91,7 @@ private:
     DestructionFunctionsRemovalTokens on_player_destroy_;
     std::string suffix_;
     std::string team_name_;
+    std::string group_name_;
     float time_since_spawn_;
     float time_since_deletion_;
     bool spotted_by_vip_;

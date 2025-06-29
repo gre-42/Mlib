@@ -20,7 +20,7 @@ void Mlib::parse_osm_xml(
     const std::string& filename,
     double scale,
     NormalizedPointsFixed<double>& normalized_points,
-    TransformationMatrix<double, double, 2>& normalization_matrix,
+    std::optional<TransformationMatrix<double, double, 2>>& normalization_matrix,
     std::map<std::string, Node>& nodes,
     std::map<std::string, Way>& ways)
 {
@@ -49,7 +49,6 @@ void Mlib::parse_osm_xml(
     FixedArray<double, 2> bounds_min_merged = fixed_full<double, 2>(INFINITY);
     FixedArray<double, 2> bounds_max_merged = fixed_full<double, 2>(-INFINITY);
     FixedArray<double, 2> current_node_position = fixed_nans<double, 2>();
-    bool normalization_matrix_defined = false;
     std::string current_way = "<none>";
     std::string current_node = "<none>";
     std::map<OrderableFixedArray<CompressedScenePos, 2>, std::string> ordered_node_positions;
@@ -66,6 +65,9 @@ void Mlib::parse_osm_xml(
         if (Mlib::re::regex_match(line, ignored_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, bounds_reg)) {
+            if (!nodes.empty()) {
+                THROW_OR_ABORT("Found bounds section, but nodes were already computed");
+            }
             FixedArray<double, 2> bounds_min{
                 safe_stod(match[1].str()),
                 safe_stod(match[2].str())};
@@ -74,6 +76,13 @@ void Mlib::parse_osm_xml(
                 safe_stod(match[4].str())};
             bounds_min_merged = minimum(bounds_min, bounds_min_merged);
             bounds_max_merged = maximum(bounds_max, bounds_max_merged);
+            if (normalization_matrix.has_value()) {
+                linfo() << "merged bounds";
+                linfo() << "min lat " << std::setprecision(18) << bounds_min_merged(0);
+                linfo() << "min lon " << std::setprecision(18) << bounds_min_merged(1);
+                linfo() << "max lat " << std::setprecision(18) << bounds_max_merged(0);
+                linfo() << "max lon " << std::setprecision(18) << bounds_max_merged(1);
+            }
             auto coords_ref = (bounds_min_merged + bounds_max_merged) / 2.0;
             auto m = latitude_longitude_2_meters_mapping(
                 coords_ref(0),
@@ -84,19 +93,11 @@ void Mlib::parse_osm_xml(
             normalized_points.set_min(min);
             normalized_points.set_max(max);
             normalization_matrix = normalized_points.normalization_matrix() * m;
-            if (normalization_matrix_defined) {
-                linfo() << "merged bounds";
-                linfo() << "min lat " << std::setprecision(18) << bounds_min_merged(0);
-                linfo() << "min lon " << std::setprecision(18) << bounds_min_merged(1);
-                linfo() << "max lat " << std::setprecision(18) << bounds_max_merged(0);
-                linfo() << "max lon " << std::setprecision(18) << bounds_max_merged(1);
-            }
-            normalization_matrix_defined = true;
         } else if (Mlib::re::regex_match(line, match, node_reg)) {
             current_way = "<none>";
             std::string action = match[2].str();
             std::string visible = match[3].str();
-            if (!normalization_matrix_defined) {
+            if (!normalization_matrix.has_value()) {
                 THROW_OR_ABORT("Normalization-matrix undefined, bounds-section?");
             }
             if ((action != "delete") && (visible == "true")) {
@@ -109,7 +110,7 @@ void Mlib::parse_osm_xml(
                 current_node_position = FixedArray<double, 2>{
                     safe_stod(lat),
                     safe_stod(lon)};
-                auto pos = normalization_matrix.transform(current_node_position).casted<CompressedScenePos>();
+                auto pos = normalization_matrix->transform(current_node_position).casted<CompressedScenePos>();
                 auto opos = OrderableFixedArray<CompressedScenePos, 2>{ pos };
                 auto it = ordered_node_positions.find(opos);
                 if (it != ordered_node_positions.end()) {
