@@ -38,7 +38,7 @@ void Mlib::calculate_terrain_spawn_points(
                 }
                 dir /= std::sqrt(len2);
                 CompressedScenePos height;
-                if (!ground_bvh.height(height, p)) {
+                if (!ground_bvh.max_height(height, p)) {
                     throw PointException{ p, "Spawn line out of bounds" };
                 }
                 auto p3 = FixedArray<CompressedScenePos, 3>{p(0), p(1), height};

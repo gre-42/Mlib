@@ -48,7 +48,7 @@ void Mlib::draw_waysides(
             auto yangle = (float)std::atan2(d3(1), d3(0));
 
             CompressedScenePos height;
-            if (ground_bvh.height(height, p2_shifted)) {
+            if (ground_bvh.max_height(height, p2_shifted)) {
                 auto add_prn = [&](){
                     if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
                         bri.add_parsed_resource_name(p2_shifted, height, *prn, yangle, scale_rng());

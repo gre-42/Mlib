@@ -97,19 +97,25 @@ bool GroundTriangle3dAndMaterial::height(
     return false;
 }
 
-bool GroundBvh::height(
+bool GroundBvh::max_height(
     CompressedScenePos& height,
     const FixedArray<CompressedScenePos, 2>& pt) const
 {
-    return !bvh_.visit(
+    height = std::numeric_limits<CompressedScenePos>::lowest();
+    bvh_.visit(
         IntersectablePoint{ pt },
         [&](const GroundTriangle3dAndMaterial& t)
     {
         if (any(t.physics_material & PhysicsMaterial::OBJ_WAY_AIR_SUPPORT)) {
             return true;
         }
-        return !t.height(height, pt);
+        CompressedScenePos h;
+        if (t.height(h, pt)) {
+            height = max(height, h);
+        }
+        return true;
     });
+    return (height != std::numeric_limits<CompressedScenePos>::lowest());
 }
 
 bool GroundBvh::height3d(
@@ -145,16 +151,16 @@ bool GroundBvh::gradient(
 {
     FixedArray<CompressedScenePos, 2, 2> positions = uninitialized;
     auto z0 = (CompressedScenePos)0.f;
-    if (!height(positions(0, 0), pt + FixedArray<CompressedScenePos, 2>{ -dx, z0 })) {
+    if (!max_height(positions(0, 0), pt + FixedArray<CompressedScenePos, 2>{ -dx, z0 })) {
         return false;
     }
-    if (!height(positions(0, 1), pt + FixedArray<CompressedScenePos, 2>{ dx, z0 })) {
+    if (!max_height(positions(0, 1), pt + FixedArray<CompressedScenePos, 2>{ dx, z0 })) {
         return false;
     }
-    if (!height(positions(1, 0), pt + FixedArray<CompressedScenePos, 2>{ z0, -dx })) {
+    if (!max_height(positions(1, 0), pt + FixedArray<CompressedScenePos, 2>{ z0, -dx })) {
         return false;
     }
-    if (!height(positions(1, 1), pt + FixedArray<CompressedScenePos, 2>{ z0, dx })) {
+    if (!max_height(positions(1, 1), pt + FixedArray<CompressedScenePos, 2>{ z0, dx })) {
         return false;
     }
     grad(0) = funpack(positions(0, 1) - positions(0, 0)) / (2. * funpack(dx));

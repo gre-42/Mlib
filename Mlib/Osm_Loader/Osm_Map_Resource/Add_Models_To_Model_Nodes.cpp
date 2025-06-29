@@ -110,7 +110,7 @@ void Mlib::add_models_to_model_nodes(
                 }
             }
             CompressedScenePos height;
-            if (ground_bvh.height(height, node.position)) {
+            if (ground_bvh.max_height(height, node.position)) {
                 bri.add_parsed_resource_name(
                     node.position,
                     height,

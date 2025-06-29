@@ -570,6 +570,7 @@ std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::t
 std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_ground_bvh() const {
     auto res = tls_smooth();
     res.push_back(tl_air_support);
+    for (const auto& [_, e] : tl_water.map()) {res.push_back(e);}
     return res;
 }
 

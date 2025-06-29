@@ -33,7 +33,7 @@ void Mlib::generate_racing_line_playback(
     for (const auto& row : mat) {
         auto pos = normalization_matrix.transform(FixedArray<double, 2>{ row(LAT), row(LON) }).casted<CompressedScenePos>();
         CompressedScenePos height;
-        if (!ground_bvh.height(height, pos)) {
+        if (!ground_bvh.max_height(height, pos)) {
             THROW_OR_ABORT("Could not find height for point on racing line");
         }
         auto xpos = geographic_mapping.transform(FixedArray<CompressedScenePos, 3>{pos(0), pos(1), height}.casted<ScenePos>());

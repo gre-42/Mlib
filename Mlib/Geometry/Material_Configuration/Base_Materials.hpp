@@ -19,6 +19,7 @@ static const auto BASE_VISIBLE_AIR_SUPPORT_MATERIAL =
     PhysicsMaterial::OBJ_WAY_AIR_SUPPORT;
 
 static const auto META_WATER_MATERIAL =
+    PhysicsMaterial::OBJ_CHASSIS |
     PhysicsMaterial::ATTR_COLLIDE |
     PhysicsMaterial::ATTR_CONCAVE |
     PhysicsMaterial::ATTR_LIQUID |

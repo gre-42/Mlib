@@ -80,7 +80,7 @@ void Mlib::calculate_waypoint_adjacency(
                 adjacency_id.second };
         } else {
             CompressedScenePos height;
-            if (ground_bvh.height(height, p2)) {
+            if (ground_bvh.max_height(height, p2)) {
                 if (hwr.has_value()) {
                     if (hwr.value().reference != HeightReference::GROUND) {
                         THROW_OR_ABORT(osm_id + ": Unknown height reference, expected \"ground\"");

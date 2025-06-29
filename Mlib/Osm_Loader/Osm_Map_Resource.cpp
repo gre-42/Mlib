@@ -1157,6 +1157,88 @@ OsmMapResource::OsmMapResource(
         osm_triangle_lists.insert(air_triangle_lists);
     }
 
+    if (config.water.has_value() && config.water->generate_tiles) {
+        std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
+            get_water_region_contours(nodes, ways);
+        if (config.water->holes_from_terrain) {
+            auto lst = osm_triangle_lists.tls_wo_subtraction_and_water();
+            for (const auto& l : tls_buildings) {
+                if (l->morphology.center_distances2(1) == INFINITY) {
+                    lst.push_back(l);
+                }
+            }
+            try {
+                find_coast_contours(
+                    water_contours,
+                    lst,
+                    config.water->heights);
+            } catch (const EdgeException<CompressedScenePos>& e) {
+                if (auto fn = try_getenv("OSM_WATER_TERRAIN_FILENAME"); fn.has_value()) {
+                    save_obj(*fn, lst, {}, {});
+                    handle_edge_exception(e, "Could find coast contour, debug image saved");
+                } else {
+                    handle_edge_exception(e, "Could find coast contour, consider setting the \"OSM_WATER_TERRAIN_FILENAME\" variable");
+                }
+            }
+        }
+        std::list<SteinerPointInfo> water_steiner_points;
+        if (all(config.water->cell_size != (CompressedScenePos)0.f)) {
+            add_water_steiner_points(
+                water_steiner_points,
+                water_contours,
+                config.water->aabb,
+                config.water->cell_size,
+                config.water->yangle,
+                config.water->duplicate_distance,
+                config.water->heights(1));
+        }
+        fg.update("Triangulate water");
+        try {
+            triangulate_water(
+                osm_triangle_lists.tl_water,
+                BoundingInfo{
+                    config.water->aabb.min,
+                    config.water->aabb.max,
+                    (CompressedScenePos)100.f,
+                    (CompressedScenePos)500.f},
+                water_steiner_points,
+                {},                     // bounding_contour
+                {},                     // hole_triangles
+                water_contours,
+                config.scale,
+                config.triangulation_scale,
+                1 / 100.f,              // uv_scale
+                1.f,                    // uv_period
+                config.water->heights(1),
+                terrain_color,
+                getenv_default("WATER_CONTOUR_TRIANGLES_FILENAME", ""),
+                getenv_default("WATER_CONTOUR_FILENAME", ""),
+                getenv_default("WATER_TRIANGLE_FILENAME", ""),
+                WaterType::UNDEFINED,
+                WaterType::UNDEFINED,
+                config.contour_detection_strategy);
+        } catch (const PointException<CompressedScenePos, 2>& e) {
+            handle_point_exception2(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const p2t::PointException& e) {
+            handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const EdgeException<CompressedScenePos>& e) {
+            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const EdgeException<double>& e) {
+            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const p2t::EdgeException& e) {
+            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        } catch (const TriangleException<CompressedScenePos>& e) {
+            handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        }
+        if (config.water->coast.width != (CompressedScenePos)0.f) {
+            set_water_alpha(
+                osm_triangle_lists.tl_water,
+                water_contours,
+                (CompressedScenePos)(3. * std::sqrt(sum(squared(config.water->cell_size)))),
+                config.water->coast.width);
+        }
+    }
+
     std::unique_ptr<GroundBvh> ground_bvh;
     {
         fg.update("Compute ground BVH");
@@ -1433,90 +1515,7 @@ OsmMapResource::OsmMapResource(
     }
 
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_all;
-    if (config.water.has_value() && config.water->generate_tiles) {
-        std::list<RegionWithMargin<WaterType, std::list<FixedArray<CompressedScenePos, 2>>>> water_contours =
-            get_water_region_contours(nodes, ways);
-        if (config.water->holes_from_terrain) {
-            auto lst = osm_triangle_lists.tls_wo_subtraction_and_water();
-            for (const auto& l : tls_buildings) {
-                if (l->morphology.center_distances2(1) == INFINITY) {
-                    lst.push_back(l);
-                }
-            }
-            try {
-                find_coast_contours(
-                    water_contours,
-                    lst,
-                    config.water->heights);
-            } catch (const EdgeException<CompressedScenePos>& e) {
-                if (auto fn = try_getenv("OSM_WATER_TERRAIN_FILENAME"); fn.has_value()) {
-                    save_obj(*fn, lst, {}, {});
-                    handle_edge_exception(e, "Could find coast contour, debug image saved");
-                } else {
-                    handle_edge_exception(e, "Could find coast contour, consider setting the \"OSM_WATER_TERRAIN_FILENAME\" variable");
-                }
-            }
-        }
-        std::list<SteinerPointInfo> water_steiner_points;
-        if (all(config.water->cell_size != (CompressedScenePos)0.f)) {
-            add_water_steiner_points(
-                water_steiner_points,
-                water_contours,
-                config.water->aabb,
-                config.water->cell_size,
-                config.water->yangle,
-                config.water->duplicate_distance,
-                config.water->heights(1));
-        }
-        fg.update("Triangulate water");
-        try {
-            triangulate_water(
-                osm_triangle_lists.tl_water,
-                BoundingInfo{
-                    config.water->aabb.min,
-                    config.water->aabb.max,
-                    (CompressedScenePos)100.f,
-                    (CompressedScenePos)500.f},
-                water_steiner_points,
-                {},                     // bounding_contour
-                {},                     // hole_triangles
-                water_contours,
-                config.scale,
-                config.triangulation_scale,
-                1 / 100.f,              // uv_scale
-                1.f,                    // uv_period
-                config.water->heights(1),
-                terrain_color,
-                getenv_default("WATER_CONTOUR_TRIANGLES_FILENAME", ""),
-                getenv_default("WATER_CONTOUR_FILENAME", ""),
-                getenv_default("WATER_TRIANGLE_FILENAME", ""),
-                WaterType::UNDEFINED,
-                WaterType::UNDEFINED,
-                config.contour_detection_strategy);
-        } catch (const PointException<CompressedScenePos, 2>& e) {
-            handle_point_exception2(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const p2t::PointException& e) {
-            handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const EdgeException<CompressedScenePos>& e) {
-            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const EdgeException<double>& e) {
-            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const p2t::EdgeException& e) {
-            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        } catch (const TriangleException<CompressedScenePos>& e) {
-            handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR_TRIANGLES|CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
-        }
-        if (config.water->coast.width != (CompressedScenePos)0.f) {
-            set_water_alpha(
-                osm_triangle_lists.tl_water,
-                water_contours,
-                (CompressedScenePos)(3. * std::sqrt(sum(squared(config.water->cell_size)))),
-                config.water->coast.width);
-        }
-        tls_all = osm_triangle_lists.tls_wo_subtraction_w_water();
-    } else {
-        tls_all = osm_triangle_lists.tls_wo_subtraction_and_water();
-    }
+    tls_all = osm_triangle_lists.tls_wo_subtraction_w_water();
     for (const auto& l : tls_buildings) {
         if (l->triangles.empty()) {
             THROW_OR_ABORT("Building \"" + l->name.full_name() + "\" has no triangles");

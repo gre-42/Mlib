@@ -35,7 +35,7 @@ public:
     explicit GroundBvh(const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& triangles);
     explicit GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas);
     ~GroundBvh();
-    bool height(CompressedScenePos& height, const FixedArray<CompressedScenePos, 2>& pt) const;
+    bool max_height(CompressedScenePos& height, const FixedArray<CompressedScenePos, 2>& pt) const;
     bool height3d(CompressedScenePos& height, const FixedArray<CompressedScenePos, 3>& pt) const;
     bool gradient(
         FixedArray<double, 2>& grad,

@@ -56,7 +56,7 @@ void Mlib::add_trees_to_zonemap(
             }
             if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(pos, (CompressedScenePos)(min_dist_to_road * position_scale))) {
                 CompressedScenePos height;
-                if (ground_bvh.height(height, pos) && (height > min_height * position_scale)) {
+                if (ground_bvh.max_height(height, pos) && (height > min_height * position_scale)) {
                     if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
                         bri.add_parsed_resource_name(pos, height, *prn, 0.f, scale_rng());
                     }
