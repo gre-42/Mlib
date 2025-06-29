@@ -1233,7 +1233,7 @@ OsmMapResource::OsmMapResource(
                 tls_bridge_piers,
                 Material{
                     .textures_color = std::move(textures_color),
-                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
+                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES,
                     .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                     .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
                     .draw_distance_noperations = 1000}.compute_color_mode(),
