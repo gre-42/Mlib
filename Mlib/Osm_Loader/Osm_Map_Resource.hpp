@@ -130,6 +130,7 @@ private:
     void handle_edge_exception(const EdgeException<double>& e, const std::string& message) const;
     void handle_edge_exception(const p2t::EdgeException& e, const std::string& message) const;
     void handle_triangle_exception(const TriangleException<CompressedScenePos>& e, const std::string& message) const;
+    void handle_triangle_exception(const TriangleException<ScenePos>& e, const std::string& message) const;
 
     TerrainTriangles terrain_triangles() const;
     std::list<const UUList<FixedArray<ColoredVertex<CompressedScenePos>, 3>>*> no_grass() const;

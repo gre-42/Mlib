@@ -31,6 +31,8 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"obj_hitbox", PhysicsMaterial::OBJ_HITBOX},
         {"obj_distancebox", PhysicsMaterial::OBJ_DISTANCEBOX},
         {"obj_grass", PhysicsMaterial::OBJ_GRASS},
+        {"obj_ground", PhysicsMaterial::OBJ_GROUND},
+        {"obj_way_air_support", PhysicsMaterial::OBJ_WAY_AIR_SUPPORT},
         {"surface_base_tarmac", PhysicsMaterial::SURFACE_BASE_TARMAC},
         {"surface_base_gravel", PhysicsMaterial::SURFACE_BASE_GRAVEL},
         {"surface_base_snow", PhysicsMaterial::SURFACE_BASE_SNOW},
@@ -87,6 +89,8 @@ static std::string physics_material_modifiers_to_string(PhysicsMaterial p) {
         { PhysicsMaterial::OBJ_HITBOX, "obj_hitbox" },
         { PhysicsMaterial::OBJ_DISTANCEBOX, "obj_distancebox" },
         { PhysicsMaterial::OBJ_GRASS, "obj_grass" },
+        { PhysicsMaterial::OBJ_GROUND, "obj_ground" },
+        { PhysicsMaterial::OBJ_WAY_AIR_SUPPORT, "obj_way_air_support" },
         { PhysicsMaterial::SURFACE_WET, "surface_wet" }
     };
     std::string result;

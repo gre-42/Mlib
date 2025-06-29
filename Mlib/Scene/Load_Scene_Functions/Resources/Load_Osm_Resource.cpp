@@ -117,6 +117,9 @@ DECLARE_ARGUMENT(roof_texture);
 DECLARE_ARGUMENT(roof_rail_texture);
 DECLARE_ARGUMENT(default_roof_9_2_max_building_height);
 DECLARE_ARGUMENT(default_roof_9_2);
+DECLARE_ARGUMENT(bridge_pier_model);
+DECLARE_ARGUMENT(bridge_pier_radius);
+DECLARE_ARGUMENT(bridge_pier_textures);
 DECLARE_ARGUMENT(tunnel_pipe_texture);
 DECLARE_ARGUMENT(tunnel_pipe_resource_name);
 DECLARE_ARGUMENT(tunnel_bdry_resource_name);
@@ -637,6 +640,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::default_roof_9_2_max_building_height)) {
             config.default_roof_9_2_max_building_height = args.arguments.at<float>(KnownArgs::default_roof_9_2_max_building_height);
+        }
+        if (args.arguments.contains(KnownArgs::bridge_pier_model)) {
+            config.bridge_pier_model = args.arguments.at<std::string>(KnownArgs::bridge_pier_model);
+        }
+        if (args.arguments.contains(KnownArgs::bridge_pier_radius)) {
+            config.bridge_pier_radius = args.arguments.at<SceneDir>(KnownArgs::bridge_pier_radius);
+        }
+        if (args.arguments.contains(KnownArgs::bridge_pier_textures)) {
+            config.bridge_pier_textures = fpathps(KnownArgs::bridge_pier_textures);
         }
         if (args.arguments.contains(KnownArgs::tunnel_pipe_texture)) {
             config.tunnel_pipe_texture = args.arguments.path_or_variable(KnownArgs::tunnel_pipe_texture).path;

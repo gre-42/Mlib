@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-static const size_t SURFACE_BASE_OFFSET = 22;
+static const size_t SURFACE_BASE_OFFSET = 24;
 static const size_t SURFACE_BASE_NBITS = 4;
 static const size_t SURFACE_NBITS = SURFACE_BASE_NBITS + 1;
 
@@ -33,6 +33,8 @@ enum class PhysicsMaterial: uint32_t {
     OBJ_HITBOX                  = (1 << 19),
     OBJ_DISTANCEBOX             = (1 << 20),
     OBJ_GRASS                   = (1 << 21),
+    OBJ_GROUND                  = (1 << 22),
+    OBJ_WAY_AIR_SUPPORT         = (1 << 23),
     SURFACE_BASE_TARMAC         = (1 << SURFACE_BASE_OFFSET),       //    1
     SURFACE_BASE_GRAVEL         = (2 << SURFACE_BASE_OFFSET),       //   10
     SURFACE_BASE_SNOW           = (3 << SURFACE_BASE_OFFSET),       //   11

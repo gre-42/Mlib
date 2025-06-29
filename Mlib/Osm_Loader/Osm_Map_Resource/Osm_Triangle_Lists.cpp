@@ -156,7 +156,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_meta_material(config.terrain_materials, tt) }));
+            Morphology{ .physics_material = BASE_VISIBLE_GROUND_MATERIAL | physics_meta_material(config.terrain_materials, tt) }));
         tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + "_visuals" + name_suffix,
             Material{
@@ -184,7 +184,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_meta_material(config.terrain_materials, tt) }));
+            Morphology{ .physics_material = BASE_VISIBLE_GROUND_MATERIAL | physics_meta_material(config.terrain_materials, tt) }));
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
@@ -409,7 +409,7 @@ OsmTriangleLists::OsmTriangleLists(
             .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
+        Morphology{ .physics_material = BASE_VISIBLE_AIR_SUPPORT_MATERIAL });
     tl_tunnel_crossing = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_crossing" + name_suffix,
         Material{
@@ -564,6 +564,12 @@ std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::t
     for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_air_street_curb.map()) {res.push_back(e);}
     res.insert(res.end(), tls_buildings_ground.begin(), tls_buildings_ground.end());
+    return res;
+}
+
+std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> OsmTriangleLists::tls_ground_bvh() const {
+    auto res = tls_smooth();
+    res.push_back(tl_air_support);
     return res;
 }
 

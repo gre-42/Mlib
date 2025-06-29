@@ -33,6 +33,7 @@
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Navigation/NavigationMeshBuilder.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Bridge_Piers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Models_To_Model_Nodes.hpp>
@@ -47,6 +48,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Street_Spawn_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Terrain_Spawn_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Colorize_Triangles_By_Physics_Material.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Boundary_Barriers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
@@ -197,6 +199,7 @@ OsmMapResource::OsmMapResource(
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_buildings;
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_wall_barriers;
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_bridge_piers;
     std::map<OrderableFixedArray<CompressedScenePos, 2>, NodeHeightBinding> node_height_bindings;
     std::unordered_map<FixedArray<CompressedScenePos, 3>*, VertexHeightBinding<CompressedScenePos>> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
@@ -1148,7 +1151,7 @@ OsmMapResource::OsmMapResource(
     std::unique_ptr<GroundBvh> ground_bvh;
     {
         fg.update("Compute ground BVH");
-        auto ground_bvh_triangles = osm_triangle_lists.tls_smooth();
+        auto ground_bvh_triangles = osm_triangle_lists.tls_ground_bvh();
         if (config.with_terrain) {
             if (!config.base_osm_map_resource->empty()) {
                 THROW_OR_ABORT("Terrain already set, cannot inherit from base OSM map");
@@ -1210,6 +1213,40 @@ OsmMapResource::OsmMapResource(
             } else {
                 handle_triangle_exception(e, "add models failed, consider setting the 'EXCEPT_MESH_AROUND_PREFIX' environment variable");
             }
+        }
+    }
+
+    if (!config.bridge_pier_model->empty()) {
+        fg.update("Add bridge piers");
+        if (config.bridge_pier_textures.empty()) {
+            THROW_OR_ABORT("Bridge pier texture not set");
+        }
+        std::vector<BlendMapTexture> textures_color;
+        textures_color.reserve(config.bridge_pier_textures.size());
+        auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+        for (const auto& t : config.bridge_pier_textures) {
+            BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
+            textures_color.push_back(bt);
+        }
+        try {
+            add_bridge_piers(
+                tls_bridge_piers,
+                Material{
+                    .textures_color = std::move(textures_color),
+                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
+                    .aggregate_mode = AggregateMode::NODE_TRIANGLES,
+                    .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
+                    .draw_distance_noperations = 1000}.compute_color_mode(),
+                config.bridge_pier_radius,
+                scene_node_resources,
+                config.bridge_pier_model,
+                *ground_bvh,
+                nodes,
+                ways);
+        } catch (const TriangleException<CompressedScenePos>& e) {
+            handle_triangle_exception(e, "add bridge piers failed");
+        } catch (const TriangleException<ScenePos>& e) {
+            handle_triangle_exception(e, "add bridge piers failed");
         }
     }
 
@@ -1479,7 +1516,8 @@ OsmMapResource::OsmMapResource(
     }
     for (const auto& l : std::list<const std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>*>{
             &tls_all,
-            &tls_wall_barriers })
+            &tls_wall_barriers,
+            &tls_bridge_piers })
     {
         for (const auto& l2 : *l) {
             if (!l2->triangles.empty()) {
@@ -1709,6 +1747,7 @@ OsmMapResource::OsmMapResource(
     }
     fg.update("Print waypoints if requested");
     print_waypoints_if_requested(debug_prefix);
+    // colorize_triangles_by_physics_material(hri_.acvas->dcvas);
 }
 
 OsmMapResource::OsmMapResource(
@@ -2210,6 +2249,14 @@ void OsmMapResource::handle_edge_exception(
 
 void OsmMapResource::handle_triangle_exception(
     const TriangleException<CompressedScenePos>& e,
+    const std::string& message) const
+{
+    auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
+    throw std::runtime_error(e.str(message, &m));
+}
+
+void OsmMapResource::handle_triangle_exception(
+    const TriangleException<ScenePos>& e,
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());

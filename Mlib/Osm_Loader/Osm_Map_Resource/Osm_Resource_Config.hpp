@@ -176,6 +176,9 @@ struct OsmResourceConfig {
     float default_roof_9_2_max_building_height = INFINITY * meters;
     std::optional<Roof9_2> default_roof_9_2;
     VariableAndHash<std::string> roof_model;
+    VariableAndHash<std::string> bridge_pier_model;
+    SceneDir bridge_pier_radius = 1.5f;
+    std::vector<VariableAndHash<std::string>> bridge_pier_textures;
     bool with_roofs = true;
     bool with_ceilings = false;
     float building_bottom = -3;

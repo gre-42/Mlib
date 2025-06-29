@@ -2111,7 +2111,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
                     .rendering_resources = options.rendering_resources,
                     .imposters = options.imposters,
                     .instantiated_nodes = options.instantiated_nodes,
-                    .instance_name = VariableAndHash<std::string>{ "building_cluster_" + std::to_string(i) },
+                    .instance_name = VariableAndHash<std::string>{ *options.instance_name + "_cluster_" + std::to_string(i) },
                     .absolute_model_matrix = trafo,
                     .scene = options.scene,
                     .max_imposter_texture_size = options.max_imposter_texture_size,

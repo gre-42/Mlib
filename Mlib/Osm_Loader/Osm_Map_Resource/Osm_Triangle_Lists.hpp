@@ -91,6 +91,7 @@ struct OsmTriangleLists {
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_raised() const;
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_smoothed() const;
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_smooth() const;
+    std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_ground_bvh() const;
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_no_backfaces() const;
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_with_vertex_normals() const;
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>> tls_no_grass() const;
