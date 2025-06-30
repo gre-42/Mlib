@@ -34,7 +34,6 @@ DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(skills);
 DECLARE_ARGUMENT(controller);
 DECLARE_ARGUMENT(spawn);
-DECLARE_ARGUMENT(game_mode);
 DECLARE_ARGUMENT(player_role);
 DECLARE_ARGUMENT(unstuck_mode);
 DECLARE_ARGUMENT(behavior);
@@ -177,7 +176,6 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {"asset_id", vehicle_name},
                     {"spawn_group", spawn_group},
                     {"team", team},
-                    {"game_mode", get(PlayerKeys::game_mode).get<std::string>()},
                     {"player_role", get(PlayerKeys::player_role).get<std::string>()},
                     {"initial_behavior", get(PlayerKeys::behavior).get<std::string>()},
                     {"seat", get(PlayerKeys::seat).get<std::string>()},

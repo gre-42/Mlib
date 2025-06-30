@@ -29,6 +29,14 @@ enum class SpawnVehicleAlreadySetBehavior {
 
 SpawnVehicleAlreadySetBehavior spawn_vehicle_already_set_behavior_from_string(const std::string& s);
 
+enum class SpawnTrigger {
+    NONE,
+    BYSTANDERS,
+    TEAM_DEATHMATCH
+};
+
+SpawnTrigger spawn_trigger_from_string(const std::string& s);
+
 class VehicleSpawner final : public ISpawner, public virtual DanglingBaseClass {
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
@@ -42,7 +50,8 @@ public:
         Scene& scene,
         std::string suffix,
         std::string team_name,
-        std::string group_name);
+        std::string group_name,
+        SpawnTrigger spawn_trigger);
     ~VehicleSpawner();
 
     // ISpawner
@@ -80,6 +89,8 @@ public:
     bool get_spotted_by_vip() const;
     void set_spotted_by_vip();
 
+    SpawnTrigger get_spawn_trigger() const;
+
     void advance_time(float dt);
 private:
     void notify_spawn();
@@ -92,6 +103,7 @@ private:
     std::string suffix_;
     std::string team_name_;
     std::string group_name_;
+    SpawnTrigger spawn_trigger_;
     float time_since_spawn_;
     float time_since_deletion_;
     bool spotted_by_vip_;

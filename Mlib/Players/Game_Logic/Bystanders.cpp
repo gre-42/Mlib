@@ -57,31 +57,31 @@ bool Bystanders::spawn_for_vip(
     std::vector<SpawnPointAndDistance> neighboring_spawn_points;
     neighboring_spawn_points.reserve(1000);
     spawner_.spawn_points_bvh_split_.at(current_bvh_)->visit(
-            AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
-                    vip_pos.casted<CompressedScenePos>(),
-                    cfg_.r_spawn_far),
-            [&](const SpawnPoint* sp)
-            {
-                if (spawner.has_player()) {
-                    if ((sp->type == SpawnPointType::PARKING) != spawner.get_player()->is_parking()) {
-                        return true;
-                    }
-                    if ((sp->location == WayPointLocation::SIDEWALK) != spawner.get_player()->is_pedestrian()) {
-                        return true;
-                    }
-                }
-                ScenePos dist2 = sum(squared(funpack(sp->trafo.t) - vip_pos));
-                // Abort if too far away.
-                if (dist2 > squared(cfg_.r_spawn_far)) {
+        AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
+                vip_pos.casted<CompressedScenePos>(),
+                cfg_.r_spawn_far),
+        [&](const SpawnPoint* sp)
+        {
+            if (spawner.has_player()) {
+                if ((sp->type == SpawnPointType::PARKING) != spawner.get_player()->is_parking()) {
                     return true;
                 }
-                // Abort if behind car.
-                if (dot0d(funpack(sp->trafo.t) - vip_pos, vip_z.casted<ScenePos>()) > 0) {
+                if ((sp->location == WayPointLocation::SIDEWALK) != spawner.get_player()->is_pedestrian()) {
                     return true;
                 }
-                neighboring_spawn_points.emplace_back(sp, dist2);
+            }
+            ScenePos dist2 = sum(squared(funpack(sp->trafo.t) - vip_pos));
+            // Abort if too far away.
+            if (dist2 > squared(cfg_.r_spawn_far)) {
                 return true;
-                });
+            }
+            // Abort if behind car.
+            if (dot0d(funpack(sp->trafo.t) - vip_pos, vip_z.casted<ScenePos>()) > 0) {
+                return true;
+            }
+            neighboring_spawn_points.emplace_back(sp, dist2);
+            return true;
+            });
     std::shuffle(neighboring_spawn_points.begin(), neighboring_spawn_points.end(), spawn_point_rng_);
     bool success = false;
     for (size_t i = 0; i < std::min(cfg_.spawn_points_visited_max, neighboring_spawn_points.size()); ++i) {
@@ -220,13 +220,17 @@ void Bystanders::handle_bystanders() {
     using players_map_difference_type = decltype(vehicle_spawners_.spawners().begin())::difference_type;
     std::advance(it, integral_cast<players_map_difference_type>(current_bystander_rng_() % vehicle_spawners_.spawners().size()));
     auto handle_bystander = [&](VehicleSpawner& spawner) {
+        if (spawner.get_spawn_trigger() != SpawnTrigger::BYSTANDERS) {
+            return;
+        }
         if (spawner.has_player()) {
             auto player = spawner.get_player();
             if (spawner.has_player() && (&player.get() == vip_.get())) {
                 return;
             }
             if (player->player_role() != PlayerRole::BYSTANDER) {
-                return;
+                // return;
+                THROW_OR_ABORT("Spawn trigger is \"bystanders\", but player role is not");
             }
         }
         if (!spawner.has_scene_vehicle()) {

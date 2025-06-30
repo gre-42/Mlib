@@ -24,17 +24,32 @@ SpawnVehicleAlreadySetBehavior Mlib::spawn_vehicle_already_set_behavior_from_str
     return it->second;
 }
 
+SpawnTrigger Mlib::spawn_trigger_from_string(const std::string& s) {
+    static const std::map<std::string, SpawnTrigger> m{
+        {"none", SpawnTrigger::NONE},
+        {"bystanders", SpawnTrigger::BYSTANDERS},
+        {"team_deathmatch", SpawnTrigger::TEAM_DEATHMATCH}
+    };
+    auto it = m.find(s);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown SpawnTrigger: \"" + s + '"');
+    }
+    return it->second;
+}
+
 VehicleSpawner::VehicleSpawner(
     Scene& scene,
     std::string suffix,
     std::string team_name,
-    std::string group_name)
+    std::string group_name,
+    SpawnTrigger spawn_trigger)
     : scene_{ scene }
     , player_{ nullptr }
     , on_player_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
     , suffix_{ std::move(suffix) }
     , team_name_{ std::move(team_name) }
     , group_name_{ std::move(group_name) }
+    , spawn_trigger_{ spawn_trigger }
     , time_since_spawn_{ NAN }
     , time_since_deletion_{ 0.f }
     , spotted_by_vip_{ false }
@@ -243,6 +258,10 @@ bool VehicleSpawner::get_spotted_by_vip() const {
 void VehicleSpawner::set_spotted_by_vip() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     spotted_by_vip_ = true;
+}
+
+SpawnTrigger VehicleSpawner::get_spawn_trigger() const {
+    return spawn_trigger_;
 }
 
 void VehicleSpawner::advance_time(float dt) {
