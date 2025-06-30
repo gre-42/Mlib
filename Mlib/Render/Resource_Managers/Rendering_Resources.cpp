@@ -1197,6 +1197,7 @@ TextureDescriptor RenderingResources::get_texture_descriptor(const VariableAndHa
                 .filename = name,
                 .color_mode = it->color_mode,
                 .mipmap_mode = it->mipmap_mode,
+                .magnifying_interpolation_mode = it->magnifying_interpolation_mode,
                 .depth_interpolation = it->depth_interpolation,
             }.compute_hash()
         };
@@ -1352,6 +1353,10 @@ std::map<ColormapWithModifiers, ManualUvTile> RenderingResources::generate_manua
     ManualTextureAtlasDescriptor tad{
         .width = 0,
         .height = 0,
+        .nlayers = 1,
+        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+        .magnifying_interpolation_mode = InterpolationMode::LINEAR,
+        .depth_interpolation = InterpolationMode::NEAREST,
         .color_mode = ColorMode::RGBA,
         .tiles = {}
     };
@@ -1507,6 +1512,7 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const VariableAndHash<
                 .filename = name,
                 .color_mode = mit->color_mode,
                 .mipmap_mode = mit->mipmap_mode,
+                .magnifying_interpolation_mode = mit->magnifying_interpolation_mode,
                 .depth_interpolation = mit->depth_interpolation}.compute_hash()}};
     }
     {

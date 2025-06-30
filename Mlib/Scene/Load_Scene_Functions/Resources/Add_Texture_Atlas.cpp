@@ -19,6 +19,7 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(width);
 DECLARE_ARGUMENT(height);
 DECLARE_ARGUMENT(layers);
+DECLARE_ARGUMENT(magnifying_interpolation_mode);
 DECLARE_ARGUMENT(depth_interpolation);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(mipmap_mode);
@@ -78,6 +79,7 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
             .height = args.arguments.at<int>(KnownArgs::height),
             .nlayers = args.arguments.at<size_t>(KnownArgs::layers, 1),
             .mipmap_mode = mipmap_mode,
+            .magnifying_interpolation_mode = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::magnifying_interpolation_mode, "linear")),
             .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
             .color_mode = color_mode,
             .tiles = tiles});

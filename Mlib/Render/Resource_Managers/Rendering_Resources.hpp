@@ -92,6 +92,7 @@ struct ManualTextureAtlasDescriptor {
     int height;
     size_t nlayers;
     MipmapMode mipmap_mode;
+    InterpolationMode magnifying_interpolation_mode;
     InterpolationMode depth_interpolation;
     ColorMode color_mode;
     std::vector<ManualAtlasTileDescriptor> tiles;
