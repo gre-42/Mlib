@@ -125,11 +125,12 @@ void Spawner::respawn_all_players() {
             if (occupied_spawn_points.contains(sp)) {
                 continue;
             }
-            // lerr() << "Spawning \"" << pit->first << "\" with team \"" << pit->second->get_team_name() << '"'";
+            // lerr() << "Spawning \"" << name << "\" with team \"" << spawner->get_team_name() << '"';
             if (!try_spawn_at_spawn_point(*spawner, sp->trafo)) {
                 THROW_OR_ABORT("Could not spawn \"" + name + "\" with team \"" + spawner->get_team_name() + '"');
             }
             occupied_spawn_points.insert(sp);
+            break;
         }
     }
 }

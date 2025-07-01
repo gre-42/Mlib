@@ -185,19 +185,19 @@ bool VehicleSpawner::try_spawn(
 {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (!try_spawn_vehicle_) {
-        THROW_OR_ABORT("Vehicle spawner not initialized");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Vehicle spawner not initialized");
     }
     if (geometry.action == SpawnAction::DRY_RUN) {
         return try_spawn_vehicle_(spawn_point, geometry, nullptr);
     }
     if (geometry.action != SpawnAction::DO_IT) {
-        verbose_abort("Unknown spawn action: " + std::to_string((int)geometry.action));
+        verbose_abort("Spawner with suffix \"" + suffix_ + "\": Unknown spawn action: " + std::to_string((int)geometry.action));
     }
     if (has_player() && player_->has_scene_vehicle()) {
-        THROW_OR_ABORT("Player \"" + player_->id() + "\" already has a vehicle before spawning");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player \"" + player_->id() + "\" already has a vehicle before spawning");
     }
     if (!scene_vehicles_.empty()) {
-        THROW_OR_ABORT("Scene vehicles already set before spawning");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Scene vehicles already set before spawning");
     }
     auto node_args = NodeSpawnArguments{
         .suffix = suffix_,
@@ -206,18 +206,18 @@ bool VehicleSpawner::try_spawn(
     };
     if (!try_spawn_vehicle_(spawn_point, geometry, &node_args)) {
         if (!scene_vehicles_.empty()) {
-            verbose_abort("Scene vehicles set after failed spawning");
+            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Scene vehicles set after failed spawning");
         }
         if (has_player() && player_->has_scene_vehicle()) {
-            verbose_abort("Player \"" + player_->id() + "\" has a vehicle after failed spawning");
+            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Player \"" + player_->id() + "\" has a vehicle after failed spawning");
         }
         return false;
     } else {
         if (scene_vehicles_.empty()) {
-            verbose_abort("Scene vehicles not set after spawning");
+            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Scene vehicles not set after spawning");
         }
         if (has_player() && (&player_->vehicle().get() != &get_primary_scene_vehicle().get())) {
-            verbose_abort("Player vehicle not set correctly after spawning");
+            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Player vehicle not set correctly after spawning");
         }
         notify_spawn();
         return true;
