@@ -1,5 +1,5 @@
 #include "Navigate.hpp"
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
+#include <Mlib/Geometry/Graph/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 
 using namespace Mlib;

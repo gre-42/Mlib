@@ -1,6 +1,6 @@
 #include "Single_Waypoint.hpp"
 #include <Mlib/Env.hpp>
-#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
+#include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Ai/Ai_Waypoint.hpp>

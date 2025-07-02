@@ -1,5 +1,5 @@
 #include "Grid_Resource.hpp"
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

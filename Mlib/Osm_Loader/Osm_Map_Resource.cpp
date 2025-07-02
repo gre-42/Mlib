@@ -5,6 +5,8 @@
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
+#include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
+#include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Material_Configuration/Material_Colors.hpp>
@@ -15,8 +17,6 @@
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
-#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>

@@ -6,6 +6,11 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Cross.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
+#include <Mlib/Geometry/Graph/Cluster_By_Flood_Fill.hpp>
+#include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
+#include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Graph/Points_And_Adjacency_Impl.hpp>
+#include <Mlib/Geometry/Graph/Shortest_Path_Multiple_Targets.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Bvh_Grid.hpp>
 #include <Mlib/Geometry/Intersection/Caching_Bvh.hpp>
@@ -24,9 +29,6 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Height_Contours.hpp>
-#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Geometry/Mesh/Quad_Area.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
@@ -37,7 +39,6 @@
 #include <Mlib/Geometry/Polygon_3D.hpp>
 #include <Mlib/Geometry/Ray_Segment_3D.hpp>
 #include <Mlib/Geometry/Roundness_Estimator.hpp>
-#include <Mlib/Geometry/Shortest_Path_Multiple_Targets.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -836,6 +837,17 @@ void test_height_contours() {
     height_contours_by_vertex(triangles, (CompressedScenePos)0.1f);
 }
 
+void test_flood_fill() {
+    std::vector<int> points{ 0, 0, 5, 2, 2, 0, 5 };
+    auto clusters = cluster_by_flood_fill(points, [](int a, int b){ return a == b; });
+    for (const auto& [i, neighbors] : enumerate(clusters)) {
+        linfo() << "cluster " << i;
+        for (const auto& n : neighbors) {
+            linfo() << "  " << *n;
+        }
+    }
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -881,6 +893,7 @@ int main(int argc, const char** argv) {
         test_distance_polygon_aabb();
         test_plane_shift();
         test_height_contours();
+        test_flood_fill();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;

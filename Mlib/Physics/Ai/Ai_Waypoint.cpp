@@ -1,6 +1,6 @@
 #include "Ai_Waypoint.hpp"
+#include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Intersection/Ray_Sphere_Intersection.hpp>
-#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Ray_Segment_3D.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

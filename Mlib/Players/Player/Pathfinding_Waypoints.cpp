@@ -1,8 +1,8 @@
 #include "Pathfinding_Waypoints.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Env.hpp>
+#include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>

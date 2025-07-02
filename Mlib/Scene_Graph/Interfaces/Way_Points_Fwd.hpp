@@ -1,5 +1,5 @@
-#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
+#include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <Mlib/Map/Unordered_Map.hpp>
 #include <Mlib/Scene_Precision.hpp>
 

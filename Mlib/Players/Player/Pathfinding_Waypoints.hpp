@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
-#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <memory>

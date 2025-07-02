@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <algorithm>
 
 namespace Mlib {

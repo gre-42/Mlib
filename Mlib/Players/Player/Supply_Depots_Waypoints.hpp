@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
-#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
+#include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <vector>
