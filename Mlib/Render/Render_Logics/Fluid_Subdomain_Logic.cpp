@@ -275,7 +275,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     }
     rp.use();
     {
-        angle_ = std::fmod(angle_ + angular_velocity_, (float)(2 * M_PI));
+        angle_ = std::remainderf(angle_ + angular_velocity_, (float)(2 * M_PI));
         std::scoped_lock lock{ velocity_mutex_ };
         CHK(glUniform2fv(rp.inner_directional_velocity, 1, directional_velocity_.flat_begin()));
         CHK(glUniform1f(rp.inner_radial_velocity, radial_velocity_ * std::sin(angle_)));

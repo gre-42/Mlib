@@ -334,8 +334,8 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         }
     }
     rp.use();
-    inner_angle_ = std::fmod(inner_angle_ + inner_angular_velocity_, (float)(2 * M_PI));
-    wind_angle_ = std::fmod(wind_angle_ + wind_angular_velocity_, (float)(2 * M_PI));
+    inner_angle_ = std::remainderf(inner_angle_ + inner_angular_velocity_, (float)(2 * M_PI));
+    wind_angle_ = std::remainderf(wind_angle_ + wind_angular_velocity_, (float)(2 * M_PI));
     {
         std::scoped_lock lock{ inner_mutex_ };
         CHK(glUniform1f(rp.inner_pressure, inner_pressure_ * std::sin(inner_angle_)));

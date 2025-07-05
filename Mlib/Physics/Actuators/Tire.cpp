@@ -45,7 +45,7 @@ Tire::Tire(
 Tire::~Tire() = default;
 
 void Tire::advance_time(float dt) {
-    angle_x = std::fmod(angle_x + dt * angular_velocity, float(2 * M_PI));
+    angle_x = std::remainderf(angle_x + dt * angular_velocity, float(2 * M_PI));
     normal_impulse = nullptr;
 }
 
