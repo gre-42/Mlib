@@ -511,7 +511,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
                 std::sqrt(sum(squared(e->rb.rbp_.v_com_)));
             auto nf = v_total * cfg_.dt / cfg_.max_penetration;
             try {
-                g.nsubsteps = p2d.greatest_divider(float_to_integral<size_t>(std::ceil(nf)));
+                g.nsubsteps = std::max(g.nsubsteps, p2d.greatest_divider(float_to_integral<size_t>(std::ceil(nf))));
             } catch (const std::runtime_error& ex) {
                 throw std::runtime_error(
                     "Cannot compute substeps for rigid body \"" + e->rb.name() +
@@ -521,7 +521,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
             }
             if (bullet_line_segments.contains(&e->rb.rbp_)) {
                 THROW_OR_ABORT(
-                    "Rigid body \"" + e->rb.name() + "\" contains both bullet "
+                    "Rigid body \"" + e->rb.name() + "\" contains both, bullet "
                     "line segments and standard meshes, which is not supported");
             }
             e->rb.get_rigid_pulses(g.rigid_bodies);
