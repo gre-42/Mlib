@@ -517,7 +517,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
                     "Cannot compute substeps for rigid body \"" + e->rb.name() +
                     "\", indicating that velocities or angular velocities are out of bounds. " +
                     "n (float): " + std::to_string(nf) +
-                    ".Message: " + ex.what());
+                    ". Message: " + ex.what());
             }
             if (bullet_line_segments.contains(&e->rb.rbp_)) {
                 THROW_OR_ABORT(
