@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib{
 
@@ -9,10 +10,11 @@ FixedArray<TData, 3, 3> rodrigues1(
     const FixedArray<TData, 3>& k,
     bool check_angle = true)
 {
-    if (sum(squared(k)) < 1e-12) {
+    auto len2 = sum(squared(k));
+    if (len2 < 1e-9) {
         return fixed_identity_array<TData, 3>();
     } else {
-        TData len_k = std::sqrt(sum(norm(k)));
+        TData len_k = std::sqrt(len2);
         return rodrigues2(k / len_k, len_k, check_angle);
     }
 }
@@ -24,7 +26,9 @@ FixedArray<TData, 3, 3> rodrigues2(
     bool check_angle = true)
 {
     if (check_angle) {
-        assert(std::abs(theta) < TData{2.1 * M_PI});
+        if (std::abs(theta) > TData(2.1 * M_PI)) {
+            THROW_OR_ABORT("rodrigues2: angle too large: " + std::to_string(theta));
+        }
     }
     FixedArray<TData, 3, 3> K{cross(k)};
     FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
