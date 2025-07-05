@@ -15,6 +15,7 @@
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Ai/Control_Source.hpp>
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
@@ -466,6 +467,9 @@ void Player::increment_external_forces(
         return;
     }
     if (!has_vehicle_controller()) {
+        return;
+    }
+    if (!phase.group.rigid_bodies.contains(&rigid_body()->rbp_)) {
         return;
     }
     {

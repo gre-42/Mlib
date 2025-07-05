@@ -289,6 +289,9 @@ void KeyBindings::increment_external_forces(
     if (enable_controls) {
         for (const auto& k : absolute_movable_idle_bindings_) {
             auto& rb = get_rigid_body_vehicle(*k->node);
+            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+                continue;
+            }
             rb.set_surface_power(main_name, EnginePowerIntent{.surface_power = 0});
             rb.set_surface_power(brakes_name, EnginePowerIntent{.surface_power = 0});
             rb.set_max_velocity(INFINITY);
@@ -300,9 +303,12 @@ void KeyBindings::increment_external_forces(
         }
     }
     for (auto& k : absolute_movable_key_bindings_) {
+        auto& rb = get_rigid_body_vehicle(*k->node);
+        if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            continue;
+        }
         float alpha = k->button_press.keys_alpha(0.05f);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& rb = get_rigid_body_vehicle(*k->node);
             if (any(k->force.vector != 0.f)) {
                 rb.integrate_force(rb.abs_F(k->force), cfg, phase);
             }
@@ -341,6 +347,9 @@ void KeyBindings::increment_external_forces(
     if (enable_controls) {
         for (const auto& k : absolute_movable_idle_bindings_) {
             auto& rb = get_rigid_body_vehicle(*k->node);
+            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+                continue;
+            }
             if (any(abs(rb.tires_z_) > float(1e-12))) {
                 rb.tires_z_ /= std::sqrt(sum(squared(rb.tires_z_)));
             } else {
@@ -354,7 +363,7 @@ void KeyBindings::increment_external_forces(
         }
     }
     // Relative movable
-    {
+    if (phase.group.penetration_class == PenetrationClass::BULLET_LINE) {
         std::vector<std::pair<RelativeMovableKeyBinding&, DanglingRef<SceneNode>>> k_n;
         k_n.reserve(relative_movable_key_bindings_.size());
         for (auto& k : relative_movable_key_bindings_) {
@@ -442,38 +451,46 @@ void KeyBindings::increment_external_forces(
         }
     }
     // Node info
-    for (auto& k : print_node_info_key_bindings_) {
-        auto node = k->dynamic_node();
-        if (node == nullptr) {
-            continue;
-        }
-        if (k->button_press.keys_pressed()) {
-            auto trafo = node->absolute_model_matrix();
-            auto z = trafo.R.column(2);
-            if (k->geographic_mapping != nullptr) {
-                linfo() << "Position (lat, lon, height): " << std::setprecision(18) << k->geographic_mapping->transform(trafo.t);
+    if (phase.group.penetration_class == PenetrationClass::BULLET_LINE) {
+        for (auto& k : print_node_info_key_bindings_) {
+            auto node = k->dynamic_node();
+            if (node == nullptr) {
+                continue;
             }
-            linfo() << "Position: " << std::setprecision(18) << trafo.t / (ScenePos)meters;
-            linfo() << "Pitch: " << z_to_pitch(z) / degrees;
-            linfo() << "Yaw: " << z_to_yaw(z) / degrees;
+            if (k->button_press.keys_pressed()) {
+                auto trafo = node->absolute_model_matrix();
+                auto z = trafo.R.column(2);
+                if (k->geographic_mapping != nullptr) {
+                    linfo() << "Position (lat, lon, height): " << std::setprecision(18) << k->geographic_mapping->transform(trafo.t);
+                }
+                linfo() << "Position: " << std::setprecision(18) << trafo.t / (ScenePos)meters;
+                linfo() << "Pitch: " << z_to_pitch(z) / degrees;
+                linfo() << "Yaw: " << z_to_yaw(z) / degrees;
 
-            auto ssaabb = std::make_shared<SweptSphereAabb>(
-                FixedArray<CompressedScenePos, 3>{(CompressedScenePos)-4.f, (CompressedScenePos)-1.f, (CompressedScenePos)-8.f} * meters,
-                FixedArray<CompressedScenePos, 3>{(CompressedScenePos)4.f, (CompressedScenePos)1.f, (CompressedScenePos)8.f} * meters,
-                ((CompressedScenePos)0.5f) * meters);
-            auto material = PhysicsMaterial::OBJ_DISTANCEBOX | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONVEX;
-            linfo() << "Can spawn: " << (int)physics_engine_.collision_query_.can_spawn_at(trafo, { {material, ssaabb} });
+                auto ssaabb = std::make_shared<SweptSphereAabb>(
+                    FixedArray<CompressedScenePos, 3>{(CompressedScenePos)-4.f, (CompressedScenePos)-1.f, (CompressedScenePos)-8.f} * meters,
+                    FixedArray<CompressedScenePos, 3>{(CompressedScenePos)4.f, (CompressedScenePos)1.f, (CompressedScenePos)8.f} * meters,
+                    ((CompressedScenePos)0.5f) * meters);
+                auto material = PhysicsMaterial::OBJ_DISTANCEBOX | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONVEX;
+                linfo() << "Can spawn: " << (int)physics_engine_.collision_query_.can_spawn_at(trafo, { {material, ssaabb} });
+            }
         }
     }
     // Avatar controller
     if (enable_controls) {
         for (const auto& k : avatar_controller_idle_bindings_) {
             auto& rb = get_rigid_body_vehicle(*k->node);
+            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+                continue;
+            }
             rb.avatar_controller().reset();
         }
     }
     for (auto& k : avatar_controller_key_bindings_) {
         auto& rb = get_rigid_body_vehicle(*k->node);
+        if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            continue;
+        }
         float alpha = get_alpha(
             k->button_press,
             k->cursor_movement.get(),
@@ -501,6 +518,9 @@ void KeyBindings::increment_external_forces(
     if (enable_controls) {
         for (const auto& k : avatar_controller_idle_bindings_) {
             auto& rb = get_rigid_body_vehicle(*k->node);
+            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+                continue;
+            }
             rb.avatar_controller().apply();
         }
     }
@@ -508,6 +528,9 @@ void KeyBindings::increment_external_forces(
     if (enable_controls) {
         for (const auto& k : car_controller_idle_bindings_) {
             auto& rb = get_rigid_body_vehicle(*k->node);
+            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+                continue;
+            }
             rb.vehicle_controller().reset_parameters(
                 k->surface_power,
                 k->steer_angle);
@@ -517,6 +540,10 @@ void KeyBindings::increment_external_forces(
         }
     }
     for (auto& k : car_controller_key_bindings_) {
+        auto& rb = get_rigid_body_vehicle(*k->node);
+        if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+            continue;
+        }
         float alpha = get_alpha(
             k->button_press,
             nullptr,
@@ -527,7 +554,6 @@ void KeyBindings::increment_external_forces(
             cfg,
             phase);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& rb = get_rigid_body_vehicle(*k->node);
             if (k->surface_power.has_value()) {
                 rb.vehicle_controller().drive(*k->surface_power, alpha);
             }
@@ -542,6 +568,9 @@ void KeyBindings::increment_external_forces(
     if (enable_controls) {
         for (const auto& k : car_controller_idle_bindings_) {
             auto& rb = get_rigid_body_vehicle(*k->node);
+            if (!phase.group.rigid_bodies.contains(&rb.rbp_)) {
+                continue;
+            }
             rb.vehicle_controller().apply();
         }
     }
@@ -552,12 +581,19 @@ void KeyBindings::increment_external_forces(
                 continue;
             }
             auto rb = k->player->rigid_body();
+            if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
+                continue;
+            }
             rb->plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
             rb->plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
         }
     }
     for (auto& k : plane_controller_key_bindings_) {
         if (k->player->scene_node_scheduled_for_deletion()) {
+            continue;
+        }
+        auto rb = k->player->rigid_body();
+        if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
             continue;
         }
         float alpha = get_alpha(
@@ -570,7 +606,6 @@ void KeyBindings::increment_external_forces(
             cfg,
             phase);
         if (enable_controls && !std::isnan(alpha)) {
-            auto rb = k->player->rigid_body();
             if (k->turbine_power.has_value()) {
                 rb->plane_controller().accelerate(*k->turbine_power, alpha);
             }
@@ -594,12 +629,18 @@ void KeyBindings::increment_external_forces(
                 continue;
             }
             auto rb = k->player->rigid_body();
+            if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
+                continue;
+            }
             rb->plane_controller().apply();
         }
     }
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
         if (k->player->scene_node_scheduled_for_deletion()) {
+            continue;
+        }
+        if (phase.group.penetration_class != PenetrationClass::BULLET_LINE) {
             continue;
         }
         float alpha = get_alpha(
@@ -627,6 +668,9 @@ void KeyBindings::increment_external_forces(
         if (k->player->scene_node_scheduled_for_deletion()) {
             continue;
         }
+        if (phase.group.penetration_class != PenetrationClass::BULLET_LINE) {
+            continue;
+        }
         if (k->button_press.keys_down() && enable_controls) {
             k->player->trigger_gun();
         }
@@ -634,6 +678,9 @@ void KeyBindings::increment_external_forces(
     // Player
     for (auto& k : player_key_bindings_) {
         if (k->player->scene_node_scheduled_for_deletion()) {
+            continue;
+        }
+        if (phase.group.penetration_class != PenetrationClass::BULLET_LINE) {
             continue;
         }
         if (k->button_press.keys_pressed() && enable_controls) {

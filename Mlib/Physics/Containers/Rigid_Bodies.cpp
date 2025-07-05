@@ -499,7 +499,15 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
         });
     PowerOfTwoDivider<size_t> p2d{ cfg_.nsubsteps };
     std::vector<CollisionGroup> result;
-    result.reserve(clusters.size() + !bullet_line_segments.empty());
+    result.reserve(1 + clusters.size());
+
+    auto& bullet_line_group = result.emplace_back(CollisionGroup{
+        .penetration_class = PenetrationClass::BULLET_LINE,
+        .nsubsteps = 1,
+        .divider = cfg_.nsubsteps,
+        .rigid_bodies = std::move(bullet_line_segments)
+    });
+
     for (auto& c : clusters) {
         CollisionGroup g{
             .penetration_class = PenetrationClass::STANDARD,
@@ -519,7 +527,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
                     "n (float): " + std::to_string(nf) +
                     ". Message: " + ex.what());
             }
-            if (bullet_line_segments.contains(&e->rb.rbp_)) {
+            if (bullet_line_group.rigid_bodies.contains(&e->rb.rbp_)) {
                 THROW_OR_ABORT(
                     "Rigid body \"" + e->rb.name() + "\" contains both, bullet "
                     "line segments and standard meshes, which is not supported");
@@ -532,14 +540,6 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
             THROW_OR_ABORT("Error computing collision group substep divider");
         }
         result.push_back(g);
-    }
-    if (!bullet_line_segments.empty()) {
-        result.push_back(CollisionGroup{
-            .penetration_class = PenetrationClass::BULLET_LINE,
-            .nsubsteps = 1,
-            .divider = cfg_.nsubsteps,
-            .rigid_bodies = std::move(bullet_line_segments)
-        });
     }
     return result;
 }
