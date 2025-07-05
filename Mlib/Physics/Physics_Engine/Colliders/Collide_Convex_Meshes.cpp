@@ -7,6 +7,9 @@
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Intersectables.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Precision.hpp>
 
@@ -105,9 +108,17 @@ void Mlib::collide_convex_meshes(
     if (!msh0.mesh->intersects(*msh1.mesh)) {
         return;
     }
-    auto line_mask = (
-        PhysicsMaterial::OBJ_TIRE_LINE |
-        PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT);
+    auto line_mask = [&](){
+        switch (history.phase.group.penetration_class) {
+            case PenetrationClass::BULLET_LINE:
+                return PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT;
+            case PenetrationClass::STANDARD:
+                return PhysicsMaterial::OBJ_TIRE_LINE;
+            case PenetrationClass::MESHLESS:
+                THROW_OR_ABORT("Unexpected \"meshless\" penetration class");
+        }
+        THROW_OR_ABORT("Unknown penetration class");
+    }();
     collide(o0, o1, msh0, msh1, history, line_mask);
     collide(o1, o0, msh1, msh0, history, line_mask);
     collide_intersectables_and_intersectables(

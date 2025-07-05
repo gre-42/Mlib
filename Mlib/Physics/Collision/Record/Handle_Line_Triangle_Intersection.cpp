@@ -35,10 +35,18 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     if (int(c.l1.has_value()) + int(c.r1.has_value()) + int(c.i1 != nullptr) != 1) {
         THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/r1/i1 are set");
     }
-    if ((c.o0.mass() != INFINITY) && !c.history.phase.group.rigid_bodies.contains(&c.o0.rbp_)) {
+    if (((c.history.phase.group.penetration_class == PenetrationClass::BULLET_LINE) ==
+        any(c.mesh0_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) &&
+        (c.o0.mass() != INFINITY) &&
+        !c.history.phase.group.rigid_bodies.contains(&c.o0.rbp_))
+    {
         THROW_OR_ABORT("Non-static rigid body \"" + c.o0.name() + "\" is not in the collision group (0)");
     }
-    if ((c.o1.mass() != INFINITY) && !c.history.phase.group.rigid_bodies.contains(&c.o1.rbp_)) {
+    if (((c.history.phase.group.penetration_class == PenetrationClass::BULLET_LINE) ==
+        any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) &&
+        (c.o1.mass() != INFINITY) &&
+        !c.history.phase.group.rigid_bodies.contains(&c.o1.rbp_))
+    {
         THROW_OR_ABORT("Non-static rigid body \"" + c.o1.name() + "\" is not in the collision group (1)");
     }
     IntersectionInfo iinfo;
