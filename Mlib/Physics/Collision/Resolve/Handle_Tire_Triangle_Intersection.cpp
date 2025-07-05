@@ -57,6 +57,7 @@ static void accelerate_positive(
     float v0,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     size_t tire_id,
     float& force_min,
     float& force_max)
@@ -71,7 +72,7 @@ static void accelerate_positive(
     float w;
     float v;
     optimal_angular_velocity_positive(rb, v_street, relaxation, surface_normal, cfg, tire_id, w, &v);
-    rb.set_tire_angular_velocity(tire_id, -w, cfg, power);
+    rb.set_tire_angular_velocity(tire_id, -w, cfg, phase, power);
     force_min = u * power / std::min(-0.001f, v);
     force_max = 0;
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
@@ -88,6 +89,7 @@ static void accelerate_negative(
     float v0,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     size_t tire_id,
     float& force_min,
     float& force_max)
@@ -102,7 +104,7 @@ static void accelerate_negative(
     float w;
     float v;
     optimal_angular_velocity_negative(rb, v_street, relaxation, surface_normal, cfg, tire_id, w, &v);
-    rb.set_tire_angular_velocity(tire_id, -w, cfg, power);
+    rb.set_tire_angular_velocity(tire_id, -w, cfg, phase, power);
     force_min = 0;
     force_max = -u * power / std::max(0.001f, v);
     if ((force_min > force_max) || (std::abs(force_min) > 1e9) || (std::abs(force_max) > 1e9)) {
@@ -116,6 +118,7 @@ void brake_positive(
     float relaxation,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     size_t tire_id,
     float& force_min,
     float& force_max)
@@ -124,10 +127,10 @@ void brake_positive(
     optimal_angular_velocity_positive(rb, v_street, relaxation, surface_normal, cfg, tire_id, w);
     if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
         float available_power = 0.f;
-        rb.set_tire_angular_velocity(tire_id, 0, cfg, available_power);
+        rb.set_tire_angular_velocity(tire_id, 0, cfg, phase, available_power);
     } else {
         float available_power = 0.f;
-        rb.set_tire_angular_velocity(tire_id, -w, cfg, available_power);
+        rb.set_tire_angular_velocity(tire_id, -w, cfg, phase, available_power);
     }
     force_min = -rb.tires_.get(tire_id).brake_force;
     force_max = 0;
@@ -161,6 +164,7 @@ void brake_negative(
     float relaxation,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     size_t tire_id,
     float& force_min,
     float& force_max)
@@ -169,10 +173,10 @@ void brake_negative(
     optimal_angular_velocity_negative(rb, v_street, relaxation, surface_normal, cfg, tire_id, w);
     if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
         float available_power = 0.f;
-        rb.set_tire_angular_velocity(tire_id, 0, cfg, available_power);
+        rb.set_tire_angular_velocity(tire_id, 0, cfg, phase, available_power);
     } else {
         float available_power = 0.f;
-        rb.set_tire_angular_velocity(tire_id, -w, cfg, available_power);
+        rb.set_tire_angular_velocity(tire_id, -w, cfg, phase, available_power);
     }
     force_min = 0;
     force_max = rb.tires_.get(tire_id).brake_force;
@@ -205,12 +209,13 @@ void idle(
     const FixedArray<float, 3>& v_street,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     size_t tire_id,
     float& force_min,
     float& force_max)
 {
     float available_power = 0.f;
-    rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(surface_normal, v_street, tire_id), cfg, available_power);
+    rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(surface_normal, v_street, tire_id), cfg, phase, available_power);
     force_min = 0;
     force_max = 0;
 }
@@ -225,6 +230,7 @@ void Mlib::handle_tire_triangle_intersection(
     float v0,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     size_t tire_id,
     float& force_min,
     float& force_max)
@@ -246,29 +252,29 @@ void Mlib::handle_tire_triangle_intersection(
         if (P.power != 0) {
             if (P.type == TirePowerIntentType::BRAKE_OR_IDLE) {
                 if ((v0 > 0) && (P.power > 0)) {
-                    brake_positive(rb, v_street, P.relaxation, surface_normal, cfg, tire_id, force_min, force_max);
+                    brake_positive(rb, v_street, P.relaxation, surface_normal, cfg, phase, tire_id, force_min, force_max);
                 } else if ((v0 < 0) && (P.power < 0)) {
-                    brake_negative(rb, v_street, P.relaxation, surface_normal, cfg, tire_id, force_min, force_max);
+                    brake_negative(rb, v_street, P.relaxation, surface_normal, cfg, phase, tire_id, force_min, force_max);
                 } else {
-                    idle(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
+                    idle(rb, v_street, surface_normal, cfg, phase, tire_id, force_min, force_max);
                 }
             } else if (P.power > 0) {
-                accelerate_positive(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
+                accelerate_positive(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, phase, tire_id, force_min, force_max);
             } else if (P.power < 0) {
-                accelerate_negative(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
+                accelerate_negative(rb, v_street, P.power, P.relaxation, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, phase, tire_id, force_min, force_max);
             } else {
                 THROW_OR_ABORT("handle_tire_triangle_intersection internal error");
             }
         } else {
-            idle(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
+            idle(rb, v_street, surface_normal, cfg, phase, tire_id, force_min, force_max);
         }
     } else {
         if (v0 > 0) {
-            brake_positive(rb, v_street, P.relaxation, surface_normal, cfg, tire_id, force_min, force_max);
+            brake_positive(rb, v_street, P.relaxation, surface_normal, cfg, phase, tire_id, force_min, force_max);
         } else if (v0 < 0) {
-            brake_negative(rb, v_street, P.relaxation, surface_normal, cfg, tire_id, force_min, force_max);
+            brake_negative(rb, v_street, P.relaxation, surface_normal, cfg, phase, tire_id, force_min, force_max);
         } else {
-            idle(rb, v_street, surface_normal, cfg, tire_id, force_min, force_max);
+            idle(rb, v_street, surface_normal, cfg, phase, tire_id, force_min, force_max);
         }
     }
     if (force_min > force_max) {

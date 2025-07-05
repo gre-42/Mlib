@@ -75,8 +75,8 @@ public:
     bool contains(const FixedArray<TPos, tndim>& other, const TPos& tolerance = TPos(0.f)) const {
         return sum(squared(other - center)) <= squared(radius + tolerance);
     }
-    bool intersects(const BoundingSphere& other) const {
-        return sum(squared(other.center - center)) <= squared(other.radius + radius);
+    bool intersects(const BoundingSphere& other, const TPos& tolerance = TPos(0.f)) const {
+        return sum(squared(other.center - center)) <= squared(other.radius + radius + tolerance);
     }
     template <class TDir>
     bool intersects(const PlaneNd<TDir, TPos, tndim>& plane) const {

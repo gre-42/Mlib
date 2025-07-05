@@ -5,6 +5,7 @@ namespace Mlib {
 
 class RigidBodyVehicle;
 struct PhysicsEngineConfig;
+struct PhysicsPhase;
 struct TirePowerIntent;
 
 void handle_tire_triangle_intersection(
@@ -17,6 +18,7 @@ void handle_tire_triangle_intersection(
     float v0,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     size_t tire_id,
     float& force_min,
     float& force_max);

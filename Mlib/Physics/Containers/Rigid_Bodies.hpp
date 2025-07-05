@@ -18,6 +18,7 @@
 #include <memory>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 
 namespace Mlib {
@@ -32,10 +33,12 @@ template <class T>
 class DestructionFunctionsTokensObject;
 class CollisionMesh;
 class IIntersectable;
+struct CollisionGroup;
 
 struct RigidBodyAndMeshes {
+    using Mesh = TypedMesh<std::pair<BoundingSphere<CompressedScenePos, 3>, std::shared_ptr<CollisionMesh>>>;
     DanglingBaseClassRef<RigidBodyVehicle> rigid_body;
-    std::list<TypedMesh<std::pair<BoundingSphere<CompressedScenePos, 3>, std::shared_ptr<CollisionMesh>>>> meshes;
+    std::list<Mesh> meshes;
     inline bool has_meshes() const {
         return !meshes.empty();
     }
@@ -106,6 +109,7 @@ public:
     RidgeMap& ridge_map();
     const LineBvh& line_bvh() const;
     bool empty() const;
+    std::vector<CollisionGroup> collision_groups();
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
     void bake_collision_ridges() const;

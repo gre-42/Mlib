@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -50,30 +51,29 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
     };
     // Note that g_beacons is delayed by one frame.
     std::list<Beacon> beacons = std::move(get_beacons());
-    {
-        if (physics_cfg_.nsubsteps == 0) {
-            THROW_OR_ABORT("Number of substeps is zero");
-        }
-        auto idt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(physics_cfg_.dt_substeps() / seconds));
-        for (size_t i = 0; i < physics_cfg_.nsubsteps; ++i) {
-            std::list<Beacon>* bcns = (i == physics_cfg_.nsubsteps - 1)
+    for (const auto& g : physics_engine_.rigid_bodies_.collision_groups()) {
+        auto idt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+            std::chrono::duration<float>(physics_cfg_.dt_substeps_(g.nsubsteps) / seconds));
+        for (size_t i = 0; i < g.nsubsteps; ++i) {
+            std::list<Beacon>* bcns = (i == g.nsubsteps - 1)
                 ? &beacons
                 : nullptr;
-            world.time = time - (physics_cfg_.nsubsteps - 1 - i) * idt;
+            world.time = time - (g.nsubsteps - 1 - i) * idt;
+            auto phase = PhysicsPhase{
+                .burn_in = false,
+                .substep = i,
+                .group = g
+            };
             physics_engine_.collide(
                 world,
                 bcns,
-                false,          // false=burn_in
-                i,
+                phase,
                 base_log_);
             physics_engine_.move_rigid_bodies(
                 world,
                 bcns,
-                PhysicsPhase{
-                    .burn_in = false,
-                    .substep = i
-                });
-            physics_engine_.move_particles(world);
+                phase);
+            physics_engine_.move_particles(world, phase);
         }
     }
     {

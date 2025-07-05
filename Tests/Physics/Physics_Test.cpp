@@ -159,7 +159,17 @@ void test_com() {
     r1->rbp_.rotation_ = fixed_identity_array<float, 3>();
     // Hack to get identical values in the following tests.
     r1->rbp_.I_ = r0->rbp_.I_;
-    float dt = cfg.dt_substeps();
+    CollisionGroup group{
+        .penetration_class = PenetrationClass::STANDARD,
+        .nsubsteps = cfg.nsubsteps,
+        .divider = 1,
+    };
+    PhysicsPhase phase{
+        .burn_in = false,
+        .substep = 0,
+        .group = group,
+    };
+    float dt = cfg.dt_substeps(phase);
     r0->rbp_.integrate_delta_v({0.f, -9.8f * meters / (seconds * seconds) * dt, 0.f});
     r1->rbp_.integrate_delta_v({0.f, -9.8f * meters / (seconds * seconds) * dt, 0.f});
     {
@@ -174,8 +184,8 @@ void test_com() {
     assert_allclose(r0->rbp_.v_com_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
     assert_allclose(r1->rbp_.v_com_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
     auto dx = FixedArray<ScenePos, 3>{7.8f * meters, 6.5f * meters, 4.3f * meters};
-    r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0.casted<ScenePos>() + dx}, cfg);
-    r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1.casted<ScenePos>() + dx}, cfg);
+    r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0.casted<ScenePos>() + dx}, cfg, phase);
+    r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1.casted<ScenePos>() + dx}, cfg, phase);
     {
         r0->rbp_.advance_time(dt);
     }
@@ -187,10 +197,10 @@ void test_com() {
         r0->velocity_at_position(com0.casted<ScenePos>()),
         r1->velocity_at_position(com1.casted<ScenePos>()));
     {
-        r0->advance_time(cfg, world, nullptr, PhysicsPhase{.burn_in = false, .substep = 0});
+        r0->advance_time(cfg, world, nullptr, phase);
     }
     {
-        r1->advance_time(cfg, world, nullptr, PhysicsPhase{.burn_in = false, .substep = 0});
+        r1->advance_time(cfg, world, nullptr, phase);
     }
     assert_allclose(
         r0->velocity_at_position(com0.casted<ScenePos>()),

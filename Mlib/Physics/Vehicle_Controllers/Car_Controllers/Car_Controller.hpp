@@ -29,7 +29,7 @@ public:
     virtual void apply() override;
 
     // IControllable
-    virtual void notify_reset(bool burn_in, const PhysicsEngineConfig& cfg) override;
+    virtual void notify_reset(const PhysicsEngineConfig& cfg, const PhysicsPhase& phase) override;
 private:
     VariableAndHash<std::string> front_engine_;
     VariableAndHash<std::string> rear_engine_;

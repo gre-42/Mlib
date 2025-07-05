@@ -13,13 +13,13 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     AimAt& aim_at,
     PitchLookAtNode& pitch_look_at_node,
     float dyaw_max,
-    const std::function<float()>& increment_yaw_error)
+    std::function<float()> increment_yaw_error)
     : aim_at_node_{ aim_at }
     , dyaw_{ 0.f }
     , dyaw_max_{ dyaw_max }
     , relative_model_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
     , pitch_look_at_node_{ pitch_look_at_node }
-    , increment_yaw_error_{ increment_yaw_error }
+    , increment_yaw_error_{ std::move(increment_yaw_error) }
 {}
 
 YawPitchLookAtNodes::~YawPitchLookAtNodes() {

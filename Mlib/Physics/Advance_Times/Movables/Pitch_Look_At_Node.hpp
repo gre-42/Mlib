@@ -22,7 +22,7 @@ public:
         float pitch_min,
         float pitch_max,
         float dpitch_max,
-        const std::function<float()>& increment_pitch_error);
+        std::function<float()> increment_pitch_error);
     virtual ~PitchLookAtNode() override;
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;

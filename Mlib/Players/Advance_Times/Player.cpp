@@ -20,6 +20,7 @@
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -452,13 +453,13 @@ void Player::advance_time(float dt, const StaticWorld& world) {
 }
 
 void Player::increment_external_forces(
-    bool burn_in,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     const StaticWorld& world)
 {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (burn_in) {
+    if (phase.burn_in) {
         return;
     }
     if (!has_scene_vehicle()) {

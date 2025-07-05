@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
@@ -36,7 +37,7 @@ void ContactSmokeGenerator::notify_contact(
     const FixedArray<SceneDir, 3>& surface_normal,
     const IntersectionScene& c)
 {
-    if (c.history.burn_in) {
+    if (c.history.phase.burn_in) {
         return;
     }
     if (c.surface_contact_info == nullptr) {

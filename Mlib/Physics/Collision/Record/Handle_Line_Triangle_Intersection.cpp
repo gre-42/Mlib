@@ -7,8 +7,10 @@
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Reflection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
@@ -32,6 +34,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     }
     if (int(c.l1.has_value()) + int(c.r1.has_value()) + int(c.i1 != nullptr) != 1) {
         THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/r1/i1 are set");
+    }
+    if ((c.o0.mass() != INFINITY) && !c.history.phase.group.rigid_bodies.contains(&c.o0.rbp_)) {
+        THROW_OR_ABORT("Non-static rigid body \"" + c.o0.name() + "\" is not in the collision group (0)");
+    }
+    if ((c.o1.mass() != INFINITY) && !c.history.phase.group.rigid_bodies.contains(&c.o1.rbp_)) {
+        THROW_OR_ABORT("Non-static rigid body \"" + c.o1.name() + "\" is not in the collision group (1)");
     }
     IntersectionInfo iinfo;
     if (c.q0.has_value()) {

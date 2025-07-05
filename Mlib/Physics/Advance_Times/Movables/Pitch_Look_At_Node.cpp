@@ -19,7 +19,7 @@ PitchLookAtNode::PitchLookAtNode(
     float pitch_min,
     float pitch_max,
     float dpitch_max,
-    const std::function<float()>& increment_pitch_error)
+    std::function<float()> increment_pitch_error)
     : aim_at_node_{ aim_at }
     , dpitch_{ 0.f }
     , pitch_{ NAN }
@@ -29,7 +29,7 @@ PitchLookAtNode::PitchLookAtNode(
     , relative_position_{ fixed_nans<ScenePos, 3>() }
     , dpitch_head_{ NAN }
     , head_node_{ nullptr }
-    , increment_pitch_error_{ increment_pitch_error }
+    , increment_pitch_error_{ std::move(increment_pitch_error) }
 {}
 
 PitchLookAtNode::~PitchLookAtNode() {

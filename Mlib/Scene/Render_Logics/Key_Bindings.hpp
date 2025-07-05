@@ -42,8 +42,8 @@ public:
 
     // IExternalForceProvider
     virtual void increment_external_forces(
-        bool burn_in,
         const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase,
         const StaticWorld& world) override;
 
     // RenderLogic

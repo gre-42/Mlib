@@ -375,7 +375,8 @@ TireContactInfo1::TireContactInfo1(
     const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,
     float v0,
-    const PhysicsEngineConfig& cfg)
+    const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase)
     : fci_{ fci }
     , surface_stiction_factor_{ surface_stiction_factor }
     , rb_{ rb }
@@ -391,6 +392,7 @@ TireContactInfo1::TireContactInfo1(
     , v0_{ v0 }
     , b0_{ fci.get_b() }
     , cfg_{ cfg }
+    , phase_{ phase }
 {}
 
 void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
@@ -409,6 +411,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
         v0_,
         fci_.normal_impulse().normal.casted<float>(),
         cfg_,
+        phase_,
         tire_id_,
         force_min,
         force_max);
@@ -463,7 +466,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
     float lambda_max =
         (-fci_.normal_impulse().lambda_total) *
         tire.stiction_coefficient(
-            -fci_.normal_impulse().lambda_total / cfg_.dt_substeps()) *
+            -fci_.normal_impulse().lambda_total / cfg_.dt_substeps(phase_)) *
         surface_stiction_factor_;
     FixedArray<float, 2> r = tire.magic_formula(
         {
@@ -473,8 +476,8 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
     // lerr() << tire_id_ << " | " << r;
     fci_.set_clamping(
         n3_,
-        signed_min(force_min * cfg_.dt_substeps(), std::abs(r(0))),
-        signed_min(force_max * cfg_.dt_substeps(), std::abs(r(0))),
+        signed_min(force_min * cfg_.dt_substeps(phase_), std::abs(r(0))),
+        signed_min(force_max * cfg_.dt_substeps(phase_), std::abs(r(0))),
         std::abs(r(1)));
     fci_.solve(dt, relaxation, iteration, niterations);
 }

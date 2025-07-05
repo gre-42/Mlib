@@ -1,6 +1,7 @@
 #include "Rigid_Bodies.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Graph/Cluster_By_Flood_Fill.hpp>
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
@@ -11,8 +12,11 @@
 #include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Svg.hpp>
+#include <Mlib/Math/Power_Of_Two_Divider.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -465,4 +469,77 @@ void RigidBodies::bake_collision_ridges() const
 
 bool RigidBodies::empty() const {
     return objects_.empty();
+}
+
+struct RigidBodyAndMesh {
+    RigidBodyVehicle& rb;
+    RigidBodyAndMeshes::Mesh& mesh;
+};
+
+std::vector<CollisionGroup> RigidBodies::collision_groups() {
+    std::list<RigidBodyAndMesh> standard_movables;
+    std::unordered_set<RigidBodyPulses*> bullet_line_segments;
+    for (auto& m : objects_) {
+        if (m.rigid_body->mass() != INFINITY) {
+            for (auto& mesh : m.meshes) {
+                // Bullet line segments are artificially long,
+                // so they work without substepping.
+                if (any(mesh.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) {
+                    bullet_line_segments.insert(&m.rigid_body->rbp_);
+                } else {
+                    standard_movables.emplace_back(m.rigid_body.get(), mesh);
+                }
+            }
+        }
+    }
+    auto clusters = cluster_by_flood_fill(
+        standard_movables,
+        [this](RigidBodyAndMesh& a, RigidBodyAndMesh& b){
+            return a.mesh.mesh.first.intersects(b.mesh.mesh.first, (CompressedScenePos)cfg_.max_penetration);
+        });
+    PowerOfTwoDivider<size_t> p2d{ cfg_.nsubsteps };
+    std::vector<CollisionGroup> result;
+    result.reserve(clusters.size() + !bullet_line_segments.empty());
+    for (auto& c : clusters) {
+        CollisionGroup g{
+            .penetration_class = PenetrationClass::STANDARD,
+            .nsubsteps = 0
+        };
+        for (const auto& e : c) {
+            auto v_total =
+                (SceneDir)e->mesh.mesh.first.radius * std::sqrt(sum(squared(e->rb.rbp_.w_))) +
+                std::sqrt(sum(squared(e->rb.rbp_.v_com_)));
+            auto nf = v_total * cfg_.dt / cfg_.max_penetration;
+            try {
+                g.nsubsteps = p2d.greatest_divider(float_to_integral<size_t>(std::ceil(nf)));
+            } catch (const std::runtime_error& ex) {
+                throw std::runtime_error(
+                    "Cannot compute substeps for rigid body \"" + e->rb.name() +
+                    "\", indicating that velocities or angular velocities are out of bounds. " +
+                    "n (float): " + std::to_string(nf) +
+                    ".Message: " + ex.what());
+            }
+            if (bullet_line_segments.contains(&e->rb.rbp_)) {
+                THROW_OR_ABORT(
+                    "Rigid body \"" + e->rb.name() + "\" contains both bullet "
+                    "line segments and standard meshes, which is not supported");
+            }
+            e->rb.get_rigid_pulses(g.rigid_bodies);
+            g.meshes.insert(e->mesh.mesh.second.get());
+        }
+        g.divider = cfg_.nsubsteps / g.nsubsteps;
+        if (g.divider * g.nsubsteps != cfg_.nsubsteps) {
+            THROW_OR_ABORT("Error computing collision group substep divider");
+        }
+        result.push_back(g);
+    }
+    if (!bullet_line_segments.empty()) {
+        result.push_back(CollisionGroup{
+            .penetration_class = PenetrationClass::BULLET_LINE,
+            .nsubsteps = 1,
+            .divider = cfg_.nsubsteps,
+            .rigid_bodies = std::move(bullet_line_segments)
+        });
+    }
+    return result;
 }

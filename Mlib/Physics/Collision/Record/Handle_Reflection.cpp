@@ -210,7 +210,8 @@ static void handle_extended_reflection(
                         vc,
                         n3,
                         -dot0d(c.o1.get_velocity_at_tire_contact(normal.casted<float>(), c.tire_id1) - v_street, n3),
-                        c.history.cfg}));
+                        c.history.cfg,
+                        c.history.phase}));
                     // if (c.beacons != nullptr) {
                     //     c.beacons->push_back(Beacon::create(contact_position, "beacon"));
                     // }
@@ -418,7 +419,7 @@ void Mlib::handle_reflection(
             //         return;
             //     }
             // }
-            float ds = vn * c.history.cfg.dt_substeps();
+            float ds = vn * c.history.cfg.dt_substeps(c.history.phase);
             if (overlap < ds * c.history.cfg.slide_factor) {
                 return;
             }

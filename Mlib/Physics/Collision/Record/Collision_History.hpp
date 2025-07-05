@@ -28,10 +28,11 @@ template <class TPosition>
 struct CollisionRidgeSphere;
 struct StaticWorld;
 class SurfaceContactDb;
+struct PhysicsPhase;
 
 struct CollisionHistory {
-    bool burn_in;
     const PhysicsEngineConfig& cfg;
+    const PhysicsPhase& phase;
     const StaticWorld& world;
     const SatTracker& st;
     const SurfaceContactDb& surface_contact_db;

@@ -9,8 +9,10 @@
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangles_And_Ridge.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -36,6 +38,9 @@ void Mlib::collide_with_terrain(
             continue;
         }
         for (const auto& msh1 : o1.meshes) {
+            if (!history.phase.group.rigid_bodies.contains(&o1.rigid_body->rbp_)) {
+                continue;
+            }
             PhysicsMaterial collide_with_terrain_triangle_mask =
                 PhysicsMaterial::OBJ_CHASSIS |
                 PhysicsMaterial::OBJ_TIRE_LINE |

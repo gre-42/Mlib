@@ -24,7 +24,7 @@ public:
         AimAt& aim_at,
         PitchLookAtNode& pitch_look_at_node,
         float dyaw_max,
-        const std::function<float()>& increment_yaw_error);
+        std::function<float()> increment_yaw_error);
     ~YawPitchLookAtNodes();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;

@@ -249,8 +249,8 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     // IExternalForceProvider
     virtual void increment_external_forces(
-        bool burn_in,
         const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase,
         const StaticWorld& world) override;
     
     DestructionFunctions delete_vehicle_externals;

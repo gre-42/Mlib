@@ -67,6 +67,6 @@ void CarController::apply() {
     RigidBodyVehicleController::apply();
 }
 
-void CarController::notify_reset(bool burn_in, const PhysicsEngineConfig& cfg) {
+void CarController::notify_reset(const PhysicsEngineConfig& cfg, const PhysicsPhase& phase) {
     applied_ = false;
 }

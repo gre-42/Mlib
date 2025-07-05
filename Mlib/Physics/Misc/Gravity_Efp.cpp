@@ -17,16 +17,19 @@ GravityEfp::GravityEfp(PhysicsEngine& engine)
 GravityEfp::~GravityEfp() = default;
 
 void GravityEfp::increment_external_forces(
-    bool burn_in,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     const StaticWorld& world)
 {
     if (world.gravity == nullptr) {
         return;
     }
     for (auto& rb : engine_.rigid_bodies_.objects()) {
-        if (rb.rigid_body->feels_gravity() && (rb.rigid_body->mass() != INFINITY)) {
-            rb.rigid_body->rbp_.integrate_delta_v(world.gravity->vector * cfg.dt_substeps());
+        if (rb.rigid_body->feels_gravity() &&
+            (rb.rigid_body->mass() != INFINITY) &&
+            phase.group.rigid_bodies.contains(&rb.rigid_body->rbp_))
+        {
+            rb.rigid_body->rbp_.integrate_delta_v(world.gravity->vector * cfg.dt_substeps(phase));
         }
     }
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cmath>
@@ -8,14 +10,20 @@
 namespace Mlib {
 
 struct PhysicsEngineConfig {
-    inline float dt_substeps() const {
-        return dt / (float)nsubsteps;
+    inline float dt_substeps(const PhysicsPhase& phase) const {
+        return dt_substeps_(phase.group.nsubsteps);
     }
-    inline float ncached() const {
-        return dt_io / dt_substeps();
+    inline float ncached(const PhysicsPhase& phase) const {
+        return ncached_(phase.group.nsubsteps);
+    }
+    inline float dt_substeps_(size_t nsubsteps2) const {
+        return dt / (float)nsubsteps2;
+    }
+    inline float ncached_(size_t nsubsteps2) const {
+        return dt_io / dt_substeps_(nsubsteps2);
     }
     inline PenetrationLimits penetration_limits() const {
-        return { dt_substeps(), max_penetration };
+        return { dt_substeps_(nsubsteps), max_penetration };
     }
 
     float dt = 0.01667f * seconds;

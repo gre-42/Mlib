@@ -40,8 +40,7 @@ PhysicsEngine::~PhysicsEngine() = default;
 void PhysicsEngine::collide(
     const StaticWorld& world,
     std::list<Beacon>* beacons,
-    bool burn_in,
-    size_t oversampling_iteration,
+    const PhysicsPhase& phase,
     BaseLog* base_log)
 {
     rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
@@ -54,11 +53,11 @@ void PhysicsEngine::collide(
         {
             continue;
         }
-        o.rigid_body->reset_forces(oversampling_iteration);
+        o.rigid_body->reset_forces(phase);
         ovector.push_back(&o);
     }
     for (const auto& co : controllables_) {
-        co->notify_reset(burn_in, cfg_);
+        co->notify_reset(cfg_, phase);
     }
     std::list<std::unique_ptr<IContactInfo>> contact_infos;
     permanent_contacts_.extend_contact_infos(cfg_, contact_infos);
@@ -77,8 +76,8 @@ void PhysicsEngine::collide(
         THROW_OR_ABORT("trail_renderer not set");
     }
     CollisionHistory history{
-        .burn_in = burn_in,
         .cfg = cfg_,
+        .phase = phase,
         .world = world,
         .st = st,
         .surface_contact_db = *surface_contact_db_,
@@ -99,7 +98,7 @@ void PhysicsEngine::collide(
         }
     }
     for (const auto& efp : external_force_providers_) {
-        efp->increment_external_forces(burn_in, cfg_, world);
+        efp->increment_external_forces(cfg_, phase, world);
     }
     for (const auto& o : ovector) {
         o->rigid_body->collide_with_air(history);
@@ -119,7 +118,7 @@ void PhysicsEngine::collide(
     collide_raycast_intersections(raycast_intersections);
     collide_grind_infos(cfg_, world, contact_infos, grind_infos);
     collide_concave_triangles(cfg_, concave_t0_intersections, ridge_intersection_points);
-    solve_contacts(contact_infos, cfg_.dt_substeps());
+    solve_contacts(contact_infos, cfg_.dt_substeps(phase));
 }
 
 void PhysicsEngine::move_rigid_bodies(
@@ -137,14 +136,14 @@ void PhysicsEngine::move_rigid_bodies(
     }
 }
 
-void PhysicsEngine::move_particles(const StaticWorld& world)
+void PhysicsEngine::move_particles(const StaticWorld& world, const PhysicsPhase& phase)
 {
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
-    contact_smoke_generator_->advance_time(cfg_.dt_substeps());
+    contact_smoke_generator_->advance_time(cfg_.dt_substeps(phase));
     if (trail_renderer_ != nullptr) {
-        trail_renderer_->move(cfg_.dt_substeps(), world);
+        trail_renderer_->move(cfg_.dt_substeps(phase), world);
     }
 }
 
@@ -166,28 +165,33 @@ void PhysicsEngine::burn_in(
                 .surface_power = NAN});
         }
     }
-    for (float time = 0; time < duration; time += cfg_.dt_substeps()) {
-        collide(
-            world,
-            nullptr,                            // beacons
-            true,                               // true = burn_in
-            SIZE_MAX,                           // oversampling_iteration
-            nullptr);                           // base_log
-        if (time < duration / 2) {
-            for (const auto& o : rigid_bodies_.objects_) {
-                if (o.rigid_body->is_deactivated_avatar()) {
-                    continue;
+    for (float time = 0; time < duration; time += cfg_.dt) {
+        for (const auto& g : rigid_bodies_.collision_groups()) {
+            for (size_t i = 0; i < g.nsubsteps; ++i) {
+                auto phase = PhysicsPhase{
+                    .burn_in = true,
+                    .substep = i,
+                    .group = g
+                };
+                collide(
+                    world,
+                    nullptr,                            // beacons
+                    phase,
+                    nullptr);                           // base_log
+                if (time < duration / 2) {
+                    for (const auto& o : rigid_bodies_.objects_) {
+                        if (o.rigid_body->is_deactivated_avatar()) {
+                            continue;
+                        }
+                        o.rigid_body->rbp_.w_ = 0;
+                    }
                 }
-                o.rigid_body->rbp_.w_ = 0;
+                move_rigid_bodies(
+                    world,
+                    nullptr,  // nullptr=beacons
+                    phase);
             }
         }
-        move_rigid_bodies(
-            world,
-            nullptr,  // nullptr=beacons
-            PhysicsPhase{
-                .burn_in = true,
-                .substep = SIZE_MAX
-            });
     }
 }
 

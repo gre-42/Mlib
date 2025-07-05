@@ -14,6 +14,7 @@ class RigidBodyVehicle;
 class RigidBodyPulses;
 class AttachedWheel;
 struct PhysicsEngineConfig;
+struct PhysicsPhase;
 
 struct PointEqualityConstraint {
     FixedArray<ScenePos, 3> p0;
@@ -361,7 +362,8 @@ public:
         const FixedArray<float, 3>& vc,
         const FixedArray<float, 3>& n3,
         float v0,
-        const PhysicsEngineConfig& cfg);
+        const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
     FrictionContactInfo1 fci_;
@@ -375,6 +377,7 @@ private:
     float v0_;
     FixedArray<float, 3> b0_;
     const PhysicsEngineConfig& cfg_;
+    const PhysicsPhase& phase_;
 };
 
 void solve_contacts(std::list<std::unique_ptr<IContactInfo>>& cis, float dt);

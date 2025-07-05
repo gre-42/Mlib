@@ -32,14 +32,13 @@ public:
     void collide(
         const StaticWorld& world,
         std::list<Beacon>* beacons,
-        bool burn_in,
-        size_t oversampling_iteration,
+        const PhysicsPhase& phase,
         BaseLog* base_log);
     void move_rigid_bodies(
         const StaticWorld& world,
         std::list<Beacon>* beacons,
         const PhysicsPhase& phase);
-    void move_particles(const StaticWorld& world);
+    void move_particles(const StaticWorld& world, const PhysicsPhase& phase);
     void move_advance_times(const StaticWorld& world);
     void burn_in(
         const StaticWorld& world,

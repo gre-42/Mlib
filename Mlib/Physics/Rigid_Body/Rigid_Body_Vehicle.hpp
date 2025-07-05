@@ -132,16 +132,18 @@ public:
     RigidBodyVehicle(const RigidBodyVehicle&) = delete;
     RigidBodyVehicle& operator = (const RigidBodyVehicle&) = delete;
     ~RigidBodyVehicle();
-    void reset_forces(size_t oversampling_iteration);
+    void reset_forces(const PhysicsPhase& phase);
     void integrate_force(
         const VectorAtPosition<float, ScenePos, 3>& F,
-        const PhysicsEngineConfig& cfg);
+        const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase);
     void integrate_force(
         const VectorAtPosition<float, ScenePos, 3>& F,
         const FixedArray<float, 3>& n,
         float damping,
         float friction,
-        const PhysicsEngineConfig& cfg);
+        const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase);
     void collide_with_air(CollisionHistory& c);
     void advance_time(
         const PhysicsEngineConfig& cfg,
@@ -172,17 +174,20 @@ public:
         size_t id,
         float w,
         const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase,
         float& available_power);
     void set_rotor_angular_velocity(
         size_t id,
         float w,
         const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase,
         float& available_power);
     void set_base_angular_velocity(
         BaseRotor& base_rotor,
         const FixedArray<float, 3>& rotation_axis,
         float w,
         const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase,
         float& available_power);
     FixedArray<float, 3> get_velocity_at_tire_contact(
         const FixedArray<float, 3>& surface_normal,
@@ -229,6 +234,7 @@ public:
         const StaticWorld& world);
     void set_actor_task(ActorTask actor_task);
     void set_waypoint_ofs(CompressedScenePos dy);
+    void get_rigid_pulses(std::unordered_set<RigidBodyPulses*>& rbps);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;

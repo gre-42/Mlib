@@ -115,7 +115,10 @@ RigidBodyVehicle::~RigidBodyVehicle()
     drivers_.clear();
 }
 
-void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
+void RigidBodyVehicle::reset_forces(const PhysicsPhase& phase) {
+    if (!phase.group.rigid_bodies.contains(&rbp_)) {
+        return;
+    }
     for (auto& e : engines_) {
         e.second.reset_forces();
     }
@@ -132,11 +135,11 @@ void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
         grind_state_.grind_direction_ = NAN;
     }
     if (jump_state_.jumping_counter_ != SIZE_MAX) {
-        ++jump_state_.jumping_counter_;
+        jump_state_.jumping_counter_ += phase.group.divider;
     }
 
     // Must be below the block above.
-    if (oversampling_iteration == 0) {
+    if (phase.substep == 0) {
         jump_state_.wants_to_jump_ = false;
         if (!grind_state_.grinding_) {
             grind_state_.wants_to_grind_ = false;
@@ -163,10 +166,11 @@ void RigidBodyVehicle::set_jump_dv(float value) {
 
 void RigidBodyVehicle::integrate_force(
     const VectorAtPosition<float, ScenePos, 3>& F,
-    const PhysicsEngineConfig& cfg)
+    const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase)
 {
     rbp_.integrate_impulse({
-        .vector = F.vector * cfg.dt_substeps(),
+        .vector = F.vector * cfg.dt_substeps(phase),
         .position = F.position});
     // if (float len = sum(squared(F.vector)); len > 1e-12) {
     //     auto location = TransformationMatrix<float, ScenePos, 3>::identity();
@@ -181,9 +185,10 @@ void RigidBodyVehicle::integrate_force(
     const FixedArray<float, 3>& n,
     float damping,
     float friction,
-    const PhysicsEngineConfig& cfg)
+    const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase)
 {
-    integrate_force(F, cfg);
+    integrate_force(F, cfg, phase);
     if (damping != 0) {
         auto vn = n * dot0d(rbp_.v_com_, n);
         auto vt = rbp_.v_com_ - vn;
@@ -197,6 +202,9 @@ void RigidBodyVehicle::integrate_force(
 
 void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
 {
+    if (!c.phase.group.rigid_bodies.contains(&rbp_)) {
+        return;
+    }
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
         if (P.type == TirePowerIntentType::ACCELERATE) {
@@ -206,9 +214,10 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 VectorAtPosition<float, ScenePos, 3>{
                     .vector = z3_from_3x3(abs_location.R) * P.power * P.relaxation * rotor->power2lift,
                     .position = abs_location.t },
-                c.cfg);
+                c.cfg,
+                c.phase);
         }
-        set_rotor_angular_velocity(rotor_id, rotor->w, c.cfg, P.power);
+        set_rotor_angular_velocity(rotor_id, rotor->w, c.cfg, c.phase, P.power);
         if (rotor->rbp != nullptr) {
             rotor->rbp->w_ = rotor->angular_velocity * z3_from_3x3(rotor->rbp->rotation_);
             auto T0 = rbp_.abs_transformation();
@@ -248,7 +257,8 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                         drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
                         drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz}),
                 .position = abs_location.t },
-            c.cfg);
+            c.cfg,
+            c.phase);
         if (wing->trail_source.has_value()) {
             const auto& s = *wing->trail_source;
             if (std::abs(lvel) > s.minimum_velocity) {
@@ -270,10 +280,11 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
             integrate_force(
                 VectorAtPosition<float, ScenePos, 3>{
                     .vector = - (fly_forward_state_.wants_to_fly_forward_factor_ /
-                                 std::sqrt(l2)) *
+                                std::sqrt(l2)) *
                                 dir,
                     .position = abs_com() },
-                c.cfg);
+                c.cfg,
+                c.phase);
         }
     }
     for (auto& [tire_id, tire] : tires_) {
@@ -428,11 +439,14 @@ void RigidBodyVehicle::advance_time(
     std::list<Beacon>* beacons,
     const PhysicsPhase& phase)
 {
+    if (!phase.group.rigid_bodies.contains(&rbp_)) {
+        return;
+    }
     auto time_step = PhysicsTimeStep{
         .dt_step = cfg.dt,
-        .dt_substep = cfg.dt_substeps()
+        .dt_substep = cfg.dt_substeps(phase)
     };
-    auto dt_substeps = cfg.dt_substeps();
+    auto dt_substeps = cfg.dt_substeps(phase);
     advance_time_skate(cfg, world);
     rbp_.advance_time(dt_substeps);
     for (auto& [_, t] : tires_) {
@@ -449,11 +463,13 @@ void RigidBodyVehicle::advance_time(
         }
     }
 #ifdef COMPUTE_POWER
-    float nrg = energy();
-    if (!std::isnan(energy_old_)) {
-        power_ = (nrg - energy_old_) / dt;
+    {
+        float nrg = energy();
+        if (!std::isnan(energy_old_)) {
+            power_ = (nrg - energy_old_) / dt;
+        }
+        energy_old_ = nrg;
     }
-    energy_old_ = nrg;
 #endif
 }
 
@@ -572,20 +588,22 @@ void RigidBodyVehicle::set_tire_angular_velocity(
     size_t id,
     float w,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     float& available_power)
 {
     auto& tire = get_tire(id);
-    set_base_angular_velocity(tire, tire.rotation_axis(), w, cfg, available_power);
+    set_base_angular_velocity(tire, tire.rotation_axis(), w, cfg, phase, available_power);
 }
 
 void RigidBodyVehicle::set_rotor_angular_velocity(
     size_t id,
     float w,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     float& available_power)
 {
     auto& rotor = get_rotor(id);
-    set_base_angular_velocity(rotor, rotor.rotation_axis(), w, cfg, available_power);
+    set_base_angular_velocity(rotor, rotor.rotation_axis(), w, cfg, phase, available_power);
 }
 
 void RigidBodyVehicle::set_base_angular_velocity(
@@ -593,6 +611,7 @@ void RigidBodyVehicle::set_base_angular_velocity(
     const FixedArray<float, 3>& rotation_axis,
     float w,
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     float& available_power)
 {
     if (base_rotor.rbp != nullptr) {
@@ -620,10 +639,10 @@ void RigidBodyVehicle::set_base_angular_velocity(
             auto available_dL = std::copysign(
                 std::min(
                     std::abs(dw) / I,
-                    available_torque * cfg.dt_substeps()),
+                    available_torque * cfg.dt_substeps(phase)),
                 dw);
             if (requires_power) {
-                auto ap = std::abs(available_power) - available_dL / cfg.dt_substeps() * base_rotor.angular_velocity;
+                auto ap = std::abs(available_power) - available_dL / cfg.dt_substeps(phase) * base_rotor.angular_velocity;
                 if (ap < 1e-12) {
                     THROW_OR_ABORT("available_power too strongly negative");
                 }
@@ -1123,6 +1142,15 @@ const ICollisionNormalModifier& RigidBodyVehicle::get_collision_normal_modifier(
         THROW_OR_ABORT("Rigid body has no collision normal modifier");
     }
     return *collision_normal_modifier_;
+}
+
+void RigidBodyVehicle::get_rigid_pulses(std::unordered_set<RigidBodyPulses*>& rbps) {
+    rbps.insert(&rbp_);
+    for (auto& [_, t] : tires_) {
+        if (t.rbp != nullptr) {
+            rbps.insert(t.rbp);
+        }
+    }
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {
