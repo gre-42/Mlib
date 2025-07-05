@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Uninitialized.hpp>
 #include <cmath>
 #include <optional>
@@ -18,9 +19,21 @@ public:
         : alpha_{ alpha }
         , s_{ x0 }
     {}
+    ExponentialSmoother(const TFloat& alpha, const TData& x0, const TFloat& dt)
+        : alpha_{ std::pow(alpha, dt) }
+        , s_{ x0 }
+    {}
     const TData& operator () (const TData& x) {
         if (s_.has_value()) {
-            *s_ = (1 - alpha_) * (*s_) + alpha_ * x;
+            *s_ = lerp(*s_, x, alpha_);
+        } else {
+            s_ = x;
+        }
+        return *s_;
+    }
+    const TData& operator () (const TData& x, const TFloat& dt) {
+        if (s_.has_value()) {
+            *s_ = lerp(*s_, x, std::pow(alpha_, 1 / dt));
         } else {
             s_ = x;
         }
