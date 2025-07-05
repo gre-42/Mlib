@@ -1152,6 +1152,11 @@ void RigidBodyVehicle::get_rigid_pulses(std::unordered_set<RigidBodyPulses*>& rb
             rbps.insert(t.rbp);
         }
     }
+    for (auto& [_, r] : rotors_) {
+        if (r->rbp != nullptr) {
+            rbps.insert(r->rbp);
+        }
+    }
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {
