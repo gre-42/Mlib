@@ -159,7 +159,8 @@ static void handle_extended_reflection(
                             .fit = fit,
                             .distance = sap,
                             .Ks = tire.sKs,
-                            .Ka = tire.sKa
+                            .Ka = tire.sKa,
+                            .exponent = tire.sKe
                         },
                         .lambda_min = c.o1.mass() * c.history.cfg.velocity_lambda_min,
                         .lambda_max = 0 },

@@ -11,6 +11,7 @@ Tire::Tire(
     float brake_torque,
     float sKs,
     float sKa,
+    float sKe,
     const Interp<float>& stiction_coefficient,
     const CombinedMagicFormula<float>& magic_formula,
     const FixedArray<float, 3>& vehicle_mount_0,
@@ -25,6 +26,7 @@ Tire::Tire(
     , brake_force{ brake_force }
     , sKs{ sKs }
     , sKa{ sKa }
+    , sKe{ sKe }
     , stiction_coefficient{ stiction_coefficient }
     , vehicle_mount_0{ vehicle_mount_0 }
     , vehicle_mount_1{ vehicle_mount_1 }

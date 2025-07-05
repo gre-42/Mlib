@@ -357,7 +357,8 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                         .fit = 1.f,
                         .distance = dot0d((abs_vehicle_mount_0 - tire.rbp->abs_position()).casted<float>(), abs_vertical_line),
                         .Ks = tire.sKs,
-                        .Ka = tire.sKa
+                        .Ka = tire.sKa,
+                        .exponent = tire.sKe
                     },
                     .lambda_min = tire.rbp->mass_ * c.cfg.velocity_lambda_min,
                     .lambda_max = -tire.rbp->mass_ * c.cfg.velocity_lambda_min },

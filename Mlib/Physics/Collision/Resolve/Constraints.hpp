@@ -122,6 +122,7 @@ struct ShockAbsorberConstraint {
     float distance;
     float Ks;  // K_spring
     float Ka;  // K_absorber
+    float exponent;
 };
 
 using BoundedPlaneEqualityConstraint = BoundedFreeConstraint1D<PlaneEqualityConstraint>;

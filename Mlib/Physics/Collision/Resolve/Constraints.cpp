@@ -497,7 +497,8 @@ ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
 
 void ShockAbsorberContactInfo1::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     ShockAbsorberConstraint& sc = sc_.constraint;
-    float F = sc.Ks * sc.distance + sc.Ka *
+    float dist = sign(sc.distance) * std::pow(std::abs(sc.distance), sc.exponent);
+    float F = sc.Ks * dist + sc.Ka *
         dot0d(
             rbp_.velocity_at_position(p_),
             sc.normal_impulse.normal.casted<float>());
@@ -520,7 +521,8 @@ ShockAbsorberContactInfo2::ShockAbsorberContactInfo2(
 
 void ShockAbsorberContactInfo2::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     ShockAbsorberConstraint& sc = sc_.constraint;
-    float F = sc.Ks * sc.distance + sc.Ka *
+    float dist = sign(sc.distance) * std::pow(std::abs(sc.distance), sc.exponent);
+    float F = sc.Ks * dist + sc.Ka *
         dot0d(
             rbp1_.velocity_at_position(p_) - rbp0_.velocity_at_position(p_),
             sc.normal_impulse.normal.casted<float>());

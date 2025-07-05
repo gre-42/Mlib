@@ -113,7 +113,7 @@ DECLARE_ARGUMENT(brake_force);
 DECLARE_ARGUMENT(brake_torque);
 DECLARE_ARGUMENT(Ks);
 DECLARE_ARGUMENT(Ka);
-
+DECLARE_ARGUMENT(Ke);
 }
 
 static inline float stow(float v) {
@@ -325,6 +325,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto wheel_brake_torque = wdb.at<float>(KnownWheels::brake_torque) * N * meters;
         auto wheel_Ks = wdb.at<float>(KnownWheels::Ks) * N;
         auto wheel_Ka = wdb.at<float>(KnownWheels::Ka) * N / (meters / seconds);
+        auto wheel_Ke = wdb.at<float>(KnownWheels::Ke);
         Interp<float> mus{
             wdb.at<std::vector<float>>(KnownWheels::musF),
             wdb.at<std::vector<float>>(KnownWheels::musC),
@@ -394,6 +395,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                         wheel_brake_torque,
                         wheel_Ks,
                         wheel_Ka,
+                        wheel_Ke,
                         mus,
                         CombinedMagicFormula<float>{
                             .f = FixedArray<MagicFormulaArgmax<float>, 2>{

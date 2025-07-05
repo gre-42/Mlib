@@ -32,6 +32,7 @@ DECLARE_ARGUMENT(brake_force);
 DECLARE_ARGUMENT(brake_torque);
 DECLARE_ARGUMENT(Ks);
 DECLARE_ARGUMENT(Ka);
+DECLARE_ARGUMENT(Ke);
 DECLARE_ARGUMENT(musF);
 DECLARE_ARGUMENT(musC);
 DECLARE_ARGUMENT(tire_id);
@@ -101,6 +102,7 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<float>(KnownArgs::brake_torque) * N * meters,
             args.arguments.at<float>(KnownArgs::Ks) * N,
             args.arguments.at<float>(KnownArgs::Ka) * N / (meters / seconds),
+            args.arguments.at<float>(KnownArgs::Ke),
             mus,
             CombinedMagicFormula<float>{
                 .f = FixedArray<MagicFormulaArgmax<float>, 2>{

@@ -27,6 +27,7 @@ public:
         float brake_torque,
         float sKs,
         float sKa,
+        float sKe,
         const Interp<float>& stiction_coefficient,
         const CombinedMagicFormula<float>& magic_formula,
         const FixedArray<float, 3>& vehicle_mount_0,
@@ -43,6 +44,7 @@ public:
     float brake_force;
     float sKs;
     float sKa;
+    float sKe;
     Interp<float> stiction_coefficient;
     FixedArray<float, 3> vehicle_mount_0;
     FixedArray<float, 3> vehicle_mount_1;
