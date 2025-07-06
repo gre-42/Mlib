@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Array/Fixed_History.hpp>
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
@@ -305,6 +306,7 @@ public:
 
     RigidBodyPulses rbp_;
     std::list<std::unique_ptr<CollisionObserver>> collision_observers_;
+    FixedHistory<size_t, 4> substep_history_;
 
     std::string name_;
     std::string asset_id_;

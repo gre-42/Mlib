@@ -1,5 +1,6 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Array/Fixed_History.hpp>
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Math.hpp>
@@ -249,25 +250,38 @@ void test_fixed_array_of_string() {
     lerr() << a(1, 2) << " " << b(2);
 }
 
+void test_fixed_history() {
+    FixedHistory<int, 4> h;
+    h.append(3);
+    h.append(4);
+    linfo() << max(h);
+}
+
 int main(int argc, char **argv) {
     enable_floating_point_exceptions();
-    test_array_index();
-    test_data();
-    test_savetxt2d_loadtxt();
-    test_row_range();
-    test_vH();
-    test_sparse_array();
-    test_sparse_array2();
-    test_move();
-    test_element_iterable();
-    test_save_binary();
-    test_take();
-    test_fixed_array();
-    test_fixed_array_initialization();
-    test_fixed_array_slicing();
-    test_append();
-    test_copy();
-    test_semi_fix();
-    test_fixed_array_of_string();
+    try {
+        test_array_index();
+        test_data();
+        test_savetxt2d_loadtxt();
+        test_row_range();
+        test_vH();
+        test_sparse_array();
+        test_sparse_array2();
+        test_move();
+        test_element_iterable();
+        test_save_binary();
+        test_take();
+        test_fixed_array();
+        test_fixed_array_initialization();
+        test_fixed_array_slicing();
+        test_append();
+        test_copy();
+        test_semi_fix();
+        test_fixed_array_of_string();
+        test_fixed_history();
+    } catch (const std::runtime_error& e) {
+        lerr() << "Exception: " << e.what();
+        return 1;
+    }
     return 0;
 }

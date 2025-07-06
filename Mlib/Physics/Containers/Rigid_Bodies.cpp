@@ -474,6 +474,7 @@ bool RigidBodies::empty() const {
 struct RigidBodyAndMesh {
     RigidBodyVehicle& rb;
     RigidBodyAndMeshes::Mesh& mesh;
+    BoundingSphere<CompressedScenePos, 3> mesh_sphere;
 };
 
 std::vector<CollisionGroup> RigidBodies::collision_groups() {
@@ -487,7 +488,10 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
                 if (any(mesh.physics_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) {
                     bullet_line_segments.insert(&m.rigid_body->rbp_);
                 } else {
-                    standard_movables.emplace_back(m.rigid_body.get(), mesh);
+                    standard_movables.emplace_back(
+                        m.rigid_body.get(),
+                        mesh,
+                        mesh.mesh.first.transformed(m.rigid_body->rbp_.abs_transformation()));
                 }
             }
         }
@@ -495,7 +499,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
     auto clusters = cluster_by_flood_fill(
         standard_movables,
         [this](RigidBodyAndMesh& a, RigidBodyAndMesh& b){
-            return a.mesh.mesh.first.intersects(b.mesh.mesh.first, (CompressedScenePos)cfg_.max_penetration);
+            return a.mesh_sphere.intersects(b.mesh_sphere, (CompressedScenePos)cfg_.max_penetration);
         });
     PowerOfTwoDivider<size_t> p2d{ cfg_.nsubsteps };
     std::vector<CollisionGroup> result;
@@ -508,12 +512,19 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
         .rigid_bodies = std::move(bullet_line_segments)
     });
 
+    // linfo() << "clusters";
     for (auto& c : clusters) {
         CollisionGroup g{
             .penetration_class = PenetrationClass::STANDARD,
             .nsubsteps = 0
         };
+        // linfo() << "g";
         for (const auto& e : c) {
+            if (bullet_line_group.rigid_bodies.contains(&e->rb.rbp_)) {
+                THROW_OR_ABORT(
+                    "Rigid body \"" + e->rb.name() + "\" contains both, bullet "
+                    "line segments and standard meshes, which is not supported");
+            }
             auto vmax = e->rb.rbp_.penetration_limits_.vmax_translation(cfg_.dt);
             auto wmax = e->rb.rbp_.penetration_limits_.wmax(cfg_.dt);
             // If radius == inf, which it is in avatars, wmax == 0.
@@ -524,19 +535,19 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
             auto nf = std::max(
                 std::sqrt(sum(squared(e->rb.rbp_.v_com_))) / vmax,
                 std::sqrt(sum(squared(e->rb.rbp_.w_))) / wmax);
+            // linfo() << "  " << e->rb.name() << " - " << nf;
             if (nf - 1e-6 > integral_to_float<float>(cfg_.nsubsteps)) {
                 throw std::runtime_error(
                     "Velocity or angular velocity of rigid body \"" + e->rb.name() +
                     "\", out of bounds. " +
                     "n (float): " + std::to_string(nf));
             }
-            auto ni = std::min(cfg_.nsubsteps, float_to_integral<size_t>(std::ceil((1.f + cfg_.max_velocity_increase) * nf)));
-            g.nsubsteps = std::max(g.nsubsteps, p2d.greatest_divider(ni));
-            if (bullet_line_group.rigid_bodies.contains(&e->rb.rbp_)) {
-                THROW_OR_ABORT(
-                    "Rigid body \"" + e->rb.name() + "\" contains both, bullet "
-                    "line segments and standard meshes, which is not supported");
-            }
+            auto ni = p2d.greatest_divider(
+                std::min(
+                    cfg_.nsubsteps,
+                    float_to_integral<size_t>(std::ceil((1.f + cfg_.max_velocity_increase) * nf))));
+            e->rb.substep_history_.append(ni);
+            g.nsubsteps = std::max(g.nsubsteps, max(e->rb.substep_history_));
             e->rb.get_rigid_pulses(g.rigid_bodies);
             g.meshes.insert(e->mesh.mesh.second.get());
         }
@@ -544,7 +555,8 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
         if (g.divider * g.nsubsteps != cfg_.nsubsteps) {
             THROW_OR_ABORT("Error computing collision group substep divider");
         }
-        result.push_back(g);
+        // linfo() << "  n: " << g.nsubsteps;
+        result.push_back(std::move(g));
     }
     return result;
 }

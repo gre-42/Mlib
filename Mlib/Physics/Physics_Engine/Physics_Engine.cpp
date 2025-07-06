@@ -49,7 +49,9 @@ void PhysicsEngine::collide(
     std::vector<RigidBodyAndMeshes*> ovector;
     ovector.reserve(rigid_bodies_.objects_.size());
     for (auto& o : rigid_bodies_.objects_) {
-        if ((o.rigid_body->mass() == INFINITY) || o.rigid_body->is_deactivated_avatar())
+        if ((o.rigid_body->mass() == INFINITY) ||
+            o.rigid_body->is_deactivated_avatar() ||
+            !phase.group.rigid_bodies.contains(&o.rigid_body->rbp_))
         {
             continue;
         }
