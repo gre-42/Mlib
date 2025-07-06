@@ -16,9 +16,9 @@ struct GameLogicConfig {
     float visible_after_delete_time = 3 * seconds;
     bool only_terrain = true;
     CompressedScenePos spawn_point_can_be_seen_y_offset = (CompressedScenePos)(2 * meters);
-    // One spawner visits each spawn point BVH every 5 seconds.
+    // The one spawner visits each spawn point BVH every 5 seconds.
     size_t spawn_points_nsubdivisions = 5 * 60;
-    // One spawner visits at most 10 spawn points.
+    // The one spawner visits at most 10 spawn points.
     size_t spawn_points_visited_max = 10;
     CompressedScenePos r_occupied_spawn_point = (CompressedScenePos)(5 * meters);
 };

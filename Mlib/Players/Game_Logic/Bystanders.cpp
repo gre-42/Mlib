@@ -98,7 +98,7 @@ bool Bystanders::spawn_for_vip(
             return false;
         }())
         {
-            return true;
+            continue;
         }
         bool spotted = vip_->can_see(
             funpack(n.sp->trafo.t),
@@ -109,7 +109,7 @@ bool Bystanders::spawn_for_vip(
 
             // Abort if visible.
             if (spotted) {
-                return true;
+                continue;
             }
             // Abort if not visible after x seconds.
             if (!vip_->can_see(
@@ -118,27 +118,23 @@ bool Bystanders::spawn_for_vip(
                 funpack(cfg_.spawn_point_can_be_seen_y_offset),
                 cfg_.visible_after_spawn_time))
             {
-                return true;
+                continue;
             }
-            linfo() << "near";
         } else {
             // The spawn point is far away from the VIP.
 
             // Abort if not visible.
             if (!spotted) {
-                return true;
+                continue;
             }
-            linfo() << "far";
         }
         if (spawner_.try_spawn_at_spawn_point(spawner, n.sp->trafo)) {
             if (spotted) {
                 spawner.set_spotted_by_vip();
             }
             success = true;
-            return false;
-        } else {
-            return true;
         }
+        break;
     }
     // current_bvh_ = (current_bvh_ + 1) % spawn_.spawn_points_bvhs_split_.size();
     current_bvh_ = current_bvh_rng_() % spawner_.spawn_points_bvh_split_.size();
