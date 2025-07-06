@@ -58,7 +58,8 @@ public:
 
     FixedArray<float, 3, 3> rotation_;
     FixedArray<ScenePos, 3> abs_com_;
-
+    
+    PenetrationLimitsFactory penetration_limits_;
 private:
     bool I_is_diagonal_;
     void update_abs_I_and_inv();
@@ -67,7 +68,6 @@ private:
 #ifndef NDEBUG
     mutable FixedArray<float, 3, 3> abs_I_rotation_;
 #endif
-    PenetrationLimitsFactory penetration_limits_;
 };
 
 }

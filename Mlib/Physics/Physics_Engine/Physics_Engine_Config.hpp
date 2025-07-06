@@ -47,6 +47,7 @@ struct PhysicsEngineConfig {
     bool no_slip = false;
     float hand_brake_velocity = 2.f * kph;
     float max_penetration = 40.f * cm;
+    float max_velocity_increase = 30.f * percent;
 
     // Friction
     // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm

@@ -29,6 +29,9 @@ void GravityEfp::increment_external_forces(
             (rb.rigid_body->mass() != INFINITY) &&
             phase.group.rigid_bodies.contains(&rb.rigid_body->rbp_))
         {
+            if (rb.rigid_body->is_deactivated_avatar()) {
+                THROW_OR_ABORT("Attempt to integrate gravity of deactivated avatar");
+            }
             auto dt = cfg.dt_substeps(phase);
             rb.rigid_body->rbp_.integrate_delta_v(world.gravity->vector * dt, dt);
         }

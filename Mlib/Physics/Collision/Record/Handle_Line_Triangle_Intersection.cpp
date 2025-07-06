@@ -49,6 +49,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     {
         THROW_OR_ABORT("Non-static rigid body \"" + c.o1.name() + "\" is not in the collision group (1)");
     }
+    if (c.o0.is_deactivated_avatar()) {
+        THROW_OR_ABORT("Attempt to collide deactivated avatar (0): \"" + c.o0.name() + '"');
+    }
+    if (c.o1.is_deactivated_avatar()) {
+        THROW_OR_ABORT("Attempt to collide deactivated avatar (1): \"" + c.o1.name() + '"');
+    }
     IntersectionInfo iinfo;
     if (c.q0.has_value()) {
         if (c.l1.has_value()) {

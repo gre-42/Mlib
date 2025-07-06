@@ -29,13 +29,13 @@ RigidBodyPulses::RigidBodyPulses(
     , w_{ w }
     , rotation_{ tait_bryan_angles_2_matrix(rotation) }
     , abs_com_{ dot1d(rotation_, com_).casted<ScenePos>() + position }
+    , penetration_limits_{ penetration_limits }
     , I_is_diagonal_{ I_is_diagonal }
     , abs_I_{ fixed_nans<float, 3, 3>() }
     , abs_I_inv_{ fixed_nans<float, 3, 3>() }
 #ifndef NDEBUG
     , abs_I_rotation_{ fixed_nans<float, 3, 3>() }
 #endif
-    , penetration_limits_{ penetration_limits }
 {}
 
 void RigidBodyPulses::advance_time(float dt)

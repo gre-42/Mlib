@@ -480,7 +480,7 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
     std::list<RigidBodyAndMesh> standard_movables;
     std::unordered_set<RigidBodyPulses*> bullet_line_segments;
     for (auto& m : objects_) {
-        if (m.rigid_body->mass() != INFINITY) {
+        if ((m.rigid_body->mass() != INFINITY) && !m.rigid_body->is_deactivated_avatar()) {
             for (auto& mesh : m.meshes) {
                 // Bullet line segments are artificially long,
                 // so they work without substepping.
@@ -514,19 +514,24 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
             .nsubsteps = 0
         };
         for (const auto& e : c) {
-            auto v_total =
-                (SceneDir)e->mesh.mesh.first.radius * std::sqrt(sum(squared(e->rb.rbp_.w_))) +
-                std::sqrt(sum(squared(e->rb.rbp_.v_com_)));
-            auto nf = v_total * cfg_.dt / cfg_.max_penetration;
-            try {
-                g.nsubsteps = std::max(g.nsubsteps, p2d.greatest_divider(float_to_integral<size_t>(std::ceil(nf))));
-            } catch (const std::runtime_error& ex) {
-                throw std::runtime_error(
-                    "Cannot compute substeps for rigid body \"" + e->rb.name() +
-                    "\", indicating that velocities or angular velocities are out of bounds. " +
-                    "n (float): " + std::to_string(nf) +
-                    ". Message: " + ex.what());
+            auto vmax = e->rb.rbp_.penetration_limits_.vmax_translation(cfg_.dt);
+            auto wmax = e->rb.rbp_.penetration_limits_.wmax(cfg_.dt);
+            // If radius == inf, which it is in avatars, wmax == 0.
+            // In this case, the angular velocity is not taken into account.
+            if (wmax == 0.f) {
+                wmax = INFINITY;
             }
+            auto nf = std::max(
+                std::sqrt(sum(squared(e->rb.rbp_.v_com_))) / vmax,
+                std::sqrt(sum(squared(e->rb.rbp_.w_))) / wmax);
+            if (nf - 1e-6 > integral_to_float<float>(cfg_.nsubsteps)) {
+                throw std::runtime_error(
+                    "Velocity or angular velocity of rigid body \"" + e->rb.name() +
+                    "\", out of bounds. " +
+                    "n (float): " + std::to_string(nf));
+            }
+            auto ni = std::min(cfg_.nsubsteps, float_to_integral<size_t>(std::ceil((1.f + cfg_.max_velocity_increase) * nf)));
+            g.nsubsteps = std::max(g.nsubsteps, p2d.greatest_divider(ni));
             if (bullet_line_group.rigid_bodies.contains(&e->rb.rbp_)) {
                 THROW_OR_ABORT(
                     "Rigid body \"" + e->rb.name() + "\" contains both, bullet "

@@ -119,6 +119,9 @@ void RigidBodyVehicle::reset_forces(const PhysicsPhase& phase) {
     if (!phase.group.rigid_bodies.contains(&rbp_)) {
         return;
     }
+    if (is_deactivated_avatar()) {
+        THROW_OR_ABORT("Attempt to reset forces of deactivated avatar");
+    }
     for (auto& e : engines_) {
         e.second.reset_forces();
     }
@@ -187,6 +190,9 @@ void RigidBodyVehicle::integrate_force(
     const PhysicsEngineConfig& cfg,
     const PhysicsPhase& phase)
 {
+    if (is_deactivated_avatar()) {
+        THROW_OR_ABORT("Attempt to integrate forces of deactivated avatar");
+    }
     integrate_force(F, cfg, phase);
     if (damping != 0) {
         auto vn = n * dot0d(rbp_.v_com_, n);
@@ -203,6 +209,9 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
 {
     if (!c.phase.group.rigid_bodies.contains(&rbp_)) {
         return;
+    }
+    if (is_deactivated_avatar()) {
+        THROW_OR_ABORT("Attempt to collide deactivated avatar with air");
     }
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
@@ -441,6 +450,9 @@ void RigidBodyVehicle::advance_time(
 {
     if (!phase.group.rigid_bodies.contains(&rbp_)) {
         return;
+    }
+    if (is_deactivated_avatar()) {
+        THROW_OR_ABORT("Attempt to move deactivated avatar");
     }
     auto time_step = PhysicsTimeStep{
         .dt_step = cfg.dt,
