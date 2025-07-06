@@ -87,19 +87,18 @@ bool Bystanders::spawn_for_vip(
     for (size_t i = 0; i < std::min(cfg_.spawn_points_visited_max, neighboring_spawn_points.size()); ++i) {
         const auto& n = neighboring_spawn_points[i];
         // Abort if another car is nearby.
-        {
-            bool exists = false;
+        if ([&](){
             for (const auto& [_, player2] : players_.players()) {
                 if (player2->has_scene_vehicle()) {
                     if (sum(squared(funpack(n.sp->trafo.t) - player2->scene_node()->position())) < squared(cfg_.r_neighbors)) {
-                        exists = true;
-                        break;
+                        return true;
                     }
                 }
             }
-            if (exists) {
-                return true;
-            }
+            return false;
+        }())
+        {
+            return true;
         }
         bool spotted = vip_->can_see(
             funpack(n.sp->trafo.t),
@@ -121,6 +120,7 @@ bool Bystanders::spawn_for_vip(
             {
                 return true;
             }
+            linfo() << "near";
         } else {
             // The spawn point is far away from the VIP.
 
@@ -128,6 +128,7 @@ bool Bystanders::spawn_for_vip(
             if (!spotted) {
                 return true;
             }
+            linfo() << "far";
         }
         if (spawner_.try_spawn_at_spawn_point(spawner, n.sp->trafo)) {
             if (spotted) {
