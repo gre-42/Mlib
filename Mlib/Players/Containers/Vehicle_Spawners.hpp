@@ -19,6 +19,7 @@ public:
     }
     void advance_time(float dt);
     size_t nactive() const;
+    void print_status() const;
 private:
     std::map<std::string, std::unique_ptr<VehicleSpawner>> spawners_;
 };

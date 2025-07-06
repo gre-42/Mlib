@@ -44,8 +44,11 @@ void GameLogic::advance_time(float dt, const StaticWorld& world) {
     vehicle_changer_.change_vehicles();
     supply_depots_.handle_supply_depots(dt);
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
-        lerr() << "Players active: " << players_.nactive();
-        lerr() << "Spawners active: " << vehicle_spawners_.nactive();
-        lerr() << "ntry_spawns " << spawner.ntry_spawns_ << " , ndelete " << spawner.ndelete_;
+        linfo() << "Players active: " << players_.nactive();
+        linfo() << "Spawners active: " << vehicle_spawners_.nactive();
+        linfo() << "ntry_spawns " << spawner.ntry_spawns_ << " , ndelete " << spawner.ndelete_;
+    }
+    if (getenv_default_bool("PRINT_SPAWNER_STATUS", false)) {
+        vehicle_spawners_.print_status();
     }
 }

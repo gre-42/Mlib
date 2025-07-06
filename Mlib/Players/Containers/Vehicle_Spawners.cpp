@@ -1,6 +1,8 @@
 #include "Vehicle_Spawners.hpp"
+#include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <iomanip>
 
 using namespace Mlib;
 
@@ -34,4 +36,16 @@ size_t VehicleSpawners::nactive() const {
         nactive += s->has_scene_vehicle();
     }
     return nactive;
+}
+
+void VehicleSpawners::print_status() const {
+    for (const auto& [n, s] : spawners_) {
+        std::stringstream sstr;
+        sstr << "Spawner " << std::left << std::setw(15) << std::string("\"" + n + "\"") << ": active=" << s->has_scene_vehicle();
+        if (s->has_player()) {
+            sstr << ", parking=" << (int)s->get_player()->is_parking()
+                << ", pedestrian=" << (int)s->get_player()->is_pedestrian();
+        }
+        linfo() << sstr.str();
+    }
 }
