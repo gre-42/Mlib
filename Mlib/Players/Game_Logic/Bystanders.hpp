@@ -17,7 +17,6 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 
 class Bystanders {
-    friend GameLogic;
 public:
     Bystanders(
         VehicleSpawners& vehicle_spawners,
@@ -26,9 +25,9 @@ public:
         Spawner& spawner,
         GameLogicConfig& cfg);
     ~Bystanders();
+    void handle_bystanders();
     void set_vip(const DanglingBaseClassPtr<Player>& vip);
 private:
-    void handle_bystanders();
     bool spawn_for_vip(
         VehicleSpawner& spawner,
         const FixedArray<float, 3>& vip_z,

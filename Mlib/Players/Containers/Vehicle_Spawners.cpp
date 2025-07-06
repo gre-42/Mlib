@@ -27,3 +27,11 @@ void VehicleSpawners::advance_time(float dt) {
         s.second->advance_time(dt);
     }
 }
+
+size_t VehicleSpawners::nactive() const {
+    size_t nactive = 0;
+    for (const auto& [_, s] : spawners_) {
+        nactive += s->has_scene_vehicle();
+    }
+    return nactive;
+}
