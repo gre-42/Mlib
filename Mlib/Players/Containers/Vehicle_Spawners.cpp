@@ -41,7 +41,7 @@ size_t VehicleSpawners::nactive() const {
 void VehicleSpawners::print_status() const {
     for (const auto& [n, s] : spawners_) {
         std::stringstream sstr;
-        sstr << "Spawner " << std::left << std::setw(15) << std::string("\"" + n + "\"") << ": active=" << s->has_scene_vehicle();
+        sstr << "Spawner " << std::left << std::setw(15) << std::string("\"" + n + "\"") << ": active=" << (int)s->has_scene_vehicle();
         if (s->has_player()) {
             sstr << ", parking=" << (int)s->get_player()->is_parking()
                 << ", pedestrian=" << (int)s->get_player()->is_pedestrian();
