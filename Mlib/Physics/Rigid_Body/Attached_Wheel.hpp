@@ -17,7 +17,7 @@ public:
 
     FixedArray<float, 3> velocity_at_position(const FixedArray<ScenePos, 3>& position) const;
     float effective_mass(const VectorAtPosition<float, ScenePos, 3>& vp) const;
-    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w = 0.f);
+    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt);
 private:
     const RigidBodyPulses& vehicle_;
     RigidBodyPulses& wheel_;

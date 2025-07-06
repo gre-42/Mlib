@@ -6,6 +6,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
 #include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -20,8 +21,7 @@ RigidBodyPulses::RigidBodyPulses(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     bool I_is_diagonal,
-    float vmax,
-    float wmax)
+    const PenetrationLimitsFactory& penetration_limits)
     : mass_{ mass }
     , I_{ I }
     , com_{ com }
@@ -35,8 +35,7 @@ RigidBodyPulses::RigidBodyPulses(
 #ifndef NDEBUG
     , abs_I_rotation_{ fixed_nans<float, 3, 3>() }
 #endif
-    , vmax_{ vmax }
-    , wmax_{ wmax }
+    , penetration_limits_{ penetration_limits }
 {}
 
 void RigidBodyPulses::advance_time(float dt)
@@ -144,33 +143,35 @@ FixedArray<float, 3> RigidBodyPulses::dot1d_abs_I(const FixedArray<float, 3>& x)
     }
 }
 
-void RigidBodyPulses::integrate_delta_v(const FixedArray<float, 3>& dv) {
+void RigidBodyPulses::integrate_delta_v(const FixedArray<float, 3>& dv, float dt) {
     v_com_ += dv;
-    if (vmax_ != INFINITY) {
+    auto vmax = penetration_limits_.vmax_translation(dt);
+    if (vmax != INFINITY) {
         auto l = std::sqrt(sum(squared(v_com_)));
-        if (l > vmax_) {
-            v_com_ *= vmax_ / l;
+        if (l > vmax) {
+            v_com_ *= vmax / l;
         }
     }
 }
 
-void RigidBodyPulses::integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w) {
+void RigidBodyPulses::integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w, float dt) {
     w_ += (1 + extra_w) * solve_abs_I(dL);
-    if (wmax_ != INFINITY) {
+    float wmax = penetration_limits_.wmax(dt);
+    if (wmax != INFINITY) {
         auto l = std::sqrt(sum(squared(w_)));
-        if (l > wmax_) {
-            w_ *= wmax_ / l;
+        if (l > wmax) {
+            w_ *= wmax / l;
         }
     }
 }
 
-void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w)
+void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt)
 {
     if (any(abs(J.vector) > 1e5f)) {
         THROW_OR_ABORT("J.vector out of bounds");
     }
-    integrate_delta_v(J.vector / mass_);
-    integrate_delta_angular_momentum(cross((J.position - abs_com_).casted<float>(), J.vector), extra_w);
+    integrate_delta_v(J.vector / mass_, dt);
+    integrate_delta_angular_momentum(cross((J.position - abs_com_).casted<float>(), J.vector), extra_w, dt);
 }
 
 float RigidBodyPulses::energy() const {

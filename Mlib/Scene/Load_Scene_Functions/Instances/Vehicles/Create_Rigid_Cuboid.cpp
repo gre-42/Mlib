@@ -74,7 +74,10 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args) const
 
 RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& args) const
 {
-    auto pl = physics_engine.config().penetration_limits();
+    auto radius = std::sqrt(sum(squared(abs(args.size / 2.f))));
+    auto pl = PenetrationLimitsFactory{
+        physics_engine.config().max_penetration,
+        radius};
     auto rb = rigid_cuboid(
         global_object_pool,
         args.name,
@@ -85,7 +88,7 @@ RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& a
         args.v,
         args.w,
         args.I_rotation,
-        args.with_penetration_limits ? &pl : nullptr,
+        args.with_penetration_limits ? pl : PenetrationLimitsFactory::inf(),
         args.geographic_coordinates);
     rb->flags_ = args.flags;
     rb->set_waypoint_ofs(args.waypoint_dy);

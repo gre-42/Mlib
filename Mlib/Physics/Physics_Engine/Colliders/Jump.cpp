@@ -8,23 +8,18 @@ void Mlib::jump(
     RigidBodyPulses& o0,
     RigidBodyPulses& o1,
     float dv,
-    const VectorAtPosition<float, ScenePos, 3>& vp)
+    const VectorAtPosition<float, ScenePos, 3>& vp,
+    float dt)
 {
     if (o0.mass_ == INFINITY) {
         float mc = o1.effective_mass(vp);
         float lambda = - mc * dv;
-        o1.integrate_impulse({
-            .vector = -vp.vector * lambda,
-            .position = vp.position});
+        o1.integrate_impulse({.vector = -vp.vector * lambda, .position = vp.position}, 0.f, dt);
     } else {
         float mc0 = o0.effective_mass(vp);
         float mc1 = o1.effective_mass(vp);
         float lambda = - (mc0 * mc1 / (mc0 + mc1)) * dv;
-        o0.integrate_impulse({
-            .vector = vp.vector * lambda,
-            .position = vp.position});
-        o1.integrate_impulse({
-            .vector = -vp.vector * lambda,
-            .position = vp.position});
+        o0.integrate_impulse({.vector = vp.vector * lambda, .position = vp.position}, 0.f, dt);
+        o1.integrate_impulse({.vector = -vp.vector * lambda, .position = vp.position}, 0.f, dt);
     }
 }

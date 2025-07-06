@@ -12,6 +12,7 @@ void jump(
     RigidBodyPulses& o0,
     RigidBodyPulses& o1,
     float dv,
-    const VectorAtPosition<float, ScenePos, 3>& vp);
+    const VectorAtPosition<float, ScenePos, 3>& vp,
+    float dt);
 
 }

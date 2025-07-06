@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Physics_Engine/Penetration_Limits_Factory.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <iosfwd>
 
@@ -27,8 +28,7 @@ public:
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         bool I_is_diagonal,
-        float vmax,
-        float wmax);
+        const PenetrationLimitsFactory& penetration_limits);
 
     FixedArray<float, 3> abs_z() const;
     FixedArray<ScenePos, 3> abs_position() const;
@@ -42,9 +42,9 @@ public:
     FixedArray<float, 3> dot1d_abs_I(const FixedArray<float, 3>& x) const;
     FixedArray<ScenePos, 3> transform_to_world_coordinates(const FixedArray<float, 3>& v) const;
     void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<ScenePos, 3>& position);
-    void integrate_delta_v(const FixedArray<float, 3>& dv);
-    void integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w = 0.f);
-    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w = 0.f);
+    void integrate_delta_v(const FixedArray<float, 3>& dv, float dt);
+    void integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w, float dt);
+    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt);
     float energy() const;
     float effective_mass(const VectorAtPosition<float, ScenePos, 3>& vp) const;
 
@@ -67,8 +67,7 @@ private:
 #ifndef NDEBUG
     mutable FixedArray<float, 3, 3> abs_I_rotation_;
 #endif
-    float vmax_;
-    float wmax_;
+    PenetrationLimitsFactory penetration_limits_;
 };
 
 }

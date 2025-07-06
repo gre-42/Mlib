@@ -116,7 +116,7 @@ void PhysicsEngine::collide(
     // Handling rays before grind_infos so new grind_infos can be created
     // by rays also.
     collide_raycast_intersections(raycast_intersections);
-    collide_grind_infos(cfg_, world, contact_infos, grind_infos);
+    collide_grind_infos(cfg_, phase, world, contact_infos, grind_infos);
     collide_concave_triangles(cfg_, concave_t0_intersections, ridge_intersection_points);
     solve_contacts(contact_infos, cfg_.dt_substeps(phase));
 }

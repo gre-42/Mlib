@@ -10,6 +10,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
+#include <Mlib/Physics/Physics_Engine/Penetration_Limits_Factory.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
@@ -56,7 +57,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
         fixed_zeros<float, 3>() * degrees,  // I_rotation
-        nullptr,                            // pl
+        PenetrationLimitsFactory::inf(),
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world"}));
     rb->set_absolute_model_matrix(absolute_model_matrix);
 

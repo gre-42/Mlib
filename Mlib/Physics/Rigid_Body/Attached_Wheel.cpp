@@ -23,6 +23,6 @@ float AttachedWheel::effective_mass(const VectorAtPosition<float, ScenePos, 3>& 
     return wheel_.effective_mass(vp);
 }
 
-void AttachedWheel::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w) {
-    wheel_.integrate_impulse(J, extra_w);
+void AttachedWheel::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt) {
+    wheel_.integrate_impulse(J, extra_w, dt);
 }

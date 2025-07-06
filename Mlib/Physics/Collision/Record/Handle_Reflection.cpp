@@ -119,7 +119,7 @@ static void handle_extended_reflection(
                 !c.o1.grind_state_.grinding_ &&
                 !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
             {
-                jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
+                jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point }, c.history.cfg.dt_substeps(c.history.phase));
             }
             auto& tire = c.o1.tires_.get(c.tire_id1);
             if (tire.rbp != nullptr) {

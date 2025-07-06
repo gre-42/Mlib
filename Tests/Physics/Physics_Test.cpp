@@ -170,8 +170,8 @@ void test_com() {
         .group = group,
     };
     float dt = cfg.dt_substeps(phase);
-    r0->rbp_.integrate_delta_v({0.f, -9.8f * meters / (seconds * seconds) * dt, 0.f});
-    r1->rbp_.integrate_delta_v({0.f, -9.8f * meters / (seconds * seconds) * dt, 0.f});
+    r0->rbp_.integrate_delta_v({0.f, -9.8f * meters / (seconds * seconds) * dt, 0.f}, dt);
+    r1->rbp_.integrate_delta_v({0.f, -9.8f * meters / (seconds * seconds) * dt, 0.f}, dt);
     {
         r0->rbp_.advance_time(dt);
     }

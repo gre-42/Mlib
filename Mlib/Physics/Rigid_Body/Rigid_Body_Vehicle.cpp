@@ -169,9 +169,8 @@ void RigidBodyVehicle::integrate_force(
     const PhysicsEngineConfig& cfg,
     const PhysicsPhase& phase)
 {
-    rbp_.integrate_impulse({
-        .vector = F.vector * cfg.dt_substeps(phase),
-        .position = F.position});
+    auto dt = cfg.dt_substeps(phase);
+    rbp_.integrate_impulse({.vector = F.vector * dt, .position = F.position}, 0.f, dt);
     // if (float len = sum(squared(F.vector)); len > 1e-12) {
     //     auto location = TransformationMatrix<float, ScenePos, 3>::identity();
     //     location.t() = F.position;
@@ -650,8 +649,9 @@ void RigidBodyVehicle::set_base_angular_velocity(
                 available_power = std::copysign(ap, available_power);
             }
             auto dL_vec = available_dL * abs_rotation_axis;
-            base_rotor.rbp->integrate_delta_angular_momentum(dL_vec);
-            rbp_.integrate_delta_angular_momentum(dL_vec);
+            auto dt = cfg.dt_substeps(phase);
+            base_rotor.rbp->integrate_delta_angular_momentum(dL_vec, 0.f, dt);
+            rbp_.integrate_delta_angular_momentum(dL_vec, 0.f, dt);
             base_rotor.angular_velocity = dot0d(base_rotor.rbp->w_, abs_rotation_axis);
         } else {
             // Change angular velocity along the rotation axis, while preserving the remaining components.

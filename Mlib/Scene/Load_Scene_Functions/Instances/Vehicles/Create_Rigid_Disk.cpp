@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Mesh/Save_Polygon_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
+#include <Mlib/Physics/Physics_Engine/Penetration_Limits_Factory.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
@@ -74,7 +75,9 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args) const
 
 RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args) const
 {
-    auto pl = physics_engine.config().penetration_limits();
+    auto pl = PenetrationLimitsFactory{
+        physics_engine.config().max_penetration,
+        args.radius};
     auto rb = rigid_disk(
         global_object_pool,
         args.name,
@@ -85,7 +88,7 @@ RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args)
         args.v,
         args.w,
         args.I_rotation,
-        args.with_penetration_limits ? &pl : nullptr,
+        args.with_penetration_limits ? pl : PenetrationLimitsFactory::inf(),
         args.geographic_coordinates);
     rb->flags_ = args.flags;
     rb->set_waypoint_ofs(args.waypoint_dy);

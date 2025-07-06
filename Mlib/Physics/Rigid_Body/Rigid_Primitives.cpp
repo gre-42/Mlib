@@ -3,7 +3,6 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Precision.hpp>
@@ -40,7 +39,7 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
     const FixedArray<float, 3>& v,
     const FixedArray<float, 3>& w,
     const FixedArray<float, 3>& I_rotation,
-    const PenetrationLimits* pl)
+    const PenetrationLimitsFactory& pl)
 {
     // From: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
     auto I = FixedArray<float, 3, 3>::init(
@@ -48,16 +47,6 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
         0.f, 1.f / 12.f * mass * (squared(size(0)) + squared(size(2))), 0.f,
         0.f, 0.f, 1.f / 12.f * mass * (squared(size(0)) + squared(size(1))));
 
-    float vmax = INFINITY;
-    float wmax = INFINITY;
-    if (pl != nullptr) {
-        auto radius = std::sqrt(sum(squared(maximum(
-            abs(size / 2.f - com),
-            abs(-size / 2.f - com)))));
-        vmax = pl->vmax_translation;
-        wmax = pl->wmax(radius);
-    }
-    
     return RigidBodyPulses{
         mass,
         permuted_diagonal_matrix(I, I_rotation),    // I
@@ -67,8 +56,7 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
         fixed_nans<ScenePos, 3>(),                  // position
         fixed_zeros<float, 3>(),                    // rotation (not NAN to pass rogridues angle assertion)
         true,                                       // I_is_diagonal
-        vmax,
-        wmax,
+        pl
     };
 }
 
@@ -79,20 +67,13 @@ RigidBodyPulses Mlib::rigid_disk_pulses(
     const FixedArray<float, 3>& v,
     const FixedArray<float, 3>& w,
     const FixedArray<float, 3>& I_rotation,
-    const PenetrationLimits* pl)
+    const PenetrationLimitsFactory& pl)
 {
     // From: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
     auto I = FixedArray<float, 3, 3>::init(
         1.f / 4.f * mass * squared(radius), 0.f, 0.f,
         0.f, 1.f / 4.f * mass * squared(radius), 0.f,
         0.f, 0.f, 1.f / 2.f * mass * squared(radius));
-
-    float vmax = INFINITY;
-    float wmax = INFINITY;
-    if (pl != nullptr) {
-        vmax = pl->vmax_translation;
-        wmax = pl->wmax(radius);
-    }
 
     return RigidBodyPulses{
         mass,
@@ -103,8 +84,7 @@ RigidBodyPulses Mlib::rigid_disk_pulses(
         fixed_nans<ScenePos, 3>(),                  // position
         fixed_zeros<float, 3>(),                    // rotation (not NAN to pass rogridues angle assertion)
         true,                                       // I_is_diagonal
-        vmax,
-        wmax,
+        pl,
     };
 }
 
@@ -118,7 +98,7 @@ std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_
     const FixedArray<float, 3>& v,
     const FixedArray<float, 3>& w,
     const FixedArray<float, 3>& I_rotation,
-    const PenetrationLimits* pl,
+    const PenetrationLimitsFactory& pl,
     const TransformationMatrix<double, double, 3>* geographic_coordinates)
 {
     return object_pool.create_unique<RigidBodyVehicle>(
@@ -140,7 +120,7 @@ std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_
     const FixedArray<float, 3>& v,
     const FixedArray<float, 3>& w,
     const FixedArray<float, 3>& I_rotation,
-    const PenetrationLimits* pl,
+    const PenetrationLimitsFactory& pl,
     const TransformationMatrix<double, double, 3>* geographic_coordinates)
 {
     return object_pool.create_unique<RigidBodyVehicle>(

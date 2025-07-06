@@ -29,7 +29,8 @@ void GravityEfp::increment_external_forces(
             (rb.rigid_body->mass() != INFINITY) &&
             phase.group.rigid_bodies.contains(&rb.rigid_body->rbp_))
         {
-            rb.rigid_body->rbp_.integrate_delta_v(world.gravity->vector * cfg.dt_substeps(phase));
+            auto dt = cfg.dt_substeps(phase);
+            rb.rigid_body->rbp_.integrate_delta_v(world.gravity->vector * dt, dt);
         }
     }
 }

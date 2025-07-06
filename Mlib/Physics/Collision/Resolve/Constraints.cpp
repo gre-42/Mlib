@@ -39,9 +39,7 @@ void GenericNormalContactInfo1<TRigidBodyPulsesArg, TRigidBodyPulsesField>::solv
     float mc = rbp_.effective_mass({ .vector = snormal, .position = p_ });
     float lambda = - mc * (-v + pc.v(dt));
     lambda = pc_.clamped_lambda(relaxation * lambda);
-    rbp_.integrate_impulse({
-        .vector = -snormal * lambda,
-        .position = p_});
+    rbp_.integrate_impulse({.vector = -snormal * lambda, .position = p_}, 0.f, dt);
     // linfo() << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x);
 }
 
@@ -67,12 +65,8 @@ void NormalContactInfo2::solve(float dt, float relaxation, size_t iteration, siz
     float mc1 = rbp1_.effective_mass({ .vector = snormal, .position = p_ });
     float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(dt));
     lambda = pc_.clamped_lambda(relaxation * lambda);
-    rbp0_.integrate_impulse({
-        .vector = -snormal * lambda,
-        .position = p_});
-    rbp1_.integrate_impulse({
-        .vector = snormal * lambda,
-        .position = p_});
+    rbp0_.integrate_impulse({.vector = -snormal * lambda, .position = p_}, 0.f, dt);
+    rbp1_.integrate_impulse({.vector = snormal * lambda, .position = p_}, 0.f, dt);
     // lerr() << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x);
 }
 
@@ -104,9 +98,7 @@ void GenericLineContactInfo1<tnullspace>::solve(float dt, float relaxation, size
         FixedArray<float, 3> n = dv / std::sqrt(len2);
         float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
         FixedArray<float, 3> lambda = - relaxation * mc0 * dv;
-        rbp0_.integrate_impulse({
-            .vector = -lambda,
-            .position = lec_.pec.p0});
+        rbp0_.integrate_impulse({.vector = -lambda, .position = lec_.pec.p0}, 0.f, dt);
     }
 }
 
@@ -136,12 +128,8 @@ void GenericLineContactInfo2<tnullspace>::solve(float dt, float relaxation, size
         float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
         float mc1 = rbp1_.effective_mass({ .vector = n, .position = lec_.pec.p1 });
         FixedArray<float, 3> lambda = - relaxation * (mc0 * mc1 / (mc0 + mc1)) * dv;
-        rbp0_.integrate_impulse({
-            .vector = -lambda,
-            .position = lec_.pec.p0});
-        rbp1_.integrate_impulse({
-            .vector = lambda,
-            .position = lec_.pec.p1});
+        rbp0_.integrate_impulse({.vector = -lambda, .position = lec_.pec.p0}, 0.f, dt);
+        rbp1_.integrate_impulse({.vector = lambda, .position = lec_.pec.p1}, 0.f, dt);
     }
 }
 
@@ -162,9 +150,7 @@ void PlaneContactInfo1::solve(float dt, float relaxation, size_t iteration, size
     float mc0 = rbp0_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p0 });
     float lambda = - mc0 * dv_len;
     lambda = pec_.clamped_lambda(relaxation * lambda);
-    rbp0_.integrate_impulse({
-        .vector = - pec.plane_normal * lambda,
-        .position = pec.pec.p0});
+    rbp0_.integrate_impulse({.vector = - pec.plane_normal * lambda, .position = pec.pec.p0}, 0.f, dt);
 }
 
 PlaneContactInfo2::PlaneContactInfo2(
@@ -186,12 +172,8 @@ void PlaneContactInfo2::solve(float dt, float relaxation, size_t iteration, size
     float mc1 = rbp1_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p1 });
     float lambda = - (mc0 * mc1 / (mc0 + mc1)) * dv_len;
     lambda = pec_.clamped_lambda(relaxation * lambda);
-    rbp0_.integrate_impulse({
-        .vector = - pec.plane_normal * lambda,
-        .position = pec.pec.p0});
-    rbp1_.integrate_impulse({
-        .vector = pec.plane_normal * lambda,
-        .position = pec.pec.p1});
+    rbp0_.integrate_impulse({.vector = -pec.plane_normal * lambda, .position = pec.pec.p0}, 0.f, dt);
+    rbp1_.integrate_impulse({.vector = pec.plane_normal * lambda, .position = pec.pec.p1}, 0.f, dt);
 }
 
 FrictionContactInfo1::FrictionContactInfo1(
@@ -256,10 +238,7 @@ void FrictionContactInfo1::solve(float dt, float relaxation, size_t iteration, s
             }
         }
         lambda = lambda_total_ - lambda_total_old;
-        rbp_.integrate_impulse({
-            .vector = -lambda,
-            .position = p_},
-            extra_w_);
+        rbp_.integrate_impulse({.vector = -lambda, .position = p_}, extra_w_, dt);
     }
 }
 
@@ -345,12 +324,8 @@ void FrictionContactInfo2::solve(float dt, float relaxation, size_t iteration, s
             lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
         }
         lambda = lambda_total_ - lambda_total_old;
-        rbp0_.integrate_impulse({
-            .vector = -lambda,
-            .position = p_});
-        rbp1_.integrate_impulse({
-            .vector = lambda,
-            .position = p_});
+        rbp0_.integrate_impulse({.vector = -lambda, .position = p_}, 0.f, dt);
+        rbp1_.integrate_impulse({.vector = lambda, .position = p_}, 0.f, dt);
     }
 }
 
@@ -497,15 +472,14 @@ ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
 
 void ShockAbsorberContactInfo1::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     ShockAbsorberConstraint& sc = sc_.constraint;
+    auto snormal = sc.normal_impulse.normal.casted<float>();
     float dist = sign(sc.distance) * std::pow(std::abs(sc.distance), sc.exponent);
     float F = sc.Ks * dist + sc.Ka *
         dot0d(
             rbp_.velocity_at_position(p_),
-            sc.normal_impulse.normal.casted<float>());
+            snormal);
     float J = sc_.clamped_lambda(1.f / (float)niterations * F * dt);
-    rbp_.integrate_impulse({
-        .vector = -sc.normal_impulse.normal.casted<float>() * sc.fit * J,
-        .position = p_ });
+    rbp_.integrate_impulse({.vector = -snormal * sc.fit * J, .position = p_ }, 0.f, dt);
 }
 
 ShockAbsorberContactInfo2::ShockAbsorberContactInfo2(
@@ -528,12 +502,8 @@ void ShockAbsorberContactInfo2::solve(float dt, float relaxation, size_t iterati
             sc.normal_impulse.normal.casted<float>());
     float J = sc_.clamped_lambda(1.f / (float)niterations * F * dt);
     auto lambda = sc.normal_impulse.normal.casted<float>() * J;
-    rbp0_.integrate_impulse({
-        .vector = lambda,
-        .position = p_ });
-    rbp1_.integrate_impulse({
-        .vector = -lambda,
-        .position = p_ });
+    rbp0_.integrate_impulse({.vector = lambda, .position = p_ }, 0.f, dt);
+    rbp1_.integrate_impulse({.vector = -lambda, .position = p_ }, 0.f, dt);
 }
 
 void Mlib::solve_contacts(std::list<std::unique_ptr<IContactInfo>>& cis, float dt) {

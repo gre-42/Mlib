@@ -12,6 +12,7 @@ using namespace Mlib;
 
 void Mlib::collide_grind_infos(
     const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
     const StaticWorld& world,
     std::list<std::unique_ptr<IContactInfo>>& contact_infos,
     const std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos)
@@ -34,7 +35,7 @@ void Mlib::collide_grind_infos(
             }
             auto n = -world.gravity->direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
-            jump(o0.rbp_, o1.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point });
+            jump(o0.rbp_, o1.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point }, cfg.dt_substeps(phase));
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg.nsubsteps) {
             auto n = cross(p.rail_direction, FixedArray<SceneDir, 3>{ 0.f, 1.f, 0.f });
             auto l2 = sum(squared(n));
