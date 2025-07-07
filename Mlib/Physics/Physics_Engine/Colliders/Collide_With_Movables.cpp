@@ -2,8 +2,11 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Iterator/Reverse_Iterator.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
+#include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -18,6 +21,11 @@ static void collide_objects(
         THROW_OR_ABORT("Cannot collide identical objects");
     }
     if ((o0.rigid_body->mass() == INFINITY) && (o1.rigid_body->mass() == INFINITY)) {
+        return;
+    }
+    if (!history.phase.group.rigid_bodies.contains(&o0.rigid_body->rbp_) &&
+        !history.phase.group.rigid_bodies.contains(&o1.rigid_body->rbp_))
+    {
         return;
     }
     PhysicsMaterial included_materials =
