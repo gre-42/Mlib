@@ -166,6 +166,7 @@ public:
     float car_health() const;
     GameMode game_mode() const;
     PlayerRole player_role() const;
+    FixedArray<SceneDir, 3> vehicle_velocity() const;
     bool can_see(
         const RigidBodyVehicle& rbi,
         bool only_terrain = false,

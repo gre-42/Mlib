@@ -378,6 +378,10 @@ PlayerRole Player::player_role() const {
     return player_role_;
 }
 
+FixedArray<SceneDir, 3> Player::vehicle_velocity() const {
+    return rigid_body()->rbp_.velocity();
+}
+
 bool Player::can_see(
     const RigidBodyVehicle& rb,
     bool only_terrain,
