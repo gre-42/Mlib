@@ -10,7 +10,6 @@ class CollisionMesh;
 enum class PenetrationClass {
     STANDARD,
     BULLET_LINE,
-    MESHLESS,
 };
 
 struct CollisionGroup {

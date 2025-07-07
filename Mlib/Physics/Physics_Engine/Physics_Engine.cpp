@@ -51,7 +51,8 @@ void PhysicsEngine::collide(
     for (auto& o : rigid_bodies_.objects_) {
         if ((o.rigid_body->mass() == INFINITY) ||
             o.rigid_body->is_deactivated_avatar() ||
-            !phase.group.rigid_bodies.contains(&o.rigid_body->rbp_))
+            ((phase.group.penetration_class != PenetrationClass::BULLET_LINE) &&
+             !phase.group.rigid_bodies.contains(&o.rigid_body->rbp_)))
         {
             continue;
         }

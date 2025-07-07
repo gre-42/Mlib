@@ -114,8 +114,6 @@ void Mlib::collide_convex_meshes(
                 return PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT;
             case PenetrationClass::STANDARD:
                 return PhysicsMaterial::OBJ_TIRE_LINE;
-            case PenetrationClass::MESHLESS:
-                THROW_OR_ABORT("Unexpected \"meshless\" penetration class");
         }
         THROW_OR_ABORT("Unknown penetration class");
     }();
