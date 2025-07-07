@@ -9,7 +9,9 @@ struct GameLogicConfig {
     CompressedScenePos r_spawn_near = (CompressedScenePos)(200 * meters);
     // No vehicles are spawned further away from the VIP.
     CompressedScenePos r_spawn_far = (CompressedScenePos)(400 * meters);
+    // Vehicles above this threshold are deleted if they are behind the VIP.
     CompressedScenePos r_delete_near = (CompressedScenePos)(100 * meters);
+    // Vehicles above this threshold are deleted if they are invisible to the VIP.
     CompressedScenePos r_delete_far = (CompressedScenePos)(300 * meters);
     CompressedScenePos r_neighbors = (CompressedScenePos)(20 * meters);
     float visible_after_spawn_distance = 1 * meters;
