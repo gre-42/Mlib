@@ -141,6 +141,9 @@ void PhysicsEngine::move_rigid_bodies(
 
 void PhysicsEngine::move_particles(const StaticWorld& world, const PhysicsPhase& phase)
 {
+    if (phase.group.penetration_class == PenetrationClass::BULLET_LINE) {
+        return;
+    }
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
