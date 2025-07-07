@@ -55,6 +55,9 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     if (c.o1.is_deactivated_avatar()) {
         THROW_OR_ABORT("Attempt to collide deactivated avatar (1): \"" + c.o1.name() + '"');
     }
+    if ((c.i0 != nullptr) && any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT)) {
+        THROW_OR_ABORT("Intersectable \"" + c.o0.name() + "\" unexpectedly collides with bullet line segment \"" + c.o1.name() + '"');
+    }
     IntersectionInfo iinfo;
     if (c.q0.has_value()) {
         if (c.l1.has_value()) {
