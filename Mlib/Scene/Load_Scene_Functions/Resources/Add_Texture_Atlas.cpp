@@ -23,6 +23,9 @@ DECLARE_ARGUMENT(magnifying_interpolation_mode);
 DECLARE_ARGUMENT(depth_interpolation);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(mipmap_mode);
+DECLARE_ARGUMENT(wrap_mode_s);
+DECLARE_ARGUMENT(wrap_mode_t);
+DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(images);
 }
 
@@ -79,8 +82,12 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
             .height = args.arguments.at<int>(KnownArgs::height),
             .nlayers = args.arguments.at<size_t>(KnownArgs::layers, 1),
             .mipmap_mode = mipmap_mode,
+            .wrap_modes = {
+                wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
+                wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))},
             .magnifying_interpolation_mode = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::magnifying_interpolation_mode, "linear")),
             .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
+            .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level),
             .color_mode = color_mode,
             .tiles = tiles});
 }

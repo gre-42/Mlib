@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Activator_Function.hpp>
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers_Hash.hpp>
-#include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Map/Threadsafe_Map.hpp>
 #include <Mlib/Map/Threadsafe_String_With_Hash_Unordered_Map.hpp>
@@ -92,8 +92,10 @@ struct ManualTextureAtlasDescriptor {
     int height;
     size_t nlayers;
     MipmapMode mipmap_mode;
+    FixedArray<WrapMode, 2> wrap_modes;
     InterpolationMode magnifying_interpolation_mode;
     InterpolationMode depth_interpolation;
+    unsigned int anisotropic_filtering_level;
     ColorMode color_mode;
     std::vector<ManualAtlasTileDescriptor> tiles;
 };
@@ -153,6 +155,7 @@ public:
         TextureRole role = TextureRole::COLOR) const;
     std::shared_ptr<ITextureHandle> get_texture(
         const VariableAndHash<std::string>& name,
+        TextureRole role = TextureRole::COLOR,
         CallerType caller_type = CallerType::RENDER) const;
     std::shared_ptr<ITextureHandle> get_texture(
         const ColormapWithModifiers& name,
@@ -173,10 +176,13 @@ public:
         std::shared_ptr<ITextureHandle> id,
         const TextureSize* texture_size = nullptr);
     void set_textures_lazy(std::function<void()> func);
-    void add_texture_descriptor(const VariableAndHash<std::string>& name, const TextureDescriptor& descriptor);
+    void add_texture_descriptor(VariableAndHash<std::string> name, TextureDescriptor descriptor);
+    void add_colormap(VariableAndHash<std::string> name, ColormapWithModifiers colormap);
     bool contains_texture_descriptor(const VariableAndHash<std::string>& name) const;
-    TextureDescriptor get_texture_descriptor(const VariableAndHash<std::string>& name) const;
-    void add_manual_texture_atlas(const VariableAndHash<std::string>& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
+    bool contains_colormap(const VariableAndHash<std::string>& name) const;
+    const TextureDescriptor& get_texture_descriptor(const VariableAndHash<std::string>& name) const;
+    const ColormapWithModifiers& get_colormap(const VariableAndHash<std::string>& name) const;
+    void add_manual_texture_atlas(VariableAndHash<std::string> name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
     std::map<ColormapWithModifiers, ManualUvTile> generate_manual_texture_atlas(
         const VariableAndHash<std::string>& name,
         const std::vector<ColormapWithModifiers>& filenames);
@@ -186,7 +192,7 @@ public:
         int mip_level_count,
         int size = 4096,
         AutoTextureAtlasDescriptor* atlas = nullptr);
-    void add_cubemap(const VariableAndHash<std::string>& name, const std::vector<VariableAndHash<std::string>>& filenames);
+    void add_cubemap(VariableAndHash<std::string> name, const std::vector<VariableAndHash<std::string>>& filenames);
 
     std::string get_texture_filename(
         const ColormapWithModifiers& color,
@@ -271,6 +277,7 @@ private:
     mutable ThreadsafeStringWithHashUnorderedMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable ThreadsafeStringWithHashUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
+    mutable ThreadsafeStringWithHashUnorderedMap<ColormapWithModifiers> colormap_descriptors_;
     mutable ThreadsafeStringWithHashUnorderedMap<std::unordered_map<char32_t, uint32_t>> charsets_;
     mutable VerboseUnorderedMap<FontNameAndHeight, LoadedFont> font_textures_;
     ThreadsafeStringWithHashUnorderedMap<TextureWarnFlags> suppressed_warnings_;

@@ -1044,10 +1044,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (ntextures_reflection != 0) {
         assert_true(reflection_map != nullptr);
-        auto& texture = *rcva_->rendering_resources_.get_texture(ColormapWithModifiers{
-            .filename = *reflection_map,
-            .color_mode = ColorMode::RGB,
-            .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash());
+        auto& texture = *rcva_->rendering_resources_.get_texture(*reflection_map);
         tb.bind(rp.texture_reflection_location, texture, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind dirtmap texture");
@@ -1081,10 +1078,44 @@ void RenderableColoredVertexArray::render_cva(
             tb.bind(rp.texture_dirt_location, texture, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
         }
     }
-    for (size_t i = 0; i < ntextures_interior; ++i) {
-        const auto& h = *rcva_->rendering_resources_.get_texture(cva->material.interior_textures[i]);
+    if (any(interior_texture_set)) {
+        for (size_t i = 0; i < size(InteriorTextureSet::INTERIOR_COLORS); ++i) {
+            const auto& h = *rcva_->rendering_resources_.get_texture(cva->material.interior_textures[i], TextureRole::COLOR_FROM_DB);
+            if (h.color_mode() != ColorMode::RGB) {
+                THROW_OR_ABORT("Interiormap color texture \"" + *cva->material.interior_textures[i] + "\" does not have color mode RGB");
+            }
+            tb.bind(rp.texture_interiormap_location(i), h, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
+        }
+    }
+    if (any(interior_texture_set & InteriorTextureSet::BACK_SPECULAR)) {
+        auto i = index(interior_texture_set, InteriorTextureSet::BACK_SPECULAR);
+        const auto& h = *rcva_->rendering_resources_.get_texture(cva->material.interior_textures[i], TextureRole::SPECULAR);
         if (h.color_mode() != ColorMode::RGB) {
-            THROW_OR_ABORT("Interiormap texture \"" + *cva->material.interior_textures[i] + "\" does not have color mode RGB");
+            THROW_OR_ABORT("Interiormap back specular texture \"" + *cva->material.interior_textures[i] + "\" does not have color mode RGB");
+        }
+        tb.bind(rp.texture_interiormap_location(i), h, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
+    }
+    if (any(interior_texture_set & InteriorTextureSet::FRONT_COLOR)) {
+        auto i = index(interior_texture_set, InteriorTextureSet::FRONT_COLOR);
+        const auto& h = *rcva_->rendering_resources_.get_texture(cva->material.interior_textures[i], TextureRole::SPECULAR);
+        if (h.color_mode() != ColorMode::RGB) {
+            THROW_OR_ABORT("Interiormap front color texture \"" + *cva->material.interior_textures[i] + "\" does not have color mode RGB");
+        }
+        tb.bind(rp.texture_interiormap_location(i), h, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
+    }
+    if (any(interior_texture_set & InteriorTextureSet::FRONT_ALPHA)) {
+        auto i = index(interior_texture_set, InteriorTextureSet::FRONT_ALPHA);
+        const auto& h = *rcva_->rendering_resources_.get_texture(cva->material.interior_textures[i], TextureRole::COLOR);
+        if (h.color_mode() != ColorMode::GRAYSCALE) {
+            THROW_OR_ABORT("Interiormap front alpha texture \"" + *cva->material.interior_textures[i] + "\" does not have color mode R");
+        }
+        tb.bind(rp.texture_interiormap_location(i), h, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
+    }
+    if (any(interior_texture_set & InteriorTextureSet::FRONT_SPECULAR)) {
+        auto i = index(interior_texture_set, InteriorTextureSet::FRONT_SPECULAR);
+        const auto& h = *rcva_->rendering_resources_.get_texture(cva->material.interior_textures[i], TextureRole::SPECULAR);
+        if (h.color_mode() != ColorMode::RGB) {
+            THROW_OR_ABORT("Interiormap front specular texture \"" + *cva->material.interior_textures[i] + "\" does not have color mode RGB");
         }
         tb.bind(rp.texture_interiormap_location(i), h, InterpolationPolicy::AUTO, TextureLayerProperties::NONE);
     }

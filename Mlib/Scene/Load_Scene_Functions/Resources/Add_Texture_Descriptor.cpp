@@ -50,6 +50,7 @@ DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(wrap_mode_s);
 DECLARE_ARGUMENT(wrap_mode_t);
 DECLARE_ARGUMENT(rotate);
+DECLARE_ARGUMENT(add_colormap);
 }
 
 namespace {
@@ -65,82 +66,102 @@ struct RegisterJsonUserFunction {
         args.arguments.at<std::string>(KnownArgs::mipmap_mode, "with_mipmaps"));
     auto magnifying_interpolation_mode = interpolation_mode_from_string(
         args.arguments.at<std::string>(KnownArgs::magnifying_interpolation_mode, "linear"));
-    auto anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level);
     auto wrap_modes = OrderableFixedArray<WrapMode, 2>{
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))};
     auto rotate = args.arguments.at<int>(KnownArgs::rotate, 0);
     auto depth_interpolation = interpolation_mode_from_string(
         args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest"));
-    auto normal = ColormapWithModifiers{
-        .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::normal).path},
-        .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
-        .color_mode = ColorMode::RGB,
-        .mipmap_mode = mipmap_mode,
-        .magnifying_interpolation_mode = magnifying_interpolation_mode,
-        .depth_interpolation = depth_interpolation,
-        .anisotropic_filtering_level = anisotropic_filtering_level,
-        .wrap_modes = wrap_modes,
-        .rotate = rotate}.compute_hash();
-    auto specular = ColormapWithModifiers{
-        .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::specular).path},
-        .color_mode = ColorMode::RGB,
-        .mipmap_mode = mipmap_mode,
-        .magnifying_interpolation_mode = magnifying_interpolation_mode,
-        .anisotropic_filtering_level = anisotropic_filtering_level,
-        .wrap_modes = wrap_modes,
-        .rotate = rotate}.compute_hash();
-    {
+    auto color = [&](){
+        auto filename = args.arguments.path_or_variable(KnownArgs::color);
+        if (filename.path.empty()) {
+            return ColormapWithModifiers{}.compute_hash();
+        }
+        if (filename.is_variable) {
+            return RenderingContextStack::primary_rendering_resources().get_colormap(VariableAndHash{filename.path});
+        }
+        return ColormapWithModifiers{
+            .filename = VariableAndHash{args.arguments.path_or_variable(KnownArgs::color).path},
+            .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
+            .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
+            .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
+            .average = "",
+            .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color).path,
+            .alpha_blend = args.arguments.try_path_or_variable(KnownArgs::alpha_blend).path,
+            .mean_color = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::mean_color, OrderableFixedArray<float, 3>(-1.f)),
+            .lighten = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten, OrderableFixedArray<float, 3>(0.f)),
+            .lighten_left = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_left, OrderableFixedArray<float, 3>(0.f)),
+            .lighten_right = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_right, OrderableFixedArray<float, 3>(0.f)),
+            .lighten_top = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_top, OrderableFixedArray<float, 3>(0.f)),
+            .lighten_bottom = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_bottom, OrderableFixedArray<float, 3>(0.f)),
+            .color_to_replace = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::color_to_replace, OrderableFixedArray<float, 3>(-1.f)),
+            .replacement_color = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::replacement_color, OrderableFixedArray<float, 3>(-1.f)),
+            .replacement_tolerance = args.arguments.at<float>(KnownArgs::replacement_tolerance, 0.f),
+            .selected_color = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::selected_color, OrderableFixedArray<float, 3>(0.f)),
+            .selected_color_near = args.arguments.at<float>(KnownArgs::selected_color_near, 0),
+            .selected_color_far = args.arguments.at<float>(KnownArgs::selected_color_far, INFINITY),
+            .edge_sigma = args.arguments.at<float>(KnownArgs::edge_sigma, 0.f),
+            .times = args.arguments.at<float>(KnownArgs::times, 1.f),
+            .plus = args.arguments.at<float>(KnownArgs::plus, 0.f),
+            .abs = args.arguments.at<bool>(KnownArgs::abs, false),
+            .invert = args.arguments.at<bool>(KnownArgs::invert, false),
+            .height_to_normals = args.arguments.at<bool>(KnownArgs::height_to_normals, false),
+            .saturate = args.arguments.at<bool>(KnownArgs::saturate, false),
+            .multiply_with_alpha = args.arguments.at<bool>(KnownArgs::multiply_with_alpha, false),
+            .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
+            .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
+            .mipmap_mode = mipmap_mode,
+            .magnifying_interpolation_mode = magnifying_interpolation_mode,
+            .depth_interpolation = depth_interpolation,
+            .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level),
+            .wrap_modes = wrap_modes,
+            .rotate = rotate}.compute_hash();
+    }();
+    auto normal = [&](){
         auto filename = args.arguments.try_path_or_variable(KnownArgs::normal);
-        if (filename.is_variable) {
-            normal = RenderingContextStack::primary_rendering_resources().colormap(normal);
+        if (filename.path.empty()) {
+            return ColormapWithModifiers{}.compute_hash();
         }
-    }
-    {
+        if (filename.is_variable) {
+            return RenderingContextStack::primary_rendering_resources().get_colormap(VariableAndHash{filename.path});
+        }
+        return ColormapWithModifiers{
+            .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::normal).path},
+            .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
+            .color_mode = ColorMode::RGB,
+            .mipmap_mode = mipmap_mode,
+            .magnifying_interpolation_mode = magnifying_interpolation_mode,
+            .depth_interpolation = depth_interpolation,
+            .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level),
+            .wrap_modes = wrap_modes,
+            .rotate = rotate}.compute_hash();
+    }();
+    auto specular = [&](){
         auto filename = args.arguments.try_path_or_variable(KnownArgs::specular);
-        if (filename.is_variable) {
-            specular = RenderingContextStack::primary_rendering_resources().colormap(specular);
+        if (filename.path.empty()) {
+            return ColormapWithModifiers{}.compute_hash();
         }
+        if (filename.is_variable) {
+            return RenderingContextStack::primary_rendering_resources().get_colormap(VariableAndHash{filename.path});
+        }
+        return ColormapWithModifiers{
+            .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::specular).path},
+            .color_mode = ColorMode::RGB,
+            .mipmap_mode = mipmap_mode,
+            .magnifying_interpolation_mode = magnifying_interpolation_mode,
+            .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level),
+            .wrap_modes = wrap_modes,
+            .rotate = rotate}.compute_hash();
+    }();
+    if (args.arguments.at<bool>(KnownArgs::add_colormap, true)) {
+        RenderingContextStack::primary_rendering_resources().add_colormap(
+            args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
+            color);
     }
     RenderingContextStack::primary_rendering_resources().add_texture_descriptor(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         TextureDescriptor{
-            .color = ColormapWithModifiers{
-                .filename = VariableAndHash{args.arguments.path_or_variable(KnownArgs::color).path},
-                .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
-                .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
-                .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
-                .average = "",
-                .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color).path,
-                .alpha_blend = args.arguments.try_path_or_variable(KnownArgs::alpha_blend).path,
-                .mean_color = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::mean_color, OrderableFixedArray<float, 3>(-1.f)),
-                .lighten = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten, OrderableFixedArray<float, 3>(0.f)),
-                .lighten_left = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_left, OrderableFixedArray<float, 3>(0.f)),
-                .lighten_right = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_right, OrderableFixedArray<float, 3>(0.f)),
-                .lighten_top = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_top, OrderableFixedArray<float, 3>(0.f)),
-                .lighten_bottom = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::lighten_bottom, OrderableFixedArray<float, 3>(0.f)),
-                .color_to_replace = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::color_to_replace, OrderableFixedArray<float, 3>(-1.f)),
-                .replacement_color = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::replacement_color, OrderableFixedArray<float, 3>(-1.f)),
-                .replacement_tolerance = args.arguments.at<float>(KnownArgs::replacement_tolerance, 0.f),
-                .selected_color = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::selected_color, OrderableFixedArray<float, 3>(0.f)),
-                .selected_color_near = args.arguments.at<float>(KnownArgs::selected_color_near, 0),
-                .selected_color_far = args.arguments.at<float>(KnownArgs::selected_color_far, INFINITY),
-                .edge_sigma = args.arguments.at<float>(KnownArgs::edge_sigma, 0.f),
-                .times = args.arguments.at<float>(KnownArgs::times, 1.f),
-                .plus = args.arguments.at<float>(KnownArgs::plus, 0.f),
-                .abs = args.arguments.at<bool>(KnownArgs::abs, false),
-                .invert = args.arguments.at<bool>(KnownArgs::invert, false),
-                .height_to_normals = args.arguments.at<bool>(KnownArgs::height_to_normals, false),
-                .saturate = args.arguments.at<bool>(KnownArgs::saturate, false),
-                .multiply_with_alpha = args.arguments.at<bool>(KnownArgs::multiply_with_alpha, false),
-                .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
-                .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
-                .mipmap_mode = mipmap_mode,
-                .magnifying_interpolation_mode = magnifying_interpolation_mode,
-                .depth_interpolation = depth_interpolation,
-                .anisotropic_filtering_level = anisotropic_filtering_level,
-                .wrap_modes = wrap_modes,
-                .rotate = rotate}.compute_hash(),
+            .color = std::move(color),
             .specular = std::move(specular),
             .normal = std::move(normal) });
             });

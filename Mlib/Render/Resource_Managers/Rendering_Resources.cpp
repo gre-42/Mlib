@@ -661,6 +661,7 @@ RenderingResources::RenderingResources(
         "Auto atlas tile descriptor",
         [](const ColormapWithModifiers& e) { return *e.filename; } }
     , cubemap_descriptors_{ "Cubemap descriptor" }
+    , colormap_descriptors_{ "Colormap descriptor" }
     , charsets_{ "Charset" }
     , font_textures_{ "Font", [](const auto& e) { return e.ttf_filename; } }
     , suppressed_warnings_{ "Suppressed warning" }
@@ -996,10 +997,16 @@ std::shared_ptr<ITextureHandle> TextureSizeAndMipmaps::flipped_vertically(float 
 
 std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
     const VariableAndHash<std::string>& name,
+    TextureRole role,
     CallerType caller_type) const
 {
-    const auto& desc = get_texture_descriptor(name);
-    return get_texture(desc.color, TextureRole::COLOR, caller_type);
+    if (role == TextureRole::COLOR_FROM_DB) {
+        const auto& desc = get_texture_descriptor(name);
+        return get_texture(desc.color, TextureRole::COLOR, caller_type);
+    } else {
+        const auto& desc = get_colormap(name);
+        return get_texture(desc, role, caller_type);
+    }
 }
 
 std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
@@ -1168,7 +1175,7 @@ void RenderingResources::set_textures_lazy(std::function<void()> func)
     append_render_allocator(state->generate_activator());
 }
 
-void RenderingResources::add_texture_descriptor(const VariableAndHash<std::string>& name, const TextureDescriptor& descriptor)
+void RenderingResources::add_texture_descriptor(VariableAndHash<std::string> name, TextureDescriptor descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_texture_descriptor " + *name);
     if (descriptor.color.color_mode == ColorMode::UNDEFINED) {
@@ -1181,37 +1188,57 @@ void RenderingResources::add_texture_descriptor(const VariableAndHash<std::strin
         THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + *descriptor.normal.filename + '"');
     }
     std::scoped_lock lock{ mutex_ };
-    add(texture_descriptors_, name, descriptor);
+    add(texture_descriptors_, std::move(name), std::move(descriptor));
+}
+
+void RenderingResources::add_colormap(VariableAndHash<std::string> name, ColormapWithModifiers descriptor)
+{
+    LOG_FUNCTION("RenderingResources::add_texture_descriptor " + *name);
+    if (descriptor.color_mode == ColorMode::UNDEFINED) {
+        THROW_OR_ABORT("Colormode undefined color texture: \"" + *descriptor.filename + '"');
+    }
+    std::scoped_lock lock{ mutex_ };
+    add(colormap_descriptors_,
+        std::move(name),
+        std::move(descriptor));
 }
 
 bool RenderingResources::contains_texture_descriptor(const VariableAndHash<std::string>& name) const {
-    LOG_FUNCTION("RenderingResources::get_texture_descriptor " + *name);
+    LOG_FUNCTION("RenderingResources::contains_texture_descriptor " + *name);
     return texture_descriptors_.contains(name);
 }
 
-TextureDescriptor RenderingResources::get_texture_descriptor(const VariableAndHash<std::string>& name) const {
+bool RenderingResources::contains_colormap(const VariableAndHash<std::string>& name) const {
+    LOG_FUNCTION("RenderingResources::contains_colormap " + *name);
+    return colormap_descriptors_.contains(name);
+}
+
+const TextureDescriptor& RenderingResources::get_texture_descriptor(const VariableAndHash<std::string>& name) const {
     LOG_FUNCTION("RenderingResources::get_texture_descriptor " + *name);
-    if (auto it = manual_atlas_tile_descriptors_.try_get(name); it != nullptr) {
-        return TextureDescriptor{
-            .color = ColormapWithModifiers{
-                .filename = name,
-                .color_mode = it->color_mode,
-                .mipmap_mode = it->mipmap_mode,
-                .magnifying_interpolation_mode = it->magnifying_interpolation_mode,
-                .depth_interpolation = it->depth_interpolation,
-            }.compute_hash()
-        };
-    }
     return texture_descriptors_.get(name);
 }
 
+const ColormapWithModifiers& RenderingResources::get_colormap(const VariableAndHash<std::string>& name) const {
+    LOG_FUNCTION("RenderingResources::get_colormap " + *name);
+    return colormap_descriptors_.get(name);
+}
+
 void RenderingResources::add_manual_texture_atlas(
-    const VariableAndHash<std::string>& name,
+    VariableAndHash<std::string> name,
     const ManualTextureAtlasDescriptor& texture_atlas_descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_manual_texture_atlas " + *name);
     std::scoped_lock lock{ mutex_ };
-    add(manual_atlas_tile_descriptors_, name, texture_atlas_descriptor);
+    add(colormap_descriptors_,
+        name,
+        ColormapWithModifiers{
+            .filename = name,
+            .color_mode = texture_atlas_descriptor.color_mode,
+            .mipmap_mode = texture_atlas_descriptor.mipmap_mode,
+            .magnifying_interpolation_mode = texture_atlas_descriptor.magnifying_interpolation_mode,
+            .depth_interpolation = texture_atlas_descriptor.depth_interpolation,
+        }.compute_hash());
+    add(manual_atlas_tile_descriptors_, std::move(name), texture_atlas_descriptor);
 }
 
 void RenderingResources::add_auto_texture_atlas(
@@ -1224,13 +1251,21 @@ void RenderingResources::add_auto_texture_atlas(
     append_render_allocator([this, name]() { preload(name, TextureRole::COLOR); });
 }
 
-void RenderingResources::add_cubemap(const VariableAndHash<std::string>& name, const std::vector<VariableAndHash<std::string>>& filenames) {
+void RenderingResources::add_cubemap(VariableAndHash<std::string> name, const std::vector<VariableAndHash<std::string>>& filenames) {
     LOG_FUNCTION("RenderingResources::add_cubemap " + *name);
     std::scoped_lock lock{ mutex_ };
     if (texture_descriptors_.contains(name)) {
         THROW_OR_ABORT("Texture descriptor with name \"" + *name + "\" already exists");
     }
-    add(cubemap_descriptors_, name, CubemapDescriptor{.filenames = filenames});
+    add(colormap_descriptors_,
+        name,
+        ColormapWithModifiers{
+            .filename = name,
+            .color_mode = ColorMode::RGB,
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+            .magnifying_interpolation_mode = InterpolationMode::LINEAR
+        }.compute_hash());
+    add(cubemap_descriptors_, std::move(name), CubemapDescriptor{.filenames = filenames});
 }
 
 std::vector<std::shared_ptr<StbInfo<uint8_t>>> RenderingResources::get_texture_array_data(
@@ -1355,6 +1390,7 @@ std::map<ColormapWithModifiers, ManualUvTile> RenderingResources::generate_manua
         .height = 0,
         .nlayers = 1,
         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+        .wrap_modes = { WrapMode::REPEAT, WrapMode::REPEAT },
         .magnifying_interpolation_mode = InterpolationMode::LINEAR,
         .depth_interpolation = InterpolationMode::NEAREST,
         .color_mode = ColorMode::RGBA,
