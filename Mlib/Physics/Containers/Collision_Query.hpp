@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <list>
@@ -44,7 +44,8 @@ public:
         const IIntersectableMesh** seen_mesh = nullptr) const;
     bool can_see(
         const RigidBodyVehicle& watcher,
-        const FixedArray<ScenePos, 3>& watched,
+        const FixedArray<ScenePos, 3>& watched_position,
+        const FixedArray<SceneDir, 3>& watched_velocity = {0.f, 0.f, 0.f},
         bool only_terrain = false,
         PhysicsMaterial collidable_mask = PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         ScenePos can_be_seen_height_offset = 0,

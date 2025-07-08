@@ -172,7 +172,8 @@ public:
         bool only_terrain = false,
         float time_offset = 0) const;
     bool can_see(
-        const FixedArray<ScenePos, 3>& pos,
+        const FixedArray<ScenePos, 3>& position,
+        const FixedArray<SceneDir, 3>& velocity,
         bool only_terrain = false,
         ScenePos height_offset = 0,
         float time_offset = 0) const;

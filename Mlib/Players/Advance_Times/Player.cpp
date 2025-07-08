@@ -400,7 +400,8 @@ bool Player::can_see(
 }
 
 bool Player::can_see(
-    const FixedArray<ScenePos, 3>& pos,
+    const FixedArray<ScenePos, 3>& position,
+    const FixedArray<SceneDir, 3>& velocity,
     bool only_terrain,
     ScenePos height_offset,
     float time_offset) const
@@ -411,7 +412,8 @@ bool Player::can_see(
     }
     return collision_query_.can_see(
         vehicle_->rb().get(),
-        pos,
+        position,
+        velocity,
         only_terrain,
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         height_offset,

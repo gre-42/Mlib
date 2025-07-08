@@ -247,7 +247,8 @@ bool CollisionQuery::can_see(
 
 bool CollisionQuery::can_see(
     const RigidBodyVehicle& watcher,
-    const FixedArray<ScenePos, 3>& watched,
+    const FixedArray<ScenePos, 3>& watched_position,
+    const FixedArray<SceneDir, 3>& watched_velocity,
     bool only_terrain,
     PhysicsMaterial collidable_mask,
     ScenePos can_be_seen_height_offset,
@@ -264,7 +265,7 @@ bool CollisionQuery::can_see(
         rbp.advance_time(time_offset);
         return can_see(
             rbp.transform_to_world_coordinates(watcher.target_) + d_watcher,
-            watched + d_watched,
+            watched_position + d_watched + (watched_velocity * time_offset).casted<ScenePos>(),
             &watcher,
             nullptr,
             only_terrain,
@@ -276,7 +277,7 @@ bool CollisionQuery::can_see(
     } else {
         return can_see(
             watcher.abs_target() + d_watcher,
-            watched + d_watched,
+            watched_position + d_watched,
             &watcher,
             nullptr,
             only_terrain,

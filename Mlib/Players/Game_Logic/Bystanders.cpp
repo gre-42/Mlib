@@ -54,9 +54,6 @@ bool Bystanders::spawn_for_vip(
     if (spawner.has_scene_vehicle()) {
         THROW_OR_ABORT("Spawner already has a vehicle");
     }
-    bool vehicle_is_slow =
-        sum(squared(vip_->vehicle_velocity())) * squared(cfg_.visible_after_spawn_time) <
-        squared(cfg_.visible_after_spawn_distance);
     std::vector<SpawnPointAndDistance> neighboring_spawn_points;
     neighboring_spawn_points.reserve(1000);
     spawner_.spawn_points_bvh_split_.at(current_bvh_)->visit(
@@ -76,10 +73,6 @@ bool Bystanders::spawn_for_vip(
             ScenePos dist2 = sum(squared(funpack(sp->trafo.t) - vip_pos));
             // Abort if too far away.
             if (dist2 > squared(cfg_.r_spawn_far)) {
-                return true;
-            }
-            // Abort if VIP is slow and vehicle is close.
-            if (vehicle_is_slow && (dist2 < squared(cfg_.r_spawn_near))) {
                 return true;
             }
             // Abort if behind car.
@@ -107,17 +100,15 @@ bool Bystanders::spawn_for_vip(
         {
             continue;
         }
+        auto velocity = -n.sp->trafo.R.column(2) * cfg_.velocity_after_spawn;
         bool spotted = vip_->can_see(
             funpack(n.sp->trafo.t),
+            velocity,
             cfg_.only_terrain,
             funpack(cfg_.spawn_point_can_be_seen_y_offset));
         if (n.dist2 < squared(cfg_.r_spawn_near)) {
             // The spawn point is near the VIP.
 
-            // Assert that the VIP is not slow.
-            if (vehicle_is_slow) {
-                verbose_abort("Vehicle is unexpectedly slow");
-            }
             // Abort if visible.
             if (spotted) {
                 continue;
@@ -125,6 +116,7 @@ bool Bystanders::spawn_for_vip(
             // Abort if not visible after x seconds.
             if (!vip_->can_see(
                 funpack(n.sp->trafo.t),
+                velocity,
                 cfg_.only_terrain,
                 funpack(cfg_.spawn_point_can_be_seen_y_offset),
                 cfg_.visible_after_spawn_time))
