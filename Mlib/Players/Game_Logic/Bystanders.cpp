@@ -133,7 +133,7 @@ bool Bystanders::spawn_for_vip(
         }
         if (spawner_.try_spawn_at_spawn_point(spawner, n.sp->trafo)) {
             if (spotted) {
-                spawner.set_spotted_by_vip();
+                spawner.notify_spotted_by_vip();
             }
             success = true;
         }
@@ -171,10 +171,12 @@ bool Bystanders::delete_for_vip(
                 ++ndelete_votes;
                 continue;
             } else {
-                spawner.set_spotted_by_vip();
+                spawner.notify_spotted_by_vip();
             }
         }
-        if (!spawner.get_spotted_by_vip() && (spawner.get_time_since_spawn() > cfg_.visible_after_delete_time)) {
+        if ((spawner.get_time_since_spawn() > cfg_.visible_after_delete_time) &&
+            (spawner.get_time_since_spotted_by_vip() > cfg_.visible_after_spotted_time))
+        {
             if (!vip_->can_see(
                 vehicle.get(),
                 cfg_.only_terrain))
@@ -182,7 +184,7 @@ bool Bystanders::delete_for_vip(
                 ++ndelete_votes;
                 continue;
             } else {
-                spawner.set_spotted_by_vip();
+                spawner.notify_spotted_by_vip();
             }
         }
     }

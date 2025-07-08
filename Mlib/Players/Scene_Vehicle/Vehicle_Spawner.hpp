@@ -86,8 +86,8 @@ public:
     void delete_vehicle();
 
     float get_time_since_spawn() const;
-    bool get_spotted_by_vip() const;
-    void set_spotted_by_vip();
+    float get_time_since_spotted_by_vip() const;
+    void notify_spotted_by_vip();
 
     SpawnTrigger get_spawn_trigger() const;
 
@@ -106,7 +106,7 @@ private:
     SpawnTrigger spawn_trigger_;
     float time_since_spawn_;
     float time_since_deletion_;
-    bool spotted_by_vip_;
+    float time_since_spotted_by_vip_;
     float respawn_cooldown_time_;
 };
 

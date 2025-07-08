@@ -17,6 +17,7 @@ struct GameLogicConfig {
     float velocity_after_spawn = 50 * kph;
     float visible_after_spawn_time = 2 * seconds;
     float visible_after_delete_time = 3 * seconds;
+    float visible_after_spotted_time = 5 * seconds;
     bool only_terrain = true;
     CompressedScenePos spawn_point_can_be_seen_y_offset = (CompressedScenePos)(2 * meters);
     // The one spawner visits each spawn point BVH every 5 seconds.

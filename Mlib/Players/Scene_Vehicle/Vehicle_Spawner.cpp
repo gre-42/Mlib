@@ -52,7 +52,7 @@ VehicleSpawner::VehicleSpawner(
     , spawn_trigger_{ spawn_trigger }
     , time_since_spawn_{ NAN }
     , time_since_deletion_{ 0.f }
-    , spotted_by_vip_{ false }
+    , time_since_spotted_by_vip_{ NAN }
     , respawn_cooldown_time_{ 0 }
 {}
 
@@ -171,6 +171,7 @@ void VehicleSpawner::set_scene_vehicles(
             if (scene_vehicles_.empty()) {
                 time_since_spawn_ = NAN;
                 time_since_deletion_ = 0.f;
+                time_since_spotted_by_vip_ = NAN;
             }
         }, CURRENT_SOURCE_LOCATION);
     }
@@ -241,23 +242,28 @@ void VehicleSpawner::notify_spawn() {
         player_->single_waypoint_.notify_spawn();
     }
     time_since_spawn_ = 0.f;
-    spotted_by_vip_ = false;
+    time_since_spotted_by_vip_ = INFINITY;
 }
 
 float VehicleSpawner::get_time_since_spawn() const {
     if (std::isnan(time_since_spawn_)) {
-        THROW_OR_ABORT("Seconds since spawn requires previous call to notify_spawn");
+        THROW_OR_ABORT("\"get_time_since_spawn\" requires previous call to \"notify_spawn\"");
     }
     return time_since_spawn_;
 }
 
-bool VehicleSpawner::get_spotted_by_vip() const {
-    return spotted_by_vip_;
+float VehicleSpawner::get_time_since_spotted_by_vip() const {
+    if (std::isnan(time_since_spotted_by_vip_)) {
+        THROW_OR_ABORT(
+            "\"get_time_since_spotted_by_vip\" requires previous call to "
+            "\"notify_spawn\" or \"notify_spotted_by_vip\"");
+    }
+    return time_since_spotted_by_vip_;
 }
 
-void VehicleSpawner::set_spotted_by_vip() {
+void VehicleSpawner::notify_spotted_by_vip() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    spotted_by_vip_ = true;
+    time_since_spotted_by_vip_ = 0.f;
 }
 
 SpawnTrigger VehicleSpawner::get_spawn_trigger() const {
@@ -267,4 +273,5 @@ SpawnTrigger VehicleSpawner::get_spawn_trigger() const {
 void VehicleSpawner::advance_time(float dt) {
     time_since_spawn_ += dt;
     time_since_deletion_ += dt;
+    time_since_spotted_by_vip_ += dt;
 }
