@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
 #include <Mlib/Geometry/Intersection/Intersectors/Polygon_Line_Intersector.hpp>
+#include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
@@ -16,6 +17,7 @@
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <format>
 
 using namespace Mlib;
 
@@ -59,56 +61,66 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         THROW_OR_ABORT("Intersectable \"" + c.o0.name() + "\" unexpectedly collides with bullet line segment \"" + c.o1.name() + '"');
     }
     IntersectionInfo iinfo;
-    if (c.q0.has_value()) {
-        if (c.l1.has_value()) {
-            if (!intersect(*c.q0, *c.l1, iinfo)) {
-                return;
+    try {
+        if (c.q0.has_value()) {
+            if (c.l1.has_value()) {
+                if (!intersect(*c.q0, *c.l1, iinfo)) {
+                    return;
+                }
+            } else if (c.r1.has_value()) {
+                if (!intersect(*c.q0, *c.r1, iinfo)) {
+                    return;
+                }
+            } else if (c.i1 != nullptr) {
+                if (!intersect(*c.q0, *c.i1, iinfo)) {
+                    return;
+                }
+            } else {
+                THROW_OR_ABORT("Unexpected intersection object (0)");
             }
-        } else if (c.r1.has_value()) {
-            if (!intersect(*c.q0, *c.r1, iinfo)) {
-                return;
+        } else if (c.t0.has_value()) {
+            if (c.l1.has_value()) {
+                if (!intersect(*c.t0, *c.l1, iinfo)) {
+                    return;
+                }
+            } else if (c.r1.has_value()) {
+                if (!intersect(*c.t0, *c.r1, iinfo)) {
+                    return;
+                }
+            } else if (c.i1 != nullptr) {
+                if (!intersect(*c.t0, *c.i1, iinfo)) {
+                    return;
+                }
+            } else {
+                THROW_OR_ABORT("Unexpected intersection object (1)");
             }
-        } else if (c.i1 != nullptr) {
-            if (!intersect(*c.q0, *c.i1, iinfo)) {
-                return;
+        } else if (c.i0 != nullptr) {
+            if (c.l1.has_value()) {
+                if (!intersect(*c.i0, *c.l1, iinfo)) {
+                    return;
+                }
+            } else if (c.r1.has_value()) {
+                if (!intersect(*c.i0, *c.r1, iinfo)) {
+                    return;
+                }
+            } else if (c.i1 != nullptr) {
+                if (!intersect(*c.i0, *c.i1, iinfo)) {
+                    return;
+                }
+            } else {
+                THROW_OR_ABORT("Unexpected intersection object (2)");
             }
         } else {
-            THROW_OR_ABORT("Unexpected intersection object (0)");
+            THROW_OR_ABORT("Unexpected intersection object (3)");
         }
-    } else if (c.t0.has_value()) {
-        if (c.l1.has_value()) {
-            if (!intersect(*c.t0, *c.l1, iinfo)) {
-                return;
-            }
-        } else if (c.r1.has_value()) {
-            if (!intersect(*c.t0, *c.r1, iinfo)) {
-                return;
-            }
-        } else if (c.i1 != nullptr) {
-            if (!intersect(*c.t0, *c.i1, iinfo)) {
-                return;
-            }
-        } else {
-            THROW_OR_ABORT("Unexpected intersection object (1)");
-        }
-    } else if (c.i0 != nullptr) {
-        if (c.l1.has_value()) {
-            if (!intersect(*c.i0, *c.l1, iinfo)) {
-                return;
-            }
-        } else if (c.r1.has_value()) {
-            if (!intersect(*c.i0, *c.r1, iinfo)) {
-                return;
-            }
-        } else if (c.i1 != nullptr) {
-            if (!intersect(*c.i0, *c.i1, iinfo)) {
-                return;
-            }
-        } else {
-            THROW_OR_ABORT("Unexpected intersection object (2)");
-        }
-    } else {
-        THROW_OR_ABORT("Unexpected intersection object (3)");
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error(std::format(
+            "Error colliding objects \"{}\" and \"{}\", meshes \"{}\" and \"{}\": {}",
+            c.o0.name(),
+            c.o1.name(),
+            (c.mesh0 == nullptr) ? "<null>" : c.mesh0->name(),
+            (c.mesh1 == nullptr) ? "<null>" : c.mesh1->name(),
+            e.what()));
     }
     // if (iinfo->has_normal_and_overlap()) {
     //     for (double t = 0; t < 0.5; t += 0.1) {
