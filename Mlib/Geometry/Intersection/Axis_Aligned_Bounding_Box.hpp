@@ -154,7 +154,7 @@ public:
     template <class TOperation>
     bool for_each_corner(const TOperation& op) const {
         FixedArray<TData, tndim> corner = uninitialized;
-        return for_each_corner(op, 0, corner);
+        return for_each_corner<0>(op, corner);
     }
     template <class TOperation>
     bool for_each_edge(const TOperation& op) const {
@@ -375,22 +375,22 @@ private:
         : min{ min }
         , max{ max }
     {}
-    template <class TOperation>
+    template <size_t tndim0, class TOperation>
     bool for_each_corner(
         const TOperation& op,
-        size_t ndim0,
         FixedArray<TData, tndim>& corner) const
     {
         static_assert(tndim != 0);
-        if (ndim0 == tndim) {
+        static_assert(tndim0 <= tndim);
+        if constexpr (tndim0 == tndim) {
             return op(corner);
         } else {
-            corner(ndim0) = min(ndim0);
-            if (!for_each_corner(op, ndim0 + 1, corner)) {
+            corner(tndim0) = min(tndim0);
+            if (!for_each_corner<tndim0 + 1>(op, corner)) {
                 return false;
             }
-            corner(ndim0) = max(ndim0);
-            if (!for_each_corner(op, ndim0 + 1, corner)) {
+            corner(tndim0) = max(tndim0);
+            if (!for_each_corner<tndim0 + 1>(op, corner)) {
                 return false;
             }
             return true;
