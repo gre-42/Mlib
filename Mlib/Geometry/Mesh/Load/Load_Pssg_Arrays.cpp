@@ -599,6 +599,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                     .filename = VariableAndHash{ blend_map },
                                     .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                 }.compute_hash()
                             },
@@ -624,6 +625,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                     .filename = VariableAndHash{ op_diffuse },
                                     .color_mode = COLOR_MODE,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                                 }.compute_hash(),
                                 .normal =
@@ -635,6 +637,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                                         .filename = VariableAndHash{ op_normal },
                                         .color_mode = COLOR_MODE,
                                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                        .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level }.compute_hash()
                             },
                             .discreteness = 0,
@@ -1059,6 +1062,7 @@ PssgArrays<TResourcePos, TInstancePos> Mlib::load_pssg_arrays(
                     .filename = VariableAndHash{ resource_prefix + node_id + ".dds" },
                     .color_mode = COLOR_MODE,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                 }.compute_hash(),
                 node.texture(model.schema),
