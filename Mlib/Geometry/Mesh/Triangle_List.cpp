@@ -647,6 +647,8 @@ void TriangleList<TPos>::smoothen_edges(
     using Vertex3 = FixedArray<TPos, 3>;
     using Edge3 = OrderableFixedArray<TPos, 2, 3>;
     std::unordered_map<Edge3, AdjacentTriangles<TPos>> adjacent_triangles;
+    bool warning0_emitted = false;
+    bool warning1_emitted = false;
     {
         fg.update("Find adjacent triangles");
         for (const auto& l : edge_triangle_lists) {
@@ -671,12 +673,18 @@ void TriangleList<TPos>::smoothen_edges(
                             .movement_j = nullptr
                         });
                         if (!at.second) {
-                            lwarn() << "More than 2 triangles share the same edge (0)";
+                            if (!warning0_emitted) {
+                                lwarn() << "More than 2 triangles share the same edge, further warnings suppressed (0)";
+                                warning0_emitted = true;
+                            }
                             return;
                         }
                     } else {
                         if (it->second.n1 != nullptr) {
-                            lwarn() << "More than 2 triangles share the same edge (1)";
+                            if (!warning1_emitted) {
+                                lwarn() << "More than 2 triangles share the same edge, further warnings suppressed (1)";
+                                warning1_emitted = true;
+                            }
                             return;
                         }
                         it->second.n1 = &nn;
