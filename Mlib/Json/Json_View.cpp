@@ -24,10 +24,6 @@ bool JsonView::contains_non_null(std::string_view name) const {
            (j_.at(name).type() != nlohmann::detail::value_t::null);
 }
 
-nlohmann::json JsonView::try_resolve() const {
-    return (const nlohmann::json&)(*this);
-}
-
 std::optional<nlohmann::json> JsonView::try_resolve(std::string_view key) const {
     return try_at(key);
 }

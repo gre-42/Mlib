@@ -146,6 +146,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
         nlohmann::json defaults = jv.at(ToplevelKeys::defaults);
         validate(defaults, PlayerKeys::options);
         nlohmann::json default_skills = defaults.at(PlayerKeys::skills);
+        JsonView default_skillsv{ default_skills };
         for (const auto& jplayer : jv.at(ToplevelKeys::players)) {
             JsonView player{jplayer};
             player.validate(PlayerKeys::options);
@@ -158,16 +159,16 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                 }
                 THROW_OR_ABORT("Could not find key \"" + std::string{ name } + "\" in player or defaults");
             };
-            auto get_skill = [&default_skills, &player](std::string_view source, std::string_view name){
+            auto get_skill = [&default_skillsv, &player](std::string_view source, std::string_view name){
                 auto player_skill = player.try_resolve(PlayerKeys::skills, source, name);
                 return player_skill.has_value()
                     ? *player_skill
-                    : default_skills.at(source).at(name);
+                    : default_skillsv.resolve(source, name);
             };
             auto team = player.at<std::string>(PlayerKeys::team);
-            auto color = jv.at(ToplevelKeys::teams).at(team).at(TeamKeys::style).at(StyleKeys::color).get<UFixedArray<float, 3>>();
-            auto spawn_group = player.at(PlayerKeys::spawn).at(SpawnKeys::group).get<std::string>();
-            auto vehicle_name = player.at(PlayerKeys::spawn).at(SpawnKeys::vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
+            auto color = jv.resolve<UFixedArray<float, 3>>(ToplevelKeys::teams, team, TeamKeys::style, StyleKeys::color);
+            auto spawn_group = player.resolve_default<std::string>("", PlayerKeys::spawn, SpawnKeys::group);
+            auto vehicle_name = player.resolve<std::string>(PlayerKeys::spawn, SpawnKeys::vehicle, SpawnedVehicleKeys::type);
             const auto& vars = args.asset_references["vehicles"].at(vehicle_name).rp;
             if (auto controller = player.try_at<std::string>(PlayerKeys::controller); controller.has_value()) {
                 nlohmann::json let{

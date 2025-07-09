@@ -43,11 +43,18 @@ void test_eval() {
     linfo() << "eval " << eval<bool>("%%levels/aircraft_carrier0/game_modes == 'hello'", JsonView{ nlohmann::json::object() });
 }
 
+void test_resolve() {
+    std::map<std::string, std::map<std::string, int>> m;
+    m["a"]["b"] = 42;
+    linfo() << "resolve " << JsonView{ m }.resolve<int>("a", "b");
+}
+
 int main(int argc, char** argv) {
 #ifndef __ANDROID__
     set_app_reldir("macro_executor_test");
 #endif
     try {
+        test_resolve();
         test_json();
         test_eval();
     } catch (const std::runtime_error& e) {

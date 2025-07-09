@@ -4,7 +4,6 @@
     "content": [
       {
         "call": "xx",
-        "input": {"cc": "c"},
         "arguments": {
           "b": 5
         }
@@ -15,36 +14,12 @@
     "call": "myfunc",
     "arguments": {
       "a": 1
-    },
-    "scripts": {
-      "b": "script.scn"
-    },
-    "pathes": {
-      "c": "CMakeLists.txt"
-    },
-    "path_lists": {
-      "d": "CMakeLists.txt"
-    },
-    "__APPDATA__": {
-      "e": "file.txt"
     }
   },
   {
     "playback": "mymacro",
-    "literal": {
+    "arguments": {
       "v": 1
-    },
-    "scripts": {
-      "b": "script.scn"
-    },
-    "pathes": {
-      "c": "CMakeLists.txt"
-    },
-    "path_lists": {
-      "d": "CMakeLists.txt"
-    },
-    "__APPDATA__": {
-      "e": "file.txt"
     }
   }
 ]

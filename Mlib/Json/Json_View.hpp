@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Json/Misc.hpp>
+#include <Mlib/Strings/Join_Arguments.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <functional>
 #include <iosfwd>
@@ -24,15 +25,41 @@ public:
     explicit JsonView(
         const nlohmann::json& j,
         CheckIsObjectBehavior check = CheckIsObjectBehavior::CHECK);
-    nlohmann::json try_resolve() const;
     std::optional<nlohmann::json> try_resolve(std::string_view key) const;
-    template <class TKey0, class... TKeys1>
-    std::optional<nlohmann::json> try_resolve(const TKey0& key0, TKeys1... path) const {
+    template <class TKey0, class TKey1, class... TKeys2>
+    std::optional<nlohmann::json> try_resolve(const TKey0& key0, const TKey1& key1, TKeys2&&... path) const {
         auto res0 = try_at(key0);
         if (res0.has_value()) {
-            return JsonView{ res0.value() }.try_resolve(path...);
+            return JsonView{ res0.value() }.try_resolve(key1, std::forward<TKeys2>(path)...);
         } else {
             return std::nullopt;
+        }
+    }
+    template <class... TKeys>
+    nlohmann::json resolve(TKeys... path) const {
+        auto res = try_resolve(path...);
+        if (!res.has_value()) {
+            THROW_OR_ABORT("Cannot resolve JSON-path \"" + join_arguments("/", path...) + '"');
+        } else {
+            return *res;
+        }
+    }
+    template <class TValue, class... TKeys>
+    TValue resolve(TKeys... path) const {
+        auto res = try_resolve(path...);
+        if (!res.has_value()) {
+            THROW_OR_ABORT("Cannot resolve JSON-path \"" + join_arguments("/", path...) + '"');
+        } else {
+            return res->template get<TValue>();
+        }
+    }
+    template <class TValue, class... TKeys>
+    TValue resolve_default(const TValue& deflt, TKeys... path) const {
+        auto res = try_resolve(path...);
+        if (!res.has_value()) {
+            return deflt;
+        } else {
+            return res->template get<TValue>();
         }
     }
     std::optional<nlohmann::json> try_at(std::string_view name) const;
