@@ -1,5 +1,6 @@
 #include "Pitch_Look_At_Node.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -66,7 +67,7 @@ void PitchLookAtNode::increment_pitch(float dpitch, float relaxation) {
 }
 
 void PitchLookAtNode::set_pitch(float pitch) {
-    increment_pitch(std::remainderf(pitch - dpitch_ - pitch_, float(2 * M_PI)), 1.f);
+    increment_pitch(normalized_radians(pitch - dpitch_ - pitch_), 1.f);
 }
 
 TransformationMatrix<float, ScenePos, 3> PitchLookAtNode::get_new_relative_model_matrix() const {

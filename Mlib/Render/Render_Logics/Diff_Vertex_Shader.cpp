@@ -22,9 +22,9 @@ std::string Mlib::diff_vertex_shader(int texture_width, int texture_height) {
     vs << "    TexCoords0 = aTexCoords;" << std::endl;
     for (int h = 0; h < 2; ++h) {
         vs << "    TexCoords0" << h << " = aTexCoords + vec2(" <<
-            (h * 2 - 1) / (float)texture_width << ", 0.0);" << std::endl;
+            float(h * 2 - 1) / (float)texture_width << ", 0.0);" << std::endl;
         vs << "    TexCoords1" << h << " = aTexCoords + vec2(0.0, " <<
-            (h * 2 - 1) / (float)texture_height << ");" << std::endl;
+            float(h * 2 - 1) / (float)texture_height << ");" << std::endl;
     }
     vs << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);" << std::endl;
     vs << "}" << std::endl;

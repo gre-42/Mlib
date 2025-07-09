@@ -1,4 +1,5 @@
 #include "Acoustic_Pressure_Subdomain_Logic.hpp"
+#include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Images/StbImage1.hpp>
@@ -28,8 +29,8 @@
 using namespace Mlib;
 
 namespace Wind {
-static const float SCALE = 0.5f;
-static const float OFFSET = 0.5f;
+// static const float SCALE = 0.5f;
+// static const float OFFSET = 0.5f;
 static const float ISCALE = 2.f;
 static const float IOFFSET = -1.f;
 }
@@ -261,6 +262,7 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         auto vs = diff_vertex_shader(texture_width_, texture_height_);
         
         std::stringstream fs;
+        fs << std::fixed;
         fs << SHADER_VER << FRAGMENT_PRECISION;
         fs << "out float p_2;" << std::endl;
         fs << "in vec2 TexCoords0;" << std::endl;
@@ -289,8 +291,8 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
                 fs << "    float p_" << dim << h << " = texture(pressure_field1, TexCoords" << dim << h << ").r * " << Pres::ISCALE << " + " << Pres::IOFFSET << ';' << std::endl;
             }
         }
-        fs << "    float Lp = p_00 + p_01 + p_10 + p_11 - 4 * p_1;" << std::endl;
-        fs << "    p_2 = Lp * idx_c_dt_2 + 2 * p_1 - p_0;" << std::endl;
+        fs << "    float Lp = p_00 + p_01 + p_10 + p_11 - 4.0 * p_1;" << std::endl;
+        fs << "    p_2 = Lp * idx_c_dt_2 + 2.0 * p_1 - p_0;" << std::endl;
         fs << "    if (all(greaterThan(TexCoords0, inner_min)) && all(lessThan(TexCoords0, inner_max))) {" << std::endl;
         fs << "        p_2 += inner_pressure;" << std::endl;
         fs << "    }" << std::endl;
@@ -315,7 +317,7 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         fs << "    p_2 = p_2 * " << Pres::SCALE << " + " << Pres::OFFSET << ';' << std::endl;
         fs << "}" << std::endl;
         // linfo() << "--------- collide_and_stream -----------";
-        // lraw() << vs.str();
+        // lraw() << vs;
         // lraw() << fs.str();
         rp.allocate(vs.c_str(), fs.str().c_str());
         rp.inner_pressure = rp.get_uniform_location("inner_pressure");
@@ -334,8 +336,8 @@ void AcousticPressureSubdomainLogic::collide_and_stream() {
         }
     }
     rp.use();
-    inner_angle_ = std::remainderf(inner_angle_ + inner_angular_velocity_, (float)(2 * M_PI));
-    wind_angle_ = std::remainderf(wind_angle_ + wind_angular_velocity_, (float)(2 * M_PI));
+    inner_angle_ = normalized_radians(inner_angle_ + inner_angular_velocity_);
+    wind_angle_ = normalized_radians(wind_angle_ + wind_angular_velocity_);
     {
         std::scoped_lock lock{ inner_mutex_ };
         CHK(glUniform1f(rp.inner_pressure, inner_pressure_ * std::sin(inner_angle_)));
@@ -367,6 +369,7 @@ void AcousticPressureSubdomainLogic::calculate_skidmark_field() {
     auto& rp = skidmark_render_program_;
     if (!rp.allocated()) {
         std::stringstream fs;
+        fs << std::fixed;
         fs << SHADER_VER << FRAGMENT_PRECISION;
         fs << "out vec3 skidmark_field;" << std::endl;
         fs << "in vec2 TexCoords;" << std::endl;

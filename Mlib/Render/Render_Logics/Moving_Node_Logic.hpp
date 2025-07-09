@@ -34,7 +34,6 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
-    virtual void print(std::ostream& ostr, size_t depth) const = 0;
 
     virtual void render_moving_node(
         const LayoutConstraintParameters& lx,

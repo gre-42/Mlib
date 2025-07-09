@@ -1,4 +1,5 @@
 #include "Tire.hpp"
+#include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
@@ -45,7 +46,7 @@ Tire::Tire(
 Tire::~Tire() = default;
 
 void Tire::advance_time(float dt) {
-    angle_x = std::remainderf(angle_x + dt * angular_velocity, float(2 * M_PI));
+    angle_x = normalized_radians(angle_x + dt * angular_velocity);
     normal_impulse = nullptr;
 }
 

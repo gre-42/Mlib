@@ -62,7 +62,7 @@ void Mlib::add_bridge_piers(
                         auto R = FixedArray<SceneDir, 3, 3>::init(
                             R2(0, 0), R2(0, 1), 0.f,
                             R2(1, 0), R2(1, 1), 0.f,
-                            0.f, 0, z);
+                            0.f, 0.f, z);
                         return TransformationMatrix<SceneDir, ScenePos, 3>{
                             R,
                             FixedArray<ScenePos, 3>{funpack(node.position(0)), funpack(node.position(1)), w}};

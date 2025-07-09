@@ -1,4 +1,5 @@
 #include "Track_Element.hpp"
+#include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Io/Read_Number.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -58,6 +59,7 @@ TrackElement TrackElement::from_stream(
             t.rotation(0) >>
             t.rotation(1) >>
             t.rotation(2);
+        t.rotation = normalized_radians(t.rotation);
         t.position = inverse_geographic_mapping.transform(pos);
     }
     return result;

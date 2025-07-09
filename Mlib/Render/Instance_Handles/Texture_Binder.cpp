@@ -52,16 +52,16 @@ void TextureBinder::bind(
     auto target_native = [&](){
         switch (target) {
         case TextureTarget::NONE: THROW_OR_ABORT("Texture binder received \"none\" target");
-        case TextureTarget::TEXTURE_2D: return GL_TEXTURE_2D;
-        case TextureTarget::TEXTURE_2D_ARRAY: return GL_TEXTURE_2D_ARRAY;
-        case TextureTarget::TEXTURE_3D: return GL_TEXTURE_3D;
-        case TextureTarget::TEXTURE_CUBE_MAP: return GL_TEXTURE_CUBE_MAP;
+        case TextureTarget::TEXTURE_2D: return (GLenum)GL_TEXTURE_2D;
+        case TextureTarget::TEXTURE_2D_ARRAY: return (GLenum)GL_TEXTURE_2D_ARRAY;
+        case TextureTarget::TEXTURE_3D: return (GLenum)GL_TEXTURE_3D;
+        case TextureTarget::TEXTURE_CUBE_MAP: return (GLenum)GL_TEXTURE_CUBE_MAP;
         case TextureTarget::ONE_LAYER_MASK: THROW_OR_ABORT("Texture binder received \"one_layer_mask\" target");
         }
         THROW_OR_ABORT("Unknown texture target");
     }();
     CHK(glUniform1i(uniform, slot_));
-    CHK(glActiveTexture(GL_TEXTURE0 + slot_));
+    CHK(glActiveTexture(integral_cast<GLenum>(GL_TEXTURE0 + slot_)));
     CHK(glBindTexture(target_native, handle.handle<GLuint>()));
     auto w0 = handle.wrap_modes(0);
     auto w1 = handle.wrap_modes(1);

@@ -1,4 +1,5 @@
 #include "Acoustic_Velocity_Subdomain_Logic.hpp"
+#include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Images/StbImage1.hpp>
@@ -203,6 +204,7 @@ void AcousticVelocitySubdomainLogic::collide_and_stream() {
         auto vs = diff_vertex_shader(texture_width_, texture_height_);
         
         std::stringstream fs;
+        fs << std::fixed;
         fs << SHADER_VER << FRAGMENT_PRECISION;
         fs << "out vec2 u_2;" << std::endl;
         fs << "in vec2 TexCoords0;" << std::endl;
@@ -238,8 +240,8 @@ void AcousticVelocitySubdomainLogic::collide_and_stream() {
                 fs << "        vec2 u_" << dim << h << " = texture(velocity_field1, TexCoords" << dim << h << ").rg * " << Vel::ISCALE << " + " << Vel::IOFFSET << ';' << std::endl;
             }
         }
-        fs << "        vec2 Lu = u_00 + u_01 + u_10 + u_11 - 4 * u_1;" << std::endl;
-        fs << "        u_2 = Lu * idx_c_dt_2 + 2 * u_1 - u_0;" << std::endl;
+        fs << "        vec2 Lu = u_00 + u_01 + u_10 + u_11 - 4.0 * u_1;" << std::endl;
+        fs << "        u_2 = Lu * idx_c_dt_2 + 2.0 * u_1 - u_0;" << std::endl;
         fs << "        u_2 *= intensity_normalization;" << std::endl;
         fs << "    }" << std::endl;
         float vm = boundary_limitation_.max;
@@ -270,7 +272,7 @@ void AcousticVelocitySubdomainLogic::collide_and_stream() {
     }
     rp.use();
     {
-        angle_ = std::remainderf(angle_ + angular_velocity_, (float)(2 * M_PI));
+        angle_ = normalized_radians(angle_ + angular_velocity_);
         std::scoped_lock lock{ velocity_mutex_ };
         CHK(glUniform2fv(rp.inner_directional_velocity, 1, directional_velocity_.flat_begin()));
         CHK(glUniform1f(rp.inner_radial_velocity, radial_velocity_ * std::sin(angle_)));
@@ -304,6 +306,7 @@ void AcousticVelocitySubdomainLogic::calculate_skidmark_field() {
         auto vs = diff_vertex_shader(texture_width_, texture_height_);
 
         std::stringstream fs;
+        fs << std::fixed;
         fs << SHADER_VER << FRAGMENT_PRECISION;
         fs << "out vec3 skidmark_field;" << std::endl;
         fs << "in vec2 TexCoords00;" << std::endl;

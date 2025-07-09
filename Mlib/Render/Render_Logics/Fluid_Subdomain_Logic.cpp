@@ -1,4 +1,5 @@
 #include "Fluid_Subdomain_Logic.hpp"
+#include <Mlib/Geometry/Angle.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Images/StbImage1.hpp>
@@ -275,7 +276,7 @@ void FluidSubdomainLogic::calculate_macroscopic_variables() {
     }
     rp.use();
     {
-        angle_ = std::remainderf(angle_ + angular_velocity_, (float)(2 * M_PI));
+        angle_ = normalized_radians(angle_ + angular_velocity_);
         std::scoped_lock lock{ velocity_mutex_ };
         CHK(glUniform2fv(rp.inner_directional_velocity, 1, directional_velocity_.flat_begin()));
         CHK(glUniform1f(rp.inner_radial_velocity, radial_velocity_ * std::sin(angle_)));
@@ -393,7 +394,7 @@ void FluidSubdomainLogic::stream() {
             vs << "{" << std::endl;
             vs << "    TexCoords0 = aTexCoords;" << std::endl;
             vs << "    TexCoords1 = aTexCoords - vec2(" <<
-                dir(0) / (float)texture_width_ << ", " << dir(1) / (float)texture_height_ << ");" << std::endl;
+                (float)dir(0) / (float)texture_width_ << ", " << (float)dir(1) / (float)texture_height_ << ");" << std::endl;
             vs << "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);" << std::endl;
             vs << "}" << std::endl;
 
