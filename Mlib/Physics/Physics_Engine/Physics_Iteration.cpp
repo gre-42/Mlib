@@ -64,6 +64,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                 .substep = i,
                 .group = g
             };
+            physics_engine_.compute_transformed_objects(&phase);
             physics_engine_.collide(
                 world,
                 bcns,
@@ -76,6 +77,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
             physics_engine_.move_particles(world, phase);
         }
     }
+    physics_engine_.compute_transformed_objects(nullptr);
     {
         scene_.notify_cleanup_required();
         DestructionGuard dg{ [&]() { scene_.notify_cleanup_done(); } };

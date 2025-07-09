@@ -29,6 +29,7 @@ public:
     void remove_external_force_provider(IExternalForceProvider& efp);
     void add_controllable(IControllable& co);
     void remove_controllable(IControllable& co);
+    void compute_transformed_objects(const PhysicsPhase* phase);
     void collide(
         const StaticWorld& world,
         std::list<Beacon>* beacons,

@@ -37,27 +37,35 @@ PhysicsEngine::PhysicsEngine(const PhysicsEngineConfig& cfg)
 
 PhysicsEngine::~PhysicsEngine() = default;
 
+void PhysicsEngine::compute_transformed_objects(const PhysicsPhase* phase) {
+    rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
+        return (rbtm.rigid_body->mass() != INFINITY);
+    });
+    for (auto& o : rigid_bodies_.objects_) {
+        if ((o.rigid_body->mass() == INFINITY) ||
+            o.rigid_body->is_deactivated_avatar() ||
+            !o.has_meshes())
+        {
+            continue;
+        }
+        if ((phase != nullptr) &&
+            (phase->group.penetration_class != PenetrationClass::BULLET_LINE) &&
+             !phase->group.rigid_bodies.contains(&o.rigid_body->rbp_))
+        {
+            continue;
+        }
+        rigid_bodies_.transform_object_and_add(o);
+    }
+}
+
 void PhysicsEngine::collide(
     const StaticWorld& world,
     std::list<Beacon>* beacons,
     const PhysicsPhase& phase,
     BaseLog* base_log)
 {
-    rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
-        return (rbtm.rigid_body->mass() != INFINITY);
-    });
-    std::vector<RigidBodyAndMeshes*> ovector;
-    ovector.reserve(rigid_bodies_.objects_.size());
-    for (auto& o : rigid_bodies_.objects_) {
-        if ((o.rigid_body->mass() == INFINITY) ||
-            o.rigid_body->is_deactivated_avatar() ||
-            ((phase.group.penetration_class != PenetrationClass::BULLET_LINE) &&
-             !phase.group.rigid_bodies.contains(&o.rigid_body->rbp_)))
-        {
-            continue;
-        }
+    for (const auto& o : rigid_bodies_.transformed_objects()) {
         o.rigid_body->reset_forces(phase);
-        ovector.push_back(&o);
     }
     for (const auto& co : controllables_) {
         co->notify_reset(cfg_, phase);
@@ -95,16 +103,11 @@ void PhysicsEngine::collide(
         .ridge_map = rigid_bodies_.ridge_map(),
         .base_log = base_log
     };
-    for (const auto& o : ovector) {
-        if (o->has_meshes()) {
-            rigid_bodies_.transform_object_and_add(*o);
-        }
-    }
     for (const auto& efp : external_force_providers_) {
         efp->increment_external_forces(cfg_, phase, world);
     }
-    for (const auto& o : ovector) {
-        o->rigid_body->collide_with_air(history);
+    for (const auto& o : rigid_bodies_.transformed_objects()) {
+        o.rigid_body->collide_with_air(history);
     }
     collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)
         ? CollisionDirection::BACKWARD
