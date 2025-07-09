@@ -39,7 +39,7 @@ public:
         const StaticWorld& world,
         std::list<Beacon>* beacons,
         const PhysicsPhase& phase);
-    void move_particles(const StaticWorld& world, const PhysicsPhase& phase);
+    void move_particles(const StaticWorld& world);
     void move_advance_times(const StaticWorld& world);
     void burn_in(
         const StaticWorld& world,

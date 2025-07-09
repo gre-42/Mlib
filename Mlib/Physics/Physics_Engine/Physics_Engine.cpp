@@ -142,17 +142,14 @@ void PhysicsEngine::move_rigid_bodies(
     }
 }
 
-void PhysicsEngine::move_particles(const StaticWorld& world, const PhysicsPhase& phase)
+void PhysicsEngine::move_particles(const StaticWorld& world)
 {
-    if (phase.group.penetration_class == PenetrationClass::BULLET_LINE) {
-        return;
-    }
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
-    contact_smoke_generator_->advance_time(cfg_.dt_substeps(phase));
+    contact_smoke_generator_->advance_time(cfg_.dt);
     if (trail_renderer_ != nullptr) {
-        trail_renderer_->move(cfg_.dt_substeps(phase), world);
+        trail_renderer_->move(cfg_.dt, world);
     }
 }
 

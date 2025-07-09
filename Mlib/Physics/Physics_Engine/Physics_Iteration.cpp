@@ -74,9 +74,9 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                 world,
                 bcns,
                 phase);
-            physics_engine_.move_particles(world, phase);
         }
     }
+    physics_engine_.move_particles(world);
     physics_engine_.compute_transformed_objects(nullptr);
     {
         scene_.notify_cleanup_required();
