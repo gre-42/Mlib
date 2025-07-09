@@ -276,9 +276,9 @@ void ListView::notify_change_visibility() {
                 break;
             }
         }
-        if ((contents_.num_entries() != 0) && !has_selected_element()) {
-            THROW_OR_ABORT(debug_hint_ + ": No listview element is selected");
-        }
+        // if ((contents_.num_entries() != 0) && !has_selected_element()) {
+        //     THROW_OR_ABORT(debug_hint_ + ": No listview element is selected");
+        // }
     }
 }
 
