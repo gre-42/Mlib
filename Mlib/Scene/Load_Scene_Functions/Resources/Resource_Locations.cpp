@@ -61,7 +61,7 @@ static void add_rw_resource(
             });
     } else if (extension == ".txd") {
         auto& res = RenderingContextStack::primary_rendering_resources();
-        res.set_textures_lazy([img, name, &res](){
+        res.set_textures_lazy([img, cfg, name, &res](){
             auto txd = Dff::read_txd(
                 *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION).stream,
                 rvalue_address(Dff::RasterFactory{}),
@@ -81,7 +81,8 @@ static void add_rw_resource(
                 auto cm = ColormapWithModifiers{
                     .filename = VariableAndHash{filename},
                     .color_mode = ColorMode::RGB | ColorMode::RGBA,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                    .magnifying_interpolation_mode = cfg->magnifying_interpolation_mode
                 }.compute_hash();
                 if (res.contains_texture(cm)) {
                     lwarn() << "Ignoring duplicate texture \"" << *tx->name << "\" with mask \"" << *tx->mask << "\" in dictionary \"" << *name << '"';
