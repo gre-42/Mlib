@@ -182,6 +182,7 @@ void PhysicsEngine::burn_in(
                     .substep = i,
                     .group = g
                 };
+                compute_transformed_objects(&phase);
                 collide(
                     world,
                     nullptr,                            // beacons
@@ -202,6 +203,7 @@ void PhysicsEngine::burn_in(
             }
         }
     }
+    compute_transformed_objects(nullptr);
 }
 
 void PhysicsEngine::set_surface_contact_db(SurfaceContactDb& surface_contact_db) {
