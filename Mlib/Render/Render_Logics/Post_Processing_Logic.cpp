@@ -200,10 +200,13 @@ void PostProcessingLogic::render_with_setup(
 {
     LOG_FUNCTION("PostProcessingLogic::render");
     // TimeGuard time_guard{"PostProcessingLogic::render", "PostProcessingLogic::render"};
-    if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+    if (!any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD)) {
         THROW_OR_ABORT("PostProcessingLogic did not receive standard rendering");
     }
-    if (!render_config.vfx || !setup.camera->get_requires_postprocessing()) {
+    if (!render_config.vfx ||
+        !setup.camera->get_requires_postprocessing() ||
+        (!depth_fog_ && !low_pass_ && (soft_light_texture_ == nullptr)))
+    {
         child_logic_.render_with_setup(
             lx,
             ly,

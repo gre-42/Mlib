@@ -94,7 +94,7 @@ public:
         if (camera_node_ == nullptr) {
             verbose_abort("node_shall_be_hidden on destroyed node hider");
         }
-        if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+        if (!any(external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
             return false;
         }
         bool hide = (camera_node_ == camera_node);

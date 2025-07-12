@@ -119,6 +119,9 @@ void SkyboxLogic::render_with_setup(
     const RenderSetup& setup)
 {
     LOG_FUNCTION("SkyboxLogic::render");
+    if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD_FOREGROUND) {
+        return;
+    }
     if (texture_ == nullptr) {
         return;
     }
@@ -134,7 +137,7 @@ void SkyboxLogic::render_with_setup(
         CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr));
         CHK(glBindVertexArray(0));
     }
-    if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+    if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
         rp_.use();

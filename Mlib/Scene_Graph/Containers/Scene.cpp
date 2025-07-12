@@ -586,7 +586,7 @@ void Scene::render(
             }
             {
                 bool is_foreground_task = any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
-                bool is_background_task = (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD);
+                bool is_background_task = any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK);
                 if (is_foreground_task && is_background_task) {
                     THROW_OR_ABORT("Scene::render has both foreground and background task");
                 }
@@ -731,12 +731,12 @@ void Scene::render(
                 LOG_INFO("Scene::render instances_renderer");
                 std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers = IInstancesRenderer::small_sorted_instances_renderers();
                 if (small_sorted_instances_renderers != nullptr) {
-                    if ((frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) ||
+                    if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK) ||
                         any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK))
                     {
                         auto small_instances_renderer_update_func = [&](TaskLocation task_location){
                             std::set<ExternalRenderPassType> black_render_passes;
-                            if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+                            if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
                                 for (const auto &[_, l] : lights) {
                                     if (any(l->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_LOCAL_MASK)) {
                                         black_render_passes.insert(l->shadow_render_pass);
@@ -800,7 +800,7 @@ void Scene::render(
                         vp, iv, lights, skidmarks, scene_graph_config, render_config, frame_id);
                 }
             }
-            if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+            if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
                 if (trail_renderer_ != nullptr) {
                     trail_renderer_->render(
                         vp,

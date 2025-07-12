@@ -6,7 +6,9 @@
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Bloom_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Bloom/Bloom_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Bloom/Bloom_Selector_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Bloom/Sky_Bloom_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fxaa_Logic.hpp>
@@ -99,6 +101,14 @@ RenderableScene::RenderableScene(
         scene_render_logics_,
         config.bloom_thresholds,
         config.bloom_iterations) }
+    , sky_bloom_logic_{ std::make_unique<SkyBloomLogic>(
+        scene_render_logics_,
+        config.bloom_intensities,
+        config.bloom_iterations) }
+    , bloom_selector_logic_{ std::make_unique<BloomSelectorLogic>(
+        *bloom_logic_,
+        *sky_bloom_logic_,
+        config.bloom_mode) }
     , imposter_render_logics_{ std::make_unique<RenderLogics>(ui_focus) }
     , imposters_instantiated_{ false }
     , background_color_applied_{ false }
@@ -110,7 +120,7 @@ RenderableScene::RenderableScene(
     render_logics_.append({ *key_bindings_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *dirtmap_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *imposter_render_logics_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
-    render_logics_.append({ *bloom_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    render_logics_.append({ *bloom_selector_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     scene_render_logics_.append({ *fxaa_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 
     on_stop_and_join_physics_.add([this](){

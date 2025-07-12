@@ -35,6 +35,8 @@ enum class ExternalRenderPassType {
 
     IMPOSTER_NODE_MASK                      = (1 << 17),
     ZOOM_NODE_MASK                          = (1 << 18),
+    FOREGROUND_MASK                         = (1 << 19),
+    BACKGROUND_MASK                         = (1 << 20),
 
     STANDARD                                = STANDARD_MASK,
 
@@ -55,7 +57,9 @@ enum class ExternalRenderPassType {
     IMPOSTER_NODE                           = IMPOSTER_NODE_MASK,
     ZOOM_NODE                               = ZOOM_NODE_MASK,
 
-    IMPOSTER_OR_ZOOM_NODE                   = IMPOSTER_NODE_MASK | ZOOM_NODE_MASK
+    IMPOSTER_OR_ZOOM_NODE                   = IMPOSTER_NODE_MASK | ZOOM_NODE_MASK,
+    STANDARD_FOREGROUND                     = STANDARD_MASK | FOREGROUND_MASK,
+    STANDARD_BACKGROUND                     = STANDARD_MASK | BACKGROUND_MASK,
 };
 
 inline ExternalRenderPassType operator & (ExternalRenderPassType a, ExternalRenderPassType b) {

@@ -77,7 +77,7 @@ void LightmapLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("LightmapLogic::render");
-    if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+    if (!any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
         THROW_OR_ABORT("LightmapLogic received wrong rendering");
     }
     if ((!fbs_[0]->is_configured() && !fbs_[1]->is_configured()) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
@@ -114,7 +114,7 @@ void LightmapLogic::render_without_setup(
             // Non-static lights are not aggregated at all due to the following lines
             // in Scene::render:
             //   bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
-            //   bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
+            //   bool is_background_task = any(external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK);
             bool create_render_guards = any(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
             std::optional<AggregateRendererGuard> arg;
             std::optional<InstancesRendererGuard> irg;

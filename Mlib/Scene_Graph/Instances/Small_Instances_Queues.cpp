@@ -14,7 +14,7 @@ SmallInstancesQueues::SmallInstancesQueues(
 : main_render_pass_{main_render_pass}
 {
     for (const auto& r : black_render_passes) {
-        assert_true(r != ExternalRenderPassType::STANDARD);
+        assert_true(!any(r & ExternalRenderPassType::STANDARD_MASK));
         black_queues_[r];
     }
 }

@@ -126,7 +126,7 @@ void AcousticPressureSubdomainLogic::render_moving_node(
     const std::optional<FixedArray<float, 2>>& offset)
 {
     LOG_FUNCTION("SkidmarkLogic::render");
-    if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+    if (!any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
         THROW_OR_ABORT("SkidmarkLogic received wrong rendering");
     }
     if (skidmark_field_ == nullptr) {

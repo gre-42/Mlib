@@ -28,6 +28,8 @@ class DirtmapLogic;
 class PostProcessingLogic;
 class FxaaLogic;
 class BloomLogic;
+class SkyBloomLogic;
+class BloomSelectorLogic;
 class MotionInterpolationLogic;
 class FlyingCameraUserClass;
 class StandardRenderLogic;
@@ -41,6 +43,7 @@ class UiFocus;
 
 enum class ThreadAffinity;
 enum class ClearMode;
+enum class BloomMode;
 
 struct FocusFilter;
 struct SceneConfig;
@@ -53,6 +56,8 @@ struct SceneConfigResource {
     bool high_pass;
     FixedArray<unsigned int, 2> bloom_iterations;
     FixedArray<float, 3> bloom_thresholds;
+    FixedArray<float, 3> bloom_intensities;
+    BloomMode bloom_mode;
     bool with_skybox;
     bool with_flying_logic;
     FixedArray<float, 3> background_color;
@@ -127,6 +132,8 @@ public:
     std::unique_ptr<PostProcessingLogic> post_processing_logic_;
     std::unique_ptr<FxaaLogic> fxaa_logic_;
     std::unique_ptr<BloomLogic> bloom_logic_;
+    std::unique_ptr<SkyBloomLogic> sky_bloom_logic_;
+    std::unique_ptr<BloomSelectorLogic> bloom_selector_logic_;
     std::unique_ptr<RenderLogics> imposter_render_logics_;
 
     std::unique_ptr<AudioListenerUpdater> audio_listener_updater_;

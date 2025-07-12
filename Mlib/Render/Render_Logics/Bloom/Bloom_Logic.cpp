@@ -9,6 +9,8 @@
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Binder.hpp>
+#include <Mlib/Render/Instance_Handles/Texture_Layer_Properties.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Shader_Version_3_0.hpp>
@@ -155,11 +157,14 @@ bool BloomLogic::render_optional_setup(
 
             rp_threshold_.use();
 
-            CHK(glUniform1i(rp_threshold_.screen_texture_color_location, 0));
             CHK(glUniform3fv(rp_threshold_.brightness_threshold_location, 1, brightness_threshold_.flat_begin()));
 
-            CHK(glActiveTexture(GL_TEXTURE0 + 0));
-            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_->texture_color()->handle<GLuint>()));
+            TextureBinder tb;
+            tb.bind(
+                rp_threshold_.screen_texture_color_location,
+                *screen_fbs_->texture_color(),
+                InterpolationPolicy::NEAREST_NEIGHBOR,
+                TextureLayerProperties::NONE);
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -172,14 +177,18 @@ bool BloomLogic::render_optional_setup(
             notify_rendering(CURRENT_SOURCE_LOCATION);
             rp_blend_.use();
 
-            CHK(glUniform1i(rp_blend_.screen_texture_color_location, 0));
-            CHK(glUniform1i(rp_blend_.bloom_texture_color_location, 1));
-
-            CHK(glActiveTexture(GL_TEXTURE0 + 0));
-            CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_->texture_color()->handle<GLuint>()));
-
-            CHK(glActiveTexture(GL_TEXTURE0 + 1));
-            CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_target_id]->texture_color()->handle<GLuint>()));
+            TextureBinder tb;
+            tb.bind(
+                rp_blend_.screen_texture_color_location,
+                *screen_fbs_->texture_color(),
+                InterpolationPolicy::NEAREST_NEIGHBOR,
+                TextureLayerProperties::NONE);
+            
+            tb.bind(
+                rp_blend_.bloom_texture_color_location,
+                *bloom_fbs_[bloom_target_id]->texture_color(),
+                InterpolationPolicy::NEAREST_NEIGHBOR,
+                TextureLayerProperties::NONE);
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

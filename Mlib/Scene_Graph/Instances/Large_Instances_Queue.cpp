@@ -15,7 +15,7 @@ LargeInstancesQueue::LargeInstancesQueue(ExternalRenderPassType render_pass)
     if ((render_pass_ != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
         (render_pass_ != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
         (render_pass_ != ExternalRenderPassType::DIRTMAP) &&
-        (render_pass_ != ExternalRenderPassType::STANDARD))
+        !any(render_pass_ & ExternalRenderPassType::STANDARD_MASK))
     {
         THROW_OR_ABORT("Unknown render pass");
     }
@@ -35,7 +35,7 @@ void LargeInstancesQueue::insert(
 {
     TransformationMatrix<float, float, 3> mo{m.R, (m.t - offset).casted<float>()};
     for (const auto& scva : scvas) {
-        if (render_pass_ == ExternalRenderPassType::STANDARD) {
+        if (any(render_pass_ & ExternalRenderPassType::STANDARD_MASK)) {
             if (!VisibilityCheck{mvp}.is_visible(scva->name.full_name(), scva->material, scva->morphology, billboard_id, scene_graph_config, render_pass_)) {
                 continue;
             }

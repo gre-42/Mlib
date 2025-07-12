@@ -44,7 +44,7 @@ bool Mlib::is_visible(
         return morphology.center_distances2(1) == INFINITY;
     } else if (any(external_render_pass & ExternalRenderPassType::ZOOM_NODE)) {
         return morphology.center_distances2(0) == 0.f;
-    } else if (any(external_render_pass & ExternalRenderPassType::STANDARD)) {
+    } else if (any(external_render_pass & ExternalRenderPassType::STANDARD_MASK)) {
         if (vc.orthographic()) {
             return true;
         }

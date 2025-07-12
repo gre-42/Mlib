@@ -13,7 +13,7 @@
 
 using namespace Mlib;
 
-static GenShaderText filter_fragment_shader_text{[](size_t axis)
+static GenShaderText filter_fragment_shader_text{[](LowpassFlavor flavor, size_t axis)
     {
         std::stringstream sstr;
         sstr << SHADER_VER << FRAGMENT_PRECISION;
@@ -26,25 +26,31 @@ static GenShaderText filter_fragment_shader_text{[](size_t axis)
         sstr << std::endl;
         sstr << "void main()" << std::endl;
         sstr << "{" << std::endl;
+        sstr << "    vec3 center = texture(texture_color, TexCoords.st).rgb;" << std::endl;
         if (axis == 0) {
             sstr << "    vec3 color =" << std::endl;
-            sstr << "          texture(texture_color, TexCoords.st).rgb" << std::endl;
+            sstr << "          center" << std::endl;
             sstr << "        + texture(texture_color, TexCoords.st + vec2(offset, 0.0)).rgb" << std::endl;
             sstr << "        + texture(texture_color, TexCoords.st - vec2(offset, 0.0)).rgb;" << std::endl;
         } else if (axis == 1) {
             sstr << "    vec3 color =" << std::endl;
-            sstr << "          texture(texture_color, TexCoords.st).rgb" << std::endl;
+            sstr << "          center" << std::endl;
             sstr << "        + texture(texture_color, TexCoords.st + vec2(0.0, offset)).rgb" << std::endl;
             sstr << "        + texture(texture_color, TexCoords.st - vec2(0.0, offset)).rgb;" << std::endl;
         } else {
             THROW_OR_ABORT("Unknown texture axis");
         }
         sstr << "    FragColor = vec4(color / 3.0, 1.0);" << std::endl;
+        if (flavor == LowpassFlavor::MAX) {
+            sstr << "    FragColor.rgb = max(FragColor.rgb, center);" << std::endl;
+        }
         sstr << "}" << std::endl;
         return sstr.str();
     }};
 
-Lowpass::Lowpass() = default;
+Lowpass::Lowpass(LowpassFlavor flavor)
+    : flavor_{ flavor }
+{}
 
 Lowpass::~Lowpass() = default;
 
@@ -57,7 +63,7 @@ void Lowpass::render(
 {
     for (auto&& [axis, rp] : enumerate(rp_.flat_iterable())) {
         if (!rp.allocated()) {
-            rp.allocate(simple_vertex_shader_text_, filter_fragment_shader_text(axis));
+            rp.allocate(simple_vertex_shader_text_, filter_fragment_shader_text(flavor_, axis));
             rp.texture_color_location = rp.get_uniform_location("texture_color");
             rp.lowpass_offset_location = rp.get_uniform_location("offset");
         }

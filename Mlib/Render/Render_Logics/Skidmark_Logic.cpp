@@ -62,7 +62,7 @@ void SkidmarkLogic::render_moving_node(
     const std::optional<FixedArray<float, 2>>& offset)
 {
     LOG_FUNCTION("SkidmarkLogic::render");
-    if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+    if (!any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
         THROW_OR_ABORT("SkidmarkLogic received wrong rendering");
     }
     size_t new_fbs_id = 1 - old_fbs_id_;

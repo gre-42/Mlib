@@ -13,9 +13,14 @@ struct LowpassFilterRenderProgram: public RenderProgram {
 	GLint lowpass_offset_location = -1;
 };
 
+enum class LowpassFlavor {
+	NONE,
+	MAX
+};
+
 class Lowpass: public GenericPostProcessingLogic {
 public:
-	Lowpass();
+	explicit Lowpass(LowpassFlavor flavor = LowpassFlavor::NONE);
 	~Lowpass();
 	void render(
 		int width,
@@ -24,6 +29,7 @@ public:
 		std::shared_ptr<FrameBuffer> fbs[2],
 		size_t& target_id);
 private:
+	LowpassFlavor flavor_;
 	UFixedArray<LowpassFilterRenderProgram, 2> rp_;
 };
 

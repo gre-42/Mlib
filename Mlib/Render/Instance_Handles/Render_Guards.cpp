@@ -48,11 +48,14 @@ RenderToFrameBufferGuard::RenderToFrameBufferGuard(std::shared_ptr<IFrameBuffer>
 }
 
 RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
-    if (last_frame_buffer != bound_frame_buffer) {
-        verbose_abort("~RenderToFrameBufferGuard error");
+    // "bound_frame_buffer" can be null if an exception happened.
+    if (bound_frame_buffer != nullptr) {
+        if (last_frame_buffer != bound_frame_buffer) {
+            verbose_abort("~RenderToFrameBufferGuard error");
+        }
+        last_frame_buffer->unbind(CURRENT_SOURCE_LOCATION);
+        bound_frame_buffer = nullptr;
     }
-    last_frame_buffer->unbind(CURRENT_SOURCE_LOCATION);
-    bound_frame_buffer = nullptr;
     last_frame_buffer = previous_frame_buffer_;
 }
 

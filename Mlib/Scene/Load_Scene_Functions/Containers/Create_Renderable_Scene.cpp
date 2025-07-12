@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
+#include <Mlib/Render/Render_Logics/Bloom/Bloom_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -22,6 +23,8 @@ DECLARE_ARGUMENT(low_pass);
 DECLARE_ARGUMENT(high_pass);
 DECLARE_ARGUMENT(bloom_iterations);
 DECLARE_ARGUMENT(bloom_thresholds);
+DECLARE_ARGUMENT(bloom_intensities);
+DECLARE_ARGUMENT(bloom_mode);
 DECLARE_ARGUMENT(with_skybox);
 DECLARE_ARGUMENT(with_flying_logic);
 DECLARE_ARGUMENT(clear_mode);
@@ -91,6 +94,8 @@ struct RegisterJsonUserFunction {
                         .high_pass = args.arguments.at<bool>(KnownArgs::high_pass),
                         .bloom_iterations = args.arguments.at<EFixedArray<unsigned int, 2>>(KnownArgs::bloom_iterations),
                         .bloom_thresholds = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::bloom_thresholds),
+                        .bloom_intensities = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::bloom_intensities, 0.f),
+                        .bloom_mode = bloom_mode_from_string(args.arguments.at<std::string>(KnownArgs::bloom_mode, "sky")),
                         .with_skybox = args.arguments.at<bool>(KnownArgs::with_skybox),
                         .with_flying_logic = args.arguments.at<bool>(KnownArgs::with_flying_logic),
                         .background_color = {1.f, 0.f, 1.f},

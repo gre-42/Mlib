@@ -53,7 +53,7 @@ bool OriginalNodeHider::node_shall_be_hidden(
     const DanglingPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
-    if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+    if (!any(external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
         return false;
     }
     if (imposter_logic_.imposter_node_ == nullptr) {
@@ -66,7 +66,7 @@ bool ImposterNodeHider::node_shall_be_hidden(
     const DanglingPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
-    if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+    if (!any(external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
         return true;
     }
     // A check for "imposter_logic_.imposter_node_ == nullptr" like
@@ -207,7 +207,7 @@ void ImposterLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("ImposterLogic::render");
-    if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+    if (!any(frame_id.external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
         THROW_OR_ABORT("ImposterLogic received wrong rendering");
     }
     auto can = cameras_.camera(DP_LOC);

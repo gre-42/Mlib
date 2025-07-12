@@ -39,6 +39,8 @@ std::string Mlib::external_render_pass_type_to_string(ExternalRenderPassType pas
     case ExternalRenderPassType::LIGHTMAP_BLACK_NODE: return "lightmap_black_node";
     case ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL: return "lightmap_black_global_and_local";
     case ExternalRenderPassType::LIGHTMAP_BLOBS: return "lightmap_blobs";
+    case ExternalRenderPassType::STANDARD_FOREGROUND: return "standard|foreground";
+    case ExternalRenderPassType::STANDARD_BACKGROUND: return "standard|background";
     default:
         THROW_OR_ABORT("Unknown render pass type");
     }
