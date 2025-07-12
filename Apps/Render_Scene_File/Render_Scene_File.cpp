@@ -608,7 +608,7 @@ int main(int argc, char** argv) {
                 {"primary_scene_bloom_thresholds", fixed_full<float, 3>(
                     safe_stof(args.named_value("--bloom_threshold", "1")))},
                 {"primary_scene_bloom_intensities", fixed_full<float, 3>(
-                    safe_stof(args.named_value("--bloom_intensities", "0.3")))},
+                    safe_stof(args.named_value("--bloom_intensities", "0")))},
                 {"primary_scene_bloom_mode", args.named_value("--bloom_mode", "sky")},
                 {"primary_scene_with_skybox", true},
                 {"primary_scene_with_flying_logic", true},
