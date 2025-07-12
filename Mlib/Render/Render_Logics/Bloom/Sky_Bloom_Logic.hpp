@@ -25,8 +25,8 @@ class SkyBloomLogic final: public RenderLogic, public GenericPostProcessingLogic
 public:
     SkyBloomLogic(
         RenderLogic& child_logic,
-        const FixedArray<float, 3>& intensities,
-        const FixedArray<uint32_t, 2>& niterations);
+        const FixedArray<float, 2>& stddev,
+        const FixedArray<float, 3>& intensities);
     ~SkyBloomLogic();
 
     virtual std::optional<RenderSetup> try_render_setup(
@@ -45,8 +45,8 @@ public:
 
 private:
     RenderLogic& child_logic_;
+    FixedArray<float, 2> stddev_;
     FixedArray<float, 3> intensities_;
-    FixedArray<uint32_t, 2> niterations_;
     SkyBloomModulateRenderProgram rp_modulate_;
     Lowpass lowpass_max_;
     SkyBloomBlendRenderProgram rp_blend_;

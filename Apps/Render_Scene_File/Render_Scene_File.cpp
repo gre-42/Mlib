@@ -361,6 +361,7 @@ int main(int argc, char** argv) {
         "    [--bloom_x <niterations>]\n"
         "    [--bloom_y <niterations>]\n"
         "    [--bloom_threshold <threshold>]\n"
+        "    [--bloom_std <stddev>]\n"
         "    [--bloom_intensities <intensities>]\n"
         "    [--motion_interpolation]\n"
         "    [--no_render]\n"
@@ -471,6 +472,7 @@ int main(int argc, char** argv) {
          "--bloom_x",
          "--bloom_y",
          "--bloom_threshold",
+         "--bloom_std",
          "--bloom_intensities",
          "--show_only"});
     try {
@@ -607,8 +609,10 @@ int main(int argc, char** argv) {
                     safe_stou(args.named_value("--bloom_y", "3"))}},
                 {"primary_scene_bloom_thresholds", fixed_full<float, 3>(
                     safe_stof(args.named_value("--bloom_threshold", "1")))},
+                {"primary_scene_bloom_std", fixed_full<float, 2>(
+                    safe_stof(args.named_value("--bloom_std", "2")))},
                 {"primary_scene_bloom_intensities", fixed_full<float, 3>(
-                    safe_stof(args.named_value("--bloom_intensities", "0")))},
+                    safe_stof(args.named_value("--bloom_intensities", "2")))},
                 {"primary_scene_bloom_mode", args.named_value("--bloom_mode", "sky")},
                 {"primary_scene_with_skybox", true},
                 {"primary_scene_with_flying_logic", true},

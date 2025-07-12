@@ -23,7 +23,7 @@ void lpr(
         local_polynomial_regression(
             bitmap.to_float_grayscale().casted<double>(),
             [sigma, fc](const Array<double>& im){
-                return gaussian_filter_NWE<double>(im, sigma, NAN, 4, fc);
+                return gaussian_filter_NWE<double>(im, sigma, NAN, 4.0, fc);
             },
             degree),
         0.0,

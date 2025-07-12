@@ -56,6 +56,7 @@ struct SceneConfigResource {
     bool high_pass;
     FixedArray<unsigned int, 2> bloom_iterations;
     FixedArray<float, 3> bloom_thresholds;
+    FixedArray<float, 2> bloom_std;
     FixedArray<float, 3> bloom_intensities;
     BloomMode bloom_mode;
     bool with_skybox;

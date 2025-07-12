@@ -103,8 +103,8 @@ RenderableScene::RenderableScene(
         config.bloom_iterations) }
     , sky_bloom_logic_{ std::make_unique<SkyBloomLogic>(
         scene_render_logics_,
-        config.bloom_intensities,
-        config.bloom_iterations) }
+        config.bloom_std,
+        config.bloom_intensities) }
     , bloom_selector_logic_{ std::make_unique<BloomSelectorLogic>(
         *bloom_logic_,
         *sky_bloom_logic_,

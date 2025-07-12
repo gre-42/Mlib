@@ -35,7 +35,7 @@ static GenShaderText modulate_fragment_shader_text{[]()
     sstr << "{" << std::endl;
     sstr << "    float fg_a = texture(foreground, TexCoords.st).a;" << std::endl;
     sstr << "    vec3 bg_rgb = texture(background, TexCoords.st).rgb;" << std::endl;
-    sstr << "    FragColor = vec4(bg_rgb * (1 - fg_a), 1.0);" << std::endl;
+    sstr << "    FragColor = vec4(bg_rgb * (1.0 - fg_a), 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
@@ -58,22 +58,32 @@ static GenShaderText blend_fragment_shader_text{[]()
     sstr << "    vec4 fg = texture(foreground, TexCoords.st).rgba;" << std::endl;
     sstr << "    vec3 bg = texture(background, TexCoords.st).rgb;" << std::endl;
     sstr << "    vec3 lo = texture(bloom, TexCoords.st).rgb;" << std::endl;
-    sstr << "    FragColor = vec4(mix(bg, fg.rgb, fg.a) + lo * intensities, 1.0);" << std::endl;
+    sstr << "    vec3 a = min(lo * intensities, vec3(1.0, 1.0, 1.0));" << std::endl;
+    sstr << "    FragColor = vec4(mix(mix(bg, fg.rgb, fg.a), bg, a), 1.0);" << std::endl;
+    // sstr << "    FragColor = vec4(mix(bg, fg.rgb, fg.a) + lo * intensities, 1.0);" << std::endl;
     // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + fg.a;" << std::endl;
     // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + bg;" << std::endl;
+    // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + lo;" << std::endl;
     // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + fg.rgb;" << std::endl;
+    // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + mix(bg, fg.rgb, fg.a);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
 
 SkyBloomLogic::SkyBloomLogic(
     RenderLogic& child_logic,
-    const FixedArray<float, 3>& intensities,
-    const FixedArray<uint32_t, 2>& niterations)
+    const FixedArray<float, 2>& stddev,
+    const FixedArray<float, 3>& intensities)
     : child_logic_{ child_logic }
+    , stddev_{ stddev }
     , intensities_{ intensities }
-    , niterations_{ niterations }
-    , lowpass_max_{ LowpassFlavor::MAX }
+    , lowpass_max_{
+        Lowpass::Params2{
+            Lowpass::Params1{NormalParameters{.stddev = stddev(0)}},
+            Lowpass::Params1{NormalParameters{.stddev = stddev(1)}}
+        },
+        LowpassFlavor::MAX
+    }
     , foreground_fbs_{ std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION) }
     , background_fbs_{ std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION) }
     , bloom_fbs_{
@@ -198,6 +208,11 @@ bool SkyBloomLogic::render_optional_setup(
                 *foreground_fbs_->texture_color(),
                 InterpolationPolicy::NEAREST_NEIGHBOR,
                 TextureLayerProperties::NONE);
+            tb.bind(
+                rp_modulate_.background_texture_location,
+                *background_fbs_->texture_color(),
+                InterpolationPolicy::NEAREST_NEIGHBOR,
+                TextureLayerProperties::NONE);
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -205,7 +220,7 @@ bool SkyBloomLogic::render_optional_setup(
 
             CHK(glActiveTexture(GL_TEXTURE0));
         }
-        lowpass_max_.render(width, height, niterations_, bloom_fbs_, bloom_target_id);
+        lowpass_max_.render(width, height, fixed_ones<uint32_t, 2>(), bloom_fbs_, bloom_target_id);
         {
             notify_rendering(CURRENT_SOURCE_LOCATION);
             rp_blend_.use();

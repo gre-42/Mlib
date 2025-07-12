@@ -1,5 +1,7 @@
 #include "Lowpass.hpp"
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
+#include <Mlib/Images/Filters/Gaussian_Kernel.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -13,9 +15,16 @@
 
 using namespace Mlib;
 
-static GenShaderText filter_fragment_shader_text{[](LowpassFlavor flavor, size_t axis)
+template<class... Ts>
+struct overloads : Ts... { using Ts::operator()...; };
+
+static GenShaderText filter_fragment_shader_text{[](
+    const std::variant<BoxParameters, NormalParameters>& params,
+    LowpassFlavor flavor,
+    size_t axis)
     {
         std::stringstream sstr;
+        sstr << std::scientific;
         sstr << SHADER_VER << FRAGMENT_PRECISION;
         sstr << "out vec4 FragColor;" << std::endl;
         sstr << std::endl;
@@ -27,29 +36,67 @@ static GenShaderText filter_fragment_shader_text{[](LowpassFlavor flavor, size_t
         sstr << "void main()" << std::endl;
         sstr << "{" << std::endl;
         sstr << "    vec3 center = texture(texture_color, TexCoords.st).rgb;" << std::endl;
-        if (axis == 0) {
-            sstr << "    vec3 color =" << std::endl;
-            sstr << "          center" << std::endl;
-            sstr << "        + texture(texture_color, TexCoords.st + vec2(offset, 0.0)).rgb" << std::endl;
-            sstr << "        + texture(texture_color, TexCoords.st - vec2(offset, 0.0)).rgb;" << std::endl;
-        } else if (axis == 1) {
-            sstr << "    vec3 color =" << std::endl;
-            sstr << "          center" << std::endl;
-            sstr << "        + texture(texture_color, TexCoords.st + vec2(0.0, offset)).rgb" << std::endl;
-            sstr << "        + texture(texture_color, TexCoords.st - vec2(0.0, offset)).rgb;" << std::endl;
-        } else {
-            THROW_OR_ABORT("Unknown texture axis");
-        }
-        sstr << "    FragColor = vec4(color / 3.0, 1.0);" << std::endl;
+        std::visit(overloads{
+            [&](const BoxParameters&){
+                if (axis == 0) {
+                    sstr << "    vec3 color =" << std::endl;
+                    sstr << "          center" << std::endl;
+                    sstr << "        + texture(texture_color, TexCoords.st + vec2(offset, 0.0)).rgb" << std::endl;
+                    sstr << "        + texture(texture_color, TexCoords.st - vec2(offset, 0.0)).rgb;" << std::endl;
+                } else if (axis == 1) {
+                    sstr << "    vec3 color =" << std::endl;
+                    sstr << "          center" << std::endl;
+                    sstr << "        + texture(texture_color, TexCoords.st + vec2(0.0, offset)).rgb" << std::endl;
+                    sstr << "        + texture(texture_color, TexCoords.st - vec2(0.0, offset)).rgb;" << std::endl;
+                } else {
+                    THROW_OR_ABORT("Unknown texture axis");
+                }
+                sstr << "    FragColor = vec4(color / 3.0, 1.0);" << std::endl;
+            },
+            [&](const NormalParameters& params){
+                auto weights = gaussian_kernel(params.stddev, 3.5f);
+                size_t cdist = weights.length() / 2;
+                if (axis == 0) {
+                    sstr << "    FragColor = vec4(0.0, 0.0, 0.0, 1.0);" << std::endl;
+                    for (const auto& [i, w] : enumerate(weights.flat_iterable())) {
+                        sstr <<
+                            "    FragColor.rgb += " << w <<
+                            " * texture(texture_color, TexCoords.st + vec2(" <<
+                            (integral_to_float<float>(i) - cdist) << " * offset, 0.0)).rgb;" << std::endl;
+                    }
+                } else if (axis == 1) {
+                    sstr << "    FragColor = vec4(0.0, 0.0, 0.0, 1.0);" << std::endl;
+                    for (const auto& [i, w] : enumerate(weights.flat_iterable())) {
+                        sstr <<
+                            "    FragColor.rgb += " << w <<
+                            " * texture(texture_color, TexCoords.st + vec2(0.0, " <<
+                            (integral_to_float<float>(i) - cdist) << " * offset)).rgb;" << std::endl;
+                    }
+                } else {
+                    THROW_OR_ABORT("Unknown texture axis");
+                }
+            },
+            }, params);
         if (flavor == LowpassFlavor::MAX) {
             sstr << "    FragColor.rgb = max(FragColor.rgb, center);" << std::endl;
         }
         sstr << "}" << std::endl;
+        if (getenv_default_bool("PRINT_SHADERS", false)) {
+            linfo();
+            linfo();
+            linfo();
+            linfo() << "Fragment";
+            std::string line;
+            for (size_t i = 1; std::getline(sstr, line); ++i) {
+                linfo() << i << ": " << line;
+            }
+        }
         return sstr.str();
     }};
 
-Lowpass::Lowpass(LowpassFlavor flavor)
-    : flavor_{ flavor }
+Lowpass::Lowpass(const Params2& params, LowpassFlavor flavor)
+    : params_{ params }
+    , flavor_{ flavor }
 {}
 
 Lowpass::~Lowpass() = default;
@@ -63,7 +110,7 @@ void Lowpass::render(
 {
     for (auto&& [axis, rp] : enumerate(rp_.flat_iterable())) {
         if (!rp.allocated()) {
-            rp.allocate(simple_vertex_shader_text_, filter_fragment_shader_text(flavor_, axis));
+            rp.allocate(simple_vertex_shader_text_, filter_fragment_shader_text(params_(axis), flavor_, axis));
             rp.texture_color_location = rp.get_uniform_location("texture_color");
             rp.lowpass_offset_location = rp.get_uniform_location("offset");
         }

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Images/Filters/Gaussian_Kernel.hpp>
 #include <Mlib/Images/Filters/Lowpass_Filters.hpp>
 #include <Mlib/Images/Filters/Polynomial_Contrast.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -12,20 +13,14 @@ Array<TData> gaussian_filter_1d_NWE(
     const TSigma& sigma,
     size_t axis,
     const TData& boundary_value,
-    const TData& truncate = 4,
+    const TSigma& truncate = 4,
     FilterExtension fc = FilterExtension::NWE,
     size_t poly_degree = 0)
 {
     if (sigma == 0) {
         return image.copy();
     }
-    Array<TSigma> coeffs{ArrayShape{1 + 2 * size_t(truncate * sigma)}};
-    size_t cdist = coeffs.length() / 2;
-    for (size_t i = cdist; i < coeffs.length(); ++i) {
-        coeffs(i) = std::exp(-squared(TSigma(i - cdist) / sigma) / 2);
-        coeffs(coeffs.length() - i - 1) = coeffs(i);
-    }
-    coeffs /= sum(coeffs);
+    auto coeffs = gaussian_kernel(sigma, truncate);
     poly_degree = (poly_degree / 2) * 2;
     if (poly_degree != 0) {
         Array<TSigma> contrast = zeros<TSigma>(ArrayShape{ 1 + poly_degree });
@@ -42,7 +37,7 @@ Array<TData> gaussian_filter_NWE(
     const Array<TData>& image,
     const TSigma& sigma,
     const TData& boundary_value,
-    const TData& truncate = 4,
+    const TSigma& truncate = 4,
     FilterExtension fc = FilterExtension::NWE,
     size_t poly_degree = 0)
 {

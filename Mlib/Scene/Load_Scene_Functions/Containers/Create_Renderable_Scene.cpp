@@ -23,6 +23,7 @@ DECLARE_ARGUMENT(low_pass);
 DECLARE_ARGUMENT(high_pass);
 DECLARE_ARGUMENT(bloom_iterations);
 DECLARE_ARGUMENT(bloom_thresholds);
+DECLARE_ARGUMENT(bloom_std);
 DECLARE_ARGUMENT(bloom_intensities);
 DECLARE_ARGUMENT(bloom_mode);
 DECLARE_ARGUMENT(with_skybox);
@@ -94,6 +95,7 @@ struct RegisterJsonUserFunction {
                         .high_pass = args.arguments.at<bool>(KnownArgs::high_pass),
                         .bloom_iterations = args.arguments.at<EFixedArray<unsigned int, 2>>(KnownArgs::bloom_iterations),
                         .bloom_thresholds = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::bloom_thresholds),
+                        .bloom_std = args.arguments.at<EFixedArray<float, 2>>(KnownArgs::bloom_std, 3.f),
                         .bloom_intensities = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::bloom_intensities, 0.f),
                         .bloom_mode = bloom_mode_from_string(args.arguments.at<std::string>(KnownArgs::bloom_mode, "sky")),
                         .with_skybox = args.arguments.at<bool>(KnownArgs::with_skybox),
