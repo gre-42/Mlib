@@ -854,10 +854,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_dynamic_emissive) {
         sstr << "uniform vec3 dynamic_emissive;" << std::endl;
     }
-    if (!textures_color.empty()) {
-        for (size_t i = 0; i < uv_map.size(); ++i) {
-            sstr << "in vec2 tex_coord" << i << ";" << std::endl;
-        }
+    for (size_t i = 0; i < uv_map.size(); ++i) {
+        sstr << "in vec2 tex_coord" << i << ";" << std::endl;
     }
     for (size_t i = 0; i < ncweights; ++i) {
         sstr << "in float cweight" << i << ";" << std::endl;
