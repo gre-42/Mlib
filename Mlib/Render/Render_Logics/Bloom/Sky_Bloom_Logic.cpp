@@ -162,10 +162,7 @@ bool SkyBloomLogic::render_optional_setup(
                 setup);
         }
 
-        background_fbs_->configure({
-            .width = width,
-            .height = height,
-            .nsamples_msaa = render_config.nsamples_msaa});
+        background_fbs_->configure({.width = width, .height = height});
         {
             RenderToFrameBufferGuard rfg{ background_fbs_ };
             ViewportGuard vg{ width, height };
