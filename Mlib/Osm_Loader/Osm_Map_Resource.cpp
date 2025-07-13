@@ -1980,21 +1980,21 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             .renderable_resource_filter = options.renderable_resource_filter});
         if (water_animation_duration_ != std::chrono::steady_clock::duration{0}) {
             // This code is for AggregateMode::NODE_TRIANGLES
-            // for (const auto& n : instantiated_nodes) {
-            //     options.scene.get_node(n, CURRENT_SOURCE_LOCATION)->set_animation_state(
-            //         std::unique_ptr<AnimationState>(new AnimationState{
-            //             .periodic_reference_time{
-            //                 std::chrono::steady_clock::now(),
-            //                 water_animation_duration_}}),
-            //         AnimationStateAlreadyExistsBehavior::THROW);
-            // }
-            // This code is for AggregateMode::ONCE
-            options.scene.set_animation_state(
-                std::unique_ptr<AnimationState>(new AnimationState{
-                    .periodic_reference_time{
-                        std::chrono::steady_clock::now(),
-                        water_animation_duration_}}),
-                AnimationStateAlreadyExistsBehavior::THROW);
+            for (const auto& n : instantiated_nodes) {
+                options.scene.get_node(n, CURRENT_SOURCE_LOCATION)->set_animation_state(
+                    std::unique_ptr<AnimationState>(new AnimationState{
+                        .periodic_reference_time{
+                            std::chrono::steady_clock::now(),
+                            water_animation_duration_}}),
+                    AnimationStateAlreadyExistsBehavior::THROW);
+            }
+            // // This code is for AggregateMode::ONCE
+            // options.scene.set_animation_state(
+            //     std::unique_ptr<AnimationState>(new AnimationState{
+            //         .periodic_reference_time{
+            //             std::chrono::steady_clock::now(),
+            //             water_animation_duration_}}),
+            //     AnimationStateAlreadyExistsBehavior::THROW);
         }
         if (options.instantiated_nodes != nullptr) {
             options.instantiated_nodes->splice(
