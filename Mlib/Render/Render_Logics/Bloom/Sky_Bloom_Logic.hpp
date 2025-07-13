@@ -12,13 +12,13 @@ namespace Mlib {
 struct SkyBloomModulateRenderProgram: public RenderProgram {
     GLint foreground_texture_location = -1;
     GLint background_texture_location = -1;
+    GLint intensities_location = -1;
 };
 
 struct SkyBloomBlendRenderProgram: public RenderProgram {
     GLint foreground_texture_location = -1;
     GLint background_texture_location = -1;
     GLint bloom_texture_color_location = -1;
-    GLint intensities_location = -1;
 };
 
 class SkyBloomLogic final: public RenderLogic, public GenericPostProcessingLogic {

@@ -18,7 +18,8 @@ struct LowpassFilterRenderProgram: public RenderProgram {
 
 enum class LowpassFlavor {
 	NONE,
-	MAX
+	MAX,
+	DILATE
 };
 
 struct NormalParameters {

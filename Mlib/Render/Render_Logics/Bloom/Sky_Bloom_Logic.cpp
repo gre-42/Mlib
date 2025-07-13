@@ -30,12 +30,13 @@ static GenShaderText modulate_fragment_shader_text{[]()
     sstr << std::endl;
     sstr << "uniform sampler2D foreground;" << std::endl;
     sstr << "uniform sampler2D background;" << std::endl;
+    sstr << "uniform vec3 intensities;" << std::endl;
     sstr << std::endl;
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     sstr << "    float fg_a = texture(foreground, TexCoords.st).a;" << std::endl;
     sstr << "    vec3 bg_rgb = texture(background, TexCoords.st).rgb;" << std::endl;
-    sstr << "    FragColor = vec4(bg_rgb * (1.0 - fg_a), 1.0);" << std::endl;
+    sstr << "    FragColor = vec4(pow(bg_rgb, intensities) * (1.0 - fg_a), 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
@@ -51,7 +52,6 @@ static GenShaderText blend_fragment_shader_text{[]()
     sstr << "uniform sampler2D foreground;" << std::endl;
     sstr << "uniform sampler2D background;" << std::endl;
     sstr << "uniform sampler2D bloom;" << std::endl;
-    sstr << "uniform vec3 intensities;" << std::endl;
     sstr << std::endl;
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
@@ -59,14 +59,9 @@ static GenShaderText blend_fragment_shader_text{[]()
     sstr << "    vec3 bg = texture(background, TexCoords.st).rgb;" << std::endl;
     sstr << "    vec3 lo = texture(bloom, TexCoords.st).rgb;" << std::endl;
     sstr << "    vec3 orig = mix(bg, fg.rgb, fg.a);" << std::endl;
-    sstr << "    vec3 a = min(lo * intensities, vec3(1.0, 1.0, 1.0));" << std::endl;
-    sstr << "    FragColor = vec4(mix(orig, bg, a), 1.0);" << std::endl;
-    // sstr << "    FragColor = vec4(mix(bg, fg.rgb, fg.a) + lo * intensities, 1.0);" << std::endl;
-    // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + fg.a;" << std::endl;
+    sstr << "    FragColor = vec4(mix(orig, bg, lo), 1.0);" << std::endl;
     // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + bg;" << std::endl;
     // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + lo;" << std::endl;
-    // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + fg.rgb;" << std::endl;
-    // sstr << "    FragColor.rgb = FragColor.rgb * 0.01 + mix(bg, fg.rgb, fg.a);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
@@ -83,7 +78,7 @@ SkyBloomLogic::SkyBloomLogic(
             Lowpass::Params1{NormalParameters{.stddev = stddev(0)}},
             Lowpass::Params1{NormalParameters{.stddev = stddev(1)}}
         },
-        LowpassFlavor::MAX
+        LowpassFlavor::DILATE
     }
     , foreground_fbs_{ std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION) }
     , background_fbs_{ std::make_shared<FrameBuffer>(CURRENT_SOURCE_LOCATION) }
@@ -134,13 +129,13 @@ bool SkyBloomLogic::render_optional_setup(
             rp_modulate_.allocate(simple_vertex_shader_text_, modulate_fragment_shader_text());
             rp_modulate_.foreground_texture_location = rp_modulate_.get_uniform_location("foreground");
             rp_modulate_.background_texture_location = rp_modulate_.get_uniform_location("background");
+            rp_modulate_.intensities_location = rp_modulate_.get_uniform_location("intensities");
         }
         if (!rp_blend_.allocated()) {
             rp_blend_.allocate(simple_vertex_shader_text_, blend_fragment_shader_text());
             rp_blend_.foreground_texture_location = rp_blend_.get_uniform_location("foreground");
             rp_blend_.background_texture_location = rp_blend_.get_uniform_location("background");
             rp_blend_.bloom_texture_color_location = rp_blend_.get_uniform_location("bloom");
-            rp_blend_.intensities_location = rp_blend_.get_uniform_location("intensities");
         }
 
         auto width = lx.ilength();
@@ -203,6 +198,8 @@ bool SkyBloomLogic::render_optional_setup(
 
             rp_modulate_.use();
 
+            CHK(glUniform3fv(rp_modulate_.intensities_location, 1, intensities_.flat_begin()));
+
             TextureBinder tb;
             tb.bind(
                 rp_modulate_.foreground_texture_location,
@@ -225,8 +222,6 @@ bool SkyBloomLogic::render_optional_setup(
         {
             notify_rendering(CURRENT_SOURCE_LOCATION);
             rp_blend_.use();
-
-            CHK(glUniform3fv(rp_blend_.intensities_location, 1, intensities_.flat_begin()));
 
             TextureBinder tb;
             tb.bind(

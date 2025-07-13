@@ -42,7 +42,7 @@ static const char* fragment_shader_text =
     "\n"
     "void main()\n"
     "{\n"
-    "    FragColor = texture(skybox, TexCoords);\n"
+    "    FragColor = vec4(texture(skybox, TexCoords).rgb, 0.0);\n"
     "}";
 
 float skybox_vertices[] = {
@@ -119,9 +119,6 @@ void SkyboxLogic::render_with_setup(
     const RenderSetup& setup)
 {
     LOG_FUNCTION("SkyboxLogic::render");
-    if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD_FOREGROUND) {
-        return;
-    }
     if (texture_ == nullptr) {
         return;
     }

@@ -80,6 +80,9 @@ static GenShaderText filter_fragment_shader_text{[](
         if (flavor == LowpassFlavor::MAX) {
             sstr << "    FragColor.rgb = max(FragColor.rgb, center);" << std::endl;
         }
+        if (flavor == LowpassFlavor::DILATE) {
+            sstr << "    FragColor.rgb *= 2.0;" << std::endl;
+        }
         sstr << "}" << std::endl;
         if (getenv_default_bool("PRINT_SHADERS", false)) {
             linfo();
