@@ -55,22 +55,22 @@ static GenShaderText filter_fragment_shader_text{[](
             },
             [&](const NormalParameters& params){
                 auto weights = gaussian_kernel(params.stddev, 3.5f);
-                size_t cdist = weights.length() / 2;
+                int cdist = integral_cast<int>(weights.length() / 2);
                 if (axis == 0) {
                     sstr << "    FragColor = vec4(0.0, 0.0, 0.0, 1.0);" << std::endl;
-                    for (const auto& [i, w] : enumerate(weights.flat_iterable())) {
+                    for (const auto& [i, w] : tenumerate<int>(weights.flat_iterable())) {
                         sstr <<
                             "    FragColor.rgb += " << w <<
                             " * texture(texture_color, TexCoords.st + vec2(" <<
-                            (integral_to_float<float>(i) - cdist) << " * offset, 0.0)).rgb;" << std::endl;
+                            integral_to_float<float>(i - cdist) << " * offset, 0.0)).rgb;" << std::endl;
                     }
                 } else if (axis == 1) {
                     sstr << "    FragColor = vec4(0.0, 0.0, 0.0, 1.0);" << std::endl;
-                    for (const auto& [i, w] : enumerate(weights.flat_iterable())) {
+                    for (const auto& [i, w] : tenumerate<int>(weights.flat_iterable())) {
                         sstr <<
                             "    FragColor.rgb += " << w <<
                             " * texture(texture_color, TexCoords.st + vec2(0.0, " <<
-                            (integral_to_float<float>(i) - cdist) << " * offset)).rgb;" << std::endl;
+                            integral_to_float<float>(i - cdist) << " * offset)).rgb;" << std::endl;
                     }
                 } else {
                     THROW_OR_ABORT("Unknown texture axis");
