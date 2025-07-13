@@ -1237,6 +1237,8 @@ void RenderingResources::add_manual_texture_atlas(
             .mipmap_mode = texture_atlas_descriptor.mipmap_mode,
             .magnifying_interpolation_mode = texture_atlas_descriptor.magnifying_interpolation_mode,
             .depth_interpolation = texture_atlas_descriptor.depth_interpolation,
+            .anisotropic_filtering_level = texture_atlas_descriptor.anisotropic_filtering_level,
+            .wrap_modes = make_orderable(texture_atlas_descriptor.wrap_modes)
         }.compute_hash());
     add(manual_atlas_tile_descriptors_, std::move(name), texture_atlas_descriptor);
 }
