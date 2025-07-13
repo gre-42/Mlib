@@ -36,6 +36,7 @@ struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
 class SceneNode;
+enum class AnimationStateAlreadyExistsBehavior;
 struct AnimationState;
 class AnimationStateUpdater;
 class SceneNodeResources;
@@ -125,11 +126,6 @@ enum class ChildParentState {
 enum class LockingStrategy {
     NO_LOCK,
     ACQUIRE_LOCK
-};
-
-enum class AnimationStateAlreadyExistsBehavior {
-    REPLACE,
-    THROW
 };
 
 enum class PhysicsMaterial: uint32_t;

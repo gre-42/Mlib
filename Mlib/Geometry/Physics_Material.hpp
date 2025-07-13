@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-static const size_t SURFACE_BASE_OFFSET = 24;
+static const size_t SURFACE_BASE_OFFSET = 23;
 static const size_t SURFACE_BASE_NBITS = 4;
 static const size_t SURFACE_NBITS = SURFACE_BASE_NBITS + 1;
 
@@ -20,21 +20,20 @@ enum class PhysicsMaterial: uint32_t {
     ATTR_ROUND                  = (1 << 6),
     ATTR_CONTAINS_SKIDMARKS     = (1 << 7),
     ATTR_SLIPPERY               = (1 << 8),
-    ATTR_ANIMATED_TEXTURES      = (1 << 9),
-    ATTR_LIQUID                 = (1 << 10),
-    OBJ_ALIGNMENT_PLANE         = (1 << 11),
-    OBJ_CHASSIS                 = (1 << 12),
-    OBJ_TIRE_LINE               = (1 << 13),
-    OBJ_GRIND_CONTACT           = (1 << 14),
-    OBJ_GRIND_LINE              = (1 << 15),
-    OBJ_ALIGNMENT_CONTACT       = (1 << 16),
-    OBJ_BULLET_LINE_SEGMENT     = (1 << 17),
-    OBJ_BULLET_MESH             = (1 << 18),
-    OBJ_HITBOX                  = (1 << 19),
-    OBJ_DISTANCEBOX             = (1 << 20),
-    OBJ_GRASS                   = (1 << 21),
-    OBJ_GROUND                  = (1 << 22),
-    OBJ_WAY_AIR_SUPPORT         = (1 << 23),
+    ATTR_LIQUID                 = (1 << 9),
+    OBJ_ALIGNMENT_PLANE         = (1 << 10),
+    OBJ_CHASSIS                 = (1 << 11),
+    OBJ_TIRE_LINE               = (1 << 12),
+    OBJ_GRIND_CONTACT           = (1 << 13),
+    OBJ_GRIND_LINE              = (1 << 14),
+    OBJ_ALIGNMENT_CONTACT       = (1 << 15),
+    OBJ_BULLET_LINE_SEGMENT     = (1 << 16),
+    OBJ_BULLET_MESH             = (1 << 17),
+    OBJ_HITBOX                  = (1 << 18),
+    OBJ_DISTANCEBOX             = (1 << 19),
+    OBJ_GRASS                   = (1 << 20),
+    OBJ_GROUND                  = (1 << 21),
+    OBJ_WAY_AIR_SUPPORT         = (1 << 22),
     SURFACE_BASE_TARMAC         = (1 << SURFACE_BASE_OFFSET),       //    1
     SURFACE_BASE_GRAVEL         = (2 << SURFACE_BASE_OFFSET),       //   10
     SURFACE_BASE_SNOW           = (3 << SURFACE_BASE_OFFSET),       //   11

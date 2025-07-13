@@ -25,4 +25,9 @@ struct AnimationState {
     const bool delete_node_when_aperiodic_animation_finished = false;
 };
 
+enum class AnimationStateAlreadyExistsBehavior {
+    REPLACE,
+    THROW
+};
+
 }

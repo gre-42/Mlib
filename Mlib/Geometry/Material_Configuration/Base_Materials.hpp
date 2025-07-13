@@ -23,7 +23,6 @@ static const auto META_WATER_MATERIAL =
     PhysicsMaterial::ATTR_COLLIDE |
     PhysicsMaterial::ATTR_CONCAVE |
     PhysicsMaterial::ATTR_LIQUID |
-    PhysicsMaterial::ATTR_ANIMATED_TEXTURES |
     PhysicsMaterial::ATTR_VISIBLE;
 
 }

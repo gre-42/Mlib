@@ -496,6 +496,11 @@ void Scene::render(
             color_styles.push_back(s.get());
         }
     }
+    std::shared_ptr<AnimationState> animation_state;
+    {
+        std::shared_lock lock{ mutex_ };
+        animation_state = animation_state_;
+    }
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
         DanglingRef<SceneNode> node = [this, &frame_id](){
             std::shared_lock lock{ mutex_ };
@@ -627,7 +632,16 @@ void Scene::render(
                         }
                     }
                     // AperiodicLagFinder lag_finder{ "Large aggregates: ", std::chrono::milliseconds{5} };
-                    large_aggregate_renderer->render_aggregates(vp, iv, lights, skidmarks, scene_graph_config, render_config, frame_id, color_styles);
+                    large_aggregate_renderer->render_aggregates(
+                        vp,
+                        iv,
+                        lights,
+                        skidmarks,
+                        scene_graph_config,
+                        render_config,
+                        frame_id,
+                        animation_state.get(),
+                        color_styles);
                 }
 
                 std::shared_ptr<IInstancesRenderer> large_instances_renderer = IInstancesRenderer::large_instances_renderer();
@@ -724,7 +738,16 @@ void Scene::render(
                         }
                     }
                     // AperiodicLagFinder lag_finder{ "Small sorted aggregates: ", std::chrono::milliseconds{5} };
-                    small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, skidmarks, scene_graph_config, render_config, frame_id, color_styles);
+                    small_sorted_aggregate_renderer->render_aggregates(
+                        vp,
+                        iv,
+                        lights,
+                        skidmarks,
+                        scene_graph_config,
+                        render_config,
+                        frame_id,
+                        animation_state.get(),
+                        color_styles);
                 }
 
                 // Contains continuous alpha and must therefore be rendered late.
@@ -935,6 +958,20 @@ void Scene::print(std::ostream& ostr) const {
 
 bool Scene::shutting_down() const {
     return shutting_down_;
+}
+
+void Scene::set_animation_state(
+    std::unique_ptr<AnimationState>&& animation_state,
+    AnimationStateAlreadyExistsBehavior already_exists_behavior)
+{
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
+    if ((already_exists_behavior == AnimationStateAlreadyExistsBehavior::THROW) &&
+        (animation_state_ != nullptr))
+    {
+        THROW_OR_ABORT("Animation state already set");
+    }
+    animation_state_ = std::move(animation_state);
 }
 
 void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {

@@ -68,6 +68,7 @@ struct Material {
     size_t number_of_frames = 1;
     bool cull_faces = true;
     bool reorient_uv0 = false;
+    bool has_animated_textures = false;
     Shading shading;
     float alpha = 1.f;
     bool reflect_only_y = false;
@@ -116,6 +117,7 @@ struct Material {
         archive(number_of_frames);
         archive(cull_faces);
         archive(reorient_uv0);
+        archive(has_animated_textures);
         archive(shading);
         archive(alpha);
         archive(reflect_only_y);

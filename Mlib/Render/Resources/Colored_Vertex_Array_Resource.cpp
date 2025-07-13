@@ -2061,7 +2061,6 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             cluster_center_by_grid<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(options.triangle_cluster_width)),
             *options.instance_name + "_split")))
         {
-            auto resource_name = VariableAndHash<std::string>{*options.instance_name + std::to_string(i)};
             auto transformed = c.cva->template translated<float>(-c.position, "_centered");
             transformed->morphology.center_distances2 = options.center_distances2;
             auto resource = std::make_shared<ColoredVertexArrayResource>(transformed);

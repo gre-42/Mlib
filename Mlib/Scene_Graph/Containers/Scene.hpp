@@ -34,6 +34,7 @@ class IDynamicLights;
 struct SceneGraphConfig;
 struct RenderedSceneDescriptor;
 struct RenderConfig;
+struct AnimationState;
 struct ColorStyle;
 class Renderable;
 template <class TPos>
@@ -43,6 +44,7 @@ enum class RenderingStrategies;
 class RenderableWithStyle;
 template <class T>
 class VariableAndHash;
+enum class AnimationStateAlreadyExistsBehavior;
 
 class Scene {
     friend RootNodes;
@@ -137,6 +139,9 @@ public:
     void print(std::ostream& ostr) const;
     void shutdown();
     bool shutting_down() const;
+    void set_animation_state(
+        std::unique_ptr<AnimationState>&& animation_state,
+        AnimationStateAlreadyExistsBehavior already_exists_behavior);
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
     void wait_for_cleanup() const;
     void notify_cleanup_required();
@@ -175,6 +180,7 @@ private:
     mutable FastMutex uuid_mutex_;
     size_t uuid_;
     std::atomic_bool shutting_down_;
+    std::shared_ptr<AnimationState> animation_state_;
     ThreadSafeList<std::unique_ptr<const ColorStyle>> color_styles_;
     SceneNodeResources* scene_node_resources_;
     ITrailRenderer* trail_renderer_;

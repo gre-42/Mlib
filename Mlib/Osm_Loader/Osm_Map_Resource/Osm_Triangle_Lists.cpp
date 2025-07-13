@@ -471,7 +471,8 @@ OsmTriangleLists::OsmTriangleLists(
                     .textures_color = blend_textures_color,
                     .textures_alpha = blend_textures_alpha,
                     .skidmarks = material_skidmarks(PhysicsMaterial::SURFACE_BASE_WATER),
-                    .aggregate_mode = AggregateMode::NODE_TRIANGLES,
+                    .aggregate_mode = AggregateMode::ONCE,
+                    .has_animated_textures = (config.water->animation_duration != std::chrono::steady_clock::duration{0}),
                     .shading = material_shading(RawShading::DEFAULT, config),
                     .draw_distance_noperations = 1000}.compute_color_mode(),
                 Morphology{ .physics_material = META_WATER_MATERIAL | PhysicsMaterial::SURFACE_BASE_WATER }));

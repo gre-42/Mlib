@@ -17,6 +17,7 @@ class ColoredVertexArray;
 struct RenderConfig;
 struct SceneGraphConfig;
 class IAggregateRenderer;
+struct AnimationState;
 struct ColorStyle;
 struct ExternalRenderPass;
 struct RenderedSceneDescriptor;
@@ -63,6 +64,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const RenderedSceneDescriptor& frame_id,
+        const AnimationState* animation_state,
         const std::list<const ColorStyle*>& color_styles) const = 0;
     virtual FixedArray<ScenePos, 3> offset() const = 0;
     static BackgroundLoop* small_aggregate_bg_worker();

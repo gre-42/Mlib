@@ -740,11 +740,14 @@ void RenderableColoredVertexArray::render_cva(
             TextureLayerProperties::CONTINUOUS |
             TextureLayerProperties::VERTEX));
     }
-    auto has_animated_textures =
-        (animation_state != nullptr) &&
-        animation_state->periodic_reference_time.active() &&
-        any(cva->morphology.physics_material & PhysicsMaterial::ATTR_ANIMATED_TEXTURES);
-    if (has_animated_textures) {
+    if (cva->material.has_animated_textures) {
+        if ((animation_state == nullptr) ||
+            !animation_state->periodic_reference_time.active())
+        {
+            THROW_OR_ABORT(
+                "Material has animated textures, but the animation state "
+                "is not set or the periodic reference time is inactive");
+        }
         if (any(texture_layer_properties)) {
             THROW_OR_ABORT("Detected continuous texture layers in both, renderable and animation");
         }
@@ -845,7 +848,7 @@ void RenderableColoredVertexArray::render_cva(
         }
         CHK(glUniform1f(rp.uv_offset_u_location, uv_offset_u));
     }
-    if (has_animated_textures) {
+    if (cva->material.has_animated_textures) {
         assert_true(animation_state != nullptr);
         CHK(glUniform1f(
             rp.texture_layer_location_uniform,
