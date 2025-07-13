@@ -862,7 +862,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "out vec4 frag_color;" << std::endl;
     if (has_alpha || ((nbillboard_ids != 0) && !orthographic)) {
-        sstr << "in centroid float alpha_fac_v;" << std::endl;
+        sstr << "centroid in float alpha_fac_v;" << std::endl;
     }
     if (!reflectance.all_equal(0.f) || any(interior_texture_set & InteriorTextureSet::ANY_SPECULAR)) {
         sstr << "uniform mat3 R;" << std::endl;
