@@ -16,10 +16,10 @@ std::string AnalogDigitalAxis::to_string() const {
 std::string AnalogDigitalAxes::to_string(InputType filter) const {
     std::string result;
     if (joystick.has_value() && any(filter & InputType::JOYSTICK)) {
-        result = "(joystick: " + joystick->to_string() + ')';
+        result = "(joystick " + std::to_string(joystick->gamepad_id) + ": " + joystick->to_string() + ')';
     }
     if (tap.has_value() && any(filter & InputType::TAP_BUTTON)) {
-        return '(' + result + ", tap: " + tap->to_string() + ')';
+        return '(' + result + ", tap " + std::to_string(tap->gamepad_id) + ": " + tap->to_string() + ')';
     } else {
         return result;
     }
@@ -44,13 +44,13 @@ std::string BaseKeyBinding::to_string(InputType filter) const {
         result.emplace_back("(mouse: " + mouse_button + ')');
     }
     if (!gamepad_button.button.empty() && any(filter & InputType::JOYSTICK)) {
-        result.emplace_back("(gamepad: " + std::to_string(gamepad_button.gamepad_id) + '.' + gamepad_button.button + ')');
+        result.emplace_back("(gamepad " + std::to_string(gamepad_button.gamepad_id) + ": " + gamepad_button.button + ')');
     }
     if (!joystick_axes.empty() && any(filter & InputType::JOYSTICK)) {
-        result.emplace_back("(joystick: (" + join(
+        result.emplace_back("(" + join(
             ", ",
             joystick_axes,
-            [filter](const auto& e){ return '(' + e.first + ": " + e.second.to_string(filter) + ')'; }) + "))");
+            [filter](const auto& e){ return '(' + e.first + ": " + e.second.to_string(filter) + ')'; }) + ")");
     }
     if (result.size() > 1) {
         return '(' + join(" | ", result) + ')';

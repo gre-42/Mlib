@@ -16,10 +16,10 @@ std::string BaseAnalogAxisBinding::to_string() const {
 std::string BaseAnalogAxesBinding::to_string(InputType filter) const {
     std::list<std::string> result;
     if (joystick.has_value() && any(filter & InputType::JOYSTICK)) {
-        result.emplace_back("(joystick: " + joystick->to_string() + ')');
+        result.emplace_back("(joystick " + std::to_string(joystick->gamepad_id) + ": " + joystick->to_string() + ')');
     }
     if (tap.has_value() && any(filter & InputType::TAP_BUTTON)) {
-        result.emplace_back("(tap: " + tap->to_string() + ')');
+        result.emplace_back("(tap " + std::to_string(tap->gamepad_id) + ": " + tap->to_string() + ')');
     }
     if (result.size() > 1) {
         return '(' + join(" | ", result) + ')';
