@@ -146,7 +146,7 @@ static nlohmann::json eval_recursion(
         static const auto comparison_re = seq(
             group(plus(no_space)),
             chr(' '),
-            group(par(str("=="), str("!="), str("<="), str("in"), str("not in"))),
+            group(par(str("=="), str("!="), str("<="), str("in"), str("not in"), str("-"))),
             chr(' '),
             group(plus(adot)),
             eof);
@@ -154,25 +154,27 @@ static nlohmann::json eval_recursion(
             std::string_view left = match[1].str();
             std::string_view op = match[2].str();
             std::string_view right = match[3].str();
+            auto e_left = eval_recursion(left, globals, locals, asset_references, recursion + 1);
+            auto e_right = eval_recursion(right, globals, locals, asset_references, recursion + 1);
             if (op == "==") {
-                return eval_recursion(left, globals, locals, asset_references, recursion + 1) ==
-                       eval_recursion(right, globals, locals, asset_references, recursion + 1);
+                return e_left == e_right;
             }
             if (op == "!=") {
-                return eval_recursion(left, globals, locals, asset_references, recursion + 1) !=
-                       eval_recursion(right, globals, locals, asset_references, recursion + 1);
+                return e_left != e_right;
             }
             if (op == "<=") {
-                return eval_recursion(left, globals, locals, asset_references, recursion + 1) <=
-                       eval_recursion(right, globals, locals, asset_references, recursion + 1);
+                return e_left <= e_right;
             }
             if (op == "in") {
-                auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<nlohmann::json>>();
-                return elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1));
+                auto elems = e_right.get<std::set<nlohmann::json>>();
+                return elems.contains(e_left);
             }
             if (op == "not in") {
-                auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<nlohmann::json>>();
-                return !elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1));
+                auto elems = e_right.get<std::set<nlohmann::json>>();
+                return !elems.contains(e_left);
+            }
+            if (op == "-") {
+                return e_left.get<double>() - e_right.get<double>();
             }
             THROW_OR_ABORT("Unknown operator: \"" + std::string{ op } + '"');
         }
