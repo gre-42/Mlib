@@ -40,7 +40,7 @@ bool ReplacementParameterContents::is_visible(size_t index) const {
             return false;
         }
     }
-    if (!ew_.eval(o.required.dynamic)) {
+    if (!ew_.eval(o.required.dynamic, o.database)) {
         return false;
     }
     return true;

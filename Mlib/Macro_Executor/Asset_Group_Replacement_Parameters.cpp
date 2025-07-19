@@ -16,7 +16,7 @@ void AssetGroupReplacementParameters::insert_if_active(
     const MacroLineExecutor& mle)
 {
     auto rp = ReplacementParameterAndFilename::from_json(filename);
-    if (!mle.eval(rp.rp.required.fixed)) {
+    if (!mle.eval(rp.rp.required.fixed, rp.rp.database)) {
         return;
     }
     auto mlecd = mle.changed_script_filename(filename);

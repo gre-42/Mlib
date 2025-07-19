@@ -38,7 +38,6 @@ public:
     bool operator < (const SceneEntry& other) const;
 private:
     const ReplacementParameterAndFilename& rpe_;
-    nlohmann::json locals_;
 };
 
 class SceneEntryContents: public IListViewContents {

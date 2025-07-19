@@ -19,7 +19,6 @@ using namespace Mlib;
 
 SceneEntry::SceneEntry(const ReplacementParameterAndFilename& rpe)
     : rpe_{ rpe }
-    , locals_(std::map<std::string, std::string>{{"id", id()}})
 {}
 
 const std::string& SceneEntry::id() const {
@@ -39,7 +38,7 @@ const nlohmann::json& SceneEntry::on_before_select() const {
 }
 
 JsonView SceneEntry::locals() const {
-    return JsonView{ locals_ };
+    return JsonView{ rpe_.rp.database };
 }
 
 const ReplacementParameterRequired& SceneEntry::required() const {
