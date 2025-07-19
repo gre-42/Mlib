@@ -232,6 +232,6 @@ void RenderableScene::instantiate_audio_listener(
 }
 
 void RenderableScene::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "RenderableScene\n";
+    ostr << std::string(depth, ' ') << "RenderableScene " << name_ << '\n';
     render_logics_.print(ostr, depth + 1);
 }
