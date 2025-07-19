@@ -173,7 +173,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 continue;
             }
             if (SMatch<8> match; regex_match(line, match, vertex_reg)) {
-                float a = match[7].matched ? safe_stof(match[7].str()) : 1;
+                float a = match[7].matched() ? safe_stof(match[7].str()) : 1;
                 if (a != 1) {
                     THROW_OR_ABORT("vertex a != 1");
                 }
@@ -183,9 +183,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         safe_stox<TPos>(match[2].str()),
                         safe_stox<TPos>(match[3].str())},
                     .color = {
-                        match[4].matched ? safe_stof(match[4].str()): 1.f,
-                        match[5].matched ? safe_stof(match[5].str()): 1.f,
-                        match[6].matched ? safe_stof(match[6].str()): 1.f}});
+                        match[4].matched() ? safe_stof(match[4].str()) : 1.f,
+                        match[5].matched() ? safe_stof(match[5].str()) : 1.f,
+                        match[6].matched() ? safe_stof(match[6].str()) : 1.f}});
             } else if (SMatch<3> match; regex_match(line, match, vertex_uv_texture_reg)) {
                 FixedArray<float, 2> n{
                     safe_stof(match[1].str()),

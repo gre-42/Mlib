@@ -41,7 +41,7 @@ std::string Mlib::substitute_dollar(const std::string_view& str, const std::func
     }
     std::string new_line;
     find_all_templated(str, s0, [&new_line, &replacements](const TemplateRegex::SMatch<3>& v) {
-        if (v[1].matched) {
+        if (v[1].matched()) {
             new_line += replacements(v[1].str());
         } else {
             new_line += v[2].str();

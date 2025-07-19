@@ -3,9 +3,9 @@
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;
 
-SMatchGroup::SMatchGroup(bool matched, std::string_view str)
-: matched{matched},
-    str_{std::move(str)}
+SMatchGroup::SMatchGroup(SMatchGroup::Index parallel_index, std::string_view str)
+    : parallel_index{parallel_index}
+    , str_{std::move(str)}
 {}
 
 SMatchGroup::~SMatchGroup() = default;

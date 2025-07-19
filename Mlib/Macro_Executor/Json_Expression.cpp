@@ -100,7 +100,7 @@ static nlohmann::json eval_recursion(
                 .at(subst(match[DbQueryGroups::asset_id].str()))
                 .rp
                 .database;
-            if (match[DbQueryGroups::key].matched) {
+            if (match[DbQueryGroups::key].matched()) {
                 auto res = db.at(match[DbQueryGroups::value].str());
                 if (res.type() != nlohmann::detail::value_t::object) {
                     THROW_OR_ABORT("Database value is not of type object: \"" + std::string{ s } + '"');
@@ -146,37 +146,31 @@ static nlohmann::json eval_recursion(
         static const auto comparison_re = seq(
             group(plus(no_space)),
             chr(' '),
-            group(par(str("=="), str("!="), str("<="), str("in"), str("not in"), str("-"))),
+            group(par(str("=="), str("!="), str("<="), str("in"), str("not in"), chr('-'))),
             chr(' '),
             group(plus(adot)),
             eof);
         if (SMatch<4> match; regex_match(expression, match, comparison_re)) {
             std::string_view left = match[1].str();
-            std::string_view op = match[2].str();
+            auto op = match[2].parallel_index;
             std::string_view right = match[3].str();
             auto e_left = eval_recursion(left, globals, locals, asset_references, recursion + 1);
             auto e_right = eval_recursion(right, globals, locals, asset_references, recursion + 1);
-            if (op == "==") {
-                return e_left == e_right;
+            switch (op) {
+                case 0: return e_left == e_right;
+                case 1: return e_left != e_right;
+                case 2: return e_left <= e_right;
+                case 3: { // in
+                    auto elems = e_right.get<std::set<nlohmann::json>>();
+                    return elems.contains(e_left);
+                }
+                case 4: { // not in
+                    auto elems = e_right.get<std::set<nlohmann::json>>();
+                    return !elems.contains(e_left);
+                }
+                case 5: return e_left.get<double>() - e_right.get<double>();
             }
-            if (op == "!=") {
-                return e_left != e_right;
-            }
-            if (op == "<=") {
-                return e_left <= e_right;
-            }
-            if (op == "in") {
-                auto elems = e_right.get<std::set<nlohmann::json>>();
-                return elems.contains(e_left);
-            }
-            if (op == "not in") {
-                auto elems = e_right.get<std::set<nlohmann::json>>();
-                return !elems.contains(e_left);
-            }
-            if (op == "-") {
-                return e_left.get<double>() - e_right.get<double>();
-            }
-            THROW_OR_ABORT("Unknown operator: \"" + std::string{ op } + '"');
+            verbose_abort("Unknown operator index: \"" + std::to_string(op) + "\". Line: \"" + std::string{expression} + '"');
         }
     }
     if ((expression.size() >= 2) && (expression[0] == '{') && (expression[expression.size() - 1] == '}')) {
@@ -185,7 +179,7 @@ static nlohmann::json eval_recursion(
         static const auto comma_re = par(str(", "), NC);
         std::set<nlohmann::json> result;
         find_all_templated(expression.substr(1, expression.size() - 2), comma_re, [&](const SMatch<2>& match2b) {
-            if (match2b[1].matched) {
+            if (match2b[1].matched()) {
                 if (!result.insert(eval_recursion(match2b[1].str(), globals, locals, asset_references, recursion + 1)).second) {
                     THROW_OR_ABORT("Duplicate element: \"" + std::string{ match2b[1].str() } + '"');
                 }
@@ -242,7 +236,7 @@ static nlohmann::json eval_recursion(
                 .at(asset_id)
                 .rp
                 .database;
-            if (match[DbQueryGroups::key].matched) {
+            if (match[DbQueryGroups::key].matched()) {
                 auto res = db.at(subst(match[DbQueryGroups::value].str()));
                 if (res.type() != nlohmann::detail::value_t::object) {
                     THROW_OR_ABORT("Database value is not of type object: \"" + std::string{ expression } + '"');

@@ -2,6 +2,8 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <array>
+#include <cstdint>
+#include <limits>
 #include <string_view>
 #include <vector>
 
@@ -11,23 +13,29 @@ namespace TemplateRegex {
 
 class SMatchGroup {
 public:
+    using Index = uint32_t;
+    static const Index NO_MATCH = std::numeric_limits<Index>::max();
+    static const Index END_MATCH = std::numeric_limits<Index>::max();
     SMatchGroup() = default;
     SMatchGroup(SMatchGroup&& other) = default;
-    SMatchGroup(bool matched, std::string_view str);
+    SMatchGroup(Index parallel_index, std::string_view str);
     ~SMatchGroup();
-    bool matched;
+    Index parallel_index;
+    bool matched() const {
+        return parallel_index != NO_MATCH;
+    }
     const std::string_view& str() const {
         return str_;
     }
     std::string_view str_;
 };
 
-template <size_t ngroups>
+template <SMatchGroup::Index ngroups>
 class SMatch {
 public:
     SMatch() = default;
     ~SMatch() = default;
-    const SMatchGroup& operator [] (size_t i) const {
+    const SMatchGroup& operator [] (SMatchGroup::Index i) const {
         if (i >= matches_.size()) {
             verbose_abort("Match index out of bounds");
         }
@@ -43,15 +51,15 @@ public:
 
 class String {
 public:
-    static const size_t ngroups = 0;
+    static const SMatchGroup::Index ngroups = 0;
     explicit String(std::string_view value);
-    template <size_t mngroups>
-    bool match(const std::string_view& line, SMatch<mngroups>& match, size_t match_index) const {
+    template <SMatchGroup::Index mngroups>
+    SMatchGroup::Index match(const std::string_view& line, SMatch<mngroups>& match, SMatchGroup::Index match_index) const {
         if (line.starts_with(value_)) {
             match.suffix_ = line.substr(value_.length());
-            return true;
+            return 0;
         } else {
-            return false;
+            return SMatchGroup::NO_MATCH;
         }
     }
 private:
@@ -67,18 +75,18 @@ class Group {
     template <class Inner2>
     friend Group<Inner2> group(Inner2 inner);
 public:
-    static const size_t ngroups = Inner::ngroups + 1;
-    template <size_t mngroups>
-    bool match(const std::string_view& line, SMatch<mngroups>& match, size_t match_index) const {
-        bool imatched = inner_.match(line, match, match_index + 1);
+    static const SMatchGroup::Index ngroups = Inner::ngroups + 1;
+    template <SMatchGroup::Index mngroups>
+    SMatchGroup::Index match(const std::string_view& line, SMatch<mngroups>& match, SMatchGroup::Index match_index) const {
+        SMatchGroup::Index iparallel_index = inner_.match(line, match, match_index + 1);
         auto& imatch = const_cast<SMatchGroup&>(match[match_index]);
-        imatch.matched = imatched;
-        if (imatched) {
+        imatch.parallel_index = iparallel_index;
+        if (iparallel_index != SMatchGroup::NO_MATCH) {
             imatch.str_ = line.substr(0, line.length() - match.suffix().length());
         } else {
             imatch.str_ = "";
         }
-        return imatched;
+        return iparallel_index;
     }
 private:
     Group(Inner inner, int)
@@ -95,44 +103,44 @@ inline Group<Inner> group(Inner inner) {
 template <class Inner>
 class Repeat {
 public:
-    static const size_t ngroups = Inner::ngroups;
-    Repeat(Inner inner, size_t min_repetitions, size_t max_repetitions)
-    : inner_{std::move(inner)},
-      min_repetitions_{min_repetitions},
-      max_repetitions_{max_repetitions}
+    static const SMatchGroup::Index ngroups = Inner::ngroups;
+    Repeat(Inner inner, SMatchGroup::Index min_repetitions, SMatchGroup::Index max_repetitions)
+        : inner_{std::move(inner)}
+        , min_repetitions_{min_repetitions}
+        , max_repetitions_{max_repetitions}
     {}
-    template <size_t mngroups>
-    bool match(const std::string_view& line, SMatch<mngroups>& match, size_t match_index) const {
+    template <SMatchGroup::Index mngroups>
+    SMatchGroup::Index match(const std::string_view& line, SMatch<mngroups>& match, SMatchGroup::Index match_index) const {
         auto cline = line;
-        for (size_t i = 0; i < max_repetitions_; ++i) {
-            bool res = inner_.match(cline, match, match_index);
-            if (res) {
+        for (SMatchGroup::Index i = 0; i < max_repetitions_; ++i) {
+            SMatchGroup::Index res = inner_.match(cline, match, match_index);
+            if (res != SMatchGroup::NO_MATCH) {
                 cline = match.suffix();
             } else {
                 if (i < min_repetitions_) {
-                    return false;
+                    return SMatchGroup::NO_MATCH;
                 } else {
                     break;
                 }
             }
         }
         match.suffix_ = cline;
-        return true;
+        return 0;
     }
 private:
     Inner inner_;
-    size_t min_repetitions_;
-    size_t max_repetitions_;
+    SMatchGroup::Index min_repetitions_;
+    SMatchGroup::Index max_repetitions_;
 };
 
 template <class Inner>
 inline Repeat<Inner> plus(Inner inner) {
-    return Repeat<Inner>{std::move(inner), 1, SIZE_MAX};
+    return Repeat<Inner>{std::move(inner), 1, SMatchGroup::END_MATCH};
 }
 
 template <class Inner>
 inline Repeat<Inner> star(Inner inner) {
-    return Repeat<Inner>{std::move(inner), 0, SIZE_MAX};
+    return Repeat<Inner>{std::move(inner), 0, SMatchGroup::END_MATCH};
 }
 
 
@@ -144,16 +152,16 @@ inline Repeat<Inner> opt(Inner inner) {
 template <class First, class Second>
 class Sequence {
 public:
-    static const size_t ngroups = First::ngroups + Second::ngroups;
+    static const SMatchGroup::Index ngroups = First::ngroups + Second::ngroups;
     Sequence(First first, Second second)
         : first_{ first }
         , second_{ second }
     {}
-    template <size_t tngroups>
-    bool match(const std::string_view& line, SMatch<tngroups>& match, size_t match_index) const
+    template <SMatchGroup::Index tngroups>
+    SMatchGroup::Index match(const std::string_view& line, SMatch<tngroups>& match, SMatchGroup::Index match_index) const
     {
-        if (!first_.match(line, match, match_index)) {
-            return false;
+        if (first_.match(line, match, match_index) == SMatchGroup::NO_MATCH) {
+            return SMatchGroup::NO_MATCH;
         }
         return second_.match(match.suffix(), match, match_index + first_.ngroups);
     }
@@ -165,18 +173,25 @@ private:
 template <class First, class Second>
 class Parallel {
 public:
-    static const size_t ngroups = First::ngroups + Second::ngroups;
+    static const SMatchGroup::Index ngroups = First::ngroups + Second::ngroups;
     Parallel(First first, Second second)
         : first_{ first }
         , second_{ second }
     {}
-    template <size_t mngroups>
-    bool match(const std::string_view& line, SMatch<mngroups>& match, size_t match_index) const
+    template <SMatchGroup::Index mngroups>
+    SMatchGroup::Index match(
+        const std::string_view& line,
+        SMatch<mngroups>& match,
+        SMatchGroup::Index match_index) const
     {
-        if (first_.match(line, match, match_index)) {
-            return true;
+        if (first_.match(line, match, match_index) != SMatchGroup::NO_MATCH) {
+            return 0;
         }
-        return second_.match(line, match, match_index + first_.ngroups);
+        auto pi = second_.match(line, match, match_index + first_.ngroups);
+        if (pi != SMatchGroup::NO_MATCH) {
+            return pi + 1;
+        }
+        return SMatchGroup::NO_MATCH;
     }
 private:
     First first_;
@@ -205,14 +220,14 @@ inline auto par(E0&& e0, ERight... eright) {
 
 class EndOfString {
 public:
-    static const size_t ngroups = 0;
-    template <size_t mngroups>
-    inline bool match(const std::string_view& line, SMatch<mngroups>& match, size_t match_index) const {
+    static const SMatchGroup::Index ngroups = 0;
+    template <SMatchGroup::Index mngroups>
+    inline SMatchGroup::Index match(const std::string_view& line, SMatch<mngroups>& match, SMatchGroup::Index match_index) const {
         if (line.empty()) {
             match.suffix_ = "";
-            return true;
+            return 0;
         } else {
-            return false;
+            return SMatchGroup::NO_MATCH;
         }
     }
 };
@@ -222,20 +237,20 @@ static const EndOfString eof;
 template <class TPredicate>
 class CharPredicate {
 public:
-    static const size_t ngroups = 0;
+    static const SMatchGroup::Index ngroups = 0;
     explicit CharPredicate(TPredicate predicate)
         : predicate_{ std::move(predicate) }
     {}
-    template <size_t ngroups>
-    bool match(const std::string_view& line, SMatch<ngroups>& match, size_t match_index) const {
+    template <SMatchGroup::Index ngroups>
+    SMatchGroup::Index match(const std::string_view& line, SMatch<ngroups>& match, SMatchGroup::Index match_index) const {
         if (line.empty()) {
-            return false;
+            return SMatchGroup::NO_MATCH;
         }
         if (predicate_(line[0])) {
             match.suffix_ = line.substr(1);
-            return true;
+            return 0;
         } else {
-            return false;
+            return SMatchGroup::NO_MATCH;
         }
     }
 private:
@@ -248,7 +263,7 @@ private:
 //     explicit Char2Predicate(TPredicate predicate)
 //     : predicate_{std::move(predicate)}
 //     {}
-//     MatchResult match(const std::string_view& line, SMatch& match, size_t match_index) const {
+//     MatchResult match(const std::string_view& line, SMatch& match, SMatchGroup::Index match_index) const {
 //         if (line.length() < 2) {
 //             return MatchResult{.success = false};
 //         }
@@ -260,7 +275,7 @@ private:
 //             return MatchResult{.success = false};
 //         }
 //     }
-//     size_t constexpr ngroups() const {
+//     SMatchGroup::Index constexpr ngroups() const {
 //         return 0;
 //     }
 // private:
@@ -283,10 +298,10 @@ template <class TRegex>
 bool regex_match(const std::string_view& line, SMatch<TRegex::ngroups + 1>& match, const TRegex& regex) {
     auto re0 = group(regex);
     for (auto& m : match.matches_) {
-        m.matched = false;
+        m.parallel_index = SMatchGroup::NO_MATCH;
         m.str_ = "";
     }
-    return re0.match(line, match, 0);
+    return re0.match(line, match, 0) != SMatchGroup::NO_MATCH;
 }
 
 }

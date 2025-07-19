@@ -97,43 +97,43 @@ void test_template_regex() {
     {
         auto re_group_hello = group(re_hello);
         assert_true(regex_match("hello world", match1, re_group_hello));
-        assert_true(match1[1].matched);
+        assert_true(match1[1].matched());
         assert_true(match1[1].str() == "hello");
     }
     {
         auto re_group_world = group(re_world);
         assert_true(!regex_match("hello world", match1, re_group_world));
-        assert_true(!match1[1].matched);
+        assert_true(!match1[1].matched());
         assert_true(match1[1].str() == "");
     }
     {
         auto re_group_world = group(star(re_hello));
         assert_true(regex_match("", match1, re_group_world));
-        assert_true(match1[1].matched);
+        assert_true(match1[1].matched());
         assert_true(match1[1].str() == "");
     }
     {
         auto re_group_world = group(plus(re_hello));
         assert_true(!regex_match("", match1, re_group_world));
-        assert_true(!match1[1].matched);
+        assert_true(!match1[1].matched());
         assert_true(match1[1].str() == "");
     }
     {
         auto re_group_world = group(plus(re_hello));
         assert_true(regex_match("hello", match1, re_group_world));
-        assert_true(match1[1].matched);
+        assert_true(match1[1].matched());
         assert_true(match1[1].str() == "hello");
     }
     {
         auto re_group_world = seq(group(plus(re_hello)), space);
         assert_true(regex_match("hello world", match1, re_group_world));
-        assert_true(match1[1].matched);
+        assert_true(match1[1].matched());
         assert_true(match1[1].str() == "hello");
     }
     {
         auto re_group_world = seq(group(plus(re_hello)), no_space);
         assert_true(!regex_match("hello world", match1, re_group_world));
-        assert_true(match1[1].matched);
+        assert_true(match1[1].matched());
         assert_true(match1[1].str() == "hello");
     }
     {
