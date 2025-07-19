@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 
@@ -7,8 +8,8 @@ namespace Mlib {
 enum class Focus;
 
 struct ReplacementParameterRequired {
-    std::vector<std::vector<std::string>> fixed;
-    std::vector<std::vector<std::string>> dynamic;
+    BooleanExpression fixed;
+    BooleanExpression dynamic;
     Focus focus_mask = Focus::ALWAYS;
 };
 

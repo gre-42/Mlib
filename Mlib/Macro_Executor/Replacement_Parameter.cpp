@@ -48,29 +48,6 @@ ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const
     }
 }
 
-void expression_from_json(const nlohmann::json& j, std::vector<std::string>& expression) {
-    if (j.type() != nlohmann::detail::value_t::array) {
-        expression.resize(1);
-        j.get_to(expression[0]);
-    } else {
-        j.get_to(expression);
-    }
-}
-
-void expression_from_json(const nlohmann::json& j, std::vector<std::vector<std::string>>& expression) {
-    if (j.type() != nlohmann::detail::value_t::array) {
-        expression.resize(1);
-        expression[0].resize(1);
-        j.get_to(expression[0][0]);
-    } else {
-        auto v = j.get<std::vector<nlohmann::json>>();
-        expression.resize(v.size());
-        for (size_t i = 0; i < v.size(); ++i) {
-            expression_from_json(v[i], expression[i]);
-        }
-    }
-}
-
 void Mlib::from_json(const nlohmann::json& j, ReplacementParameterRequired& rp) {
     validate(j, KnownRequired::options);
     expression_from_json(j.at(KnownRequired::fixed), rp.fixed);

@@ -1,6 +1,7 @@
 #include "Macro_Line_Executor.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/FPath.hpp>
+#include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
@@ -235,22 +236,15 @@ void MacroLineExecutor::operator () (
         bool include = true;
         try {
             if (jv.contains(MacroKeys::required)) {
-                for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::required)) {
-                    if (!Mlib::eval<bool>(e, global_args, merged_args, asset_references_)) {
-                        include = false;
-                        break;
-                    }
-                }
+                BooleanExpression required;
+                expression_from_json(jv.at(MacroKeys::required), required);
+                include = eval(required);
             }
             // BENCHMARK times.emplace_back("required", ot.elapsed());
             if (include && jv.contains(MacroKeys::exclude)) {
-                include = false;
-                for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::exclude)) {
-                    if (!Mlib::eval<bool>(e, global_args, merged_args, asset_references_)) {
-                        include = true;
-                        break;
-                    }
-                }
+                BooleanExpression exclude;
+                expression_from_json(jv.at(MacroKeys::exclude), exclude);
+                include = !eval(exclude);
             }
             // BENCHMARK times.emplace_back("exclude", ot.elapsed());
         } catch (const std::exception& e) {
