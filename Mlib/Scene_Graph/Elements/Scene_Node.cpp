@@ -1008,12 +1008,13 @@ void SceneNode::render(
     const std::list<const ColorStyle*>& color_styles,
     SceneNodeVisibility visibility) const
 {
+    assert_true(is_visible_for_user(frame_id.external_render_pass.user_id));
     auto child_m = relative_model_matrix(frame_id.external_render_pass.time);
     std::shared_lock lock{ mutex_ };
     if (state_ == SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Cannot render detached node");
     }
-    auto visit_node_hider = [&](const auto& avail){
+    auto visit_node_hiders = [&](const auto& avail){
         for (const auto& nh : avail) {
             // Note that the INodeHider may depend on this function being called,
             // so there should not be any additional check above this line.
@@ -1023,11 +1024,11 @@ void SceneNode::render(
         }
     };
     if (auto avail = node_hiders_.find(nullptr); avail != node_hiders_.end()) {
-        visit_node_hider(avail->second);
+        visit_node_hiders(avail->second);
     }
     if (frame_id.external_render_pass.renderable_scene != nullptr) {
         if (auto avail = node_hiders_.find(frame_id.external_render_pass.renderable_scene); avail != node_hiders_.end()) {
-            visit_node_hider(avail->second);
+            visit_node_hiders(avail->second);
         }
     }
     // OpenGL matrices are transposed in memory,
@@ -1086,6 +1087,9 @@ void SceneNode::render(
         }
     }
     for (const auto& [_, c] : children_) {
+        if (!c.scene_node->is_visible_for_user(frame_id.external_render_pass.user_id)) {
+            continue;
+        }
         OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
         c.scene_node->render(
             mvp,

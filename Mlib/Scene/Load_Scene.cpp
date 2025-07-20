@@ -76,7 +76,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Move_Node_To_Bvh.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Bone.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Root_Node.hpp>
@@ -330,7 +329,6 @@ LoadScene::LoadScene() {
             register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
             register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
             register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
-            register_json_user_function(SetNodeHider::key, SetNodeHider::json_user_function);
             register_json_user_function(SetNodeRotation::key, SetNodeRotation::json_user_function);
             register_json_user_function(SetRaceIdentifierAndReloadHistory::key, SetRaceIdentifierAndReloadHistory::json_user_function);
             register_json_user_function(SetRigidBodyAlignToSurfaceRelaxation::key, SetRigidBodyAlignToSurfaceRelaxation::json_user_function);

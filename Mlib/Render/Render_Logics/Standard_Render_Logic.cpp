@@ -54,10 +54,7 @@ void StandardRenderLogic::render_with_setup(
         clear_color_and_depth({0.f, 0.f, 0.f, 1.f});
     } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         clear_color_and_depth({1.f, 1.f, 1.f, 1.f});
-    } else if (
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) ||
-        (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD_FOREGROUND))
-    {
+    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
         clear_color_and_depth({
             background_color_(0),
             background_color_(1),

@@ -36,6 +36,7 @@ std::string Mlib::external_render_pass_type_to_string(ExternalRenderPassType pas
     case ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC: return "lightmap_global_dynamic";
     case ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC: return "lightmap_black_global_static";
     case ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES: return "lightmap_black_local_instances";
+    case ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES: return "lightmap_black_movables";
     case ExternalRenderPassType::LIGHTMAP_BLACK_NODE: return "lightmap_black_node";
     case ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL: return "lightmap_black_global_and_local";
     case ExternalRenderPassType::LIGHTMAP_BLOBS: return "lightmap_blobs";

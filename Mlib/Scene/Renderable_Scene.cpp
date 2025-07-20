@@ -190,6 +190,7 @@ void RenderableScene::render_without_setup(
 
     auto f = frame_id;
     f.external_render_pass.user_id = user_id_;
+    f.external_render_pass.renderable_scene = { *this, DP_LOC };
     auto completed_time = physics_scene_->physics_set_fps_.completed_time();
     if (completed_time != std::chrono::steady_clock::time_point()) {
         f.external_render_pass.time = std::min(

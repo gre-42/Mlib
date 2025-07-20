@@ -515,7 +515,12 @@ void Scene::render(
         NodeDanglingPtrs nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(node.ptr()); return true; });
+            root_nodes_.visit(iv.t, [&](const auto& node) {
+                if (node->is_visible_for_user(frame_id.external_render_pass.user_id)) {
+                    nodes.emplace_back(node.ptr());
+                }
+                return true;
+            });
         }
         for (const auto& node : nodes) {
             node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, frame_id, nullptr, color_styles);

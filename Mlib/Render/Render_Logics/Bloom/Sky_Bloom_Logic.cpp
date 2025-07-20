@@ -110,9 +110,6 @@ bool SkyBloomLogic::render_optional_setup(
 {
     LOG_FUNCTION("SkyBloomLogic::render");
     // TimeGuard time_guard{"SkyBloomLogic::render", "SkyBloomLogic::render"};
-    if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
-        THROW_OR_ABORT("SkyBloomLogic did not receive standard rendering");
-    }
     if (all(intensities_ == 0.f)) {
         child_logic_.render_auto_setup(
             lx,
@@ -123,6 +120,9 @@ bool SkyBloomLogic::render_optional_setup(
             frame_id,
             setup);
     } else {
+        if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
+            THROW_OR_ABORT("SkyBloomLogic did not receive standard rendering");
+        }
         assert_true(render_config.nsamples_msaa > 0);
 
         if (!rp_modulate_.allocated()) {

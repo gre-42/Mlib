@@ -6,6 +6,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <ostream>
 #include <string>
 
@@ -43,6 +44,11 @@ bool RenderToPixelRegionLogic::render_optional_setup(
     const RenderSetup* setup)
 {
     LOG_FUNCTION("RenderToPixelRegionLogic::render");
+    if ((frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) &&
+        !any(frame_id.external_render_pass.pass & ExternalRenderPassType::FOREGROUND_MASK))
+    {
+        return true;
+    }
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     auto vg = ViewportGuard::from_widget(*ew);
     if (vg.has_value()) {
