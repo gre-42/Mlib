@@ -70,8 +70,8 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         render_pass,
         node,
         light,
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::black_node), // black_node_name
-        args.arguments.at<bool>(KnownArgs::with_depth_texture),                 // with_depth_texture
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::black_node),
+        args.arguments.at<bool>(KnownArgs::with_depth_texture),
         args.arguments.at<int>(KnownArgs::lightmap_width),
         args.arguments.at<int>(KnownArgs::lightmap_height),
         args.arguments.at<EFixedArray<uint32_t, 2>>(KnownArgs::smooth_niterations));
