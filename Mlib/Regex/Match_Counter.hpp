@@ -1,5 +1,5 @@
 #pragma once
-#include <cstddef>
+#include <cstdint>
 
-#define BEGIN_MATCH_COUNTER static size_t counter = 1
-#define DECLARE_MATCH_COUNTER(a) static const size_t a = counter++;
+#define BEGIN_MATCH_COUNTER static uint32_t counter = 1
+#define DECLARE_MATCH_COUNTER(a) static const uint32_t a = counter++;
