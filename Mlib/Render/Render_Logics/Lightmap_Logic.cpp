@@ -130,21 +130,21 @@ void LightmapLogic::render_without_setup(
                     std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                     std::make_shared<ArrayInstancesRenderer>(rendering_resources_));
             }
-            auto lx = LayoutConstraintParameters{
+            auto vlx = LayoutConstraintParameters{
                 .dpi = NAN,
                 .min_pixel = 0.f,
                 .end_pixel = (float)lightmap_width_};
-            auto ly = LayoutConstraintParameters{
+            auto vly = LayoutConstraintParameters{
                 .dpi = NAN,
                 .min_pixel = 0.f,
                 .end_pixel = (float)lightmap_height_};
-            setup.emplace(child_logic_.render_setup(lx, ly, light_rsd));
+            setup.emplace(child_logic_.render_setup(vlx, vly, light_rsd));
             if (!setup.has_value()) {
                 THROW_OR_ABORT("LightmapLogic::render could not determine child setup");
             }
             child_logic_.render_with_setup(
-                lx,
-                ly,
+                vlx,
+                vly,
                 render_config,
                 scene_graph_config,
                 render_results,
