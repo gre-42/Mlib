@@ -123,6 +123,14 @@ bool BloomLogic::render_optional_setup(
 
         auto width = lx.ilength();
         auto height = ly.ilength();
+        auto vlx = LayoutConstraintParameters{
+            .dpi = lx.dpi,
+            .min_pixel = 0.f,
+            .end_pixel = (float)width};
+        auto vly = LayoutConstraintParameters{
+            .dpi = ly.dpi,
+            .min_pixel = 0.f,
+            .end_pixel = (float)height};
         screen_fbs_->configure({
             .width = width,
             .height = height,
@@ -132,8 +140,8 @@ bool BloomLogic::render_optional_setup(
             ViewportGuard vg{ width, height };
 
             child_logic_.render_auto_setup(
-                lx,
-                ly,
+                vlx,
+                vly,
                 render_config,
                 scene_graph_config,
                 render_results,

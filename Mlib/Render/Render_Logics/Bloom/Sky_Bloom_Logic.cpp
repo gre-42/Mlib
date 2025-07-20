@@ -140,6 +140,14 @@ bool SkyBloomLogic::render_optional_setup(
 
         auto width = lx.ilength();
         auto height = ly.ilength();
+        auto vlx = LayoutConstraintParameters{
+            .dpi = lx.dpi,
+            .min_pixel = 0.f,
+            .end_pixel = (float)width};
+        auto vly = LayoutConstraintParameters{
+            .dpi = ly.dpi,
+            .min_pixel = 0.f,
+            .end_pixel = (float)height};
         foreground_fbs_->configure({
             .width = width,
             .height = height,
@@ -153,8 +161,8 @@ bool SkyBloomLogic::render_optional_setup(
             auto fcp = frame_id;
             fcp.external_render_pass.pass = ExternalRenderPassType::STANDARD_FOREGROUND;
             child_logic_.render_auto_setup(
-                lx,
-                ly,
+                vlx,
+                vly,
                 render_config,
                 scene_graph_config,
                 render_results,
@@ -170,8 +178,8 @@ bool SkyBloomLogic::render_optional_setup(
             auto fcp = frame_id;
             fcp.external_render_pass.pass = ExternalRenderPassType::STANDARD_BACKGROUND;
             child_logic_.render_auto_setup(
-                lx,
-                ly,
+                vlx,
+                vly,
                 render_config,
                 scene_graph_config,
                 render_results,
