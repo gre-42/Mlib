@@ -1846,6 +1846,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        frag_color.rgb = mix(frag_color.rgb, fog_emissive, t);" << std::endl;
         sstr << "    }" << std::endl;
     }
+    if (alpha_threshold != 0) {
+        sstr << "    frag_color.a = 1.0;" << std::endl;
+    }
     if (any(interior_texture_set) && compute_interiormap_at_end) {
         sstr << "    is_in_interior(TBN, alpha_fac);" << std::endl;
     }
