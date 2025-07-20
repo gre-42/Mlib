@@ -744,6 +744,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const FresnelReflectance& fresnel,
     float alpha,
     float alpha_threshold,
+    bool blend,
     const OrderableFixedArray<float, 4>& alpha_distances,
     const OrderableFixedArray<float, 2>& fog_distances,
     const OrderableFixedArray<float, 3>& fog_emissive,
@@ -1846,7 +1847,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        frag_color.rgb = mix(frag_color.rgb, fog_emissive, t);" << std::endl;
         sstr << "    }" << std::endl;
     }
-    if (alpha_threshold != 0) {
+    if (!blend) {
         sstr << "    frag_color.a = 1.0;" << std::endl;
     }
     if (any(interior_texture_set) && compute_interiormap_at_end) {
@@ -2523,6 +2524,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                     : any(id.blend_mode & BlendMode::THRESHOLD_08_MASK)
                         ? 0.8f
                         : NAN,
+        any(id.blend_mode & BlendMode::ANY_CONTINUOUS),
         id.alpha_distances,
         id.fog_distances,
         id.fog_emissive,
