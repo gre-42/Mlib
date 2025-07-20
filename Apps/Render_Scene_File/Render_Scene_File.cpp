@@ -311,7 +311,6 @@ int main(int argc, char** argv) {
         "    [--max_distance_black <distance>]\n"
         "    [--small_aggregate_update_interval <interval>]\n"
         "    [--large_max_offset_deviation <interval>]\n"
-        "    [--flavor <flavor>]\n"
         "    [--windowed_width <width>]\n"
         "    [--windowed_height <height>]\n"
         "    [--fullscreen_width <width>]\n"
@@ -343,6 +342,7 @@ int main(int argc, char** argv) {
         "    [--draw_distance_add <value>]\n"
         "    [--far_plane <value>]\n"
         "    [--record_track_basename <value>]\n"
+        "    [--flavor <flavor>]\n"
         "    [--devel_mode]\n"
         "    [--enable_ridge_map]\n"
         "    [--stiction_coefficient <x>]\n"
@@ -422,6 +422,7 @@ int main(int argc, char** argv) {
          "--verbose"},
         {"--app_reldir",
          "--record_track_basename",
+         "--flavor",
          "--swap_interval",
          "--fullscreen_refresh_rate",
          "--nsamples_msaa",

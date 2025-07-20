@@ -380,6 +380,7 @@ void android_main(android_app* app) {
         "    [--draw_distance_add <value>]\n"
         "    [--far_plane <value>]\n"
         "    [--record_track_basename <value>]\n"
+        "    [--flavor <flavor>]\n"
         "    [--devel_mode]\n"
         "    [--enable_ridge_map]\n"
         "    [--stiction_coefficient <x>]\n"
