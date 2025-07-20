@@ -188,6 +188,11 @@ OsmTriangleLists::OsmTriangleLists(
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
+            if (bt.texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS_2D) {
+                (*tl_terrain)[tt]->material.has_animated_textures = true;
+                tl_terrain_visuals[tt]->material.has_animated_textures = true;
+                tl_terrain_extrusion[tt]->material.has_animated_textures = true;
+            }
             (*tl_terrain)[tt]->material.textures_color.push_back(bt);
             tl_terrain_visuals[tt]->material.textures_color.push_back(bt);
             tl_terrain_extrusion[tt]->material.textures_color.push_back(bt);
