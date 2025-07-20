@@ -296,14 +296,16 @@ void RenderableColoredVertexArray::render_cva(
         }
     } else {
         if (!instances_are_visible(cva->material, render_pass.rsd.external_render_pass.pass)) {
+            // lerr() << ", skipped (3)";
             return;
         }
         instances = rcva_->instances_->at(cva.get());
         if (instances->num_instances() == 0) {
+            // lerr() << ", skipped (4)";
             return;
         }
     }
-    // lerr();
+    // lerr() << ", not skipped";
 
     std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> filtered_lights;
     std::vector<size_t> lightmap_indices;
