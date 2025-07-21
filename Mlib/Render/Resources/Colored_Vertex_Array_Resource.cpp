@@ -2051,12 +2051,18 @@ void ColoredVertexArrayResource::instantiate_child_renderable(const ChildInstant
 }
 
 void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstantiationOptions& options) const {
+    auto dcvas = triangles_res_->dcvas;
     {
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas_node_triangles;
-        for (const auto& cva : triangles_res_->dcvas) {
+        dcvas.remove_if([&](auto& cva){
             if (cva->material.aggregate_mode == AggregateMode::NODE_TRIANGLES) {
                 dcvas_node_triangles.push_back(cva);
+                return true;
             }
+            return false;
+        });
+        if (!dcvas_node_triangles.empty() && (options.triangle_cluster_width == 0)) {
+            THROW_OR_ABORT("Aggregate-mode is \"node_triangles\", \"triangle_cluster_width\" is zero");
         }
         for (const auto& [i, c] : enumerate(cluster_triangles(
             dcvas_node_triangles,
@@ -2091,10 +2097,15 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
     }
     {
         std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> dcvas_node_object;
-        for (const auto& cva : triangles_res_->dcvas) {
+        dcvas.remove_if([&](auto& cva){
             if (cva->material.aggregate_mode == AggregateMode::NODE_OBJECT) {
                 dcvas_node_object.push_back(cva);
+                return true;
             }
+            return false;
+        });
+        if (!dcvas_node_object.empty() && (options.object_cluster_width == 0)) {
+            THROW_OR_ABORT("Aggregate-mode is \"node_object\", \"object_cluster_width\" is zero");
         }
         for (const auto& [i, c] : enumerate(cluster_meshes<CompressedScenePos>(
             dcvas_node_object,
@@ -2120,7 +2131,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
                 });
         }
     }
-    if (!triangles_res_->scvas.empty() || !triangles_res_->dcvas.empty()) {
+    if (!triangles_res_->scvas.empty() || !dcvas.empty()) {
         auto node = make_unique_scene_node(
             options.absolute_model_matrix.t,
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R),
@@ -2197,33 +2208,24 @@ void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const Fi
 }
 
 void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
-    if ((triangles_res_->scvas.size() + triangles_res_->dcvas.size()) != 1) {
-        THROW_OR_ABORT("generate_ray requires exactly one triangle mesh");
+    if (triangles_res_->scvas.size() != 1) {
+        THROW_OR_ABORT("generate_ray requires exactly one single precision triangle mesh");
     }
-    auto gen_ray = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
-    {
-        cvas.front()->lines.emplace_back(
-            ColoredVertex<TPos>{
-                from,
-                Colors::WHITE,
-                {0.f, 0.f},
-                fixed_zeros<float, 3>(),
-                fixed_zeros<float, 3>(),
-            },
-            ColoredVertex<TPos>{
-                to,
-                Colors::WHITE,
-                {0.f, 1.f},
-                fixed_zeros<float, 3>(),
-                fixed_zeros<float, 3>(),
-            });
-    };
-    if (!triangles_res_->scvas.empty()) {
-        gen_ray(triangles_res_->scvas);
-    }
-    if (!triangles_res_->dcvas.empty()) {
-        gen_ray(triangles_res_->scvas);
-    }
+    triangles_res_->scvas.front()->lines.emplace_back(
+        ColoredVertex<float>{
+            from,
+            Colors::WHITE,
+            {0.f, 0.f},
+            fixed_zeros<float, 3>(),
+            fixed_zeros<float, 3>(),
+        },
+        ColoredVertex<float>{
+            to,
+            Colors::WHITE,
+            {0.f, 1.f},
+            fixed_zeros<float, 3>(),
+            fixed_zeros<float, 3>(),
+        });
 }
 
 std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_grind_lines(
