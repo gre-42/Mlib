@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <filesystem>
@@ -56,8 +57,10 @@ public:
     T eval(const std::string& expression) const;
     template <class T>
     T eval(const std::string& expression, const JsonView& variables) const;
-    bool eval(const std::vector<std::vector<std::string>>& expression) const;
-    bool eval(const std::vector<std::vector<std::string>>& expression, const JsonView& variables) const;
+    bool eval(const BooleanExpression& expression) const;
+    bool eval(const BooleanExpression& expression, const JsonView& variables) const;
+    bool eval_boolean_expression(const nlohmann::json& j) const;
+    bool eval_boolean_expression(const nlohmann::json& j, const JsonView& variables) const;
     JsonMacroArgumentsObserverToken add_observer(std::function<void()> func);
     JsonView block_arguments() const;
 private:

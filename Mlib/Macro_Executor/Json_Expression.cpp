@@ -146,7 +146,7 @@ static nlohmann::json eval_recursion(
         static const auto comparison_re = seq(
             group(plus(no_space)),
             chr(' '),
-            group(par(str("=="), str("!="), str("<="), str("in"), str("not in"), chr('-'))),
+            group(par(str("=="), str("!="), str("<="), str(">="), str("in"), str("not in"), chr('-'))),
             chr(' '),
             group(plus(adot)),
             eof);
@@ -160,15 +160,16 @@ static nlohmann::json eval_recursion(
                 case 0: return e_left == e_right;
                 case 1: return e_left != e_right;
                 case 2: return e_left <= e_right;
-                case 3: { // in
+                case 3: return e_left >= e_right;
+                case 4: { // in
                     auto elems = e_right.get<std::set<nlohmann::json>>();
                     return elems.contains(e_left);
                 }
-                case 4: { // not in
+                case 5: { // not in
                     auto elems = e_right.get<std::set<nlohmann::json>>();
                     return !elems.contains(e_left);
                 }
-                case 5: return e_left.get<double>() - e_right.get<double>();
+                case 6: return e_left.get<double>() - e_right.get<double>();
             }
             verbose_abort("Unknown operator index: \"" + std::to_string(op) + "\". Line: \"" + std::string{expression} + '"');
         }

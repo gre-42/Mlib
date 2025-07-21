@@ -29,6 +29,7 @@ DECLARE_ARGUMENT(library);
 
 namespace PlayerKeys {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(required);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(skills);
@@ -150,6 +151,11 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
         for (const auto& jplayer : jv.at(ToplevelKeys::players)) {
             JsonView player{jplayer};
             player.validate(PlayerKeys::options);
+            if (auto rj = player.try_at(PlayerKeys::required); rj.has_value()) {
+                if (!args.macro_line_executor.eval_boolean_expression(*rj)) {
+                    continue;
+                }
+            }
             auto get = [&defaults, &player](std::string_view name){
                 if (player.contains(name)) {
                     return player.at(name);

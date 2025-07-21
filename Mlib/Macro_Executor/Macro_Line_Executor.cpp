@@ -501,9 +501,7 @@ T MacroLineExecutor::eval(const std::string& expression) const {
     return Mlib::eval<T>(expression, global_args, JsonView{ block_arguments_ }, asset_references_);
 }
 
-bool MacroLineExecutor::eval(
-    const std::vector<std::vector<std::string>>& expression) const
-{
+bool MacroLineExecutor::eval(const BooleanExpression& expression) const {
     for (const auto& rs : expression) {
         bool ok = false;
         for (const auto& r : rs) {
@@ -519,10 +517,7 @@ bool MacroLineExecutor::eval(
     return true;
 }
 
-bool MacroLineExecutor::eval(
-    const std::vector<std::vector<std::string>>& expression,
-    const JsonView& variables) const
-{
+bool MacroLineExecutor::eval(const BooleanExpression& expression, const JsonView& variables) const {
     for (const auto& rs : expression) {
         bool ok = false;
         for (const auto& r : rs) {
@@ -536,6 +531,18 @@ bool MacroLineExecutor::eval(
         }
     }
     return true;
+}
+
+bool MacroLineExecutor::eval_boolean_expression(const nlohmann::json& j) const {
+    BooleanExpression expression;
+    expression_from_json(j, expression);
+    return eval(expression);
+}
+
+bool MacroLineExecutor::eval_boolean_expression(const nlohmann::json& j, const JsonView& variables) const {
+    BooleanExpression expression;
+    expression_from_json(j, expression);
+    return eval(expression, variables);
 }
 
 JsonMacroArgumentsObserverToken MacroLineExecutor::add_observer(std::function<void()> func) {
