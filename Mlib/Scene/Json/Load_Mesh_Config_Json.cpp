@@ -25,6 +25,7 @@ DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(center_distances);
 DECLARE_ARGUMENT(max_triangle_distance);
+DECLARE_ARGUMENT(triangle_cluster_width);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(alpha_distances);
 DECLARE_ARGUMENT(cull_faces_default);
@@ -72,6 +73,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
                 KnownArgs::center_distances,
                 default_step_distances) * meters},
         .max_triangle_distance = j.at<float>(KnownArgs::max_triangle_distance, INFINITY) * meters,
+        .triangle_cluster_width = j.at<float>(KnownArgs::triangle_cluster_width, 0.f) * meters,
         .blend_mode = blend_mode_from_string(j.at<std::string>(KnownArgs::blend_mode)),
         .alpha_distances = j.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         .cull_faces_default = j.at<bool>(KnownArgs::cull_faces_default, true),

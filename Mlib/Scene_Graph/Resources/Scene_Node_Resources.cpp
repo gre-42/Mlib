@@ -584,15 +584,18 @@ std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(
         THROW_OR_ABORT("Could not find resource or loader with name \"" + *name + '"');
     }
     auto resource = (*lit)();
-    auto mit = modifiers_.try_extract(name);
-    if (!mit.empty()) {
-        clear_list_recursively(mit.mapped(), [&](const auto& modifier){
+    auto* mit = modifiers_.try_get(name);
+    if (mit != nullptr) {
+        clear_list_recursively(*mit, [&](const auto& modifier){
             try {
                 modifier(*resource);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not apply modifier for resource \"" + *name + "\": " + e.what());
             }
             });
+        if (modifiers_.erase(name) != 1) {
+            verbose_abort("Could not erase modifiers for \"" + *name + "\". Recursive resource access?");
+        }
     }
     auto iit = resources_.try_emplace(name, std::move(resource));
     if (!iit.second) {

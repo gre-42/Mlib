@@ -16,7 +16,7 @@
 #include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Triangles.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Position_And_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
 #include <Mlib/Geometry/Mesh/Typed_Mesh.hpp>
@@ -2066,67 +2066,50 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             return false;
         }
     });
-    {
-        if (!dcvas_node_triangles.empty() && (options.triangle_cluster_width == 0)) {
+    auto instantiate_position_and_meshes = [&](size_t i, const PositionAndMeshes<CompressedScenePos>& cs){
+        auto tm = TranslationMatrix{ cs.position.casted<ScenePos>() };
+        auto trafo = options.absolute_model_matrix * tm;
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
+        for (const auto& cva : cs.cvas) {
+            auto scva = cva->translated<float>(-cs.position, "_centered");
+            scva->morphology.center_distances2 += scva->radius(fixed_zeros<float, 3>());
+            scvas.emplace_back(std::move(scva));
+        }
+        auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scvas));
+        rcva->instantiate_root_renderables(
+            RootInstantiationOptions{
+                .rendering_resources = options.rendering_resources,
+                .imposters = options.imposters,
+                .instantiated_nodes = options.instantiated_nodes,
+                .instance_name = VariableAndHash<std::string>{ *options.instance_name + "_cluster_" + std::to_string(i) },
+                .absolute_model_matrix = trafo,
+                .scene = options.scene,
+                .max_imposter_texture_size = options.max_imposter_texture_size,
+                .renderable_resource_filter = options.renderable_resource_filter
+            });
+    };
+    for (const auto& [triangle_cluster_width, dcvas] : triangle_cluster_width_groups(dcvas_node_triangles)) {
+        if (triangle_cluster_width == 0) {
             THROW_OR_ABORT("Aggregate-mode is \"node_triangles\", \"triangle_cluster_width\" is zero");
         }
-        for (const auto& [i, c] : enumerate(cluster_triangles(
-            dcvas_node_triangles,
-            cluster_center_by_grid<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(options.triangle_cluster_width)),
+        for (const auto& [i, cs] : enumerate(cluster_triangles(
+            dcvas,
+            cluster_center_by_grid<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(triangle_cluster_width)),
             *options.instance_name + "_split")))
         {
-            auto transformed = c.cva->template translated<float>(-c.position, "_centered");
-            transformed->morphology.center_distances2 = options.center_distances2 + transformed->radius(fixed_zeros<float, 3>());
-            auto resource = std::make_shared<ColoredVertexArrayResource>(transformed);
-            auto ctrafo = options.absolute_model_matrix * TransformationMatrix<SceneDir, ScenePos, 3>{
-                fixed_identity_array<SceneDir, 3>(),
-                c.position.template casted<ScenePos>()};
-            auto node = make_unique_scene_node(
-                ctrafo.t,
-                matrix_2_tait_bryan_angles(ctrafo.R),
-                ctrafo.get_scale(),
-                PoseInterpolationMode::DISABLED);
-            resource->instantiate_child_renderable(ChildInstantiationOptions{
-                .rendering_resources = options.rendering_resources,
-                .instance_name = VariableAndHash{ *options.instance_name + "_hri_split_arrays" },
-                .scene_node = node.ref(DP_LOC),
-                .renderable_resource_filter = options.renderable_resource_filter});
-            auto node_name = VariableAndHash<std::string>{*options.instance_name + std::to_string(i) + "_hri_split_node"};
-            options.scene.auto_add_root_node(
-                node_name,
-                std::move(node),
-                RenderingDynamics::STATIC);
-            if (options.instantiated_nodes != nullptr) {
-                options.instantiated_nodes->emplace_back(std::move(node_name));
-            }
+            instantiate_position_and_meshes(i, cs);
         }
     }
-    {
-        if (!dcvas_node_object.empty() && (options.object_cluster_width == 0)) {
+    for (const auto& [object_cluster_width, dcvas] : object_cluster_width_groups(dcvas_node_object)) {
+        if (object_cluster_width == 0) {
             THROW_OR_ABORT("Aggregate-mode is \"node_object\", \"object_cluster_width\" is zero");
         }
-        for (const auto& [i, c] : enumerate(cluster_meshes<CompressedScenePos>(
-            dcvas_node_object,
-            cva_to_grid_center<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(options.object_cluster_width)),
+        for (const auto& [i, cs] : enumerate(cluster_meshes<CompressedScenePos>(
+            dcvas,
+            cva_to_grid_center<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(object_cluster_width)),
             *options.instance_name + "_cluster")))
         {
-            auto center = c.cva->aabb().data().center();
-            auto tm = TranslationMatrix{ center.casted<ScenePos>() };
-            auto trafo = options.absolute_model_matrix * tm;
-            auto scva = c.cva->translated<float>(-center, "_centered");
-            scva->morphology.center_distances2 += scva->radius(fixed_zeros<float, 3>());
-            auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scva));
-            rcva->instantiate_root_renderables(
-                RootInstantiationOptions{
-                    .rendering_resources = options.rendering_resources,
-                    .imposters = options.imposters,
-                    .instantiated_nodes = options.instantiated_nodes,
-                    .instance_name = VariableAndHash<std::string>{ *options.instance_name + "_cluster_" + std::to_string(i) },
-                    .absolute_model_matrix = trafo,
-                    .scene = options.scene,
-                    .max_imposter_texture_size = options.max_imposter_texture_size,
-                    .renderable_resource_filter = options.renderable_resource_filter
-                });
+            instantiate_position_and_meshes(i, cs);
         }
     }
     if (!triangles_res_->scvas.empty() || !dcvas_default.empty()) {

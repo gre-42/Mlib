@@ -352,7 +352,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 Morphology{
                     .physics_material = cfg.physics_material,
                     .center_distances2 = SquaredStepDistances::from_distances(cfg.center_distances),
-                    .max_triangle_distance = cfg.max_triangle_distance
+                    .max_triangle_distance = cfg.max_triangle_distance,
+                    .triangle_cluster_width = cfg.triangle_cluster_width
                 }};
             auto attrs = MetaAttributes::ATTR_VISIBLE;
             static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");

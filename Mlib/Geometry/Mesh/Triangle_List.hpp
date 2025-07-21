@@ -42,6 +42,7 @@ public:
         UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
         UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
         UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {},
+        UUList<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers = {},
         UUList<FixedArray<float, 3>>&& alpha = {},
         UUList<FixedArray<float, 4>>&& interiormap_uvmaps = {});
     void draw_triangle_with_normals(
@@ -202,6 +203,7 @@ public:
         UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+        UUList<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
         UUList<FixedArray<float, 3>> alpha;
         UUList<FixedArray<float, 4>> interiormap_uvmaps;
 
@@ -211,6 +213,7 @@ public:
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
+        archive(discrete_triangle_texture_layers);
         archive(alpha);
         archive(interiormap_uvmaps);
 
@@ -221,6 +224,7 @@ public:
             std::move(quads),
             std::move(triangles),
             std::move(triangle_bone_weights),
+            std::move(discrete_triangle_texture_layers),
             std::move(alpha),
             std::move(interiormap_uvmaps));
     }
@@ -231,6 +235,7 @@ public:
     UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
     UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+    UUList<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
     UUList<FixedArray<float, 3>> alpha;
     UUList<FixedArray<float, 4>> interiormap_uvmaps;
 };

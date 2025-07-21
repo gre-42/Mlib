@@ -15,7 +15,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Meshes.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Position_And_Meshes.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
@@ -1975,8 +1975,6 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             .absolute_model_matrix = options.absolute_model_matrix,
             .scene = options.scene,
             .max_imposter_texture_size = options.max_imposter_texture_size,
-            .object_cluster_width = options.object_cluster_width,
-            .triangle_cluster_width = options.triangle_cluster_width,
             .renderable_resource_filter = options.renderable_resource_filter});
         if (water_animation_duration_ != std::chrono::steady_clock::duration{0}) {
             // This code is for AggregateMode::NODE_TRIANGLES
@@ -2018,17 +2016,20 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
                 });
         }
     } else {
-        for (const auto& [i, c] : enumerate(cluster_meshes<CompressedScenePos>(
+        for (const auto& [i, cs] : enumerate(cluster_meshes<CompressedScenePos>(
             buildings_,
             cva_to_grid_center<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(building_cluster_width_)),
             "building_cluster")))
         {
-            auto center = c.cva->aabb().data().center();
-            auto tm = TranslationMatrix{ center.casted<ScenePos>() };
+            auto tm = TranslationMatrix{ cs.position.casted<ScenePos>() };
             auto trafo = options.absolute_model_matrix * tm;
-            auto scva = c.cva->translated<float>(-center, "_centered");
-            scva->morphology.center_distances2 += building_cluster_width_;
-            auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scva));
+            std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
+            for (const auto& cva : cs.cvas) {
+                auto scva = cva->translated<float>(-cs.position, "_centered");
+                scva->morphology.center_distances2 += building_cluster_width_;
+                scvas.emplace_back(std::move(scva));
+            }
+            auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scvas));
             rcva->instantiate_root_renderables(
                 RootInstantiationOptions{
                     .rendering_resources = options.rendering_resources,

@@ -354,6 +354,9 @@ int main(int argc, char** argv) {
         "    [--no_slip <x>]\n"
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
+        "    [--sparse_triangle_cluster_width <width>]\n"
+        "    [--dense_triangle_cluster_width <width>]\n"
+        "    [--object_cluster_width <width>]\n"
         "    [--no_vfx]\n"
         "    [--depth_fog_vfx]\n"
         "    [--low_pass]\n"
@@ -461,6 +464,9 @@ int main(int argc, char** argv) {
          "--longitudinal_friction_steepness",
          "--lateral_friction_steepness",
          "--wheel_penetration_depth",
+         "--sparse_triangle_cluster_width",
+         "--dense_triangle_cluster_width",
+         "--object_cluster_width",
          "--draw_distance_add",
          "--far_plane",
          "--num_renderings",
@@ -636,7 +642,10 @@ int main(int argc, char** argv) {
                 {"scene_water_waves_height", safe_stoi(args.named_value("--scene_water_waves_height", "512"))},
                 {"scene_sea_spray_width", safe_stoi(args.named_value("--scene_sea_spray_width", "2048"))},
                 {"scene_sea_spray_height", safe_stoi(args.named_value("--scene_sea_spray_height", "2048"))},
-                {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))}};
+                {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))},
+                {"sparse_triangle_cluster_width", safe_stof(args.named_value("--sparse_triangle_cluster_width", "3e3"))},
+                {"dense_triangle_cluster_width", safe_stof(args.named_value("--dense_triangle_cluster_width", "250"))},
+                {"object_cluster_width", safe_stof(args.named_value("--object_cluster_width", "500"))}};
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));

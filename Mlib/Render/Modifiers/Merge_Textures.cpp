@@ -46,6 +46,7 @@ void Mlib::merge_textures(
                         if (!cva->modifier_backlog.merge_textures) {
                             continue;
                         }
+                        cva->modifier_backlog.merge_textures = false;
                         if (!any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                             lwarn() << "Attempt to merge object \"" << cva->name << "\", which has a non-continuous material";
                             continue;

@@ -27,6 +27,7 @@ TriangleList<TPos>::TriangleList(
     UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
+    UUList<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
     UUList<FixedArray<float, 3>>&& alpha,
     UUList<FixedArray<float, 4>>&& interiormap_uvmaps)
     : name{ std::move(name) }
@@ -35,6 +36,7 @@ TriangleList<TPos>::TriangleList(
     , quads{ std::move(quads) }
     , triangles{ std::move(triangles) }
     , triangle_bone_weights{ std::move(triangle_bone_weights) }
+    , discrete_triangle_texture_layers{ std::move(discrete_triangle_texture_layers) }
     , alpha{ std::move(alpha) }
     , interiormap_uvmaps{ std::move(interiormap_uvmaps) }
 {}
@@ -756,7 +758,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         UUVector<FixedArray<ColoredVertex<TPos>, 2>>(),
         UUVector<FixedArray<std::vector<BoneWeight>, 3>>(triangle_bone_weights.begin(), triangle_bone_weights.end()),
         UUVector<FixedArray<float, 3>>{},
-        UUVector<FixedArray<uint8_t, 3>>{},
+        UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()),
         std::vector<UUVector<FixedArray<float, 3, 2>>>{},
         std::vector<UUVector<FixedArray<float, 3>>>{},
         std::vector(alpha.begin(), alpha.end()),

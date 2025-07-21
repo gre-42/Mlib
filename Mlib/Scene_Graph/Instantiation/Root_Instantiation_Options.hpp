@@ -26,9 +26,6 @@ struct RootInstantiationOptions {
     const TransformationMatrix<SceneDir, ScenePos, 3>& absolute_model_matrix;
     Scene& scene;
     uint32_t max_imposter_texture_size = 0;
-    ScenePos object_cluster_width = 0.;
-    ScenePos triangle_cluster_width = 0.;
-    SquaredStepDistances center_distances2 = default_step_distances2;
     const RenderableResourceFilter& renderable_resource_filter;
 };
 

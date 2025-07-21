@@ -5,7 +5,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Cluster_Triangles.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Position_And_Meshes.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -27,21 +27,25 @@ static void patch(
     std::list<VariableAndHash<std::string>>& added_instantiables)
 {
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
-    for (const auto& [i, c] : enumerate(cluster_triangles(
+    for (const auto& [i, cs] : enumerate(cluster_triangles(
         cvas,
         cluster_center_by_grid<TPos, TWidth>(width),
         prefix + "_split")))
     {
         auto resource_name = VariableAndHash<std::string>{(prefix + std::to_string(i)).full_name()};
-        auto transformed = c.cva->template translated<float>(-c.position, "_centered");
-        transformed->morphology.center_distances2 = center_distances2;
-        scene_node_resources.add_resource(
-            resource_name,
-            std::make_shared<ColoredVertexArrayResource>(transformed));
-        added_scene_node_resources.push_back(resource_name);
         auto ctrafo = trafo * TransformationMatrix<SceneDir, ScenePos, 3>{
             fixed_identity_array<SceneDir, 3>(),
-            c.position.template casted<ScenePos>()};
+            cs.position.template casted<ScenePos>()};
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
+        for (const auto& cva : cs.cvas) {
+            auto transformed = cva->template translated<float>(-cs.position, "_centered");
+            transformed->morphology.center_distances2 = center_distances2;
+            scvas.emplace_back(std::move(transformed));
+        }
+        scene_node_resources.add_resource(
+            resource_name,
+            std::make_shared<ColoredVertexArrayResource>(std::move(scvas)));
+        added_scene_node_resources.push_back(resource_name);
         scene_node_resources.add_instantiable(
             resource_name,
             InstanceInformation<ScenePos>{

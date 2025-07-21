@@ -49,6 +49,7 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
                 .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::merged_texture_name),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::merged_anisotropic_filtering_level)
             }.compute_hash(),
             .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::merged_blend_mode)),

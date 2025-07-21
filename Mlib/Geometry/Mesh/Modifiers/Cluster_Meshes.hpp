@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Point_To_Grid_Center.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
@@ -9,14 +10,12 @@
 
 namespace Mlib {
 
-template <class TPos>
-class ColoredVertexArray;
 class GroupAndName;
 template <class TPos>
-struct MeshAndPosition;
+struct PositionAndMeshes;
 
 template <class TPos>
-std::list<MeshAndPosition<TPos>> cluster_meshes(
+std::list<PositionAndMeshes<TPos>> cluster_meshes(
     const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
     const std::function<FixedArray<TPos, 3>(const ColoredVertexArray<TPos>&)>& get_cluster_center,
     const GroupAndName& prefix);
@@ -31,6 +30,17 @@ inline std::function<FixedArray<TPos, 3>(const ColoredVertexArray<TPos>&)> cva_t
         }
         return point_to_grid_center(cva.aabb().data().center(), width);
     };
+}
+
+template <class TPos>
+std::unordered_map<float, std::list<std::shared_ptr<ColoredVertexArray<TPos>>>>
+    object_cluster_width_groups(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
+{
+    std::unordered_map<float, std::list<std::shared_ptr<ColoredVertexArray<TPos>>>> result;
+    for (const auto& cva : cvas) {
+        result[cva->morphology.object_cluster_width].push_back(cva);
+    }
+    return result;
 }
 
 }

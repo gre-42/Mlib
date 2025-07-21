@@ -30,6 +30,7 @@ struct LoadMeshConfig {
     FixedArray<float, 3> scale = FixedArray<float, 3>(1.f);
     OrderableFixedArray<float, 2> center_distances = default_step_distances;
     float max_triangle_distance = INFINITY;
+    float triangle_cluster_width = 0.f;
     BlendMode blend_mode;
     FixedArray<float, 4> alpha_distances = default_linear_distances;
     bool cull_faces_default;

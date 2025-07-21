@@ -2,10 +2,9 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Group_Meshes_By_Material.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Material_And_Morphology.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Merge_Meshes.hpp>
-#include <Mlib/Geometry/Mesh/Modifiers/Mesh_And_Position.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Position_And_Meshes.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Strings/Group_And_Name.hpp>
 #include <unordered_map>
@@ -21,12 +20,12 @@ struct Clustered {
 };
 
 template <class TPos>
-std::list<MeshAndPosition<TPos>> Mlib::cluster_triangles(
+std::list<PositionAndMeshes<TPos>> Mlib::cluster_triangles(
     const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
     const std::function<FixedArray<TPos, 3>(const FixedArray<ColoredVertex<TPos>, 3>&)>& get_cluster_center,
     const GroupAndName& prefix)
 {
-    std::list<MeshAndPosition<TPos>> result;
+    std::unordered_map<OrderableFixedArray<TPos, 3>, std::map<MaterialAndMorphology, Clustered<TPos>>> clustered;
     for (const auto& cva : cvas) {
         if (!cva->discrete_triangle_texture_layers.empty() &&
             (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()))
@@ -43,10 +42,13 @@ std::list<MeshAndPosition<TPos>> Mlib::cluster_triangles(
         {
             THROW_OR_ABORT("cluster_triangles: interiormap_uvmaps size mismatch");
         }
-        std::unordered_map<OrderableFixedArray<TPos, 3>, Clustered<TPos>> clusters;
+        if (cva->modifier_backlog != ModifierBacklog{}) {
+            THROW_OR_ABORT("cluster_triangles: modifier_backlog is not empty: " + modifier_backlog_to_string(cva->modifier_backlog));
+        }
+        auto mm = MaterialAndMorphology{cva->material, cva->morphology};
         for (const auto& [i, tri] : enumerate(cva->triangles)) {
             auto center = get_cluster_center(*tri);
-            auto& cluster = clusters[make_orderable(center)];
+            auto& cluster = clustered[make_orderable(center)][mm];
             cluster.triangles.push_back(tri);
             if (!cva->discrete_triangle_texture_layers.empty()) {
                 cluster.discrete_triangle_texture_layers.push_back(cva->discrete_triangle_texture_layers[i]);
@@ -58,13 +60,18 @@ std::list<MeshAndPosition<TPos>> Mlib::cluster_triangles(
                 cluster.interiormap_uvmaps.push_back(cva->interiormap_uvmaps[i]);
             }
         }
-        for (const auto& [center, c] : clusters) {
-            auto& ccva = result.emplace_back(
+    }
+    size_t i = 0;
+    std::list<PositionAndMeshes<TPos>> result;
+    for (const auto& [center, lists] : clustered) {
+        auto& pm = result.emplace_back(center);
+        for (const auto& [mm, c] : lists) {
+            auto& ccva = pm.cvas.emplace_back(
                 std::make_shared<ColoredVertexArray<TPos>>(
-                    cva->name,
-                    cva->material,
-                    cva->morphology,
-                    cva->modifier_backlog,
+                    prefix + std::to_string(i++),
+                    mm.material,
+                    mm.morphology,
+                    ModifierBacklog{},
                     UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
                     UUVector<FixedArray<ColoredVertex<TPos>, 3>>(c.triangles.begin(), c.triangles.end()),
                     UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
@@ -74,23 +81,22 @@ std::list<MeshAndPosition<TPos>> Mlib::cluster_triangles(
                     std::vector<UUVector<FixedArray<float, 3, 2>>>{},
                     std::vector<UUVector<FixedArray<float, 3>>>{},
                     UUVector<FixedArray<float, 3>>(c.alpha.begin(), c.alpha.end()),
-                    UUVector<FixedArray<float, 4>>(c.interiormap_uvmaps.begin(), c.interiormap_uvmaps.end())),
-                center);
-            if (ccva.cva->material.aggregate_mode != AggregateMode::NODE_TRIANGLES) {
+                    UUVector<FixedArray<float, 4>>(c.interiormap_uvmaps.begin(), c.interiormap_uvmaps.end())));
+            if (ccva->material.aggregate_mode != AggregateMode::NODE_TRIANGLES) {
                 THROW_OR_ABORT("cluster_triangles: aggregate mode is not \"NODE_TRIANGLES\"");
             }
-            ccva.cva->material.aggregate_mode = AggregateMode::NONE;
+            ccva->material.aggregate_mode = AggregateMode::NONE;
         }
     }
     return result;
 }
 
-template std::list<MeshAndPosition<float>> Mlib::cluster_triangles<float>(
+template std::list<PositionAndMeshes<float>> Mlib::cluster_triangles<float>(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas,
     const std::function<FixedArray<float, 3>(const FixedArray<ColoredVertex<float>, 3>&)>& get_cluster_id,
     const GroupAndName& prefix);
 
-template std::list<MeshAndPosition<CompressedScenePos>> Mlib::cluster_triangles<CompressedScenePos>(
+template std::list<PositionAndMeshes<CompressedScenePos>> Mlib::cluster_triangles<CompressedScenePos>(
     const std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>& cvas,
     const std::function<FixedArray<CompressedScenePos, 3>(const FixedArray<ColoredVertex<CompressedScenePos>, 3>&)>& get_cluster_id,
     const GroupAndName& prefix);
