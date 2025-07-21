@@ -2076,7 +2076,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             *options.instance_name + "_split")))
         {
             auto transformed = c.cva->template translated<float>(-c.position, "_centered");
-            transformed->morphology.center_distances2 = options.center_distances2;
+            transformed->morphology.center_distances2 = options.center_distances2 + transformed->radius(fixed_zeros<float, 3>());
             auto resource = std::make_shared<ColoredVertexArrayResource>(transformed);
             auto ctrafo = options.absolute_model_matrix * TransformationMatrix<SceneDir, ScenePos, 3>{
                 fixed_identity_array<SceneDir, 3>(),
@@ -2114,7 +2114,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             auto tm = TranslationMatrix{ center.casted<ScenePos>() };
             auto trafo = options.absolute_model_matrix * tm;
             auto scva = c.cva->translated<float>(-center, "_centered");
-            scva->morphology.center_distances2 += (float)options.object_cluster_width;
+            scva->morphology.center_distances2 += scva->radius(fixed_zeros<float, 3>());
             auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scva));
             rcva->instantiate_root_renderables(
                 RootInstantiationOptions{

@@ -78,7 +78,7 @@ public:
         if (const auto* d = std::get_if<BoundingSphere<TData, tndim>>(&data_)) {
             return *d;
         }
-        verbose_abort("BoundingSphere is neither empty nor full");
+        verbose_abort("BoundingSphere is either empty or full");
     }
 private:
     std::variant<ExtremalBoundingVolume, BoundingSphere<TData, tndim>> data_;

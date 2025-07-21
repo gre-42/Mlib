@@ -717,6 +717,16 @@ const ExtremalBoundingSphere<TPos, 3>& ColoredVertexArray<TPos>::bounding_sphere
 }
 
 template <class TPos>
+TPos ColoredVertexArray<TPos>::radius(const FixedArray<TPos, 3>& center) const {
+    auto vs = vertices();
+    if (vs.empty()) {
+        THROW_OR_ABORT("Mesh \"" + name.full_name() + "\" has no vertices");
+    }
+    auto bs = BoundingSphere<TPos, 3>::from_center_and_iterator(center, vs.begin(), vs.end());
+    return bs.radius;
+}
+
+template <class TPos>
 void ColoredVertexArray<TPos>::set_bounds(
     const AxisAlignedBoundingBox<TPos, 3>& aabb,
     const BoundingSphere<TPos, 3>& bounding_sphere)

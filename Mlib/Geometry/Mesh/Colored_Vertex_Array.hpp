@@ -99,6 +99,7 @@ public:
     UUVector<FixedArray<TPos, 3>> vertices() const;
     const ExtremalAxisAlignedBoundingBox<TPos, 3>& aabb() const;
     const ExtremalBoundingSphere<TPos, 3>& bounding_sphere() const;
+    TPos radius(const FixedArray<TPos, 3>& center) const;
     void set_bounds(
         const AxisAlignedBoundingBox<TPos, 3>& aabb,
         const BoundingSphere<TPos, 3>& bounding_sphere);
