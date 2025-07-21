@@ -22,6 +22,7 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(transformation);
 DECLARE_ARGUMENT(object_cluster_width);
 DECLARE_ARGUMENT(triangle_cluster_width);
+DECLARE_ARGUMENT(center_distances);
 DECLARE_ARGUMENT(resource);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
@@ -55,6 +56,10 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
             .scene = scene,
             .object_cluster_width = args.arguments.at<ScenePos>(KnownArgs::object_cluster_width, 0.f),
             .triangle_cluster_width = args.arguments.at<ScenePos>(KnownArgs::triangle_cluster_width, 0.f),
+            .center_distances2 = SquaredStepDistances::from_distances(
+                args.arguments.at<EFixedArray<float, 2>>(
+                    KnownArgs::center_distances,
+                    FixedArray<float, 2>{0.f, INFINITY })* meters),
             .renderable_resource_filter = RenderableResourceFilter {
                 .cva_filter = {
                     .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),

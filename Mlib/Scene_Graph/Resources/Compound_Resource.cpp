@@ -73,6 +73,7 @@ void CompoundResource::instantiate_root_renderables(const RootInstantiationOptio
                 .scene = options.scene,
                 .object_cluster_width = options.object_cluster_width,
                 .triangle_cluster_width = options.triangle_cluster_width,
+                .center_distances2 = options.center_distances2,
                 .renderable_resource_filter = options.renderable_resource_filter});
     }
 }
