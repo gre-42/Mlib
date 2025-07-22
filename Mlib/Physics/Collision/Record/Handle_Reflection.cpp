@@ -410,20 +410,20 @@ void Mlib::handle_reflection(
                 normal = round_normal;
             }
         } else {
-            auto dv = c.o0.velocity_at_position(iinfo.intersection_point) - c.o1.velocity_at_position(iinfo.intersection_point);
-            float vn = dot0d(normal.casted<float>(), dv);
-            // if (vn > c.history.cfg.min_skip_velocity) {
-            //     float ds = vn * c.history.cfg.dt_substeps();
-            //     if (overlap < ds * c.history.cfg.slide_factor)
-            //        (overlap > ds * c.history.cfg.ignore_factor))
-            //     {
-            //         return;
-            //     }
+            // auto dv = c.o0.velocity_at_position(iinfo.intersection_point) - c.o1.velocity_at_position(iinfo.intersection_point);
+            // float vn = dot0d(normal.casted<float>(), dv);
+            // // if (vn > c.history.cfg.min_skip_velocity) {
+            // //     float ds = vn * c.history.cfg.dt_substeps();
+            // //     if (overlap < ds * c.history.cfg.slide_factor)
+            // //        (overlap > ds * c.history.cfg.ignore_factor))
+            // //     {
+            // //         return;
+            // //     }
+            // // }
+            // float ds = vn * c.history.cfg.dt_substeps(c.history.phase);
+            // if (overlap < ds * c.history.cfg.slide_factor) {
+            //     return;
             // }
-            float ds = vn * c.history.cfg.dt_substeps(c.history.phase);
-            if (overlap < ds * c.history.cfg.slide_factor) {
-                return;
-            }
         }
     }
     if ((c.o0.mass() != INFINITY) && (c.o1.mass() == INFINITY)) {

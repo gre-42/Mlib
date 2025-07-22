@@ -40,7 +40,7 @@ void GenericNormalContactInfo1<TRigidBodyPulsesArg, TRigidBodyPulsesField>::solv
     float lambda = - mc * (-v + pc.v(dt));
     lambda = pc_.clamped_lambda(relaxation * lambda);
     rbp_.integrate_impulse({.vector = -snormal * lambda, .position = p_}, 0.f, dt);
-    // linfo() << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x);
+    // linfo() << v << " | " << snormal << " | " << relaxation << " | " << lambda << " o=" << pc.overlap << " s=" << pc.slop << " T=" << pc.normal_impulse.lambda_total;
 }
 
 NormalContactInfo2::NormalContactInfo2(
