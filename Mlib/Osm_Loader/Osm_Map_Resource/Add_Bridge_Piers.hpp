@@ -16,10 +16,12 @@ class GroundBvh;
 struct Node;
 struct Way;
 struct Material;
+struct Morphology;
 
 void add_bridge_piers(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_bridge_piers,
     Material material,
+    const Morphology& morphology,
     SceneDir bridge_pier_radius,
     const SceneNodeResources& scene_node_resources,
     const VariableAndHash<std::string>& model_name,

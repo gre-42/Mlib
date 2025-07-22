@@ -194,6 +194,8 @@ DECLARE_ARGUMENT(zonemap_multiplier);
 DECLARE_ARGUMENT(zonemap_jitter);
 DECLARE_ARGUMENT(zonemap_step_size);
 DECLARE_ARGUMENT(zone_resource_names);
+DECLARE_ARGUMENT(sparse_triangle_cluster_width);
+DECLARE_ARGUMENT(dense_triangle_cluster_width);
 DECLARE_ARGUMENT(with_roofs);
 DECLARE_ARGUMENT(with_ceilings);
 DECLARE_ARGUMENT(building_bottom);
@@ -874,6 +876,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains_non_null(KnownArgs::zone_resource_names)) {
             config.zone_resource_names = args.arguments.at_vector<std::string>(KnownArgs::zone_resource_names, parse_resource_name_func);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::sparse_triangle_cluster_width)) {
+            config.sparse_triangle_cluster_width = args.arguments.at<float>(KnownArgs::sparse_triangle_cluster_width);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::dense_triangle_cluster_width)) {
+            config.dense_triangle_cluster_width = args.arguments.at<float>(KnownArgs::dense_triangle_cluster_width);
         }
         if (args.arguments.contains(KnownArgs::boundary_barrier_height)) {
             config.boundary_barrier_height = args.arguments.at<float>(KnownArgs::boundary_barrier_height) * meters;

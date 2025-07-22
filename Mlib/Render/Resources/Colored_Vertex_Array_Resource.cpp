@@ -2066,7 +2066,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             return false;
         }
     });
-    auto instantiate_position_and_meshes = [&](size_t i, const PositionAndMeshes<CompressedScenePos>& cs){
+    auto instantiate_position_and_meshes = [&](const std::string& suffix, const PositionAndMeshes<CompressedScenePos>& cs){
         auto tm = TranslationMatrix{ cs.position.casted<ScenePos>() };
         auto trafo = options.absolute_model_matrix * tm;
         std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
@@ -2081,7 +2081,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
                 .rendering_resources = options.rendering_resources,
                 .imposters = options.imposters,
                 .instantiated_nodes = options.instantiated_nodes,
-                .instance_name = VariableAndHash<std::string>{ *options.instance_name + "_cluster_" + std::to_string(i) },
+                .instance_name = VariableAndHash<std::string>{ *options.instance_name + suffix },
                 .absolute_model_matrix = trafo,
                 .scene = options.scene,
                 .max_imposter_texture_size = options.max_imposter_texture_size,
@@ -2097,7 +2097,9 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
             cluster_center_by_grid<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(triangle_cluster_width)),
             *options.instance_name + "_split")))
         {
-            instantiate_position_and_meshes(i, cs);
+            instantiate_position_and_meshes(
+                "_triangle_cluster" + std::to_string(triangle_cluster_width) + '_' + std::to_string(i),
+                cs);
         }
     }
     for (const auto& [object_cluster_width, dcvas] : object_cluster_width_groups(dcvas_node_object)) {
@@ -2107,9 +2109,11 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
         for (const auto& [i, cs] : enumerate(cluster_meshes<CompressedScenePos>(
             dcvas,
             cva_to_grid_center<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(object_cluster_width)),
-            *options.instance_name + "_cluster")))
+            *options.instance_name + "_mesh_cluster")))
         {
-            instantiate_position_and_meshes(i, cs);
+            instantiate_position_and_meshes(
+                "_mesh_cluster" + std::to_string(object_cluster_width) + '_' + std::to_string(i),
+                cs);
         }
     }
     if (!triangles_res_->scvas.empty() || !dcvas_default.empty()) {

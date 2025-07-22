@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Graph/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
 #include <Mlib/Geometry/Material_Configuration/Material_Colors.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
@@ -451,7 +452,10 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
                 .draw_distance_noperations = 1000},
-            Morphology{ .physics_material = PhysicsMaterial::NONE },
+            Morphology{
+                .physics_material = PhysicsMaterial::NONE,
+                .triangle_cluster_width = config.dense_triangle_cluster_width
+            },
             wall_barriers,
             nodes,
             config.scale,
@@ -471,7 +475,10 @@ OsmMapResource::OsmMapResource(
                     .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                     .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
                     .draw_distance_noperations = 1000},
-                Morphology{ .physics_material = PhysicsMaterial::NONE },
+                Morphology{
+                    .physics_material = PhysicsMaterial::NONE,
+                    .triangle_cluster_width = config.dense_triangle_cluster_width
+                },
                 config.scale,
                 config.uv_scale_barrier_wall,
                 config.boundary_barrier_height,
@@ -1328,6 +1335,10 @@ OsmMapResource::OsmMapResource(
                     .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                     .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE, config),
                     .draw_distance_noperations = 1000}.compute_color_mode(),
+                Morphology{
+                    .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
+                    .triangle_cluster_width = config.dense_triangle_cluster_width
+                },
                 config.bridge_pier_radius,
                 scene_node_resources,
                 config.bridge_pier_model,

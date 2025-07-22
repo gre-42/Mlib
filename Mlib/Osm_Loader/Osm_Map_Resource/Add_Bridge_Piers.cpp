@@ -1,7 +1,6 @@
 #include "Add_Bridge_Piers.hpp"
 #include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Geometry/Material.hpp>
-#include <Mlib/Geometry/Material_Configuration/Base_Materials.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -18,6 +17,7 @@ using namespace Mlib;
 void Mlib::add_bridge_piers(
     std::list<std::shared_ptr<TriangleList<CompressedScenePos>>>& tls_bridge_piers,
     Material material,
+    const Morphology& morphology,
     SceneDir bridge_pier_radius,
     const SceneNodeResources& scene_node_resources,
     const VariableAndHash<std::string>& model_name,
@@ -33,9 +33,7 @@ void Mlib::add_bridge_piers(
         std::make_shared<TriangleList<CompressedScenePos>>(
             "bridge_piers",
             material,
-            Morphology{
-                .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL
-            }
+            morphology
     ));
     for (const auto& [_, w] : ways) {
         for (const auto& node_id : w.nd) {

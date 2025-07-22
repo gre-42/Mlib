@@ -156,7 +156,10 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_GROUND_MATERIAL | physics_meta_material(config.terrain_materials, tt) }));
+            Morphology{
+                .physics_material = BASE_VISIBLE_GROUND_MATERIAL | physics_meta_material(config.terrain_materials, tt),
+                .triangle_cluster_width = config.dense_triangle_cluster_width
+            }));
         tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + "_visuals" + name_suffix,
             Material{
@@ -170,7 +173,10 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
+            Morphology{
+                .physics_material = PhysicsMaterial::ATTR_VISIBLE,
+                .triangle_cluster_width = config.dense_triangle_cluster_width
+            }));
         tl_terrain_extrusion.insert(tt, std::make_shared<TriangleList<CompressedScenePos>>(
             terrain_type_to_string(tt) + "_street_extrusion" + name_suffix,
             Material{
@@ -184,7 +190,10 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_GROUND_MATERIAL | physics_meta_material(config.terrain_materials, tt) }));
+            Morphology{
+                .physics_material = BASE_VISIBLE_GROUND_MATERIAL | physics_meta_material(config.terrain_materials, tt),
+                .triangle_cluster_width = config.dense_triangle_cluster_width
+            }));
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
@@ -226,7 +235,10 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(pmit->second, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second }));
+            Morphology{
+                .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second,
+                .triangle_cluster_width = config.dense_triangle_cluster_width
+            }));
     }
     for (const auto& [road_properties, road_style] : config.street_texture) {
         auto pmit = config.street_materials.find(road_properties.type);
@@ -278,7 +290,10 @@ OsmTriangleLists::OsmTriangleLists(
                             .shading = material_shading(physics_material, config),
                             // .reflect_only_y = true,
                             .draw_distance_noperations = 1000}.compute_color_mode(),
-                        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material }),
+                        Morphology{
+                            .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | physics_material,
+                            .triangle_cluster_width = config.dense_triangle_cluster_width
+                        }),
                     .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
         }
         if (blend &&
@@ -316,7 +331,10 @@ OsmTriangleLists::OsmTriangleLists(
                     .shading = material_shading(RawShading::MUD, config),
                     // .reflect_only_y = true,
                     .draw_distance_noperations = 1000}.compute_color_mode(),
-                Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE }));
+                Morphology{
+                    .physics_material = PhysicsMaterial::ATTR_VISIBLE,
+                    .triangle_cluster_width = config.dense_triangle_cluster_width
+                }));
         }
     }
     // WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || (config.extrude_street_amount != 0)
@@ -342,7 +360,10 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading((config.extrude_curb_amount == (CompressedScenePos)0. && tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second })); // mixed_texture: terrain_texture
+            Morphology{
+                .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second,
+                .triangle_cluster_width = config.dense_triangle_cluster_width
+            })); // mixed_texture: terrain_texture
     }
     for (const auto& [tpe, texture] : config.curb2_street_texture) {
         auto pmit = config.street_materials.find(tpe);
@@ -363,7 +384,10 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading((tpe != RoadType::WALL) ? RawShading::CURB : RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second })); // mixed_texture: terrain_texture
+            Morphology{
+                .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second,
+                .triangle_cluster_width = config.dense_triangle_cluster_width
+            })); // mixed_texture: terrain_texture
     }
     for (const auto& [tpe, texture] : config.air_curb_street_texture) {
         auto pmit = config.street_materials.find(tpe);
@@ -384,7 +408,10 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::NODE_TRIANGLES,
                 .shading = material_shading(RawShading::DEFAULT, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second }));
+            Morphology{
+                .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second,
+                .triangle_cluster_width = config.dense_triangle_cluster_width
+            }));
     }
     tl_racing_line = std::make_shared<TriangleList<CompressedScenePos>>(
         "racing_line" + name_suffix,
@@ -400,7 +427,10 @@ OsmTriangleLists::OsmTriangleLists(
             .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE });
+        Morphology{
+            .physics_material = PhysicsMaterial::ATTR_VISIBLE,
+            .triangle_cluster_width = config.dense_triangle_cluster_width
+        });
     tl_ditch = std::make_shared<TriangleList<CompressedScenePos>>(
         "ditch" + name_suffix,
         Material{},
@@ -414,7 +444,10 @@ OsmTriangleLists::OsmTriangleLists(
             .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{ .physics_material = BASE_VISIBLE_AIR_SUPPORT_MATERIAL });
+        Morphology{
+            .physics_material = BASE_VISIBLE_AIR_SUPPORT_MATERIAL,
+            .triangle_cluster_width = config.dense_triangle_cluster_width
+        });
     tl_tunnel_crossing = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_crossing" + name_suffix,
         Material{
@@ -424,7 +457,10 @@ OsmTriangleLists::OsmTriangleLists(
             .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
+        Morphology{
+            .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
+            .triangle_cluster_width = config.dense_triangle_cluster_width
+        });
     tl_tunnel_pipe = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_pipe" + name_suffix,
         Material{
@@ -434,7 +470,10 @@ OsmTriangleLists::OsmTriangleLists(
             .aggregate_mode = AggregateMode::NODE_TRIANGLES,
             .shading = material_shading(RawShading::DEFAULT, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        Morphology{ .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL });
+        Morphology{
+            .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
+            .triangle_cluster_width = config.dense_triangle_cluster_width
+        });
     tl_tunnel_bdry = std::make_shared<TriangleList<CompressedScenePos>>(
         "tunnel_bdry" + name_suffix,
         Material{
@@ -480,7 +519,10 @@ OsmTriangleLists::OsmTriangleLists(
                     .has_animated_textures = (config.water->animation_duration != std::chrono::steady_clock::duration{0}),
                     .shading = material_shading(RawShading::DEFAULT, config),
                     .draw_distance_noperations = 1000}.compute_color_mode(),
-                Morphology{ .physics_material = META_WATER_MATERIAL | PhysicsMaterial::SURFACE_BASE_WATER }));
+                Morphology{
+                    .physics_material = META_WATER_MATERIAL | PhysicsMaterial::SURFACE_BASE_WATER,
+                    .triangle_cluster_width = config.sparse_triangle_cluster_width
+                }));
         }
     }
 }
