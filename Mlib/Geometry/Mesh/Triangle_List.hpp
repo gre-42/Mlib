@@ -188,6 +188,7 @@ public:
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
+        archive(discrete_triangle_texture_layers);
         archive(alpha);
         archive(interiormap_uvmaps);
     }
