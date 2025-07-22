@@ -156,7 +156,6 @@ OsmMapResource::OsmMapResource(
     : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale }
     , scene_node_resources_{ scene_node_resources }
     , scale_{ config.scale }
-    , building_cluster_width_{ config.building_cluster_width }
     , max_imposter_texture_size_{ config.max_imposter_texture_size }
     , water_animation_duration_{ config.water.has_value() ? config.water->animation_duration : std::chrono::steady_clock::duration{0} }
     , normalization_matrix_{ uninitialized }
@@ -359,15 +358,18 @@ OsmMapResource::OsmMapResource(
     GetMorphology get_building_morphology{
         Morphology{
             .physics_material = PhysicsMaterial::NONE,
-            .center_distances2 = SquaredStepDistances::from_distances(0.f, 300.f)
+            .center_distances2 = SquaredStepDistances::from_distances(0.f, 300.f),
+            .object_cluster_width = config.object_cluster_width
         },
         Morphology{
             .physics_material = PhysicsMaterial::NONE,
-            .center_distances2 = SquaredStepDistances::from_distances(300.f, INFINITY)
+            .center_distances2 = SquaredStepDistances::from_distances(300.f, INFINITY),
+            .object_cluster_width = config.object_cluster_width
         },
         Morphology{
             .physics_material = PhysicsMaterial::NONE,
-            .center_distances2 = SquaredStepDistances::from_distances(0.f, INFINITY)
+            .center_distances2 = SquaredStepDistances::from_distances(0.f, INFINITY),
+            .object_cluster_width = config.object_cluster_width
         }};
 
     if (config.with_buildings) {
@@ -753,7 +755,7 @@ OsmMapResource::OsmMapResource(
             Material{
                 .reflection_map = config.window_reflection_map,
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = (building_cluster_width_ == 0)
+                .aggregate_mode = (config.object_cluster_width == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NODE_OBJECT,
                 .draw_distance_noperations = 1000},
@@ -781,7 +783,7 @@ OsmMapResource::OsmMapResource(
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = (building_cluster_width_ == 0)
+                .aggregate_mode = (config.object_cluster_width == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NODE_OBJECT,
                 .shading = material_shading(RawShading::ROOF, config),
@@ -789,7 +791,7 @@ OsmMapResource::OsmMapResource(
             Material{
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_rail_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = (building_cluster_width_ == 0)
+                .aggregate_mode = (config.object_cluster_width == 0)
                     ? AggregateMode::SORTED_CONTINUOUSLY
                     : AggregateMode::NODE_OBJECT,
                 .shading = material_shading(RawShading::ROOF, config),
@@ -2011,48 +2013,14 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
                 std::move(instantiated_nodes));
         }
     }
-    if (building_cluster_width_ == 0.f) {
-        for (const auto& [i, b] : enumerate(buildings_)) {
-            auto center = b->aabb().data().center();
-            auto tm = TranslationMatrix{ center.casted<ScenePos>() };
-            auto trafo = options.absolute_model_matrix * tm;
-            auto rcva = std::make_shared<ColoredVertexArrayResource>(b->translated<CompressedScenePos>(-center, "_centered"));
-            rcva->instantiate_root_renderables(
-                RootInstantiationOptions{
-                    .rendering_resources = options.rendering_resources,
-                    .instance_name = VariableAndHash<std::string>{ "building_" + std::to_string(i) },
-                    .absolute_model_matrix = trafo,
-                    .scene = options.scene,
-                    .renderable_resource_filter = options.renderable_resource_filter
-                });
-        }
-    } else {
-        for (const auto& [i, cs] : enumerate(cluster_meshes<CompressedScenePos>(
-            buildings_,
-            cva_to_grid_center<CompressedScenePos, ScenePos>(fixed_full<ScenePos, 3>(building_cluster_width_)),
-            "building_cluster")))
-        {
-            auto tm = TranslationMatrix{ cs.position.casted<ScenePos>() };
-            auto trafo = options.absolute_model_matrix * tm;
-            std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
-            for (const auto& cva : cs.cvas) {
-                auto scva = cva->translated<float>(-cs.position, "_centered");
-                scva->morphology.center_distances2 += building_cluster_width_;
-                scvas.emplace_back(std::move(scva));
-            }
-            auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scvas));
-            rcva->instantiate_root_renderables(
-                RootInstantiationOptions{
-                    .rendering_resources = options.rendering_resources,
-                    .imposters = options.imposters,
-                    .instance_name = VariableAndHash<std::string>{ "building_cluster_" + std::to_string(i) },
-                    .absolute_model_matrix = trafo,
-                    .scene = options.scene,
-                    .max_imposter_texture_size = max_imposter_texture_size_,
-                    .renderable_resource_filter = options.renderable_resource_filter
-                });
-        }
-    }
+    std::make_shared<ColoredVertexArrayResource>(buildings_)->instantiate_root_renderables(
+        RootInstantiationOptions{
+            .rendering_resources = options.rendering_resources,
+            .instance_name = VariableAndHash<std::string>{ "building" },
+            .absolute_model_matrix = options.absolute_model_matrix,
+            .scene = options.scene,
+            .renderable_resource_filter = options.renderable_resource_filter
+        });
     if (terrain_styles_.requires_renderer()) {
         auto node = make_unique_scene_node(
             options.absolute_model_matrix.t,

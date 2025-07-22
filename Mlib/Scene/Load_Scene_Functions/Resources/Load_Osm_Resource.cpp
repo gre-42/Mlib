@@ -26,7 +26,7 @@
 #include <concepts>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 75;
+static uint32_t CACHE_FILE_VERSION = 76;
 
 namespace fs = std::filesystem;
 
@@ -294,7 +294,7 @@ DECLARE_ARGUMENT(displacementmap_heights);
 DECLARE_ARGUMENT(fog_distances);
 DECLARE_ARGUMENT(fog_ambient);
 DECLARE_ARGUMENT(use_terrain_holes);
-DECLARE_ARGUMENT(building_cluster_width);
+DECLARE_ARGUMENT(object_cluster_width);
 DECLARE_ARGUMENT(max_imposter_texture_size);
 }
 
@@ -1197,8 +1197,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.fog_ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::fog_ambient) * meters;
         }
         config.use_terrain_holes = args.arguments.at<bool>(KnownArgs::use_terrain_holes, false);
-        if (args.arguments.contains(KnownArgs::building_cluster_width)) {
-            config.building_cluster_width = args.arguments.at<float>(KnownArgs::building_cluster_width) * meters;
+        if (args.arguments.contains(KnownArgs::object_cluster_width)) {
+            config.object_cluster_width = args.arguments.at<float>(KnownArgs::object_cluster_width) * meters;
         }
         if (args.arguments.contains(KnownArgs::max_imposter_texture_size)) {
             config.max_imposter_texture_size = args.arguments.at<uint32_t>(KnownArgs::max_imposter_texture_size);

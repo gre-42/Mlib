@@ -102,7 +102,6 @@ public:
         archive(hri_);
         archive(buildings_);
         archive(scale_);
-        archive(building_cluster_width_);
         archive(max_imposter_texture_size_);
         archive(water_animation_duration_);
         archive(spawn_points_);
@@ -139,7 +138,6 @@ private:
     std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>> buildings_;
     SceneNodeResources& scene_node_resources_;
     double scale_;
-    float building_cluster_width_;
     uint32_t max_imposter_texture_size_;
     std::chrono::steady_clock::duration water_animation_duration_;
     std::list<SpawnPoint> spawn_points_;

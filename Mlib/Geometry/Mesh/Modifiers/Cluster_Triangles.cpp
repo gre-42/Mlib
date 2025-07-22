@@ -66,7 +66,7 @@ std::list<PositionAndMeshes<TPos>> Mlib::cluster_triangles(
     for (const auto& [center, lists] : clustered) {
         auto& pm = result.emplace_back(center);
         for (const auto& [mm, c] : lists) {
-            auto& ccva = pm.cvas.emplace_back(
+            auto& ccva = pm.cvas[mm.material.continuous_blending_z_order].emplace_back(
                 std::make_shared<ColoredVertexArray<TPos>>(
                     prefix + std::to_string(i++),
                     mm.material,

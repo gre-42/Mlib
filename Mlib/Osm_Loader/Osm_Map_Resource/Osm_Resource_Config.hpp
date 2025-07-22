@@ -97,6 +97,8 @@ struct OsmResourceConfig {
     double zonemap_step_size = 4.;
     float sparse_triangle_cluster_width = 0.f;
     float dense_triangle_cluster_width = 0.f;
+    float object_cluster_width = 0.f;
+    uint32_t max_imposter_texture_size = 0.f;
     std::vector<ParsedResourceName> zone_resource_names;
     std::map<TerrainType, PhysicsMaterial> terrain_materials;
     std::map<RoadType, PhysicsMaterial> street_materials;
@@ -251,8 +253,6 @@ struct OsmResourceConfig {
     std::map<RoadType, bool> blend_street;
     Interp<double> layer_heights{ std::vector<double>{}, std::vector<double>{} };
     bool use_terrain_holes = false;
-    float building_cluster_width = 500.f;
-    uint32_t max_imposter_texture_size = 0;
     std::string game_level;
     VariableAndHash<std::string> base_osm_map_resource;
     VariableAndHash<std::string> navmesh_resource;

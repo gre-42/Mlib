@@ -36,25 +36,27 @@ static void patch(
         auto ctrafo = trafo * TransformationMatrix<SceneDir, ScenePos, 3>{
             fixed_identity_array<SceneDir, 3>(),
             cs.position.template casted<ScenePos>()};
-        std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
-        for (const auto& cva : cs.cvas) {
-            auto transformed = cva->template translated<float>(-cs.position, "_centered");
-            transformed->morphology.center_distances2 = center_distances2;
-            scvas.emplace_back(std::move(transformed));
+        for (const auto& [continuous_blending_z_order, cvas] : cs.cvas) {
+            std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
+            for (const auto& cva : cvas) {
+                auto transformed = cva->template translated<float>(-cs.position, "_centered");
+                transformed->morphology.center_distances2 = center_distances2;
+                scvas.emplace_back(std::move(transformed));
+            }
+            scene_node_resources.add_resource(
+                resource_name,
+                std::make_shared<ColoredVertexArrayResource>(std::move(scvas)));
+            added_scene_node_resources.push_back(resource_name);
+            scene_node_resources.add_instantiable(
+                resource_name,
+                InstanceInformation<ScenePos>{
+                    .resource_name = resource_name,
+                    .trafo = ctrafo,
+                    .scale = 1,
+                    .rendering_dynamics = rendering_dynamics
+                });
+            added_instantiables.push_back(resource_name);
         }
-        scene_node_resources.add_resource(
-            resource_name,
-            std::make_shared<ColoredVertexArrayResource>(std::move(scvas)));
-        added_scene_node_resources.push_back(resource_name);
-        scene_node_resources.add_instantiable(
-            resource_name,
-            InstanceInformation<ScenePos>{
-                .resource_name = resource_name,
-                .trafo = ctrafo,
-                .scale = 1,
-                .rendering_dynamics = rendering_dynamics
-            });
-        added_instantiables.push_back(resource_name);
     }
     cvas = std::move(result);
 }

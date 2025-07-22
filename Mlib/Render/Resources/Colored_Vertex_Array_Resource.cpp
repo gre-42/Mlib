@@ -2069,24 +2069,41 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
     auto instantiate_position_and_meshes = [&](const std::string& suffix, const PositionAndMeshes<CompressedScenePos>& cs){
         auto tm = TranslationMatrix{ cs.position.casted<ScenePos>() };
         auto trafo = options.absolute_model_matrix * tm;
-        std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
-        for (const auto& cva : cs.cvas) {
-            auto scva = cva->translated<float>(-cs.position, "_centered");
-            scva->morphology.center_distances2 += scva->radius(fixed_zeros<float, 3>());
-            scvas.emplace_back(std::move(scva));
-        }
-        auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scvas));
-        rcva->instantiate_root_renderables(
-            RootInstantiationOptions{
+        auto node = make_unique_scene_node(
+            trafo.t,
+            matrix_2_tait_bryan_angles(trafo.R),
+            trafo.get_scale(),
+            PoseInterpolationMode::DISABLED);
+        for (const auto& [continuous_blending_z_order, cvas] : cs.cvas) {
+            std::list<std::shared_ptr<ColoredVertexArray<float>>> scvas;
+            for (const auto& cva : cvas) {
+                auto scva = cva->translated<float>(-cs.position, "_centered");
+                scva->morphology.center_distances2 += scva->radius(fixed_zeros<float, 3>());
+                scvas.emplace_back(std::move(scva));
+            }
+            auto rcva = std::make_shared<ColoredVertexArrayResource>(std::move(scvas));
+            rcva->instantiate_child_renderable(ChildInstantiationOptions{
                 .rendering_resources = options.rendering_resources,
-                .imposters = options.imposters,
-                .instantiated_nodes = options.instantiated_nodes,
-                .instance_name = VariableAndHash<std::string>{ *options.instance_name + suffix },
-                .absolute_model_matrix = trafo,
-                .scene = options.scene,
-                .max_imposter_texture_size = options.max_imposter_texture_size,
-                .renderable_resource_filter = options.renderable_resource_filter
-            });
+                .instance_name = VariableAndHash<std::string>{
+                    *options.instance_name + suffix + '_' + std::to_string(continuous_blending_z_order) },
+                .scene_node = node.ref(DP_LOC),
+                .renderable_resource_filter = options.renderable_resource_filter});
+        }
+        if (options.max_imposter_texture_size != 0) {
+            if (options.imposters == nullptr) {
+                THROW_OR_ABORT("Imposters not set for \"" + *options.instance_name + '"');
+            }
+            auto imposter_node_name = *options.instance_name + "-" + std::to_string(options.scene.get_uuid());
+            options.imposters->set_imposter_info(node.ref(DP_LOC), { imposter_node_name, options.max_imposter_texture_size });
+        }
+        auto node_name = VariableAndHash<std::string>{*options.instance_name + suffix};
+        options.scene.auto_add_root_node(
+            node_name,
+            std::move(node),
+            RenderingDynamics::STATIC);
+        if (options.instantiated_nodes != nullptr) {
+            options.instantiated_nodes->emplace_back(std::move(node_name));
+        }
     };
     for (const auto& [triangle_cluster_width, dcvas] : triangle_cluster_width_groups(dcvas_node_triangles)) {
         if (triangle_cluster_width == 0) {
