@@ -132,7 +132,7 @@ void Mlib::create_scene_flat(
              std::make_shared<SweptSphereAabb>(
                 -fixed_full<CompressedScenePos, 3>((CompressedScenePos)1.f),
                 fixed_full<CompressedScenePos, 3>((CompressedScenePos)1.f),
-                (CompressedScenePos)0.5f) }
+                (CompressedScenePos)0.25f) }
     };
 
     RenderingContextStack::primary_scene_node_resources().add_resource(OBJ0, std::make_shared<ColoredVertexArrayResource>(triangles0));
@@ -205,9 +205,9 @@ void Mlib::create_scene_flat(
     scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
 
     scene.auto_add_root_node(OBJ, std::move(scene_nodeR), RenderingDynamics::MOVING);
-    scene.add_root_node(VariableAndHash<std::string>{"follower_camera"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node(VariableAndHash<std::string>{"follower_camera_0"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.add_root_node(VariableAndHash<std::string>{"light_node"}, std::move(scene_nodeL), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
     scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(

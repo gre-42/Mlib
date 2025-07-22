@@ -70,7 +70,7 @@ struct PhysicsEngineConfig {
     float point_equality_beta = 0.15f;
     float plane_equality_beta = 0.15f;
     float plane_inequality_beta = 0.02f;
-    size_t nsubsteps = 20;
+    size_t nsubsteps = 8;
     bool enable_ridge_map = false;  // disabled to save memory, the swept sphere volume is used instead.
 
     // Grind

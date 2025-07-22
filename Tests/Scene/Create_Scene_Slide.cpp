@@ -135,9 +135,9 @@ void Mlib::create_scene_slide(
 
     scene.auto_add_root_node(OBJ_SLIDE, std::move(scene_node_slide), RenderingDynamics::STATIC);
     scene.auto_add_root_node(OBJ_BOX, std::move(scene_node_box), RenderingDynamics::MOVING);
-    scene.add_root_node(VariableAndHash<std::string>{"follower_camera"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node(VariableAndHash<std::string>{"follower_camera_0"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.add_root_node(VariableAndHash<std::string>{"light_node"}, std::move(scene_node_light), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
     scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(

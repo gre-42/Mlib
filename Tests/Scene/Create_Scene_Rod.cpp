@@ -121,9 +121,9 @@ void Mlib::create_scene_rod(
     scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
 
     scene.auto_add_root_node(OBJ, std::move(scene_nodeR), RenderingDynamics::MOVING);
-    scene.add_root_node(VariableAndHash<std::string>{"follower_camera"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node(VariableAndHash<std::string>{"follower_camera_0"}, make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.add_root_node(VariableAndHash<std::string>{"light_node"}, std::move(scene_nodeL), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
-    scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
     scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(

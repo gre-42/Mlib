@@ -1061,12 +1061,12 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Node has a full AABB");
             }
             scene.add_root_node(
-                VariableAndHash<std::string>{"follower_camera"},
+                VariableAndHash<std::string>{"follower_camera_0"},
                 make_unique_scene_node(),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto la = gl_lookat_aabb(
-                scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->position(),
+                scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->position(),
                 scene.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)->absolute_model_matrix(),
                 aabb.data());
             if (!la.has_value()) {
@@ -1086,18 +1086,18 @@ int main(int argc, char** argv) {
                 render_results.outputs.at(rsd).width = npixels->width;
                 render_results.outputs.at(rsd).height = npixels->height;
             }
-            scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<FrustumCamera>(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(
                     npixels->scaled_sensor_aabb,
                     la->near_plane,
                     la->far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
-            scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_rotation(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_rotation(
                 matrix_2_tait_bryan_angles(la->extrinsic_R),
                 std::chrono::steady_clock::time_point());
         } else {
             scene.add_root_node(
-                VariableAndHash<std::string>{"follower_camera"},
+                VariableAndHash<std::string>{"follower_camera_0"},
                 make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
                         safe_stof(args.named_value("--camera_x", "0")),
@@ -1110,7 +1110,7 @@ int main(int argc, char** argv) {
                     1.f),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
-            scene.get_node(VariableAndHash<std::string>{"follower_camera"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
+            scene.get_node(VariableAndHash<std::string>{"follower_camera_0"}, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig{
                     .y_fov = safe_stof(args.named_value("--y_fov", "90")) * degrees},
                 PerspectiveCamera::Postprocessing::ENABLED));

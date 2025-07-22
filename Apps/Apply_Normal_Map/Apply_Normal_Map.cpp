@@ -221,11 +221,11 @@ int main(int argc, char** argv) {
         }
         
         scene.add_root_node(
-            VariableAndHash<std::string>{ "follower_camera" },
+            VariableAndHash<std::string>{ "follower_camera_0" },
             make_unique_scene_node(),
             RenderingDynamics::MOVING,
             RenderingStrategies::OBJECT);
-        scene.get_node(VariableAndHash<std::string>{ "follower_camera" }, DP_LOC)->set_camera(std::make_unique<OrthoCamera>(
+        scene.get_node(VariableAndHash<std::string>{ "follower_camera_0" }, DP_LOC)->set_camera(std::make_unique<OrthoCamera>(
             OrthoCameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
             OrthoCamera::Postprocessing::ENABLED));
         
