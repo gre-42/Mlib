@@ -100,11 +100,18 @@ void test_tait_bryan_angles_2_matrix() {
 }
 
 void test_rodrigues_fixed() {
-    Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
-    auto kf = FixedArray<float, 3>{k};
-    FixedArray<float, 3, 3> rf = rodrigues1(kf);
-    Array<float> r = rodrigues1(k);
-    assert_allclose(r, rf.to_array());
+    {
+        Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
+        auto kf = FixedArray<float, 3>{k};
+        FixedArray<float, 3, 3> rf = rodrigues1(kf);
+        Array<float> r = rodrigues1(k);
+        assert_allclose(r, rf.to_array());
+    }
+    {
+        FixedArray<float, 3> k{1e-7f, 1e-6f, 1e-5f};
+        linfo() << rodrigues1(k, true, 0.f);
+        linfo() << rodrigues1(k, true, 1.f);
+    }
 }
 
 void test_fixed_tait_bryan_angles_2_matrix() {

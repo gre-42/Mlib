@@ -13,11 +13,13 @@ Array<TData> tait_bryan_angles_2_matrix(const Array<TData>& angles);
 template <class TData>
 Array<TData> rodrigues1(const Array<TData>& k) {
     assert(all(k.shape() == ArrayShape{3}));
-    if (sum(squared(k)) < 1e-12) {
+    auto len2 = sum(norm(k));
+    if (len2 < 1e-12) {
         static const Array<TData> I = identity_array<TData>(3);
-        return I;
+        auto K = cross(k);
+        return I + K;
     } else {
-        TData len_k = std::sqrt(sum(norm(k)));
+        TData len_k = std::sqrt(len2);
         return rodrigues2(k / len_k, len_k);
     }
 }
@@ -31,7 +33,7 @@ Array<TData> rodrigues2(const Array<TData>& k, const TData& theta) {
     // static const Array<TData> I = identity_array<TData>(3);
     // return I + std::sin(theta) * K + (1 - std::cos(theta)) * dot(K, K);
 
-    static Array<TData> K = zeros<TData>(ArrayShape{3, 3});
+    Array<TData> K = zeros<TData>(ArrayShape{3, 3});
     K(0, 1) = -k(2);
     K(0, 2) = k(1);
     K(1, 0) = k(2);
