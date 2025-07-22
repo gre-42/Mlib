@@ -1062,23 +1062,42 @@ std::shared_ptr<ITextureHandle> RenderingResources::get_texture(
         if (caller_type != CallerType::PRELOAD) {
             THROW_OR_ABORT("Texture source is not preload for texture \"" + *color.filename + '"');
         }
-        texture = make_shared_texture(render_to_texture_2d_array(
-            aptr->width,
-            aptr->height,
-            integral_cast<GLsizei>(aptr->tiles.size()),
-            aptr->mip_level_count,
-            aniso,
-            nchannels2sized_internal_format(max(color.color_mode)),
-            [this, &aptr](GLsizei width, GLsizei height, GLsizei layer)
-            {
-                render_texture_atlas(
-                    *const_cast<RenderingResources*>(this),
-                    aptr->tiles.at(integral_cast<size_t>(layer)),
-                    integral_to_float<float>(width) / integral_to_float<float>(aptr->width),
-                    integral_to_float<float>(height) / integral_to_float<float>(aptr->height));
-            }),
-            TextureTarget::TEXTURE_2D_ARRAY,
-            integral_cast<uint32_t>(aptr->tiles.size()));
+        if (aptr->tiles.size() == 1) {
+            texture = make_shared_texture(render_to_texture_2d(
+                aptr->width,
+                aptr->height,
+                aptr->mip_level_count,
+                aniso,
+                nchannels2sized_internal_format(max(color.color_mode)),
+                [this, &aptr](GLsizei width, GLsizei height)
+                {
+                    render_texture_atlas(
+                        *const_cast<RenderingResources*>(this),
+                        aptr->tiles.at(0),
+                        integral_to_float<float>(width) / integral_to_float<float>(aptr->width),
+                        integral_to_float<float>(height) / integral_to_float<float>(aptr->height));
+                }),
+                TextureTarget::TEXTURE_2D,
+                1);
+        } else {
+            texture = make_shared_texture(render_to_texture_2d_array(
+                aptr->width,
+                aptr->height,
+                integral_cast<GLsizei>(aptr->tiles.size()),
+                aptr->mip_level_count,
+                aniso,
+                nchannels2sized_internal_format(max(color.color_mode)),
+                [this, &aptr](GLsizei width, GLsizei height, GLsizei layer)
+                {
+                    render_texture_atlas(
+                        *const_cast<RenderingResources*>(this),
+                        aptr->tiles.at(integral_cast<size_t>(layer)),
+                        integral_to_float<float>(width) / integral_to_float<float>(aptr->width),
+                        integral_to_float<float>(height) / integral_to_float<float>(aptr->height));
+                }),
+                TextureTarget::TEXTURE_2D_ARRAY,
+                integral_cast<uint32_t>(aptr->tiles.size()));
+        }
     } else {
         if (preloaded_texture_dds_data_.contains(color)) {
             texture = initialize_dds_texture(color, aniso);
@@ -1464,11 +1483,11 @@ FixedArray<int, 2> RenderingResources::texture_size(const ColormapWithModifiers&
 }
 
 std::unordered_map<VariableAndHash<std::string>, AutoUvTile> RenderingResources::generate_auto_texture_atlas(
+    AutoTextureAtlasDescriptor* atlas,
     const ColormapWithModifiers& name,
     const std::vector<ColormapWithModifiers>& filenames,
     int mip_level_count,
-    int size,
-    AutoTextureAtlasDescriptor* atlas)
+    int size)
 {
     std::unordered_map<VariableAndHash<std::string>, ColormapWithModifiers> colormaps;
     std::unordered_map<VariableAndHash<std::string>, FixedArray<int, 2>> packed_sizes;

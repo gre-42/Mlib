@@ -187,11 +187,11 @@ public:
         const VariableAndHash<std::string>& name,
         const std::vector<ColormapWithModifiers>& filenames);
     std::unordered_map<VariableAndHash<std::string>, AutoUvTile> generate_auto_texture_atlas(
+        AutoTextureAtlasDescriptor* atlas,
         const ColormapWithModifiers& name,
         const std::vector<ColormapWithModifiers>& filenames,
         int mip_level_count,
-        int size = 4096,
-        AutoTextureAtlasDescriptor* atlas = nullptr);
+        int size = 4096);
     void add_cubemap(VariableAndHash<std::string> name, const std::vector<VariableAndHash<std::string>>& filenames);
 
     std::string get_texture_filename(

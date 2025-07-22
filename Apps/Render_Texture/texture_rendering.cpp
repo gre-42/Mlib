@@ -150,6 +150,7 @@ int main(int argc, char** argv)
                 THROW_OR_ABORT("Could not find a single texture matching \"" + parsed.named_value("--filter") + '"');
             }
             rendering_resources.generate_auto_texture_atlas(
+                &atlas,
                 ColormapWithModifiers{
                     .filename = tmp_texture,
                     .color_mode = ColorMode::RGBA,
@@ -157,8 +158,7 @@ int main(int argc, char** argv)
                 }.compute_hash(),
                 std::vector(names.begin(), names.end()),
                 safe_stoi(parsed.named_value("--mip_level_count")),
-                safe_stoi(parsed.named_value("--size", "4096")),
-                &atlas);
+                safe_stoi(parsed.named_value("--size", "4096")));
             for (const auto& [i, t] : enumerate(atlas.tiles)) {
                 linfo() << "Layer: " << i;
                 for (const auto& d : t) {

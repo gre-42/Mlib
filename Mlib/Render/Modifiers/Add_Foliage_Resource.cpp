@@ -29,6 +29,7 @@ void Mlib::add_foliage_resource(
             if (!cva->modifier_backlog.add_foliage) {
                 continue;
             }
+            cva->modifier_backlog.add_foliage = false;
             grass_triangles.insert(grass_triangles.end(), cva->triangles.begin(), cva->triangles.end());
         }
     }

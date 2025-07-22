@@ -104,7 +104,9 @@ void Mlib::merge_textures(
                 }
                 // auto keys = std::views::keys(merged_filenames);
                 // auto uv_tiles = rendering_resources.generate_texture_atlas(merged_texture_name, std::set(keys.begin(), keys.end()));
+                AutoTextureAtlasDescriptor atlas;
                 auto uv_tiles = rendering_resources.generate_auto_texture_atlas(
+                    &atlas,
                     merged_materials_config.texture_name,
                     merged_filenames.keys(),
                     merged_materials_config.mip_level_count);
@@ -126,7 +128,7 @@ void Mlib::merge_textures(
     #pragma GCC diagnostic pop
                                 }
                             }
-                            {
+                            if (atlas.tiles.size() != 1) {
                                 auto& mlay = merged_discrete_triangle_texture_layers.emplace_back(uninitialized);
                                 for (auto& v : mlay.flat_iterable()) {
                                     v = tile.layer;
