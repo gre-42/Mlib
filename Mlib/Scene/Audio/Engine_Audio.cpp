@@ -16,8 +16,8 @@ EngineAudio::EngineAudio(
     const std::string& resource_name,
     std::function<bool()> audio_paused,
     EventEmitter& audio_paused_changed,
-    float p_reference,
-    float p_idle)
+    float p_idle,
+    float p_reference)
     : cross_fade_{ PositionRequirement::WAITING_FOR_POSITION, std::move(audio_paused), audio_paused_changed }
     , p_reference_{ p_reference }
     , p_idle_{ p_idle }
@@ -46,7 +46,7 @@ void EngineAudio::notify_rotation(
             max_surface_power);
         cross_fade_.play(
             *seq.buffer,
-            driving_gain_ * std::max(p_idle_, p) / p_reference_,
+            std::min(1.f, driving_gain_ * std::max(p_idle_, p) / p_reference_),
             f,
             seq.frequency);
     }

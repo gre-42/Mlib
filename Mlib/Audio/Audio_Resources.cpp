@@ -54,6 +54,12 @@ void AudioResources::add_buffer_sequence(
     float gain,
     float hysteresis_step)
 {
+    if (gain < 0.f) {
+        THROW_OR_ABORT("Attempt to set negative buffer sequence gain");
+    }
+    if (gain > 1.f) {
+        THROW_OR_ABORT("Attempt to set buffer sequence gain greater than 1");
+    }
     std::unique_lock lock{mutex_};
     if (!buffer_sequence_filenames_.insert({name, {filename, gain, hysteresis_step}}).second) {
         THROW_OR_ABORT("Audio sequence with name \"" + name + "\" already exists");

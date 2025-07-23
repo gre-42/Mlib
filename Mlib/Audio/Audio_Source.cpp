@@ -44,6 +44,12 @@ void AudioSource::set_loop(bool value) {
 }
 
 void AudioSource::set_gain(float value) {
+    if (value < 0.f) {
+        THROW_OR_ABORT("Attempt to set negative audio gain");
+    }
+    if (value > 1.f) {
+        THROW_OR_ABORT("Attempt to set audio gain greater 1");
+    }
     if (position_requirement_ != PositionRequirement::WAITING_FOR_POSITION) {
         if (!muted_) {
             AL_CHK(alSourcef(source_, AL_GAIN, value));

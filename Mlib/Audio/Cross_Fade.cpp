@@ -77,6 +77,12 @@ void CrossFade::play(
     float buffer_frequency,
     float alpha)
 {
+    if (gain_factor < 0.f) {
+        THROW_OR_ABORT("Attempt to set negative audio gain factor");
+    }
+    if (gain_factor > 1.f) {
+        THROW_OR_ABORT("Attempt to set audio gain factor greater 1");
+    }
     std::scoped_lock lock{ mutex_ };
     auto sg_it = std::find_if(
         sources_.begin(),

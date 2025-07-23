@@ -18,8 +18,8 @@ public:
         const std::string& resource_name,
         std::function<bool()> audio_paused,
         EventEmitter& audio_paused_changed,
-        float p_reference,
-        float p_idle);
+        float p_idle,
+        float p_reference);
     virtual ~EngineAudio() override;
     virtual void notify_rotation(
         float engine_angular_velocity,
