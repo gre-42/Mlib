@@ -11,6 +11,7 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
+#include <Mlib/Audio/List_Audio_Devices.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -524,6 +525,7 @@ void android_main(android_app* app) {
         if (args.has_named("--check_gl_errors")) {
             check_gl_errors(CheckErrors::ENABLED);
         }
+        list_audio_devices();
         AudioDevice audio_device;
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
