@@ -8,8 +8,9 @@ namespace Mlib {
 using SceneDir = float;
 using ScenePos = double;
 
-using CompressedScenePos = FixedPointNumber<int32_t, (1 << 11)>;
-using HalfCompressedScenePos = FixedPointNumber<int16_t, (1 << 11)>;
+static const std::intmax_t SCENE_POS_DENOMINATOR = (1 << 11);
+using CompressedScenePos = FixedPointNumber<int32_t, SCENE_POS_DENOMINATOR>;
+using HalfCompressedScenePos = FixedPointNumber<int16_t, SCENE_POS_DENOMINATOR>;
 
 }
 

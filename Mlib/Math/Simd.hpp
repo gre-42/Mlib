@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Scene_Precision.hpp>
 #include <concepts>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
@@ -27,21 +28,30 @@ consteval bool requires_simd_optimization() {
     return true;
 }
 
+class PaddedFixedArray3Uint32: public FixedArray<uint32_t, 3> {
+public:
+    using FixedArray<uint32_t, 3>::FixedArray;
+    explicit PaddedFixedArray3Uint32(const FixedArray<uint32_t, 3>& other)
+        : FixedArray<uint32_t, 3>{ other }
+    {}
+    uint32_t padding = 0;
+};
+
 template <std::intmax_t denominator>
-class PaddedFixedArray3Int32: public FixedArray<FixedPointNumber<int32_t, denominator>, 3> {
+class PaddedFixedArray3FpInt32: public FixedArray<FixedPointNumber<int32_t, denominator>, 3> {
 public:
     using FixedArray<FixedPointNumber<int32_t, denominator>, 3>::FixedArray;
-    explicit PaddedFixedArray3Int32(const FixedArray<FixedPointNumber<int32_t, denominator>, 3>& other)
+    explicit PaddedFixedArray3FpInt32(const FixedArray<FixedPointNumber<int32_t, denominator>, 3>& other)
         : FixedArray<FixedPointNumber<int32_t, denominator>, 3>{ other }
     {}
     int32_t padding = 0;
 };
 
 template <std::intmax_t denominator>
-class PaddedFixedArray3Int16: public FixedArray<FixedPointNumber<int16_t, denominator>, 3> {
+class PaddedFixedArray3FpInt16: public FixedArray<FixedPointNumber<int16_t, denominator>, 3> {
 public:
     using FixedArray<FixedPointNumber<int16_t, denominator>, 3>::FixedArray;
-    explicit PaddedFixedArray3Int16(const FixedArray<FixedPointNumber<int16_t, denominator>, 3>& other)
+    explicit PaddedFixedArray3FpInt16(const FixedArray<FixedPointNumber<int16_t, denominator>, 3>& other)
         : FixedArray<FixedPointNumber<int16_t, denominator>, 3>{ other }
     {}
     int16_t padding = 0;
@@ -57,47 +67,64 @@ public:
 };
 
 template <class TData, size_t tndim>
-    requires (!requires_simd_optimization<TData, tndim>())
-inline FixedArray<TData, tndim> get_padded_fixed_array(const FixedArray<TData, tndim>&) {
-    verbose_abort("xx");
-}
-
-template <std::intmax_t denominator>
-inline PaddedFixedArray3Int32<denominator> get_padded_fixed_array(
-    const FixedArray<FixedPointNumber<int32_t, denominator>, 3>&)
+struct padded_fixed_array
 {
-    verbose_abort("xx");
-}
+    static_assert(!requires_simd_optimization<TData, tndim>());
+    using type = FixedArray<TData, tndim>;
+};
 
-template <std::intmax_t denominator>
-inline PaddedFixedArray3Int16<denominator> get_padded_fixed_array(
-    const FixedArray<FixedPointNumber<int16_t, denominator>, 3>&)
-{
-    verbose_abort("xx");
-}
+template<>
+struct padded_fixed_array<uint32_t, 3> {
+    using type = PaddedFixedArray3Uint32;
+};
 
-inline PaddedFixedArray3Float get_padded_fixed_array(
-    const FixedArray<float, 3>&)
-{
-    verbose_abort("xx");
-}
+template<>
+struct padded_fixed_array<FixedPointNumber<int32_t, SCENE_POS_DENOMINATOR>, 3> {
+    using type = PaddedFixedArray3FpInt32<SCENE_POS_DENOMINATOR>;
+};
 
-template <class TData, size_t tndim>
-struct padded_fixed_array 
-{
-    static const FixedArray<TData, tndim>& f() {
-        verbose_abort("xx");
-    }
-    using type = decltype(get_padded_fixed_array(f()));
+template<>
+struct padded_fixed_array<FixedPointNumber<int16_t, SCENE_POS_DENOMINATOR>, 3> {
+    using type = PaddedFixedArray3FpInt16<SCENE_POS_DENOMINATOR>;
+};
+
+template<>
+struct padded_fixed_array<float, 3> {
+    using type = PaddedFixedArray3Float;
 };
 
 template <class TData, size_t tndim>
 using padded_fixed_array_t = padded_fixed_array<TData, tndim>::type;
 
+inline bool all_le(
+    const PaddedFixedArray3Uint32& a,
+    const PaddedFixedArray3Uint32& b)
+{
+    eve::experimental::fixed_size_simd<uint32_t, 4> ea(
+        a(0),
+        a(1),
+        a(2),
+        a.padding);
+
+    eve::experimental::fixed_size_simd<uint32_t, 4> eb(
+        b(0),
+        b(1),
+        b(2),
+        b.padding);
+    return eve::all(ea <= eb);
+}
+
+inline bool all_ge(
+    const PaddedFixedArray3Uint32& a,
+    const PaddedFixedArray3Uint32& b)
+{
+    return all_le(b, a);
+}
+
 template <std::intmax_t denominator>
-bool all_le(
-    const PaddedFixedArray3Int32<denominator>& a,
-    const PaddedFixedArray3Int32<denominator>& b)
+inline bool all_le(
+    const PaddedFixedArray3FpInt32<denominator>& a,
+    const PaddedFixedArray3FpInt32<denominator>& b)
 {
     eve::experimental::fixed_size_simd<int32_t, 4> ea(
         a(0).count,
@@ -114,17 +141,17 @@ bool all_le(
 }
 
 template <std::intmax_t denominator>
-bool all_ge(
-    const PaddedFixedArray3Int32<denominator>& a,
-    const PaddedFixedArray3Int32<denominator>& b)
+inline bool all_ge(
+    const PaddedFixedArray3FpInt32<denominator>& a,
+    const PaddedFixedArray3FpInt32<denominator>& b)
 {
     return all_le(b, a);
 }
 
 template <std::intmax_t denominator>
-bool all_le(
-    const PaddedFixedArray3Int16<denominator>& a,
-    const PaddedFixedArray3Int16<denominator>& b)
+inline bool all_le(
+    const PaddedFixedArray3FpInt16<denominator>& a,
+    const PaddedFixedArray3FpInt16<denominator>& b)
 {
     eve::experimental::fixed_size_simd<int16_t, 4> ea(
         a(0).count,
@@ -141,9 +168,9 @@ bool all_le(
 }
 
 template <std::intmax_t denominator>
-bool all_ge(
-    const PaddedFixedArray3Int16<denominator>& a,
-    const PaddedFixedArray3Int16<denominator>& b)
+inline bool all_ge(
+    const PaddedFixedArray3FpInt16<denominator>& a,
+    const PaddedFixedArray3FpInt16<denominator>& b)
 {
     return all_le(b, a);
 }
@@ -175,7 +202,7 @@ inline bool all_ge(
 
 template <class TData, size_t tndim>
     requires (!requires_simd_optimization<TData, tndim>())
-bool all_le(
+inline bool all_le(
     const FixedArray<TData, tndim>& a,
     const FixedArray<TData, tndim>& b)
 {
@@ -189,7 +216,7 @@ bool all_le(
 
 template <class TData, size_t tndim>
     requires (!requires_simd_optimization<TData, tndim>())
-bool all_ge(
+inline bool all_ge(
     const FixedArray<TData, tndim>& a,
     const FixedArray<TData, tndim>& b)
 {

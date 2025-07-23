@@ -175,22 +175,29 @@ private:
 template <class TContainer, class TData>
 concept DataSizedIterable = requires()
 {
-    requires SizedIterable<TContainer>;
     requires std::same_as<typename TContainer::value_type, TData>;
+    requires SizedIterable<TContainer>;
+};
+
+template <class TContainer, class TData>
+concept DataSizedIterableNotArray = requires()
+{
+    requires !std::same_as<TContainer, Array<TData>>;
+    requires DataSizedIterable<TContainer, TData>;
 };
 
 template <class TContainer, class TData>
 concept ArraySizedIterable = requires()
 {
-    requires SizedIterable<TContainer>;
     requires std::same_as<typename TContainer::value_type, Array<TData>>;
+    requires SizedIterable<TContainer>;
 };
 
 template <class TContainer, class TData, size_t ...tsize>
 concept FixedArraySizedSizedIterable = requires()
 {
-    requires SizedIterable<TContainer>;
     requires std::same_as<typename TContainer::value_type, FixedArray<TData, tsize...>>;
+    requires SizedIterable<TContainer>;
 };
 
 template <class TData>
@@ -265,7 +272,7 @@ public:
             std::copy(begin, end, &(*this)(0));
         }
     }
-    template <DataSizedIterable<TData> TDataContainer>
+    template <DataSizedIterableNotArray<TData> TDataContainer>
     explicit Array(const TDataContainer& lst)
         : offset_{ 0 }
         , resize{ [this](const ArrayShape& shape) { do_resize(shape); } }

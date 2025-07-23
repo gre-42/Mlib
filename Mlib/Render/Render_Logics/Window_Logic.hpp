@@ -69,7 +69,10 @@ private:
 }
 
 #else
+
 #include <string>
+#include <vector>
+
 namespace Mlib {
 
 struct VideoMode {

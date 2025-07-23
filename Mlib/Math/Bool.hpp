@@ -17,7 +17,7 @@ inline TDerived& operator |= (BaseDenseArray<TDerived, bool>& a, const BaseDense
 
 template <class TDerived>
 inline TDerived operator | (const BaseDenseArray<TDerived, bool>& a, const BaseDenseArray<TDerived, bool>& b) {
-    return a->template array_array_binop(*b, [](bool x, bool y){return x | y;});
+    return a->array_array_binop(*b, [](bool x, bool y){return x | y;});
 }
 
 }
