@@ -456,7 +456,7 @@ OsmMapResource::OsmMapResource(
                 .draw_distance_noperations = 1000},
             Morphology{
                 .physics_material = PhysicsMaterial::NONE,
-                .triangle_cluster_width = config.dense_triangle_cluster_width
+                .triangle_cluster_width = config.medium_triangle_cluster_width
             },
             wall_barriers,
             nodes,
@@ -479,7 +479,7 @@ OsmMapResource::OsmMapResource(
                     .draw_distance_noperations = 1000},
                 Morphology{
                     .physics_material = PhysicsMaterial::NONE,
-                    .triangle_cluster_width = config.dense_triangle_cluster_width
+                    .triangle_cluster_width = config.medium_triangle_cluster_width
                 },
                 config.scale,
                 config.uv_scale_barrier_wall,
@@ -1339,7 +1339,7 @@ OsmMapResource::OsmMapResource(
                     .draw_distance_noperations = 1000}.compute_color_mode(),
                 Morphology{
                     .physics_material = BASE_VISIBLE_TERRAIN_MATERIAL,
-                    .triangle_cluster_width = config.dense_triangle_cluster_width
+                    .triangle_cluster_width = config.medium_triangle_cluster_width
                 },
                 config.bridge_pier_radius,
                 scene_node_resources,

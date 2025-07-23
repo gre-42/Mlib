@@ -2107,7 +2107,11 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
     };
     for (const auto& [triangle_cluster_width, dcvas] : triangle_cluster_width_groups(dcvas_node_triangles)) {
         if (triangle_cluster_width == 0) {
-            THROW_OR_ABORT("Aggregate-mode is \"node_triangles\", \"triangle_cluster_width\" is zero");
+            std::stringstream sstr;
+            for (const auto& cva : dcvas) {
+                sstr << '"' << cva->name << "\"\n";
+            }
+            THROW_OR_ABORT("Aggregate-mode is \"node_triangles\", \"triangle_cluster_width\" is zero:\n" + sstr.str());
         }
         for (const auto& [i, cs] : enumerate(cluster_triangles(
             dcvas,
@@ -2121,7 +2125,11 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
     }
     for (const auto& [object_cluster_width, dcvas] : object_cluster_width_groups(dcvas_node_object)) {
         if (object_cluster_width == 0) {
-            THROW_OR_ABORT("Aggregate-mode is \"node_object\", \"object_cluster_width\" is zero");
+            std::stringstream sstr;
+            for (const auto& cva : dcvas) {
+                sstr << '"' << cva->name << "\"\n";
+            }
+            THROW_OR_ABORT("Aggregate-mode is \"node_object\", \"object_cluster_width\" is zero:\n" + sstr.str());
         }
         for (const auto& [i, cs] : enumerate(cluster_meshes<CompressedScenePos>(
             dcvas,

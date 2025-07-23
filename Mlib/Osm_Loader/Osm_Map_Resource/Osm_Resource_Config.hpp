@@ -96,6 +96,7 @@ struct OsmResourceConfig {
     float zonemap_jitter = 0.9f;
     double zonemap_step_size = 4.;
     float sparse_triangle_cluster_width = 0.f;
+    float medium_triangle_cluster_width = 0.f;
     float dense_triangle_cluster_width = 0.f;
     float object_cluster_width = 0.f;
     uint32_t max_imposter_texture_size = 0.f;

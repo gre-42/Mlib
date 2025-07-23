@@ -393,6 +393,7 @@ void android_main(android_app* app) {
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
         "    [--sparse_triangle_cluster_width <width>]\n"
+        "    [--medium_triangle_cluster_width <width>]\n"
         "    [--dense_triangle_cluster_width <width>]\n"
         "    [--object_cluster_width <width>]\n"
         "    [--vfx]\n"
@@ -494,6 +495,7 @@ void android_main(android_app* app) {
          "--lateral_friction_steepness",
          "--wheel_penetration_depth",
          "--sparse_triangle_cluster_width",
+         "--medium_triangle_cluster_width",
          "--dense_triangle_cluster_width",
          "--object_cluster_width",
          "--draw_distance_add",
@@ -651,6 +653,7 @@ void android_main(android_app* app) {
                 {"scene_sea_spray_height", safe_stoi(args.named_value("--scene_sea_spray_height", "2048"))},
                 {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))},
                 {"sparse_triangle_cluster_width", safe_stof(args.named_value("--sparse_triangle_cluster_width", "3e3"))},
+                {"medium_triangle_cluster_width", safe_stof(args.named_value("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_value("--dense_triangle_cluster_width", "250"))},
                 {"object_cluster_width", safe_stof(args.named_value("--object_cluster_width", "500"))}};
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});

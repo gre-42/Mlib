@@ -26,7 +26,7 @@
 #include <concepts>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 77;
+static uint32_t CACHE_FILE_VERSION = 79;
 
 namespace fs = std::filesystem;
 
@@ -195,6 +195,7 @@ DECLARE_ARGUMENT(zonemap_jitter);
 DECLARE_ARGUMENT(zonemap_step_size);
 DECLARE_ARGUMENT(zone_resource_names);
 DECLARE_ARGUMENT(sparse_triangle_cluster_width);
+DECLARE_ARGUMENT(medium_triangle_cluster_width);
 DECLARE_ARGUMENT(dense_triangle_cluster_width);
 DECLARE_ARGUMENT(with_roofs);
 DECLARE_ARGUMENT(with_ceilings);
@@ -879,6 +880,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains_non_null(KnownArgs::sparse_triangle_cluster_width)) {
             config.sparse_triangle_cluster_width = args.arguments.at<float>(KnownArgs::sparse_triangle_cluster_width);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::medium_triangle_cluster_width)) {
+            config.medium_triangle_cluster_width = args.arguments.at<float>(KnownArgs::medium_triangle_cluster_width);
         }
         if (args.arguments.contains_non_null(KnownArgs::dense_triangle_cluster_width)) {
             config.dense_triangle_cluster_width = args.arguments.at<float>(KnownArgs::dense_triangle_cluster_width);
