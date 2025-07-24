@@ -304,6 +304,9 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
     switch (cmd) {
         case APP_CMD_SAVE_STATE:
             // LOGI("APP_CMD_SAVE_STATE");
+            for (const auto& f : eng->on_save_state_) {
+                f();
+            }
             break;
         case APP_CMD_INIT_WINDOW:
             // LOGI("APP_CMD_INIT_WINDOW");
@@ -446,4 +449,8 @@ Mlib::LayoutConstraintParameters AEngine::LayoutParametersY() const {
         .dpi = ydpi_,
         .min_pixel = 0.f,
         .end_pixel = (float)gl_context_->GetScreenHeight()};
+}
+
+void AEngine::AddOnSaveState(std::function<void()> func) {
+    on_save_state_.emplace_back(std::move(func));
 }

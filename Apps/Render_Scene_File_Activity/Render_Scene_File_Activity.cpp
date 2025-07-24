@@ -677,6 +677,9 @@ void android_main(android_app* app) {
 
         // FifoLog fifo_log{10 * 1000};
 
+        a_engine.AddOnSaveState([&](){
+            ui_focuses.try_save();
+        });
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
@@ -796,8 +799,6 @@ void android_main(android_app* app) {
                 main_scene_filename = s;
             }
         }
-
-        ui_focuses.try_save();
 
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {
         //     lerr() << "write svg";

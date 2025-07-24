@@ -1,5 +1,7 @@
 #pragma once
 #include <Mlib/Android/ndk_helper/NDKHelper.h>
+#include <functional>
+#include <list>
 
 namespace Mlib {
     class IRenderer;
@@ -37,6 +39,8 @@ class AEngine {
     const ASensor* accelerometer_sensor_;
     ASensorEventQueue* sensor_event_queue_;
 
+    std::list<std::function<void()>> on_save_state_;
+
     void TransformPosition(ndk_helper::Vec2& vec);
     void UpdateDpi();
 
@@ -65,4 +69,6 @@ public:
 
     Mlib::LayoutConstraintParameters LayoutParametersX() const;
     Mlib::LayoutConstraintParameters LayoutParametersY() const;
+
+    void AddOnSaveState(std::function<void()> func);
 };

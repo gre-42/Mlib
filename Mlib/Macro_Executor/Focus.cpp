@@ -277,7 +277,11 @@ void UiFocus::save() {
 
 UiFocuses::UiFocuses(std::string filename_prefix)
     : filename_prefix_{ std::move(filename_prefix) }
-{}
+{
+    // Ensure the first user exists, so the settings are loaded
+    // from disk.
+    (*this)[0];
+}
 
 UiFocuses::~UiFocuses() = default;
 
@@ -286,6 +290,8 @@ UiFocus& UiFocuses::operator [] (uint32_t user_id) {
     if (it == focuses_.end()) {
         auto res = focuses_.try_emplace(
             user_id,
+            // Only save if the "filename_prefix_" is not empty,
+            // and only for the first user.
             filename_prefix_.empty() || (user_id != 0)
                 ? ""
                 : filename_prefix_ + std::to_string(user_id) + ".json");

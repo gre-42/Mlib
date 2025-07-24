@@ -66,5 +66,5 @@ void ARenderLoop::render_loop(const std::function<bool()>& exit_loop) {
 }
 
 bool ARenderLoop::destroy_requested() const {
-    return app_.destroyRequested;
+    return app_.destroyRequested != 0;
 }
