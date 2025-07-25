@@ -50,6 +50,7 @@ struct ColoredRenderProgram: public RenderProgram {
 };
 
 struct RenderProgramIdentifier {
+    ExternalRenderPassType render_pass;
     size_t skidmarks_hash;
     size_t nbones;
     BlendMode blend_mode;

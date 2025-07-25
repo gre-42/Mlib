@@ -749,6 +749,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 4>& alpha_distances,
     const OrderableFixedArray<float, 2>& fog_distances,
     const OrderableFixedArray<float, 3>& fog_emissive,
+    ExternalRenderPassType render_pass,
     bool reorient_normals,
     bool reorient_uv0,
     bool orthographic,
@@ -1833,7 +1834,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else {
         sstr << "    frag_color.rgb += frag_brightness_specular;" << std::endl;
     }
-    if (fog_distances != default_step_distances) {
+    if (any(render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+        // Do nothing (keep colors)
+    } else if (any(render_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
+        sstr << "    frag_color.r = 0.5;" << std::endl;
+        sstr << "    frag_color.g = 0.5;" << std::endl;
+        sstr << "    frag_color.b = 0.5;" << std::endl;
+    } else if (fog_distances != default_step_distances) {
         define_dist_if_necessary();
         sstr << "    {" << std::endl;
         sstr << "        vec3 fog_emissive = vec3(" << fog_emissive(0) << ", " << fog_emissive(1) << ", " << fog_emissive(2) << ");" << std::endl;
@@ -2534,6 +2541,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.alpha_distances,
         id.fog_distances,
         id.fog_emissive,
+        id.render_pass,
         id.reorient_normals,
         id.reorient_uv0,
         id.orthographic,
