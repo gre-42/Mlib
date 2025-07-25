@@ -333,7 +333,13 @@ void RenderableColoredVertexArray::render_cva(
             ? color_style->fresnel_ambient * cva->material.shading.fresnel.ambient
             : cva->material.shading.fresnel.ambient;
     } else {
-        emissive = 1.f;
+        if (any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
+            emissive = 1.f;
+        } else if (any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK)) {
+            emissive = 0.5f;
+        } else {
+            THROW_OR_ABORT("Unknown lightmap render pass: \"" + external_render_pass_type_to_string(render_pass.rsd.external_render_pass.pass) + '"');
+        }
     }
     if (!is_lightmap) {
         filtered_lights.reserve(lights.size());
@@ -759,7 +765,6 @@ void RenderableColoredVertexArray::render_cva(
     }
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
-            .render_pass = render_pass.rsd.external_render_pass.pass,
             .skidmarks_hash = skidmarks_hash,
             .nbones = rcva_->triangles_res_->bone_indices.size(),
             .blend_mode = any(render_pass.rsd.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
