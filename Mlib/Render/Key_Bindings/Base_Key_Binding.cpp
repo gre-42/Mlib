@@ -25,11 +25,35 @@ std::string AnalogDigitalAxes::to_string(InputType filter) const {
     }
 }
 
+std::string GamepadButton::to_string() const {
+    return "(joystick " + std::to_string(gamepad_id) + ": " + button + ')';
+}
+
+const GamepadButton* BaseKeyBinding::get_gamepad_button(const std::string& role) const {
+    if (auto it = gamepad_button.find(role); it != gamepad_button.end()) {
+        return &it->second;
+    }
+    if (auto it = gamepad_button.find("default"); it != gamepad_button.end()) {
+        return &it->second;
+    }
+    return nullptr;
+}
+
 const AnalogDigitalAxes* BaseKeyBinding::get_joystick_axis(const std::string& role) const {
     if (auto it = joystick_axes.find(role); it != joystick_axes.end()) {
         return &it->second;
     }
     if (auto it = joystick_axes.find("default"); it != joystick_axes.end()) {
+        return &it->second;
+    }
+    return nullptr;
+}
+
+const GamepadButton* BaseKeyBinding::get_tap_button(const std::string& role) const {
+    if (auto it = tap_button.find(role); it != tap_button.end()) {
+        return &it->second;
+    }
+    if (auto it = tap_button.find("default"); it != tap_button.end()) {
         return &it->second;
     }
     return nullptr;
@@ -43,8 +67,11 @@ std::string BaseKeyBinding::to_string(InputType filter) const {
     if (!mouse_button.empty() && any(filter & InputType::MOUSE)) {
         result.emplace_back("(mouse: " + mouse_button + ')');
     }
-    if (!gamepad_button.button.empty() && any(filter & InputType::JOYSTICK)) {
-        result.emplace_back("(gamepad " + std::to_string(gamepad_button.gamepad_id) + ": " + gamepad_button.button + ')');
+    if (!gamepad_button.empty() && any(filter & InputType::JOYSTICK)) {
+        result.emplace_back("(" + join(
+            ", ",
+            gamepad_button,
+            [](const auto& e){ return '(' + e.first + ": " + e.second.to_string() + ')'; }) + ")");
     }
     if (!joystick_axes.empty() && any(filter & InputType::JOYSTICK)) {
         result.emplace_back("(" + join(
@@ -66,10 +93,9 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const BaseKeyBinding& base_
     if (!base_key_binding.mouse_button.empty()) {
         ostr << "mouse button: " << base_key_binding.mouse_button << '\n';
     }
-    if (!base_key_binding.gamepad_button.button.empty()) {
-        ostr << "gamepad button: " <<
-            base_key_binding.gamepad_button.button << '.' <<
-            base_key_binding.gamepad_button.button << '\n';
+    for (const auto& [k, v] : base_key_binding.gamepad_button) {
+        ostr << "role: " << k << '\n';
+        ostr << "joystick " << v.gamepad_id << ": " <<  v.button << '\n';
     }
     for (const auto& [k, v] : base_key_binding.joystick_axes) {
         ostr << "analog role: " << k << '\n';

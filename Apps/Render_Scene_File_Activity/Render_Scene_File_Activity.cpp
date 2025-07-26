@@ -37,6 +37,7 @@
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions.hpp>
+#include <Mlib/Render/Key_Bindings/Make_Key_Binding.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
@@ -74,6 +75,8 @@
 namespace fs = std::filesystem;
 
 using namespace Mlib;
+
+static const auto& g = make_gamepad_button;
 
 class SceneRenderer: public IRenderer {
 public:
@@ -592,13 +595,13 @@ void android_main(android_app* app) {
             BaseKeyCombination confirm_key_combination_0{{{
                 BaseKeyBinding{
                     .key = "ENTER",
-                    .gamepad_button = { 0, "A" },
-                    .tap_button = { 0, "START" }}}}};
+                    .gamepad_button = g(0, "A"),
+                    .tap_button = g(0, "START")}}}};
             locked_key_configs->insert(0, "confirm", { std::move(confirm_key_combination_0) });
             confirm_button_press.emplace_back(button_states, confirm_key_configurations, 0, "confirm", "");
             for (uint32_t i = 1; i < ngamepads; ++i) {
                 BaseKeyCombination confirm_key_combination_i{{{
-                    BaseKeyBinding{.gamepad_button = { i, "A" }}}}};
+                    BaseKeyBinding{.gamepad_button = g(i, "A")}}}};
                 locked_key_configs->insert(i, "confirm", { std::move(confirm_key_combination_i) });
                 confirm_button_press.emplace_back(button_states, confirm_key_configurations, i, "confirm", "");
             }

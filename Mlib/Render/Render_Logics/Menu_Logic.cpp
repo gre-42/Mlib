@@ -5,6 +5,7 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
+#include <Mlib/Render/Key_Bindings/Make_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -12,6 +13,9 @@
 #include <sstream>
 
 namespace Mlib {
+
+static const auto& g = make_gamepad_button;
+
 class MenuLogicKeys {
 public:
     explicit MenuLogicKeys(ButtonStates& button_states)
@@ -21,15 +25,21 @@ public:
     {
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->insert(0, "escape", { {{{.key = "ESCAPE", .gamepad_button = {0, "START"}, .tap_button = {0, "ESCAPE"}}}} });
+            ->insert(0, "escape", {{{BaseKeyBinding{
+                .key = "ESCAPE",
+                .gamepad_button = g(0, "START"),
+                .tap_button = g(0, "ESCAPE")}}}});
         key_configurations
             .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
-            ->insert(1, "escape", { {{{.gamepad_button = {1, "START"}, .tap_button = {1, "ESCAPE"}}}} });
+            ->insert(1, "escape", {{{BaseKeyBinding{
+                .gamepad_button = g(1, "START"),
+                .tap_button = g(1, "ESCAPE")}}}});
     }
     std::vector<ButtonPress> start;
 private:
     LockableKeyConfigurations key_configurations;
 };
+
 }
 
 using namespace Mlib;

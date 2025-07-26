@@ -28,7 +28,7 @@ GamepadAnalogAxesPosition::~GamepadAnalogAxesPosition() = default;
 
 static float axis_alpha(const BaseAnalogAxisBinding& b, float v) {
     if (std::isnan(b.sign_and_scale)) {
-        THROW_OR_ABORT("Gamepad axis sign_and_scale is NAN, axis=\"" + b.axis + '"');
+        THROW_OR_ABORT("Gamepad axis sign_and_scale is NAN, axis=\"" + std::to_string(b.axis) + '"');
     }
     if (std::isnan(v)) {
         return NAN;

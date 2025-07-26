@@ -147,9 +147,10 @@ void KeyConfigurations::load(
                 : SIZE_MAX;
         };
         auto gbutton = [&ev](std::string_view key){
-            return ev.contains(key)
-                ? ev.at<GamepadButton>(key)
-                : GamepadButton{};
+            if (ev.contains(key)) {
+                return ev.at<std::map<std::string, GamepadButton>>(key);
+            }
+            return std::map<std::string, GamepadButton>{};
         };
         auto digital_axes = [&e](std::string_view key){
             if (e.contains(key)) {

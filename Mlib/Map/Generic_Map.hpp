@@ -18,7 +18,7 @@ public:
 
     GenericMap() {}
     GenericMap(std::initializer_list<value_type> init)
-        : TBaseMap(init)
+        : TBaseMap(std::move(init))
     {}
 
     bool contains(const key_type& key) const {

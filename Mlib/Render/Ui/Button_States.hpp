@@ -9,6 +9,7 @@
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <unordered_map>
 #include <unordered_set>

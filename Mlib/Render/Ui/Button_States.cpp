@@ -280,14 +280,19 @@ bool ButtonStates::key_down(const BaseKeyBinding& k, const std::string& role) co
             }
         }
     }
-    if (!k.gamepad_button.button.empty()) {
-        auto button = gamepad_buttons_map.get(k.gamepad_button.button);
-        if (button.has_value() && get_gamepad_button_down(k.gamepad_button.gamepad_id, *button)) {
+    if (auto gamepad_button = k.get_gamepad_button(role); gamepad_button != nullptr) {
+        auto button = gamepad_buttons_map.get(gamepad_button->button);
+        if (button.has_value() && get_gamepad_button_down(gamepad_button->gamepad_id, *button)) {
+            return true;
+        }
+    }
+    if (auto tap_button = k.get_tap_button(role); tap_button != nullptr) {
+        auto button = tap_buttons_map.get(tap_button->button);
+        if (get_tap_button_down(tap_button->gamepad_id, button)) {
             return true;
         }
     }
     return
         (!k.key.empty() && get_key_down(keys_map.get(k.key))) ||
-        (!k.mouse_button.empty() && get_mouse_button_down(mouse_buttons_map.get(k.mouse_button))) ||
-        (!k.tap_button.button.empty() && get_tap_button_down(k.tap_button.gamepad_id, tap_buttons_map.get(k.tap_button.button)));
+        (!k.mouse_button.empty() && get_mouse_button_down(mouse_buttons_map.get(k.mouse_button)));
 }

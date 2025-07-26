@@ -2,28 +2,33 @@
 #include <optional>
 
 #ifdef __ANDROID__
-#include <Mlib/Map/Map.hpp>
+#include <Mlib/Map/Verbose_Map.hpp>
 #include <android/input.h>
+#include <cstdint>
 
 namespace Mlib {
 
-static const Map<std::string, std::optional<int>> joystick_axes_map{
-    {"1", AMOTION_EVENT_AXIS_X},
-    {"2", AMOTION_EVENT_AXIS_Y},
-    {"3", std::nullopt},
-    {"4", std::nullopt},
-    {"5", std::nullopt},
-    {"6", std::nullopt},
-    {"7", std::nullopt},
-    {"8", std::nullopt},
-    {"9", std::nullopt},
-    {"10", std::nullopt},
-    {"11", std::nullopt},
-    {"12", std::nullopt},
-    {"13", std::nullopt},
-    {"14", std::nullopt},
-    {"15", std::nullopt},
-    {"16", std::nullopt},
+static const VerboseMap<uint32_t, std::optional<int>> joystick_axes_map{
+    "Joystick axis",
+    [](uint32_t key){ return std::to_string(key); },
+    {
+        {1, AMOTION_EVENT_AXIS_X},
+        {2, AMOTION_EVENT_AXIS_Y},
+        {3, std::nullopt},
+        {4, std::nullopt},
+        {5, std::nullopt},
+        {6, std::nullopt},
+        {7, std::nullopt},
+        {8, std::nullopt},
+        {9, std::nullopt},
+        {10, std::nullopt},
+        {11, std::nullopt},
+        {12, std::nullopt},
+        {13, std::nullopt},
+        {14, std::nullopt},
+        {15, std::nullopt},
+        {16, std::nullopt}
+},
 };
 
 }

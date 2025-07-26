@@ -25,15 +25,18 @@ struct AnalogDigitalAxes {
 struct GamepadButton {
     uint32_t gamepad_id = UINT32_MAX;
     std::string button;
+    std::string to_string() const;
 };
 
 struct BaseKeyBinding {
     std::string key;
     std::string mouse_button;
-    GamepadButton gamepad_button;
+    std::map<std::string, GamepadButton> gamepad_button;
     std::map<std::string, AnalogDigitalAxes> joystick_axes;
-    GamepadButton tap_button;
+    std::map<std::string, GamepadButton> tap_button;
+    const GamepadButton* get_gamepad_button(const std::string& role) const;
     const AnalogDigitalAxes* get_joystick_axis(const std::string& role) const;
+    const GamepadButton* get_tap_button(const std::string& role) const;
     std::string to_string(InputType filter) const;
 };
 

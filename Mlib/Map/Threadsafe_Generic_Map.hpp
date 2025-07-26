@@ -27,8 +27,8 @@ public:
     ThreadsafeGenericMap(
         std::string value_name,
         std::function<std::string(const key_type& e)> element_to_string,
-        std::initializer_list<value_type>&& l)
-        : elements_{ l }
+        std::initializer_list<value_type> l)
+        : elements_{ std::move(l) }
         , value_name_{ std::move(value_name) }
         , key_to_string_{ std::move(element_to_string) } {
     }
