@@ -202,63 +202,65 @@ float ButtonStates::get_tap_joystick_axis(
     return it->second;
 }
 
-void ButtonStates::print(bool physical, bool only_pressed) const {
-    std::stringstream sstr;
+void ButtonStates::print(const ButtonStatesPrintArgs& args) const {
+    print(linfo().ref(), args);
+}
+
+void ButtonStates::print(std::ostream& ostr, const ButtonStatesPrintArgs& args) const {
     for (const auto& [name, code] : keys_map) {
         if (get_key_down(code)) {
-            sstr << name << " ";
+            ostr << name << " ";
         }
     }
 #ifndef __ANDROID__
-    sstr << "\n\n";
+    ostr << "\n\n";
     std::shared_lock lock{ gamepad_state_mutex_ };
     static_assert(GLFW_JOYSTICK_1 == 0);
     for (size_t j = 0; j <= GLFW_JOYSTICK_LAST; ++j) {
         if (has_gamepad_[j]) {
-            sstr << std::endl;
-            sstr << std::endl;
-            if (physical) {
+            ostr << '\n';
+            ostr << '\n';
+            if (args.physical) {
                 for (size_t i = 0; i < 15; ++i) {
-                    if (only_pressed && !gamepad_state_[j].buttons[i]) {
+                    if (args.only_pressed && !gamepad_state_[j].buttons[i]) {
                         continue;
                     }
-                    sstr << i << "=" << (unsigned int)gamepad_state_[j].buttons[i] << " ";
+                    ostr << i << "=" << (unsigned int)gamepad_state_[j].buttons[i] << " ";
                 }
-                sstr << std::endl;
+                ostr << '\n';
                 for (size_t i = 0; i < 6; ++i) {
-                    if (only_pressed && (std::fabs(gamepad_state_[j].axes[i]) != 1.0)) {
+                    if (std::fabs(gamepad_state_[j].axes[i]) < args.min_deflection) {
                         continue;
                     }
-                    sstr << i << "=" << gamepad_state_[j].axes[i] << " ";
+                    ostr << i << "=" << gamepad_state_[j].axes[i] << " ";
                 }
             } else {
                 for (const auto& [n, b] : gamepad_buttons_map) {
                     if (!b.has_value()) {
                         continue;
                     }
-                    if (only_pressed && !gamepad_state_[j].buttons[*b]) {
+                    if (args.only_pressed && !gamepad_state_[j].buttons[*b]) {
                         continue;
                     }
-                    sstr << n << "=" << (unsigned int)gamepad_state_[j].buttons[*b] << " ";
+                    ostr << n << "=" << (unsigned int)gamepad_state_[j].buttons[*b] << " ";
                 }
-                sstr << std::endl;
+                ostr << '\n';
                 for (const auto& [n, b] : joystick_axes_map) {
                     if (!b.has_value()) {
                         continue;
                     }
-                    if (only_pressed && (std::fabs(gamepad_state_[j].axes[*b]) != 1.0)) {
+                    if (std::fabs(gamepad_state_[j].axes[*b]) < args.min_deflection) {
                         continue;
                     }
-                    sstr << n << "=" << gamepad_state_[j].axes[*b] << " ";
+                    ostr << n << "=" << gamepad_state_[j].axes[*b] << " ";
                 }
             }
-            sstr << std::endl;
+            ostr << '\n';
         } else {
-            sstr << "No gamepad attached: " << j << std::endl;
+            ostr << "No gamepad attached: " << j << '\n';
         }
     }
 #endif
-    linfo() << sstr.str();
 }
 
 bool ButtonStates::key_down(const BaseKeyBinding& k, const std::string& role) const {

@@ -51,7 +51,6 @@ void ThreadTop::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION);
 }
 
-
 namespace {
 
 struct RegisterJsonUserFunction {

@@ -11,7 +11,7 @@ enum class InputType;
 
 struct AnalogDigitalAxis {
     uint32_t gamepad_id = UINT32_MAX;
-    std::string axis;
+    uint32_t axis;
     float sign_and_threshold;
     std::string to_string() const;
 };

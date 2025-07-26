@@ -10,6 +10,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
@@ -26,20 +27,13 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(text);
 }
 
-const std::string FocusedText::key = "focused_text";
-
-LoadSceneJsonUserFunction FocusedText::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    FocusedText(args.renderable_scene()).execute(args);
-};
-
 FocusedText::FocusedText(RenderableScene& renderable_scene) 
-: LoadRenderableSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     auto& loading_logic = object_pool.create<FocusedTextLogic>(
         CURRENT_SOURCE_LOCATION,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),        
@@ -55,4 +49,19 @@ void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
         { loading_logic, CURRENT_SOURCE_LOCATION },
         1,                          // z_order
         CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "focused_text",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                FocusedText(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-class FocusedText: public LoadRenderableSceneInstanceFunction {
+class InputState: public LoadRenderableSceneInstanceFunction {
 public:
-    explicit FocusedText(RenderableScene& renderable_scene);
+    explicit InputState(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

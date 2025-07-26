@@ -37,7 +37,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Player_Bullet_Count.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Player_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Fill_Pixel_Region_With_Texture.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Focused_Text.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Minimap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Pixel_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Texture.hpp>
@@ -282,7 +281,6 @@ LoadScene::LoadScene() {
             register_json_user_function(DeleteRootNode::key, DeleteRootNode::json_user_function);
             register_json_user_function(ExecuteInPhysicsThread::key, ExecuteInPhysicsThread::json_user_function);
             register_json_user_function(FillPixelRegionWithTexture::key, FillPixelRegionWithTexture::json_user_function);
-            register_json_user_function(FocusedText::key, FocusedText::json_user_function);
             register_json_user_function(FollowNode::key, FollowNode::json_user_function);
             register_json_user_function(Minimap::key, Minimap::json_user_function);
             register_json_user_function(InstantiateGrass::key, InstantiateGrass::json_user_function);

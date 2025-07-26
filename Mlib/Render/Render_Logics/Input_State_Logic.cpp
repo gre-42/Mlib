@@ -1,4 +1,4 @@
-#include "Thread_Top_Logic.hpp"
+#include "Input_State_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -12,21 +12,23 @@
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_Interpolation_Mode.hpp>
-#include <Mlib/Threads/Thread_Top.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <sstream>
 
 using namespace Mlib;
 
-ThreadTopLogic::ThreadTopLogic(
+InputStateLogic::InputStateLogic(
     std::unique_ptr<ExpressionWatcher>&& ew,
     std::string charset,
     std::string ttf_filename,
+    std::unique_ptr<IWidget>&& widget,
     const FixedArray<float, 3>& color,
-    const FixedArray<float, 2>& position,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
+    FocusFilter focus_filter,
     std::chrono::milliseconds update_interval,
-    Focus focus_mask)
+    const ButtonStates& button_states)
     : RenderTextLogic{
         ascii,
         std::move(ttf_filename),
@@ -35,17 +37,18 @@ ThreadTopLogic::ThreadTopLogic(
         line_distance }
     , ew_{ std::move(ew) }
     , charset_{ std::move(charset) }
-    , position_{ position }
+    , widget_{std::move(widget)}
     , last_update_{ std::chrono::steady_clock::time_point() }
     , update_interval_{ update_interval }
-    , focus_mask_{ focus_mask }
+    , button_states_{ button_states }
+    , focus_filter_{ std::move(focus_filter) }
 {}
 
-ThreadTopLogic::~ThreadTopLogic() {
+InputStateLogic::~InputStateLogic() {
     on_destroy.clear();
 }
 
-std::optional<RenderSetup> ThreadTopLogic::try_render_setup(
+std::optional<RenderSetup> InputStateLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderedSceneDescriptor& frame_id) const
@@ -53,7 +56,7 @@ std::optional<RenderSetup> ThreadTopLogic::try_render_setup(
     return std::nullopt;
 }
 
-void ThreadTopLogic::render_without_setup(
+void InputStateLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -61,13 +64,21 @@ void ThreadTopLogic::render_without_setup(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    LOG_FUNCTION("ThreadTopLogic::render");
+    LOG_FUNCTION("InputStateLogic::render");
     auto now = std::chrono::steady_clock::now();
     auto elapsed = now - last_update_;
     if ((last_update_ == std::chrono::steady_clock::time_point()) ||
         (elapsed > update_interval_))
     {
-        text_ = thread_top();
+        std::stringstream sstr;
+        button_states_.print(
+            sstr,
+            {
+                .physical = false,
+                .only_pressed = true,
+                .min_deflection = BUTTON_STATES_MIN_DEFLECTION
+            });
+        text_ = sstr.str();
         last_update_ = now;
     }
     if (ew_->result_may_have_changed()) {
@@ -75,18 +86,18 @@ void ThreadTopLogic::render_without_setup(
     }
     renderable_text().render(
         font_height_.to_pixels(ly, PixelsRoundMode::ROUND),
-        position_,
-        { lx.flength(), ly.flength() },
+        *widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED),
         text_,
-        VerticalTextAlignment::TOP,
+        line_distance_.to_pixels(ly, PixelsRoundMode::NONE),
         TextInterpolationMode::NEAREST_NEIGHBOR,
-        line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
+        GenericTextAlignment::DEFAULT,
+        GenericTextAlignment::DEFAULT);
 }
 
-FocusFilter ThreadTopLogic::focus_filter() const {
-    return { .focus_mask = focus_mask_ };
+FocusFilter InputStateLogic::focus_filter() const {
+    return focus_filter_;
 }
 
-void ThreadTopLogic::print(std::ostream& ostr, size_t depth) const {
-    ostr << std::string(depth, ' ') << "ThreadTopLogic (" << focus_to_string(focus_mask_) << ")\n";
+void InputStateLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "InputStateLogic";
 }

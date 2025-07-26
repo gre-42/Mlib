@@ -7,6 +7,7 @@ namespace Mlib {
 
 struct BaseKeyBinding;
 class ButtonStates;
+struct ButtonStatesPrintArgs;
 
 class ButtonPress {
     ButtonPress& operator = (const ButtonPress&) = delete;
@@ -19,7 +20,7 @@ public:
         std::string role);
     ~ButtonPress();
 
-    void print(bool physical = false, bool only_pressed = false) const;
+    void print(const ButtonStatesPrintArgs& args) const;
 
     bool keys_down() const;
     bool keys_pressed();

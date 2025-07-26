@@ -32,22 +32,22 @@ ListView::ListView(
 {
     AnalogDigitalAxis left{
         .gamepad_id = user_id,
-        .axis = "1",
+        .axis = 1,
         .sign_and_threshold = -0.5
     };
     AnalogDigitalAxis right{
         .gamepad_id = user_id,
-        .axis = "1",
+        .axis = 1,
         .sign_and_threshold = 0.5
     };
     AnalogDigitalAxis up{
         .gamepad_id = user_id,
-        .axis = "2",
+        .axis = 2,
         .sign_and_threshold = -0.5
     };
     AnalogDigitalAxis down{
         .gamepad_id = user_id,
-        .axis = "2",
+        .axis = 2,
         .sign_and_threshold = 0.5
     };
     auto lock = key_configurations_.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");

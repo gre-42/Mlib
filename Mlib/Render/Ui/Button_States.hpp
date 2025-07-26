@@ -1,8 +1,6 @@
 #pragma once
 
-#ifdef __ANDROID__
-#include <unordered_map>
-#else
+#ifndef __ANDROID__
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -11,12 +9,22 @@
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstddef>
+#include <iosfwd>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 namespace Mlib {
 
 struct BaseKeyBinding;
+
+static const float BUTTON_STATES_MIN_DEFLECTION = 0.1f;
+
+struct ButtonStatesPrintArgs {
+    bool physical = false;
+    bool only_pressed = false;
+    float min_deflection = 0.f;
+};
 
 class ButtonStates {
     ButtonStates(const ButtonStates&) = delete;
@@ -54,7 +62,8 @@ public:
 #else
     void update_gamepad_state();
 #endif
-    void print(bool physical = false, bool only_pressed = false) const;
+    void print(const ButtonStatesPrintArgs& args = {}) const;
+    void print(std::ostream& ostr, const ButtonStatesPrintArgs& args = {}) const;
     bool key_down(const BaseKeyBinding& k, const std::string& role = "") const;
         std::unordered_map<uint32_t, TapButtonsStates> tap_buttons_;
     mutable SafeAtomicRecursiveSharedMutex  tap_buttons_mutex_;

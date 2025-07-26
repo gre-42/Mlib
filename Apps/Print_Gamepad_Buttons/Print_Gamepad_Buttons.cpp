@@ -29,9 +29,10 @@ int main(int argc, char** argv) {
     while (true) {
         bs.update_gamepad_state();
         bs.print();
-        bs.print(
-            false,  // physical
-            true);  // only_pressed
+        bs.print({
+            .only_pressed = true,
+            .min_deflection = BUTTON_STATES_MIN_DEFLECTION
+        });
         Mlib::sleep_for(std::chrono::milliseconds(100));
     }
 

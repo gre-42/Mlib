@@ -46,7 +46,7 @@ LogBuf::LogBuf(std::function<void(const std::string&)> write)
 
 int LogBuf::sync() {
     // From: https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
-    std::string delimiter = "\n";
+    char delimiter = '\n';
     std::string s = str();
     size_t last = 0;
     size_t next = 0;

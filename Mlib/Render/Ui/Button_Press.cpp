@@ -28,8 +28,8 @@ ButtonPress::ButtonPress(
 
 ButtonPress::~ButtonPress() = default;
 
-void ButtonPress::print(bool physical, bool only_pressed) const {
-    button_states_.print(physical, only_pressed);
+void ButtonPress::print(const ButtonStatesPrintArgs& args) const {
+    button_states_.print(args);
 }
 
 bool ButtonPress::keys_down() const {
