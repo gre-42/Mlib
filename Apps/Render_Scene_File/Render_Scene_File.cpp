@@ -174,36 +174,12 @@ void print_debug_info(
 
 JThread loader_thread(
     const ParsedArgs& args,
-    RenderLogicGallery& gallery,
-    AssetReferences& asset_references,
-    Translators& translators,
     PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
-    WindowLogic& window_logic,
-    const std::list<std::string>& search_path,
-    const std::string& main_scene_filename,
-    ThreadSafeString& next_scene_filename,
-    NotifyingJsonMacroArguments& external_json_macro_arguments,
-    std::atomic_size_t& num_renderings,
-    RealtimeDependentFps& render_set_fps,
-    SurfaceContactDb& surface_contact_db,
-    BulletPropertyDb& bullet_property_db,
-    DynamicLightDb& dynamic_light_db,
-    SceneConfig& scene_config,
-    ButtonStates& button_states,
-    CursorStates& cursor_states,
-    CursorStates& scroll_wheel_states,
-    VerboseVector<ButtonPress>& confirm_button_press,
-    LockableKeyConfigurations& key_configurations,
-    LockableKeyDescriptions& key_descriptions,
-    UiFocuses& ui_focuses,
-    LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
     std::atomic_bool& load_scene_finished,
-    const Render& render,
     std::chrono::steady_clock::duration render_delay,
-    std::chrono::steady_clock::duration velocity_dt,
-    const std::function<void()>& exit)
+    std::chrono::steady_clock::duration velocity_dt)
 {
     return JThread{[&, render_delay, velocity_dt](){
         try {
@@ -213,33 +189,7 @@ JThread loader_thread(
                 AudioResourceContextGuard arcg{ arc };
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
                 // GlContextGuard gcg{ render2.window() };
-                load_scene(
-                    &search_path,
-                    main_scene_filename,
-                    next_scene_filename,
-                    external_json_macro_arguments,
-                    num_renderings,
-                    render_set_fps,
-                    args.has_named("--verbose"),
-                    surface_contact_db,
-                    bullet_property_db,
-                    dynamic_light_db,
-                    scene_config,
-                    button_states,
-                    cursor_states,
-                    scroll_wheel_states,
-                    confirm_button_press,
-                    key_configurations,
-                    key_descriptions,
-                    ui_focuses,
-                    layout_constraints,
-                    gallery,
-                    asset_references,
-                    translators,
-                    physics_scenes,
-                    renderable_scenes,
-                    window_logic,
-                    exit);
+                load_scene();
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : physics_scenes.guarded_iterable()) {
@@ -719,7 +669,7 @@ int main(int argc, char** argv) {
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
             // In case of an exception in the main thread, destruction of "load_scene" must therefore happen
             // after the destruction of "renderable_scenes".
-            LoadScene load_scene;
+            std::unique_ptr<LoadScene> load_scene;
             ThreadSafeString next_scene_filename;
             {
                 RenderingResources rendering_resources{
@@ -761,20 +711,14 @@ int main(int argc, char** argv) {
                 std::function<void()> exit = [&render](){
                     render.request_window_close();
                 };
-                JThread loader_future_guard{loader_thread(
-                    args,
-                    gallery,
-                    asset_references,
-                    translators,
-                    physics_scenes,
-                    renderable_scenes,
-                    window_logic,
-                    search_path,
+                load_scene.reset(new LoadScene(
+                    &search_path,
                     main_scene_filename,
                     next_scene_filename,
                     external_json_macro_arguments,
                     num_renderings,
                     render_set_fps,
+                    args.has_named("--verbose"),
                     surface_contact_db,
                     bullet_property_db,
                     dynamic_light_db,
@@ -787,12 +731,21 @@ int main(int argc, char** argv) {
                     key_descriptions,
                     ui_focuses,
                     layout_constraints,
-                    load_scene,
+                    gallery,
+                    asset_references,
+                    translators,
+                    physics_scenes,
+                    renderable_scenes,
+                    window_logic,
+                    exit));
+                JThread loader_future_guard{loader_thread(
+                    args,
+                    physics_scenes,
+                    renderable_scenes,
+                    *load_scene,
                     load_scene_finished,
-                    render,
                     render_delay,
-                    velocity_dt,
-                    exit)};
+                    velocity_dt)};
                 try {
                     main_func(
                         button_states,

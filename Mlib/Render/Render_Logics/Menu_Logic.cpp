@@ -63,7 +63,7 @@ void MenuLogic::handle_events() {
                     focuses.pop_back();
                 }
             } else if (focuses.countdown_active() || focuses.has_focus(Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) {
-                focuses.push_back(Focus::MAIN_MENU);
+                focuses.force_push_back(Focus::MAIN_MENU);
             } else if (focuses.game_over_countdown_active()) {
                 // Do nothing, menu will show automatically after the countdown is finished
             } else if (!focuses.empty()) {

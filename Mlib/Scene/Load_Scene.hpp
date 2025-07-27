@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Macro_Executor/Focus_Finalizer.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
@@ -32,9 +34,7 @@ class WindowLogic;
 
 class LoadScene {
 public:
-    LoadScene();
-    ~LoadScene();
-    void operator () (
+    LoadScene(
         const std::list<std::string>* search_path,
         const std::string& script_filename,
         ThreadSafeString& next_scene_filename,
@@ -61,8 +61,13 @@ public:
         RenderableScenes& renderable_scenes,
         WindowLogic& window_logic,
         const std::function<void()>& exit);
+    ~LoadScene();
+    void operator () ();
 private:
+    MacroLineExecutor::JsonUserFunction json_user_function_;
+    MacroLineExecutor macro_line_executor_;
     MacroRecorder macro_file_executor_;
+    FocusFinalizer focus_finalizer_;
 };
 
 }

@@ -53,7 +53,7 @@ void CreateVideoModeSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& 
         SubmenuHeader{
             .title=args.arguments.at<std::string>(KnownArgs::title),
             .icon=args.arguments.at<std::string>(KnownArgs::icon)},
-        focus_filter.focus_mask,
+        focus_filter,
         0);
     auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
     auto& video_selector_logic = object_pool.create<VideoModeSelectorLogic>(

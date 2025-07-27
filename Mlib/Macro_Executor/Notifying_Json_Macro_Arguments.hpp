@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
+#include <cstdint>
+#include <functional>
 
 namespace Mlib {
 
@@ -13,14 +15,11 @@ class JsonMacroArgumentsObserverToken {
     JsonMacroArgumentsObserverToken(const JsonMacroArgumentsObserverToken&) = delete;
     JsonMacroArgumentsObserverToken& operator = (const JsonMacroArgumentsObserverToken&) = delete;
 private:
-    inline JsonMacroArgumentsObserverToken(
-        NotifyingJsonMacroArguments& args,
-        std::list<std::function<void()>>::iterator it);
+    inline explicit JsonMacroArgumentsObserverToken(std::function<void()> cleanup);
 public:
     ~JsonMacroArgumentsObserverToken();
 private:
-    NotifyingJsonMacroArguments& args_;
-    std::list<std::function<void()>>::iterator it_;
+    std::function<void()> cleanup_;
 };
 
 class NotifyingJsonMacroArguments {
@@ -45,11 +44,15 @@ public:
     }
     JsonMacroArgumentsAndLock json_macro_arguments() const;
     JsonMacroArgumentsObserverToken add_observer(std::function<void()> func);
+    JsonMacroArgumentsObserverToken add_finalizer(std::function<void()> func);
 private:
     void remove_observer(const std::list<std::function<void()>>::iterator& it);
+    void remove_finalizer(const std::list<std::function<void()>>::iterator& it);
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     JsonMacroArguments json_macro_arguments_;
     std::list<std::function<void()>> observers_;
+    std::list<std::function<void()>> finalizers_;
+    uint32_t notification_counter_;
 };
 
 class JsonMacroArgumentsAndLock {

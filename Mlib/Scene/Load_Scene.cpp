@@ -197,7 +197,97 @@
 using namespace Mlib;
 using namespace LoadSceneFuncs;
 
-LoadScene::LoadScene() {
+LoadScene::LoadScene(
+    const std::list<std::string>* search_path,
+    const std::string& script_filename,
+    ThreadSafeString& next_scene_filename,
+    NotifyingJsonMacroArguments& external_json_macro_arguments,
+    std::atomic_size_t& num_renderings,
+    RealtimeDependentFps& render_set_fps,
+    bool verbose,
+    SurfaceContactDb& surface_contact_db,
+    BulletPropertyDb& bullet_property_db,
+    DynamicLightDb& dynamic_light_db,
+    SceneConfig& scene_config,
+    ButtonStates& button_states,
+    CursorStates& cursor_states,
+    CursorStates& scroll_wheel_states,
+    VerboseVector<ButtonPress>& confirm_button_press,
+    LockableKeyConfigurations& key_configurations,
+    LockableKeyDescriptions& key_descriptions,
+    UiFocuses& ui_focuses,
+    LayoutConstraints& layout_constraints,
+    RenderLogicGallery& gallery,
+    AssetReferences& asset_references,
+    Translators& translators,
+    PhysicsScenes& physics_scenes,
+    RenderableScenes& renderable_scenes,
+    WindowLogic& window_logic,
+    const std::function<void()>& exit)
+    : json_user_function_{ [&](
+        const std::string& context,
+        const MacroLineExecutor& macro_line_executor,
+        const std::string& name,
+        const JsonMacroArguments& arguments,
+        JsonMacroArguments* local_json_macro_arguments)
+    {
+        auto physics_scene = [&]() -> PhysicsScene& {
+            return physics_scenes[context];
+        };
+        auto renderable_scene = [&]() -> RenderableScene& {
+            return renderable_scenes[context];
+        };
+        LoadSceneJsonUserFunctionArgs args{
+            .name = name,
+            .arguments = arguments,
+            .physics_scene = physics_scene,
+            .renderable_scene = renderable_scene,
+            .macro_line_executor = macro_line_executor,
+            .external_json_macro_arguments = external_json_macro_arguments,
+            .local_json_macro_arguments = local_json_macro_arguments,
+            .surface_contact_db = surface_contact_db,
+            .bullet_property_db = bullet_property_db,
+            .dynamic_light_db = dynamic_light_db,
+            .scene_config = scene_config,
+            .button_states = button_states,
+            .cursor_states = cursor_states,
+            .scroll_wheel_states = scroll_wheel_states,
+            .confirm_button_press = confirm_button_press,
+            .key_configurations = key_configurations,
+            .key_descriptions = key_descriptions,
+            .ui_focuses = ui_focuses,
+            .layout_constraints = layout_constraints,
+            .num_renderings = num_renderings,
+            .render_set_fps = render_set_fps,
+            .script_filename = script_filename,
+            .next_scene_filename = next_scene_filename,
+            .gallery = gallery,
+            .asset_references = asset_references,
+            .translators = translators,
+            .physics_scenes = physics_scenes,
+            .renderable_scenes = renderable_scenes,
+            .window_logic = window_logic,
+            .exit = exit};
+        auto& funcs = json_user_functions();
+        auto it = funcs.find(args.name);
+        if (it == funcs.end()) {
+            return false;
+        }
+        it->second(args);
+        return true;
+    }},
+    macro_line_executor_{
+        macro_file_executor_,
+        script_filename,
+        search_path,
+        json_user_function_,
+        "no_scene_specified",
+        nlohmann::json::object(),
+        external_json_macro_arguments,
+        asset_references,
+        verbose},
+    focus_finalizer_{ ui_focuses, macro_line_executor_ }
+{
     static struct RegisterJsonUserFunctions {
         RegisterJsonUserFunctions() {
             // Containers
@@ -399,95 +489,6 @@ LoadScene::LoadScene() {
 
 LoadScene::~LoadScene() = default;
 
-void LoadScene::operator()(
-    const std::list<std::string>* search_path,
-    const std::string& script_filename,
-    ThreadSafeString& next_scene_filename,
-    NotifyingJsonMacroArguments& external_json_macro_arguments,
-    std::atomic_size_t& num_renderings,
-    RealtimeDependentFps& render_set_fps,
-    bool verbose,
-    SurfaceContactDb& surface_contact_db,
-    BulletPropertyDb& bullet_property_db,
-    DynamicLightDb& dynamic_light_db,
-    SceneConfig& scene_config,
-    ButtonStates& button_states,
-    CursorStates& cursor_states,
-    CursorStates& scroll_wheel_states,
-    VerboseVector<ButtonPress>& confirm_button_press,
-    LockableKeyConfigurations& key_configurations,
-    LockableKeyDescriptions& key_descriptions,
-    UiFocuses& ui_focuses,
-    LayoutConstraints& layout_constraints,
-    RenderLogicGallery& gallery,
-    AssetReferences& asset_references,
-    Translators& translators,
-    PhysicsScenes& physics_scenes,
-    RenderableScenes& renderable_scenes,
-    WindowLogic& window_logic,
-    const std::function<void()>& exit)
-{
-    MacroLineExecutor::JsonUserFunction json_user_function = [&](
-        const std::string& context,
-        const MacroLineExecutor& macro_line_executor,
-        const std::string& name,
-        const JsonMacroArguments& arguments,
-        JsonMacroArguments* local_json_macro_arguments)
-    {
-        auto physics_scene = [&]() -> PhysicsScene& {
-            return physics_scenes[context];
-        };
-        auto renderable_scene = [&]() -> RenderableScene& {
-            return renderable_scenes[context];
-        };
-        LoadSceneJsonUserFunctionArgs args{
-            .name = name,
-            .arguments = arguments,
-            .physics_scene = physics_scene,
-            .renderable_scene = renderable_scene,
-            .macro_line_executor = macro_line_executor,
-            .external_json_macro_arguments = external_json_macro_arguments,
-            .local_json_macro_arguments = local_json_macro_arguments,
-            .surface_contact_db = surface_contact_db,
-            .bullet_property_db = bullet_property_db,
-            .dynamic_light_db = dynamic_light_db,
-            .scene_config = scene_config,
-            .button_states = button_states,
-            .cursor_states = cursor_states,
-            .scroll_wheel_states = scroll_wheel_states,
-            .confirm_button_press = confirm_button_press,
-            .key_configurations = key_configurations,
-            .key_descriptions = key_descriptions,
-            .ui_focuses = ui_focuses,
-            .layout_constraints = layout_constraints,
-            .num_renderings = num_renderings,
-            .render_set_fps = render_set_fps,
-            .script_filename = script_filename,
-            .next_scene_filename = next_scene_filename,
-            .gallery = gallery,
-            .asset_references = asset_references,
-            .translators = translators,
-            .physics_scenes = physics_scenes,
-            .renderable_scenes = renderable_scenes,
-            .window_logic = window_logic,
-            .exit = exit};
-        auto& funcs = json_user_functions();
-        auto it = funcs.find(args.name);
-        if (it == funcs.end()) {
-            return false;
-        }
-        it->second(args);
-        return true;
-    };
-    MacroLineExecutor lp2{
-        macro_file_executor_,
-        script_filename,
-        search_path,
-        json_user_function,
-        "no_scene_specified",
-        nlohmann::json::object(),
-        external_json_macro_arguments,
-        asset_references,
-        verbose};
-    macro_file_executor_(lp2);
+void LoadScene::operator () () {
+    macro_file_executor_(macro_line_executor_);
 }

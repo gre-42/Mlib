@@ -62,6 +62,7 @@ public:
     bool eval_boolean_expression(const nlohmann::json& j) const;
     bool eval_boolean_expression(const nlohmann::json& j, const JsonView& variables) const;
     JsonMacroArgumentsObserverToken add_observer(std::function<void()> func);
+    JsonMacroArgumentsObserverToken add_finalizer(std::function<void()> func);
     JsonView block_arguments() const;
 private:
     MacroRecorder& macro_recorder_;

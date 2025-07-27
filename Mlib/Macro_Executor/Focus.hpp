@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Threads/Checked_Mutex.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <atomic>
@@ -11,6 +12,7 @@
 namespace Mlib {
 
 struct FocusFilter;
+class MacroLineExecutor;
 
 enum class Focus {
     // Focuses
@@ -76,7 +78,7 @@ public:
     void replace(Focus old, Focus new_);
     void remove(Focus focus);
     void pop_back();
-    void push_back(Focus focus);
+    void force_push_back(Focus focus);
     bool has_focus(Focus focus) const;
     bool countdown_active() const;
     bool game_over_countdown_active() const;
@@ -95,7 +97,7 @@ std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 struct SubmenuHeader {
     std::string title;
     std::string icon;
-    std::vector<std::string> requires_;
+    BooleanExpression required;
 };
 
 enum class PersistedValueType {
@@ -113,7 +115,7 @@ public:
     std::map<std::string, std::atomic_size_t> menu_selection_ids;
     std::map<std::string, size_t> submenu_numbers;
     std::vector<SubmenuHeader> submenu_headers;
-    std::vector<Focus> focus_masks;
+    std::vector<FocusFilter> focus_filters;
     std::map<std::string, std::atomic_size_t> all_selection_ids;
     void set_persisted_selection_id(const std::string& submenu, const std::string& s, PersistedValueType cb);
     std::string get_persisted_selection_id(const std::string& submenu) const;
@@ -123,8 +125,9 @@ public:
     void insert_submenu(
         const std::string& id,
         const SubmenuHeader& header,
-        Focus focus_mask,
+        FocusFilter focus_filter,
         size_t default_selection);
+    void try_push_back(Focus focus, const MacroLineExecutor& mle);
     bool has_focus(const FocusFilter& focus_filter) const;
     void clear();
     bool can_load() const;
@@ -132,6 +135,7 @@ public:
     bool has_changes() const;
     void load();
     void save();
+    void pop_invalid_focuses(const MacroLineExecutor& mle);
 private:
     bool get_has_changes() const;
     std::map<std::string, ThreadSafeString> loaded_persistent_selection_ids;
@@ -154,6 +158,7 @@ public:
     void try_save();
     void clear();
     void clear_focuses();
+    void pop_invalid_focuses(MacroLineExecutor& mle);
 private:
     std::map<uint32_t, UiFocus> focuses_;
     std::string filename_prefix_;

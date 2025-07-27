@@ -1,4 +1,4 @@
-#include "Append_Focuses.hpp"
+#include "Try_Append_Focuses.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -14,15 +14,15 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(content);
 }
 
-AppendFocuses::AppendFocuses(RenderableScene& renderable_scene)
+TryAppendFocuses::TryAppendFocuses(RenderableScene& renderable_scene)
     : LoadRenderableSceneInstanceFunction(renderable_scene)
 {}
 
-void AppendFocuses::execute(const LoadSceneJsonUserFunctionArgs& args) {
+void TryAppendFocuses::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     std::scoped_lock lock{ui_focus.focuses.mutex};
     for (Focus focus : args.arguments.at_vector<std::string>(KnownArgs::content, focus_from_string)) {
-        ui_focus.focuses.push_back(focus);
+        ui_focus.try_push_back(focus, args.macro_line_executor);
     }
 }
 
@@ -31,10 +31,10 @@ namespace {
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "append_focuses",
+            "try_append_focuses",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                AppendFocuses(args.renderable_scene()).execute(args);
+                TryAppendFocuses(args.renderable_scene()).execute(args);
             });
     }
 } obj;

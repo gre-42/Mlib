@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-class AppendFocuses: public LoadRenderableSceneInstanceFunction {
+class TryAppendFocuses: public LoadRenderableSceneInstanceFunction {
 public:
-    explicit AppendFocuses(RenderableScene& renderable_scene);
+    explicit TryAppendFocuses(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

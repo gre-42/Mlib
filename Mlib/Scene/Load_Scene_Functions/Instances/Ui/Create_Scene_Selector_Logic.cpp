@@ -63,7 +63,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         SubmenuHeader{
             .title=args.arguments.at<std::string>(KnownArgs::title),
             .icon=args.arguments.at<std::string>(KnownArgs::icon)},
-        focus_filter.focus_mask,
+        focus_filter,
         0);
     auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
         CURRENT_SOURCE_LOCATION,

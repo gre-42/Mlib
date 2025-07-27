@@ -88,7 +88,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
-        args.external_json_macro_arguments,
+        args.macro_line_executor,
         args.asset_references,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         ui_focus,

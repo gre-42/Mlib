@@ -50,13 +50,17 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto focus_filter = FocusFilter{
         .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
         .submenu_ids = args.arguments.at<std::set<std::string>>(KnownArgs::submenus, { id }) };
+    BooleanExpression required;
+    if (auto r = args.arguments.try_at(KnownArgs::required); r.has_value()) {
+        expression_from_json(*r, required);
+    }
     ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),
-            .requires_ = args.arguments.at<std::vector<std::string>>(KnownArgs::required, std::vector<std::string>{})
+            .required = std::move(required)
         },
-        focus_filter.focus_mask,
+        focus_filter,
         args.arguments.at<size_t>(KnownArgs::deflt));
     auto& parameter_setter_logic = object_pool.create<KeyBindingsLogic>(
         CURRENT_SOURCE_LOCATION,

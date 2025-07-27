@@ -549,6 +549,10 @@ JsonMacroArgumentsObserverToken MacroLineExecutor::add_observer(std::function<vo
     return global_json_macro_arguments_.add_observer(std::move(func));
 }
 
+JsonMacroArgumentsObserverToken MacroLineExecutor::add_finalizer(std::function<void()> func) {
+    return global_json_macro_arguments_.add_finalizer(std::move(func));
+}
+
 JsonView MacroLineExecutor::block_arguments() const {
     return JsonView{ block_arguments_ };
 }

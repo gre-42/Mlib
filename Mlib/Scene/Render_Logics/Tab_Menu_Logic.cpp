@@ -27,11 +27,11 @@
 using namespace Mlib;
 
 SubmenuHeaderContents::SubmenuHeaderContents(
-    const NotifyingJsonMacroArguments& substitutions,
+    const MacroLineExecutor& mle,
     const AssetReferences& asset_references,
     Focus focus_mask,
     UiFocus& ui_focus)
-    : substitutions_{ substitutions }
+    : mle_{ mle }
     , asset_references_{ asset_references }
     , focus_mask_{ focus_mask }
     , ui_focus_{ ui_focus }
@@ -42,16 +42,10 @@ size_t SubmenuHeaderContents::num_entries() const {
 }
 
 bool SubmenuHeaderContents::is_visible(size_t index) const {
-    if (!any(focus_mask_ & ui_focus_.focus_masks.at(index))) {
+    if (!any(focus_mask_ & ui_focus_.focus_filters.at(index).focus_mask)) {
         return false;
     }
-    auto variables = substitutions_.json_macro_arguments();
-    for (const auto& r : ui_focus_.submenu_headers.at(index).requires_) {
-        if (!eval<bool>(r, variables, asset_references_)) {
-            return false;
-        }
-    }
-    return true;
+    return mle_.eval(ui_focus_.submenu_headers.at(index).required);
 }
 
 TabMenuLogic::TabMenuLogic(
@@ -70,7 +64,7 @@ TabMenuLogic::TabMenuLogic(
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
-    NotifyingJsonMacroArguments& substitutions,
+    const MacroLineExecutor& mle,
     const AssetReferences& asset_references,
     std::unique_ptr<ExpressionWatcher>&& ew,
     UiFocus& ui_focus,
@@ -91,7 +85,7 @@ TabMenuLogic::TabMenuLogic(
         ttf_filename_,
         font_color) }
     , ui_focus_{ ui_focus }
-    , contents_{ substitutions, asset_references, focus_mask, ui_focus }
+    , contents_{ mle, asset_references, focus_mask, ui_focus }
     , gallery_{ gallery }
     , list_view_style_{ list_view_style }
     , selection_marker_{ selection_marker }
@@ -101,7 +95,6 @@ TabMenuLogic::TabMenuLogic(
     , widget_{ std::move(widget) }
     , font_height_{ font_height }
     , line_distance_{ line_distance }
-    , substitutions_{ substitutions }
     , num_renderings_{ num_renderings }
     , on_execute_{ std::move(reload_transient_objects) }
     , list_view_{

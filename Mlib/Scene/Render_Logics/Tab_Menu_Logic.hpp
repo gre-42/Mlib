@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -19,7 +20,6 @@ struct SubmenuHeader;
 class ButtonPress;
 class ButtonStates;
 class ThreadSafeString;
-class NotifyingJsonMacroArguments;
 class AssetReferences;
 class IWidget;
 class ILayoutPixels;
@@ -30,7 +30,7 @@ class ExpressionWatcher;
 class SubmenuHeaderContents: public IListViewContents {
 public:
     explicit SubmenuHeaderContents(
-        const NotifyingJsonMacroArguments& substitutions,
+        const MacroLineExecutor& mle,
         const AssetReferences& asset_references,
         Focus focus_mask,
         UiFocus& ui_focus);
@@ -39,7 +39,7 @@ public:
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
-    const NotifyingJsonMacroArguments& substitutions_;
+    MacroLineExecutor mle_;
     const AssetReferences& asset_references_;
     Focus focus_mask_;
     UiFocus& ui_focus_;
@@ -63,7 +63,7 @@ public:
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
-        NotifyingJsonMacroArguments& substitutions,
+        const MacroLineExecutor& mle,
         const AssetReferences& asset_references,
         std::unique_ptr<ExpressionWatcher>&& ew,
         UiFocus& ui_focus,
@@ -112,7 +112,6 @@ private:
     std::unordered_map<size_t, std::unique_ptr<TextResource>> title_resources_;
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
-    const NotifyingJsonMacroArguments& substitutions_;
     std::atomic_size_t& num_renderings_;
     std::function<void()> on_execute_;
     ListView list_view_;
