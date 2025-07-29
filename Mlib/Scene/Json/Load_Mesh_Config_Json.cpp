@@ -45,6 +45,7 @@ DECLARE_ARGUMENT(ambient_factor);
 DECLARE_ARGUMENT(diffuse_factor);
 DECLARE_ARGUMENT(specular_factor);
 DECLARE_ARGUMENT(desaturate);
+DECLARE_ARGUMENT(desaturation_exponent);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(lighten);
 DECLARE_ARGUMENT(textures);
@@ -93,6 +94,7 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .diffuse_factor = j.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
         .specular_factor = j.at<EFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
         .desaturate = j.at<float>(KnownArgs::desaturate, 0.f),
+        .desaturation_exponent = j.at<float>(KnownArgs::desaturation_exponent, 0.f),
         .histogram = j.try_path_or_variable(KnownArgs::histogram).path,
         .lighten = j.at<EFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
         .textures = blend_map_textures_from_json(j, KnownArgs::textures),

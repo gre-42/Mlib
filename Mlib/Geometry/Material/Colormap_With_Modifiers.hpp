@@ -14,6 +14,7 @@ namespace Mlib {
 struct ColormapWithModifiers {
     VariableAndHash<std::string> filename;
     float desaturate = 0.f;
+    float desaturation_exponent = 0.f;
     std::string alpha = "";
     std::string histogram = "";
     std::string average = "";
@@ -56,6 +57,7 @@ struct ColormapWithModifiers {
     void serialize(Archive& archive) {
         archive(filename);
         archive(desaturate);
+        archive(desaturation_exponent);
         archive(alpha);
         archive(histogram);
         archive(average);

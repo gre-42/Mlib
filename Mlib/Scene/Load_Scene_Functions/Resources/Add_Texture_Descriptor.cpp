@@ -19,6 +19,7 @@ DECLARE_ARGUMENT(normal);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(alpha_fac);
 DECLARE_ARGUMENT(desaturate);
+DECLARE_ARGUMENT(desaturation_exponent);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(multiply_color);
 DECLARE_ARGUMENT(alpha_blend);
@@ -83,6 +84,7 @@ struct RegisterJsonUserFunction {
         return ColormapWithModifiers{
             .filename = VariableAndHash{args.arguments.path_or_variable(KnownArgs::color).path},
             .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
+            .desaturation_exponent = args.arguments.at<float>(KnownArgs::desaturation_exponent, 0.f),
             .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
             .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
             .average = "",

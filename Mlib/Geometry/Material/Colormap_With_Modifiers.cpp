@@ -28,6 +28,7 @@ ColormapWithModifiers& ColormapWithModifiers::compute_hash() {
     hash = Mlib::hash_combine(
         filename,
         desaturate,
+        desaturation_exponent,
         alpha,
         histogram,
         average,
@@ -69,6 +70,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const ColormapWithModifiers
     ostr <<
         "filename: " << *t.filename << '\n' <<
         "desaturate: " << (int)t.desaturate << '\n' <<
+        "desaturation_exponent: " << (int)t.desaturation_exponent << '\n' <<
         "alpha: " << t.alpha << '\n' <<
         "histogram: " << t.histogram << '\n' <<
         "average: " << t.average << '\n' <<

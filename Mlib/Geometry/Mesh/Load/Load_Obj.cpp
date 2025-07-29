@@ -352,6 +352,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     td.color = ColormapWithModifiers{
                         .filename = VariableAndHash{ p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string() },
                         .desaturate = cfg.desaturate,
+                        .desaturation_exponent = cfg.desaturation_exponent,
                         .histogram = cfg.histogram,
                         .lighten = make_orderable(cfg.lighten),
                         .mipmap_mode = cfg.mipmap_mode,

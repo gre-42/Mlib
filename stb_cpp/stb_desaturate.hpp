@@ -5,4 +5,5 @@ void stb_desaturate(
     int width,
     int height,
     int nrChannels,
-    float amount);
+    float amount,
+    float exponent);

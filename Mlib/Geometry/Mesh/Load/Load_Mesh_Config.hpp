@@ -50,6 +50,7 @@ struct LoadMeshConfig {
     FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specular_factor = FixedArray<float, 3>(1.f);
     float desaturate = 0.f;
+    float desaturation_exponent = 0.f;
     std::string histogram;
     FixedArray<float, 3> lighten = FixedArray<float, 3>(0.f);
     std::vector<BlendMapTexture> textures;

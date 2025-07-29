@@ -309,14 +309,6 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
             si1.nrChannels,
             si0.nrChannels);
     }
-    if (color.desaturate != 0.f) {
-        stb_desaturate(
-            si0.data(),
-            si0.width,
-            si0.height,
-            si0.nrChannels,
-            color.desaturate);
-    }
     if (!color.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
         Array<unsigned char> ref = stb_image_2_array(stb_load_texture(color.histogram, -3, FlipMode::NONE, suppressed_warnings));
@@ -513,6 +505,15 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
             si0.nrChannels,
             si1.nrChannels,
             si0.nrChannels);
+    }
+    if (color.desaturate != 0.f) {
+        stb_desaturate(
+            si0.data(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            color.desaturate,
+            color.desaturation_exponent);
     }
     if (color.height_to_normals) {
         if (si0.nrChannels != 1) {

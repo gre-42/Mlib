@@ -8,7 +8,8 @@ void stb_desaturate(
     int width,
     int height,
     int nrChannels,
-    float amount)
+    float amount,
+    float exponent)
 {
     if (nrChannels != 3 && nrChannels != 4) {
         THROW_OR_ABORT("nrChannels is not 3 or 4");
@@ -16,9 +17,12 @@ void stb_desaturate(
     for (int r = 0; r < height; ++r) {
         for (int c = 0; c < width; ++c) {
             auto* dat = &data[(r * width + c) * nrChannels];
-            float mean = 0.2989f * dat[0] + 0.5870f * dat[1] + 0.1140f * dat[2];
+            auto mean = 0.2989f * dat[0] + 0.5870f * dat[1] + 0.1140f * dat[2];
+            auto amount2 = (exponent == 0.f)
+                ? amount
+                : std::pow(mean / 255.f, exponent) * amount;
             for (int d = 0; d < 3; ++d) {
-                dat[d] = (int)std::round(std::clamp(amount * mean  + (1 - amount) * dat[d], 0.f, 255.f));
+                dat[d] = (unsigned char)std::round(std::clamp(std::lerp((float)dat[d], mean, amount2), 0.f, 255.f));
             }
         }
     }

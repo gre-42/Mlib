@@ -192,6 +192,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     .color = ColormapWithModifiers{
                         .filename = VariableAndHash{ gen_filename(filename, material.at("diffuse_texture")) },
                         .desaturate = cfg.desaturate,
+                        .desaturation_exponent = cfg.desaturation_exponent,
                         .histogram = cfg.histogram,
                         .lighten = make_orderable(cfg.lighten),
                         .mipmap_mode = cfg.mipmap_mode,
