@@ -16,7 +16,7 @@ StbInfo<unsigned char> stb_multiply_with_alpha(
         for (int c = 0; c < width; ++c) {
             int i = (r * width + c) * nrChannels;
             auto fac = float(data[i + nrChannels - 1]) / 255.f;
-            for (int j = 0; j < nrChannels; ++j) {
+            for (int j = 0; j < nrChannels - 1; ++j) {
                 result(c, r, j) = (unsigned char)std::round(data[i + j] * fac);
             }
         }

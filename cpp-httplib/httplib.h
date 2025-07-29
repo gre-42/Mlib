@@ -256,7 +256,10 @@ using socket_t = int;
 #include <errno.h>
 #include <exception>
 #include <fcntl.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include <functional>
+#pragma GCC diagnostic pop
 #include <iomanip>
 #include <iostream>
 #include <list>

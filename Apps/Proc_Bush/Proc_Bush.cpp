@@ -5,6 +5,7 @@
 #include <Mlib/Stats/Fixed_Random_Arrays.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <ostream>
+#include <print>
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
