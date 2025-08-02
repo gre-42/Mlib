@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Regex/Misc.hpp>
@@ -40,6 +41,7 @@ private:
 class ParameterSetterLogic: public RenderLogic {
 public:
     ParameterSetterLogic(
+        BooleanExpression required,
         std::string id,
         std::vector<ReplacementParameter> options,
         ButtonPress& confirm_button,
@@ -81,6 +83,8 @@ private:
     std::vector<std::string> cached_titles_;
     ReplacementParameterContents contents_;
     std::unique_ptr<TextResource> renderable_text_;
+    BooleanExpression required_;
+    bool requirements_fulfilled_;
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;

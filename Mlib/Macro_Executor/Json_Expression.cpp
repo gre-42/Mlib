@@ -15,13 +15,13 @@ DECLARE_MATCH_COUNTER(group);
 DECLARE_MATCH_COUNTER(asset_id);
 DECLARE_MATCH_COUNTER(value);
 DECLARE_MATCH_COUNTER(key);
-};
+}
 
 namespace DictQueryGroups {
 BEGIN_MATCH_COUNTER;
 DECLARE_MATCH_COUNTER(dict);
 DECLARE_MATCH_COUNTER(key);
-};
+}
 
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;
@@ -271,7 +271,7 @@ static nlohmann::json eval_recursion(
             auto key_name = subst(match[DictQueryGroups::key].str());
             var = JsonView{ dict }.at(key_name);
         } else {
-            var = at(expression.substr(1), globals.json(), locals.json());
+            var = at(subst(expression.substr(1)), globals.json(), locals.json());
         }
         if (expression[0] == '!') {
             if (var.type() != nlohmann::detail::value_t::boolean) {

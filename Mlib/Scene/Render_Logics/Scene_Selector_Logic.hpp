@@ -71,7 +71,7 @@ public:
         ButtonStates& button_states,
         UiFocus& ui_focus,
         uint32_t user_id,
-        const std::function<void()>& on_change = [](){});
+        std::function<void()> on_change = [](){});
     ~SceneSelectorLogic();
 
     // RenderLogic

@@ -56,6 +56,7 @@ size_t selected_id(const std::string& id, const std::vector<ReplacementParameter
 }
 
 ParameterSetterLogic::ParameterSetterLogic(
+    BooleanExpression required,
     std::string id,
     std::vector<ReplacementParameter> options,
     ButtonPress& confirm_button,
@@ -75,14 +76,16 @@ ParameterSetterLogic::ParameterSetterLogic(
     std::function<void()> on_execute)
     : ew_{ std::move(ew) }
     , options_{ std::move(options) }
-    , contents_{options_, *ew_, ui_focus}
-    , renderable_text_{std::make_unique<TextResource>(
+    , contents_{ options_, *ew_, ui_focus }
+    , renderable_text_{ std::make_unique<TextResource>(
         ascii,
         std::move(ttf_filename),
-        font_color)}
-    , widget_{std::move(widget)}
-    , font_height_{font_height}
-    , line_distance_{line_distance}
+        font_color) }
+    , required_{ std::move(required) }
+    , requirements_fulfilled_{ false }
+    , widget_{ std::move(widget) }
+    , font_height_{ font_height }
+    , line_distance_{ line_distance }
     , focus_filter_{ std::move(focus_filter) }
     , confirm_button_{ confirm_button }
     , ui_focus_{ ui_focus }
@@ -99,12 +102,25 @@ ParameterSetterLogic::ParameterSetterLogic(
         contents_,
         ListViewOrientation::VERTICAL,
         user_id,
-        [this, on_change](){
+        [this, oc = std::move(on_change)](){
+            if (!ew_->eval(required_)) {
+                return;
+            }
             merge_substitutions();
-            on_change();
-        }}
+            oc();
+        } }
     , ot_{ ew_->add_observer([this](){
-        list_view_.notify_change_visibility();
+        if (!ew_->eval(required_)) {
+            requirements_fulfilled_ = false;
+            return;
+        }
+        auto rf = requirements_fulfilled_;
+        requirements_fulfilled_ = true;
+        if (!list_view_.has_selected_element()) {
+            list_view_.notify_change_visibility();
+        } else if (!rf) {
+            list_view_.trigger_on_change();
+        }
     }) }
 {
     cached_titles_.resize(options_.size());

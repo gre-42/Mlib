@@ -69,6 +69,8 @@ CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderab
 
 void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     auto id = args.arguments.at<std::string>(KnownArgs::id);
     std::list<ReplacementParameter> rps;
     if (args.arguments.contains(KnownArgs::parameters)) {
@@ -122,7 +124,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),
             .icon = args.arguments.at_non_null<std::string>(KnownArgs::icon, ""),
-            .required = std::move(required)
+            .required = required
         },
         focus_filter,
         args.arguments.at<size_t>(KnownArgs::deflt));
@@ -135,6 +137,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
     auto& parameter_setter_logic = object_pool.create<ParameterSetterLogic>(
         CURRENT_SOURCE_LOCATION,
+        std::move(required),
         std::move(id),
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
         args.confirm_button_press.get(user_id),
@@ -174,7 +177,6 @@ struct RegisterJsonUserFunction {
             "parameter_setter",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateParameterSetterLogic(args.renderable_scene()).execute(args);
             });
     }

@@ -71,7 +71,7 @@ ListView::ListView(
         lock->insert(0, "down", { {.key_bindings = {{.joystick_axes = a(down, down), .tap_button = g(user_id, "DOWN")}}} });
     }
     if (on_change_ && has_selected_element()) {
-        on_change_();
+        trigger_on_change();
     } else {
         notify_change_visibility();
     }
@@ -165,8 +165,8 @@ void ListView::handle_input(size_t left, size_t right) {
     if (last_.keys_pressed()) {
         go_to_last();
     }
-    if ((selection_index_ != old_selection_index) && on_change_) {
-        on_change_();
+    if (selection_index_ != old_selection_index) {
+        trigger_on_change();
     }
 }
 
@@ -198,6 +198,12 @@ static std::pair<size_t, size_t> get_visible_window(
     // No border exceeded
     size_t left = selected_index - dleft;
     return {left, right};
+}
+
+void ListView::trigger_on_change() {
+    if (on_change_) {
+        on_change_();
+    }
 }
 
 std::pair<size_t, size_t> ListView::render(
@@ -274,9 +280,7 @@ void ListView::notify_change_visibility() {
         for (size_t i = 0; i < contents_.num_entries(); ++i) {
             if (contents_.is_visible(i)) {
                 selection_index_ = i;
-                if (on_change_) {
-                    on_change_();
-                }
+                trigger_on_change();
                 break;
             }
         }

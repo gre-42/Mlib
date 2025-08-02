@@ -84,7 +84,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     ButtonStates& button_states,
     UiFocus& ui_focus,
     uint32_t user_id,
-    const std::function<void()>& on_change)
+    std::function<void()> on_change)
     : ew_{ std::move(ew) }
     , charset_{ std::move(charset) }
     , renderable_text_{ std::make_unique<TextResource>(
@@ -107,10 +107,10 @@ SceneSelectorLogic::SceneSelectorLogic(
         contents_,
         ListViewOrientation::VERTICAL,
         user_id,
-        [this, on_change]() {
+        [this, oc = std::move(on_change)]() {
             next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename();
             merge_substitutions();
-            on_change();
+            oc();
         } }
     , ot_{ ew_->add_observer([this]() {
         list_view_.notify_change_visibility();

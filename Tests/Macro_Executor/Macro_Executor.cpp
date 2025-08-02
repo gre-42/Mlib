@@ -38,8 +38,13 @@ void test_json() {
 }
 
 void test_eval() {
+    nlohmann::json variables{
+        {"hello_42", "world"},
+        {"i", "42"},
+    };
     linfo() << "eval " << eval<bool>("'hello' == 'world'", JsonView{ nlohmann::json::object() });
     linfo() << "eval " << eval<bool>("'hello' != 'world'", JsonView{ nlohmann::json::object() });
+    linfo() << "eval " << eval<std::string>("%hello_$i", JsonView{ variables });
     linfo() << "eval " << eval<bool>("%%levels/aircraft_carrier0/game_modes == 'hello'", JsonView{ nlohmann::json::object() });
 }
 

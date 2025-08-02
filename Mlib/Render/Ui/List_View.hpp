@@ -29,6 +29,7 @@ public:
         const LayoutConstraintParameters& ly,
         IListViewDrawer& drawer);
     void notify_change_visibility();
+    void trigger_on_change();
     bool has_selected_element() const;
     size_t selected_element() const;
 

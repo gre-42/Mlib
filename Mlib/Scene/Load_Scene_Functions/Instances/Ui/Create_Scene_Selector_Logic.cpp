@@ -19,7 +19,6 @@
 #include <list>
 
 using namespace Mlib;
-namespace fs = std::filesystem;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
