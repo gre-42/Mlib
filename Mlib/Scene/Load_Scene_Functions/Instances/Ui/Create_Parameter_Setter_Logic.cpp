@@ -119,12 +119,11 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
     if (auto r = args.arguments.try_at(KnownArgs::required); r.has_value()) {
         expression_from_json(*r, required);
     }
-    ui_focus.insert_submenu(
+    auto& header = ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),
-            .icon = args.arguments.at_non_null<std::string>(KnownArgs::icon, ""),
-            .required = required
+            .icon = args.arguments.at_non_null<std::string>(KnownArgs::icon, "")
         },
         focus_filter,
         args.arguments.at<size_t>(KnownArgs::deflt));
@@ -154,6 +153,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         focus_filter,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         ui_focus,
+        header,
         args.arguments.at<std::string>(KnownArgs::persistent, ""),
         args.button_states,
         user_id,

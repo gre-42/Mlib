@@ -14,6 +14,7 @@
 namespace Mlib {
 
 class UiFocus;
+struct SubmenuHeader;
 class ButtonStates;
 class IWidget;
 class ILayoutPixels;
@@ -54,6 +55,7 @@ public:
         FocusFilter focus_filter,
         std::unique_ptr<ExpressionWatcher>&& ew,
         UiFocus& ui_focus,
+        SubmenuHeader& header,
         std::string persisted,
         ButtonStates& button_states,
         uint32_t user_id,

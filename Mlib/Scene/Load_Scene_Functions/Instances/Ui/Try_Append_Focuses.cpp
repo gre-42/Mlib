@@ -22,7 +22,7 @@ void TryAppendFocuses::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     std::scoped_lock lock{ui_focus.focuses.mutex};
     for (Focus focus : args.arguments.at_vector<std::string>(KnownArgs::content, focus_from_string)) {
-        ui_focus.try_push_back(focus, args.macro_line_executor);
+        ui_focus.try_push_back(focus);
     }
 }
 

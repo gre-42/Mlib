@@ -69,6 +69,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     FocusFilter focus_filter,
     std::unique_ptr<ExpressionWatcher>&& ew,
     UiFocus& ui_focus,
+    SubmenuHeader& header,
     std::string persisted,
     ButtonStates& button_states,
     uint32_t user_id,
@@ -124,6 +125,12 @@ ParameterSetterLogic::ParameterSetterLogic(
     }) }
 {
     cached_titles_.resize(options_.size());
+    if (header.required_) {
+        THROW_OR_ABORT("header.required already set");
+    }
+    header.required_ = [this](){
+        return ew_->eval(required_) && list_view_.has_selected_element();
+    };
 }
 
 ParameterSetterLogic::~ParameterSetterLogic() {

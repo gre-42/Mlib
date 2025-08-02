@@ -27,12 +27,10 @@
 using namespace Mlib;
 
 SubmenuHeaderContents::SubmenuHeaderContents(
-    const MacroLineExecutor& mle,
     const AssetReferences& asset_references,
     Focus focus_mask,
     UiFocus& ui_focus)
-    : mle_{ mle }
-    , asset_references_{ asset_references }
+    : asset_references_{ asset_references }
     , focus_mask_{ focus_mask }
     , ui_focus_{ ui_focus }
 {}
@@ -45,7 +43,7 @@ bool SubmenuHeaderContents::is_visible(size_t index) const {
     if (!any(focus_mask_ & ui_focus_.focus_filters.at(index).focus_mask)) {
         return false;
     }
-    return mle_.eval(ui_focus_.submenu_headers.at(index).required);
+    return ui_focus_.submenu_headers.at(index).required();
 }
 
 TabMenuLogic::TabMenuLogic(
@@ -85,7 +83,7 @@ TabMenuLogic::TabMenuLogic(
         ttf_filename_,
         font_color) }
     , ui_focus_{ ui_focus }
-    , contents_{ mle, asset_references, focus_mask, ui_focus }
+    , contents_{ asset_references, focus_mask, ui_focus }
     , gallery_{ gallery }
     , list_view_style_{ list_view_style }
     , selection_marker_{ selection_marker }
@@ -108,6 +106,9 @@ TabMenuLogic::TabMenuLogic(
             merge_substitutions();
             on_change();
         }}
+    , ot_{ ew_->add_observer([this](){
+        list_view_.notify_change_visibility();
+    }) }
 {
     if ((icon_widget_ == nullptr) != (title_widget_ == nullptr)) {
         THROW_OR_ABORT("Inconsistent icon / title widget definition");

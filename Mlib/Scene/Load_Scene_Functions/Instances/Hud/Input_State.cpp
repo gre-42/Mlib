@@ -19,7 +19,6 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(title);
-DECLARE_ARGUMENT(required);
 DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(left);
@@ -45,15 +44,10 @@ void InputState::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto focus_filter = FocusFilter{
         .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
         .submenu_ids = args.arguments.at<std::set<std::string>>(KnownArgs::submenus, { id }) };
-    BooleanExpression required;
-    if (auto r = args.arguments.try_at(KnownArgs::required); r.has_value()) {
-        expression_from_json(*r, required);
-    }
     ui_focus.insert_submenu(
         id,
         SubmenuHeader{
-            .title = args.arguments.at<std::string>(KnownArgs::title),
-            .required = std::move(required)
+            .title = args.arguments.at<std::string>(KnownArgs::title)
         },
         focus_filter,
         0);

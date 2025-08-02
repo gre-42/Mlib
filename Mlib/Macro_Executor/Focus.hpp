@@ -1,8 +1,9 @@
 #pragma once
 #include <Mlib/Macro_Executor/Boolean_Expression.hpp>
-#include <Mlib/Threads/Checked_Mutex.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
+#include <functional>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -12,7 +13,6 @@
 namespace Mlib {
 
 struct FocusFilter;
-class MacroLineExecutor;
 
 enum class Focus {
     // Focuses
@@ -84,7 +84,7 @@ public:
     bool game_over_countdown_active() const;
     bool empty() const;
     size_t size() const;
-    mutable CheckedMutex mutex;
+    mutable SafeAtomicRecursiveSharedMutex mutex;
 private:
     void compute_focus_merge();
     Focus back_or_none() const;
@@ -97,7 +97,10 @@ std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 struct SubmenuHeader {
     std::string title;
     std::string icon;
-    BooleanExpression required;
+    std::function<bool()> required_;
+    inline bool required() const {
+        return !required_ || required_();
+    }
 };
 
 enum class PersistedValueType {
@@ -122,12 +125,12 @@ public:
     void set_requires_reload(std::string submenu, std::string reason);
     void clear_requires_reload(const std::string& submenu);
     const std::map<std::string, std::string>& requires_reload() const;
-    void insert_submenu(
+    SubmenuHeader& insert_submenu(
         const std::string& id,
         const SubmenuHeader& header,
         FocusFilter focus_filter,
         size_t default_selection);
-    void try_push_back(Focus focus, const MacroLineExecutor& mle);
+    void try_push_back(Focus focus);
     bool has_focus(const FocusFilter& focus_filter) const;
     void clear();
     bool can_load() const;
@@ -135,7 +138,7 @@ public:
     bool has_changes() const;
     void load();
     void save();
-    void pop_invalid_focuses(const MacroLineExecutor& mle);
+    void pop_invalid_focuses();
 private:
     bool get_has_changes() const;
     std::map<std::string, ThreadSafeString> loaded_persistent_selection_ids;
@@ -158,7 +161,7 @@ public:
     void try_save();
     void clear();
     void clear_focuses();
-    void pop_invalid_focuses(MacroLineExecutor& mle);
+    void pop_invalid_focuses();
 private:
     std::map<uint32_t, UiFocus> focuses_;
     std::string filename_prefix_;

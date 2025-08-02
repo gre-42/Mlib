@@ -9,7 +9,7 @@ FocusFinalizer::FocusFinalizer(
     UiFocuses& ui_focuses,
     MacroLineExecutor& mle)
     : ot_{ mle.add_finalizer([&](){
-        ui_focuses.pop_invalid_focuses(mle);
+        ui_focuses.pop_invalid_focuses();
     }) }
 {}
 

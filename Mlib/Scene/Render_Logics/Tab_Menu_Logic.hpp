@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -30,7 +31,6 @@ class ExpressionWatcher;
 class SubmenuHeaderContents: public IListViewContents {
 public:
     explicit SubmenuHeaderContents(
-        const MacroLineExecutor& mle,
         const AssetReferences& asset_references,
         Focus focus_mask,
         UiFocus& ui_focus);
@@ -39,7 +39,6 @@ public:
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
-    MacroLineExecutor mle_;
     const AssetReferences& asset_references_;
     Focus focus_mask_;
     UiFocus& ui_focus_;
@@ -115,6 +114,7 @@ private:
     std::atomic_size_t& num_renderings_;
     std::function<void()> on_execute_;
     ListView list_view_;
+    JsonMacroArgumentsObserverToken ot_;
 };
 
 }

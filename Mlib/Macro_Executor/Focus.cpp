@@ -2,7 +2,6 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -26,7 +25,7 @@ Focuses::Focuses(const std::initializer_list<Focus>& focuses)
 }
 
 void Focuses::compute_focus_merge() {
-    mutex.assert_locked_by_caller();
+    mutex.is_owner();
     focus_merge_ = Focus::NONE;
     for (const auto f : focus_stack_) {
         focus_merge_ |= f;
@@ -34,14 +33,14 @@ void Focuses::compute_focus_merge() {
 }
 
 void Focuses::set_focuses(const std::initializer_list<Focus>& focuses) {
-    mutex.assert_locked_by_caller();
+    mutex.is_owner();
     focus_stack_ = std::list(focuses.begin(), focuses.end());
     compute_focus_merge();
 }
 
 void Focuses::set_focuses(const std::vector<Focus>& focuses)
 {
-    mutex.assert_locked_by_caller();
+    mutex.is_owner();
     focus_stack_ = std::list(focuses.begin(), focuses.end());
     compute_focus_merge();
 }
@@ -63,7 +62,7 @@ bool Focuses::operator != (const std::vector<Focus>& focuses) const {
 }
 
 void Focuses::replace(Focus old, Focus new_) {
-    mutex.assert_locked_by_caller();
+    mutex.is_owner();
     auto it = std::find(focus_stack_.begin(), focus_stack_.end(), old);
     if (it == focus_stack_.end()) {
         THROW_OR_ABORT("Could not find focus with value \"" + focus_to_string(old) + '"');
@@ -79,7 +78,7 @@ Focus Focuses::back_or_none() const {
 }
 
 void Focuses::remove(Focus focus) {
-    mutex.assert_locked_by_caller();
+    mutex.is_owner();
     auto it = std::find(focus_stack_.begin(), focus_stack_.end(), focus);
     if (it == focus_stack_.end()) {
         THROW_OR_ABORT("Could not find focus with value \"" + focus_to_string(focus) + '"');
@@ -89,7 +88,7 @@ void Focuses::remove(Focus focus) {
 }
 
 void Focuses::pop_back() {
-    mutex.assert_locked_by_caller();
+    mutex.is_owner();
     if (focus_stack_.empty()) {
         THROW_OR_ABORT("pop_back called on empty focuses");
     }
@@ -98,7 +97,7 @@ void Focuses::pop_back() {
 }
 
 void Focuses::force_push_back(Focus focus) {
-    mutex.assert_locked_by_caller();
+    mutex.is_owner();
     if (any(focus_merge_ & focus)) {
         THROW_OR_ABORT("Duplicate focus: " + focus_to_string(focus));
     }
@@ -145,7 +144,7 @@ UiFocus::UiFocus(std::string filename)
 
 UiFocus::~UiFocus() = default;
 
-void UiFocus::insert_submenu(
+SubmenuHeader& UiFocus::insert_submenu(
     const std::string& id,
     const SubmenuHeader& header,
     FocusFilter focus_filter,
@@ -154,16 +153,17 @@ void UiFocus::insert_submenu(
     if (!submenu_numbers.try_emplace(id, submenu_headers.size()).second) {
         THROW_OR_ABORT("Submenu with ID \"" + id + "\" already exists");
     }
-    submenu_headers.push_back(header);
+    auto& res = submenu_headers.emplace_back(header);
     focus_filters.emplace_back(std::move(focus_filter));
     // If the selection_ids array is not yet initialized, apply the default value.
     all_selection_ids.try_emplace(id, default_selection);
+    return res;
 }
 
-void UiFocus::try_push_back(Focus focus, const MacroLineExecutor& mle) {
+void UiFocus::try_push_back(Focus focus) {
     focuses.force_push_back(focus);
     if (focuses.has_focus(Focus::MENU_ANY)) {
-        pop_invalid_focuses(mle);
+        pop_invalid_focuses();
     }
 }
 
@@ -284,12 +284,12 @@ void UiFocus::save() {
     loaded_persistent_selection_ids = current_persistent_selection_ids;
 }
 
-void UiFocus::pop_invalid_focuses(const MacroLineExecutor& mle) {
-    focuses.mutex.assert_locked_by_caller();
+void UiFocus::pop_invalid_focuses() {
+    focuses.mutex.is_owner();
     while (true) {
         bool retry = false;
         for (const auto& [i, focus_filter] : enumerate(focus_filters)) {
-            if (has_focus(focus_filter) && !mle.eval(submenu_headers.at(i).required)) {
+            if (has_focus(focus_filter) && !submenu_headers.at(i).required()) {
                 lwarn() << "Pop invalid focus because of \"" << submenu_headers.at(i).title << '"';
                 if (focuses.size() <= 1) {
                     THROW_OR_ABORT("Cannot remove focus layer after invalidation");
@@ -371,10 +371,10 @@ void UiFocuses::clear_focuses() {
     }
 }
 
-void UiFocuses::pop_invalid_focuses(MacroLineExecutor& mle) {
+void UiFocuses::pop_invalid_focuses() {
     for (auto& [_, f] : focuses_) {
         std::scoped_lock lock{ f.focuses.mutex };
-        f.pop_invalid_focuses(mle);
+        f.pop_invalid_focuses();
     }
 }
 

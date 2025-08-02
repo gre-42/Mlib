@@ -10,7 +10,7 @@ class FocusFinalizer {
     FocusFinalizer(const FocusFinalizer&) = delete;
     FocusFinalizer& operator = (const FocusFinalizer&) = delete;
 public:
-    explicit FocusFinalizer(
+    FocusFinalizer(
         UiFocuses& ui_focuses,
         MacroLineExecutor& mle);
     ~FocusFinalizer();
