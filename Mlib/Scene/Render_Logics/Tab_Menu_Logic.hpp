@@ -17,7 +17,6 @@ namespace Mlib {
 
 enum class Focus;
 class UiFocus;
-struct SubmenuHeader;
 class ButtonPress;
 class ButtonStates;
 class ThreadSafeString;

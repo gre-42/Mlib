@@ -287,18 +287,28 @@ void UiFocus::save() {
 void UiFocus::pop_invalid_focuses() {
     focuses.mutex.is_owner();
     while (true) {
+        bool any_has_focus = false;
         bool retry = false;
         for (const auto& [i, focus_filter] : enumerate(focus_filters)) {
-            if (has_focus(focus_filter) && !submenu_headers.at(i).required()) {
-                lwarn() << "Pop invalid focus because of \"" << submenu_headers.at(i).title << '"';
-                if (focuses.size() <= 1) {
-                    THROW_OR_ABORT("Cannot remove focus layer after invalidation");
+            if (has_focus(focus_filter)) {
+                any_has_focus = true;
+                if (!submenu_headers.at(i).required()) {
+                    lwarn() << "Pop invalid focus because of \"" << submenu_headers.at(i).title << '"';
+                    if (focuses.size() <= 1) {
+                        THROW_OR_ABORT("Cannot remove focus layer after invalidation");
+                    }
+                    focuses.pop_back();
+                    retry = true;
                 }
-                focuses.pop_back();
-                retry = true;
             }
         }
-        if (!retry) {
+        if (!any_has_focus && focuses.has_focus(Focus::MENU_ANY)) {
+            lwarn() << "Pop invalid focus because no submenu has the focus";
+            if (focuses.size() <= 1) {
+                THROW_OR_ABORT("Cannot remove focus layer after \"no submenus\"");
+            }
+            focuses.pop_back();
+        } else if (!retry) {
             break;
         }
     }
