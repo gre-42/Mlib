@@ -114,11 +114,11 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
     //     "players": [
     //         {
     //             "controller": "pc", "name": "you", "team": "red",
-    //             "spawned_vehicle": { "type": "tiger_tank" }
+    //             "spawn": { "vehicle": { "type": "tiger_tank" } }
     //         },
     //         {
     //             "controller": "npc", "name": "npc1", "team": "red",
-    //             "spawned_vehicle": { "type": "tiger_tank" }
+    //             "spawn": { "vehicle": { "type": "tiger_tank" } }
     //         },
     //         ...
     //     ]
