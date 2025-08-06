@@ -8,6 +8,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Physics_Engine/Penetration_Limits.hpp>
 #include <Mlib/Physics/Rotating_Frame.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -167,8 +168,9 @@ void RigidBodyPulses::integrate_delta_angular_momentum(const FixedArray<float, 3
 
 void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt)
 {
-    if (any(abs(J.vector) > 1e5f)) {
-        THROW_OR_ABORT("J.vector out of bounds");
+    auto thr = 10e3f * kg * 1000.f * kph;
+    if (any(abs(J.vector) > thr)) {
+        THROW_OR_ABORT((std::stringstream() << "J.vector out of bounds: " << J.vector << ". Threshold: " << thr).str());
     }
     integrate_delta_v(J.vector / mass_, dt);
     integrate_delta_angular_momentum(cross((J.position - abs_com_).casted<float>(), J.vector), extra_w, dt);

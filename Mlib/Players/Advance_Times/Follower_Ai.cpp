@@ -41,6 +41,7 @@ void FollowerAi::advance_time(float dt, const StaticWorld& world) {
                 nullptr                         // waypoint_history
             },
             nullptr,
-            world);
+            world,
+            dt);
     }
 }

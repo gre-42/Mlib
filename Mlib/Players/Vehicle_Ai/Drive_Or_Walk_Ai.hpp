@@ -32,7 +32,8 @@ public:
     virtual VehicleAiMoveToStatus move_to(
         const AiWaypoint& ai_waypoint,
         const SkillMap* skills,
-        const StaticWorld& world) override;
+        const StaticWorld& world,
+        float dt) override;
     virtual std::vector<SkillFactor> skills() const override;
 private:
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;

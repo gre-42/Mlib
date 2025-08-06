@@ -66,7 +66,8 @@ void SingleWaypoint::clear_waypoint() {
 
 void SingleWaypoint::move_to_waypoint(
     const SkillMap& skills,
-    const StaticWorld& world)
+    const StaticWorld& world,
+    float dt)
 {
     if (getenv_default_bool("DRAW_WAYPOINT_HISTORY", false)) {
         if (waypoint_.has_value()) {
@@ -89,7 +90,8 @@ void SingleWaypoint::move_to_waypoint(
             &waypoint_history_          // waypoint_history
         },
         &skills,
-        world) & VehicleAiMoveToStatus::WAYPOINT_REACHED))
+        world,
+        dt) & VehicleAiMoveToStatus::WAYPOINT_REACHED))
     {
         if (waypoint_id_ != SIZE_MAX) {
             last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();

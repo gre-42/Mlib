@@ -21,6 +21,7 @@
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
@@ -507,7 +508,7 @@ void Player::increment_external_forces(
         }
     }
     if (!unstucking) {
-        single_waypoint_.move_to_waypoint(skills_, world);
+        single_waypoint_.move_to_waypoint(skills_, world, cfg.dt_substeps(phase));
     }
 }
 

@@ -232,7 +232,8 @@ public:
     VehicleAiMoveToStatus move_to(
         const AiWaypoint& ai_waypoint,
         const SkillMap* skills,
-        const StaticWorld& world);
+        const StaticWorld& world,
+        float dt);
     void set_actor_task(ActorTask actor_task);
     void set_waypoint_ofs(CompressedScenePos dy);
     void get_rigid_pulses(std::unordered_set<RigidBodyPulses*>& rbps);

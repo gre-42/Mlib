@@ -17,7 +17,7 @@ public:
     void throttle_engine(
         float rocket_engine_power,
         float relaxation);
-    virtual void apply() = 0;
+    virtual void apply(float dt) = 0;
 protected:
     RigidBodyVehicle& rb_;
     float rocket_engine_power_;

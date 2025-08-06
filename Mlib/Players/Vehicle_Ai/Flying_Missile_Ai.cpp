@@ -19,7 +19,6 @@ using namespace Mlib;
 
 FlyingMissileAi::FlyingMissileAi(
     RigidBodyVehicle& rigid_body,
-    const PidController<FixedArray<float, 3>, float>& pid,
     Interp<float, float> dy,
     double eta_max,
     RigidBodyMissileController& controller,
@@ -27,7 +26,6 @@ FlyingMissileAi::FlyingMissileAi(
     float resting_position_reached_radius,
     float maximum_velocity)
     : on_destroy_rigid_body_{ rigid_body.on_destroy, CURRENT_SOURCE_LOCATION }
-    , pid_{ pid }
     , dy_{ std::move(dy) }
     , eta_max_{ eta_max }
     , waypoint_reached_radius_squared_{ squared(waypoint_reached_radius) }
@@ -46,7 +44,8 @@ FlyingMissileAi::~FlyingMissileAi() {
 VehicleAiMoveToStatus FlyingMissileAi::move_to(
     const AiWaypoint& ai_waypoint,
     const SkillMap* skills,
-    const StaticWorld& world)
+    const StaticWorld& world,
+    float dt)
 {
     controller_.reset_parameters();
     controller_.reset_relaxation();
@@ -57,7 +56,7 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
     if (!ai_waypoint.has_position_of_destination()) {
         controller_.throttle_engine(0.f, 1.f);
         controller_.set_desired_direction(fixed_zeros<float, 3>(), 1.f);
-        controller_.apply();
+        controller_.apply(dt);
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
     auto pod = ai_waypoint.position_of_destination(rigid_body_.waypoint_ofs_);
@@ -101,11 +100,14 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
         (rigid_body_.current_vehicle_domain_ == VehicleDomain::GROUND))
     {
         dir(1) += 0.5f;
-        dir /= std::sqrt(sum(squared(dir)));
+        auto l = std::sqrt(sum(squared(dir)));
+        if (l < 1e-12) {
+            THROW_OR_ABORT("Direction length too small during takeoff");
+        }
+        dir /= l;
     }
-
-    controller_.set_desired_direction(pid_(dir), 1.f);
-    controller_.apply();
+    controller_.set_desired_direction(dir, 1.f);
+    controller_.apply(dt);
     return result;
 }
 

@@ -23,7 +23,7 @@ public:
 
     explicit SingleWaypoint(const DanglingBaseClassRef<Player>& player);
     ~SingleWaypoint();
-    void move_to_waypoint(const SkillMap& skills, const StaticWorld& world);
+    void move_to_waypoint(const SkillMap& skills, const StaticWorld& world, float dt);
     void draw_waypoint_history(const std::string& filename) const;
     void set_waypoint(const WayPoint& waypoint, size_t waypoint_id);
     void set_waypoint(const WayPoint& waypoint);

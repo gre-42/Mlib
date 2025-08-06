@@ -43,6 +43,7 @@ struct PhysicsEngineConfig {
     float max_extra_friction = 0;
     float max_extra_w = 0;
     float velocity_lambda_min = -1000.f * kph;
+    float max_aerodynamic_acceleration = 50.f * kph / seconds;
     bool avoid_burnout = true;
     bool no_slip = false;
     float hand_brake_velocity = 2.f * kph;

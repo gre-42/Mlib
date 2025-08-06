@@ -3,7 +3,6 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Missile_Controller.hpp>
 #include <Mlib/Players/Vehicle_Ai/Flying_Missile_Ai.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -15,18 +14,11 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(missile);
-DECLARE_ARGUMENT(pid);
 DECLARE_ARGUMENT(dy);
 DECLARE_ARGUMENT(eta_max);
 DECLARE_ARGUMENT(waypoint_reached_radius);
 DECLARE_ARGUMENT(resting_position_reached_radius);
 DECLARE_ARGUMENT(maximum_velocity);
-}
-
-namespace PidArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(pid);
-DECLARE_ARGUMENT(alpha);
 }
 
 namespace DyArgs {
@@ -48,20 +40,11 @@ LoadSceneJsonUserFunction CreateMissileAi::json_user_function = [](const LoadSce
 };
 
 CreateMissileAi::CreateMissileAi(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto jpid = args.arguments.child(KnownArgs::pid);
-    jpid.validate(PidArgs::options);
-    auto pid = jpid.at<EFixedArray<float, 3>>(PidArgs::pid);
-    auto pid_alpha = jpid.at<float>(PidArgs::alpha);
-    auto pid_controller = PidController<FixedArray<float, 3>, float>{
-        pid(0) / meters,
-        pid(1) / meters,
-        pid(2) / meters,
-        pid_alpha}.changed_time_step(1.f / 60.f * seconds, physics_engine.config().dt);
     auto jdy = args.arguments.child(KnownArgs::dy);
     jdy.validate(DyArgs::options);
     Interp<float, float> dy{
@@ -74,7 +57,6 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
             global_object_pool.create<FlyingMissileAi>(
                 CURRENT_SOURCE_LOCATION,
                 missile_vehicle,
-                pid_controller,
                 std::move(dy),
                 args.arguments.at<float>(KnownArgs::eta_max) * seconds,
                 missile_vehicle.missile_controller(),

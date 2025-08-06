@@ -22,7 +22,8 @@ enum class VehicleAiMoveToStatus {
     POWER_IS_NAN = (1 << 4),
     WAYPOINT_REACHED = (1 << 5),
     RESTING_POSITION_REACHED = (1 << 6),
-    STOPPED_TO_AVOID_COLLISION = (1 << 7)
+    STOPPED_TO_AVOID_COLLISION = (1 << 7),
+    AUTOPILOT_SINGULARITY = (1 << 8)
 };
 
 inline VehicleAiMoveToStatus& operator |= (VehicleAiMoveToStatus& a, VehicleAiMoveToStatus b) {
@@ -48,7 +49,8 @@ public:
     virtual VehicleAiMoveToStatus move_to(
         const AiWaypoint& ai_waypoint,
         const SkillMap* skills,
-        const StaticWorld& world) = 0;
+        const StaticWorld& world,
+        float dt) = 0;
     virtual std::vector<SkillFactor> skills() const = 0;
 };
 

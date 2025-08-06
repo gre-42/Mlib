@@ -233,7 +233,7 @@ public:
             return ((x - *xm.first) * width_) / (*xm.second - *xm.first);
         };
         const auto ypos = [&](const TData& y) {
-            return height_ - ((y - *ym.first) * height_) / (*ym.second - *ym.first);
+            return height_ - ((y - *ym.first) * height_) / std::max((TData)1e-12, *ym.second - *ym.first);
         };
         // for (size_t i = down_sampling; i < x.size(); i += down_sampling) {
         //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));

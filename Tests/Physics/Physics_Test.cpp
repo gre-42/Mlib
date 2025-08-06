@@ -15,7 +15,6 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
-#include <Mlib/Signal/Pid_Controller.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 
 using namespace Mlib;
@@ -244,16 +243,6 @@ void test_track_element() {
     assert_allequal(te.transformation().rotation, te2.transformation().rotation);
 }
 
-void test_pid() {
-    PidController<float, float> pid{ 2.f, 5.f, 7.f, 0.2f };
-    auto pid2 = pid.changed_time_step(1.f / 60, 3.f / 60);
-    for (size_t i = 0; i < 10; ++i) {
-        pid2(5.f);
-        pid2(5.f);
-        linfo() << std::abs(pid(5.f) - pid2(5.f));
-    }
-}
-
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
@@ -266,7 +255,6 @@ int main(int argc, char** argv) {
         test_com();
         test_magic_formula();
         test_track_element();
-        test_pid();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;

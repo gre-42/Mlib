@@ -31,7 +31,8 @@ DestinationReachedAi::~DestinationReachedAi() {
 VehicleAiMoveToStatus DestinationReachedAi::move_to(
     const AiWaypoint& ai_waypoint,
     const SkillMap* skills,
-    const StaticWorld& world)
+    const StaticWorld& world,
+    float dt)
 {
     if ((skills != nullptr) && !skills->skills(control_source_).can_drive) {
         return VehicleAiMoveToStatus::SKILL_IS_MISSING;

@@ -18,6 +18,10 @@ void RigidBodyMissileController::set_desired_direction(
     float relaxation)
 {
     if (relaxation >= desired_direction_relaxation_) {
+        auto l2 = sum(squared(dir));
+        if (std::abs(l2 - 1.f) > 1e6f) {
+            THROW_OR_ABORT("Desired missile direction not normalized. Length: " + std::to_string(std::sqrt(l2)));
+        }
         desired_direction_ = dir;
         desired_direction_relaxation_ = relaxation;
     }

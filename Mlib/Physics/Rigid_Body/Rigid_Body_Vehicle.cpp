@@ -257,13 +257,17 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         auto svel2 = lvel * vel;
         auto drag = -wing->drag_coefficients * svel2;
         float fac = wing->fac(lvel);
+        auto thr = rbp_.mass_ * c.cfg.max_aerodynamic_acceleration;
         integrate_force(
             VectorAtPosition<float, ScenePos, 3>{
                 .vector = abs_location.rotate(
-                    fac * FixedArray<float, 3>{
-                        drag(0),
-                        drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
-                        drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz}),
+                    clamped(
+                        fac * FixedArray<float, 3>{
+                            drag(0),
+                            drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
+                            drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz},
+                        -thr,
+                        thr)),
                 .position = abs_location.t },
             c.cfg,
             c.phase);
@@ -578,10 +582,16 @@ void RigidBodyVehicle::set_rotor_movement_z(size_t id, float movement_z) {
 }
 
 void RigidBodyVehicle::set_wing_angle_of_attack(size_t id, float angle) {
+    if (std::abs(angle) >= M_PI) {
+        THROW_OR_ABORT("Angle of attack too large");
+    }
     get_wing(id).angle_of_attack = angle;
 }
 
 void RigidBodyVehicle::set_wing_brake_angle(size_t id, float angle) {
+    if (std::abs(angle) >= M_PI) {
+        THROW_OR_ABORT("Brake angle too large");
+    }
     get_wing(id).brake_angle = angle;
 }
 
@@ -1101,7 +1111,8 @@ void RigidBodyVehicle::remove_autopilot(const SkillScenario& scenario) {
 VehicleAiMoveToStatus RigidBodyVehicle::move_to(
     const AiWaypoint& ai_waypoint,
     const SkillMap* skills,
-    const StaticWorld& world)
+    const StaticWorld& world,
+    float dt)
 {
     auto it = autopilots_.find(actor_task_);
     if (it == autopilots_.end()) {
@@ -1109,7 +1120,7 @@ VehicleAiMoveToStatus RigidBodyVehicle::move_to(
     }
     auto status = VehicleAiMoveToStatus::NONE;
     for (auto& ai : it->second) {
-        status |= ai.second.ai->move_to(ai_waypoint, skills, world);
+        status |= ai.second.ai->move_to(ai_waypoint, skills, world, dt);
     }
     return status;
 }
