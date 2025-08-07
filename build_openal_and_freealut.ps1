@@ -4,7 +4,7 @@ Push-Location $PSScriptRoot
 # Chocolatey is already installed, skipping
 # Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-# Install CMake, OpenAL SDK and OpenAL
+Write-Host "Install CMake, OpenAL SDK and OpenAL"
 choco install -y cmake --installargs ADD_CMAKE_TO_PATH=System
 choco install -y openalsdk
 choco install -y openal
@@ -13,7 +13,7 @@ choco install -y openal
 # Expand-Archive OpenAL11CoreSDK.zip -DestinationPath .\
 # .\OpenAL11CoreSDK.exe
 
-# Compile freealut
+Write-Host "Install freealut"
 git clone https://github.com/vancegroup/freealut
 mkdir freealut/build
 cd freealut/build

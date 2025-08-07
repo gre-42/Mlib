@@ -1,13 +1,13 @@
 Push-Location $PSScriptRoot
 
-# Compile OpenAL Soft
+Write-Host "Compile OpenAL Soft"
 git clone https://github.com/kcat/openal-soft.git
 cd openal-soft/build
 cmake ..
 cmake --build . --config Release
 cd ..\..
 
-# Compile freealut
+Write-Host "Compile freealut"
 git clone https://github.com/vancegroup/freealut
 mkdir freealut/build
 cd freealut/build
