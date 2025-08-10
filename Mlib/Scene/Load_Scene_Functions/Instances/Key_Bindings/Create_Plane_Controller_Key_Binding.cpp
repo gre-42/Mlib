@@ -68,6 +68,7 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
             args.key_configurations,
+            args.arguments.at<uint32_t>(KnownArgs::user_id),
             args.arguments.at<std::string>(KnownArgs::id)),
         .gamepad_analog_axes_position{
             args.button_states,
