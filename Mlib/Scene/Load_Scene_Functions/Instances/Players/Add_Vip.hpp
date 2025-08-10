@@ -4,12 +4,9 @@
 
 namespace Mlib {
 
-class SetVip: public LoadPhysicsSceneInstanceFunction {
+class AddVip: public LoadPhysicsSceneInstanceFunction {
 public:
-    static LoadSceneJsonUserFunction json_user_function;
-    static const std::string key;
-private:
-    explicit SetVip(PhysicsScene& physics_scene);
+    explicit AddVip(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

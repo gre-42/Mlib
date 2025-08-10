@@ -1,5 +1,6 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_List.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <random>
 
@@ -13,8 +14,12 @@ class GameLogic;
 class Scene;
 class Spawner;
 struct GameLogicConfig;
-template <typename TData, size_t... tshape>
-class FixedArray;
+
+struct VipAndPosition {
+    Player& player;
+    FixedArray<float, 3> dir_z;
+    FixedArray<ScenePos, 3> position;
+};
 
 class Bystanders {
 public:
@@ -26,21 +31,19 @@ public:
         GameLogicConfig& cfg);
     ~Bystanders();
     void handle_bystanders();
-    void set_vip(const DanglingBaseClassPtr<Player>& vip);
+    void add_vip(const DanglingBaseClassRef<Player>& vip, SourceLocation loc);
 private:
     bool spawn_for_vip(
         VehicleSpawner& spawner,
-        const FixedArray<float, 3>& vip_z,
-        const FixedArray<ScenePos, 3>& vip_pos);
+        const std::vector<VipAndPosition>& vips);
     bool delete_for_vip(
         VehicleSpawner& spawner,
-        const FixedArray<float, 3>& vip_z,
-        const FixedArray<ScenePos, 3>& vip_pos);
+        const std::vector<VipAndPosition>& vips);
     std::mt19937 current_bystander_rng_;
     std::mt19937 current_bvh_rng_;
     std::mt19937 spawn_point_rng_;
     size_t current_bvh_;
-    DanglingBaseClassPtr<Player> vip_;
+    DanglingList<Player> vips_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     Scene& scene_;

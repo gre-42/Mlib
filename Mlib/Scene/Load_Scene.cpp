@@ -94,7 +94,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Respawn_All_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Identifier_And_Reload_History.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Spawn_Points.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Vip.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Way_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
@@ -430,7 +429,6 @@ LoadScene::LoadScene(
             register_json_user_function(SetSoftLight::key, SetSoftLight::json_user_function);
             register_json_user_function(SetSpawnPoints::key, SetSpawnPoints::json_user_function);
             register_json_user_function(SetWayPoints::key, SetWayPoints::json_user_function);
-            register_json_user_function(SetVip::key, SetVip::json_user_function);
             register_json_user_function(SpawnerSetNodes::key, SpawnerSetNodes::json_user_function);
             register_json_user_function(SpawnerSetPlayer::key, SpawnerSetPlayer::json_user_function);
             register_json_user_function(SpawnerSetRespawnCooldownTime::key, SpawnerSetRespawnCooldownTime::json_user_function);
