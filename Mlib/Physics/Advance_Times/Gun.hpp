@@ -52,13 +52,16 @@ public:
             const std::optional<VariableAndHash<std::string>>& target,
             const FixedArray<float, 3>& velocity,
             const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
+        std::function<void(
+            const FixedArray<ScenePos, 3>& position,
+            const FixedArray<SceneDir, 3>& velocity)> generate_shot_audio,
         ITrailStorage* bullet_trace_storage,
         std::string ammo_type,
-        const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
+        std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
         VariableAndHash<std::string> muzzle_flash_resource,
         const FixedArray<float, 3>& muzzle_flash_position,
         float muzzle_flash_animation_time,
-        const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider);
+        std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider);
     ~Gun();
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
@@ -75,6 +78,7 @@ private:
     bool maybe_generate_bullet(const StaticWorld& world);
     void generate_bullet(const StaticWorld& world);
     void generate_muzzle_flash_hider();
+    void generate_shot_audio();
     RenderingResources* rendering_resources_;
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
@@ -92,6 +96,9 @@ private:
         const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet_;
+    std::function<void(
+        const FixedArray<ScenePos, 3>& position,
+        const FixedArray<SceneDir, 3>& velocity)> generate_shot_audio_;
     ITrailStorage* bullet_trace_storage_;
     std::string ammo_type_;
     bool triggered_;

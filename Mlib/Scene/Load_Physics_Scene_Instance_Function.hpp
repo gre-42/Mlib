@@ -16,6 +16,7 @@ class ITrailRenderer;
 class SmokeParticleGenerator;
 class DynamicLights;
 class VehicleSpawners;
+class OneShotAudio;
 class Players;
 class Scene;
 class DynamicWorld;
@@ -58,6 +59,7 @@ protected:
     SceneParticles& sea_spray_particles;
     ITrailRenderer& trail_renderer;
     DynamicLights& dynamic_lights;
+    OneShotAudio& one_shot_audio;
     VehicleSpawners& vehicle_spawners;
     Players& players;
     Scene& scene;

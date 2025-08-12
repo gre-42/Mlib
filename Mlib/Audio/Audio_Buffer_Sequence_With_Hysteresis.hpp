@@ -8,14 +8,15 @@ class AudioBufferSequenceWithHysteresis {
     AudioBufferSequenceWithHysteresis &operator=(const AudioBufferSequenceWithHysteresis &) = delete;
 
 public:
-    AudioBufferSequenceWithHysteresis(std::vector<AudioBufferAndFrequency> buffers,
-                                      float hysteresis_step);
-    const AudioBufferAndFrequency &get_buffer_and_frequency(
+    AudioBufferSequenceWithHysteresis(
+        std::vector<AudioBufferAndFrequency> buffers,
+        float hysteresis_step);
+    const AudioBufferAndFrequency& get_buffer_and_frequency(
         float frequency,
         PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::UP_SAMPLING);
 
 private:
-    const AudioBufferAndFrequency *previous_result_;
+    const AudioBufferAndFrequency* previous_result_;
     float hysteresis_step_;
     AudioBufferSequence seq_;
 };

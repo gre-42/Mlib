@@ -34,18 +34,20 @@ class CrossFade {
     CrossFade(const CrossFade &) = delete;
     CrossFade &operator=(const CrossFade &) = delete;
 public:
-    explicit CrossFade(PositionRequirement position_requirement,
-                       std::function<bool()> paused,
-                       EventEmitter& paused_changed,
-                       float dgain = 0.02f);
+    explicit CrossFade(
+        PositionRequirement position_requirement,
+        std::function<bool()> paused,
+        EventEmitter& paused_changed,
+        float dgain = 0.02f);
     ~CrossFade();
     void start_background_thread(float dt = 0.01f);
     void advance_time(float dt);
-    void play(const AudioBuffer &audio_buffer,
-              float gain_factor = 1.f,
-              float pitch = 1.f,
-              float buffer_frequency = NAN,
-              float alpha = NAN);
+    void play(
+        const AudioBuffer &audio_buffer,
+        float gain_factor = 1.f,
+        float pitch = 1.f,
+        float buffer_frequency = NAN,
+        float alpha = NAN);
     void stop();
     void set_position(const AudioSourceState<ScenePos> &position);
     void print(std::ostream& ostr) const;

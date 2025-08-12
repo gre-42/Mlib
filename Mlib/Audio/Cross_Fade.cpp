@@ -52,11 +52,11 @@ void CrossFade::advance_time(float dt) {
     std::scoped_lock lock{ mutex_ };
     if (pause) {
         for (auto &s : sources_) {
-            s.source->mute();
+            s.source->pause();
         }
     } else {
         for (auto &s : sources_) {
-            s.source->unmute();
+            s.source->unpause();
         }
         if (dt != 0.f) {
             update_gain_unsafe(dgain_);
@@ -99,7 +99,7 @@ void CrossFade::play(
             update_pitch_unsafe(pitch);
         }
     } else {
-        auto &sg = sources_.emplace_back(AudioSourceAndGain{
+        auto& sg = sources_.emplace_back(AudioSourceAndGain{
             .audio_buffer = &audio_buffer,
             .gain = (Gain)0.f,
             .gain_factor = gain_factor,
@@ -132,7 +132,7 @@ void CrossFade::update_gain_unsafe(float dgain) {
     if (sources_.empty()) {
         return;
     }
-    auto &sg_back = sources_.back();
+    auto& sg_back = sources_.back();
     auto dgain1 = std::min(sg_back.gain + Gain{ dgain }, Gain{ 1.f }) - sg_back.gain;
     sg_back.gain += dgain1;
     total_gain_ += dgain1;

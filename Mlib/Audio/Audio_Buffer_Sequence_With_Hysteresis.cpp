@@ -6,9 +6,9 @@ using namespace Mlib;
 AudioBufferSequenceWithHysteresis::AudioBufferSequenceWithHysteresis(
     std::vector<AudioBufferAndFrequency> buffers,
     float hysteresis_step)
-: previous_result_{nullptr},
-  hysteresis_step_{hysteresis_step},
-  seq_{std::move(buffers)}
+    : previous_result_{ nullptr }
+    , hysteresis_step_{ hysteresis_step }
+    , seq_{ std::move(buffers) }
 {}
 
 const AudioBufferAndFrequency& AudioBufferSequenceWithHysteresis::get_buffer_and_frequency(

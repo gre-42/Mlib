@@ -36,6 +36,7 @@ class ITrailRenderer;
 class DynamicLights;
 class SurfaceContactDb;
 class DynamicLightDb;
+class OneShotAudio;
 
 class PhysicsLoop;
 
@@ -113,6 +114,8 @@ public:
     std::unique_ptr<GameLogic> game_logic_;
     Users users_;
     UsageCounter usage_counter_;
+
+    std::unique_ptr<OneShotAudio> one_shot_audio_;
 
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;

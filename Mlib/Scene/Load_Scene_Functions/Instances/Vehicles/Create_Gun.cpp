@@ -1,5 +1,8 @@
 #include "Create_Gun.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Audio/Audio_Resources.hpp>
+#include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
@@ -20,6 +23,7 @@
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <memory>
 
 using namespace Mlib;
 
@@ -38,6 +42,7 @@ DECLARE_ARGUMENT(muzzle_flash_resource);
 DECLARE_ARGUMENT(muzzle_flash_position);
 DECLARE_ARGUMENT(muzzle_flash_animation_time);
 DECLARE_ARGUMENT(generate_muzzle_flash_hider);
+DECLARE_ARGUMENT(shot_audio);
 }
 
 const std::string CreateGun::key = "gun";
@@ -49,7 +54,7 @@ LoadSceneJsonUserFunction CreateGun::json_user_function = [](const LoadSceneJson
 };
 
 CreateGun::CreateGun(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 class PunchAngleRng {
@@ -139,6 +144,27 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 mle.inserted_block_arguments(let)(l, nullptr);
             };
     }
+    std::function<void(
+        const FixedArray<ScenePos, 3>& position,
+        const FixedArray<SceneDir, 3>& velocity)> generate_shot_audio;
+    if (auto a = args.arguments.try_at<std::string>(KnownArgs::shot_audio); a.has_value()) {
+        generate_shot_audio =
+        [
+            &o=one_shot_audio,
+            shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(*a),
+            shot_audio_gain=AudioResourceContextStack::primary_audio_resources()->get_buffer_gain(*a)
+        ]
+        (
+            const FixedArray<ScenePos, 3>& position,
+            const FixedArray<SceneDir, 3>& velocity
+        )
+        {
+            o.play(
+                *shot_audio_buffer,
+                {position, velocity},
+                shot_audio_gain);
+        };
+    }
     global_object_pool.create<Gun>(
         CURRENT_SOURCE_LOCATION,
         &rendering_resources,
@@ -154,6 +180,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         punch_angle_node,
         bullet_props,
         std::move(generate_smart_bullet),
+        std::move(generate_shot_audio),
         bullet_trace_storage,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,

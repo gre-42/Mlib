@@ -77,6 +77,18 @@ void AudioSource::play() {
     AL_CHK(alSourcePlay(source_));
 }
 
+void AudioSource::pause() {
+    AL_CHK(alSourcePause(source_));
+}
+
+void AudioSource::unpause() {
+    ALint source_state;
+    AL_CHK(alGetSourcei(source_, AL_SOURCE_STATE, &source_state));
+    if (source_state == AL_PAUSED) {
+        AL_CHK(alSourcePlay(source_));
+    }
+}
+
 void AudioSource::join() {
     while (true) {
         ALint source_state;
@@ -101,4 +113,10 @@ void AudioSource::unmute() {
         }
         muted_ = false;
     }
+}
+
+bool AudioSource::stopped() const {
+    ALint source_state;
+    AL_CHK(alGetSourcei(source_, AL_SOURCE_STATE, &source_state));
+    return (source_state == AL_STOPPED);
 }

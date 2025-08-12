@@ -1,4 +1,5 @@
 #include "Physics_Scene.hpp"
+#include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
@@ -104,6 +105,10 @@ PhysicsScene::PhysicsScene(
           &fifo_log_}
     , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, std::move(translator) }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
+    , one_shot_audio_{ std::make_unique<OneShotAudio>(
+        PositionRequirement::WAITING_FOR_POSITION,
+        paused_,
+        paused_changed_) }
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 {
     physics_engine_.set_surface_contact_db(surface_contact_db);
@@ -113,6 +118,7 @@ PhysicsScene::PhysicsScene(
     physics_engine_.add_external_force_provider(gefp_);
     physics_engine_.advance_times_.add_advance_time({ *air_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine_.advance_times_.add_advance_time({ *skidmark_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    physics_engine_.advance_times_.add_advance_time({ *one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 PhysicsScene::~PhysicsScene() {

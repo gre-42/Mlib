@@ -52,13 +52,16 @@ Gun::Gun(
         const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
+    std::function<void(
+        const FixedArray<ScenePos, 3>& position,
+        const FixedArray<SceneDir, 3>& velocity)> generate_shot_audio,
     ITrailStorage* bullet_trace_storage,
     std::string ammo_type,
-    const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
+    std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
     VariableAndHash<std::string> muzzle_flash_resource,
     const FixedArray<float, 3>& muzzle_flash_position,
     float muzzle_flash_animation_time,
-    const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider)
+    std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider)
     : rendering_resources_{ rendering_resources }
     , scene_{ scene }
     , scene_node_resources_{ scene_node_resources }
@@ -71,6 +74,7 @@ Gun::Gun(
     , punch_angle_node_{ punch_angle_node }
     , bullet_properties_{ bullet_properties }
     , generate_smart_bullet_{ std::move(generate_smart_bullet) }
+    , generate_shot_audio_{ std::move(generate_shot_audio) }
     , bullet_trace_storage_{ bullet_trace_storage }
     , ammo_type_{ std::move(ammo_type) }
     , triggered_{ false }
@@ -80,11 +84,11 @@ Gun::Gun(
     , time_since_last_shot_{ 0 }
     , absolute_model_matrix_{ fixed_nans<ScenePos, 4, 4 >() }
     , punch_angle_{ 0.f, 0.f, 0.f }
-    , punch_angle_rng_{ punch_angle_rng }
+    , punch_angle_rng_{ std::move(punch_angle_rng) }
     , muzzle_flash_resource_{ std::move(muzzle_flash_resource) }
     , muzzle_flash_position_{ muzzle_flash_position }
     , muzzle_flash_animation_time_{ muzzle_flash_animation_time }
-    , generate_muzzle_flash_hider_{ generate_muzzle_flash_hider }
+    , generate_muzzle_flash_hider_{ std::move(generate_muzzle_flash_hider) }
     , node_on_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
 {
     if (punch_angle_node != nullptr) {
@@ -143,6 +147,9 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
     generate_bullet(world);
     if (!muzzle_flash_resource_->empty()) {
         generate_muzzle_flash_hider();
+    }
+    if (generate_shot_audio_) {
+        generate_shot_audio();
     }
     return true;
 }
@@ -258,6 +265,15 @@ void Gun::generate_muzzle_flash_hider() {
         muzzle_flash_position_.casted<ScenePos>(),
         muzzle_flash_animation_time_);
     generate_muzzle_flash_hider_(muzzle_flash_suffix);
+}
+
+void Gun::generate_shot_audio() {
+    if (!generate_shot_audio_) {
+        THROW_OR_ABORT("Shot audio not set");
+    }
+    generate_shot_audio_(
+        absolute_model_matrix_.t,
+        parent_rb_.velocity_at_position(absolute_model_matrix_.t));
 }
 
 void Gun::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix)
