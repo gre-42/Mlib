@@ -88,6 +88,9 @@ public:
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;
     RenderingResources rendering_resources_;
+    std::function<bool()> paused_;
+    EventEmitter paused_changed_;
+    OneShotAudio& one_shot_audio_;
     std::unique_ptr<ITrailRenderer> trail_renderer_;
     std::unique_ptr<DynamicLights> dynamic_lights_;
     DynamicWorld dynamic_world_;
@@ -99,8 +102,6 @@ public:
     SceneParticles skidmark_particles_;
     SceneParticles sea_spray_particles_;
     ContactSmokeGenerator contact_smoke_generator_;
-    std::function<bool()> paused_;
-    EventEmitter paused_changed_;
     RealtimeSleeper physics_sleeper_;
     FifoLog fifo_log_{10 * 1000};
     SetFps physics_set_fps_;
@@ -114,8 +115,6 @@ public:
     std::unique_ptr<GameLogic> game_logic_;
     Users users_;
     UsageCounter usage_counter_;
-
-    std::unique_ptr<OneShotAudio> one_shot_audio_;
 
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;

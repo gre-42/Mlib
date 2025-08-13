@@ -1,7 +1,10 @@
 #pragma once
+#include <Mlib/Audio/Lazy_One_Shot_Audio.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Smoke_Generation/Particle_Descriptor.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -13,9 +16,15 @@ struct SurfaceSmokeRule {
     Interp<float> smoke_particle_velocity = Interp<float>{ {}, {} };
 };
 
-struct SurfaceSmokeInfo {
+struct SurfaceSmokeVisual {
     ParticleDescriptor particle;
     std::string smoke_particle_instance_prefix;
+};
+
+struct SurfaceSmokeInfo {
+    std::optional<SurfaceSmokeVisual> visual;
+    std::unique_ptr<LazyOneShotAudio> audio;
+    std::optional<std::string> audio_resource_name;
     SurfaceSmokeRule vehicle_velocity;
     SurfaceSmokeRule tire_velocity;
 };
@@ -24,7 +33,7 @@ struct SurfaceContactInfo {
     float stiction_factor;      // for tires (tires store their stiction coefficient themselves)
     float stiction_coefficient; // for everything except tires
     float friction_coefficient; // for everything except tires
-    std::vector<SurfaceSmokeInfo> smoke_infos;
+    std::vector<SurfaceSmokeInfo> emission;
 };
 
 }

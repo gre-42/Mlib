@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
+#include <Mlib/Physics/Maybe_Generate.hpp>
 #include <Mlib/Physics/Smoke_Generation/Particle_Trail_Generator.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
@@ -79,6 +80,7 @@ private:
     VariableAndHash<std::string> bullet_node_name_;
     const BulletProperties& props_;
     float lifetime_;
+    MaybeGenerate maybe_generate_;
     ParticleTrailGenerator trail_generator_;
     bool has_trail_;
     std::unique_ptr<ITrailExtender> trace_extender_;

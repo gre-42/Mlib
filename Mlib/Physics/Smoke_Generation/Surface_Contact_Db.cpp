@@ -38,14 +38,3 @@ const SurfaceContactInfo* SurfaceContactDb::get_contact_info(
     }
     return &sit->second;
 }
-
-const SurfaceContactInfo* SurfaceContactDb::get_contact_info(
-    PhysicsMaterial material0,
-    PhysicsMaterial material1,
-    size_t tire_id1) const
-{
-    PhysicsMaterial m1 = (tire_id1 == SIZE_MAX)
-        ? material1
-        : PhysicsMaterial::SURFACE_BASE_TIRE;
-    return get_contact_info(material0, m1);
-}

@@ -48,6 +48,10 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const std::string& name)
     return buffer;
 }
 
+void AudioResources::preload_buffer(const std::string& name) const {
+    get_buffer(name);
+}
+
 void AudioResources::add_buffer_sequence(
     const std::string& name,
     const std::string& filename,

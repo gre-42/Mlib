@@ -44,8 +44,7 @@ void Mlib::collide_line_and_triangles(
             .l1_is_normal = false,
             .surface_contact_info = history.surface_contact_db.get_contact_info(
                 l0.physics_material,
-                t1.physics_material,
-                SIZE_MAX),
+                t1.physics_material),
             .default_collision_type = CollisionType::GRIND,
             .history = history});
     }

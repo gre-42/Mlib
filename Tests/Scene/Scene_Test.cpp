@@ -1,6 +1,7 @@
 #include "Create_Scene_Flat.hpp"
 #include "Create_Scene_Rod.hpp"
 #include "Create_Scene_Slide.hpp"
+#include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
@@ -138,13 +139,21 @@ void test_physics_engine(unsigned int seed) {
         16 };
     SurfaceContactDb surface_contact_db;
     BulletPropertyDb bullet_property_db;
+    std::function<bool()> paused;
+    EventEmitter paused_changed{ [](){ return true; } };
+    OneShotAudio one_shot_audio{ PositionRequirement::WAITING_FOR_POSITION, paused, paused_changed };
     ParticleRenderer air_particle_renderer{ particle_resources, ParticleType::SMOKE };
     ParticleRenderer skidmark_particle_renderer{ particle_resources, ParticleType::SKIDMARK };
     ParticleRenderer sea_spray_particle_renderer{ particle_resources, ParticleType::SEA_SPRAY };
     SmokeParticleGenerator air_smoke_particle_generator{ rendering_resources, scene_node_resources, air_particle_renderer, scene };
     SmokeParticleGenerator skidmark_smoke_particle_generator{ rendering_resources, scene_node_resources, skidmark_particle_renderer, scene };
     SmokeParticleGenerator sea_spray_smoke_particle_generator{ rendering_resources, scene_node_resources, sea_spray_particle_renderer, scene };
-    ContactSmokeGenerator contact_smoke_generator{ air_smoke_particle_generator, skidmark_smoke_particle_generator, sea_spray_smoke_particle_generator };
+    ContactSmokeGenerator contact_smoke_generator{
+        one_shot_audio,
+        air_smoke_particle_generator,
+        skidmark_smoke_particle_generator,
+        sea_spray_smoke_particle_generator
+    };
     TrailRenderer trail_renderer{ trail_resources };
     pe.set_surface_contact_db(surface_contact_db);
     pe.set_contact_smoke_generator(contact_smoke_generator);

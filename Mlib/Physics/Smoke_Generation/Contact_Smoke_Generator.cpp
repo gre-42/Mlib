@@ -1,4 +1,5 @@
 #include "Contact_Smoke_Generator.hpp"
+#include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
@@ -11,10 +12,12 @@
 using namespace Mlib;
 
 ContactSmokeGenerator::ContactSmokeGenerator(
+    OneShotAudio& one_shot_audio,
     SmokeParticleGenerator& air_smoke_particle_generator,
     SmokeParticleGenerator& skidmark_smoke_particle_generator,
     SmokeParticleGenerator& sea_wave_smoke_particle_generator)
-    : air_smoke_particle_generator_{ air_smoke_particle_generator }
+    : one_shot_audio_{ one_shot_audio }
+    , air_smoke_particle_generator_{ air_smoke_particle_generator }
     , skidmark_smoke_particle_generator_{ skidmark_smoke_particle_generator }
     , sea_wave_smoke_particle_generator_{ sea_wave_smoke_particle_generator }
 {}
@@ -43,7 +46,7 @@ void ContactSmokeGenerator::notify_contact(
     if (c.surface_contact_info == nullptr) {
         return;
     }
-    if (c.surface_contact_info->smoke_infos.empty()) {
+    if (c.surface_contact_info->emission.empty()) {
         return;
     }
     auto v0 = c.o0.rbp_.velocity_at_position(intersection_point);
@@ -56,7 +59,7 @@ void ContactSmokeGenerator::notify_contact(
             c.o1.get_tire_radius(c.tire_id1));
     auto dvel_a = std::sqrt(sum(squared(v0 - v1_a)));
     auto dvel_s = std::sqrt(sum(squared(v0 - v1_s)));
-    for (const auto& smoke_info : c.surface_contact_info->smoke_infos) {
+    for (const auto& smoke_info : c.surface_contact_info->emission) {
         const auto& af = smoke_info.vehicle_velocity.smoke_particle_frequency;
         const auto& sf = smoke_info.tire_velocity.smoke_particle_frequency;
         auto f =
@@ -69,48 +72,66 @@ void ContactSmokeGenerator::notify_contact(
         if (tstg.empty()) {
             c.o1.destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION }, ObserverAlreadyExistsBehavior::IGNORE);
         }
-        std::pair<size_t, const SurfaceSmokeInfo*> key{ c.tire_id1, &smoke_info };
-        if (auto tstgit = tstg.find(key); tstgit == tstg.end()) {
-            auto& pgen = [&]() -> SmokeParticleGenerator& {
-                switch (smoke_info.particle.type) {
-                    case ParticleType::NONE: THROW_OR_ABORT("Particle type \"none\" does not require a contact smoke generator");
-                    case ParticleType::SMOKE: return air_smoke_particle_generator_;
-                    case ParticleType::SKIDMARK: return skidmark_smoke_particle_generator_;
-                    case ParticleType::WATER_WAVE: THROW_OR_ABORT("Water waves do not require a contact smoke generator");
-                    case ParticleType::SEA_SPRAY: return sea_wave_smoke_particle_generator_;
-                };
-                THROW_OR_ABORT("Unknoen particle type");
-            }();
-            if (!tstg.try_emplace(key, pgen).second)
-            {
-                THROW_OR_ABORT("Could not insert smoke trail generator");
+        auto& ce = [&]() -> ContactEmissions& {
+            std::pair<size_t, const SurfaceSmokeInfo*> key{ c.tire_id1, &smoke_info };
+            if (auto tstgit = tstg.find(key); tstgit == tstg.end()) {
+                auto ceit = tstg.try_emplace(key);
+                if (!ceit.second) {
+                    THROW_OR_ABORT("Could not insert smoke trail generator");
+                }
+                auto& ce = ceit.first->second;
+                if (smoke_info.visual.has_value()) {
+                    auto& pgen = [&]() -> SmokeParticleGenerator& {
+                        switch (smoke_info.visual->particle.type) {
+                            case ParticleType::NONE: THROW_OR_ABORT("Particle type \"none\" does not require a contact smoke generator");
+                            case ParticleType::SMOKE: return air_smoke_particle_generator_;
+                            case ParticleType::SKIDMARK: return skidmark_smoke_particle_generator_;
+                            case ParticleType::WATER_WAVE: THROW_OR_ABORT("Water waves do not require a contact smoke generator");
+                            case ParticleType::SEA_SPRAY: return sea_wave_smoke_particle_generator_;
+                        };
+                        THROW_OR_ABORT("Unknoen particle type");
+                    }();
+                    ce.particle_trail_generator.emplace(pgen);
+                }
+                return ce;
+            } else {
+                return tstgit->second;
+            }
+        }();
+        if (ce.maybe_generate(1.f / f)) {
+            if (smoke_info.audio != nullptr) {
+                smoke_info.audio->play(
+                    one_shot_audio_,
+                    {intersection_point, c.o1.rbp_.velocity_at_position(intersection_point)});
+            }
+            if (smoke_info.visual.has_value()) {
+                assert_true(ce.particle_trail_generator.has_value());
+                const auto& av = smoke_info.vehicle_velocity.smoke_particle_velocity;
+                const auto& sv = smoke_info.tire_velocity.smoke_particle_velocity;
+                auto pvel =
+                    (av.empty() ? 0.f : av(dvel_a)) +
+                    (sv.empty() ? 0.f : sv(dvel_s));
+                auto dirx = c.o1.rbp_.rotation_.column(0);
+                if (dot0d(dirx, (intersection_point - c.o1.rbp_.abs_position()).casted<float>()) < 0.f) {
+                    dirx = -dirx;
+                }
+                dirx -= surface_normal.casted<float>() * dot0d(surface_normal.casted<float>(), dirx);
+                ce.particle_trail_generator->generate(
+                    intersection_point,
+                    rotation,
+                    dirx * pvel,
+                    smoke_info.visual->particle,
+                    smoke_info.visual->smoke_particle_instance_prefix,
+                    ParticleContainer::INSTANCE);
             }
         }
-        const auto& av = smoke_info.vehicle_velocity.smoke_particle_velocity;
-        const auto& sv = smoke_info.tire_velocity.smoke_particle_velocity;
-        auto pvel =
-            (av.empty() ? 0.f : av(dvel_a)) +
-            (sv.empty() ? 0.f : sv(dvel_s));
-        auto dirx = c.o1.rbp_.rotation_.column(0);
-        if (dot0d(dirx, (intersection_point - c.o1.rbp_.abs_position()).casted<float>()) < 0.f) {
-            dirx = -dirx;
-        }
-        dirx -= surface_normal.casted<float>() * dot0d(surface_normal.casted<float>(), dirx);
-        tstg.at(key).maybe_generate(
-            intersection_point,
-            rotation,
-            dirx * pvel,
-            smoke_info.particle,
-            1.f / f,
-            smoke_info.smoke_particle_instance_prefix,
-            ParticleContainer::INSTANCE);
     }
 }
 
 void ContactSmokeGenerator::advance_time(float dt) {
     for (auto& [_, m] : tire_smoke_trail_generators_) {
         for (auto& [_1, g] : m) {
-            g.advance_time(dt);
+            g.maybe_generate.advance_time(dt);
         }
     }
 }

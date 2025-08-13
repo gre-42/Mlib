@@ -2,6 +2,7 @@
 #include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Actuators/IEngine_Event_Listener.hpp>
+#include <Mlib/Physics/Maybe_Generate.hpp>
 #include <Mlib/Physics/Rotating_Frame.hpp>
 #include <Mlib/Physics/Smoke_Generation/Constant_Particle_Trail.hpp>
 #include <Mlib/Physics/Smoke_Generation/Particle_Trail_Generator.hpp>
@@ -36,6 +37,7 @@ public:
     virtual void advance_time(float dt) override;
 private:
     std::shared_ptr<IParticleRenderer> particle_renderer_;
+    MaybeGenerate maybe_generate_;
     SmokeParticleGenerator smoke_generator_;
     ParticleTrailGenerator trail_generator_;
     ConstantParticleTrail particle_;

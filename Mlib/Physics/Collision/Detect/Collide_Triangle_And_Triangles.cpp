@@ -55,8 +55,7 @@ void Mlib::collide_triangle_and_triangles(
                 .l1_is_normal = false,
                 .surface_contact_info = history.surface_contact_db.get_contact_info(
                     physics_material0,
-                    msh1.physics_material,
-                    SIZE_MAX),
+                    msh1.physics_material),
                 .default_collision_type = CollisionType::REFLECT,
                 .history = history});
         }

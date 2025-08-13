@@ -36,13 +36,12 @@ void EngineExhaust::notify_rotation(
         engine_angular_velocity,
         tires_angular_velocity,
         max_surface_power);
-    if (p > p_reference_) {
-        trail_generator_.maybe_generate(
+    if ((p > p_reference_) && maybe_generate_(particle_.generation_dt)) {
+        trail_generator_.generate(
             relative_location_.t,
             matrix_2_tait_bryan_angles(relative_location_.R),
             fixed_zeros<SceneDir, 3>(),     // velocity
             particle_.particle,
-            particle_.generation_dt,
             "exhaust",
             ParticleContainer::INSTANCE);
     }
@@ -53,5 +52,5 @@ void EngineExhaust::set_location(
 {}
 
 void EngineExhaust::advance_time(float dt) {
-    trail_generator_.advance_time(dt);
+    maybe_generate_.advance_time(dt);
 }

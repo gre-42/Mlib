@@ -38,11 +38,6 @@ public:
     const SurfaceContactInfo* get_contact_info(
         PhysicsMaterial material0,
         PhysicsMaterial material1) const;
-    const SurfaceContactInfo* get_contact_info(
-        PhysicsMaterial material0,
-        PhysicsMaterial material1,
-        size_t tire_id1) const;
-
 private:
     std::map<CommutativeMaterialPair, SurfaceContactInfo> surface_contact_infos_;
 };

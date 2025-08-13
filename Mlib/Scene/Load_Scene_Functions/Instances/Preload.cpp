@@ -64,29 +64,39 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 });
             auto preload_cvas = [&](const auto &cvas) {
                 for (const auto &a : cvas) {
-                    const SurfaceContactInfo* c = args.surface_contact_db.get_contact_info(
-                        a->morphology.physics_material,
-                        PhysicsMaterial::SURFACE_BASE_TIRE);
-                    if (c != nullptr) {
-                        for (const auto& s : c->smoke_infos) {
-                            switch (s.particle.type) {
-                                case ParticleType::SMOKE:
-                                    air_particles.particle_renderer->preload(s.particle.resource_name);
-                                    break;
-                                case ParticleType::SKIDMARK:
-                                    skidmark_particles.particle_renderer->preload(s.particle.resource_name);
-                                    break;
-                                case ParticleType::WATER_WAVE:
-                                    THROW_OR_ABORT("Water waves do not require particle preloading");
-                                case ParticleType::SEA_SPRAY:
-                                    sea_spray_particles.particle_renderer->preload(s.particle.resource_name);
-                                    break;
-                                default:
-                                    THROW_OR_ABORT("Unknown particle type: " + std::to_string((int)s.particle.type));
+                    for (auto material1 : {
+                        PhysicsMaterial::SURFACE_BASE_TIRE,
+                        PhysicsMaterial::SURFACE_BASE_FOOT})
+                    {
+                        const SurfaceContactInfo* c = args.surface_contact_db.get_contact_info(
+                            a->morphology.physics_material,
+                            material1);
+                        if (c != nullptr) {
+                            for (const auto& s : c->emission) {
+                                if (s.visual.has_value()) {
+                                    switch (s.visual->particle.type) {
+                                        case ParticleType::SMOKE:
+                                            air_particles.particle_renderer->preload(s.visual->particle.resource_name);
+                                            break;
+                                        case ParticleType::SKIDMARK:
+                                            skidmark_particles.particle_renderer->preload(s.visual->particle.resource_name);
+                                            break;
+                                        case ParticleType::WATER_WAVE:
+                                            THROW_OR_ABORT("Water waves do not require particle preloading");
+                                        case ParticleType::SEA_SPRAY:
+                                            sea_spray_particles.particle_renderer->preload(s.visual->particle.resource_name);
+                                            break;
+                                        default:
+                                            THROW_OR_ABORT("Unknown particle type: " + std::to_string((int)s.visual->particle.type));
+                                    }
+                                }
+                                if (s.audio != nullptr) {
+                                    s.audio->preload();
+                                }
                             }
+                            // RenderingContextStack::primary_scene_node_resources().preload_single(
+                            //     c->smoke_particle_resource_name, RenderableResourceFilter{});
                         }
-                        // RenderingContextStack::primary_scene_node_resources().preload_single(
-                        //     c->smoke_particle_resource_name, RenderableResourceFilter{});
                     }
                 }
             };

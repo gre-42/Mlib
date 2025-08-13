@@ -58,8 +58,7 @@ void Mlib::collide_triangle_and_lines(
                     .l1_is_normal = true,
                     .surface_contact_info = history.surface_contact_db.get_contact_info(
                         physics_material0,
-                        msh1.physics_material,
-                        SIZE_MAX),
+                        msh1.physics_material),
                     .default_collision_type = CollisionType::REFLECT,
                     .history = history});
             }
@@ -88,8 +87,7 @@ void Mlib::collide_triangle_and_lines(
                     .l1_is_normal = true,
                     .surface_contact_info = history.surface_contact_db.get_contact_info(
                         physics_material0,
-                        msh1.physics_material,
-                        tire_id1),
+                        msh1.physics_material),
                     .default_collision_type = CollisionType::REFLECT,
                     .history = history});
             }

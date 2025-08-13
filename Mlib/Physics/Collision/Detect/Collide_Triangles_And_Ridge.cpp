@@ -58,8 +58,7 @@ void Mlib::collide_triangles_and_ridge(
             .l1_is_normal = false,
             .surface_contact_info = history.surface_contact_db.get_contact_info(
                 physics_material0,
-                r1.physics_material,
-                SIZE_MAX),
+                r1.physics_material),
             .default_collision_type = CollisionType::REFLECT,
             .history = history});
     };

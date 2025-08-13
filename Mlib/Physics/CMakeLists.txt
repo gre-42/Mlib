@@ -10,4 +10,4 @@ endif()
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibPhysics MlibGeometry MlibSceneGraph MlibThreads MlibTime)
+target_link_libraries(MlibPhysics MlibGeometry MlibSceneGraph MlibAudio MlibThreads MlibTime)

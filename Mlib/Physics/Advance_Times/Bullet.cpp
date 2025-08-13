@@ -88,15 +88,16 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
         rigid_body_pulses_.rotation_ = *R;
     }
     if (has_trail_) {
-        trail_generator_.advance_time(dt);
-        trail_generator_.maybe_generate(
-            rigid_body_pulses_.abs_position(),
-            fixed_zeros<float, 3>(),
-            fixed_zeros<float, 3>(),
-            props_.trail.particle,
-            props_.trail.generation_dt,
-            "trail",
-            ParticleContainer::INSTANCE);
+        maybe_generate_.advance_time(dt);
+        if (maybe_generate_(props_.trail.generation_dt)) {
+            trail_generator_.generate(
+                rigid_body_pulses_.abs_position(),
+                fixed_zeros<float, 3>(),
+                fixed_zeros<float, 3>(),
+                props_.trail.particle,
+                "trail",
+                ParticleContainer::INSTANCE);
+        }
     }
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(

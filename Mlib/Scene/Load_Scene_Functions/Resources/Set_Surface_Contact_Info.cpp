@@ -1,5 +1,7 @@
 #include "Set_Surface_Contact_Info.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
@@ -14,10 +16,16 @@ DECLARE_ARGUMENT(particle_frequencies);
 DECLARE_ARGUMENT(particle_velocities);
 }
 
-namespace KnownSmokeArgs {
+namespace KnownSmokeVisualArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(particle);
 DECLARE_ARGUMENT(instance_prefix);
+}
+
+namespace KnownSmokeArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(audio);
+DECLARE_ARGUMENT(visual);
 DECLARE_ARGUMENT(vehicle);
 DECLARE_ARGUMENT(tire);
 }
@@ -50,6 +58,13 @@ static void rules_from_json(
     }
 }
 
+static void from_json(const nlohmann::json& j, SurfaceSmokeVisual& item) {
+    JsonView jv{ j };
+    jv.validate(KnownSmokeVisualArgs::options);
+    item.particle = jv.at<ParticleDescriptor>(KnownSmokeVisualArgs::particle);
+    item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeVisualArgs::instance_prefix);
+}
+
 static void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
     JsonView jv{ j };
     jv.validate(KnownSmokeArgs::options);
@@ -60,8 +75,8 @@ static void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
     if (auto tire = jv.try_at(KnownSmokeArgs::tire)) {
         rules_from_json(*tire, item.tire_velocity);
     }
-    item.particle = jv.at<ParticleDescriptor>(KnownSmokeArgs::particle);
-    item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeArgs::instance_prefix);
+    item.audio_resource_name = jv.try_at<std::string>(KnownSmokeArgs::audio);
+    item.visual = jv.try_at<SurfaceSmokeVisual>(KnownSmokeArgs::visual);
 }
 
 }
@@ -75,7 +90,7 @@ DECLARE_ARGUMENT(material1);
 DECLARE_ARGUMENT(stiction_factor);
 DECLARE_ARGUMENT(stiction_coefficient);
 DECLARE_ARGUMENT(friction_coefficient);
-DECLARE_ARGUMENT(smoke);
+DECLARE_ARGUMENT(emission);
 }
 
 const std::string SetSurfaceContactInfo::key = "set_surface_contact_info";
@@ -83,12 +98,20 @@ const std::string SetSurfaceContactInfo::key = "set_surface_contact_info";
 LoadSceneJsonUserFunction SetSurfaceContactInfo::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
+    auto emission = args.arguments.at<std::vector<SurfaceSmokeInfo>>(KnownArgs::emission);
+    for (auto& s : emission) {
+        if (s.audio_resource_name.has_value()) {
+            s.audio = std::make_unique<LazyOneShotAudio>(
+                *AudioResourceContextStack::primary_resource_context().audio_resources,
+                *s.audio_resource_name);
+        }
+    }
     args.surface_contact_db.store_contact_info(
         SurfaceContactInfo{
             .stiction_factor = args.arguments.at<float>(KnownArgs::stiction_factor),
             .stiction_coefficient = args.arguments.at<float>(KnownArgs::stiction_coefficient),
             .friction_coefficient = args.arguments.at<float>(KnownArgs::friction_coefficient),
-            .smoke_infos = args.arguments.at<std::vector<SurfaceSmokeInfo>>(KnownArgs::smoke) },
+            .emission = std::move(emission) },
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material0)),
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material1)));
 };

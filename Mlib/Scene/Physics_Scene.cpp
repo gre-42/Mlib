@@ -36,6 +36,15 @@ PhysicsScene::PhysicsScene(
     , rendering_resources_{
         std::move(rendering_resources_name),
         max_anisotropic_filtering_level }
+    , paused_{ [this]() {
+        return (usage_counter_.count() == 0);
+      } }
+    , paused_changed_{ [](){ return true; }}
+    , one_shot_audio_{ object_pool_.create<OneShotAudio>(
+        CURRENT_SOURCE_LOCATION,
+        PositionRequirement::WAITING_FOR_POSITION,
+        paused_,
+        paused_changed_) }
     , trail_renderer_{ std::make_unique<TrailRenderer>(trail_resources) }
     , dynamic_lights_{ std::make_unique<DynamicLights>(dynamic_light_db) }
     , dynamic_world_{ scene_node_resources, std::move(world) }
@@ -71,13 +80,10 @@ PhysicsScene::PhysicsScene(
         VariableAndHash<std::string>{}, // node name
         ParticleType::SEA_SPRAY}
     , contact_smoke_generator_{
+        one_shot_audio_,
         air_particles_.smoke_particle_generator,
         skidmark_particles_.smoke_particle_generator,
         sea_spray_particles_.smoke_particle_generator }
-    , paused_{ [this]() {
-        return (usage_counter_.count() == 0);
-      } }
-    , paused_changed_{ [](){ return true; }}
     , physics_sleeper_{
           "Physics FPS: ",
           scene_config_.physics_engine_config.dt / seconds,
@@ -105,10 +111,6 @@ PhysicsScene::PhysicsScene(
           &fifo_log_}
     , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, std::move(translator) }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
-    , one_shot_audio_{ std::make_unique<OneShotAudio>(
-        PositionRequirement::WAITING_FOR_POSITION,
-        paused_,
-        paused_changed_) }
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 {
     physics_engine_.set_surface_contact_db(surface_contact_db);
@@ -118,7 +120,7 @@ PhysicsScene::PhysicsScene(
     physics_engine_.add_external_force_provider(gefp_);
     physics_engine_.advance_times_.add_advance_time({ *air_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine_.advance_times_.add_advance_time({ *skidmark_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    physics_engine_.advance_times_.add_advance_time({ *one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 PhysicsScene::~PhysicsScene() {
