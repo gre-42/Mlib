@@ -89,3 +89,12 @@ AudioBuffer AudioBuffer::from_wave(const std::string& filename) {
     }
     return AudioBuffer{buffer};
 }
+
+uint32_t AudioBuffer::nchannels() const {
+    ALint value;
+    AL_CHK(alGetBufferi(
+        *buffer_,
+        AL_CHANNELS,
+        &value));
+    return integral_cast<uint32_t>(value);
+}

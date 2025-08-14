@@ -7,6 +7,7 @@
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <chrono>
+#include <iosfwd>
 #include <optional>
 #include <unordered_map>
 
@@ -37,6 +38,7 @@ public:
 	static void set_source_transformation(
 		AudioSource& source,
 		const AudioSourceState<ScenePos>& state);
+	static void print(std::ostream& ostr);
 private:
 	static FastMutex mutex_;
 	static float default_alpha_;

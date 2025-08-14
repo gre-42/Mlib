@@ -51,6 +51,13 @@ void OneShotAudio::advance_time() {
     for (auto& sp : sources_) {
         AudioScene::set_source_transformation(sp.source, sp.position);
     }
+    // if (!pause && !sources_.empty()) {
+    //     lraw() << "OneShotAudio::advance_time";
+    //     for (auto& sp : sources_) {
+    //         lraw() << &sp.source;
+    //     }
+    //     AudioScene::print(lraw().ref());
+    // }
 }
 
 void OneShotAudio::play(
@@ -65,10 +72,10 @@ void OneShotAudio::play(
         position_requirement_,
         alpha,
         position);
+    AudioScene::set_source_transformation(sp.source, sp.position);
     sp.source.set_loop(false);
     sp.source.set_gain(gain);
     sp.source.play();
-    AudioScene::set_source_transformation(sp.source, sp.position);
 }
 
 void OneShotAudio::stop() {

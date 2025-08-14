@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/OpenAL_al.h>
 #include <cstddef>
+#include <cstdint>
 
 namespace Mlib {
 
@@ -39,6 +40,7 @@ public:
     void unmute();
     bool stopped() const;
 private:
+    uint32_t nchannels_;
     ALuint source_;
     PositionRequirement position_requirement_;
     bool muted_;

@@ -32,6 +32,7 @@ AudioSource::AudioSource(
         THROW_OR_ABORT("Cannot attach null audio buffer");
     }
     AL_CHK(alSourcei(source_, AL_BUFFER, (ALint)(*buffer.buffer_)));
+    nchannels_ = buffer.nchannels();
 }
 
 AudioSource::~AudioSource() {
@@ -63,6 +64,9 @@ void AudioSource::set_pitch(float value) {
 }
 
 void AudioSource::set_position(const AudioSourceState<float>& position) {
+    if (nchannels_ != 1) {
+        THROW_OR_ABORT("Attempt to set position of an audio source with #channels != 1");
+    }
     AL_CHK(alSourcefv(source_, AL_POSITION, (position.position / meters).flat_begin()));
     AL_CHK(alSourcefv(source_, AL_VELOCITY, (position.velocity / (meters / seconds)).flat_begin()));
     if (position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {

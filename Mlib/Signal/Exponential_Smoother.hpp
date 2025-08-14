@@ -39,8 +39,8 @@ public:
         }
         return *s_;
     }
-    const TData& xhat() const {
-        return s_.value();
+    const std::optional<TData>& xhat() const {
+        return s_;
     }
     void reset() {
         s_.reset();
