@@ -1,4 +1,5 @@
 #include "Gun.hpp"
+#include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
@@ -52,9 +53,8 @@ Gun::Gun(
         const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
-    std::function<void(
-        const FixedArray<ScenePos, 3>& position,
-        const FixedArray<SceneDir, 3>& velocity)> generate_shot_audio,
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio,
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
     ITrailStorage* bullet_trace_storage,
     std::string ammo_type,
     std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
@@ -75,6 +75,7 @@ Gun::Gun(
     , bullet_properties_{ bullet_properties }
     , generate_smart_bullet_{ std::move(generate_smart_bullet) }
     , generate_shot_audio_{ std::move(generate_shot_audio) }
+    , generate_bullet_explosion_audio_{ std::move(generate_bullet_explosion_audio) }
     , bullet_trace_storage_{ bullet_trace_storage }
     , ammo_type_{ std::move(ammo_type) }
     , triggered_{ false }
@@ -180,6 +181,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
         auto& rc = get_rigid_body_vehicle(np);
         auto bullet = std::make_unique<Bullet>(
             scene_,
+            generate_bullet_explosion_audio_,
             smoke_generator_,
             advance_times_,
             rc,
@@ -230,6 +232,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
         }
         auto bullet = std::make_unique<Bullet>(
             scene_,
+            generate_bullet_explosion_audio_,
             smoke_generator_,
             advance_times_,
             rc,
@@ -271,9 +274,9 @@ void Gun::generate_shot_audio() {
     if (!generate_shot_audio_) {
         THROW_OR_ABORT("Shot audio not set");
     }
-    generate_shot_audio_(
+    generate_shot_audio_({
         absolute_model_matrix_.t,
-        parent_rb_.velocity_at_position(absolute_model_matrix_.t));
+        parent_rb_.velocity_at_position(absolute_model_matrix_.t)});
 }
 
 void Gun::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix)

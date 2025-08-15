@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cmath>
 #include <memory>
 #include <string>
@@ -16,7 +17,7 @@ class LazyOneShotAudio {
 public:
     LazyOneShotAudio(
         AudioResources& resources,
-        std::string resource_name,
+        VariableAndHash<std::string> resource_name,
         float alpha = NAN);
     void preload();
     void play(
@@ -27,7 +28,7 @@ private:
     float gain_;
     float alpha_;
     AudioResources& resources_;
-    std::string resource_name_;
+    VariableAndHash<std::string> resource_name_;
 };
 
 }

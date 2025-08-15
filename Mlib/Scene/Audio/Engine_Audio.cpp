@@ -22,8 +22,9 @@ EngineAudio::EngineAudio(
     , p_reference_{ p_reference }
     , p_idle_{ p_idle }
 {
-    driving_buffer_sequence_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence(resource_name + ".driving");
-    driving_gain_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence_gain(resource_name + ".driving");
+    auto res = VariableAndHash<std::string>{resource_name + ".driving"};
+    driving_buffer_sequence_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence(res);
+    driving_gain_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence_gain(res);
 }
 
 EngineAudio::~EngineAudio() = default;

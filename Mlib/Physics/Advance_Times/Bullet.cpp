@@ -1,4 +1,5 @@
 #include "Bullet.hpp"
+#include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
@@ -24,6 +25,7 @@ using namespace Mlib;
 
 Bullet::Bullet(
     Scene& scene,
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
     SmokeParticleGenerator& smoke_generator,
     AdvanceTimes& advance_times,
     RigidBodyVehicle& rigid_body,
@@ -37,6 +39,7 @@ Bullet::Bullet(
     const StaticWorld& world,
     RotateBullet rotate_bullet)
     : scene_{ scene }
+    , generate_bullet_explosion_audio_{ std::move(generate_bullet_explosion_audio) }
     , smoke_generator_{ smoke_generator }
     , advance_times_{ advance_times }
     , rigid_body_pulses_{ rigid_body.rbp_ }
@@ -141,6 +144,9 @@ void Bullet::notify_collided(
         trace_extender_->append_location(
             TransformationMatrix<float, ScenePos, 3>{rigid_body_pulses_.rotation_, intersection_point},
             TrailLocationType::ENDPOINT);
+    }
+    if (generate_bullet_explosion_audio_) {
+        generate_bullet_explosion_audio_({intersection_point, fixed_zeros<float, 3>()});
     }
 }
 

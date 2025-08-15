@@ -24,7 +24,7 @@ struct SurfaceSmokeVisual {
 struct SurfaceSmokeInfo {
     std::optional<SurfaceSmokeVisual> visual;
     std::unique_ptr<LazyOneShotAudio> audio;
-    std::optional<std::string> audio_resource_name;
+    std::optional<VariableAndHash<std::string>> audio_resource_name;
     SurfaceSmokeRule vehicle_velocity;
     SurfaceSmokeRule tire_velocity;
 };

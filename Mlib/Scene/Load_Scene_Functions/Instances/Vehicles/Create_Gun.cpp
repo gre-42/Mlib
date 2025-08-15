@@ -144,25 +144,30 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 mle.inserted_block_arguments(let)(l, nullptr);
             };
     }
-    std::function<void(
-        const FixedArray<ScenePos, 3>& position,
-        const FixedArray<SceneDir, 3>& velocity)> generate_shot_audio;
-    if (auto a = args.arguments.try_at<std::string>(KnownArgs::shot_audio); a.has_value()) {
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio;
+    if (auto a = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::shot_audio); a.has_value()) {
         generate_shot_audio =
         [
             &o=one_shot_audio,
             shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(*a),
             shot_audio_gain=AudioResourceContextStack::primary_audio_resources()->get_buffer_gain(*a)
         ]
-        (
-            const FixedArray<ScenePos, 3>& position,
-            const FixedArray<SceneDir, 3>& velocity
-        )
+        (const AudioSourceState<ScenePos>& state)
         {
-            o.play(
-                *shot_audio_buffer,
-                {position, velocity},
-                shot_audio_gain);
+            o.play(*shot_audio_buffer, state, shot_audio_gain);
+        };
+    }
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio;
+    if (const auto& a = bullet_props.explosion_audio_resource_name; !a->empty()) {
+        generate_bullet_explosion_audio =
+        [
+            &o=one_shot_audio,
+            shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(a),
+            shot_audio_gain=AudioResourceContextStack::primary_audio_resources()->get_buffer_gain(a)
+        ]
+        (const AudioSourceState<ScenePos>& state)
+        {
+            o.play(*shot_audio_buffer, state, shot_audio_gain);
         };
     }
     global_object_pool.create<Gun>(
@@ -181,6 +186,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         bullet_props,
         std::move(generate_smart_bullet),
         std::move(generate_shot_audio),
+        std::move(generate_bullet_explosion_audio),
         bullet_trace_storage,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,

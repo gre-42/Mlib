@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Smoke_Generation/Particle_Trail_Generator.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <functional>
 #include <mutex>
 #include <string>
 
@@ -27,6 +28,8 @@ class ITrailExtender;
 class IDynamicLight;
 class DynamicLights;
 struct BulletProperties;
+template <class TPosition>
+struct AudioSourceState;
 
 enum class RotateBullet {
     YES,
@@ -41,6 +44,7 @@ class Bullet final:
 public:
     Bullet(
         Scene& scene,
+        std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
         SmokeParticleGenerator& smoke_generator,
         AdvanceTimes& advance_times,
         RigidBodyVehicle& rigid_body,
@@ -71,6 +75,7 @@ private:
         float amount);
     void notify_kill(RigidBodyVehicle& rigid_body_vehicle);
     Scene& scene_;
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio_;
     SmokeParticleGenerator& smoke_generator_;
     AdvanceTimes& advance_times_;
     RigidBodyPulses& rigid_body_pulses_;

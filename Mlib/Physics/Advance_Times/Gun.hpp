@@ -31,6 +31,8 @@ class ITeam;
 struct BulletProperties;
 enum class RigidBodyVehicleFlags;
 struct StaticWorld;
+template <class TPosition>
+struct AudioSourceState;
 
 class Gun final: public IAbsoluteObserver, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
@@ -52,9 +54,8 @@ public:
             const std::optional<VariableAndHash<std::string>>& target,
             const FixedArray<float, 3>& velocity,
             const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
-        std::function<void(
-            const FixedArray<ScenePos, 3>& position,
-            const FixedArray<SceneDir, 3>& velocity)> generate_shot_audio,
+        std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio,
+        std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
         ITrailStorage* bullet_trace_storage,
         std::string ammo_type,
         std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
@@ -96,9 +97,8 @@ private:
         const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet_;
-    std::function<void(
-        const FixedArray<ScenePos, 3>& position,
-        const FixedArray<SceneDir, 3>& velocity)> generate_shot_audio_;
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio_;
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio_;
     ITrailStorage* bullet_trace_storage_;
     std::string ammo_type_;
     bool triggered_;

@@ -6,7 +6,7 @@ using namespace Mlib;
 
 LazyOneShotAudio::LazyOneShotAudio(
     AudioResources& resources,
-    std::string resource_name,
+    VariableAndHash<std::string> resource_name,
     float alpha)
     : gain_{ NAN }
     , alpha_{ alpha }
