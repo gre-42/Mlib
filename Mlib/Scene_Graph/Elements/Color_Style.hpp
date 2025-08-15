@@ -41,6 +41,7 @@ struct ColorStyle {
             !selector.has_value() ||
             Mlib::re::regex_search(*name, *selector);
     } };
+    void set_emissive(const FixedArray<float, 3>& value);
 };
 
 }

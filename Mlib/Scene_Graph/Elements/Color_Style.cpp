@@ -63,3 +63,10 @@ ColorStyle& ColorStyle::compute_hash() {
     hash_ = hasher;
     return *this;
 }
+
+void ColorStyle::set_emissive(const FixedArray<float, 3>& value) {
+    std::scoped_lock lock{ hash_mutex_ };
+    emissive = value;
+    hash_.reset();
+    compute_hash();
+}

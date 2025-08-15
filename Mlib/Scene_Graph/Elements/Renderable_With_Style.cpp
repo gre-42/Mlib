@@ -17,18 +17,18 @@ const ColorStyle* RenderableWithStyle::style(
     const std::list<const ColorStyle*>& color_styles,
     const VariableAndHash<std::string>& name) const
 {
-    Hasher hasher{ SEED };
+    Hasher hasher0{ SEED };
     for (const auto* style : color_styles) {
         if (style->matches(name)) {
-            hasher.combine(style->get_hash());
+            hasher0.combine(style->get_hash());
         }
     }
-    if (hasher == SEED) {
+    if (hasher0 == SEED) {
         return nullptr;
     }
     {
         std::shared_lock lock{ style_hash_mutex_ };
-        if (hasher == style_hash_) {
+        if (hasher0 == style_hash_) {
             if (!style_.has_value()) {
                 THROW_OR_ABORT("Style hash collision (0)");
             }
@@ -37,7 +37,7 @@ const ColorStyle* RenderableWithStyle::style(
     }
     {
         std::scoped_lock lock{ style_hash_mutex_ };
-        if (hasher == style_hash_) {
+        if (hasher0 == style_hash_) {
             if (!style_.has_value()) {
                 THROW_OR_ABORT("Style hash collision (1)");
             }
@@ -48,12 +48,15 @@ const ColorStyle* RenderableWithStyle::style(
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         style_.emplace();
 #pragma GCC diagnostic pop
+        Hasher hasher1{ SEED };
         for (const auto& style : color_styles) {
             if (style->matches(name)) {
+                std::scoped_lock lock{style->hash_mutex_};
+                hasher1.combine(style->hash_.get());
                 style_->insert(*style);
             }
         }
-        style_hash_ = hasher;
+        style_hash_ = hasher1;
     }
     return &*style_;
 }

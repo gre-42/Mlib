@@ -36,7 +36,7 @@ void SupplyDepots::reset_cooldown() {
     bvh_.visit_all([](const auto& d){
         auto& payload = const_cast<SupplyDepot&>(d.payload());
         payload.time_since_last_visit = payload.cooldown;
-        payload.node->color_style(VariableAndHash<std::string>{""}).emissive = -1.f;
+        payload.node->color_style(VariableAndHash<std::string>{""}).set_emissive(fixed_full<float, 3>(-1.f));
         return true;
     });
 }
@@ -76,7 +76,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
         bool old_cd = supply_depot.is_cooling_down();
         supply_depot.time_since_last_visit += dt;
         if (old_cd && !supply_depot.is_cooling_down()) {
-            supply_depot.node->color_style(VariableAndHash<std::string>{""}).emissive = -1.f;
+            supply_depot.node->color_style(VariableAndHash<std::string>{""}).set_emissive(fixed_full<float, 3>(-1.f));
         }
         return true;
     });
@@ -97,9 +97,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
                     rb->inventory_.add(item_type, std::min(free, navail));
                 }
                 supply_depot.time_since_last_visit = 0.f;
-                auto& style = supply_depot.node->color_style(VariableAndHash<std::string>{""});
-                style.emissive = 2.f;
-                style.update_hash();
+                supply_depot.node->color_style(VariableAndHash<std::string>{""}).set_emissive(fixed_full<float, 3>(2.f));
                 return true;
             });
     }

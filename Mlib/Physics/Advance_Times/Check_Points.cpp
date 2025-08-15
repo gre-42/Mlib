@@ -186,8 +186,7 @@ void CheckPoints::advance_time(float dt) {
         }
         {
             auto& style = beacon_nodes_[i01_].beacon_node->color_style(VariableAndHash<std::string>{""});
-            style.emissive = selection_emissive_;
-            style.update_hash();
+            style.set_emissive(selection_emissive_);
         }
         checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
         beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
@@ -253,8 +252,7 @@ void CheckPoints::advance_time(float dt) {
             lap_index_ = checkpoints_ahead_.front().lap_index;
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
                 auto& style = checkpoints_ahead_.front().beacon_node->beacon_node->color_style(VariableAndHash<std::string>{""});
-                style.emissive = deselection_emissive_;
-                style.update_hash();
+                style.set_emissive(deselection_emissive_);
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
             }
             checkpoints_ahead_.pop_front();
