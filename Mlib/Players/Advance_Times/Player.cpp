@@ -942,12 +942,17 @@ const VehicleSpawner& Player::vehicle_spawner() const {
     return const_cast<Player*>(this)->vehicle_spawner();
 }
 
+struct AvailableSpawner {
+    VehicleSpawner& spawner;
+    SceneVehicle& vehicle;
+    const std::string& free_seat;
+};
+
 void Player::select_next_vehicle() {
     std::scoped_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
         return;
     }
-    ScenePos closest_distance2 = INFINITY;
     auto clear_next_scene_vehicle = [this](){
         if (next_scene_vehicle_ != nullptr) {
             on_next_vehicle_destroyed_.clear();
@@ -955,6 +960,8 @@ void Player::select_next_vehicle() {
         }
     };
     clear_next_scene_vehicle();
+    std::vector<AvailableSpawner> available_spawners;
+    available_spawners.reserve(vehicle_spawners_.spawners().size());
     for (auto& [_, s] : vehicle_spawners_.spawners()) {
         if (!s->has_scene_vehicle()) {
             continue;
@@ -967,22 +974,28 @@ void Player::select_next_vehicle() {
         if (free_seat == nullptr) {
             continue;
         }
-        auto set_next_scene_vehicle = [&](){
-            clear_next_scene_vehicle();
-            next_scene_vehicle_ = s.get();
-            next_seat_ = *free_seat;
-            on_next_vehicle_destroyed_.set(v->on_destroy, CURRENT_SOURCE_LOCATION);
-            on_next_vehicle_destroyed_.add([this](){
-                next_scene_vehicle_ = nullptr;
-            }, CURRENT_SOURCE_LOCATION);
-        };
-        if (s->has_player() && (&s->get_player().get() == this)) {
-            set_next_scene_vehicle();
-            break;
+        available_spawners.emplace_back(*s, v.get(), *free_seat);
+    }
+    auto set_next_scene_vehicle = [&](AvailableSpawner& a){
+        clear_next_scene_vehicle();
+        next_scene_vehicle_ = &a.spawner;
+        next_seat_ = a.free_seat;
+        on_next_vehicle_destroyed_.set(a.vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
+        on_next_vehicle_destroyed_.add([this](){
+            next_scene_vehicle_ = nullptr;
+        }, CURRENT_SOURCE_LOCATION);
+    };
+    for (auto& a : available_spawners) {
+        if (a.spawner.has_player() && (&a.spawner.get_player().get() == this)) {
+            set_next_scene_vehicle(a);
+            return;
         }
-        ScenePos dist2 = sum(squared(v->rb()->rbp_.abs_position() - vehicle_->rb()->rbp_.abs_position()));
+    }
+    ScenePos closest_distance2 = INFINITY;
+    for (auto& a : available_spawners) {
+        ScenePos dist2 = sum(squared(a.vehicle.rb()->rbp_.abs_position() - vehicle_->rb()->rbp_.abs_position()));
         if (dist2 < closest_distance2) {
-            set_next_scene_vehicle();
+            set_next_scene_vehicle(a);
             closest_distance2 = dist2;
         }
     }
