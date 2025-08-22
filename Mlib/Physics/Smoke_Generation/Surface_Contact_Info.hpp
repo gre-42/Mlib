@@ -21,10 +21,18 @@ struct SurfaceSmokeVisual {
     std::string smoke_particle_instance_prefix;
 };
 
+enum class SurfaceSmokeAffinity {
+    PAIR,
+    TIRE
+};
+
+SurfaceSmokeAffinity surface_smoke_affinity_from_string(const std::string& s);
+
 struct SurfaceSmokeInfo {
     std::optional<SurfaceSmokeVisual> visual;
     std::unique_ptr<LazyOneShotAudio> audio;
     std::optional<VariableAndHash<std::string>> audio_resource_name;
+    SurfaceSmokeAffinity affinity;
     SurfaceSmokeRule vehicle_velocity;
     SurfaceSmokeRule tire_velocity;
 };

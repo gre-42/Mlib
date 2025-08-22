@@ -24,6 +24,11 @@ struct ContactEmissions {
     std::optional<ParticleTrailGenerator> particle_trail_generator;
 };
 
+struct ContactSmokeAndAudio {
+    std::map<std::pair<size_t, const SurfaceSmokeInfo*>, ContactEmissions> smoke;
+    std::map<size_t, ContactEmissions> audio;
+};
+
 class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
 public:
     ContactSmokeGenerator(
@@ -45,7 +50,7 @@ private:
     SmokeParticleGenerator& air_smoke_particle_generator_;
     SmokeParticleGenerator& skidmark_smoke_particle_generator_;
     SmokeParticleGenerator& sea_wave_smoke_particle_generator_;
-    std::unordered_map<RigidBodyVehicle*, std::map<std::pair<size_t, const SurfaceSmokeInfo*>, ContactEmissions>> tire_smoke_trail_generators_;
+    std::unordered_map<RigidBodyVehicle*, ContactSmokeAndAudio> tire_smoke_trail_generators_;
 };
 
 }

@@ -26,6 +26,7 @@ namespace KnownSmokeArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(audio);
 DECLARE_ARGUMENT(visual);
+DECLARE_ARGUMENT(affinity);
 DECLARE_ARGUMENT(vehicle);
 DECLARE_ARGUMENT(tire);
 }
@@ -75,6 +76,7 @@ static void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
     if (auto tire = jv.try_at(KnownSmokeArgs::tire)) {
         rules_from_json(*tire, item.tire_velocity);
     }
+    item.affinity = surface_smoke_affinity_from_string(jv.at<std::string>(KnownSmokeArgs::affinity));
     item.audio_resource_name = jv.try_at<std::string>(KnownSmokeArgs::audio);
     item.visual = jv.try_at<SurfaceSmokeVisual>(KnownSmokeArgs::visual);
 }
