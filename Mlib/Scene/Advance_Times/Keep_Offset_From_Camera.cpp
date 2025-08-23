@@ -95,4 +95,5 @@ void KeepOffsetFromCamera::set_scene_node(
         follower_node_ = nullptr;
         global_object_pool.remove(this);
     }, loc);
+    node->set_absolute_movable({ *this, CURRENT_SOURCE_LOCATION });
 }
