@@ -245,21 +245,20 @@ void Bystanders::handle_bystanders() {
     if (vips.empty()) {
         return;
     }
-    auto it = vehicle_spawners_.spawners().begin();
-    using players_map_difference_type = decltype(vehicle_spawners_.spawners().begin())::difference_type;
-    std::advance(it, integral_cast<players_map_difference_type>(current_bystander_rng_() % vehicle_spawners_.spawners().size()));
-    auto handle_bystander = [&](VehicleSpawner& spawner) {
-        if (spawner.get_spawn_trigger() != SpawnTrigger::BYSTANDERS) {
-            return;
+    std::vector<VehicleSpawner*> spawners;
+    spawners.reserve(vehicle_spawners_.spawners().size());
+    for (auto& [_, spawner] : vehicle_spawners_.spawners()) {
+        if (spawner->get_spawn_trigger() != SpawnTrigger::BYSTANDERS) {
+            continue;
         }
-        if (!spawner.dependencies_are_met()) {
-            return;
+        if (!spawner->has_scene_vehicle() && !spawner->dependencies_are_met()) {
+            continue;
         }
         // if (spawner.has_player()) {
         //     auto player = spawner.get_player();
         //     for (const auto& vip : vips) {
         //         if (&player.get() == &vip.player) {
-        //             return;
+        //             continue;
         //         }
         //     }
         //     if (player->player_role() != PlayerRole::BYSTANDER) {
@@ -267,16 +266,22 @@ void Bystanders::handle_bystanders() {
         //         THROW_OR_ABORT("Spawn trigger is \"bystanders\", but player role is not");
         //     }
         // }
-        for (const auto& vip : vips) {
-            if (&vip.player.vehicle_spawner() == &spawner) {
-                return;
-            }
+        if (std::ranges::any_of(vips.begin(), vips.end(),
+            [&spawner](const auto& vip){ return &vip.player.vehicle_spawner() == spawner.get(); }))
+        {
+            continue;
         }
+        spawners.push_back(spawner.get());
+    }
+    auto it = spawners.begin();
+    using players_map_difference_type = decltype(spawners.begin())::difference_type;
+    std::advance(it, integral_cast<players_map_difference_type>(current_bystander_rng_() % spawners.size()));
+    auto handle_bystander = [&](VehicleSpawner& spawner) {
         if (!spawner.has_scene_vehicle()) {
             spawn_for_vip(spawner, vips);
         } else {
             delete_for_vip(spawner, vips);
         }
     };
-    handle_bystander(*it->second);
+    handle_bystander(**it);
 }

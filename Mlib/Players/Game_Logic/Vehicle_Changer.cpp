@@ -131,14 +131,12 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         b.get_primary_scene_vehicle()->scene_node()->invalidate_transformation_history();
         b_rb->activate_avatar();
     }
-    ExternalsMode a_ec_old = ap->externals_mode();
-    auto a_seat_old = ap->internals_mode();
+    ExternalsMode a_em_old = ap->externals_mode();
     ap->reset_node();
     ap->set_vehicle_spawner(b, ap->next_seat());
-    ap->create_vehicle_externals(a_ec_old);
-    if (!a_seat_old.seat.empty()) {
-        ap->create_vehicle_internals(a_seat_old);
-    }
+    ap->create_vehicle_externals(a_em_old);
+    ap->create_vehicle_internals(ap->internals_mode());
+    ap->single_waypoint().notify_spawn();
     if (!ap->rigid_body()->is_avatar()) {
         if (!ap->rigid_body()->passengers_.try_emplace(
             a.get_primary_scene_vehicle()->rb().set_loc(CURRENT_SOURCE_LOCATION).ptr(),
