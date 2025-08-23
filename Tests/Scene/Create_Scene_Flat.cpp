@@ -200,6 +200,10 @@ void Mlib::create_scene_flat(
     scene_nodeR->add_child(N1_0, std::move(scene_node1_0));
     scene_nodeR->add_child(N1_1, std::move(scene_node1_1));
     scene_nodeR->add_child(N1_2, std::move(scene_node1_2));
+    scene.register_node(N0, scene_node0.ref(DP_LOC));
+    scene.register_node(N1_0, scene_node1_0.ref(DP_LOC));
+    scene.register_node(N1_1, scene_node1_1.ref(DP_LOC));
+    scene.register_node(N1_2, scene_node1_2.ref(DP_LOC));
     scene_nodeR->set_position({0.f, -1.f, -40.f}, INITIAL_POSE);
     scene_nodeL->set_position({0.f, 50.f, -40.f}, INITIAL_POSE);
     scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
@@ -216,10 +220,10 @@ void Mlib::create_scene_flat(
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter<RigidBodyVehicle> ams0{scene.get_node(OBJ, DP_LOC)->get_child(N0), std::move(rb0), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter<RigidBodyVehicle> ams1_0{scene.get_node(OBJ, DP_LOC)->get_child(N1_0), std::move(rb1_0), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter<RigidBodyVehicle> ams1_1{scene.get_node(OBJ, DP_LOC)->get_child(N1_1), std::move(rb1_1), CURRENT_SOURCE_LOCATION};
-        AbsoluteMovableSetter<RigidBodyVehicle> ams1_2{scene.get_node(OBJ, DP_LOC)->get_child(N1_2), std::move(rb1_2), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams0{scene, scene.get_node(N0, DP_LOC), N0, std::move(rb0), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_0{scene, scene.get_node(N1_0, DP_LOC), N1_0, std::move(rb1_0), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_1{scene, scene.get_node(N1_1, DP_LOC), N1_1, std::move(rb1_1), CURRENT_SOURCE_LOCATION};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_2{scene, scene.get_node(N1_2, DP_LOC), N1_2, std::move(rb1_2), CURRENT_SOURCE_LOCATION};
 
         pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, { triangles0 }, {}, {}, CollidableMode::STATIC);
         pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, quads1, {}, {}, CollidableMode::MOVING);

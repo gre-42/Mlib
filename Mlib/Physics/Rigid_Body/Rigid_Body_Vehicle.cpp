@@ -39,6 +39,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
@@ -56,6 +57,8 @@ RigidBodyVehicle::RigidBodyVehicle(
     std::string asset_id,
     const TransformationMatrix<double, double, 3>* geographic_mapping)
     : destruction_observers{ *this }
+    , on_clear_scene_node_{ nullptr, CURRENT_SOURCE_LOCATION }
+    , scene_node_{ nullptr }
     , max_velocity_{ INFINITY }
     , tires_{ "Tire", [](size_t i) { return std::to_string(i); } }
     , rotors_{ "Rotor", [](size_t i) { return std::to_string(i); } }
@@ -113,6 +116,12 @@ RigidBodyVehicle::~RigidBodyVehicle()
     on_destroy.clear();
     destruction_observers.clear();
     drivers_.clear();
+    if (scene_ != nullptr) {
+        scene_->delete_root_node(node_name_);
+    }
+    while (!passengers_.empty()) {
+        object_pool_.remove(passengers_.begin()->first.get());
+    }
 }
 
 void RigidBodyVehicle::reset_forces(const PhysicsPhase& phase) {
@@ -530,19 +539,6 @@ void RigidBodyVehicle::set_absolute_model_matrix(const TransformationMatrix<floa
 
 TransformationMatrix<float, ScenePos, 3> RigidBodyVehicle::get_new_absolute_model_matrix() const {
     return rbp_.abs_transformation();
-}
-
-void RigidBodyVehicle::notify_destroyed(SceneNode& destroyed_object) {
-    if (destroyed_object.has_absolute_movable()) {
-        if (&destroyed_object.get_absolute_movable() != this) {
-            verbose_abort("Unexpected absolute movable");
-        }
-        destroyed_object.clear_absolute_movable();
-    }
-    if (destroyed_object.contains_node_hider(nullptr, { *this, CURRENT_SOURCE_LOCATION })) {
-        destroyed_object.remove_node_hider(nullptr, { *this, CURRENT_SOURCE_LOCATION });
-    }
-    object_pool_.remove(this);
 }
 
 void RigidBodyVehicle::set_max_velocity(float max_velocity) {
@@ -1209,4 +1205,42 @@ void TrailerHitches::set_position_male(const FixedArray<float, 3>& position) {
         THROW_OR_ABORT("Male trailer hitch position already set");
     }
     male_ = position;
+}
+
+void RigidBodyVehicle::set_scene_node(
+    Scene& scene,
+    const DanglingRef<SceneNode>& node,
+    VariableAndHash<std::string> node_name,
+    SourceLocation loc)
+{
+    if (scene_ != nullptr) {
+        THROW_OR_ABORT("RigidBodyVehicle::set_scene_node: Scene already set");
+    }
+    scene_ = &scene;
+    scene_node_ = node.ptr();
+    node_name_ = std::move(node_name);
+
+    node->set_absolute_movable({ *this, loc });
+    if (is_avatar()) {
+        node->insert_node_hider(nullptr, { *this, loc });
+    }
+    on_clear_scene_node_.set(node->on_clear, loc);
+    on_clear_scene_node_.add([this, node](){
+        if (node->has_absolute_movable()) {
+            if (&node->get_absolute_movable() != this) {
+                verbose_abort("Unexpected absolute movable");
+            }
+            node->clear_absolute_movable();
+        }
+        if (node->contains_node_hider(nullptr, { *this, CURRENT_SOURCE_LOCATION })) {
+            node->remove_node_hider(nullptr, { *this, CURRENT_SOURCE_LOCATION });
+        }
+        if (scene_ == nullptr) {
+            verbose_abort("RigidBodyVehicle::set_scene_node: Scene is null");
+        }
+        scene_ = nullptr;
+        scene_node_ = nullptr;
+        animation_state_updater_ = nullptr;
+        object_pool_.remove(this);
+    }, loc);
 }

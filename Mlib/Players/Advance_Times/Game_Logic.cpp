@@ -22,7 +22,7 @@ GameLogic::GameLogic(
     : spawner{ vehicle_spawners, players, cfg, delete_node_mutex, scene }
     , bystanders{ vehicle_spawners, players, scene, spawner, cfg }
     , team_deathmatch{ vehicle_spawners, players, spawner, std::move(setup_new_round) }
-    , vehicle_changer_{ vehicle_spawners, delete_node_mutex }
+    , vehicle_changer{ vehicle_spawners, delete_node_mutex }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
     , supply_depots_{ supply_depots }
@@ -41,7 +41,7 @@ void GameLogic::advance_time(float dt, const StaticWorld& world) {
     vehicle_spawners_.advance_time(dt);
     team_deathmatch.handle_respawn();
     bystanders.handle_bystanders();
-    vehicle_changer_.change_vehicles();
+    vehicle_changer.change_vehicles();
     supply_depots_.handle_supply_depots(dt);
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
         linfo() << "Players active: " << players_.nactive();

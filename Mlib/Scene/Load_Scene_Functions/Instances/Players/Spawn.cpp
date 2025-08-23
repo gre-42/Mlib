@@ -22,7 +22,6 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(spawner);
-DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
 }

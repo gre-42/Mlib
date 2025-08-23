@@ -211,7 +211,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
         rcu->flags_ = bullet_properties_.rigid_body_flags;
         auto& rc = *rcu;
         {
-            AbsoluteMovableSetter ams{ node.ref(DP_LOC), std::move(rcu), CURRENT_SOURCE_LOCATION };
+            AbsoluteMovableSetter ams{ scene_, node.ref(DP_LOC), bullet_node_name, std::move(rcu), CURRENT_SOURCE_LOCATION };
             if (!bullet_properties_.renderable_resource_name->empty()) {
                 scene_node_resources_.instantiate_child_renderable(
                     bullet_properties_.renderable_resource_name,

@@ -8,9 +8,9 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Map.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
@@ -19,6 +19,7 @@
 #include <Mlib/Physics/Rigid_Body/Drivers.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
@@ -64,6 +65,7 @@ class DanglingRef;
 class ISurfaceNormal;
 class ICollisionNormalModifier;
 struct PhysicsPhase;
+class Scene;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -118,7 +120,7 @@ struct TrailerHitches {
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
 class RigidBodyVehicle:
-    public DestructionObserver<SceneNode&>,
+    public INodeSetter,
     public IAbsoluteMovable,
     public StatusWriter,
     public INodeHider,
@@ -242,8 +244,12 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
 
-    // DestructionObserver
-    virtual void notify_destroyed(SceneNode& destroyed_object) override;
+    // INodeSetter
+    virtual void set_scene_node(
+        Scene& scene,
+        const DanglingRef<SceneNode>& node,
+        VariableAndHash<std::string> node_name,
+        SourceLocation loc) override;
 
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const override;
@@ -280,6 +286,10 @@ public:
 
     DestructionObservers<const RigidBodyVehicle&> destruction_observers;
     DestructionFunctions on_destroy;
+    DestructionFunctionsRemovalTokens on_clear_scene_node_;
+    Scene* scene_ = nullptr;
+    DanglingPtr<SceneNode> scene_node_;
+    VariableAndHash<std::string> node_name_;
 
     float max_velocity_;
 #ifdef COMPUTE_POWER

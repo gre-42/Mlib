@@ -3,8 +3,9 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
+#include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <memory>
 
@@ -18,7 +19,7 @@ class Scene;
 class SelectedCameras;
 class EventReceiverDeletionToken;
 
-class KeepOffsetFromCamera: public DestructionObserver<SceneNode&>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class KeepOffsetFromCamera: public INodeSetter, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     KeepOffsetFromCamera(
         AdvanceTimes& advance_times,
@@ -31,11 +32,16 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
-    virtual void notify_destroyed(SceneNode& destroyed_object) override;
+    virtual void set_scene_node(
+        Scene& scene,
+        const DanglingRef<SceneNode>& node,
+        VariableAndHash<std::string> node_name,
+        SourceLocation loc) override;
 
 private:
     void advance_time(float dt);
 
+    DestructionFunctionsRemovalTokens on_destroy_follower_node_;
     AdvanceTimes& advance_times_;
     Scene& scene_;
     const SelectedCameras& cameras_;

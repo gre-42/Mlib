@@ -203,7 +203,6 @@ public:
     size_t nbullets_available() const;
     std::optional<std::string> best_weapon_in_inventory() const;
     void select_opponent(OpponentSelectionStrategy strategy);
-    void select_next_vehicle();
     void request_reset_vehicle_to_last_checkpoint();
     void append_dependent_node(VariableAndHash<std::string> node_name);
     void create_vehicle_externals(ExternalsMode externals_mode);
@@ -236,6 +235,14 @@ public:
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) const override;
     virtual bool try_reset_vehicle(
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) override;
+    virtual void select_next_vehicle(
+        SelectNextVehicleQuery q,
+        const std::string& seat) override;
+    virtual void set_next_vehicle(
+        VehicleSpawner& spawner,
+        SceneVehicle& vehicle,
+        const std::string& seat) override;
+    virtual void clear_next_vehicle() override;
     virtual std::vector<DanglingPtr<SceneNode>> moving_nodes() const override;
     virtual void notify_race_started() override;
     virtual RaceState notify_lap_finished(

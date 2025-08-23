@@ -3,9 +3,10 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Signal/Kalman_Filter.hpp>
@@ -15,8 +16,37 @@ namespace Mlib {
 
 class AdvanceTimes;
 class SceneNode;
+class FollowMovable;
 
-class FollowMovable: public DestructionObserver<SceneNode&>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class FollowerMovableNodeSetter: public INodeSetter {
+public:
+    explicit FollowerMovableNodeSetter(FollowMovable& follow);
+    virtual void set_scene_node(
+        Scene& scene,
+        const DanglingRef<SceneNode>& node,
+        VariableAndHash<std::string> node_name,
+        SourceLocation loc) override;
+private:
+    FollowMovable& follow_;
+    DestructionFunctionsRemovalTokens removal_tokens_;
+};
+
+class FollowedMovableNodeSetter: public INodeSetter {
+public:
+    explicit FollowedMovableNodeSetter(FollowMovable& follow);
+    virtual void set_scene_node(
+        Scene& scene,
+        const DanglingRef<SceneNode>& node,
+        VariableAndHash<std::string> node_name,
+        SourceLocation loc) override;
+private:
+    FollowMovable& follow_;
+    DestructionFunctionsRemovalTokens removal_tokens_;
+};
+
+class FollowMovable: public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+    friend FollowerMovableNodeSetter;
+    friend FollowedMovableNodeSetter;
 public:
     FollowMovable(
         AdvanceTimes& advance_times,
@@ -35,9 +65,11 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
-    virtual void notify_destroyed(SceneNode& destroyed_object) override;
+    FollowerMovableNodeSetter set_follower;
+    FollowedMovableNodeSetter set_followed;
 
 private:
+    void notify_destroyed(SceneNode& destroyed_object);
     void advance_time(float dt);
     AdvanceTimes& advance_times_;
     DanglingPtr<const SceneNode> followed_node_;

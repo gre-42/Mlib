@@ -30,9 +30,11 @@ LookAtNode::LookAtNode(PhysicsScene& physics_scene)
 void LookAtNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower), DP_LOC);
-    DanglingRef<SceneNode> followed_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::followed), DP_LOC);
-    auto follower = global_object_pool.create_unique<LookAtMovable>(
+    auto follower = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower);
+    auto followed = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::followed);
+    DanglingRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
+    DanglingRef<SceneNode> followed_node = scene.get_node(followed, DP_LOC);
+    auto look_at = global_object_pool.create_unique<LookAtMovable>(
         CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
         scene,
@@ -41,8 +43,13 @@ void LookAtNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         followed_node,
         followed_node->get_absolute_movable());
     linker.link_absolute_movable_and_additional_node(
-        follower_node,
-        followed_node,
+        scene,
+        std::move(follower_node),
+        std::move(followed_node),
+        look_at->follower_setter,
+        look_at->followed_setter,
         std::move(follower),
+        std::move(followed),
+        std::move(look_at),
         CURRENT_SOURCE_LOCATION);
 }

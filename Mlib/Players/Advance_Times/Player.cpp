@@ -942,26 +942,44 @@ const VehicleSpawner& Player::vehicle_spawner() const {
     return const_cast<Player*>(this)->vehicle_spawner();
 }
 
+void Player::set_next_vehicle(
+    VehicleSpawner& spawner,
+    SceneVehicle& vehicle,
+    const std::string& seat)
+{
+    clear_next_vehicle();
+    next_scene_vehicle_ = &spawner;
+    next_seat_ = seat;
+    on_next_vehicle_destroyed_.set(vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
+    on_next_vehicle_destroyed_.add([this](){
+        next_scene_vehicle_ = nullptr;
+    }, CURRENT_SOURCE_LOCATION);
+}
+
+void Player::clear_next_vehicle() {
+    if (next_scene_vehicle_ != nullptr) {
+        on_next_vehicle_destroyed_.clear();
+        next_scene_vehicle_ = nullptr;
+    }
+}
+
 struct AvailableSpawner {
     VehicleSpawner& spawner;
     SceneVehicle& vehicle;
-    const std::string& free_seat;
+    const std::string& seat;
 };
 
-void Player::select_next_vehicle() {
+void Player::select_next_vehicle(
+    SelectNextVehicleQuery q,
+    const std::string& seat)
+{
     std::scoped_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
         return;
     }
-    auto clear_next_scene_vehicle = [this](){
-        if (next_scene_vehicle_ != nullptr) {
-            on_next_vehicle_destroyed_.clear();
-            next_scene_vehicle_ = nullptr;
-        }
-    };
-    clear_next_scene_vehicle();
-    std::vector<AvailableSpawner> available_spawners;
-    available_spawners.reserve(vehicle_spawners_.spawners().size());
+    clear_next_vehicle();
+    std::optional<AvailableSpawner> closest_spawner;
+    ScenePos closest_distance2 = INFINITY;
     for (auto& [_, s] : vehicle_spawners_.spawners()) {
         if (!s->has_scene_vehicle()) {
             continue;
@@ -970,34 +988,46 @@ void Player::select_next_vehicle() {
             continue;
         }
         auto v = s->get_primary_scene_vehicle();
-        const auto* free_seat = v->rb()->drivers_.first_free_seat();
-        if (free_seat == nullptr) {
-            continue;
+        if (any(q & SelectNextVehicleQuery::EXIT)) {
+            if (s->has_player() && (&s->get_player().get() == this)) {
+                const auto* free_seat = v->rb()->drivers_.first_free_seat();
+                if (free_seat == nullptr) {
+                    THROW_OR_ABORT("Avatar \"" + v->rb()->name() + "\" has no free seat");
+                }
+                set_next_vehicle(*s, v.get(), *free_seat);
+                return;
+            }
         }
-        available_spawners.emplace_back(*s, v.get(), *free_seat);
+        if (any(q & SelectNextVehicleQuery::ANY_ENTER) && !v->rb()->is_avatar()) {
+            ScenePos dist2 = sum(squared(v->rb()->rbp_.abs_position() - vehicle_->rb()->rbp_.abs_position()));
+            if (dist2 < closest_distance2) {
+                closest_spawner.reset();
+                if (!seat.empty()) {
+                    closest_spawner.emplace(*s, v.get(), seat);
+                } else {
+                    const auto* free_seat = v->rb()->drivers_.first_free_seat();
+                    if (free_seat != nullptr) {
+                        closest_spawner.emplace(*s, v.get(), *free_seat);
+                    } else {
+                        closest_spawner.emplace(*s, v.get(), "driver");
+                    }
+                }
+                closest_distance2 = dist2;
+            }
+        }
     }
-    auto set_next_scene_vehicle = [&](AvailableSpawner& a){
-        clear_next_scene_vehicle();
-        next_scene_vehicle_ = &a.spawner;
-        next_seat_ = a.free_seat;
-        on_next_vehicle_destroyed_.set(a.vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
-        on_next_vehicle_destroyed_.add([this](){
-            next_scene_vehicle_ = nullptr;
-        }, CURRENT_SOURCE_LOCATION);
-    };
-    for (auto& a : available_spawners) {
-        if (a.spawner.has_player() && (&a.spawner.get_player().get() == this)) {
-            set_next_scene_vehicle(a);
-            return;
+    if (closest_spawner.has_value()) {
+        auto driver = closest_spawner->vehicle.rb()->drivers_.try_get(seat);
+        if (driver != nullptr) {
+            if (!any(q & SelectNextVehicleQuery::ENTER_BY_FORCE)) {
+                return;
+            }
+            driver->select_next_vehicle(SelectNextVehicleQuery::EXIT, "driver");
         }
-    }
-    ScenePos closest_distance2 = INFINITY;
-    for (auto& a : available_spawners) {
-        ScenePos dist2 = sum(squared(a.vehicle.rb()->rbp_.abs_position() - vehicle_->rb()->rbp_.abs_position()));
-        if (dist2 < closest_distance2) {
-            set_next_scene_vehicle(a);
-            closest_distance2 = dist2;
-        }
+        set_next_vehicle(
+            closest_spawner->spawner,
+            closest_spawner->vehicle,
+            closest_spawner->seat);
     }
 }
 

@@ -56,7 +56,9 @@ bool Bystanders::spawn_for_vip(
     neighboring_spawn_points.reserve(1000);
     std::unordered_set<const SpawnPoint*> neighboring_spawn_points_set;
     for (const auto& vip : vips) {
-        assert_true(&spawner.get_player().get() != &vip.player);
+        if (spawner.has_player() && (&spawner.get_player().get() == &vip.player)) {
+            THROW_OR_ABORT("Attempt to spawn a VIP as a bystander");
+        }
         spawner_.spawn_points_bvh_split_.at(current_bvh_)->visit(
             AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(
                 vip.position.casted<CompressedScenePos>(),

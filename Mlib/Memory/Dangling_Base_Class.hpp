@@ -150,6 +150,12 @@ public:
     bool operator != (const DanglingBaseClassPtr<TOther>& other) const {
         return v_ != other.v_;
     }
+    void print_base_references() const {
+        b_->print_references();
+    }
+    SourceLocation loc() const {
+        return b_->loc(this);
+    }
 private:
     DanglingBaseClassPtr(DanglingBaseClass& b, T& v, SourceLocation loc)
         : b_{ &b }
@@ -250,6 +256,12 @@ public:
     }
     T& get() const {
         return v_;
+    }
+    void print_base_references() const {
+        b_.print_references();
+    }
+    SourceLocation loc() const {
+        return b_.loc(this);
     }
 private:
     explicit DanglingBaseClassRef(DanglingBaseClass& b, T& v, SourceLocation loc)

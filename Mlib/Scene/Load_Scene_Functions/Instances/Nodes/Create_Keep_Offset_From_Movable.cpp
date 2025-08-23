@@ -32,9 +32,11 @@ CreateKeepOffsetFromMovable::CreateKeepOffsetFromMovable(PhysicsScene& physics_s
 void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower), DP_LOC);
-    DanglingRef<SceneNode> followed_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::followed), DP_LOC);
-    auto follower = global_object_pool.create_unique<KeepOffsetFromMovable>(
+    auto follower = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower);
+    auto followed = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::followed);
+    DanglingRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
+    DanglingRef<SceneNode> followed_node = scene.get_node(followed, DP_LOC);
+    auto keep_offset = global_object_pool.create_unique<KeepOffsetFromMovable>(
         CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
         scene,
@@ -42,5 +44,14 @@ void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& a
         followed_node,
         followed_node->get_absolute_movable(),
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::offset));
-    linker.link_absolute_movable(follower_node, std::move(follower), CURRENT_SOURCE_LOCATION);
+    linker.link_absolute_movable_and_additional_node(
+        scene,
+        follower_node,
+        followed_node,
+        keep_offset->set_follower,
+        keep_offset->set_followed,
+        follower,
+        followed,
+        std::move(keep_offset),
+        CURRENT_SOURCE_LOCATION);
 }

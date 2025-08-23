@@ -225,7 +225,10 @@ void SceneNode::insert_node_hider(
     const DanglingBaseClassRef<INodeHider>& node_hider)
 {
     std::scoped_lock lock{ mutex_ };
-    if (!node_hiders_[renderable_scene].insert(node_hider.ptr()).second) {
+    auto it = node_hiders_[renderable_scene].insert(node_hider.ptr());
+    if (!it.second) {
+        lerr() << "old: " << it.first->loc().file_name() << ':' << it.first->loc().line();
+        lerr() << "new: " << node_hider.loc().file_name() << ':' << node_hider.loc().line();
         THROW_OR_ABORT("Node hider already inserted");
     }
 }

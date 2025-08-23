@@ -33,7 +33,8 @@ CreateKeepOffsetFromCamera::CreateKeepOffsetFromCamera(RenderableScene& renderab
 void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower), DP_LOC);
+    auto follower = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower);
+    DanglingRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
     auto camera = follower_node->get_camera(CURRENT_SOURCE_LOCATION);
     const auto* ortho_camera = dynamic_cast<OrthoCamera*>(&camera.get());
     if (ortho_camera == nullptr) {
@@ -42,7 +43,7 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto grid2 = ortho_camera->grid({
         args.arguments.at<float>(KnownArgs::texture_width),
         args.arguments.at<float>(KnownArgs::texture_height)});
-    auto follower = global_object_pool.create_unique<KeepOffsetFromCamera>(
+    auto keep_offset = global_object_pool.create_unique<KeepOffsetFromCamera>(
         CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
         scene,
@@ -51,7 +52,9 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
         FixedArray<float, 3>{ grid2(0), grid2(1), 0.f },
         follower_node);
     linker.link_absolute_movable(
+        scene,
         follower_node,
-        std::move(follower),
+        follower,
+        std::move(keep_offset),
         CURRENT_SOURCE_LOCATION);
 }

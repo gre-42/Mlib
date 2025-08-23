@@ -16,7 +16,9 @@ LookAtMovable::LookAtMovable(
     DanglingRef<SceneNode> follower_node,
     DanglingRef<SceneNode> followed_node,
     IAbsoluteMovable& followed)
-    : advance_times_{ advance_times }
+    : follower_setter{ *this }
+    , followed_setter{ *this }
+    , advance_times_{ advance_times }
     , scene_{ scene }
     , follower_name_{ std::move(follower_name) }
     , follower_node_{ follower_node.ptr() }
@@ -57,14 +59,7 @@ void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
     if (follower_node_ == nullptr) {
         return;
     }
-    if (&destroyed_object == follower_node_.get()) {
-        followed_node_->clearing_observers.remove(
-            { *this, CURRENT_SOURCE_LOCATION },
-            ObserverDoesNotExistBehavior::IGNORE);
-    } else if (&destroyed_object == followed_node_.get()) {
-        follower_node_->clearing_observers.remove(
-            { *this, CURRENT_SOURCE_LOCATION },
-            ObserverDoesNotExistBehavior::IGNORE);
+    if (&destroyed_object == followed_node_.get()) {
         if (!follower_node_->shutting_down()) {
             scene_.schedule_delete_root_node(follower_name_);
         }
@@ -78,4 +73,39 @@ void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
     follower_node_ = nullptr;
     followed_node_ = nullptr;
     global_object_pool.remove(this);
+}
+
+LookAtMovableFollowerNodeSetter::LookAtMovableFollowerNodeSetter(LookAtMovable& look_at_movable)
+    : look_at_movable_{ look_at_movable }
+    , removal_tokens_{ nullptr, CURRENT_SOURCE_LOCATION }
+{}
+
+void LookAtMovableFollowerNodeSetter::set_scene_node(
+    Scene& scene,
+    const DanglingRef<SceneNode>& node,
+    VariableAndHash<std::string> node_name,
+    SourceLocation loc)
+{
+    removal_tokens_.set(node->on_clear, loc);
+    removal_tokens_.add([this, node](){
+        look_at_movable_.notify_destroyed(node.obj());
+    }, loc);
+    node->set_absolute_movable({ look_at_movable_, loc });
+}
+
+LookAtMovableFollowedNodeSetter::LookAtMovableFollowedNodeSetter(LookAtMovable& look_at_movable)
+    : look_at_movable_{ look_at_movable }
+    , removal_tokens_{ nullptr, CURRENT_SOURCE_LOCATION }
+{}
+
+void LookAtMovableFollowedNodeSetter::set_scene_node(
+    Scene& scene,
+    const DanglingRef<SceneNode>& node,
+    VariableAndHash<std::string> node_name,
+    SourceLocation loc)
+{
+    removal_tokens_.set(node->on_clear, loc);
+    removal_tokens_.add([this, node](){
+        look_at_movable_.notify_destroyed(node.obj());
+    }, loc);
 }

@@ -58,7 +58,7 @@ VehicleSpawner::VehicleSpawner(
 
 VehicleSpawner::~VehicleSpawner() {
     if (!scene_vehicles_.empty()) {
-        verbose_abort("~VehicleSpawner: Scene vehicles remaining");
+        verbose_abort("Spawner with suffix \"" + suffix_ + "\": ~VehicleSpawner: Scene vehicles remaining");
     }
 }
 
@@ -83,7 +83,7 @@ void VehicleSpawner::set_player(
     std::string role)
 {
     if (player_ != nullptr) {
-        THROW_OR_ABORT("Player already set");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player already set");
     }
     player_ = player.ptr();
     on_player_destroy_.set(player_->on_destroy, CURRENT_SOURCE_LOCATION);
@@ -93,7 +93,7 @@ void VehicleSpawner::set_player(
 
 DanglingBaseClassRef<Player> VehicleSpawner::get_player() {
     if (player_ == nullptr) {
-        THROW_OR_ABORT("Player not set");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player not set");
     }
     return *player_;
 }
@@ -117,7 +117,7 @@ void VehicleSpawner::set_spawn_vehicle(
     if (try_spawn_vehicle_ &&
         (vehicle_spawner_already_set_behavior == SpawnVehicleAlreadySetBehavior::THROW))
     {
-        THROW_OR_ABORT("Spawn vehicle function already set");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Spawn vehicle function already set");
     }
     try_spawn_vehicle_ = std::move(try_spawn_vehicle);
 }
@@ -128,7 +128,7 @@ bool VehicleSpawner::has_scene_vehicle() const {
 
 DanglingBaseClassRef<SceneVehicle> VehicleSpawner::get_primary_scene_vehicle() {
     if (scene_vehicles_.empty()) {
-        THROW_OR_ABORT("Spawner has no scene vehicle");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Scene vehicles not set");
     }
     return scene_vehicles_.front().object();
 }
@@ -146,20 +146,20 @@ void VehicleSpawner::set_scene_vehicles(
 {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (!scene_vehicles_.empty()) {
-        THROW_OR_ABORT("Scene vehicles already set");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Scene vehicles already set");
     }
     if (scene_vehicles.empty()) {
-        THROW_OR_ABORT("Scene vehicles list is empty");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Scene vehicles list is empty");
     }
     for (const auto& v : scene_vehicles) {
         if (v->scene_node_name()->empty()) {
-            THROW_OR_ABORT("Rigid body scene node name is empty");
+            THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Rigid body scene node name is empty");
         }
         if (v->scene_node()->shutting_down()) {
-            THROW_OR_ABORT("Player received scene node that is shutting down");
+            THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player received scene node that is shutting down");
         }
         if (scene_.root_node_scheduled_for_deletion(v->scene_node_name())) {
-            THROW_OR_ABORT("Player received root node scheduled for deletion");
+            THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player received root node scheduled for deletion");
         }
     }
     for (auto& l : scene_vehicles) {
@@ -236,7 +236,7 @@ void VehicleSpawner::delete_vehicle() {
 void VehicleSpawner::notify_spawn() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (scene_vehicles_.empty()) {
-        THROW_OR_ABORT("Scene vehicles not set");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Scene vehicles not set");
     }
     if (has_player()) {
         player_->single_waypoint_.notify_spawn();
@@ -247,7 +247,7 @@ void VehicleSpawner::notify_spawn() {
 
 float VehicleSpawner::get_time_since_spawn() const {
     if (std::isnan(time_since_spawn_)) {
-        THROW_OR_ABORT("\"get_time_since_spawn\" requires previous call to \"notify_spawn\"");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": \"get_time_since_spawn\" requires previous call to \"notify_spawn\"");
     }
     return time_since_spawn_;
 }
@@ -255,6 +255,7 @@ float VehicleSpawner::get_time_since_spawn() const {
 float VehicleSpawner::get_time_since_spotted_by_vip() const {
     if (std::isnan(time_since_spotted_by_vip_)) {
         THROW_OR_ABORT(
+            "Spawner with suffix \"" + suffix_ + "\": "
             "\"get_time_since_spotted_by_vip\" requires previous call to "
             "\"notify_spawn\" or \"notify_spotted_by_vip\"");
     }

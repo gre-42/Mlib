@@ -37,10 +37,12 @@ FollowNode::FollowNode(PhysicsScene& physics_scene)
 void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at(KnownArgs::follower), DP_LOC);
-    DanglingRef<SceneNode> followed_node = scene.get_node(args.arguments.at(KnownArgs::followed), DP_LOC);
+    auto follower = args.arguments.at(KnownArgs::follower);
+    auto followed = args.arguments.at(KnownArgs::followed);
+    DanglingRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
+    DanglingRef<SceneNode> followed_node = scene.get_node(followed, DP_LOC);
     auto distance = args.arguments.at<float>(KnownArgs::distance);
-    auto follower = global_object_pool.create_unique<FollowMovable>(
+    auto follow_movable = global_object_pool.create_unique<FollowMovable>(
         CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
         followed_node,
@@ -52,11 +54,16 @@ void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::y_adaptivity),
         args.arguments.at<float>(KnownArgs::y_snappiness),
         scene_config.physics_engine_config.dt);
-    auto& follower_p = *follower;
+    auto& follow_movable_p = *follow_movable;
     linker.link_absolute_movable_and_additional_node(
+        scene,
         follower_node,
         followed_node,
-        std::move(follower),
+        follow_movable->set_follower,
+        follow_movable->set_followed,
+        follower,
+        followed,
+        std::move(follow_movable),
         CURRENT_SOURCE_LOCATION);
-    follower_p.initialize(follower_node);
+    follow_movable_p.initialize(follower_node);
 }

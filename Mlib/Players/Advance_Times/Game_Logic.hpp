@@ -37,8 +37,8 @@ public:
     Spawner spawner;
     Bystanders bystanders;
     TeamDeathmatch team_deathmatch;
+    VehicleChanger vehicle_changer;
 private:
-    VehicleChanger vehicle_changer_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     SupplyDepots& supply_depots_;

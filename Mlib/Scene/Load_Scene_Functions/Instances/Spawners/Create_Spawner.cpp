@@ -28,7 +28,7 @@ LoadSceneJsonUserFunction CreateSpawner::json_user_function = [](const LoadScene
 };
 
 CreateSpawner::CreateSpawner(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)

@@ -25,7 +25,9 @@ FollowMovable::FollowMovable(
     float y_snappiness,
     float dt,
     float dt_ref)
-    : advance_times_{ advance_times }
+    : set_follower{ *this }
+    , set_followed{ *this }
+    , advance_times_{ advance_times }
     , followed_node_{ followed_node.ptr() }
     , followed_{ &followed }
     , attachment_distance_{ attachment_distance }
@@ -115,9 +117,6 @@ void FollowMovable::notify_destroyed(SceneNode& destroyed_object) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {
-        if (followed_node_ != nullptr) {
-            followed_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-        }
         if (destroyed_object.has_absolute_movable()) {
             if (&destroyed_object.get_absolute_movable() != this) {
                 verbose_abort("Unexpected absolute movable");
@@ -126,4 +125,40 @@ void FollowMovable::notify_destroyed(SceneNode& destroyed_object) {
         }
         global_object_pool.remove(this);
     }
+}
+
+FollowerMovableNodeSetter::FollowerMovableNodeSetter(FollowMovable& follow)
+    : follow_{ follow }
+    , removal_tokens_{ nullptr, CURRENT_SOURCE_LOCATION }
+{}
+
+void FollowerMovableNodeSetter::set_scene_node(
+    Scene& scene,
+    const DanglingRef<SceneNode>& node,
+    VariableAndHash<std::string> node_name,
+    SourceLocation loc)
+{
+    removal_tokens_.set(node->on_destroy, CURRENT_SOURCE_LOCATION);
+    removal_tokens_.add([this, node](){
+        follow_.notify_destroyed(node.obj());
+    }, loc);
+    node->set_absolute_movable({ follow_, loc });
+}
+
+
+FollowedMovableNodeSetter::FollowedMovableNodeSetter(FollowMovable& follow)
+    : follow_{ follow }
+    , removal_tokens_{ nullptr, CURRENT_SOURCE_LOCATION }
+{}
+
+void FollowedMovableNodeSetter::set_scene_node(
+    Scene& scene,
+    const DanglingRef<SceneNode>& node,
+    VariableAndHash<std::string> node_name,
+    SourceLocation loc)
+{
+    removal_tokens_.set(node->on_destroy, CURRENT_SOURCE_LOCATION);
+    removal_tokens_.add([this, node](){
+        follow_.notify_destroyed(node.obj());
+    }, loc);
 }

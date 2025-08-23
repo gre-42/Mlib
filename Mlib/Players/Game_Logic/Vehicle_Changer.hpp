@@ -15,6 +15,7 @@ public:
     VehicleChanger(
         VehicleSpawners& vehicle_spawners,
         DeleteNodeMutex& delete_node_mutex);
+    bool change_vehicle(VehicleSpawner& s);
 private:
     void change_vehicles();
     void swap_vehicles(Player& a, Player& b);

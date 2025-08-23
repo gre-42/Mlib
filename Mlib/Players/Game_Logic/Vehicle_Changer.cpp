@@ -21,34 +21,41 @@ VehicleChanger::VehicleChanger(
     , delete_node_mutex_{ delete_node_mutex }
 {}
 
+bool VehicleChanger::change_vehicle(VehicleSpawner& s) {
+    if (!s.has_player()) {
+        return false;
+    }
+    auto p = s.get_player();
+    auto next_vehicle = p->next_scene_vehicle();
+    if (next_vehicle == nullptr) {
+        return false;
+    }
+    if (!p->has_scene_vehicle()) {
+        return false;
+    }
+    if (next_vehicle->get_primary_scene_vehicle()->scene_node().ptr() == p->scene_node().ptr()) {
+        THROW_OR_ABORT("Next scene node equals current node");
+    }
+    auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle()->scene_node());
+    auto* other_player = next_rb.drivers_.try_get(p->next_seat()).get();
+    if (other_player == nullptr) {
+        enter_vehicle(s, *next_vehicle);
+        return true;
+    }
+    return false;
+    // } else {
+    //     auto* other_driver = dynamic_cast<Player*>(other_player);
+    //     if (other_driver == nullptr) {
+    //         THROW_OR_ABORT("Next vehicle's driver is not a player");
+    //     }
+    //     swap_vehicles(p.get(), *other_driver);
+    // }
+}
+
 void VehicleChanger::change_vehicles() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (const auto& [_, s] : vehicle_spawners_.spawners()) {
-        if (!s->has_player()) {
-            continue;
-        }
-        auto p = s->get_player();
-        auto next_vehicle = p->next_scene_vehicle();
-        if (next_vehicle == nullptr) {
-            continue;
-        }
-        if (!p->has_scene_vehicle()) {
-            continue;
-        }
-        if (next_vehicle->get_primary_scene_vehicle()->scene_node().ptr() == p->scene_node().ptr()) {
-            THROW_OR_ABORT("Next scene node equals current node");
-        }
-        auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle()->scene_node());
-        auto* other_player = next_rb.drivers_.try_get(p->next_seat()).get();
-        if (other_player == nullptr) {
-            enter_vehicle(*s, *next_vehicle);
-        } else {
-            auto* other_driver = dynamic_cast<Player*>(other_player);
-            if (other_driver == nullptr) {
-                THROW_OR_ABORT("Next vehicle's driver is not a player");
-            }
-            swap_vehicles(p.get(), *other_driver);
-        }
+        change_vehicle(*s);
     }
 }
 

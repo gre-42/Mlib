@@ -688,7 +688,10 @@ void KeyBindings::increment_external_forces(
                 k->player->select_opponent(OpponentSelectionStrategy::NEXT);
             }
             if (k->select_next_vehicle) {
-                k->player->select_next_vehicle();
+                k->player->select_next_vehicle(
+                    SelectNextVehicleQuery::ENTER_BY_FORCE |
+                    SelectNextVehicleQuery::EXIT,
+                    "driver");
             }
             if (k->reset_vehicle) {
                 k->player->request_reset_vehicle_to_last_checkpoint();

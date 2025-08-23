@@ -17,7 +17,8 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
     const FixedArray<float, 3>& offset,
     const FixedArray<float, 3>& grid,
     const DanglingRef<SceneNode>& follower_node)
-    : advance_times_{ advance_times }
+    : on_destroy_follower_node_{ nullptr, CURRENT_SOURCE_LOCATION }
+    , advance_times_{ advance_times }
     , scene_{ scene }
     , cameras_{ cameras }
     , offset_{ offset }
@@ -77,13 +78,21 @@ TransformationMatrix<float, ScenePos, 3> KeepOffsetFromCamera::get_new_absolute_
     return transformation_matrix_;
 }
 
-void KeepOffsetFromCamera::notify_destroyed(SceneNode& destroyed_object) {
-    if (destroyed_object.has_absolute_movable()) {
-        if (&destroyed_object.get_absolute_movable() != this) {
-            verbose_abort("Unexpected absolute movable");
+void KeepOffsetFromCamera::set_scene_node(
+    Scene& scene,
+    const DanglingRef<SceneNode>& node,
+    VariableAndHash<std::string> node_name,
+    SourceLocation loc)
+{
+    on_destroy_follower_node_.set(node->on_clear, loc);
+    on_destroy_follower_node_.add([this, node](){
+        if (node->has_absolute_movable()) {
+            if (&node->get_absolute_movable() != this) {
+                verbose_abort("Unexpected absolute movable");
+            }
+            node->clear_absolute_movable();
         }
-        destroyed_object.clear_absolute_movable();
-    }
-    follower_node_ = nullptr;
-    global_object_pool.remove(this);
+        follower_node_ = nullptr;
+        global_object_pool.remove(this);
+    }, loc);
 }

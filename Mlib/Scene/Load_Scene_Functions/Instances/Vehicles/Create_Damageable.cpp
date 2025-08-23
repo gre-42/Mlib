@@ -30,7 +30,7 @@ LoadSceneJsonUserFunction CreateDamageable::json_user_function = [](const LoadSc
 };
 
 CreateDamageable::CreateDamageable(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
