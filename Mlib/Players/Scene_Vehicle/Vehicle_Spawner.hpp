@@ -41,6 +41,7 @@ class VehicleSpawner final : public ISpawner, public virtual DanglingBaseClass {
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:
+    using DependenciesAreMet = std::function<bool()>;
     using TrySpawnVehicle = std::function<bool(
         const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
         const GeometrySpawnArguments& geom,
@@ -78,8 +79,10 @@ public:
     void set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>>&& scene_vehicle);
     
     void set_spawn_vehicle(
+        DependenciesAreMet depends_are_met,
         TrySpawnVehicle try_spawn_vehicle,
         SpawnVehicleAlreadySetBehavior vehicle_spawner_already_set_behavior);
+    bool dependencies_are_met() const;
     bool try_spawn(
         const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
         const GeometrySpawnArguments& geometry);
@@ -95,6 +98,7 @@ public:
 private:
     void notify_spawn();
     Scene& scene_;
+    DependenciesAreMet dependencies_are_met_;
     TrySpawnVehicle try_spawn_vehicle_;
     DanglingList<SceneVehicle> scene_vehicles_;
     DanglingBaseClassPtr<Player> player_;

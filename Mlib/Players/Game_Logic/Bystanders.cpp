@@ -252,16 +252,24 @@ void Bystanders::handle_bystanders() {
         if (spawner.get_spawn_trigger() != SpawnTrigger::BYSTANDERS) {
             return;
         }
-        if (spawner.has_player()) {
-            auto player = spawner.get_player();
-            for (const auto& vip : vips) {
-                if (&player.get() == &vip.player) {
-                    return;
-                }
-            }
-            if (player->player_role() != PlayerRole::BYSTANDER) {
-                // return;
-                THROW_OR_ABORT("Spawn trigger is \"bystanders\", but player role is not");
+        if (!spawner.dependencies_are_met()) {
+            return;
+        }
+        // if (spawner.has_player()) {
+        //     auto player = spawner.get_player();
+        //     for (const auto& vip : vips) {
+        //         if (&player.get() == &vip.player) {
+        //             return;
+        //         }
+        //     }
+        //     if (player->player_role() != PlayerRole::BYSTANDER) {
+        //         // return;
+        //         THROW_OR_ABORT("Spawn trigger is \"bystanders\", but player role is not");
+        //     }
+        // }
+        for (const auto& vip : vips) {
+            if (&vip.player.vehicle_spawner() == &spawner) {
+                return;
             }
         }
         if (!spawner.has_scene_vehicle()) {

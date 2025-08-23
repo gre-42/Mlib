@@ -111,14 +111,16 @@ float VehicleSpawner::get_time_since_deletion() const {
 }
 
 void VehicleSpawner::set_spawn_vehicle(
+    DependenciesAreMet depends_are_met,
     TrySpawnVehicle try_spawn_vehicle,
     SpawnVehicleAlreadySetBehavior vehicle_spawner_already_set_behavior)
 {
-    if (try_spawn_vehicle_ &&
+    if ((dependencies_are_met_ || try_spawn_vehicle_) &&
         (vehicle_spawner_already_set_behavior == SpawnVehicleAlreadySetBehavior::THROW))
     {
         THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Spawn vehicle function already set");
     }
+    dependencies_are_met_ = std::move(depends_are_met);
     try_spawn_vehicle_ = std::move(try_spawn_vehicle);
 }
 
@@ -178,6 +180,14 @@ void VehicleSpawner::set_scene_vehicles(
     if (has_player()) {
         player_->set_vehicle_spawner(*this, role_);
     }
+}
+
+bool VehicleSpawner::dependencies_are_met() const {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
+    if (!dependencies_are_met_) {
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Dependencies not initialized");
+    }
+    return dependencies_are_met_();
 }
 
 bool VehicleSpawner::try_spawn(

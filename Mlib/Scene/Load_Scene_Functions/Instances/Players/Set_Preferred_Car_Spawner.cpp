@@ -22,6 +22,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(dependencies);
 DECLARE_ARGUMENT(spawner);
 DECLARE_ARGUMENT(asset_id);
 DECLARE_ARGUMENT(macro);
@@ -48,8 +49,21 @@ SetPreferredCarSpawner::SetPreferredCarSpawner(PhysicsScene& physics_scene)
 
 void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+    args.macro_line_executor.block_arguments().validate_complement(KnownLet::options);
+
     std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
     vehicle_spawners.get(spawner_name).set_spawn_vehicle(
+        [dependencies = args.arguments.try_at_vector<std::string>(KnownArgs::dependencies),
+         &vs = vehicle_spawners]()
+        {
+            for (const auto& dependency : dependencies) {
+                if (vs.get(dependency).has_scene_vehicle()) {
+                    return false;
+                }
+            }
+            return true;
+        },
         [macro_line_executor = args.macro_line_executor,
          asset_id = args.arguments.at<std::string>(KnownArgs::asset_id),
          y_offset = args.arguments.at<CompressedScenePos>(KnownArgs::y_offset),
@@ -113,8 +127,6 @@ struct RegisterJsonUserFunction {
             "set_preferred_car_spawner",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
-                args.macro_line_executor.block_arguments().validate_complement(KnownLet::options);
                 SetPreferredCarSpawner(args.physics_scene()).execute(args);
             });
     }
