@@ -105,14 +105,16 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
     if (a_rb_old->is_avatar()) {
         a_rb_old->deactivate_avatar();
     } else if (a_rb_old->passengers_.erase(a.get_primary_scene_vehicle()->rb().ptr()) != 1) {
-        THROW_OR_ABORT("Could not find passenger to be deleted");
+        THROW_OR_ABORT(
+            "Could not find passenger to be deleted. Vehicle: \"" + a_rb_old->name() +
+            "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
     }
     if (b_rb->is_activated_avatar()) {
-        THROW_OR_ABORT("Destination avatar is not deactivated");
+        THROW_OR_ABORT("Destination avatar is not deactivated: \"" + b_rb->name() + '"');
     }
     if (b_rb->is_deactivated_avatar()) {
         if (std::isnan(a_rb_old->door_distance_)) {
-            THROW_OR_ABORT("Door distance not set");
+            THROW_OR_ABORT("Door distance not set: \"" + a_rb_old->name() + '"');
         }
         auto a_trafo = a_rb_old->rbp_.abs_transformation();
         FixedArray<float, 3> a_dir = (std::abs(a_trafo.R(0, 1)) > 0.9f)
@@ -142,7 +144,9 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
             a.get_primary_scene_vehicle()->rb().set_loc(CURRENT_SOURCE_LOCATION).ptr(),
             CURRENT_SOURCE_LOCATION).second)
         {
-            THROW_OR_ABORT("Passenger already exists");
+            THROW_OR_ABORT(
+                "Passenger already exists. Vehicle: \"" + ap->rigid_body()->name() +
+                "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
         }
     }
 }

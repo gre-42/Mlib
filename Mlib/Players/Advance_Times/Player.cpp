@@ -998,7 +998,10 @@ void Player::select_next_vehicle(
                 return;
             }
         }
-        if (any(q & SelectNextVehicleQuery::ANY_ENTER) && !v->rb()->is_avatar()) {
+        if (any(q & SelectNextVehicleQuery::ANY_ENTER) &&
+            rigid_body()->is_avatar() &&
+            !v->rb()->is_avatar())
+        {
             ScenePos dist2 = sum(squared(v->rb()->rbp_.abs_position() - vehicle_->rb()->rbp_.abs_position()));
             if (dist2 < closest_distance2) {
                 closest_spawner.reset();
