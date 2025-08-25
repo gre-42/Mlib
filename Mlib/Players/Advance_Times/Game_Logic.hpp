@@ -7,6 +7,7 @@
 #include <Mlib/Players/Game_Logic/Spawner.hpp>
 #include <Mlib/Players/Game_Logic/Team_Deathmatch.hpp>
 #include <Mlib/Players/Game_Logic/Vehicle_Changer.hpp>
+#include <Mlib/Players/Player/Supply_Depots_Waypoints_Collection.hpp>
 #include <functional>
 
 namespace Mlib {
@@ -35,6 +36,7 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     Navigate navigate;
     Spawner spawner;
+    SupplyDepotsWaypointsCollection supply_depots_waypoints_collection;
     Bystanders bystanders;
     TeamDeathmatch team_deathmatch;
     VehicleChanger vehicle_changer;

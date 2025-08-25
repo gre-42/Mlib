@@ -22,15 +22,13 @@ public:
     using PointsAndAdjacencyResource = PointsAndAdjacency<WaypointAndFlags>;
 
     SupplyDepotsWaypoints(
+        const PointsAndAdjacencyResource& waypoints,
+        const SupplyDepots& supply_depots);
+    bool select_next_waypoint(
         Player& player,
-        SingleWaypoint& single_waypoint,
-        SupplyDepots& supply_depots);
-    bool select_next_waypoint();
-    void set_waypoints(const PointsAndAdjacencyResource& waypoints);
+        SingleWaypoint& single_waypoint) const;
 private:
-    Player& player_;
-    SingleWaypoint& single_waypoint_;
-    SupplyDepots& supply_depots_;
+    const SupplyDepots& supply_depots_;
     UUVector<WaypointAndFlags> waypoint_positions_;
     std::vector<size_t> predecessors_;
     std::vector<CompressedScenePos> total_distances_;

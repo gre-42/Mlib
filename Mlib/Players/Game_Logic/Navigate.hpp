@@ -10,6 +10,7 @@ public:
     ~Navigate();
     bool has_way_points() const;
     const WayPointSandboxesAndBvh& way_points() const;
+    const WayPointsAndBvh& way_points(JoinedWayPointSandbox key) const;
     void set_way_points(
         const TransformationMatrix<SceneDir, ScenePos, 3>& absolute_model_matrix,
         const WayPointSandboxes& way_points);

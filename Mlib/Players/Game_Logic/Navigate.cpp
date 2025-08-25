@@ -19,6 +19,10 @@ const WayPointSandboxesAndBvh& Navigate::way_points() const {
     return *way_points_;
 }
 
+const WayPointsAndBvh& Navigate::way_points(JoinedWayPointSandbox key) const {
+    return *way_points_->get(key);
+}
+
 void Navigate::set_way_points(
     const TransformationMatrix<SceneDir, ScenePos, 3>& absolute_model_matrix,
     const WayPointSandboxes& way_points)

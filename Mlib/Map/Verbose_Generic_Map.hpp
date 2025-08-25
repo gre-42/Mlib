@@ -80,6 +80,14 @@ public:
         return elements_.extract(key);
     }
 
+    const mapped_type& operator[](const key_type& key) const {
+        return elements_[key];
+    }
+
+    mapped_type& operator[](const key_type& key) {
+        return elements_[key];
+    }
+
     const mapped_type& get(const key_type& key) const {
         return const_cast<VerboseGenericMap*>(this)->get(key);
     }

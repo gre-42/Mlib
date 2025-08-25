@@ -20,6 +20,7 @@ GameLogic::GameLogic(
     DeleteNodeMutex& delete_node_mutex,
     std::function<void()> setup_new_round)
     : spawner{ vehicle_spawners, players, cfg, delete_node_mutex, scene }
+    , supply_depots_waypoints_collection{ supply_depots, navigate }
     , bystanders{ vehicle_spawners, players, scene, spawner, cfg }
     , team_deathmatch{ vehicle_spawners, players, spawner, std::move(setup_new_round) }
     , vehicle_changer{ vehicle_spawners, delete_node_mutex }

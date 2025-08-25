@@ -45,6 +45,7 @@ class CollisionQuery;
 class AimAt;
 class Gun;
 class Navigate;
+class SupplyDepotsWaypointsCollection;
 enum class DrivingDirection;
 enum class JoinedWayPointSandbox;
 enum class WayPointLocation;
@@ -116,6 +117,7 @@ public:
         Scene& scene,
         SupplyDepots& supply_depots,
         const Navigate& navigate,
+        const SupplyDepotsWaypointsCollection& supply_depots_waypoints_collection,
         Spawner& spawner,
         const PhysicsEngineConfig& cfg,
         CollisionQuery& collision_query,
@@ -320,12 +322,13 @@ private:
     InternalsMode internals_mode_;
     SingleWaypoint single_waypoint_;
     PathfindingWaypoints pathfinding_waypoints_;
-    SupplyDepotsWaypoints supply_depots_waypoints_;
     PlaybackWaypoints playback_waypoints_;
     const Focuses& focuses_;
     ScenePos select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
     const Navigate& navigate_;
+    const SupplyDepotsWaypointsCollection& supply_depots_waypoints_collection_;
+    const SupplyDepotsWaypoints* supply_depots_waypoints_;
     Spawner& spawner_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };

@@ -164,27 +164,19 @@ OsmMapResource::OsmMapResource(
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     NodesAndWays naws;
-    NormalizedPointsFixed<double> normalized_points{ ScaleMode::NONE, OffsetMode::CENTERED };
+    OsmBounds osm_bounds{ config.scale };
 
     FunctionGuard fg{ "OSM map resource" };
 
     fg.update("Parse OSM XML");
-    {
-        std::optional<TransformationMatrix<double, double, 2>> normalization_matrix;
-        for (const auto& layer : config.filenames) {
-            parse_osm_xml(
-                layer,
-                config.scale,
-                normalized_points,
-                normalization_matrix,
-                naws.nodes,
-                naws.ways);
-        }
-        if (!normalization_matrix.has_value()) {
-            THROW_OR_ABORT("Normalization matrix not set, OSM-file seems to be empty");
-        }
-        normalization_matrix_ = *normalization_matrix;
+    for (const auto& layer : config.filenames) {
+        parse_osm_xml(
+            layer,
+            osm_bounds,
+            naws.nodes,
+            naws.ways);
     }
+    normalization_matrix_ = osm_bounds.normalization_matrix();
     triangulation_normalization_matrix_ = normalization_matrix_.pre_scaled(config.triangulation_scale);
     
     fg.update("Smoothen ways");
@@ -685,7 +677,7 @@ OsmMapResource::OsmMapResource(
             vertex_height_bindings,
             nodes,
             ways,
-            normalized_points,
+            osm_bounds.normalized_points(),
             tls_wall_barriers,
             osm_triangle_lists,
             air_triangle_lists,
@@ -2162,17 +2154,17 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
             FixedArray<CompressedScenePos, 2>{-r, +r},
             FixedArray<CompressedScenePos, 2>{-r, -r}};
         auto hitbox_positions = hri_.bri->hitbox_positions(scene_node_resources_);
-        if (auto it = way_points_.find(JoinedWayPointSandbox::STREET); it != way_points_.end()) {
-            plot_way_points_and_obstacles(*wf + debug_prefix + "street.svg", it->second, bounding_contour, hitbox_positions);
+        if (auto it = way_points_.try_get(JoinedWayPointSandbox::STREET); it != nullptr) {
+            plot_way_points_and_obstacles(*wf + debug_prefix + "street.svg", *it, bounding_contour, hitbox_positions);
         }
-        if (auto it = way_points_.find(JoinedWayPointSandbox::SIDEWALK); it != way_points_.end()) {
-            plot_way_points_and_obstacles(*wf + debug_prefix + "sidewalk.svg", it->second, bounding_contour, hitbox_positions);
+        if (auto it = way_points_.try_get(JoinedWayPointSandbox::SIDEWALK); it != nullptr) {
+            plot_way_points_and_obstacles(*wf + debug_prefix + "sidewalk.svg", *it, bounding_contour, hitbox_positions);
         }
-        if (auto it = way_points_.find(JoinedWayPointSandbox::EXPLICIT_GROUND); it != way_points_.end()) {
-            plot_way_points_and_obstacles(*wf + debug_prefix + "explicit_ground.svg", it->second, bounding_contour, hitbox_positions);
+        if (auto it = way_points_.try_get(JoinedWayPointSandbox::EXPLICIT_GROUND); it != nullptr) {
+            plot_way_points_and_obstacles(*wf + debug_prefix + "explicit_ground.svg", *it, bounding_contour, hitbox_positions);
         }
-        if (auto it = way_points_.find(JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY); it != way_points_.end()) {
-            plot_way_points_and_obstacles(*wf + debug_prefix + "runway_or_taxiway_or_airway.svg", it->second, bounding_contour, hitbox_positions);
+        if (auto it = way_points_.try_get(JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY); it != nullptr) {
+            plot_way_points_and_obstacles(*wf + debug_prefix + "runway_or_taxiway_or_airway.svg", *it, bounding_contour, hitbox_positions);
         }
     }
 }

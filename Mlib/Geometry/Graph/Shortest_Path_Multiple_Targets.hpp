@@ -19,8 +19,8 @@ void shortest_path_multiple_targets(
     }
     std::vector<size_t> active_nodes = targets;
     auto cmp = [&total_distances](size_t a, size_t b){return total_distances[a] < total_distances[b];};
+    std::make_heap(active_nodes.begin(), active_nodes.end(), cmp);
     while (!active_nodes.empty()) {
-        std::make_heap(active_nodes.begin(), active_nodes.end(), cmp);
         std::pop_heap(active_nodes.begin(), active_nodes.end(), cmp);
         size_t i = active_nodes.back();
         active_nodes.pop_back();

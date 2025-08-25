@@ -29,6 +29,7 @@
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Navigate.hpp>
 #include <Mlib/Players/Game_Logic/Spawner.hpp>
+#include <Mlib/Players/Player/Supply_Depots_Waypoints_Collection.hpp>
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
@@ -103,6 +104,7 @@ Player::Player(
     Scene& scene,
     SupplyDepots& supply_depots,
     const Navigate& navigate,
+    const SupplyDepotsWaypointsCollection& supply_depots_waypoints_collection,
     Spawner& spawner,
     const PhysicsEngineConfig& cfg,
     CollisionQuery& collision_query,
@@ -155,12 +157,13 @@ Player::Player(
     , externals_mode_{ ExternalsMode::NONE }
     , single_waypoint_{ { *this, CURRENT_SOURCE_LOCATION } }
     , pathfinding_waypoints_{ *this, cfg }
-    , supply_depots_waypoints_{ *this, single_waypoint_, supply_depots }
     , playback_waypoints_{ *this }
     , focuses_{ focuses }
     , select_opponent_hysteresis_factor_{ (ScenePos)0.9 }
     , destruction_observers_{ *this }
     , navigate_{ navigate }
+    , supply_depots_waypoints_collection_{ supply_depots_waypoints_collection }
+    , supply_depots_waypoints_{ nullptr }
     , spawner_{ spawner }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
@@ -502,7 +505,9 @@ void Player::increment_external_forces(
             auto tpos = target_rb_->abs_target();
             single_waypoint_.set_waypoint({ tpos.casted<CompressedScenePos>(), WayPointLocation::UNKNOWN });
         } else {
-            if (!supply_depots_waypoints_.select_next_waypoint()) {
+            if ((supply_depots_waypoints_ == nullptr) ||
+                !supply_depots_waypoints_->select_next_waypoint(*this, single_waypoint_))
+            {
                 pathfinding_waypoints_.select_next_waypoint();
             }
         }
@@ -1309,7 +1314,7 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
                 joined_way_point_sandbox_to_string(final_filter) + '"');
         }
         pathfinding_waypoints_.set_waypoints(wp);
-        supply_depots_waypoints_.set_waypoints(wp->way_points);
+        supply_depots_waypoints_ = &supply_depots_waypoints_collection_.get_way_points(location);
         ++nfound;
     }
     if (nfound == 0) {
