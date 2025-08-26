@@ -13,12 +13,15 @@ SupplyDepotsWaypointsCollection::SupplyDepotsWaypointsCollection(
 
 const SupplyDepotsWaypoints& SupplyDepotsWaypointsCollection::get_way_points(JoinedWayPointSandbox key) const
 {
-    auto it = sdw_.find(key);
-    if (it == sdw_.end()) {
+    if (auto it = sdw_.find(key); it != sdw_.end()) {
+        return it->second;
+    }
+    {
         const auto& wpts = navigate_.way_points(key);
-        if (!sdw_.try_emplace(key, wpts.way_points, supply_depots_).second) {
+        auto it = sdw_.try_emplace(key, wpts.way_points, supply_depots_);
+        if (!it.second) {
             verbose_abort("SupplyDepotsWaypointsCollection::get_way_points data race");
         }
+        return it.first->second;
     }
-    return it->second;
 }
