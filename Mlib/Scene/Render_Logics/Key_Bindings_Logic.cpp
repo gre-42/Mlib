@@ -46,10 +46,8 @@ bool KeyBindingsContents::is_visible(size_t index) const {
     if (k.section != section_) {
         return false;
     }
-    for (const auto& r : k.required) {
-        if (!ew_.eval<bool>(r)) {
-            return false;
-        }
+    if (!ew_.eval(k.required)) {
+        return false;
     }
     return true;
 }

@@ -16,14 +16,15 @@ namespace Mlib {
 
 void from_json(const nlohmann::json& j, KeyDescription& obj)
 {
-    validate(j, KeyDescriptionArgs::options);
-    if (j.contains(KeyDescriptionArgs::required)) {
-        j.at(KeyDescriptionArgs::required).get_to(obj.required);
+    JsonView jv{ j };
+    jv.validate(KeyDescriptionArgs::options);
+    if (jv.contains(KeyDescriptionArgs::required)) {
+        expression_from_json(jv.at(KeyDescriptionArgs::required), obj.required);
     }
-    j.at(KeyDescriptionArgs::unique).get_to(obj.unique);
-    j.at(KeyDescriptionArgs::id).get_to(obj.id);
-    j.at(KeyDescriptionArgs::section).get_to(obj.section);
-    j.at(KeyDescriptionArgs::title).get_to(obj.title);
+    jv.at(KeyDescriptionArgs::unique).get_to(obj.unique);
+    jv.at(KeyDescriptionArgs::id).get_to(obj.id);
+    jv.at(KeyDescriptionArgs::section).get_to(obj.section);
+    jv.at(KeyDescriptionArgs::title).get_to(obj.title);
 }
 
 }

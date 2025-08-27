@@ -1,11 +1,11 @@
 #pragma once
+#include <Mlib/Macro_Executor/Boolean_Expression.hpp>
 #include <string>
-#include <vector>
 
 namespace Mlib {
 
 struct KeyDescription {
-    std::vector<std::string> required;
+    BooleanExpression required;
     std::string unique;
     std::string id;
     std::string section;
