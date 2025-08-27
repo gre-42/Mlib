@@ -698,7 +698,7 @@ void test_shortest_path() {
     points_and_adjacency.adjacency(2, 1) = std::sqrt(sum(squared(points_and_adjacency.points[2] - points_and_adjacency.points[1])));
     points_and_adjacency.adjacency(2, 3) = std::sqrt(sum(squared(points_and_adjacency.points[2] - points_and_adjacency.points[3])));
     points_and_adjacency.adjacency(3, 2) = std::sqrt(sum(squared(points_and_adjacency.points[3] - points_and_adjacency.points[2])));
-    std::vector<size_t> targets{{ 0, 2 }};
+    std::vector<size_t> targets{{ 0 }};
     std::vector<size_t> predecessors;
     std::vector<double> total_distances;
     shortest_path_multiple_targets(
@@ -706,7 +706,7 @@ void test_shortest_path() {
         targets,
         predecessors,
         total_distances);
-    assert_allequal(Array<size_t>{predecessors}, Array<size_t>{SIZE_MAX, 2, SIZE_MAX, 2});
+    assert_allequal(Array<size_t>{predecessors}, Array<size_t>{SIZE_MAX, 0, 1, 2});
 }
 
 void test_frustum3() {
