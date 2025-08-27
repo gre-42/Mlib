@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -25,7 +26,7 @@ float calculate_damage(
 {
     float fac = dot0d(rbp.abs_z(), normal);
     fac = std::sqrt(1 - std::min(1.f, squared(fac)));
-    return damage_raw * squared(std::max(0.f, -lambda_final)) * fac;
+    return damage_raw * squared(std::max(0.f, -lambda_final / (kg * kph))) * fac;
 }
 
 void Crash::notify_impact(

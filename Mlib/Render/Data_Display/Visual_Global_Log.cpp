@@ -29,7 +29,8 @@ VisualGlobalLog::VisualGlobalLog(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     size_t nentries,
-    LogEntrySeverity severity)
+    LogEntrySeverity severity,
+    FocusFilter focus_filter)
     : RenderTextLogic{
         ascii,
         std::move(ttf_filename),
@@ -42,6 +43,7 @@ VisualGlobalLog::VisualGlobalLog(
     , nentries_{ nentries }
     , severity_{ severity }
     , widget_{ std::move(widget) }
+    , focus_filter_{ std::move(focus_filter) }
 {}
 
 VisualGlobalLog::~VisualGlobalLog() {
@@ -78,6 +80,10 @@ void VisualGlobalLog::render_without_setup(
         TextInterpolationMode::NEAREST_NEIGHBOR,
         GenericTextAlignment::DEFAULT,
         GenericTextAlignment::DEFAULT);
+}
+
+FocusFilter VisualGlobalLog::focus_filter() const {
+    return focus_filter_;
 }
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {

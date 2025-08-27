@@ -32,7 +32,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Opponent_Tracker_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Opponent_Zoom_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Target_Point_Logic.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Global_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Node_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Player_Bullet_Count.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Player_Status.hpp>
@@ -352,7 +351,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreateSpawner::key, CreateSpawner::json_user_function);
             register_json_user_function(CreateTankController::key, CreateTankController::json_user_function);
             register_json_user_function(CreateTrailerNode::key, CreateTrailerNode::json_user_function);
-            register_json_user_function(CreateVisualGlobalLog::key, CreateVisualGlobalLog::json_user_function);
             register_json_user_function(CreateVisualNodeStatus::key, CreateVisualNodeStatus::json_user_function);
             register_json_user_function(CreateVisualPlayerBulletCount::key, CreateVisualPlayerBulletCount::json_user_function);
             register_json_user_function(CreateVisualPlayerStatus::key, CreateVisualPlayerStatus::json_user_function);

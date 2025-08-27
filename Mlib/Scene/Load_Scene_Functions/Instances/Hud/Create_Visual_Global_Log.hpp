@@ -6,9 +6,6 @@ namespace Mlib {
 
 class CreateVisualGlobalLog: public LoadRenderableSceneInstanceFunction {
 public:
-    static LoadSceneJsonUserFunction json_user_function;
-    static const std::string key;
-private:
     explicit CreateVisualGlobalLog(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };

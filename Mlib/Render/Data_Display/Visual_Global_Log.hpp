@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <cstddef>
@@ -27,7 +28,8 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         size_t nentries,
-        LogEntrySeverity severity);
+        LogEntrySeverity severity,
+        FocusFilter focus_filter);
     virtual ~VisualGlobalLog();
 
     virtual std::optional<RenderSetup> try_render_setup(
@@ -41,6 +43,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    virtual FocusFilter focus_filter() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
@@ -50,6 +53,7 @@ private:
     size_t nentries_;
     LogEntrySeverity severity_;
     std::unique_ptr<IWidget> widget_;
+    FocusFilter focus_filter_;
 };
 
 }
