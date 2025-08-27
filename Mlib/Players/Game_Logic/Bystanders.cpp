@@ -110,8 +110,8 @@ bool Bystanders::spawn_for_vip(
         }
         auto velocity = -n.sp->trafo.R.column(2) * cfg_.velocity_after_spawn;
         bool spotted = [&](){
-            for (const auto& vip : vips_) {
-                if (vip->can_see(
+            for (const auto& vip : vips) {
+                if (vip.player.can_see(
                     funpack(n.sp->trafo.t),
                     velocity,
                     cfg_.only_terrain,
@@ -131,8 +131,8 @@ bool Bystanders::spawn_for_vip(
             }
             // Abort if not visible after x seconds.
             if (![&](){
-                for (const auto& vip : vips_) {
-                    if (vip->can_see(
+                for (const auto& vip : vips) {
+                    if (vip.player.can_see(
                         funpack(n.sp->trafo.t),
                         velocity,
                         cfg_.only_terrain,
