@@ -334,6 +334,7 @@ int main(int argc, char** argv) {
         "    [--num_renderings <n>]\n"
         "    [--audio_gain <f>]\n"
         "    [--show_debug_wheels]\n"
+        "    [--show_global_log]\n"
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
         "    [--audio_alpha <value>]\n"
@@ -427,6 +428,7 @@ int main(int argc, char** argv) {
          "--num_renderings",
          "--audio_gain",
          "--show_debug_wheels",
+         "--show_global_log",
          "--write_loaded_resources",
          "--audio_frequency",
          "--audio_alpha",
@@ -585,6 +587,7 @@ int main(int argc, char** argv) {
                     : nlohmann::json(*record_track_basename)},
                 {"if_devel", args.has_named("--devel_mode")},
                 {"if_show_debug_wheels", args.has_named("--show_debug_wheels")},
+                {"if_show_global_log", args.has_named("--show_global_log")},
                 {"if_android", false},
                 {"flavor", args.named_value("--flavor", "main")},
                 {"scene_lightmap_width", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
