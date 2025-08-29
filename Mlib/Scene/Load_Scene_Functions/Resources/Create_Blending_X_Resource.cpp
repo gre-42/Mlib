@@ -20,6 +20,8 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(texture_filename);
 DECLARE_ARGUMENT(min);
 DECLARE_ARGUMENT(max);
+DECLARE_ARGUMENT(emissive);
+DECLARE_ARGUMENT(ambient);
 DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(number_of_frames);
 }
@@ -46,7 +48,8 @@ LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const
         .number_of_frames = args.arguments.at<size_t>(KnownArgs::number_of_frames, 1),
         .cull_faces = false,
         .shading{
-            .ambient = {2.f, 2.f, 2.f},
+            .emissive = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
+            .ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::ambient),
             .diffuse = {0.f, 0.f, 0.f},
             .specular = {0.f, 0.f, 0.f}}};
     material.compute_color_mode();
