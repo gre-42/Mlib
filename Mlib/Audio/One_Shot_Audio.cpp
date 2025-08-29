@@ -1,5 +1,6 @@
 #include "One_Shot_Audio.hpp"
 #include <Mlib/Audio/Audio_Scene.hpp>
+#include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <mutex>
@@ -63,6 +64,7 @@ void OneShotAudio::advance_time() {
 void OneShotAudio::play(
     const AudioBuffer& audio_buffer,
     const AudioSourceState<ScenePos>& position,
+    const std::optional<Interval<float>>& distance_clamping,
     float gain,
     float alpha)
 {
@@ -75,6 +77,9 @@ void OneShotAudio::play(
     AudioScene::set_source_transformation(sp.source, sp.position);
     sp.source.set_loop(false);
     sp.source.set_gain(gain);
+    if (distance_clamping.has_value()) {
+        sp.source.set_distance_clamping(*distance_clamping);
+    }
     sp.source.play();
 }
 

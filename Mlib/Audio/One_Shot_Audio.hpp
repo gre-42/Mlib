@@ -15,6 +15,8 @@ namespace Mlib {
 class EventEmitter;
 class EventReceiverDeletionToken;
 class AudioBuffer;
+template <class T>
+struct Interval;
 
 struct AudioSourceAndPosition {
     AudioSourceAndPosition(
@@ -40,6 +42,7 @@ public:
     void play(
         const AudioBuffer& audio_buffer,
         const AudioSourceState<ScenePos>& position,
+        const std::optional<Interval<float>>& distance_clamping,
         float gain,
         float alpha = NAN);
     void stop();

@@ -10,6 +10,8 @@ class FixedArray;
 class AudioBuffer;
 template <class TPosition>
 struct AudioSourceState;
+template <class T>
+struct Interval;
 
 enum class PositionRequirement {
     WAITING_FOR_POSITION,
@@ -32,6 +34,7 @@ public:
     void set_gain(float f);
     void set_pitch(float f);
     void set_position(const AudioSourceState<float>& position);
+    void set_distance_clamping(const Interval<float>& interval);
     void play();
     void pause();
     void unpause();

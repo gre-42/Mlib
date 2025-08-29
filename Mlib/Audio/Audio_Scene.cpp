@@ -1,7 +1,9 @@
 #include "Audio_Scene.hpp"
+#include <Mlib/Audio/Audio_Distance_Model.hpp>
 #include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Source.hpp>
+#include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <mutex>
 #include <string>
@@ -74,6 +76,18 @@ void AudioScene::set_source_transformation(
         .position = smooth_position,
         .velocity = smooth_velocity
     });
+}
+
+void AudioScene::set_distance_model(AudioDistanceModel model) {
+    switch (model) {
+    case AudioDistanceModel::INVERSE_DISTANCE_CLAMPED:
+        AL_CHK(alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED));
+        return;
+    case AudioDistanceModel::LINEAR_DISTANCE_CLAMPED:
+        AL_CHK(alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED));
+        return;
+    }
+    THROW_OR_ABORT("Unknown audio distance model: " + std::to_string((int)model));
 }
 
 void AudioScene::print(std::ostream& ostr) {

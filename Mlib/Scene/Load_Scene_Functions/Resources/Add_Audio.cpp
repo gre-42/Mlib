@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
+#include <Mlib/Geometry/Intersection/Interval_Json.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -13,6 +14,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(gain);
+DECLARE_ARGUMENT(distance_clamping);
 }
 
 const std::string AddAudio::key = "add_audio";
@@ -28,5 +30,6 @@ void AddAudio::execute(const LoadSceneJsonUserFunctionArgs& args)
     AudioResourceContextStack::primary_audio_resources()->add_buffer(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         args.arguments.path(KnownArgs::filename),
-        args.arguments.at<float>(KnownArgs::gain, 1.f));
+        args.arguments.at<float>(KnownArgs::gain, 1.f),
+        args.arguments.try_at<Interval<float>>(KnownArgs::distance_clamping));
 }

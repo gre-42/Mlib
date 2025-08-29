@@ -9,6 +9,7 @@
 #include <Mlib/Array/Verbose_Vector.hpp>
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
+#include <Mlib/Audio/Audio_Distance_Model.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
@@ -378,6 +379,7 @@ void android_main(android_app* app) {
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
         "    [--audio_alpha <value>]\n"
+        "    [--audio_distance_model <value>]\n"
         "    [--user_count <n>]\n"
         "    [--check_gl_errors]\n"
         "    [--verbose]",
@@ -463,6 +465,7 @@ void android_main(android_app* app) {
          "--write_loaded_resources",
          "--audio_frequency",
          "--audio_alpha",
+         "--audio_distance_model",
          "--user_count",
          "--bloom_x",
          "--bloom_y",
@@ -486,6 +489,7 @@ void android_main(android_app* app) {
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
         AudioScene::set_default_alpha(safe_stof(args.named_value("--audio_alpha", "0.1")));
+        AudioScene::set_distance_model(audio_distance_model_from_string(args.named_value("--audio_distance_model", "inverse_distance_clamped")));
 
         std::atomic_size_t num_renderings;
         RenderConfig render_config{

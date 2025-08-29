@@ -17,6 +17,7 @@ class AudioSource;
 template <class TPosition>
 struct AudioSourceState;
 class SceneNode;
+enum class AudioDistanceModel;
 
 struct AudioSourceNode {
 	ExponentialSmoother<FixedArray<float, 3>, float> relative_position;
@@ -38,6 +39,7 @@ public:
 	static void set_source_transformation(
 		AudioSource& source,
 		const AudioSourceState<ScenePos>& state);
+	static void set_distance_model(AudioDistanceModel model);
 	static void print(std::ostream& ostr);
 private:
 	static FastMutex mutex_;

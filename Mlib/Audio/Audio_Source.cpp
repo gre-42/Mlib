@@ -4,6 +4,7 @@
 #include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Physics/Units.hpp>
 
 using namespace Mlib;
@@ -75,6 +76,11 @@ void AudioSource::set_position(const AudioSourceState<float>& position) {
         }
         position_requirement_ = PositionRequirement::POSITION_NOT_REQUIRED;
     }
+}
+
+void AudioSource::set_distance_clamping(const Interval<float>& interval) {
+    AL_CHK(alSourcef(source_, AL_REFERENCE_DISTANCE, interval.min));
+    AL_CHK(alSourcef(source_, AL_MAX_DISTANCE, interval.max));
 }
 
 void AudioSource::play() {

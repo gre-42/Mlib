@@ -17,14 +17,23 @@ AudioResources::AudioResources()
 
 AudioResources::~AudioResources() = default;
 
-void AudioResources::add_buffer(const VariableAndHash<std::string>& name, const std::string& filename, float gain) {
+void AudioResources::add_buffer(
+    const VariableAndHash<std::string>& name,
+    const std::string& filename,
+    float gain,
+    const std::optional<Interval<float>>& distance_clamping)
+{
     std::unique_lock lock{ mutex_ };
-    buffer_filenames_.add(name, filename, gain);
+    buffer_filenames_.add(
+        name,
+        filename,
+        gain,
+        distance_clamping);
 }
 
-float AudioResources::get_buffer_gain(const VariableAndHash<std::string>& name) const {
+const AudioFileInformation& AudioResources::get_buffer_meta(const VariableAndHash<std::string>& name) const {
     std::shared_lock lock{ mutex_ };
-    return buffer_filenames_.get(name).gain;
+    return buffer_filenames_.get(name);
 }
 
 std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<std::string>& name) const {
@@ -50,6 +59,7 @@ void AudioResources::add_buffer_sequence(
     const VariableAndHash<std::string>& name,
     const std::string& filename,
     float gain,
+    const std::optional<Interval<float>>& distance_clamping,
     float hysteresis_step)
 {
     if (gain < 0.f) {
@@ -59,7 +69,7 @@ void AudioResources::add_buffer_sequence(
         THROW_OR_ABORT("Attempt to set buffer sequence gain greater than 1");
     }
     std::unique_lock lock{mutex_};
-    buffer_sequence_filenames_.add(name, filename, gain, hysteresis_step);
+    buffer_sequence_filenames_.add(name, filename, gain, distance_clamping, hysteresis_step);
 }
 
 float AudioResources::get_buffer_sequence_gain(const VariableAndHash<std::string>& name) const {

@@ -150,11 +150,11 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         [
             &o=one_shot_audio,
             shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(*a),
-            shot_audio_gain=AudioResourceContextStack::primary_audio_resources()->get_buffer_gain(*a)
+            &shot_audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(*a)
         ]
         (const AudioSourceState<ScenePos>& state)
         {
-            o.play(*shot_audio_buffer, state, shot_audio_gain);
+            o.play(*shot_audio_buffer, state, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
         };
     }
     std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio;
@@ -163,11 +163,11 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         [
             &o=one_shot_audio,
             shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(a),
-            shot_audio_gain=AudioResourceContextStack::primary_audio_resources()->get_buffer_gain(a)
+            &shot_audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(a)
         ]
         (const AudioSourceState<ScenePos>& state)
         {
-            o.play(*shot_audio_buffer, state, shot_audio_gain);
+            o.play(*shot_audio_buffer, state, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
         };
     }
     global_object_pool.create<Gun>(

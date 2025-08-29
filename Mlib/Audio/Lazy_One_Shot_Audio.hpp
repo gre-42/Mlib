@@ -12,6 +12,7 @@ class OneShotAudio;
 class AudioResources;
 template <class TPosition>
 struct AudioSourceState;
+struct AudioFileInformation;
 
 class LazyOneShotAudio {
 public:
@@ -25,7 +26,7 @@ public:
         const AudioSourceState<ScenePos>& position);
 private:
     std::shared_ptr<AudioBuffer> buffer_;
-    float gain_;
+    const AudioFileInformation* info_;
     float alpha_;
     AudioResources& resources_;
     VariableAndHash<std::string> resource_name_;

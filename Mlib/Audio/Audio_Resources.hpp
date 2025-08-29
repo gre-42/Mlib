@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <map>
@@ -13,11 +14,13 @@ class AudioBufferSequenceWithHysteresis;
 struct AudioFileInformation {
     std::string filename;
     float gain;
+    std::optional<Interval<float>> distance_clamping;
 };
 
 struct AudioFileSequenceInformation {
     std::string filename;
     float gain;
+    std::optional<Interval<float>> distance_clamping;
     float hysteresis_step;
 };
 
@@ -28,15 +31,21 @@ class AudioResources {
 public:
     AudioResources();
     ~AudioResources();
-    void add_buffer(const VariableAndHash<std::string>& name, const std::string &filename, float gain);
-    float get_buffer_gain(const VariableAndHash<std::string>& name) const;
+    void add_buffer(
+        const VariableAndHash<std::string>& name,
+        const std::string &filename,
+        float gain,
+        const std::optional<Interval<float>>& distance_clamping);
+    const AudioFileInformation& get_buffer_meta(const VariableAndHash<std::string>& name) const;
     std::shared_ptr<AudioBuffer> get_buffer(const VariableAndHash<std::string>& name) const;
     void preload_buffer(const VariableAndHash<std::string>& name) const;
 
-    void add_buffer_sequence(const VariableAndHash<std::string>& name,
-                             const std::string& filename,
-                             float gain,
-                             float hysteresis_step);
+    void add_buffer_sequence(
+        const VariableAndHash<std::string>& name,
+        const std::string& filename,
+        float gain,
+        const std::optional<Interval<float>>& distance_clamping,
+        float hysteresis_step);
     float get_buffer_sequence_gain(const VariableAndHash<std::string>& name) const;
     std::shared_ptr<AudioBufferSequenceWithHysteresis>
     get_buffer_sequence(const VariableAndHash<std::string>& name) const;
