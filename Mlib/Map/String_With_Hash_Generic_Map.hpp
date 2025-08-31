@@ -46,6 +46,18 @@ public:
         elements_.clear();
     }
 
+    decltype(auto) find(const key_type& key) {
+        return elements_.find(key);
+    }
+
+    decltype(auto) find(const key_type& key) const {
+        return elements_.find(key);
+    }
+
+    void erase(const const_iterator& it) {
+        elements_.erase(it);
+    }
+
     size_t erase(const key_type& key) {
         return elements_.erase(key);
     }
