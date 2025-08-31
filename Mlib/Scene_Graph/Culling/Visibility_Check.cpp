@@ -46,7 +46,12 @@ bool VisibilityCheck<TData>::black_is_visible(
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass) const
 {
-    assert_true((billboard_id != BILLBOARD_ID_NONE) || material.billboard_atlas_instances.empty());
+    if ((billboard_id == BILLBOARD_ID_NONE) != material.billboard_atlas_instances.empty()) {
+        THROW_OR_ABORT(
+            "Material " + material.identifier() +
+            " (1): Billboard id = " + std::to_string(billboard_id) +
+            ", atlas size = " + std::to_string(material.billboard_atlas_instances.size()));
+    }
     if ((external_render_pass == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
         (external_render_pass == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
         (external_render_pass == ExternalRenderPassType::DIRTMAP))

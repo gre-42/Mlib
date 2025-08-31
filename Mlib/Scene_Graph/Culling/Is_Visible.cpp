@@ -22,7 +22,12 @@ bool Mlib::is_visible(
     const Frustum3<TData>* frustum,
     const ExtremalAxisAlignedBoundingBox<TData, 3>* aabb)
 {
-    assert_true((billboard_id != BILLBOARD_ID_NONE) || material.billboard_atlas_instances.empty());
+    if ((billboard_id == BILLBOARD_ID_NONE) != material.billboard_atlas_instances.empty()) {
+        THROW_OR_ABORT(
+            "Material " + material.identifier() +
+            " (0): Billboard id = " + std::to_string(billboard_id) +
+            ", atlas size = " + std::to_string(material.billboard_atlas_instances.size()));
+    }
     if ((scene_graph_config.renderable_hider != nullptr) &&
         !scene_graph_config.renderable_hider->is_visible(object_name))
     {
