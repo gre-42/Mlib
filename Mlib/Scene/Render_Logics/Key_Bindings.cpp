@@ -248,6 +248,19 @@ static float get_alpha(
     return alpha;
 }
 
+static bool get_pressed(
+    ButtonPress& button_press,
+    ScrollWheelMovement* scroll_wheel_movement,
+    const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase)
+{
+    bool pressed = button_press.keys_pressed();
+    if (scroll_wheel_movement != nullptr) {
+        pressed |= !std::isnan(scroll_wheel_movement->axis_alpha(cfg.ncached(phase)));
+    }
+    return pressed;
+}
+
 static const auto main_name = VariableAndHash<std::string>{ "main" };
 static const auto brakes_name = VariableAndHash<std::string>{ "brakes" };
 
@@ -643,16 +656,12 @@ void KeyBindings::increment_external_forces(
         if (phase.group.penetration_class != PenetrationClass::BULLET_LINE) {
             continue;
         }
-        float alpha = get_alpha(
+        bool pressed = get_pressed(
             k->button_press,
-            nullptr,
             k->scroll_wheel_movement.get(),
-            nullptr,
-            0.f,
-            1.f,
             cfg,
             phase);
-        if (enable_controls && !std::isnan(alpha)) {
+        if (pressed && enable_controls) {
             auto& wc = k->player->weapon_cycle();
             if (k->direction == 1) {
                 wc.equip_next_weapon(k->player->id());
