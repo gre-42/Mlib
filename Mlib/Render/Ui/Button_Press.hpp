@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <chrono>
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
