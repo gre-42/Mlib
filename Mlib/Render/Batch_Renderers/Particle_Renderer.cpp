@@ -87,6 +87,7 @@ void ParticleRenderer::render(
         }
         instance->render(
             mvp,
+            m,
             iv,
             lights,
             skidmarks,

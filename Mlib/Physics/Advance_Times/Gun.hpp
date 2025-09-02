@@ -59,10 +59,7 @@ public:
         ITrailStorage* bullet_trace_storage,
         std::string ammo_type,
         std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
-        VariableAndHash<std::string> muzzle_flash_resource,
-        const FixedArray<float, 3>& muzzle_flash_position,
-        float muzzle_flash_animation_time,
-        std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider);
+        std::function<void()> generate_muzzle_flash);
     ~Gun();
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
@@ -78,7 +75,7 @@ public:
 private:
     bool maybe_generate_bullet(const StaticWorld& world);
     void generate_bullet(const StaticWorld& world);
-    void generate_muzzle_flash_hider();
+    void generate_muzzle_flash();
     void generate_shot_audio();
     RenderingResources* rendering_resources_;
     Scene& scene_;
@@ -109,10 +106,7 @@ private:
     TransformationMatrix<float, ScenePos, 3> absolute_model_matrix_;
     FixedArray<float, 3> punch_angle_;
     std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng_;
-    VariableAndHash<std::string> muzzle_flash_resource_;
-    FixedArray<float, 3> muzzle_flash_position_;
-    float muzzle_flash_animation_time_;
-    std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider_;
+    std::function<void()> generate_muzzle_flash_;
     DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     std::optional<DestructionFunctionsRemovalTokens> punch_angle_node_on_clear_;

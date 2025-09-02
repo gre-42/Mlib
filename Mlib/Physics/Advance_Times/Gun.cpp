@@ -58,10 +58,7 @@ Gun::Gun(
     ITrailStorage* bullet_trace_storage,
     std::string ammo_type,
     std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
-    VariableAndHash<std::string> muzzle_flash_resource,
-    const FixedArray<float, 3>& muzzle_flash_position,
-    float muzzle_flash_animation_time,
-    std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider)
+    std::function<void()> generate_muzzle_flash)
     : rendering_resources_{ rendering_resources }
     , scene_{ scene }
     , scene_node_resources_{ scene_node_resources }
@@ -86,10 +83,7 @@ Gun::Gun(
     , absolute_model_matrix_{ fixed_nans<ScenePos, 4, 4 >() }
     , punch_angle_{ 0.f, 0.f, 0.f }
     , punch_angle_rng_{ std::move(punch_angle_rng) }
-    , muzzle_flash_resource_{ std::move(muzzle_flash_resource) }
-    , muzzle_flash_position_{ muzzle_flash_position }
-    , muzzle_flash_animation_time_{ muzzle_flash_animation_time }
-    , generate_muzzle_flash_hider_{ std::move(generate_muzzle_flash_hider) }
+    , generate_muzzle_flash_{ std::move(generate_muzzle_flash) }
     , node_on_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
 {
     if (punch_angle_node != nullptr) {
@@ -146,8 +140,8 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
     parent_rb_.inventory_.take(ammo_type_, 1);
     time_since_last_shot_ = 0;
     generate_bullet(world);
-    if (!muzzle_flash_resource_->empty()) {
-        generate_muzzle_flash_hider();
+    if (generate_muzzle_flash_) {
+        generate_muzzle_flash();
     }
     if (generate_shot_audio_) {
         generate_shot_audio();
@@ -258,16 +252,11 @@ void Gun::generate_bullet(const StaticWorld& world) {
     }
 }
 
-void Gun::generate_muzzle_flash_hider() {
-    std::string muzzle_flash_suffix = smoke_generator_.generate_suffix();
-
-    smoke_generator_.generate_child(
-        *node_,
-        muzzle_flash_resource_,
-        VariableAndHash<std::string>{"muzzle_flash_node" + muzzle_flash_suffix},
-        muzzle_flash_position_.casted<ScenePos>(),
-        muzzle_flash_animation_time_);
-    generate_muzzle_flash_hider_(muzzle_flash_suffix);
+void Gun::generate_muzzle_flash() {
+    if (!generate_muzzle_flash_) {
+        THROW_OR_ABORT("Muzzle flash hider not set");
+    }
+    generate_muzzle_flash_();
 }
 
 void Gun::generate_shot_audio() {

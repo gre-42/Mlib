@@ -113,7 +113,7 @@ void TrailsInstance::render(
     if (dynamic_vertex_buffers_->ntriangles() == 0) {
         return;
     }
-    if (any(isnan(offset_))) {
+    if (any(isnan(offset))) {
         verbose_abort("TrailsInstance::render internal error");
     }
     TransformationMatrix<float, ScenePos, 3> m{ fixed_identity_array<float, 3>(), offset_ };

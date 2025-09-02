@@ -29,6 +29,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IRenderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
@@ -373,6 +374,26 @@ void SceneNode::add_renderable(
     }
 }
 
+void SceneNode::set_particle_renderer(
+    const VariableAndHash<std::string>& name,
+    std::shared_ptr<IParticleRenderer> particle_renderer)
+{
+    std::scoped_lock lock{ mutex_ };
+    if (particle_renderer_ != nullptr) {
+        THROW_OR_ABORT("Particle renderer already set");
+    }
+    particle_renderer_ = particle_renderer;
+    add_renderable(name, particle_renderer);
+}
+
+std::shared_ptr<IParticleRenderer> SceneNode::get_particle_renderer() const {
+    std::shared_lock lock{ mutex_ };
+    if (particle_renderer_ == nullptr) {
+        THROW_OR_ABORT("Particle renderer not set");
+    }
+    return particle_renderer_;
+}
+
 bool SceneNode::has_node_modifier() const {
     if (scene_ != nullptr) {
         scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
@@ -383,9 +404,15 @@ bool SceneNode::has_node_modifier() const {
 
 void SceneNode::clear_renderable_instance(const VariableAndHash<std::string>& name) {
     std::scoped_lock lock{ mutex_ };
-    if (renderables_.erase(name) != 1) {
+    auto it = renderables_.find(name);
+    if (it == renderables_.end()) {
         verbose_abort("Could not clear renderable with name \"" + *name + '"');
     }
+    assert_true(it->second != nullptr);
+    if (it->second->get() == particle_renderer_.get()) {
+        particle_renderer_ = nullptr;
+    }
+    renderables_.erase(it);
 }
 
 void SceneNode::clear_absolute_observer() {

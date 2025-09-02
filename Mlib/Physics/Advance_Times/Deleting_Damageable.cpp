@@ -1,9 +1,11 @@
 #include "Deleting_Damageable.hpp"
+#include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
@@ -15,7 +17,8 @@ DeletingDamageable::DeletingDamageable(
     VariableAndHash<std::string> root_node_name,
     float health,
     bool delete_node_when_health_leq_zero,
-    std::shared_ptr<Translator> translator)
+    std::shared_ptr<Translator> translator,
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion)
     : scene_{ scene }
     , advance_times_{ advance_times }
     , root_node_name_{ std::move(root_node_name) }
@@ -23,6 +26,7 @@ DeletingDamageable::DeletingDamageable(
     , delete_node_when_health_leq_zero_{ delete_node_when_health_leq_zero }
     , rb_{ &get_rigid_body_vehicle(scene.get_node(root_node_name_, DP_LOC)) }
     , translator_{ std::move(translator) }
+    , generate_explosion_{ std::move(generate_explosion) }
     , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear, CURRENT_SOURCE_LOCATION }
     , rb_on_destroy_{ rb_->on_destroy, CURRENT_SOURCE_LOCATION }
 {
@@ -42,6 +46,10 @@ DeletingDamageable::~DeletingDamageable() {
 
 void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
     if (delete_node_when_health_leq_zero_ && (health() <= 0)) {
+        if (generate_explosion_) {
+            auto pos = rb_->rbp_.abs_position();
+            generate_explosion_({pos, rb_->velocity_at_position(pos)});
+        }
         scene_.schedule_delete_root_node(root_node_name_);
     }
 }

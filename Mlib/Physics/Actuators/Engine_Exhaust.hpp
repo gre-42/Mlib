@@ -36,7 +36,6 @@ public:
         const RotatingFrame<SceneDir, ScenePos, 3>& frame) override;
     virtual void advance_time(float dt) override;
 private:
-    std::shared_ptr<IParticleRenderer> particle_renderer_;
     MaybeGenerate maybe_generate_;
     SmokeParticleGenerator smoke_generator_;
     ParticleTrailGenerator trail_generator_;

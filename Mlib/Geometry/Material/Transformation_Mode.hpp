@@ -6,6 +6,7 @@ namespace Mlib {
 
 enum class TransformationMode {
     ALL,
+    POSITION_FLAT,
     POSITION_LOOKAT,
     POSITION,
     POSITION_YANGLE

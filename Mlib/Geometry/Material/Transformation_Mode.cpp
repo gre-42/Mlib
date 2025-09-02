@@ -7,6 +7,7 @@ using namespace Mlib;
 TransformationMode Mlib::transformation_mode_from_string(const std::string& str) {
     static const std::map<std::string, TransformationMode> m{
         {"all", TransformationMode::ALL},
+        {"position_flat", TransformationMode::POSITION_FLAT},
         {"position_lookat", TransformationMode::POSITION_LOOKAT},
         {"position", TransformationMode::POSITION},
         {"position_yangle", TransformationMode::POSITION_YANGLE}};

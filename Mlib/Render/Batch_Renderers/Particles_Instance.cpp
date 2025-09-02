@@ -1,7 +1,7 @@
 #include "Particles_Instance.hpp"
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Render/Batch_Renderers/Infer_Shader_Properties.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -80,7 +80,8 @@ void ParticlesInstance::preload() const {
 }
 
 void ParticlesInstance::render(
-    const FixedArray<ScenePos, 4, 4>& vp,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
@@ -101,12 +102,12 @@ void ParticlesInstance::render(
     if (any(isnan(offset))) {
         verbose_abort("ParticlesInstance::render internal error");
     }
-    TransformationMatrix<float, ScenePos, 3> m{ fixed_identity_array<float, 3>(), offset };
+    TranslationMatrix<ScenePos, 3> t{ offset };
     rcva_->render(
-        dot2d(vp, m.affine()),
-        m,
+        mvp * t,
+        m * t,
         iv,
-        nullptr,        // dynamic style
+        nullptr,        // dynamic_style
         lights,
         skidmarks,
         scene_graph_config,

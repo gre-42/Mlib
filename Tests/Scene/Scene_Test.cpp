@@ -142,9 +142,9 @@ void test_physics_engine(unsigned int seed) {
     std::function<bool()> paused;
     EventEmitter paused_changed{ [](){ return true; } };
     OneShotAudio one_shot_audio{ PositionRequirement::WAITING_FOR_POSITION, paused, paused_changed };
-    ParticleRenderer air_particle_renderer{ particle_resources, ParticleType::SMOKE };
-    ParticleRenderer skidmark_particle_renderer{ particle_resources, ParticleType::SKIDMARK };
-    ParticleRenderer sea_spray_particle_renderer{ particle_resources, ParticleType::SEA_SPRAY };
+    auto air_particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE);
+    auto skidmark_particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SKIDMARK);
+    auto sea_spray_particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SEA_SPRAY);
     SmokeParticleGenerator air_smoke_particle_generator{ rendering_resources, scene_node_resources, air_particle_renderer, scene };
     SmokeParticleGenerator skidmark_smoke_particle_generator{ rendering_resources, scene_node_resources, skidmark_particle_renderer, scene };
     SmokeParticleGenerator sea_spray_smoke_particle_generator{ rendering_resources, scene_node_resources, sea_spray_particle_renderer, scene };

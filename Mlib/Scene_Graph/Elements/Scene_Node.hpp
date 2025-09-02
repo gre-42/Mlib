@@ -41,6 +41,7 @@ struct AnimationState;
 class AnimationStateUpdater;
 class SceneNodeResources;
 class Renderable;
+class IParticleRenderer;
 class IRenderableScene;
 class INodeHider;
 class IAbsoluteMovable;
@@ -192,6 +193,10 @@ public:
     void add_renderable(
         const VariableAndHash<std::string>& name,
         const std::shared_ptr<const Renderable>& renderable);
+    void set_particle_renderer(
+        const VariableAndHash<std::string>& name,
+        std::shared_ptr<IParticleRenderer> particle_renderer);
+    std::shared_ptr<IParticleRenderer> get_particle_renderer() const;
     void add_child(
         const VariableAndHash<std::string>& name,
         DanglingUniquePtr<SceneNode>&& node,
@@ -386,6 +391,7 @@ private:
     IAbsoluteObserver* sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;
     StringWithHashUnorderedMap<std::shared_ptr<RenderableWithStyle>> renderables_;
+    std::shared_ptr<IParticleRenderer> particle_renderer_;
     StringWithHashUnorderedMap<SceneNodeChild> children_;
     StringWithHashUnorderedMap<SceneNodeChild> aggregate_children_;
     StringWithHashUnorderedMap<SceneNodeInstances> instances_children_;

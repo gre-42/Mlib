@@ -52,7 +52,8 @@ public:
     void preload() const;
 
     void render(
-        const FixedArray<ScenePos, 4, 4>& vp,
+        const FixedArray<ScenePos, 4, 4>& mvp,
+        const TransformationMatrix<float, ScenePos, 3>& m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,

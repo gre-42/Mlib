@@ -14,6 +14,7 @@ namespace Mlib {
 
 struct ColoredRenderProgram: public RenderProgram {
     GLint mvp_location;
+    GLint lookat_location;
     std::map<size_t, GLint> mvp_light_locations;
     std::map<size_t, GLint> mvp_skidmarks_locations;
     GLint mvp_dirtmap_location;
@@ -79,6 +80,7 @@ struct RenderProgramIdentifier {
     bool has_horizontal_detailmap;
     ColorMode dirt_color_mode;
     bool has_instances;
+    bool has_flat;
     bool has_lookat;
     bool has_yangle;
     bool has_rotation_quaternion;

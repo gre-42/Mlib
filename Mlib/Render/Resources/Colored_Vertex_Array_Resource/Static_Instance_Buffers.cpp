@@ -33,6 +33,7 @@ bool StaticInstanceBuffers::copy_in_progress() const {
             return true;
         }
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                (transformation_mode_ == TransformationMode::ALL)) {
         if (position_.copy_in_progress()) {
@@ -58,6 +59,7 @@ void StaticInstanceBuffers::wait() const {
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.wait();
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                (transformation_mode_ == TransformationMode::ALL))
     {
@@ -86,6 +88,7 @@ void StaticInstanceBuffers::bind(
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.bind(instance_attribute_index, task_location);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                (transformation_mode_ == TransformationMode::ALL))
     {

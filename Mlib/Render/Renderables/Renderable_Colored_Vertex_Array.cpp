@@ -641,6 +641,7 @@ void RenderableColoredVertexArray::render_cva(
         assert_true(size(interior_texture_set) == ntextures_interior);
     }
     bool has_instances = (rcva_->instances_ != nullptr);
+    bool has_flat = (cva->material.transformation_mode == TransformationMode::POSITION_FLAT);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
     bool has_rotation_quaternion = has_instances && (cva->material.transformation_mode == TransformationMode::ALL);
@@ -792,6 +793,7 @@ void RenderableColoredVertexArray::render_cva(
                 ? rcva_->rendering_resources_.get_texture_descriptor(cva->material.dirt_texture).color.color_mode
                 : ColorMode::UNDEFINED,
             .has_instances = has_instances,
+            .has_flat = has_flat,
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
             .has_rotation_quaternion = has_rotation_quaternion,
@@ -948,7 +950,7 @@ void RenderableColoredVertexArray::render_cva(
             (fragments_depend_on_distance && !vc.orthographic()) ||
             (fresnel.exponent != 0.f);
         bool pred1 = (fog_distances != default_step_distances);
-        if (pred0 || pred1 || reorient_uv0 || (ntextures_interior != 0) || reorient_normals) {
+        if (has_flat || pred0 || pred1 || reorient_uv0 || (ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;
             if ((pred0 || pred1 || reorient_uv0 || reorient_normals) && ortho) {
@@ -958,6 +960,9 @@ void RenderableColoredVertexArray::render_cva(
             }
             if ((pred0 && !ortho) || (ntextures_interior != 0) || pred1) {
                 CHK(glUniform3fv(rp.view_pos, 1, miv.t.casted<float>().flat_begin()));
+            }
+            if (has_flat) {
+                CHK(glUniformMatrix3fv(rp.lookat_location, 1, GL_TRUE, miv.R.flat_begin()));
             }
         }
     }

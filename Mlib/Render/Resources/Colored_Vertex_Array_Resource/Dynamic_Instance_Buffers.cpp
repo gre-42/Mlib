@@ -69,6 +69,7 @@ void DynamicInstanceBuffers::append(
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.append(m);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                (transformation_mode_ == TransformationMode::ALL))
     {
@@ -108,6 +109,7 @@ void DynamicInstanceBuffers::move(float dt, const StaticWorld& world) {
         if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
             advance_position(position_yangles_[i].row_range<0, 3>());
         } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+                   (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                    (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                    (transformation_mode_ == TransformationMode::ALL))
         {
@@ -137,6 +139,7 @@ void DynamicInstanceBuffers::move(float dt, const StaticWorld& world) {
             if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
                 position_yangles_.remove(i);
             } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+                       (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                        (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                        (transformation_mode_ == TransformationMode::ALL))
             {
@@ -196,6 +199,7 @@ void DynamicInstanceBuffers::update(RenderTimeId time_id)
             position_yangles_.clear();
         }
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                (transformation_mode_ == TransformationMode::ALL))
     {
@@ -242,6 +246,7 @@ void DynamicInstanceBuffers::bind(
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.bind(instance_attribute_index);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_FLAT) ||
                (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                (transformation_mode_ == TransformationMode::ALL))
     {

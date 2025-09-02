@@ -268,6 +268,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_nontrivial_specularity,
     bool has_fresnel_exponent,
     bool has_instances,
+    bool has_flat,
     bool has_lookat,
     bool has_yangle,
     bool has_rotation_quaternion,
@@ -326,6 +327,9 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << std::scientific;
     sstr << SHADER_VER;
     sstr << "uniform mat4 MVP;" << std::endl;
+    if (has_flat) {
+        sstr << "uniform mat3 lookat;" << std::endl;
+    }
     sstr << "layout (location=" << attr_ids.idx_position << ") in vec3 vPos;" << std::endl;
     sstr << "layout (location=" << attr_ids.idx_color << ") in vec3 vCol;" << std::endl;
     assert_true(attr_idc->nuvs == attr_ids.uv_count);
@@ -534,24 +538,26 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_yangle && !has_instances) {
         THROW_OR_ABORT("has_yangle requires has_instances");
     }
-    if (has_lookat || has_yangle || has_rotation_quaternion) {
+    if (has_flat || has_lookat || has_yangle || has_rotation_quaternion) {
         if (has_rotation_quaternion) {
             sstr << "    vPosInstance = rotate(rotationQuaternion, vPosInstance);" << std::endl;
         } else {
-            sstr << "    mat3 lookat;" << std::endl;
-            if (has_yangle) {
-                sstr << "    vec2 dz_xz = vec2(sin(instancePosition.w), cos(instancePosition.w));" << std::endl;
-            } else if (orthographic) {
-                sstr << "    vec2 dz_xz = normalize(viewDir.xz);" << std::endl;
-            } else {
-                sstr << "    vec2 dz_xz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
+            if (!has_flat) {
+                sstr << "    mat3 lookat;" << std::endl;
+                if (has_yangle) {
+                    sstr << "    vec2 dz_xz = vec2(sin(instancePosition.w), cos(instancePosition.w));" << std::endl;
+                } else if (orthographic) {
+                    sstr << "    vec2 dz_xz = normalize(viewDir.xz);" << std::endl;
+                } else {
+                    sstr << "    vec2 dz_xz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
+                }
+                sstr << "    vec3 dz = vec3(dz_xz.x, 0.0, dz_xz.y);" << std::endl;
+                sstr << "    vec3 dy = vec3(0.0, 1.0, 0.0);" << std::endl;
+                sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
+                sstr << "    lookat[0] = dx;" << std::endl;
+                sstr << "    lookat[1] = dy;" << std::endl;
+                sstr << "    lookat[2] = dz;" << std::endl;
             }
-            sstr << "    vec3 dz = vec3(dz_xz.x, 0.0, dz_xz.y);" << std::endl;
-            sstr << "    vec3 dy = vec3(0.0, 1.0, 0.0);" << std::endl;
-            sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
-            sstr << "    lookat[0] = dx;" << std::endl;
-            sstr << "    lookat[1] = dy;" << std::endl;
-            sstr << "    lookat[2] = dz;" << std::endl;
             sstr << "    vPosInstance = lookat * vPosInstance;" << std::endl;
         }
         if (has_instances) {
@@ -564,7 +570,7 @@ static GenShaderText vertex_shader_text_gen{[](
                 sstr << "    vNormalInstance = lookat * vNormalInstance;" << std::endl;
             }
         }
-    } else if (has_instances && !has_lookat) {
+    } else if (has_instances) {
         sstr << "    vPosInstance = vPosInstance + instancePosition;" << std::endl;
     }
     for (const auto& [t, i] : uv_map) {
@@ -2465,6 +2471,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         !id.specular.all_equal(0) && (id.specular_exponent != 0.f),
         (id.fresnel.exponent != 0.f),
         id.has_instances,
+        id.has_flat,
         id.has_lookat,
         id.has_yangle,
         id.has_rotation_quaternion,
@@ -2553,8 +2560,15 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         rp->allocate(vs_text, fs_text);
 
         rp->mvp_location = rp->get_uniform_location("MVP");
+        if (id.has_flat) {
+            rp->lookat_location = rp->get_uniform_location("lookat");
+        } else {
+            rp->lookat_location = -1;
+        }
         if (id.has_uv_offset_u) {
             rp->uv_offset_u_location = rp->get_uniform_location("uv_offset_u");
+        } else {
+            rp->uv_offset_u_location = -1;
         }
         for (size_t i = 0; i < id.ntextures_color; ++i) {
             rp->texture_color_locations[i] = rp->get_uniform_location(("textures_color[" + std::to_string(i) + "]").c_str());

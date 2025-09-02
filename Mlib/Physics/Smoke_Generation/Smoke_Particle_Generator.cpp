@@ -17,11 +17,11 @@ using namespace Mlib;
 SmokeParticleGenerator::SmokeParticleGenerator(
     RenderingResources& rendering_resources,
     SceneNodeResources& scene_node_resources,
-    IParticleRenderer& particle_renderer,
+    std::shared_ptr<IParticleRenderer> particle_renderer,
     Scene& scene)
     : rendering_resources_{ rendering_resources }
     , scene_node_resources_{ scene_node_resources }
-    , particle_renderer_{ particle_renderer }
+    , particle_renderer_{ std::move(particle_renderer) }
     , scene_{ scene }
 {}
 
@@ -36,34 +36,19 @@ void SmokeParticleGenerator::generate_root(
     ParticleContainer particle_container)
 {
     if (particle_container == ParticleContainer::NODE) {
-        auto node = make_unique_scene_node(
+        generate_root_node(
+            resource_name,
+            node_name,
             position,
             rotation,
-            1.f,
-            PoseInterpolationMode::DISABLED);
-        node->set_animation_state(
-            std::unique_ptr<AnimationState>(new AnimationState{
-                .aperiodic_animation_frame = AperiodicAnimationFrame{
-                    AnimationFrame{
-                        .begin = 0.f,
-                        .end = animation_duration,
-                        .time = 0.f}},
-                .delete_node_when_aperiodic_animation_finished = true}),
-            AnimationStateAlreadyExistsBehavior::THROW);
-        scene_node_resources_.instantiate_child_renderable(
-            resource_name,
-            ChildInstantiationOptions{
-                .rendering_resources = &rendering_resources_,
-                .instance_name = resource_name,
-                .scene_node = node.ref(DP_LOC),
-                .interpolation_mode = PoseInterpolationMode::DISABLED,
-                .renderable_resource_filter = RenderableResourceFilter{}});
-        scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
+            velocity,
+            air_resistance,
+            animation_duration);
     } else if (particle_container == ParticleContainer::INSTANCE) {
-        particle_renderer_.get_instantiator(resource_name).add_particle(
-            TransformationMatrix<float, ScenePos, 3>{
-                tait_bryan_angles_2_matrix(rotation),
-                position},
+        generate_instance(
+            resource_name,
+            position,
+            rotation,
             velocity,
             air_resistance);
     } else {
@@ -71,7 +56,56 @@ void SmokeParticleGenerator::generate_root(
     }
 }
 
-void SmokeParticleGenerator::generate_child(
+void SmokeParticleGenerator::generate_instance(
+    const VariableAndHash<std::string>& resource_name,
+    const FixedArray<ScenePos, 3>& position,
+    const FixedArray<float, 3>& rotation,
+    const FixedArray<float, 3>& velocity,
+    float air_resistance)
+{
+    particle_renderer_->get_instantiator(resource_name).add_particle(
+        TransformationMatrix<float, ScenePos, 3>{
+            tait_bryan_angles_2_matrix(rotation),
+            position},
+        velocity,
+        air_resistance);
+}
+
+void SmokeParticleGenerator::generate_root_node(
+    const VariableAndHash<std::string>& resource_name,
+    const VariableAndHash<std::string>& node_name,
+    const FixedArray<ScenePos, 3>& position,
+    const FixedArray<float, 3>& rotation,
+    const FixedArray<float, 3>& velocity,
+    float air_resistance,
+    float animation_duration)
+{
+    auto node = make_unique_scene_node(
+        position,
+        rotation,
+        1.f,
+        PoseInterpolationMode::DISABLED);
+    node->set_animation_state(
+        std::unique_ptr<AnimationState>(new AnimationState{
+            .aperiodic_animation_frame = AperiodicAnimationFrame{
+                AnimationFrame{
+                    .begin = 0.f,
+                    .end = animation_duration,
+                    .time = 0.f}},
+            .delete_node_when_aperiodic_animation_finished = true}),
+        AnimationStateAlreadyExistsBehavior::THROW);
+    scene_node_resources_.instantiate_child_renderable(
+        resource_name,
+        ChildInstantiationOptions{
+            .rendering_resources = &rendering_resources_,
+            .instance_name = resource_name,
+            .scene_node = node.ref(DP_LOC),
+            .interpolation_mode = PoseInterpolationMode::DISABLED,
+            .renderable_resource_filter = RenderableResourceFilter{}});
+    scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
+}
+
+void SmokeParticleGenerator::generate_child_node(
     DanglingRef<SceneNode> parent,
     const VariableAndHash<std::string>& resource_name,
     const VariableAndHash<std::string>& child_node_name,

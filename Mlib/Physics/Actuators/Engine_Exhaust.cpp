@@ -12,11 +12,10 @@ EngineExhaust::EngineExhaust(
     const ConstantParticleTrail& particle,
     const TransformationMatrix<SceneDir, ScenePos, 3>& relative_location,
     float p_reference)
-    : particle_renderer_{ particle_renderer }
-    , smoke_generator_{
+    : smoke_generator_{
         rendering_resources,
         scene_node_resources,
-        *particle_renderer,
+        particle_renderer,
         scene }
     , trail_generator_{ smoke_generator_ }
     , particle_{ particle }

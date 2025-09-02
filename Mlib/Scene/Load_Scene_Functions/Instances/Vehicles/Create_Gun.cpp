@@ -4,6 +4,7 @@
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -12,11 +13,14 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
+#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
@@ -38,10 +42,7 @@ DECLARE_ARGUMENT(ammo_type);
 DECLARE_ARGUMENT(generate_smart_bullet);
 DECLARE_ARGUMENT(punch_angle_idle_std);
 DECLARE_ARGUMENT(punch_angle_shoot_std);
-DECLARE_ARGUMENT(muzzle_flash_resource);
-DECLARE_ARGUMENT(muzzle_flash_position);
-DECLARE_ARGUMENT(muzzle_flash_animation_time);
-DECLARE_ARGUMENT(generate_muzzle_flash_hider);
+DECLARE_ARGUMENT(generate_muzzle_flash);
 DECLARE_ARGUMENT(shot_audio);
 }
 
@@ -170,6 +171,10 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             o.play(*shot_audio_buffer, state, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
         };
     }
+    std::function<void()> generate_muzzle_flash;
+    if (auto macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash); macro.has_value()) {
+        generate_muzzle_flash = [macro=*macro, mle=args.macro_line_executor](){ mle(macro, nullptr); };
+    }
     global_object_pool.create<Gun>(
         CURRENT_SOURCE_LOCATION,
         &rendering_resources,
@@ -190,16 +195,5 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         bullet_trace_storage,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
-        VariableAndHash{ args.arguments.at<std::string>(KnownArgs::muzzle_flash_resource, "") },
-        args.arguments.at<EFixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
-        args.arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * seconds,
-        [macro_line_executor = args.macro_line_executor,
-         macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash_hider)](const std::string& muzzle_flash_suffix)
-        {
-            if (!macro.has_value()) {
-                return;
-            }
-            auto mle = macro_line_executor.inserted_block_arguments({{"muzzle_flash_suffix", muzzle_flash_suffix}});
-            mle(*macro, nullptr);
-        });
+        generate_muzzle_flash);
 }

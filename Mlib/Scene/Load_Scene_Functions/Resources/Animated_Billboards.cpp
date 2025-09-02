@@ -46,5 +46,5 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
                     .duration = duration * seconds,
                     .final_texture_w = final_texture_w}));
         });
-    pr.insert_creator_to_instance(name, animatable);
+    pr.insert_creator_to_instance(std::move(name), std::move(animatable));
 };

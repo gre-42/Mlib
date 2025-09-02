@@ -1,5 +1,8 @@
 #include "Create_Damageable.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Audio/Audio_Resources.hpp>
+#include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_And_Id.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
@@ -7,6 +10,7 @@
 #include <Mlib/Physics/Advance_Times/Deleting_Damageable.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -18,6 +22,9 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(health);
 DECLARE_ARGUMENT(delete_node_when_health_leq_zero);
+DECLARE_ARGUMENT(explosion_animation);
+DECLARE_ARGUMENT(explosion_animation_duration);
+DECLARE_ARGUMENT(explosion_audio);
 DECLARE_ARGUMENT(gid);
 }
 
@@ -35,14 +42,64 @@ CreateDamageable::CreateDamageable(PhysicsScene& physics_scene)
 
 void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    auto node = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
+
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion_animation;
+    if (auto resource = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::explosion_animation); resource.has_value()) {
+        generate_explosion_animation = [
+            &g = air_particles.smoke_particle_generator,
+            resource = *resource,
+            node = *node,
+            &scene = scene,
+            duration = args.arguments.at<float>(KnownArgs::explosion_animation_duration) * seconds
+        ]
+        (const AudioSourceState<ScenePos>& state)
+        {
+            g.generate_root(
+                resource,
+                VariableAndHash<std::string>{node + scene.get_temporary_instance_suffix()},
+                state.position,
+                fixed_zeros<float, 3>(),
+                fixed_zeros<float, 3>(),
+                0.f,
+                duration,
+                ParticleContainer::NODE);
+        };
+    }
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion_audio;
+    if (auto a = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::explosion_audio); a.has_value()) {
+        generate_explosion_audio =
+        [
+            &o=one_shot_audio,
+            shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(*a),
+            &shot_audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(*a)
+        ]
+        (const AudioSourceState<ScenePos>& state)
+        {
+            o.play(*shot_audio_buffer, state, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
+        };
+    }
+    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion =
+        [animation=std::move(generate_explosion_animation),
+         audio=std::move(generate_explosion_audio)]
+        (const AudioSourceState<ScenePos>& state)
+    {
+        if (animation) {
+            animation(state);
+        }
+        if (audio) {
+            audio(state);
+        }
+    };
     global_object_pool.create<DeletingDamageable>(
         CURRENT_SOURCE_LOCATION,
         scene,
         physics_engine.advance_times_,
-        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
+        node,
         args.arguments.at<float>(KnownArgs::health),
         args.arguments.at<bool>(KnownArgs::delete_node_when_health_leq_zero),
         std::make_unique<Translator>(
             args.translators,
-            VariableAndHash{args.arguments.at<AssetGroupAndId>(KnownArgs::gid)}));
+            VariableAndHash{args.arguments.at<AssetGroupAndId>(KnownArgs::gid)}),
+        std::move(generate_explosion));
 }

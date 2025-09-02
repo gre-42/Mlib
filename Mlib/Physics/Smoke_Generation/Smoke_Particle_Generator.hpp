@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
+#include <memory>
 #include <string>
 
 namespace Mlib {
@@ -27,7 +28,7 @@ public:
     SmokeParticleGenerator(
         RenderingResources& rendering_resources,
         SceneNodeResources& scene_node_resources,
-        IParticleRenderer& particle_renderer,
+        std::shared_ptr<IParticleRenderer> particle_renderer,
         Scene& scene);
     void generate_root(
         const VariableAndHash<std::string>& resource_name,
@@ -38,7 +39,21 @@ public:
         float air_resistance,
         float animation_duration,
         ParticleContainer particle_container);
-    void generate_child(
+    void generate_instance(
+        const VariableAndHash<std::string>& resource_name,
+        const FixedArray<ScenePos, 3>& position,
+        const FixedArray<float, 3>& rotation,
+        const FixedArray<float, 3>& velocity,
+        float air_resistance);
+    void generate_root_node(
+        const VariableAndHash<std::string>& resource_name,
+        const VariableAndHash<std::string>& node_name,
+        const FixedArray<ScenePos, 3>& position,
+        const FixedArray<float, 3>& rotation,
+        const FixedArray<float, 3>& velocity,
+        float air_resistance,
+        float animation_duration);
+    void generate_child_node(
         DanglingRef<SceneNode> parent,
         const VariableAndHash<std::string>& resource_name,
         const VariableAndHash<std::string>& child_node_name,
@@ -48,7 +63,7 @@ public:
 private:
     RenderingResources& rendering_resources_;
     SceneNodeResources& scene_node_resources_;
-    IParticleRenderer& particle_renderer_;
+    std::shared_ptr<IParticleRenderer> particle_renderer_;
     Scene& scene_;
 };
 
