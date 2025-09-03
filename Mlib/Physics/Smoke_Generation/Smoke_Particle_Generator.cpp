@@ -6,6 +6,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
@@ -33,7 +34,8 @@ void SmokeParticleGenerator::generate_root(
     const FixedArray<float, 3>& velocity,
     float air_resistance,
     float animation_duration,
-    ParticleContainer particle_container)
+    ParticleContainer particle_container,
+    const StaticWorld& static_world)
 {
     if (particle_container == ParticleContainer::NODE) {
         generate_root_node(
@@ -43,7 +45,8 @@ void SmokeParticleGenerator::generate_root(
             rotation,
             velocity,
             air_resistance,
-            animation_duration);
+            animation_duration,
+            static_world);
     } else if (particle_container == ParticleContainer::INSTANCE) {
         generate_instance(
             resource_name,
@@ -78,7 +81,8 @@ void SmokeParticleGenerator::generate_root_node(
     const FixedArray<float, 3>& rotation,
     const FixedArray<float, 3>& velocity,
     float air_resistance,
-    float animation_duration)
+    float animation_duration,
+    const StaticWorld& static_world)
 {
     auto node = make_unique_scene_node(
         position,
@@ -87,11 +91,10 @@ void SmokeParticleGenerator::generate_root_node(
         PoseInterpolationMode::DISABLED);
     node->set_animation_state(
         std::unique_ptr<AnimationState>(new AnimationState{
-            .aperiodic_animation_frame = AperiodicAnimationFrame{
-                AnimationFrame{
-                    .begin = 0.f,
-                    .end = animation_duration,
-                    .time = 0.f}},
+            .reference_time = AperiodicReferenceTime{
+                static_world.time,
+                std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                    std::chrono::duration<float>(animation_duration / seconds))},
             .delete_node_when_aperiodic_animation_finished = true}),
         AnimationStateAlreadyExistsBehavior::THROW);
     scene_node_resources_.instantiate_child_renderable(

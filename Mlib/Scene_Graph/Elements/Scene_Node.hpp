@@ -346,7 +346,7 @@ public:
         std::unique_ptr<AnimationState>&& animation_state,
         AnimationStateAlreadyExistsBehavior already_exists_behavior);
     void set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater);
-    bool to_be_deleted() const;
+    bool to_be_deleted(std::chrono::steady_clock::time_point time) const;
     void set_bone(const SceneNodeBone& bone);
     void set_periodic_animation(const VariableAndHash<std::string>& name);
     void set_aperiodic_animation(const VariableAndHash<std::string>& name);

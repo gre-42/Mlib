@@ -33,7 +33,8 @@ void EngineAudio::notify_rotation(
     float engine_angular_velocity,
     float tires_angular_velocity,
     const EnginePowerIntent& engine_power_intent,
-    float max_surface_power)
+    float max_surface_power,
+    const StaticWorld& static_world)
 {
     if ((engine_power_intent.state == EngineState::OFF) || (engine_angular_velocity >= 0)) {
         cross_fade_.stop();

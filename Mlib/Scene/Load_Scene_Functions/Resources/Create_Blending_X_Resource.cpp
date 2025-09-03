@@ -37,6 +37,7 @@ DECLARE_ARGUMENT(alpha_distances);
 DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
 DECLARE_ARGUMENT(number_of_frames);
+DECLARE_ARGUMENT(has_animated_textures);
 DECLARE_ARGUMENT(billboards);
 DECLARE_ARGUMENT(fog_distances);
 DECLARE_ARGUMENT(fog_ambient);
@@ -72,6 +73,7 @@ LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
         .billboard_atlas_instances = billboard_atlas_instances,
         .number_of_frames = args.arguments.at<unsigned int>(KnownArgs::number_of_frames, 1),
+        .has_animated_textures = args.arguments.at<bool>(KnownArgs::has_animated_textures, false),
         .cull_faces = false,
         .shading{
             .emissive = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),

@@ -19,7 +19,8 @@ void ParticleTrailGenerator::generate(
     const FixedArray<float, 3>& velocity,
     const ParticleDescriptor& trail,
     const std::string& instance_prefix,
-    ParticleContainer particle_container)
+    ParticleContainer particle_container,
+    const StaticWorld& static_world)
 {
     auto r = [&]() {
         switch (trail.rotation) {
@@ -38,5 +39,6 @@ void ParticleTrailGenerator::generate(
         velocity,
         trail.air_resistance,
         trail.animation_duration,
-        particle_container);
+        particle_container,
+        static_world);
 }

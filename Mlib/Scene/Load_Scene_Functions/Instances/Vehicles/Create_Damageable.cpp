@@ -44,7 +44,7 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
 
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion_animation;
+    std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion_animation;
     if (auto resource = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::explosion_animation); resource.has_value()) {
         generate_explosion_animation = [
             &g = air_particles.smoke_particle_generator,
@@ -53,7 +53,7 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
             &scene = scene,
             duration = args.arguments.at<float>(KnownArgs::explosion_animation_duration) * seconds
         ]
-        (const AudioSourceState<ScenePos>& state)
+        (const AudioSourceState<ScenePos>& state, const StaticWorld& static_world)
         {
             g.generate_root(
                 resource,
@@ -63,10 +63,11 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
                 fixed_zeros<float, 3>(),
                 0.f,
                 duration,
-                ParticleContainer::NODE);
+                ParticleContainer::NODE,
+                static_world);
         };
     }
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion_audio;
+    std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion_audio;
     if (auto a = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::explosion_audio); a.has_value()) {
         generate_explosion_audio =
         [
@@ -74,21 +75,21 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
             shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(*a),
             &shot_audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(*a)
         ]
-        (const AudioSourceState<ScenePos>& state)
+        (const AudioSourceState<ScenePos>& state, const StaticWorld& static_world)
         {
             o.play(*shot_audio_buffer, state, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
         };
     }
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion =
+    std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion =
         [animation=std::move(generate_explosion_animation),
          audio=std::move(generate_explosion_audio)]
-        (const AudioSourceState<ScenePos>& state)
+        (const AudioSourceState<ScenePos>& state, const StaticWorld& static_world)
     {
         if (animation) {
-            animation(state);
+            animation(state, static_world);
         }
         if (audio) {
-            audio(state);
+            audio(state, static_world);
         }
     };
     global_object_pool.create<DeletingDamageable>(

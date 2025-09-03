@@ -18,7 +18,7 @@ DeletingDamageable::DeletingDamageable(
     float health,
     bool delete_node_when_health_leq_zero,
     std::shared_ptr<Translator> translator,
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion)
+    std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion)
     : scene_{ scene }
     , advance_times_{ advance_times }
     , root_node_name_{ std::move(root_node_name) }
@@ -48,7 +48,7 @@ void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
     if (delete_node_when_health_leq_zero_ && (health() <= 0)) {
         if (generate_explosion_) {
             auto pos = rb_->rbp_.abs_position();
-            generate_explosion_({pos, rb_->velocity_at_position(pos)});
+            generate_explosion_({pos, rb_->velocity_at_position(pos)}, world);
         }
         scene_.schedule_delete_root_node(root_node_name_);
     }

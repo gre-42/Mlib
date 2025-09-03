@@ -23,6 +23,7 @@ struct TirePowerIntent;
 enum class VelocityClassification;
 struct PhysicsTimeStep;
 struct PhysicsPhase;
+struct StaticWorld;
 
 class RigidBodyEngine: public StatusWriter {
     friend std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
@@ -57,7 +58,8 @@ public:
     void advance_time(
         const PhysicsTimeStep& dt,
         const PhysicsPhase& phase,
-        const RotatingFrame<SceneDir, ScenePos, 3>& frame);
+        const RotatingFrame<SceneDir, ScenePos, 3>& frame,
+        const StaticWorld& static_world);
     float engine_w() const;
 
 private:

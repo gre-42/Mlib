@@ -1986,9 +1986,10 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             for (const auto& n : instantiated_nodes) {
                 options.scene.get_node(n, CURRENT_SOURCE_LOCATION)->set_animation_state(
                     std::unique_ptr<AnimationState>(new AnimationState{
-                        .periodic_reference_time{
-                            std::chrono::steady_clock::now(),
-                            water_animation_duration_}}),
+                        .reference_time{
+                            PeriodicReferenceTime{
+                                std::chrono::steady_clock::now(),
+                                water_animation_duration_}}}),
                     AnimationStateAlreadyExistsBehavior::THROW);
             }
             // // This code is for AggregateMode::ONCE

@@ -873,7 +873,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                     time,
                     scene_node_resources_,
                     nullptr);  // animation_state
-                if (it->second->to_be_deleted()) {
+                if (it->second->to_be_deleted(time)) {
                     UnlockGuard ug{lock};
                     delete_root_node((it++)->first);
                 } else {

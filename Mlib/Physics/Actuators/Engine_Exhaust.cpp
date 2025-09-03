@@ -29,7 +29,8 @@ void EngineExhaust::notify_rotation(
     float engine_angular_velocity,
     float tires_angular_velocity,
     const EnginePowerIntent& engine_power_intent,
-    float max_surface_power)
+    float max_surface_power,
+    const StaticWorld& static_world)
 {
     float p = engine_power_intent.real_power(
         engine_angular_velocity,
@@ -42,7 +43,8 @@ void EngineExhaust::notify_rotation(
             fixed_zeros<SceneDir, 3>(),     // velocity
             particle_.particle,
             "exhaust",
-            ParticleContainer::INSTANCE);
+            ParticleContainer::INSTANCE,
+            static_world);
     }
 }
 

@@ -99,7 +99,8 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
                 fixed_zeros<float, 3>(),
                 props_.trail.particle,
                 "trail",
-                ParticleContainer::INSTANCE);
+                ParticleContainer::INSTANCE,
+                world);
         }
     }
     if (trace_extender_ != nullptr) {
@@ -139,7 +140,8 @@ void Bullet::notify_collided(
         fixed_zeros<float, 3>(),
         0.f,
         props_.explosion_animation_time,
-        ParticleContainer::NODE);
+        ParticleContainer::NODE,
+        world);
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(
             TransformationMatrix<float, ScenePos, 3>{rigid_body_pulses_.rotation_, intersection_point},

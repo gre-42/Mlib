@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -105,7 +106,8 @@ void ContactSmokeGenerator::notify_contact(
                         dirx * pvel,
                         smoke_info.visual->particle,
                         smoke_info.visual->smoke_particle_instance_prefix,
-                        ParticleContainer::INSTANCE);
+                        ParticleContainer::INSTANCE,
+                        c.history.world);
                 }
             }
         };

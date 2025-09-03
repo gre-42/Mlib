@@ -23,6 +23,7 @@ class Scene;
 class Translator;
 template <class TPosition>
 struct AudioSourceState;
+struct StaticWorld;
 
 class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter, public virtual DanglingBaseClass {
     DeletingDamageable(const DeletingDamageable&) = delete;
@@ -35,7 +36,7 @@ public:
         float health,
         bool delete_node_when_health_leq_zero,
         std::shared_ptr<Translator> translator,
-        std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion);
+        std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion);
     virtual ~DeletingDamageable() override;
     // IAdvanceTime
     virtual void advance_time(float dt, const StaticWorld& world) override;
@@ -55,7 +56,7 @@ protected:
     bool delete_node_when_health_leq_zero_;
     RigidBodyVehicle* rb_;
     std::shared_ptr<Translator> translator_;
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_explosion_;
+    std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion_;
     DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     DestructionFunctionsRemovalTokens rb_on_destroy_;

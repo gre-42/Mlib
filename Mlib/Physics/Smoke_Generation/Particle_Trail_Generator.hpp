@@ -14,6 +14,7 @@ class SmokeParticleGenerator;
 enum class ParticleContainer;
 template <class T>
 class VariableAndHash;
+struct StaticWorld;
 
 class ParticleTrailGenerator {
 public:
@@ -25,7 +26,8 @@ public:
         const FixedArray<float, 3>& velocity,
         const ParticleDescriptor& trail,
         const std::string& instance_prefix,
-        ParticleContainer particle_container);
+        ParticleContainer particle_container,
+        const StaticWorld& static_world);
 private:
     SmokeParticleGenerator& smoke_generator_;
     FastUniformRandomNumberGenerator<float> yangle_rng_;

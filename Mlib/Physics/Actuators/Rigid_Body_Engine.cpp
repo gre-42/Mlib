@@ -180,7 +180,8 @@ void RigidBodyEngine::set_surface_power(const EnginePowerIntent& engine_power_in
 void RigidBodyEngine::advance_time(
     const PhysicsTimeStep& dt,
     const PhysicsPhase& phase,
-    const RotatingFrame<SceneDir, ScenePos, 3>& frame)
+    const RotatingFrame<SceneDir, ScenePos, 3>& frame,
+    const StaticWorld& static_world)
 {
     float average_tire_w_;
     if (tires_w_.empty()) {
@@ -201,7 +202,8 @@ void RigidBodyEngine::advance_time(
                 engine_power_->engine_w(),
                 average_tire_w_,
                 engine_power_intent_,
-                engine_power_->get_power());
+                engine_power_->get_power(),
+                static_world);
         }
     }
     if (!phase.burn_in && (phase.substep == 0) && (listener_ != nullptr)) {

@@ -305,6 +305,34 @@ void RenderableColoredVertexArray::render_cva(
             return;
         }
     }
+    float texture_layer = NAN;
+    if (cva->material.has_animated_textures) {
+        if ((animation_state == nullptr) ||
+            (animation_state->reference_time.index() == 0))
+        {
+            THROW_OR_ABORT(
+                "Material has animated textures, but the animation state "
+                "is not set or the (a)periodic reference time is inactive");
+        }
+        assert_true(animation_state != nullptr);
+        texture_layer = std::visit(
+            [&]<class RefTime>(const RefTime& reference_time) -> float {
+                if constexpr (!std::is_same_v<RefTime, std::monostate>) {
+                    return reference_time.phase01(render_pass.rsd.external_render_pass.time);
+                }
+                THROW_OR_ABORT("Reference time not set for material with textures: " + cva->material.identifier());
+            },
+            animation_state->reference_time);
+        if (texture_layer < 0.f) {
+            return;
+        }
+        if (texture_layer > 1.f) {
+            THROW_OR_ABORT("Attempt to render outdated texture layertexture_layer");
+        }
+        if (std::isnan(texture_layer)) {
+            verbose_abort("texture_layer is unexpectedly NAN");
+        }
+    }
     // lerr() << ", not skipped";
 
     std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> filtered_lights;
@@ -743,14 +771,7 @@ void RenderableColoredVertexArray::render_cva(
             TextureLayerProperties::CONTINUOUS |
             TextureLayerProperties::VERTEX));
     }
-    if (cva->material.has_animated_textures) {
-        if ((animation_state == nullptr) ||
-            !animation_state->periodic_reference_time.active())
-        {
-            THROW_OR_ABORT(
-                "Material has animated textures, but the animation state "
-                "is not set or the periodic reference time is inactive");
-        }
+    if (!std::isnan(texture_layer)) {
         if (any(texture_layer_properties)) {
             THROW_OR_ABORT("Detected continuous texture layers in both, renderable and animation");
         }
@@ -852,11 +873,10 @@ void RenderableColoredVertexArray::render_cva(
         }
         CHK(glUniform1f(rp.uv_offset_u_location, uv_offset_u));
     }
-    if (cva->material.has_animated_textures) {
-        assert_true(animation_state != nullptr);
+    if (!std::isnan(texture_layer)) {
         CHK(glUniform1f(
             rp.texture_layer_location_uniform,
-            animation_state->periodic_reference_time.phase01(render_pass.rsd.external_render_pass.time)));
+            texture_layer));
     }
     if (!cva->material.billboard_atlas_instances.empty()) {
         size_t n = cva->material.billboard_atlas_instances.size();

@@ -17,6 +17,7 @@ class RenderingResources;
 class IParticleRenderer;
 template <class T>
 class VariableAndHash;
+struct StaticWorld;
 
 enum class ParticleContainer {
     NODE,
@@ -38,7 +39,8 @@ public:
         const FixedArray<float, 3>& velocity,
         float air_resistance,
         float animation_duration,
-        ParticleContainer particle_container);
+        ParticleContainer particle_container,
+        const StaticWorld& static_world);
     void generate_instance(
         const VariableAndHash<std::string>& resource_name,
         const FixedArray<ScenePos, 3>& position,
@@ -52,7 +54,8 @@ public:
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
         float air_resistance,
-        float animation_duration);
+        float animation_duration,
+        const StaticWorld& static_world);
     void generate_child_node(
         DanglingRef<SceneNode> parent,
         const VariableAndHash<std::string>& resource_name,

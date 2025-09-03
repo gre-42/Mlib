@@ -10,14 +10,16 @@ void EngineEventListeners::notify_rotation(
     float engine_angular_velocity,
     float tires_angular_velocity,
     const EnginePowerIntent& engine_power_intent,
-    float max_surface_power)
+    float max_surface_power,
+    const StaticWorld& static_world)
 {
     for (const auto& l : listeners_) {
         l->notify_rotation(
             engine_angular_velocity,
             tires_angular_velocity,
             engine_power_intent,
-            max_surface_power);
+            max_surface_power,
+            static_world);
     }
 }
 

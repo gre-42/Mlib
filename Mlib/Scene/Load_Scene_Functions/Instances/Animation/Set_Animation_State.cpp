@@ -11,6 +11,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 
 using namespace Mlib;
 
@@ -26,6 +27,7 @@ DECLARE_ARGUMENT(aperiodic_animation_begin);
 DECLARE_ARGUMENT(aperiodic_animation_end);
 DECLARE_ARGUMENT(aperiodic_animation_time);
 DECLARE_ARGUMENT(periodic_reference_time_duration);
+DECLARE_ARGUMENT(aperiodic_reference_time_duration);
 DECLARE_ARGUMENT(delete_node_when_aperiodic_animation_finished);
 }
 
@@ -57,26 +59,35 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
         } else {
             animation_loop_end = NAN;
         }
+        auto animation_state = std::unique_ptr<AnimationState>(new AnimationState{
+            .periodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animation_loop_name, VariableAndHash<std::string>()),
+            .aperiodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::aperiodic_animation_name, VariableAndHash<std::string>()),
+            .periodic_skelletal_animation_frame = {
+                AnimationFrame{
+                    .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN) * seconds,
+                    .end = animation_loop_end * seconds,
+                    .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN) * seconds}},
+            .aperiodic_animation_frame = {
+                AnimationFrame{
+                    .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN) * seconds,
+                    .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN) * seconds,
+                    .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN) * seconds}},
+            .delete_node_when_aperiodic_animation_finished = args.arguments.at<bool>(KnownArgs::delete_node_when_aperiodic_animation_finished, false)});
+        auto pd = args.arguments.try_at<std::chrono::steady_clock::duration>(KnownArgs::periodic_reference_time_duration);
+        auto ad = args.arguments.try_at<std::chrono::steady_clock::duration>(KnownArgs::aperiodic_reference_time_duration);
+        if (pd.has_value() && ad.has_value()) {
+            THROW_OR_ABORT("Both, periodic and aperiodic reference duration were given");
+        }
+        if (pd.has_value()) {
+            animation_state->reference_time = PeriodicReferenceTime{
+                physics_set_fps.simulated_time(), *pd};
+        }
+        if (ad.has_value()) {
+            animation_state->reference_time = AperiodicReferenceTime{
+                physics_set_fps.simulated_time(), *ad};
+        }
         node->set_animation_state(
-            std::unique_ptr<AnimationState>(new AnimationState{
-                .periodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::animation_loop_name, VariableAndHash<std::string>()),
-                .aperiodic_skelletal_animation_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::aperiodic_animation_name, VariableAndHash<std::string>()),
-                .periodic_skelletal_animation_frame = {
-                    AnimationFrame{
-                        .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN) * seconds,
-                        .end = animation_loop_end * seconds,
-                        .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN) * seconds}},
-                .aperiodic_animation_frame = {
-                    AnimationFrame{
-                        .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN) * seconds,
-                        .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN) * seconds,
-                        .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN) * seconds}},
-                .periodic_reference_time{
-                    std::chrono::steady_clock::now(),
-                    args.arguments.at<std::chrono::steady_clock::duration>(
-                        KnownArgs::periodic_reference_time_duration,
-                        std::chrono::steady_clock::duration{0})},
-                .delete_node_when_aperiodic_animation_finished = args.arguments.at<bool>(KnownArgs::delete_node_when_aperiodic_animation_finished, false)}),
+            std::move(animation_state),
             AnimationStateAlreadyExistsBehavior::THROW);
     }
 }

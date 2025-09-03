@@ -484,7 +484,7 @@ void RigidBodyVehicle::advance_time(
     {
         auto frame = rbp_.rotating_frame();
         for (auto& [_, e] : engines_) {
-            e.advance_time(time_step, phase, frame);
+            e.advance_time(time_step, phase, frame, world);
         }
     }
 #ifdef COMPUTE_POWER

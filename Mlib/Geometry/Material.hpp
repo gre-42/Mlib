@@ -66,9 +66,9 @@ struct Material {
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     size_t number_of_frames = 1;
+    bool has_animated_textures = false;
     bool cull_faces = true;
     bool reorient_uv0 = false;
-    bool has_animated_textures = false;
     Shading shading;
     float alpha = 1.f;
     bool reflect_only_y = false;

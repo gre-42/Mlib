@@ -909,7 +909,7 @@ void SceneNode::move(
         for (auto it = children_.begin(); it != children_.end(); ) {
             OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
             it->second.scene_node->move(v2, dt, time, scene_node_resources, estate);
-            if (it->second.scene_node->to_be_deleted()) {
+            if (it->second.scene_node->to_be_deleted(time)) {
                 remove_child((it++)->first);
             } else {
                 ++it;
@@ -926,12 +926,21 @@ void SceneNode::move(
     trafo_history_.append(trafo_, time);
 }
 
-bool SceneNode::to_be_deleted() const {
+bool SceneNode::to_be_deleted(std::chrono::steady_clock::time_point time) const {
     std::shared_lock lock{ mutex_ };
     return
         (animation_state_ != nullptr) &&
         animation_state_->delete_node_when_aperiodic_animation_finished &&
-        animation_state_->aperiodic_animation_frame.ran_to_completion();
+        (animation_state_->aperiodic_animation_frame.ran_to_completion() ||
+         std::visit(
+            [&time]<class RefTime>(const RefTime& reference_time) -> bool
+            {
+                if constexpr (std::is_same_v<RefTime, AperiodicReferenceTime>) {
+                    return reference_time.ran_to_completion(time);
+                }
+                return false;
+            },
+            animation_state_->reference_time));
 }
 
 void SceneNode::set_bone(const SceneNodeBone& bone) {
