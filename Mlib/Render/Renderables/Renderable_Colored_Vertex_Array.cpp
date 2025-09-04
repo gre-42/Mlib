@@ -710,6 +710,9 @@ void RenderableColoredVertexArray::render_cva(
         texture_modifiers_hash.combine(t.id_color);
         texture_modifiers_hash.combine(t.id_normal);
         texture_modifiers_hash.combine(t.id_specular);
+        texture_modifiers_hash.combine(t.tex_color == nullptr ? UINT32_MAX : t.tex_color->layers());
+        texture_modifiers_hash.combine(t.tex_normal == nullptr ? UINT32_MAX : t.tex_normal->layers());
+        texture_modifiers_hash.combine(t.tex_specular == nullptr ? UINT32_MAX : t.tex_specular->layers());
     }
     texture_modifiers_hash.combine(blended_textures_alpha.size());
     for (const auto& t : blended_textures_alpha) {
@@ -717,6 +720,9 @@ void RenderableColoredVertexArray::render_cva(
         texture_modifiers_hash.combine(t.id_color);
         texture_modifiers_hash.combine(t.id_normal);
         texture_modifiers_hash.combine(t.id_specular);
+        texture_modifiers_hash.combine(t.tex_color == nullptr ? UINT32_MAX : t.tex_color->layers());
+        texture_modifiers_hash.combine(t.tex_normal == nullptr ? UINT32_MAX : t.tex_normal->layers());
+        texture_modifiers_hash.combine(t.tex_specular == nullptr ? UINT32_MAX : t.tex_specular->layers());
     }
     Hasher lights_hash;
     lights_hash.combine(filtered_lights.size());
