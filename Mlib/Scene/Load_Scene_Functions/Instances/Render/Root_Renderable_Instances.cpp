@@ -23,6 +23,7 @@ DECLARE_ARGUMENT(transformation);
 DECLARE_ARGUMENT(resource);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
+DECLARE_ARGUMENT(instantiated_root_nodes);
 }
 
 const std::string RootRenderableInstances::key = "root_renderable_instances";
@@ -42,12 +43,16 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto absolute_model_matrix = transformation_matrix_from_json<float, ScenePos, 3>(
         args.arguments.at(KnownArgs::transformation));
 
+    auto irno = args.arguments.try_at_non_null<std::string>(KnownArgs::instantiated_root_nodes);
+    std::list<VariableAndHash<std::string>> instantiated_root_nodes;
+
     scene_node_resources.instantiate_root_renderables(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         RootInstantiationOptions{
             .rendering_resources = &rendering_resources,
             .imposters = &deferred_instantiator,
             .supply_depots = &supply_depots,
+            .instantiated_nodes = irno.has_value() ? &instantiated_root_nodes : nullptr,
             .instance_name = VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) },
             .absolute_model_matrix = absolute_model_matrix,
             .scene = scene,
@@ -55,4 +60,11 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .cva_filter = {
                     .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
                     .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}}});
+    
+    if (irno.has_value()) {
+        if (args.local_json_macro_arguments == nullptr) {
+            THROW_OR_ABORT("instantiated_root_nodes requires local arguments");
+        }
+        args.local_json_macro_arguments->set(*irno, instantiated_root_nodes);
+    }
 }

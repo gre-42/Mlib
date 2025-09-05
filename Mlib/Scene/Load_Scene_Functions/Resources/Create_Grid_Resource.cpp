@@ -2,6 +2,8 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Material_Configuration/Material_Skidmarks.hpp>
+#include <Mlib/Geometry/Material_Configuration/Meta_Materials.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -20,9 +22,11 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(texture_filename);
+DECLARE_ARGUMENT(textures_color);
+DECLARE_ARGUMENT(textures_alpha);
 DECLARE_ARGUMENT(size);
 DECLARE_ARGUMENT(center_distances);
+DECLARE_ARGUMENT(triangle_cluster_width);
 DECLARE_ARGUMENT(occluded_pass);
 DECLARE_ARGUMENT(occluder_pass);
 DECLARE_ARGUMENT(emissivity);
@@ -47,6 +51,8 @@ DECLARE_ARGUMENT(specular_factor);
 DECLARE_ARGUMENT(fog_distances);
 DECLARE_ARGUMENT(fog_ambient);
 DECLARE_ARGUMENT(fresnel);
+DECLARE_ARGUMENT(has_animated_textures);
+DECLARE_ARGUMENT(physics_material);
 }
 
 const std::string CreateGridResource::key = "grid_resource";
@@ -67,6 +73,11 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
     auto diffuse_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
     auto specular_factor = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
     
+    auto physics_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material, ""));
+
+    auto get_texture = [&](const std::string& name){
+        return primary_rendering_resources.get_blend_map_texture(VariableAndHash{name});
+    };
     RenderingContextStack::primary_scene_node_resources().add_resource(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         std::make_shared<GridResource>(
@@ -81,14 +92,17 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                 .depth_func = args.arguments.contains(KnownArgs::depth_func)
                     ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
                     : DepthFunc::LESS,
-                .textures_color = {primary_rendering_resources.get_blend_map_texture(VariableAndHash{args.arguments.path_or_variable(KnownArgs::texture_filename).path})},
+                .textures_color = args.arguments.at_vector<std::string>(KnownArgs::textures_color, get_texture),
+                .textures_alpha = args.arguments.try_at_vector<std::string>(KnownArgs::textures_alpha, get_texture),
                 .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
                 .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
+                .skidmarks = material_skidmarks(physics_material),
                 .alpha_distances = args.arguments.at<EOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
                 // .wrap_mode_s = WrapMode::REPEAT,
                 // .wrap_mode_t = WrapMode::REPEAT,
                 .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
                 .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
+                .has_animated_textures = args.arguments.at<bool>(KnownArgs::has_animated_textures, false),
                 .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
                 .shading{
                     .emissive = make_orderable(emissive * emissive_factor),
@@ -100,10 +114,11 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                     .fog_ambient = args.arguments.at<EOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(1.f)),
                 }}.compute_color_mode(),
             Morphology{
-                .physics_material = PhysicsMaterial::NONE,
+                .physics_material = meta_material(physics_material) | physics_material,
                 .center_distances2 = SquaredStepDistances::from_distances(
                     args.arguments.at<EFixedArray<float, 2>>(
                         KnownArgs::center_distances,
                         FixedArray<float, 2>{0.f, INFINITY }) * meters),
+                .triangle_cluster_width = args.arguments.at<float>(KnownArgs::triangle_cluster_width, 0)
             }));
 };

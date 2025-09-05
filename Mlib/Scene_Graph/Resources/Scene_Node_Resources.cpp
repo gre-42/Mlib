@@ -175,6 +175,7 @@ void SceneNodeResources::instantiate_root_renderables(
                     RootInstantiationOptions{
                         .rendering_resources = options.rendering_resources,
                         .supply_depots = options.supply_depots,
+                        .instantiated_nodes = options.instantiated_nodes,
                         .instance_name = VariableAndHash{ *options.instance_name + "/" + *resource_name },
                         .absolute_model_matrix = options.absolute_model_matrix,
                         .scene = options.scene,

@@ -133,11 +133,11 @@ public:
     }
     template <class TData, class TOperation>
     auto try_at_vector(std::string_view name, const TOperation& op) const {
-        if (!j_.contains(name)) {
+        if (!contains_non_null(name)) {
             using TRet = decltype(at_vector<TData>(name, op));
-            return std::optional<TRet>();
+            return TRet();
         }
-        return std::optional{ at_vector<TData>(name, op) };
+        return at_vector<TData>(name, op);
     }
     template <class TData, class TOperation>
     auto at_vector_non_null(std::string_view name, const TOperation& op) const {
