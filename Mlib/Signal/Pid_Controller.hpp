@@ -1,7 +1,7 @@
 #pragma once
 #include <cmath>
-#include <iosfwd>
 #include <optional>
+#include <ostream>
 
 namespace Mlib {
 
