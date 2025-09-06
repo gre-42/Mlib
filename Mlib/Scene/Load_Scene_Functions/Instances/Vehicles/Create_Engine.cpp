@@ -97,19 +97,6 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<float>(KnownArgs::w_clutch) * rpm,
             args.arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / seconds};
     }
-    std::shared_ptr<EngineAudio> av;
-    if (args.arguments.contains(KnownArgs::audio)) {
-        auto a = args.arguments.child(KnownArgs::audio);
-        a.validate(Audio::options);
-        if (!a.at<bool>(Audio::mute)) {
-            av = std::make_shared<EngineAudio>(
-                a.at<std::string>(Audio::name),
-                paused,
-                paused_changed,
-                a.at<float>(Audio::p_idle) * hp,
-                a.at<float>(Audio::p_reference) * hp);
-        }
-    }
     std::shared_ptr<EngineEventListeners> engine_listeners;
     auto add_engine_listener = [&](std::shared_ptr<IEngineEventListener> l){
         if (engine_listeners == nullptr) {
@@ -117,6 +104,18 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
         engine_listeners->add(std::move(l));
     };
+    if (args.arguments.contains(KnownArgs::audio)) {
+        auto a = args.arguments.child(KnownArgs::audio);
+        a.validate(Audio::options);
+        if (!a.at<bool>(Audio::mute)) {
+            add_engine_listener(std::make_shared<EngineAudio>(
+                a.at<std::string>(Audio::name),
+                paused,
+                paused_changed,
+                a.at<float>(Audio::p_idle) * hp,
+                a.at<float>(Audio::p_reference) * hp));
+        }
+    }
     if (auto engine_exhausts = args.arguments.try_at_non_null<std::vector<nlohmann::json>>(KnownArgs::exhaust); engine_exhausts.has_value()) {
         if (engine_exhausts->empty()) {
             THROW_OR_ABORT("Engine exhaust array is empty");
