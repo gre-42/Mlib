@@ -14,8 +14,8 @@ using namespace Mlib;
 Crash::Crash(
     RigidBodyVehicle& rigid_body,
     float damage)
-: rigid_body_{rigid_body},
-  damage_{damage}
+    : rigid_body_{rigid_body}
+    , damage_{damage}
 {}
 
 float calculate_damage(
