@@ -549,7 +549,7 @@ bool Player::unstuck() {
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
                 // std::scoped_lock lock{ mutex_ };
                 // scene_.delete_root_node(vehicle_.scene_node_name);
-                scene_.schedule_delete_root_node(vehicle_->scene_node_name());
+                scene_.delete_root_node(vehicle_->scene_node_name());
             } else {
                 THROW_OR_ABORT("Unsupported unstuck mode");
             }

@@ -50,7 +50,7 @@ void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
             auto pos = rb_->rbp_.abs_position();
             generate_explosion_({pos, rb_->velocity_at_position(pos)}, world);
         }
-        scene_.schedule_delete_root_node(root_node_name_);
+        scene_.delete_root_node(root_node_name_);
     }
 }
 

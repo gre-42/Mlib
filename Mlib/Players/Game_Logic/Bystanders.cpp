@@ -216,9 +216,7 @@ bool Bystanders::delete_for_vip(
     if (ndelete_votes == spawner.get_scene_vehicles().size() * vips.size()) {
         // TimeGuard time_guard{"delete", "delete"};
         // std::scoped_lock lock{ delete_node_mutex_ };
-        for (const auto& v : spawner.get_scene_vehicles()) {
-            scene_.schedule_delete_root_node(v->scene_node_name());
-        }
+        spawner.delete_vehicle();
         ++spawner_.ndelete_;
         return true;
     } else {

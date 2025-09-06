@@ -61,10 +61,10 @@ void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
     }
     if (&destroyed_object == followed_node_.get()) {
         if (!follower_node_->shutting_down()) {
-            scene_.schedule_delete_root_node(follower_name_);
+            follower_node_ = nullptr;
+            scene_.delete_root_node(follower_name_);
         }
-    }
-    if (follower_node_->has_absolute_movable()) {
+    } else if (follower_node_->has_absolute_movable()) {
         if (&follower_node_->get_absolute_movable() != this) {
             verbose_abort("Unexpected absolute movable");
         }

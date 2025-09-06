@@ -77,7 +77,7 @@ Bullet::~Bullet() {
 void Bullet::advance_time(float dt, const StaticWorld& world) {
     lifetime_ += dt;
     if (lifetime_ > props_.max_lifetime) {
-        scene_.schedule_delete_root_node(bullet_node_name_);
+        scene_.delete_root_node(bullet_node_name_);
         lifetime_ = INFINITY;
         return;
     }
