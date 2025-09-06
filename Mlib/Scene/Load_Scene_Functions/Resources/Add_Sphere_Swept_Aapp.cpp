@@ -36,10 +36,12 @@ struct RegisterJsonUserFunction {
                     args.arguments.at<EFixedArray<CompressedScenePos, 3>>(KnownArgs::min) * meters,
                     args.arguments.at<EFixedArray<CompressedScenePos, 3>>(KnownArgs::max) * meters,
                     args.arguments.at<CompressedScenePos>(KnownArgs::radius) * meters);
-                auto l = std::list{ TypedMesh<std::shared_ptr<IIntersectable>>{material, ssaabb} };
-                auto res = std::make_shared<IntersectableResource>(std::move(l));
-                auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
-                scene_node_resources.add_resource(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), res);
+                // Using loader instead so "write_loaded_resources" works as expected.
+                RenderingContextStack::primary_scene_node_resources().add_resource_loader(
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
+                    [l = std::list{ TypedMesh<std::shared_ptr<IIntersectable>>{material, ssaabb} }]()mutable{
+                        return std::make_shared<IntersectableResource>(std::move(l));
+                    });
             });
     }
 } obj;

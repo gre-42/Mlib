@@ -47,6 +47,7 @@ void SceneNodeResources::write_loaded_resources(const std::string& filename) con
     for (const auto& [name, _] : resources_) {
         descriptors.push_back(*name);
     }
+    descriptors.sort();
     nlohmann::json j(descriptors);
     fstr << j;
     if (fstr.fail()) {
