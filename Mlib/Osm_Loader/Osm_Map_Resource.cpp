@@ -1917,6 +1917,7 @@ OsmMapResource::~OsmMapResource()
 
 void OsmMapResource::preload(const RenderableResourceFilter& filter) const {
     hri_.preload(filter);
+    ColoredVertexArrayResource(buildings_).preload(filter);
     auto preload_styles = [&](const TerrainStyle& style) {
         if (style.is_visible()) {
             for (const auto& p : style.config.near_resource_names_valley_regular) {
