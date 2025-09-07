@@ -875,7 +875,10 @@ void RenderableColoredVertexArray::render_cva(
                 uv_offset_u = frame_index / (float)cva->material.number_of_frames;
             }
         } else {
-            uv_offset_u = 0;
+            THROW_OR_ABORT(
+                "Material has multiple frames, but animation state "
+                "is not set or not active: " + cva->material.identifier());
+            // uv_offset_u = 0;
         }
         CHK(glUniform1f(rp.uv_offset_u_location, uv_offset_u));
     }
