@@ -18,6 +18,7 @@ SetUserCount::SetUserCount(PhysicsScene& physics_scene)
 {}
 
 void SetUserCount::execute(const LoadSceneJsonUserFunctionArgs &args) {
+    args.arguments.validate(KnownArgs::options);
     users.set_user_count(args.arguments.at<uint32_t>(KnownArgs::user_count));
 }
 
@@ -29,7 +30,6 @@ struct RegisterJsonUserFunction {
             "set_user_count",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 SetUserCount(args.physics_scene()).execute(args);
             });
     }

@@ -455,8 +455,9 @@ int main(int argc, char** argv) {
         }
 
         args.assert_num_unnamed(2);
-        std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
-        std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
+        auto search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
+        auto initial_main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
+        auto main_scene_filename = initial_main_scene_filename;
 
         if (args.has_named("--check_gl_errors")) {
             check_gl_errors(CheckErrors::ENABLED);
@@ -774,6 +775,8 @@ int main(int argc, char** argv) {
             ui_focuses.clear_focuses();
             if (auto s = (std::string)next_scene_filename; !s.empty()) {
                 main_scene_filename = s;
+            } else {
+                main_scene_filename = initial_main_scene_filename;
             }
         }
 

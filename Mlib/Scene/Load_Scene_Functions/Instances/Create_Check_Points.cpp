@@ -46,6 +46,7 @@ DECLARE_ARGUMENT(track_filename);
 DECLARE_ARGUMENT(track);
 DECLARE_ARGUMENT(circular);
 DECLARE_ARGUMENT(laps);
+DECLARE_ARGUMENT(pacenotes_enabled);
 DECLARE_ARGUMENT(pacenotes_filename);
 DECLARE_ARGUMENT(pacenotes_meters_ahead);
 DECLARE_ARGUMENT(pacenotes_minimum_covered_meters);
@@ -122,7 +123,10 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         [on_finish, mle = args.macro_line_executor]() {
             mle(on_finish, nullptr);
         });
-    auto pacenotes_filename = args.arguments.path(KnownArgs::pacenotes_filename, "");
+    std::string pacenotes_filename;
+    if (args.arguments.at<bool>(KnownArgs::pacenotes_enabled)) {
+        pacenotes_filename = args.arguments.path(KnownArgs::pacenotes_filename, "");
+    }
     if (!pacenotes_filename.empty()) {
         auto text_widget = std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_text_left)),
@@ -147,7 +151,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::pacenotes_charset),
             args.arguments.path(KnownArgs::pacenotes_ttf),
             args.arguments.at<EFixedArray<float, 3>>(KnownArgs::pacenotes_font_color),
-            args.arguments.path(KnownArgs::pacenotes_filename),
+            std::move(pacenotes_filename),
             DanglingBaseClassRef<const CheckPoints>{ check_points, CURRENT_SOURCE_LOCATION },
             nlaps,
             args.arguments.at<double>(KnownArgs::pacenotes_meters_ahead),
