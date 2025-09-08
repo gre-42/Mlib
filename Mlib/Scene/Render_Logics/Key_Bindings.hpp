@@ -23,6 +23,7 @@ class SelectedCameras;
 class GamepadAnalogAxesPosition;
 class Scene;
 class Focuses;
+class CountdownPhysics;
 class Players;
 struct BaseKeyCombination;
 struct BaseGamepadAnalogAxesBinding;
@@ -36,6 +37,7 @@ public:
     KeyBindings(
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
+        const CountdownPhysics& countdown_start,
         Players& players,
         PhysicsEngine& physics_engine);
     ~KeyBindings();
@@ -109,6 +111,7 @@ private:
 
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
+    const CountdownPhysics& countdown_start_;
     Players& players_;
     PhysicsEngine& physics_engine_;
 };

@@ -5,13 +5,13 @@
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Images/Svg.hpp>
-#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
+#include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Ai/Control_Source.hpp>
@@ -120,7 +120,7 @@ Player::Player(
     std::string behavior,
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex,
-    const Focuses& focuses)
+    const CountdownPhysics& countdown_start)
     : car_movement{ *this }
     , avatar_movement{ *this }
     , on_vehicle_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
@@ -158,7 +158,7 @@ Player::Player(
     , single_waypoint_{ { *this, CURRENT_SOURCE_LOCATION } }
     , pathfinding_waypoints_{ *this, cfg }
     , playback_waypoints_{ *this }
-    , focuses_{ focuses }
+    , countdown_start_{ countdown_start }
     , select_opponent_hysteresis_factor_{ (ScenePos)0.9 }
     , destruction_observers_{ *this }
     , navigate_{ navigate }
@@ -482,18 +482,11 @@ void Player::increment_external_forces(
     if (!phase.group.rigid_bodies.contains(&rigid_body()->rbp_)) {
         return;
     }
-    {
-        bool countdown_active;
-        {
-            std::shared_lock lock1{ focuses_.mutex };
-            countdown_active = focuses_.countdown_active();
-        }
-        if (countdown_active) {
-            car_movement.step_on_brakes();
-            car_movement.steer(0.f);
-            vehicle_->rb()->vehicle_controller().apply();
-            return;
-        }
+    if (countdown_start_.counting()) {
+        car_movement.step_on_brakes();
+        car_movement.steer(0.f);
+        vehicle_->rb()->vehicle_controller().apply();
+        return;
     }
     bool unstucking = false;
     if ((game_mode_ == GameMode::RALLY) && (player_role_ == PlayerRole::COMPETITOR)) {

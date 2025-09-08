@@ -53,7 +53,7 @@ class DeleteNodeMutex;
 class Bystanders;
 class WeaponCycle;
 class Inventory;
-class Focuses;
+class CountdownPhysics;
 class SceneVehicle;
 class VehicleSpawner;
 class VehicleSpawners;
@@ -133,7 +133,7 @@ public:
         std::string behavior,
         DrivingDirection driving_direction,
         DeleteNodeMutex& delete_node_mutex,
-        const Focuses& focuses);
+        const CountdownPhysics& countdown_start);
     virtual ~Player() override;
     void set_can_drive(ControlSource control_source, bool value);
     void set_can_aim(ControlSource control_source, bool value);
@@ -323,7 +323,7 @@ private:
     SingleWaypoint single_waypoint_;
     PathfindingWaypoints pathfinding_waypoints_;
     PlaybackWaypoints playback_waypoints_;
-    const Focuses& focuses_;
+    const CountdownPhysics& countdown_start_;
     ScenePos select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
     const Navigate& navigate_;

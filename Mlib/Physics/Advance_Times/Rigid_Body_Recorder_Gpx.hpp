@@ -10,7 +10,7 @@
 
 namespace Mlib {
 
-class Focuses;
+class CountdownPhysics;
 class AdvanceTimes;
 class SceneNode;
 class RigidBodyPulses;
@@ -24,13 +24,13 @@ public:
         DanglingRef<SceneNode> recorded_node,
         RigidBodyPulses& rbp,
         const TransformationMatrix<double, double, 3>* geographic_coordinates,
-        const Focuses& focuses);
+        const CountdownPhysics* countdown_start);
     ~RigidBodyRecorderGpx();
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
 private:
-    const Focuses& focuses_;
+    const CountdownPhysics* countdown_start_;
     DanglingPtr<SceneNode> recorded_node_;
     RigidBodyPulses* rbp_;
     const TransformationMatrix<double, double, 3>* geographic_coordinates_;

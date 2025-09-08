@@ -115,7 +115,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_node_resources,
         scene,
         delete_node_mutex,
-        ui_focus.focuses,
+        &countdown_start,
         args.arguments.at<bool>(KnownArgs::height_changed),
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::selection_emissivity, fixed_full<float, 3>(-1.f)),
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::deselection_emissivity, fixed_full<float, 3>(-1.f)),

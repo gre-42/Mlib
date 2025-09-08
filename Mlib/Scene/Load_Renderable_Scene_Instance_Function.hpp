@@ -41,6 +41,7 @@ class SupplyDepots;
 class RenderingResources;
 class EventEmitter;
 class UiFocus;
+class CountdownPhysics;
 
 class LoadRenderableSceneInstanceFunction {
 public:
@@ -82,6 +83,7 @@ protected:
     SkyboxLogic& skybox_logic;
     GameLogic* game_logic;
     BaseLog& base_log;
+    CountdownPhysics& countdown_start;
     UiFocus& ui_focus;
     DeleteNodeMutex& delete_node_mutex;
 

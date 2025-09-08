@@ -85,6 +85,7 @@ RenderableScene::RenderableScene(
     , key_bindings_{std::make_unique<KeyBindings>(
           selected_cameras_,
           ui_focus.focuses,
+          physics_scene->countdown_start_,
           physics_scene->players_,
           physics_scene->physics_engine_)}
     , read_pixels_logic_{ *aggregate_render_logic_, button_states, key_configurations, ReadPixelsRole::INTERMEDIATE }

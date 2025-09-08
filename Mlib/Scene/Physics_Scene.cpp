@@ -121,12 +121,14 @@ PhysicsScene::PhysicsScene(
     physics_engine_.advance_times_.add_advance_time({ *air_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine_.advance_times_.add_advance_time({ *skidmark_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 PhysicsScene::~PhysicsScene() {
     object_pool_.clear();
     air_particles_.particle_renderer->on_destroy.clear();
     skidmark_particles_.particle_renderer->on_destroy.clear();
+    countdown_start_.on_destroy.clear();
     stop_and_join();
     clear();
 }

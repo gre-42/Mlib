@@ -22,15 +22,9 @@ enum class Focus {
     SETTINGS_MENU = 1 << 2,
     CONTROLS_MENU = 1 << 3,
     LOADING = 1 << 4,
-    COUNTDOWN_PENDING = 1 << 5,
-    COUNTDOWN_COUNTING = 1 << 6,
-    GAME_OVER_COUNTDOWN_PENDING = 1 << 7,
-    GAME_OVER_COUNTDOWN_COUNTING = 1 << 8,
-    SCENE = 1 << 9,
-    GAME_OVER = 1 << 10,  // currently not in use, countdown is used instead.
+    SCENE = 1 << 5,
+    GAME_OVER = 1 << 6,
     MENU_ANY = MAIN_MENU | NEW_GAME_MENU | SETTINGS_MENU | CONTROLS_MENU,
-    COUNTDOWN_ANY = COUNTDOWN_PENDING | COUNTDOWN_COUNTING,
-    GAME_OVER_COUNTDOWN_ANY = GAME_OVER_COUNTDOWN_PENDING | GAME_OVER_COUNTDOWN_COUNTING,
     // Queries
     QUERY_CONTAINS = 1 << 16,
     QUERY_ALL = 1 << 17,
@@ -80,8 +74,7 @@ public:
     void pop_back();
     void force_push_back(Focus focus);
     bool has_focus(Focus focus) const;
-    bool countdown_active() const;
-    bool game_over_countdown_active() const;
+    bool game_over() const;
     bool empty() const;
     size_t size() const;
     mutable SafeAtomicRecursiveSharedMutex mutex;

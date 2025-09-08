@@ -57,7 +57,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto filename = wt->m_filename;
     auto playback = std::make_shared<RigidBodyPlayback>(
         std::make_unique<TrackElementFile>(create_ifstream(filename), filename),
-        ui_focus.focuses,
+        &countdown_start,
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
         args.arguments.at<float>(KnownArgs::speed),
         node_prefixes.size());

@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
+#include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
@@ -60,10 +61,12 @@ using namespace Mlib;
 KeyBindings::KeyBindings(
     SelectedCameras& selected_cameras,
     const Focuses& focuses,
+    const CountdownPhysics& countdown_start,
     Players& players,
     PhysicsEngine& physics_engine)
     : selected_cameras_{ selected_cameras }
     , focuses_{ focuses }
+    , countdown_start_{ countdown_start }
     , players_{ players }
     , physics_engine_{ physics_engine }
 {}
@@ -271,6 +274,9 @@ void KeyBindings::increment_external_forces(
 {
     bool enable_controls = [&]() {
         if (phase.burn_in) {
+            return false;
+        }
+        if (countdown_start_.counting()) {
             return false;
         }
         {

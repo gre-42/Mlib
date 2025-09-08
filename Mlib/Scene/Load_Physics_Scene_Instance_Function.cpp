@@ -29,6 +29,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(PhysicsScene&
     , physics_set_fps{ physics_scene.physics_set_fps_ }
     , game_logic{ physics_scene.game_logic_.get() }
     , users{ physics_scene.users_ }
+    , countdown_start{ physics_scene.countdown_start_ }
     , ui_focus{ physics_scene.ui_focus_ }
     , base_log{ physics_scene.fifo_log_ }
     , delete_node_mutex{ physics_scene.delete_node_mutex_ }

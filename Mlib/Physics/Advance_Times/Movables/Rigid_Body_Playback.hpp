@@ -18,6 +18,7 @@ class Focuses;
 
 class ITrackElementSequence;
 class RigidBodyPlayback;
+class CountdownPhysics;
 
 class RigidBodySinglePlayback: public IAbsoluteMovable, public virtual DanglingBaseClass {
     friend RigidBodyPlayback;
@@ -33,7 +34,7 @@ class RigidBodyPlayback: public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RigidBodyPlayback(
         std::unique_ptr<ITrackElementSequence>&& sequence,
-        const Focuses& focuses,
+        const CountdownPhysics* countdown_start,
         const TransformationMatrix<double, double, 3>* geographic_mapping,
         float speedup,
         size_t ntransformations);
@@ -41,7 +42,7 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     DanglingBaseClassRef<IAbsoluteMovable> get_playback_object(size_t i);
 private:
-    const Focuses& focuses_;
+    const CountdownPhysics* countdown_start_;
     float speedup_;
     double progress_;
     TrackReader track_reader_;

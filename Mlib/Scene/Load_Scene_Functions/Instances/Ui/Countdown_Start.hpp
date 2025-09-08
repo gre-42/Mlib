@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-class Countdown: public LoadRenderableSceneInstanceFunction {
+class CountdownStart: public LoadRenderableSceneInstanceFunction {
 public:
-    explicit Countdown(RenderableScene& renderable_scene);
+    explicit CountdownStart(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

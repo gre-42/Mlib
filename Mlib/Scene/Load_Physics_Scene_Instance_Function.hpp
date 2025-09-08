@@ -40,6 +40,7 @@ class RenderingResources;
 class EventEmitter;
 class RenderLogics;
 class UiFocus;
+class CountdownPhysics;
 
 class LoadPhysicsSceneInstanceFunction {
 public:
@@ -72,6 +73,7 @@ protected:
     SetFps& physics_set_fps;
     GameLogic* game_logic;
     Users& users;
+    CountdownPhysics& countdown_start;
     UiFocus& ui_focus;
     BaseLog& base_log;
     DeleteNodeMutex& delete_node_mutex;

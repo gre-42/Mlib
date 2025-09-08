@@ -62,10 +62,8 @@ void MenuLogic::handle_events() {
                 if (focuses.size() > 1) {
                     focuses.pop_back();
                 }
-            } else if (focuses.countdown_active() || focuses.has_focus(Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) {
+            } else if (focuses.has_focus(Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) {
                 focuses.force_push_back(Focus::MAIN_MENU);
-            } else if (focuses.game_over_countdown_active()) {
-                // Do nothing, menu will show automatically after the countdown is finished
             } else if (!focuses.empty()) {
                 THROW_OR_ABORT("Unknown focus value: " + (std::stringstream() << focuses).str());
             }

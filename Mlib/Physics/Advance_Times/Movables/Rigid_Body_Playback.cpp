@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
@@ -9,11 +10,11 @@ using namespace Mlib;
 
 RigidBodyPlayback::RigidBodyPlayback(
     std::unique_ptr<ITrackElementSequence>&& sequence,
-    const Focuses& focuses,
+    const CountdownPhysics* countdown_start,
     const TransformationMatrix<double, double, 3>* geographic_mapping,
     float speedup,
     size_t ntransformations)
-    : focuses_{focuses}
+    : countdown_start_{countdown_start}
     , speedup_{speedup}
     , progress_{0.}
     , track_reader_{
@@ -37,11 +38,8 @@ RigidBodyPlayback::~RigidBodyPlayback() {
 }
 
 void RigidBodyPlayback::advance_time(float dt, const StaticWorld& world) {
-    {
-        std::shared_lock lock{focuses_.mutex};
-        if (focuses_.countdown_active()) {
-            return;
-        }
+    if ((countdown_start_ != nullptr) && countdown_start_->counting()) {
+        return;
     }
     if (track_reader_.read(progress_)) {
         progress_ += dt / seconds * speedup_;

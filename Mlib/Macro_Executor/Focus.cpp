@@ -114,12 +114,8 @@ bool Focuses::has_focus(Focus focus) const {
         : any(f & focus);
 }
 
-bool Focuses::countdown_active() const {
-    return has_focus(Focus::QUERY_CONTAINS | Focus::COUNTDOWN_PENDING | Focus::COUNTDOWN_COUNTING);
-}
-
-bool Focuses::game_over_countdown_active() const {
-    return has_focus(Focus::QUERY_CONTAINS | Focus::GAME_OVER_COUNTDOWN_PENDING | Focus::GAME_OVER_COUNTDOWN_COUNTING);
+bool Focuses::game_over() const {
+    return has_focus(Focus::QUERY_CONTAINS | Focus::GAME_OVER);
 }
 
 bool Focuses::empty() const {
@@ -395,12 +391,6 @@ Focus Mlib::single_focus_from_string(const std::string& str) {
         {"controls_menu", Focus::CONTROLS_MENU},
         {"menu_any", Focus::MENU_ANY},
         {"loading", Focus::LOADING},
-        {"countdown_pending", Focus::COUNTDOWN_PENDING},
-        {"countdown_counting", Focus::COUNTDOWN_COUNTING},
-        {"countdown_any", Focus::COUNTDOWN_ANY},
-        {"game_over_countdown_pending", Focus::GAME_OVER_COUNTDOWN_PENDING},
-        {"game_over_countdown_counting", Focus::GAME_OVER_COUNTDOWN_COUNTING},
-        {"game_over_countdown_any", Focus::GAME_OVER_COUNTDOWN_ANY},
         {"scene", Focus::SCENE},
         {"game_over", Focus::GAME_OVER},
         {"query_contains", Focus::QUERY_CONTAINS},
@@ -430,10 +420,6 @@ std::string Mlib::focus_to_string(Focus focus) {
     if (any(focus & Focus::SETTINGS_MENU)) result += "s";
     if (any(focus & Focus::CONTROLS_MENU)) result += "o";
     if (any(focus & Focus::LOADING)) result += "l";
-    if (any(focus & Focus::COUNTDOWN_PENDING)) result += "p";
-    if (any(focus & Focus::COUNTDOWN_COUNTING)) result += "c";
-    if (any(focus & Focus::GAME_OVER_COUNTDOWN_PENDING)) result += "P";
-    if (any(focus & Focus::GAME_OVER_COUNTDOWN_COUNTING)) result += "C";
     if (any(focus & Focus::SCENE)) result += "S";
     if (any(focus & Focus::GAME_OVER)) result += "O";
     return '(' + result + ')';

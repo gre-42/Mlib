@@ -13,7 +13,7 @@
 
 namespace Mlib {
 
-class Focuses;
+class CountdownPhysics;
 class IAbsoluteMovable;
 class AdvanceTimes;
 class SceneNode;
@@ -63,7 +63,7 @@ public:
         SceneNodeResources& scene_node_resources,
         Scene& scene,
         DeleteNodeMutex& delete_node_mutex,
-        const Focuses& focuses,
+        const CountdownPhysics* countdown_start,
         bool enable_height_changed_mode = false,
         const FixedArray<float, 3>& selection_emissive = { -1.f, -1.f, -1.f },
         const FixedArray<float, 3>& deselection_emissive = { -1.f, -1.f, -1.f },
@@ -99,7 +99,7 @@ private:
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
     DeleteNodeMutex& delete_node_mutex_;
-    const Focuses& focuses_;
+    const CountdownPhysics* countdown_start_;
     float total_elapsed_seconds_;
     float lap_elapsed_seconds_;
     std::list<float> lap_times_seconds_;

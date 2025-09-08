@@ -67,7 +67,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::behavior),
         driving_direction_from_string(args.arguments.at<std::string>(KnownArgs::driving_direction)),
         delete_node_mutex,
-        ui_focus.focuses);
+        countdown_start);
     players.add_player({ *player, CURRENT_SOURCE_LOCATION });
     physics_engine.advance_times_.add_advance_time({ *player, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine.add_external_force_provider(*player);

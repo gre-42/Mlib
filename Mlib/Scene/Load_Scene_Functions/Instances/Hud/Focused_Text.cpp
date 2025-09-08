@@ -17,6 +17,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(z_order);
 DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
 DECLARE_ARGUMENT(position);
@@ -47,7 +48,7 @@ void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::text));
     render_logics.append(
         { loading_logic, CURRENT_SOURCE_LOCATION },
-        1,                          // z_order
+        args.arguments.at<int>(KnownArgs::z_order),
         CURRENT_SOURCE_LOCATION);
 }
 

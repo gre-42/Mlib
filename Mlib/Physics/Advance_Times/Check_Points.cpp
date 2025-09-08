@@ -2,11 +2,11 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Iterator/Reverse_Iterator.hpp>
-#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -42,7 +42,7 @@ CheckPoints::CheckPoints(
     SceneNodeResources& scene_node_resources,
     Scene& scene,
     DeleteNodeMutex& delete_node_mutex,
-    const Focuses& focuses,
+    const CountdownPhysics* countdown_start,
     bool enable_height_changed_mode,
     const FixedArray<float, 3>& selection_emissive,
     const FixedArray<float, 3>& deselection_emissive,
@@ -73,7 +73,7 @@ CheckPoints::CheckPoints(
     , scene_node_resources_{ scene_node_resources }
     , scene_{ scene }
     , delete_node_mutex_{ delete_node_mutex }
-    , focuses_{ focuses }
+    , countdown_start_{ countdown_start }
     , total_elapsed_seconds_{ NAN }
     , lap_elapsed_seconds_{ NAN }
     , race_state_{ RaceState::COUNTDOWN }
@@ -122,8 +122,7 @@ void CheckPoints::advance_time(float dt) {
     }
     bool just_started = false;
     if (race_state_ == RaceState::COUNTDOWN) {
-        std::shared_lock lock{focuses_.mutex};
-        if (!focuses_.countdown_active()) {
+        if ((countdown_start_ == nullptr) || countdown_start_->finished()) {
             race_state_ = RaceState::ONGOING;
             just_started = true;
         }
