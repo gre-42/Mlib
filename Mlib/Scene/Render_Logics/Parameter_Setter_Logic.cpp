@@ -188,8 +188,9 @@ void ParameterSetterLogic::render_without_setup(
     drawer.render();
 }
 
-FocusFilter ParameterSetterLogic::focus_filter() const {
-    return focus_filter_;
+bool ParameterSetterLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void ParameterSetterLogic::merge_substitutions() const {

@@ -2,6 +2,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Math/Sub_Sat.hpp>
 #include <Mlib/Render/Key_Bindings/Input_Type.hpp>
@@ -148,8 +149,9 @@ void KeyBindingsLogic::render_without_setup(
     drawer.render();
 }
 
-FocusFilter KeyBindingsLogic::focus_filter() const {
-    return focus_filter_;
+bool KeyBindingsLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void KeyBindingsLogic::print(std::ostream& ostr, size_t depth) const {

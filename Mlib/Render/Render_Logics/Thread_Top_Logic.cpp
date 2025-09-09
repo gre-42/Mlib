@@ -83,8 +83,9 @@ void ThreadTopLogic::render_without_setup(
         line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }
 
-FocusFilter ThreadTopLogic::focus_filter() const {
-    return { .focus_mask = focus_mask_ };
+bool ThreadTopLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.focuses.has_focus(focus_mask_);
 }
 
 void ThreadTopLogic::print(std::ostream& ostr, size_t depth) const {

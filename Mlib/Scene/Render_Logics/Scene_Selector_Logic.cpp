@@ -4,6 +4,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
@@ -159,8 +160,9 @@ void SceneSelectorLogic::render_without_setup(
     drawer.render();
 }
 
-FocusFilter SceneSelectorLogic::focus_filter() const {
-    return focus_filter_;
+bool SceneSelectorLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void SceneSelectorLogic::merge_substitutions() const {

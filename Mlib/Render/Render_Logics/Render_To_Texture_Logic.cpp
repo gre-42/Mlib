@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -105,8 +106,9 @@ bool RenderToTextureLogic::render_optional_setup(
     return true;
 }
 
-FocusFilter RenderToTextureLogic::focus_filter() const {
-    return focus_filter_;
+bool RenderToTextureLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void RenderToTextureLogic::print(std::ostream& ostr, size_t depth) const {

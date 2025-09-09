@@ -100,6 +100,6 @@ bool RenderLogic::render_optional_setup(
     return false;
 }
 
-FocusFilter RenderLogic::focus_filter() const {
-    return { .focus_mask = Focus::ALWAYS };
+bool RenderLogic::is_visible(const UiFocus& ui_focus) const {
+    return true;
 }

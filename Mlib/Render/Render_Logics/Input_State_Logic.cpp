@@ -6,6 +6,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
@@ -94,8 +95,9 @@ void InputStateLogic::render_without_setup(
         GenericTextAlignment::DEFAULT);
 }
 
-FocusFilter InputStateLogic::focus_filter() const {
-    return focus_filter_;
+bool InputStateLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void InputStateLogic::print(std::ostream& ostr, size_t depth) const {

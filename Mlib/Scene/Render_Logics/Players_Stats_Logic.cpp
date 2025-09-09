@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
@@ -75,8 +76,9 @@ void PlayersStatsLogic::render_without_setup(
         GenericTextAlignment::DEFAULT);
 }
 
-FocusFilter PlayersStatsLogic::focus_filter() const {
-    return focus_filter_;
+bool PlayersStatsLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {

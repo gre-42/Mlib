@@ -72,8 +72,9 @@ void FocusedTextLogic::render_without_setup(
         line_distance_.to_pixels(ly, PixelsRoundMode::NONE));
 }
 
-FocusFilter FocusedTextLogic::focus_filter() const {
-    return { .focus_mask = focus_mask_ };
+bool FocusedTextLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.focuses.has_focus(focus_mask_);
 }
 
 void FocusedTextLogic::print(std::ostream& ostr, size_t depth) const {

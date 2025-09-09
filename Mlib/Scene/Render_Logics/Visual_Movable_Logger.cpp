@@ -1,6 +1,7 @@
 #include "Visual_Movable_Logger.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -83,8 +84,9 @@ void VisualMovableLogger::render_without_setup(
     }
 }
 
-FocusFilter VisualMovableLogger::focus_filter() const {
-    return focus_filter_;
+bool VisualMovableLogger::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {

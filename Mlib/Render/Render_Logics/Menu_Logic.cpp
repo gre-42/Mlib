@@ -59,10 +59,12 @@ void MenuLogic::handle_events() {
             auto& focuses = user_object_.ui_focuses[user_id].focuses;
             std::scoped_lock lock{focuses.mutex};
             if (focuses.has_focus(Focus::MENU_ANY)) {
-                if (focuses.size() > 1) {
+                if (!focuses.has_focus(Focus::QUERY_CONTAINS | Focus::GAME_OVER) &&
+                    (focuses.size() > 1))
+                {
                     focuses.pop_back();
                 }
-            } else if (focuses.has_focus(Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) {
+            } else if (focuses.has_focus(Focus::LOADING | Focus::SCENE)) {
                 focuses.force_push_back(Focus::MAIN_MENU);
             } else if (!focuses.empty()) {
                 THROW_OR_ABORT("Unknown focus value: " + (std::stringstream() << focuses).str());

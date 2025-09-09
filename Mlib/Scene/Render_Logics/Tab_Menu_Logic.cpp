@@ -234,8 +234,9 @@ void TabMenuLogic::render_without_setup(
     }
 }
 
-FocusFilter TabMenuLogic::focus_filter() const {
-    return { .focus_mask = focus_mask_ };
+bool TabMenuLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.focuses.has_focus(focus_mask_);
 }
 
 void TabMenuLogic::merge_substitutions() const {

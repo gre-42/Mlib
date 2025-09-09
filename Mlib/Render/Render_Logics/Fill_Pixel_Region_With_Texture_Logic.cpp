@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -55,8 +56,9 @@ void FillPixelRegionWithTextureLogic::render_without_setup(
     }
 }
 
-FocusFilter FillPixelRegionWithTextureLogic::focus_filter() const {
-    return focus_filter_;
+bool FillPixelRegionWithTextureLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void FillPixelRegionWithTextureLogic::print(std::ostream& ostr, size_t depth) const {

@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -113,8 +114,9 @@ void CheckPointsPacenotes::render_without_setup(
     }
 }
 
-FocusFilter CheckPointsPacenotes::focus_filter() const {
-    return focus_filter_;
+bool CheckPointsPacenotes::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void CheckPointsPacenotes::print(std::ostream& ostr, size_t depth) const {

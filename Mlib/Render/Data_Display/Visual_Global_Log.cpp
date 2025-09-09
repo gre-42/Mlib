@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Expression_Watcher.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
@@ -82,8 +83,9 @@ void VisualGlobalLog::render_without_setup(
         GenericTextAlignment::DEFAULT);
 }
 
-FocusFilter VisualGlobalLog::focus_filter() const {
-    return focus_filter_;
+bool VisualGlobalLog::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {

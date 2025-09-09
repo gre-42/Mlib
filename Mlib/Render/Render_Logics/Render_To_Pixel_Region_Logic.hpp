@@ -29,7 +29,7 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id,
         const RenderSetup* setup) override;
-    virtual FocusFilter focus_filter() const override;
+    virtual bool is_visible(const UiFocus& ui_focus) const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
     DestructionFunctionsRemovalTokens on_render_logic_destroy;

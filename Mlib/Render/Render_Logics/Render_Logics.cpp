@@ -1,8 +1,6 @@
 #include "Render_Logics.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Macro_Executor/Focus.hpp>
-#include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -59,10 +57,7 @@ void RenderLogics::render_without_setup(
     std::shared_lock lock{ mutex_ };
 
     for (const auto& [_, c] : render_logics_) {
-        if ([this, &c=c](){
-            std::shared_lock lock{ ui_focus_.focuses.mutex };
-            return ui_focus_.has_focus(c->focus_filter());}())
-        {
+        if (c->is_visible(ui_focus_)) {
             c->render_toplevel(
                 lx,
                 ly,

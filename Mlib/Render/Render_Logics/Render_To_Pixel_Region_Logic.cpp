@@ -3,6 +3,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -64,8 +65,9 @@ bool RenderToPixelRegionLogic::render_optional_setup(
     return true;
 }
 
-FocusFilter RenderToPixelRegionLogic::focus_filter() const {
-    return focus_filter_;
+bool RenderToPixelRegionLogic::is_visible(const UiFocus& ui_focus) const {
+    std::shared_lock lock{ ui_focus.focuses.mutex };
+    return ui_focus.has_focus(focus_filter_);
 }
 
 void RenderToPixelRegionLogic::print(std::ostream& ostr, size_t depth) const {

@@ -23,6 +23,7 @@ class DanglingPtr;
 class SceneNode;
 class DeleteNodeMutex;
 struct RenderSetup;
+class UiFocus;
 
 class RenderLogic: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
@@ -74,7 +75,7 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id,
         const RenderSetup* setup);
-    virtual FocusFilter focus_filter() const;
+    virtual bool is_visible(const UiFocus& ui_focus) const;
     virtual void print(std::ostream& ostr, size_t depth) const = 0;
 };
 
