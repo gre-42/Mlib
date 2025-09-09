@@ -92,7 +92,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             {"minimap_offset", minimap_offset} };
         auto on_before_select = nlohmann::json{
             {"call", "globals"},
-            {"arguments", globals} };
+            {"arguments", std::move(globals)} };
         auto database = JsonMacroArguments(nlohmann::json{
             {"if_raceway_circular", circular},
             {"game_modes", std::vector<std::string>{"rally"}} });
