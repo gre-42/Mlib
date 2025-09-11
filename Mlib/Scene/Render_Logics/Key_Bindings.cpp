@@ -7,6 +7,7 @@
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
@@ -234,7 +235,7 @@ static float get_alpha(
 {
     float alpha = button_press.keys_alpha(0.05f);
     if (!std::isnan(alpha)) {
-        alpha = press_factor * (1 - alpha) + repeat_factor * alpha;
+        alpha = lerp(press_factor, repeat_factor, alpha);
     }
     auto update_alpha = [&alpha](float a) {
         alpha = std::isnan(alpha) ? a : std::isnan(a) ? alpha : std::max(alpha, a);
@@ -453,10 +454,18 @@ void KeyBindings::increment_external_forces(
             };
 
             // Apply key binding
-            float alpha = k.button_press.keys_alpha();
+            float alpha = get_alpha(
+                k.button_press,
+                k.cursor_movement.get(),
+                nullptr,
+                &k.gamepad_analog_axes_position,
+                1.f, // press_factor
+                1.f, // repeat_factor
+                cfg,
+                phase);
             if (enable_controls && !std::isnan(alpha)) {
-                ScenePos v = ((1 - alpha) * k.velocity_press + alpha * k.velocity_repeat);
-                float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
+                ScenePos v = lerp(k.velocity_press, k.velocity_repeat, alpha);
+                float w = lerp(k.angular_velocity_press, k.angular_velocity_repeat, alpha);
                 translate(v * cfg.dt_substeps(phase));
                 rotate(w * cfg.dt_substeps(phase));
             }
