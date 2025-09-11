@@ -459,7 +459,7 @@ void KeyBindings::increment_external_forces(
                 k.cursor_movement.get(),
                 nullptr,
                 &k.gamepad_analog_axes_position,
-                1.f, // press_factor
+                0.f, // press_factor
                 1.f, // repeat_factor
                 cfg,
                 phase);
