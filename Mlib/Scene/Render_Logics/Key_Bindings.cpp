@@ -589,7 +589,7 @@ void KeyBindings::increment_external_forces(
                 rb.vehicle_controller().set_stearing_wheel_amount(*k->steer_left_amount, alpha);
             }
             if (k->ascend_velocity.has_value()) {
-                rb.vehicle_controller().ascend_by((*k->ascend_velocity) * cfg.dt_substeps(phase));
+                rb.vehicle_controller().ascend_by((*k->ascend_velocity) * alpha * cfg.dt_substeps(phase));
             }
         }
     }
