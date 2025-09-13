@@ -16,10 +16,10 @@ struct RelativeMovableKeyBinding {
     std::function<DanglingPtr<SceneNode>()> dynamic_node;
     FixedArray<ScenePos, 3> translation;
     FixedArray<float, 3> rotation_axis;
-    ScenePos velocity_press;
-    ScenePos velocity_repeat;
-    float angular_velocity_press;
-    float angular_velocity_repeat;
+    SceneDir velocity;
+    SceneDir angular_velocity;
+    float press_factor;
+    float repeat_factor;
     float speed_cursor;
     ButtonPress button_press;
     std::shared_ptr<CursorMovement> cursor_movement;

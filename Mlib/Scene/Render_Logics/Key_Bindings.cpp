@@ -459,13 +459,13 @@ void KeyBindings::increment_external_forces(
                 k.cursor_movement.get(),
                 nullptr,
                 &k.gamepad_analog_axes_position,
-                0.f, // press_factor
-                1.f, // repeat_factor
+                k.press_factor,
+                k.repeat_factor,
                 cfg,
                 phase);
             if (enable_controls && !std::isnan(alpha)) {
-                ScenePos v = lerp(k.velocity_press, k.velocity_repeat, alpha);
-                float w = lerp(k.angular_velocity_press, k.angular_velocity_repeat, alpha);
+                SceneDir v = k.velocity * alpha;
+                SceneDir w = k.angular_velocity * alpha;
                 translate(v * cfg.dt_substeps(phase));
                 rotate(w * cfg.dt_substeps(phase));
             }

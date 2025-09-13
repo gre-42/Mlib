@@ -21,10 +21,10 @@ DECLARE_ARGUMENT(seat);
 
 DECLARE_ARGUMENT(translation);
 DECLARE_ARGUMENT(rotation_axis);
-DECLARE_ARGUMENT(velocity_press);
-DECLARE_ARGUMENT(velocity_repeat);
-DECLARE_ARGUMENT(angular_velocity_press);
-DECLARE_ARGUMENT(angular_velocity_repeat);
+DECLARE_ARGUMENT(velocity);
+DECLARE_ARGUMENT(angular_velocity);
+DECLARE_ARGUMENT(press_factor);
+DECLARE_ARGUMENT(repeat_factor);
 DECLARE_ARGUMENT(speed_cursor);
 }
 
@@ -53,10 +53,10 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
         },
         .translation = args.arguments.at<EFixedArray<ScenePos, 3>>(KnownArgs::translation, fixed_zeros<ScenePos, 3>()),
         .rotation_axis = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),
-        .velocity_press = args.arguments.at<ScenePos>(KnownArgs::velocity_press, 0.) * kph,
-        .velocity_repeat = args.arguments.at<ScenePos>(KnownArgs::velocity_repeat, 0.) * kph,
-        .angular_velocity_press = args.arguments.at<float>(KnownArgs::angular_velocity_press, 0.f) * radians / seconds,
-        .angular_velocity_repeat = args.arguments.at<float>(KnownArgs::angular_velocity_repeat, 0.f) * radians / seconds,
+        .velocity = args.arguments.at<SceneDir>(KnownArgs::velocity, 0.f) * kph,
+        .angular_velocity = args.arguments.at<SceneDir>(KnownArgs::angular_velocity, 0.f) * radians / seconds,
+        .press_factor = args.arguments.at<float>(KnownArgs::press_factor, 0.f),
+        .repeat_factor = args.arguments.at<float>(KnownArgs::repeat_factor, 1.f),
         .speed_cursor = args.arguments.at<float>(KnownArgs::speed_cursor),
         .button_press{
             args.button_states,
