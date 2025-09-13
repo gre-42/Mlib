@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed_atleast(1);
 
-        list_audio_devices();
+        list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice device;
         AudioContext context{device, safe_stou(args.named_value("--audio_frequency", "0"))};
         std::list<AudioBuffer> buffers;

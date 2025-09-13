@@ -40,8 +40,8 @@ void Mlib::set_log_level(LogLevel log_level) {
     g_log_level = log_level;
 }
 
-LogBuf::LogBuf(std::function<void(const std::string&)> write)
-    : write_{ std::move(write) }
+LogBuf::LogBuf(const std::function<void(const std::string&)>& write)
+    : write_{ write }
 {}
 
 int LogBuf::sync() {
@@ -58,24 +58,24 @@ int LogBuf::sync() {
     return 0;
 }
 
-LLog::LLog(std::function<void(const std::string&)> write)
+LLog::LLog(
+    LogFlags flags,
+    std::function<void(const std::string&)> write)
     : std::ostream{ &buf_ }
+    , flags_{ flags }
     , write_{ std::move(write) }
     , buf_{ write_ }
-    , destroyed_{ false }
 {}
 
 LLog::~LLog() {
-    if (destroyed_ && !buf_.str().empty()) {
-        verbose_abort("Destroyed log is not empty");
-    }
-    destroy();
-}
-
-void LLog::destroy() {
     flush();
-    write_(buf_.str());
-    destroyed_ = true;
+    if (any(flags_ & LogFlags::NO_APPEND_NEWLINE)) {
+        if (!buf_.str().empty()) {
+            verbose_abort("Destroyed log is not empty despite NO_APPEND_NEWLINE. Please manually append a newline.");
+        }
+    } else {
+        write_(buf_.str());
+    }
 }
 
 std::ostream& LLog::ref() const {
@@ -108,6 +108,7 @@ LLog Mlib::linfo(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
+        flags,
         [&, flags](const std::string& s) {
             if (g_log_level >= LogLevel::INFO) {
                 std::scoped_lock lock{ mutex };
@@ -123,6 +124,7 @@ LLog Mlib::lwarn(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
+        flags,
         [&, flags](const std::string& s) {
             if (g_log_level >= LogLevel::WARNING) {
                 std::scoped_lock lock{ mutex };
@@ -138,6 +140,7 @@ LLog Mlib::lerr(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
+        flags,
         [&, flags](const std::string& s) {
             if (g_log_level >= LogLevel::ERROR) {
                 std::scoped_lock lock{ mutex };
@@ -153,6 +156,7 @@ LLog Mlib::lraw(LogFlags flags) {
         THROW_OR_ABORT("Raw logger cannot suppress duplicates");
     }
     return LLog{
+        flags,
         [](const std::string& s) {
             LOGI("%s", s.c_str());
         }};
@@ -163,6 +167,7 @@ LLog Mlib::lout(LogFlags flags) {
         THROW_OR_ABORT("Out logger cannot suppress duplicates");
     }
     return LLog{
+        flags,
         [](const std::string& s) {
             LOGI("%s", s.c_str());
         }};
@@ -246,6 +251,7 @@ LLog Mlib::linfo(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
+        flags,
         [&, flags](const std::string& s) {
         if (g_log_level >= LogLevel::INFO) {
             std::scoped_lock lock{ mutex };
@@ -260,6 +266,7 @@ LLog Mlib::lwarn(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
+        flags,
         [&, flags](const std::string& s) {
             std::scoped_lock lock{ mutex };
             if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
@@ -273,6 +280,7 @@ LLog Mlib::lerr(LogFlags flags) {
     static std::mutex mutex;
     static std::string last_message;
     return LLog{
+        flags,
         [&, flags](const std::string& s) {
             std::scoped_lock lock{ mutex };
             if (!any(flags & LogFlags::SUPPRESS_DUPLICATES) || (s != last_message)) {
@@ -287,6 +295,7 @@ LLog Mlib::lraw(LogFlags flags) {
         THROW_OR_ABORT("Raw logger cannot suppress duplicates");
     }
     return LLog{
+        flags,
         [](const std::string& s) {
             std::cerr << s << std::endl;
         }};
@@ -297,6 +306,7 @@ LLog Mlib::lout(LogFlags flags) {
         THROW_OR_ABORT("Out logger cannot suppress duplicates");
     }
     return LLog{
+        flags,
         [](const std::string& s) {
             std::cout << s << std::endl;
         }};

@@ -29,3 +29,15 @@ unsigned int AudioDevice::get_frequency() const {
     }
     return integral_cast<unsigned int>(rate);
 }
+
+std::string AudioDevice::get_name() const {
+    const auto* name = alcGetString(device_, ALC_DEVICE_SPECIFIER);
+    ALCenum error = alcGetError(device_);
+    if (error != ALC_NO_ERROR) {
+        THROW_OR_ABORT("Could not read audio device name, code: " + std::to_string(error));
+    }
+    if (name == nullptr) {
+        THROW_OR_ABORT("Could not read audio device name");
+    }
+    return name;
+}

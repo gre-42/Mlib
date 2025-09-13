@@ -5,6 +5,7 @@
 #include <Mlib/Scene_Precision.hpp>
 #include <atomic>
 #include <chrono>
+#include <iosfwd>
 #include <memory>
 #include <vector>
 
@@ -47,7 +48,7 @@ public:
         RenderResults* render_results = nullptr);
     ~Render();
 
-    void print_hardware_info() const;
+    void print_hardware_info(std::ostream& ostr) const;
 
     Renderer generate_renderer() const;
 

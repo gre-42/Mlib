@@ -2,7 +2,6 @@
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Audio/OpenAL_al.h>
 #include <Mlib/Audio/OpenAL_alc.h>
-#include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstddef>
 #include <cstring>
@@ -10,7 +9,7 @@
 
 using namespace Mlib;
 
-void Mlib::list_audio_devices() {
+void Mlib::list_audio_devices(std::ostream& ostr) {
     std::scoped_lock lock{ al_error_mutex };
     const ALCchar* devices = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
     if (devices == nullptr) {
@@ -20,13 +19,11 @@ void Mlib::list_audio_devices() {
     const ALCchar* next = devices + 1;
     size_t len = 0;
 
-    linfo() << "Audio devices:";
-    linfo() << "----------";
+    ostr << "Audio devices:\n";
     while (device && *device != '\0' && next && *next != '\0') {
-        linfo() << device;
+        ostr << "  - " << device << '\n';
         len = strlen(device);
         device += (len + 1);
         next += (len + 2);
     }
-    linfo() << "----------";
 }

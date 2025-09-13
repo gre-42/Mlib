@@ -10,7 +10,7 @@
 
 using namespace Mlib;
 
-AudioContext::AudioContext(AudioDevice &device, unsigned int frequency) {
+AudioContext::AudioContext(AudioDevice& device, unsigned int frequency) {
     ALCint attrlist[] = {ALC_FREQUENCY, integral_cast<ALCint>(frequency), 0};
     auto *context = alcCreateContext(device.device_, frequency == 0 ? nullptr : attrlist);
     if (context == nullptr) {

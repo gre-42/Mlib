@@ -103,7 +103,7 @@ public:
     }
 
     void load_resources() override {
-        print_gl_version_info();
+        print_gl_version_info(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         // window_.set_frame_rate_if_supported(1.f / render_config_.min_dt);
     }
     void unload_resources() override {
@@ -485,8 +485,9 @@ void android_main(android_app* app) {
         if (args.has_named("--check_gl_errors")) {
             check_gl_errors(CheckErrors::ENABLED);
         }
-        list_audio_devices();
+        list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice audio_device;
+        linfo() << "Selected audio device: " << audio_device.get_name();
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
         AudioScene::set_default_alpha(safe_stof(args.named_value("--audio_alpha", "0.1")));

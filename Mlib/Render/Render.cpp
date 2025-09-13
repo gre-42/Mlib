@@ -107,10 +107,10 @@ Render::~Render() {
     GLFW_ABORT(glfwTerminate());
 }
 
-void Render::print_hardware_info() const {
+void Render::print_hardware_info(std::ostream& ostr) const {
     {
         GlContextGuard gcg{ *window_ };
-        print_gl_version_info();
+        print_gl_version_info(ostr);
     }
 // #ifndef __ANDROID__
 //     print_monitor_info();

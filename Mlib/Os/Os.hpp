@@ -27,7 +27,8 @@ enum class LogLevel {
 
 enum class LogFlags {
     NONE = 0,
-    SUPPRESS_DUPLICATES = (1 << 0)
+    SUPPRESS_DUPLICATES = (1 << 0),
+    NO_APPEND_NEWLINE = (1 << 1)
 };
 
 inline bool any(LogFlags f) {
@@ -52,25 +53,28 @@ LogLevel log_level_from_string(const std::string& s);
 void set_log_level(LogLevel log_level);
 
 class LogBuf: public std::stringbuf {
+    LogBuf(const LogBuf&) = delete;
+    LogBuf& operator = (const LogBuf&) = delete;
 public:
-    explicit LogBuf(std::function<void(const std::string&)> write);
+    explicit LogBuf(const std::function<void(const std::string&)>& write);
     virtual int sync() override;
 private:
-    std::function<void(const std::string&)> write_;
+    const std::function<void(const std::string&)>& write_;
 };
 
 class LLog: public std::ostream {
     LLog(const LLog&) = delete;
     LLog& operator = (const LLog&) = delete;
 public:
-    explicit LLog(std::function<void(const std::string&)> write);
+    explicit LLog(
+        LogFlags flags,
+        std::function<void(const std::string&)> write);
     ~LLog() override;
-    void destroy();
     std::ostream& ref() const;
 private:
+    LogFlags flags_;
     std::function<void(const std::string&)> write_;
     LogBuf buf_;
-    bool destroyed_;
 };
 
 LLog linfo(LogFlags flags = LogFlags::NONE);

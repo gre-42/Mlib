@@ -537,7 +537,7 @@ int main(int argc, char** argv) {
             []() { return std::chrono::steady_clock::now(); },
             &render_results };
 
-        render.print_hardware_info();
+        render.print_hardware_info(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         ClearWrapperGuard clear_wrapper_guard;
 
         SceneNodeResources scene_node_resources;

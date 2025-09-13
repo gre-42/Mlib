@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/OpenAL_alc.h>
+#include <string>
 
 namespace Mlib {
 
@@ -15,6 +16,7 @@ public:
     ~AudioDevice();
 
     unsigned int get_frequency() const;
+    std::string get_name() const;
 
 private:
     ALCdevice *device_;
