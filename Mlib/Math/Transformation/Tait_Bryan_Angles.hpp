@@ -30,9 +30,11 @@ public:
         , position{ position }
     {}
 
-    TransformationMatrix<TRotation, TPos, tsize> to_matrix() const {
+    TransformationMatrix<TRotation, TPos, tsize> to_matrix(
+        const FixedArray<size_t, 3>& indices = {(size_t)0, (size_t)1, (size_t)2}) const
+    {
         return TransformationMatrix<TRotation, TPos, tsize>{
-            tait_bryan_angles_2_matrix(rotation),
+            tait_bryan_angles_2_matrix(rotation, indices),
             position};
     }
 

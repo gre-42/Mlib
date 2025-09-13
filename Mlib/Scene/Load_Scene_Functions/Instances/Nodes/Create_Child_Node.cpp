@@ -29,6 +29,7 @@ CreateChildNode::CreateChildNode(PhysicsScene& physics_scene)
 
 void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args) const
 {
+    args.arguments.validate(KnownArgs::options);
     (*this)(
         args.arguments.at<std::string>(KnownArgs::type),
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent),
@@ -75,7 +76,6 @@ struct RegisterJsonUserFunction {
             "child_node_instance",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateChildNode(args.physics_scene()).execute(args);
             });
     }
