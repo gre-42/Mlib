@@ -7,7 +7,7 @@
 #endif
 
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
-#include <Mlib/Signal/Exponential_Smoother.hpp>
+#include <Mlib/Signal/Clamped_Exponential_Smoother.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -29,11 +29,27 @@ struct ButtonStatesPrintArgs {
     float min_deflection = 0.f;
 };
 
-struct InputFilter: public ExponentialSmoother<float> {
+// struct InputFilter: public ExponentialSmoother<float> {
+//     inline InputFilter()
+//         : ExponentialSmoother<float>{0.01f}
+//     {}
+// };
+
+struct InputFilter: public ClampedExponentialSmoother<float> {
     inline InputFilter()
-        : ExponentialSmoother<float>{0.01f}
+        : ClampedExponentialSmoother<float>{0.01f, {-0.01f, 0.01f}}
     {}
 };
+
+// class InputFilter {
+// public:
+//     InputFilter();
+//     void operator () (const float& e);
+//     std::optional<float> xhat() const;
+// private:
+//     PidController<float, float> pid_;
+//     std::optional<float> xhat_;
+// };
 
 struct RawAndFiltered {
     float raw;

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Uninitialized.hpp>
 #include <cmath>
@@ -7,26 +8,30 @@
 namespace Mlib {
 
 template <class TData, class TFloat=TData>
-class ExponentialSmoother {
+class ClampedExponentialSmoother {
 public:
-    explicit ExponentialSmoother(const TFloat& alpha)
+    explicit ClampedExponentialSmoother(const TFloat& alpha, const Interval<TData>& interval)
         : alpha_{ alpha }
+        , interval_{ interval }
     {}
-    ExponentialSmoother(const TFloat& alpha, Uninitialized)
+    ClampedExponentialSmoother(const TFloat& alpha, const Interval<TData>& interval, Uninitialized)
         : alpha_{ alpha }
+        , interval_{ interval }
     {}
-    ExponentialSmoother(const TFloat& alpha, const TData& x0)
+    ClampedExponentialSmoother(const TFloat& alpha, const Interval<TData>& interval, const TData& x0)
         : alpha_{ alpha }
+        , interval_{ interval }
         , s_{ x0 }
     {}
     template <class TX0>
-    ExponentialSmoother(const TFloat& alpha, const TX0& x0, const TFloat& dt)
+    ClampedExponentialSmoother(const TFloat& alpha, const Interval<TData>& interval, const TX0& x0, const TFloat& dt)
         : alpha_{ std::pow(alpha, dt) }
+        , interval_{ interval }
         , s_{ x0 }
     {}
     const TData& operator () (const TData& x) {
         if (s_.has_value()) {
-            *s_ = lerp(*s_, x, alpha_);
+            *s_ = std::clamp(lerp(*s_, x, alpha_), *s_ + interval_.min, *s_ + interval_.max);
         } else {
             s_ = x;
         }
@@ -34,13 +39,13 @@ public:
     }
     const TData& operator () (const TData& x, const TFloat& dt) {
         if (s_.has_value()) {
-            *s_ = lerp(*s_, x, std::pow(alpha_, 1 / dt));
+            *s_ = std::clamp(lerp(*s_, x, std::pow(alpha_, 1 / dt)), *s_ + interval_.min, *s_ + interval_.max);
         } else {
             s_ = x;
         }
         return *s_;
     }
-    ExponentialSmoother changed_time_step(const TFloat& from, const TFloat& to) const {
+    ClampedExponentialSmoother changed_time_step(const TFloat& from, const TFloat& to) const {
         auto f = from / to;
         return { alpha_, s_, f };
     }
@@ -55,6 +60,7 @@ public:
     }
 private:
     TFloat alpha_;
+    Interval<TData> interval_; 
     std::optional<TData> s_;
 };
 

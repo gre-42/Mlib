@@ -18,6 +18,18 @@
 
 using namespace Mlib;
 
+// InputFilter::InputFilter()
+//     : pid_{0.f, 2.f, 0.f, 0.01f}
+// {}
+// 
+// void InputFilter::operator () (const float& e) {
+//     xhat_ = std::clamp(pid_(e), -1.f, 1.f);
+// }
+// 
+// std::optional<float> InputFilter::xhat() const {
+//     return xhat_;
+// }
+
 static bool make_digital(float v, float sign_and_threshold) {
     if (std::isnan(v)) {
         return false;

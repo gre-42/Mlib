@@ -1,6 +1,5 @@
 #pragma once
-#include <Mlib/Math/Lerp.hpp>
-#include <cmath>
+#include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <optional>
 #include <ostream>
 
@@ -17,46 +16,54 @@ public:
         const TFloat& d,
         const TFloat& a,
         const TData& I = (TData)0,
-        std::optional<TData> e_old = std::nullopt)
+        const std::optional<TData>& e_old = std::nullopt)
         : p_{ p }
         , i_{ i }
         , d_{ d }
-        , a_{ a }
-        , I_( I )
+        , I_{ a, I }
+        , e_old_{ e_old }
+    {}
+    PidController(
+        const TFloat& p,
+        const TFloat& i,
+        const TFloat& d,
+        const ExponentialSmoother<TData, TFloat>& I,
+        const std::optional<TData>& e_old)
+        : p_{ p }
+        , i_{ i }
+        , d_{ d }
+        , I_{ I }
         , e_old_{ e_old }
     {}
     TData operator () (const TData& e) {
-        I_ = lerp(I_, e, a_);
         TData result = e_old_.has_value()
-            ? p_ * e + i_ * I_ + d_ * (e - *e_old_)
-            : p_ * e + i_ * I_;
+            ? p_ * e + i_ * I_(e) + d_ * (e - *e_old_)
+            : p_ * e + i_ * I_(e);
         e_old_ = e;
         return result;
     }
     TData operator () (const TData& e, const TFloat& from, const TFloat& to) {
         auto cts = changed_time_step(from, to);
         auto result = cts(e);
-        I_ = cts.I_;
+        I_.set(*cts.I_.xhat());
         e_old_ = e;
         return result;
     }
-    PidController changed_time_step(const TFloat& from, const TFloat& to) {
+    PidController changed_time_step(const TFloat& from, const TFloat& to) const {
         // The factors were determined by trial and error in the test "test_pid".
         auto f = from / to;
         return {
             p_,
             i_,
             d_ * f,
-            std::pow(a_, f),
-            I_,
+            I_.changed_time_step(from, to),
             e_old_ };
     }
 private:
     TFloat p_;
     TFloat i_;
     TFloat d_;
-    TFloat a_;
-    TData I_;
+    ExponentialSmoother<TData, TFloat> I_;
     std::optional<TData> e_old_;
 };
 
