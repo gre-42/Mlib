@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Lerp.hpp>
 #include <cmath>
 #include <optional>
 #include <ostream>
@@ -25,7 +26,7 @@ public:
         , e_old_{ e_old }
     {}
     TData operator () (const TData& e) {
-        I_ = (1 - a_) * I_ + a_ * e;
+        I_ = lerp(I_, e, a_);
         TData result = e_old_.has_value()
             ? p_ * e + i_ * I_ + d_ * (e - *e_old_)
             : p_ * e + i_ * I_;
