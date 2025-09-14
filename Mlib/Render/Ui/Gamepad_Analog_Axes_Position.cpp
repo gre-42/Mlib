@@ -70,7 +70,7 @@ float GamepadAnalogAxesPosition::axis_alpha()
     if (const auto& b = axes->joystick; b.has_value()) {
         const auto& id = joystick_axes_map.get(b->axis);
         if (id.has_value()) {
-            float v = button_states_.get_gamepad_axis(b->gamepad_id, *id);
+            float v = button_states_.get_gamepad_axis(b->gamepad_id, *id, b->filter_type);
             update_result(::axis_alpha(*b, v));
         }
     }

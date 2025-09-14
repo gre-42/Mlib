@@ -1,6 +1,7 @@
 #include "Key_Configurations.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Render/Key_Bindings/Filter_Type.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 
 namespace KeyConfigurationArgs {
@@ -48,6 +49,7 @@ namespace BaseAnalogAxisBindingArgs {
     DECLARE_ARGUMENT(sign_and_scale);
     DECLARE_ARGUMENT(deadzone);
     DECLARE_ARGUMENT(exponent);
+    DECLARE_ARGUMENT(filter);
 }
 
 namespace GamepadButtonArgs {
@@ -82,6 +84,8 @@ void from_json(const nlohmann::json& j, BaseAnalogAxisBinding& obj)
     j.at(BaseAnalogAxisBindingArgs::gamepad_id).get_to(obj.gamepad_id);
     j.at(BaseAnalogAxisBindingArgs::axis).get_to(obj.axis);
     j.at(BaseAnalogAxisBindingArgs::sign_and_scale).get_to(obj.sign_and_scale);
+    obj.filter_type = filter_type_from_string(jv.at<std::string>(
+        BaseAnalogAxisBindingArgs::filter, "none"));
     obj.deadzone = jv.at<float>(BaseAnalogAxisBindingArgs::deadzone, 0);
     obj.exponent = jv.at<float>(BaseAnalogAxisBindingArgs::exponent, 1);
     if (std::isnan(obj.deadzone) || (obj.deadzone < 0.f) || (obj.deadzone > 1.f)) {

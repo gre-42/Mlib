@@ -8,6 +8,7 @@
 namespace Mlib {
 
 enum class InputType;
+enum class FilterType;
 
 struct BaseAnalogAxisBinding {
     uint32_t gamepad_id = UINT32_MAX;
@@ -15,6 +16,7 @@ struct BaseAnalogAxisBinding {
     float sign_and_scale;
     float deadzone;
     float exponent;
+    FilterType filter_type;
     std::string to_string() const;
 };
 

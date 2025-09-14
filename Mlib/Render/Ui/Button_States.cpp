@@ -1,4 +1,5 @@
 #include "Button_States.hpp"
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Input_Map/Gamepad_Button_Map.hpp>
@@ -9,6 +10,7 @@
 #include <Mlib/Render/Input_Map/Tap_Analog_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Tap_Button_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Filter_Type.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <iostream>
@@ -41,7 +43,8 @@ ButtonStates::~ButtonStates() = default;
 #ifndef __ANDROID__
 float ButtonStates::get_gamepad_axis(
     uint32_t gamepad_id,
-    int axis) const
+    int axis,
+    FilterType filter_type) const
 {
     std::shared_lock lock{ gamepad_state_mutex_ };
     static_assert(GLFW_JOYSTICK_1 == 0);
@@ -54,7 +57,17 @@ float ButtonStates::get_gamepad_axis(
     if ((size_t)axis >= (sizeof(gamepad_state_[0].axes) / sizeof(gamepad_state_[0].axes[0]))) {
         THROW_OR_ABORT("Unknown gamepad axis");
     }
-    return gamepad_state_[gamepad_id].axes[axis];
+    switch (filter_type) {
+    case FilterType::NONE:
+        return gamepad_state_[gamepad_id].axes[axis];
+    case FilterType::FILTERED:
+        auto res = gamepad_axes_[gamepad_id].at(axis).xhat();
+        if (!res.has_value()) {
+            verbose_abort("Internal error: No interpolated gamepad state available");
+        }
+        return *res;
+    }
+    THROW_OR_ABORT("Unknown filter type: " + std::to_string((int)filter_type));
 }
 
 bool ButtonStates::get_gamepad_button_down(uint32_t gamepad_id, int button) const {
@@ -77,6 +90,11 @@ void ButtonStates::update_gamepad_state() {
     static_assert(GLFW_JOYSTICK_1 == 0);
     for (int i = GLFW_JOYSTICK_1; i <= GLFW_JOYSTICK_LAST; ++i) {
         GLFW_CHK(has_gamepad_[i] = glfwGetGamepadState(i, gamepad_state_ + i));
+        if (has_gamepad_[i]) {
+            for (auto [j, s] : tenumerate<uint32_t>(gamepad_state_[i].axes)) {
+                gamepad_axes_[i][j](s);
+            }
+        }
     }
 }
 #else
@@ -123,7 +141,7 @@ bool ButtonStates::get_gamepad_digital_axis(
     int axis,
     float sign_and_threshold) const
 {
-    return make_digital(get_gamepad_axis(gamepad_id, axis), sign_and_threshold);
+    return make_digital(get_gamepad_axis(gamepad_id, axis, FilterType::NONE), sign_and_threshold);
 }
 
 bool ButtonStates::get_tap_analog_digital_axis(

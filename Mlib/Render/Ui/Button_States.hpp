@@ -7,6 +7,7 @@
 #endif
 
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
+#include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -18,6 +19,7 @@
 namespace Mlib {
 
 struct BaseKeyBinding;
+enum class FilterType;
 
 static const float BUTTON_STATES_MIN_DEFLECTION = 0.1f;
 
@@ -25,6 +27,17 @@ struct ButtonStatesPrintArgs {
     bool physical = false;
     bool only_pressed = false;
     float min_deflection = 0.f;
+};
+
+struct InputFilter: public ExponentialSmoother<float> {
+    inline InputFilter()
+        : ExponentialSmoother<float>{0.01f}
+    {}
+};
+
+struct RawAndFiltered {
+    float raw;
+    InputFilter filtered;
 };
 
 class ButtonStates {
@@ -35,7 +48,8 @@ public:
     ~ButtonStates();
     float get_gamepad_axis(
         uint32_t gamepad_id,
-        int axis) const;
+        int axis,
+        FilterType filter_type) const;
     bool get_gamepad_button_down(
         uint32_t gamepad_id,
         int button) const;
@@ -71,10 +85,11 @@ public:
 private:
 #ifdef __ANDROID__
     std::unordered_map<uint32_t, std::unordered_map<int, bool>> gamepad_buttons_;
-    std::unordered_map<uint32_t, std::unordered_map<int, float>> gamepad_axes_;
+    std::unordered_map<uint32_t, std::unordered_map<int, RawAndFiltered>> gamepad_axes_;
     mutable SafeAtomicRecursiveSharedMutex gamepad_button_mutex_;
     mutable SafeAtomicRecursiveSharedMutex gamepad_axes_mutex_;
 #else
+    std::unordered_map<uint32_t, InputFilter> gamepad_axes_[GLFW_JOYSTICK_LAST + 1];
     GLFWgamepadstate gamepad_state_[GLFW_JOYSTICK_LAST + 1];
     bool has_gamepad_[GLFW_JOYSTICK_LAST + 1];
     mutable SafeAtomicRecursiveSharedMutex gamepad_state_mutex_;
