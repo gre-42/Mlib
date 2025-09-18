@@ -1141,6 +1141,12 @@ void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
     internals_mode_ = internals_mode;
 }
 
+void Player::create_gun_externals() {
+    if (has_weapon_cycle()) {
+        weapon_cycle().create_externals(id());
+    }
+}
+
 void Player::set_seat(const std::string& seat) {
     std::scoped_lock lock{ mutex_ };
     if (externals_mode_ == ExternalsMode::NONE) {

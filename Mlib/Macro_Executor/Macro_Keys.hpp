@@ -39,7 +39,8 @@ static std::set<std::string_view> unexpanded_keys =
     MacroKeys::exclude,
     MacroKeys::arguments,
     MacroKeys::content,
-    MacroKeys::comment
+    MacroKeys::comment,
+    MacroKeys::context
 };
 
 }

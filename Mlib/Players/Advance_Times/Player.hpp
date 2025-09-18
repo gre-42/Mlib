@@ -209,6 +209,7 @@ public:
     void append_dependent_node(VariableAndHash<std::string> node_name);
     void create_vehicle_externals(ExternalsMode externals_mode);
     void create_vehicle_internals(const InternalsMode& internals_mode);
+    void create_gun_externals();
     void set_seat(const std::string& ui);
     void change_seat();
     const Skills& skills(ControlSource control_source) const;

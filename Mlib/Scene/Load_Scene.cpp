@@ -63,8 +63,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Set_Soft_Light.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Copy_Rotation.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Externals.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Internals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Keep_Offset_From_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Keep_Offset_From_Movable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Relative_Transformer.hpp>
@@ -320,7 +318,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
             register_json_user_function(CreateDestinationReachedAi::key, CreateDestinationReachedAi::json_user_function);
             register_json_user_function(CreateEngine::key, CreateEngine::json_user_function);
-            register_json_user_function(CreateExternals::key, CreateExternals::json_user_function);
             register_json_user_function(CreateGunKeyBinding::key, CreateGunKeyBinding::json_user_function);
             register_json_user_function(CreateGun::key, CreateGun::json_user_function);
             register_json_user_function(CreateMissileAi::key, CreateMissileAi::json_user_function);
@@ -330,7 +327,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreateHudTargetPointLogic::key, CreateHudTargetPointLogic::json_user_function);
             register_json_user_function(CreateAvatarAsAvatarController::key, CreateAvatarAsAvatarController::json_user_function);
             register_json_user_function(CreateAvatarAsCarController::key, CreateAvatarAsCarController::json_user_function);
-            register_json_user_function(CreateInternals::key, CreateInternals::json_user_function);
             register_json_user_function(CreateKeepOffsetFromCamera::key, CreateKeepOffsetFromCamera::json_user_function);
             register_json_user_function(CreateKeepOffsetFromMovable::key, CreateKeepOffsetFromMovable::json_user_function);
             register_json_user_function(CreateLightOnlyShadow::key, CreateLightOnlyShadow::json_user_function);

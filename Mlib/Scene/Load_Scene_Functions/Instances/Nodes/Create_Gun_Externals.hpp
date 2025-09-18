@@ -5,9 +5,9 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class CreateInternals: public LoadPhysicsSceneInstanceFunction {
+class CreateGunExternals: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit CreateInternals(PhysicsScene& physics_scene);
+    explicit CreateGunExternals(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

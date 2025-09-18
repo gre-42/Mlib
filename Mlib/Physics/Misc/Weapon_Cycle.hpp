@@ -13,7 +13,8 @@ enum class RigidBodyVehicleFlags;
 struct BulletProperties;
 
 struct WeaponInfo {
-    std::function<void(const std::optional<std::string>& player_name)> create_weapon;
+    std::function<void()> create_weapon;
+    std::function<void(const std::string& player_name)> create_externals;
     std::string ammo_type;
     const BulletProperties& bullet_properties;
     float cool_down;
@@ -35,6 +36,7 @@ public:
     WeaponCycle();
     virtual ~WeaponCycle() override;
     virtual void modify_node() override;
+    void create_externals(const std::string& player_name);
     void add_weapon(std::string weapon_name, const WeaponInfo& weapon_info);
     void set_desired_weapon(
         std::optional<std::string> player_name,

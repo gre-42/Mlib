@@ -80,6 +80,7 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     if (!a_seat_old.seat.empty()) {
         a.create_vehicle_internals(a_seat_old);
     }
+    a.create_gun_externals();
 
     if (b_ec_old != ExternalsMode::NONE) {
         b.create_vehicle_externals(b_ec_old);
@@ -87,6 +88,7 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     if (!b_seat_old.seat.empty()) {
         b.create_vehicle_internals(b_seat_old);
     }
+    b.create_gun_externals();
 }
 
 void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
@@ -138,6 +140,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
     ap->set_vehicle_spawner(b, ap->next_seat());
     ap->create_vehicle_externals(a_em_old);
     ap->create_vehicle_internals(ap->internals_mode());
+    ap->create_gun_externals();
     ap->single_waypoint().notify_spawn();
     if (!ap->rigid_body()->is_avatar()) {
         if (!ap->rigid_body()->passengers_.try_emplace(

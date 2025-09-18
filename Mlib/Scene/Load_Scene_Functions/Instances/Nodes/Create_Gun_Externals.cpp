@@ -1,4 +1,4 @@
-#include "Create_Internals.hpp"
+#include "Create_Gun_Externals.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -11,18 +11,17 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
-DECLARE_ARGUMENT(seat);
 }
 
-CreateInternals::CreateInternals(PhysicsScene& physics_scene) 
+CreateGunExternals::CreateGunExternals(PhysicsScene& physics_scene) 
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateInternals::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateGunExternals::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    player->create_vehicle_internals({ args.arguments.at<std::string>(KnownArgs::seat) });
+    player->create_gun_externals();
 }
 
 namespace {
@@ -30,10 +29,11 @@ namespace {
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "create_internals",
+            "create_gun_externals",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                CreateInternals(args.physics_scene()).execute(args);
+                args.arguments.validate(KnownArgs::options);
+                CreateGunExternals(args.physics_scene()).execute(args);
             });
     }
 } obj;

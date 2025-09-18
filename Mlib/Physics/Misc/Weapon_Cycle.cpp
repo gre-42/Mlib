@@ -28,8 +28,23 @@ void WeaponCycle::modify_node() {
         if (it == weapon_infos_.end()) {
             THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + desired_.weapon_name + '"');
         }
-        it->second.create_weapon(desired_.player_name);
+        if (it->second.create_weapon) {
+            it->second.create_weapon();
+        }
+        if (it->second.create_externals && desired_.player_name.has_value()) {
+            it->second.create_externals(*desired_.player_name);
+        }
         equipped_ = desired_;
+    }
+}
+
+void WeaponCycle::create_externals(const std::string& player_name) {
+    auto it = weapon_infos_.find(equipped_.weapon_name);
+    if (it == weapon_infos_.end()) {
+        THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + equipped_.weapon_name + '"');
+    }
+    if (it->second.create_externals) {
+        it->second.create_externals(player_name);
     }
 }
 
