@@ -110,6 +110,8 @@ public:
     const LineBvh& line_bvh() const;
     bool empty() const;
     std::vector<CollisionGroup> collision_groups();
+    void notify_colliding_start();
+    void notify_colliding_end();
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
     void bake_collision_ridges() const;
@@ -118,6 +120,7 @@ private:
     std::unordered_map<const RigidBodyVehicle*, DestructionFunctionsTokensRef<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
+    bool is_colliding_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     // BVHs. Do not forget to .clear() the BVHs in the "delete_rigid_body" method.
     ConvexMeshBvh convex_mesh_bvh_;

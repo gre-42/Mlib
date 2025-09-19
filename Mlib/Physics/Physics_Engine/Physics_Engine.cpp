@@ -64,6 +64,7 @@ void PhysicsEngine::collide(
     const PhysicsPhase& phase,
     BaseLog* base_log)
 {
+    rigid_bodies_.notify_colliding_start();
     for (const auto& o : rigid_bodies_.transformed_objects()) {
         o.rigid_body->reset_forces(phase);
     }
@@ -125,6 +126,7 @@ void PhysicsEngine::collide(
     collide_grind_infos(cfg_, phase, world, contact_infos, grind_infos);
     collide_concave_triangles(cfg_, concave_t0_intersections, ridge_intersection_points);
     solve_contacts(contact_infos, cfg_.dt_substeps(phase));
+    rigid_bodies_.notify_colliding_end();
 }
 
 void PhysicsEngine::move_rigid_bodies(

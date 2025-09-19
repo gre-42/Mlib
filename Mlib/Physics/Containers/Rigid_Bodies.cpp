@@ -25,6 +25,7 @@ using namespace Mlib;
 
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
     : cfg_{ cfg }
+    , is_colliding_{ false }
     , convex_mesh_bvh_{
         {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size},
         cfg.bvh_levels,
@@ -72,6 +73,9 @@ void RigidBodies::add_rigid_body(
     const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables,
     CollidableMode collidable_mode)
 {
+    if (is_colliding_) {
+        THROW_OR_ABORT("Attempt to add rigid body during collision-phase (0)");
+    }
     auto& rb = rigid_body;
     bool has_meshes_or_intersectables = !s_hitboxes.empty() || !d_hitboxes.empty() || !intersectables.empty();
     if ((collidable_mode == CollidableMode::NONE) && has_meshes_or_intersectables) {
@@ -277,6 +281,9 @@ void RigidBodies::add_rigid_body(
                         "intersectable mesh",
                         intersectable))});
         }
+        if (rbm.has_meshes()) {
+            transform_object_and_add(rbm);
+        }
     } else {
         THROW_OR_ABORT("Unknown collidable mode");
     }
@@ -322,6 +329,9 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     if (!o.has_meshes()) {
         THROW_OR_ABORT("Attempt to add rigid body \"" + o.rigid_body->name() + "\" without meshes");
+    }
+    if (is_colliding_) {
+        THROW_OR_ABORT("Attempt to add rigid body during collision-phase (1)");
     }
     auto m = o.rigid_body->get_new_absolute_model_matrix();
     std::list<TypedMesh<std::shared_ptr<IIntersectableMesh>>> transformed_meshes;
@@ -559,4 +569,18 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
         result.push_back(std::move(g));
     }
     return result;
+}
+
+void RigidBodies::notify_colliding_start() {
+    if (is_colliding_) {
+        THROW_OR_ABORT("Collision phase already started");
+    }
+    is_colliding_ = true;
+}
+
+void RigidBodies::notify_colliding_end() {
+    if (!is_colliding_) {
+        THROW_OR_ABORT("Collision phase already ended");
+    }
+    is_colliding_ = false;
 }
