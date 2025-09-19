@@ -102,7 +102,7 @@ using namespace Mlib;
  */
 static void add_reference_bone(
     const Bone& b,
-    DanglingRef<SceneNode> parent_node,
+    DanglingBaseClassRef<SceneNode> parent_node,
     SceneNodeResources& scene_node_resources)
 {
     auto bone_node = make_unique_scene_node(
@@ -114,7 +114,7 @@ static void add_reference_bone(
         VariableAndHash<std::string>{ "reference_bone" },
         ChildInstantiationOptions{
             .instance_name = VariableAndHash<std::string>{ "reference_bone" },
-            .scene_node = bone_node.ref(DP_LOC),
+            .scene_node = bone_node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = PoseInterpolationMode::ENABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
     parent_node->add_child(VariableAndHash<std::string>{ "reference_bone" + std::to_string(b.index) }, std::move(bone_node));
@@ -130,7 +130,7 @@ static void add_reference_bone(
 static void add_bone_frame(
     const Bone& b,
     const UUVector<OffsetAndQuaternion<float, float>>& frame,
-    DanglingRef<SceneNode> parent_node,
+    DanglingBaseClassRef<SceneNode> parent_node,
     SceneNodeResources& scene_node_resources)
 {
     if (b.index >= frame.size()) {
@@ -145,10 +145,10 @@ static void add_bone_frame(
         VariableAndHash<std::string>{ "frame_bone" },
         ChildInstantiationOptions{
             .instance_name = VariableAndHash<std::string>{ "frame_bone" },
-            .scene_node = bone_node.ref(DP_LOC),
+            .scene_node = bone_node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = PoseInterpolationMode::ENABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
-    DanglingRef<SceneNode> parent = bone_node.ref(DP_LOC);
+    auto parent = bone_node.ref(CURRENT_SOURCE_LOCATION);
     parent_node->add_child(VariableAndHash<std::string>{ "frame_bone" + std::to_string(b.index) }, std::move(bone_node));
     for (const auto& c : b.children) {
         add_bone_frame(*c, frame, parent, scene_node_resources);
@@ -157,7 +157,7 @@ static void add_bone_frame(
 
 struct LightAndNode {
     std::shared_ptr<Light> light;
-    DanglingRef<SceneNode> node;
+    DanglingBaseClassRef<SceneNode> node;
 };
 
 template <class TPos>
@@ -703,7 +703,7 @@ int main(int argc, char** argv) {
                             args.named_value("--reference_bone"),
                             bone_cfg,
                             scene_node_resources));
-                        add_reference_bone(rmhx2->skeleton(), scene_node.ref(DP_LOC), scene_node_resources);
+                        add_reference_bone(rmhx2->skeleton(), scene_node.ref(CURRENT_SOURCE_LOCATION), scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
                         BvhConfig bvh_config{
@@ -732,7 +732,7 @@ int main(int argc, char** argv) {
                                 rmhx2->vectorize_joint_poses(scene_node_resources.get_relative_poses(
                                     VariableAndHash<std::string>{"anim"},
                                     bone_frame)),
-                                scene_node.ref(DP_LOC),
+                                scene_node.ref(CURRENT_SOURCE_LOCATION),
                                 scene_node_resources);
                         }
                         // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
@@ -785,7 +785,7 @@ int main(int argc, char** argv) {
                         ChildInstantiationOptions{
                             .rendering_resources = &rendering_resources,
                             .instance_name = VariableAndHash<std::string>{"objs"},
-                            .scene_node = scene_node.ref(DP_LOC),
+                            .scene_node = scene_node.ref(CURRENT_SOURCE_LOCATION),
                             .interpolation_mode = args.has_named("--large_object_mode")
                                 ? PoseInterpolationMode::DISABLED
                                 : PoseInterpolationMode::ENABLED,
@@ -902,7 +902,7 @@ int main(int argc, char** argv) {
                 : RenderingDynamics::MOVING);
 
         size_t light_beacon_index = 0;
-        auto add_light_beacon_if_set = [&](DanglingRef<SceneNode> scene_node){
+        auto add_light_beacon_if_set = [&](DanglingBaseClassRef<SceneNode> scene_node){
             if (!args.has_named_value("--light_beacon")) {
                 return;
             }

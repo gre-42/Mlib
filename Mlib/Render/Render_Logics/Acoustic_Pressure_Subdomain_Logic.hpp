@@ -63,7 +63,7 @@ public:
 class AcousticPressureSubdomainLogic final: public MovingNodeLogic, private GenericPostProcessingLogic {
 public:
     AcousticPressureSubdomainLogic(
-        DanglingRef<SceneNode> skidmark_node,
+        DanglingBaseClassRef<SceneNode> skidmark_node,
         std::shared_ptr<Skidmark> skidmark,
         float inner_pressure,
         float inner_angular_velocity,

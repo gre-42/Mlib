@@ -29,7 +29,7 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
     RenderLogics& render_logics,
     Players& players,
     const DanglingBaseClassRef<Player>& player,
-    DanglingPtr<SceneNode> exclusive_node,
+    DanglingBaseClassPtr<SceneNode> exclusive_node,
     std::unique_ptr<IWidget>&& widget,
     float fov,
     float zoom)
@@ -115,7 +115,7 @@ void HudOpponentZoomLogic::render_without_setup(
             frame_id.external_render_pass.time,
             VariableAndHash<std::string>(),
             observed_node,
-            zoom_camera_node.get(DP_LOC)
+            zoom_camera_node.get(CURRENT_SOURCE_LOCATION)
         },
         .time_id = 0};
     scene_logic_->render_toplevel(

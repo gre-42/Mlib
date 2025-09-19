@@ -18,7 +18,7 @@ struct Skidmark;
 class SkidmarkLogic final: public MovingNodeLogic {
 public:
     SkidmarkLogic(
-        DanglingRef<SceneNode> skidmark_node,
+        DanglingBaseClassRef<SceneNode> skidmark_node,
         std::shared_ptr<Skidmark> skidmark,
         IParticleRenderer& particle_renderer,
         int texture_width,

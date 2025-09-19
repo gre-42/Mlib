@@ -72,7 +72,7 @@ void FoliageResource::instantiate_root_renderables(const RootInstantiationOption
     instantiate_child_renderable(ChildInstantiationOptions{
         .rendering_resources = options.rendering_resources,
         .instance_name = options.instance_name,
-        .scene_node = node.ref(DP_LOC),
+        .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = options.renderable_resource_filter});
     auto node_name = VariableAndHash<std::string>{*options.instance_name + "_foliage_world"};
     options.scene.auto_add_root_node(

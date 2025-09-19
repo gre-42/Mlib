@@ -27,7 +27,7 @@ enum class RaceState;
 template <class T>
 class DanglingBaseClassRef;
 template <class T>
-class DestructionFunctionsTokensObject;
+class DestructionFunctionsTokensRef;
 class ObjectPool;
 enum class WayPointLocation;
 
@@ -66,14 +66,14 @@ public:
     uint32_t rank(float race_time_seconds) const;
     std::optional<LapTimeEventAndIdAndMfilename> get_winner_track_filename(size_t rank) const;
     std::string get_score_board(ScoreBoardConfiguration config) const;
-    std::map<std::string, DestructionFunctionsTokensObject<Player>>& players();
-    const std::map<std::string, DestructionFunctionsTokensObject<Player>>& players() const;
-    std::map<std::string, DestructionFunctionsTokensObject<Team>>& teams();
-    const std::map<std::string, DestructionFunctionsTokensObject<Team>>& teams() const;
+    std::map<std::string, DestructionFunctionsTokensRef<Player>>& players();
+    const std::map<std::string, DestructionFunctionsTokensRef<Player>>& players() const;
+    std::map<std::string, DestructionFunctionsTokensRef<Team>>& teams();
+    const std::map<std::string, DestructionFunctionsTokensRef<Team>>& teams() const;
     size_t nactive() const;
 private:
-    std::map<std::string, DestructionFunctionsTokensObject<Player>> players_;
-    std::map<std::string, DestructionFunctionsTokensObject<Team>> teams_;
+    std::map<std::string, DestructionFunctionsTokensRef<Player>> players_;
+    std::map<std::string, DestructionFunctionsTokensRef<Team>> teams_;
     std::unique_ptr<RaceHistory> race_history_;
     std::shared_ptr<Translator> translator_;
 };

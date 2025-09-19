@@ -15,7 +15,7 @@ class INodeSetter {
 public:
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) = 0;
 };

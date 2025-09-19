@@ -20,7 +20,7 @@ struct Bijection;
 
 class MovingNodeLogic: public RenderLogic {
 public:
-    explicit MovingNodeLogic(DanglingRef<SceneNode> skidmark_node);
+    explicit MovingNodeLogic(DanglingBaseClassRef<SceneNode> skidmark_node);
     virtual ~MovingNodeLogic();
 
     virtual std::optional<RenderSetup> try_render_setup(
@@ -48,7 +48,7 @@ public:
 
     DestructionFunctionsRemovalTokens on_skidmark_node_clear;
 protected:
-    DanglingRef<SceneNode> skidmark_node_;
+    DanglingBaseClassRef<SceneNode> skidmark_node_;
 private:
     std::optional<FixedArray<ScenePos, 3>> old_camera_position_;
 };

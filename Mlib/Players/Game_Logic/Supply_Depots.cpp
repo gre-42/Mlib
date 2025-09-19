@@ -1,6 +1,6 @@
 #include "Supply_Depots.hpp"
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -104,7 +104,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
 }
 
 void SupplyDepots::add_supply_depot(
-    DanglingRef<SceneNode> scene_node,
+    const DanglingBaseClassRef<SceneNode>& scene_node,
     const std::map<std::string, uint32_t>& supplies,
     float cooldown)
 {

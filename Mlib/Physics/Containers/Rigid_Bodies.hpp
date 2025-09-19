@@ -30,7 +30,7 @@ class RigidBodyVehicle;
 class IIntersectableMesh;
 struct PhysicsEngineConfig;
 template <class T>
-class DestructionFunctionsTokensObject;
+class DestructionFunctionsTokensRef;
 class CollisionMesh;
 class IIntersectable;
 struct CollisionGroup;
@@ -115,7 +115,7 @@ private:
     void bake_collision_ridges() const;
     void bake_collision_ridges_if_necessary() const;
     const PhysicsEngineConfig& cfg_;
-    std::unordered_map<const RigidBodyVehicle*, DestructionFunctionsTokensObject<RigidBodyVehicle>> rigid_bodies_;
+    std::unordered_map<const RigidBodyVehicle*, DestructionFunctionsTokensRef<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;

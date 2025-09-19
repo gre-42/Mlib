@@ -13,8 +13,8 @@ class PermanentLineContact: public PermanentNodeContact {
 public:
     PermanentLineContact(
         PermanentContacts& permanent_contacts,
-        DanglingRef<SceneNode> scene_node0,
-        DanglingRef<SceneNode> scene_node1,
+        DanglingBaseClassRef<SceneNode> scene_node0,
+        DanglingBaseClassRef<SceneNode> scene_node1,
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const FixedArray<ScenePos, 3>& p0,

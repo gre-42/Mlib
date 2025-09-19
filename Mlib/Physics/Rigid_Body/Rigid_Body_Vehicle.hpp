@@ -10,7 +10,7 @@
 #include <Mlib/Memory/Dangling_Map.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
@@ -103,7 +103,7 @@ struct VehicleAiWithSkill {
         : ai{ o, loc }
         , skill{ skill }
     {}
-    DestructionFunctionsTokensObject<IVehicleAi> ai;
+    DestructionFunctionsTokensRef<IVehicleAi> ai;
     float skill;
 };
 
@@ -247,7 +247,7 @@ public:
     // INodeSetter
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) override;
 
@@ -258,7 +258,7 @@ public:
 
     // INodeHider
     virtual bool node_shall_be_hidden(
-        const DanglingPtr<const SceneNode>& camera_node,
+        const DanglingBaseClassPtr<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 
     bool feels_gravity() const;
@@ -288,7 +288,7 @@ public:
     DestructionFunctions on_destroy;
     DestructionFunctionsRemovalTokens on_clear_scene_node_;
     Scene* scene_ = nullptr;
-    DanglingPtr<SceneNode> scene_node_;
+    DanglingBaseClassPtr<SceneNode> scene_node_;
     VariableAndHash<std::string> node_name_;
 
     float max_velocity_;

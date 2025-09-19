@@ -1,5 +1,6 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Cfd/Lbm/Fluid_Subdomain.hpp>
 #include <Mlib/Time/Elapsed_Guard.hpp>
@@ -16,7 +17,7 @@ void test_fluid_subdomain() {
     auto center_velocity = FixedArray<T, 2>{(T)0.2, (T)0.2};
     FluidSubdomain<TModel> cfd{{70u, 20u}};
     for (size_t i = 0; i < 200; ++i) {
-        auto x = std::clamp<size_t>(float_to_integral<size_t>(35 + std::round(i / 10.0)), 0, cfd.size(0) - 1);
+        auto x = std::clamp<size_t>(float_to_integral<size_t>(35 + std::round(integral_to_float<double>(i) / 10.0)), 0, cfd.size(0) - 1);
         for (size_t y = 5; y < 10; ++y) {
             cfd.set_velocity_field({x, y}, std::cos((T)i * omega) * center_velocity);
         }

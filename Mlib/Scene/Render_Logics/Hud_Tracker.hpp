@@ -1,9 +1,11 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Dangling_Unordered_Set.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
+#include <vector>
 
 namespace Mlib {
 
@@ -40,7 +42,7 @@ class HudTracker: public FillWithTextureLogic {
     HudTracker& operator = (const HudTracker&) = delete;
 public:
     HudTracker(
-        DanglingPtr<SceneNode> exclusive_node,
+        const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
         HudErrorBehavior hud_error_behavior,
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size,
@@ -62,7 +64,7 @@ private:
     FixedArray<float, 2> offset_;
     ExponentialSmoother<FixedArray<float, 2>, float> smooth_offset_;
     mutable bool is_visible_;
-    DanglingPtr<SceneNode> exclusive_node_;
+    std::optional<DanglingUnorderedSet<const SceneNode>> exclusive_nodes_;
     mutable FixedArray<ScenePos, 4, 4> vp_;
     mutable float near_plane_;
     mutable float far_plane_;

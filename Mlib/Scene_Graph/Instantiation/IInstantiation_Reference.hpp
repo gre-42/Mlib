@@ -21,7 +21,7 @@ public:
     virtual TransformationMatrix<float, ScenePos, 3> absolute_model_matrix() const = 0;
     virtual void auto_add_root_node(
         const std::string& name,
-        DanglingUniquePtr<SceneNode>&& scene_node,
+        std::unique_ptr<SceneNode>&& scene_node,
         RenderingDynamics rendering_dynamics) = 0;
 };
 

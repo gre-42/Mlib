@@ -17,7 +17,7 @@ class Scene;
 
 class CopyRotation: public DestructionObserver<SceneNode&>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
-    explicit CopyRotation(DanglingRef<SceneNode> from);
+    explicit CopyRotation(DanglingBaseClassRef<SceneNode> from);
     ~CopyRotation();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
@@ -26,7 +26,7 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void notify_destroyed(SceneNode& destroyed_object) override;
 private:
-    DanglingPtr<SceneNode> from_;
+    DanglingBaseClassPtr<SceneNode> from_;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
 };
 

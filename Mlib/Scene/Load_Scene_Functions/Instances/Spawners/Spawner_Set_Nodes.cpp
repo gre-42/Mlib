@@ -48,7 +48,7 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>> vehicles;
     for (const auto& prefix : prefixes) {
         auto name = VariableAndHash<std::string>{prefix + suffix};
-        DanglingRef<SceneNode> node = scene.get_node(name, DP_LOC);
+        DanglingBaseClassRef<SceneNode> node = scene.get_node(name, DP_LOC);
         auto& rb = get_rigid_body_vehicle(node);
         vehicles.push_back(global_object_pool.create_unique<SceneVehicle>(
             CURRENT_SOURCE_LOCATION,

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
 #include <string>
 
@@ -14,7 +14,7 @@ class VariableAndHash;
 struct ChildInstantiationOptions {
     RenderingResources* rendering_resources = nullptr;
     const VariableAndHash<std::string>& instance_name;
-    DanglingRef<SceneNode> scene_node;
+    DanglingBaseClassRef<SceneNode> scene_node;
     PoseInterpolationMode interpolation_mode = PoseInterpolationMode::UNDEFINED;
     const RenderableResourceFilter& renderable_resource_filter;
 };

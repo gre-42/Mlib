@@ -79,7 +79,7 @@ static inline float stop(float v) {
 void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::rigid_body), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     std::optional<EnginePower> engine_power;
     if (args.arguments.contains(KnownArgs::angular_vels) ||

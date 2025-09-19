@@ -45,7 +45,7 @@ void Mlib::instantiate(
         ChildInstantiationOptions{
             .rendering_resources = &rendering_resources,
             .instance_name = name,
-            .scene_node = node.ref(DP_LOC),
+            .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = RenderableResourceFilter{}},
         PreloadBehavior::NO_PRELOAD);
     if (!any(node->rendering_strategies())) {

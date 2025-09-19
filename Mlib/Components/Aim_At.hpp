@@ -5,9 +5,9 @@ namespace Mlib {
 class AimAt;
 class SceneNode;
 template <class T>
-class DanglingRef;
+class DanglingBaseClassRef;
 
-bool has_aim_at(DanglingRef<SceneNode> node);
-AimAt& get_aim_at(DanglingRef<SceneNode> node);
+bool has_aim_at(const DanglingBaseClassRef<SceneNode>& node);
+AimAt& get_aim_at(const DanglingBaseClassRef<SceneNode>& node);
 
 }

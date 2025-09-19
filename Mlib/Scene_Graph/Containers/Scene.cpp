@@ -34,7 +34,7 @@
 using namespace Mlib;
 
 using NodeRawPtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
-using NodeDanglingPtrs = ChunkedArray<std::list<std::vector<DanglingPtr<const SceneNode>>>>;
+using NodeDanglingPtrs = ChunkedArray<std::list<std::vector<DanglingBaseClassPtr<const SceneNode>>>>;
 static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
@@ -64,7 +64,7 @@ Scene::Scene(
 
 void Scene::add_moving_root_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     LOG_FUNCTION("Scene::add_root_node");
@@ -73,7 +73,7 @@ void Scene::add_moving_root_node(
 
 void Scene::add_static_root_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     static_root_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
@@ -81,7 +81,7 @@ void Scene::add_static_root_node(
 
 void Scene::add_root_aggregate_once_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     root_aggregate_once_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
@@ -89,7 +89,7 @@ void Scene::add_root_aggregate_once_node(
 
 void Scene::add_root_aggregate_always_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     root_aggregate_always_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
@@ -97,7 +97,7 @@ void Scene::add_root_aggregate_always_node(
 
 void Scene::add_root_instances_once_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     root_instances_once_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
@@ -105,7 +105,7 @@ void Scene::add_root_instances_once_node(
 
 void Scene::add_root_instances_always_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     root_instances_always_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
@@ -113,7 +113,7 @@ void Scene::add_root_instances_always_node(
 
 void Scene::add_static_root_physics_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     static_root_physics_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
@@ -121,7 +121,7 @@ void Scene::add_static_root_physics_node(
 
 void Scene::auto_add_root_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node,
+    std::unique_ptr<SceneNode>&& scene_node,
     RenderingDynamics rendering_dynamics)
 {
     add_root_node(
@@ -133,7 +133,7 @@ void Scene::auto_add_root_node(
 
 void Scene::add_root_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node,
+    std::unique_ptr<SceneNode>&& scene_node,
     RenderingDynamics rendering_dynamics,
     RenderingStrategies rendering_strategy)
 {
@@ -189,7 +189,7 @@ void Scene::add_root_node(
 
 void Scene::add_root_imposter_node(
     const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
-    const DanglingRef<SceneNode>& scene_node)
+    const DanglingBaseClassRef<SceneNode>& scene_node)
 {
     if (scene_node->domain() != SceneNodeDomain::RENDER) {
         THROW_OR_ABORT("Imposter node domain is not \"render\"");
@@ -237,7 +237,7 @@ void Scene::try_delete_root_node(const VariableAndHash<std::string>& name) {
 
 void Scene::delete_root_imposter_node(
     const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
-    const DanglingRef<SceneNode>& scene_node)
+    const DanglingBaseClassRef<SceneNode>& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     scene_node->shutdown();
@@ -273,10 +273,10 @@ void Scene::try_delete_node(const VariableAndHash<std::string>& name) {
 void Scene::delete_node(const VariableAndHash<std::string>& name) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     try {
-        DanglingPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
+        DanglingBaseClassPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
         if (!node->shutting_down()) {
             if (node->has_parent()) {
-                DanglingRef<SceneNode> parent = node->parent();
+                DanglingBaseClassRef<SceneNode> parent = node->parent();
                 node = nullptr;
                 parent->remove_child(name);
             } else {
@@ -325,7 +325,7 @@ void Scene::shutdown() {
     size_t nremaining = try_empty_the_trash_can();
     if (nremaining != 0) {
         for (const auto& o : trash_can_child_nodes_) {
-            o.print_references();
+            o->print_references();
         }
         for (const auto& o : trash_can_obj_) {
             o->print_references();
@@ -340,7 +340,7 @@ bool Scene::contains_node(const VariableAndHash<std::string>& name) const {
     return nodes_.contains(name);
 }
 
-void Scene::add_to_trash_can(DanglingUniquePtr<SceneNode>&& node) {
+void Scene::add_to_trash_can(std::unique_ptr<SceneNode>&& node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     trash_can_child_nodes_.emplace_back(std::move(node));
 }
@@ -360,7 +360,7 @@ size_t Scene::try_empty_the_trash_can() {
     }
     for (auto it = trash_can_child_nodes_.begin(); it != trash_can_child_nodes_.end();) {
         auto c = it++;
-        if (c->nreferences() == 0) {
+        if ((*c)->nreferences() == 0) {
             trash_can_child_nodes_.erase(c);
         }
     }
@@ -369,7 +369,7 @@ size_t Scene::try_empty_the_trash_can() {
 
 void Scene::register_node(
     const VariableAndHash<std::string>& name,
-    const DanglingRef<SceneNode>& scene_node)
+    const DanglingBaseClassRef<SceneNode>& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     if (name->empty()) {
@@ -401,7 +401,7 @@ void Scene::unregister_nodes(const Mlib::re::cregex& regex) {
     }
 }
 
-DanglingRef<SceneNode> Scene::get_node(const VariableAndHash<std::string>& name, SOURCE_LOCATION loc) const {
+DanglingBaseClassRef<SceneNode> Scene::get_node(const VariableAndHash<std::string>& name, SourceLocation loc) const {
     std::shared_lock lock{ mutex_ };
     if (delete_node_mutex_.this_thread_is_deleter_thread() &&
         morn_.root_node_scheduled_for_deletion(name, false))
@@ -415,7 +415,7 @@ DanglingRef<SceneNode> Scene::get_node(const VariableAndHash<std::string>& name,
     return res;
 }
 
-DanglingPtr<SceneNode> Scene::try_get_node(const VariableAndHash<std::string>& name, SOURCE_LOCATION loc) const {
+DanglingBaseClassPtr<SceneNode> Scene::try_get_node(const VariableAndHash<std::string>& name, SourceLocation loc) const {
     std::shared_lock lock{ mutex_ };
     if (!contains_node(name)) {
         return nullptr;
@@ -423,9 +423,9 @@ DanglingPtr<SceneNode> Scene::try_get_node(const VariableAndHash<std::string>& n
     return get_node(name, loc).ptr();
 }
 
-std::list<std::pair<VariableAndHash<std::string>, DanglingRef<SceneNode>>> Scene::get_nodes(const Mlib::re::cregex& regex) const {
+std::list<std::pair<VariableAndHash<std::string>, DanglingBaseClassRef<SceneNode>>> Scene::get_nodes(const Mlib::re::cregex& regex) const {
     std::shared_lock lock{ mutex_ };
-    std::list<std::pair<VariableAndHash<std::string>, DanglingRef<SceneNode>>> result;
+    std::list<std::pair<VariableAndHash<std::string>, DanglingBaseClassRef<SceneNode>>> result;
     for (const auto& [name, node] : nodes_) {
         if (Mlib::re::regex_match(*name, regex)) {
             if (morn_.root_node_scheduled_for_deletion(name, false)) {
@@ -437,7 +437,7 @@ std::list<std::pair<VariableAndHash<std::string>, DanglingRef<SceneNode>>> Scene
     return result;
 }
 
-DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const VariableAndHash<std::string>& name) const {
+DanglingBaseClassRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const VariableAndHash<std::string>& name) const {
     std::shared_lock lock{ mutex_ };
     auto it = nodes_.try_get(name);
     if (it == nullptr) {
@@ -478,7 +478,7 @@ bool Scene::visit_all(const std::function<bool(
 void Scene::render(
     const FixedArray<ScenePos, 4, 4>& vp,
     const TransformationMatrix<float, ScenePos, 3>& iv,
-    const DanglingPtr<const SceneNode>& camera_node,
+    const DanglingBaseClassPtr<const SceneNode>& camera_node,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const RenderedSceneDescriptor& frame_id,
@@ -502,7 +502,7 @@ void Scene::render(
         animation_state = animation_state_;
     }
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
-        DanglingRef<SceneNode> node = [this, &frame_id](){
+        DanglingBaseClassRef<SceneNode> node = [this, &frame_id](){
             std::shared_lock lock{ mutex_ };
             auto res = root_nodes_.try_get(frame_id.external_render_pass.black_node_name, DP_LOC);
             if (!res.has_value()) {
@@ -547,7 +547,7 @@ void Scene::render(
             });
             static_root_nodes_.visit(iv.t, [&](const auto& node) {
                 if (node->is_visible_for_user(frame_id.external_render_pass.user_id)) {
-                    local_static_root_nodes.emplace_back(&node.obj());
+                    local_static_root_nodes.emplace_back(&node.get());
                 }
                 return true;
             });
@@ -610,7 +610,7 @@ void Scene::render(
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_aggregate_once_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+                                root_aggregate_once_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
                             }
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
                             for (const auto& node : nodes) {
@@ -660,7 +660,7 @@ void Scene::render(
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_instances_once_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+                                root_instances_once_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
                             }
                             LargeInstancesQueue instances_queue{external_render_pass_type};
                             for (const auto& node : nodes) {
@@ -711,7 +711,7 @@ void Scene::render(
                             NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_aggregate_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+                                root_aggregate_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
                             }
                             std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
                             for (const auto& node : nodes) {
@@ -779,7 +779,7 @@ void Scene::render(
                                 NodeRawPtrs nodes{ CHUNK_SIZE };
                                 {
                                     std::shared_lock lock{ mutex_ };
-                                    root_instances_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+                                    root_instances_always_nodes_.visit(iv.t, [&nodes](const auto& node) { nodes.emplace_back(&node.get()); return true; });
                                 }
                                 // auto start_time = std::chrono::steady_clock::now();
                                 auto main_render_pass = black_render_passes.empty()

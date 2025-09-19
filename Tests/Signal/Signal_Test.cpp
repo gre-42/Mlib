@@ -1,5 +1,6 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Svg.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
 
@@ -23,7 +24,7 @@ void test_pid() {
     Svg<float> svg{*f, 600, 500};
     size_t n = 150;
     float dt0 = 0.056f;
-    float dt1 = dt0 / n;
+    float dt1 = dt0 / integral_to_float<float>(n);
     // To find the optimal parameters, set all of them except one to zero.
     PidController<float, float> pid0{
         2.f,        // P
@@ -48,9 +49,9 @@ void test_pid() {
         for (size_t i = 0; i < n; ++i) {
             p1.move(pid1(target - p1.x, dt0, dt1), dt1);
         }
-        x0.push_back(i);
+        x0.push_back(integral_to_float<float>(i));
         y0.push_back(p0.x);
-        x1.push_back(i);
+        x1.push_back(integral_to_float<float>(i));
         y1.push_back(p1.x);
         linfo() << p0.x << " | " << p1.x << " | " << (p0.x - p1.x);
     }

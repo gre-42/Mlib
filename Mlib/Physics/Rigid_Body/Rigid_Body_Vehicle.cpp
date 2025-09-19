@@ -10,7 +10,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
@@ -953,7 +953,7 @@ StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<VariableAn
 }
 
 bool RigidBodyVehicle::node_shall_be_hidden(
-    const DanglingPtr<const SceneNode>& camera_node,
+    const DanglingBaseClassPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     return is_deactivated_avatar();
@@ -1209,7 +1209,7 @@ void TrailerHitches::set_position_male(const FixedArray<float, 3>& position) {
 
 void RigidBodyVehicle::set_scene_node(
     Scene& scene,
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {

@@ -22,7 +22,7 @@ using namespace Mlib;
 
 VisualMovable3rdLogger::VisualMovable3rdLogger(
     RenderLogic& scene_logic,
-    const DanglingRef<SceneNode>& scene_node,
+    const DanglingBaseClassRef<SceneNode>& scene_node,
     RenderLogics& render_logics,
     AdvanceTimes& advance_times,
     StatusWriter& status_writer,

@@ -33,9 +33,9 @@ ConnectTrailer::ConnectTrailer(PhysicsScene& physics_scene)
 
 void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> car_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::car), DP_LOC);
+    DanglingBaseClassRef<SceneNode> car_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::car), DP_LOC);
     auto& car_rb = get_rigid_body_vehicle(car_node);
-    DanglingRef<SceneNode> trailer_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::trailer), DP_LOC);
+    DanglingBaseClassRef<SceneNode> trailer_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::trailer), DP_LOC);
     auto& trailer_rb = get_rigid_body_vehicle(trailer_node);
     physics_engine.permanent_contacts_.insert(std::make_unique<PermanentPointContact>(
         physics_engine.permanent_contacts_,

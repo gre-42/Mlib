@@ -19,7 +19,7 @@ public:
     RigidBodyRecorder(
         const std::string& filename,
         const TransformationMatrix<double, double, 3>* geographic_mapping,
-        DanglingRef<SceneNode> recorded_node,
+        DanglingBaseClassRef<SceneNode> recorded_node,
         RigidBodyPulses& rbp,
         const CountdownPhysics* countdown_start);
     ~RigidBodyRecorder();
@@ -28,7 +28,7 @@ public:
 
 private:
     const CountdownPhysics* countdown_start_;
-    DanglingPtr<SceneNode> recorded_node_;
+    DanglingBaseClassPtr<SceneNode> recorded_node_;
     RigidBodyPulses* rbp_;
     TrackWriter track_writer_;
     std::chrono::steady_clock::time_point start_time_;

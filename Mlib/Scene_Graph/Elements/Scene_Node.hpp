@@ -67,7 +67,7 @@ struct SceneNodeInstances {
     using SmallInstances = GenericBvh<CompressedScenePos, 3, BillboardContainer>;
 
     bool is_registered;
-    DanglingUniquePtr<SceneNode> scene_node;
+    std::unique_ptr<SceneNode> scene_node;
     CompressedScenePos max_center_distance;
     SmallInstances small_instances;
     std::list<PositionAndYAngleAndBillboardId<CompressedScenePos>> large_instances;
@@ -76,7 +76,7 @@ struct SceneNodeInstances {
 
 struct SceneNodeChild {
     bool is_registered;
-    DanglingUniquePtr<SceneNode> scene_node;
+    std::unique_ptr<SceneNode> scene_node;
 };
 
 struct SceneNodeBone {
@@ -137,7 +137,7 @@ class RenderableWithStyle;
 static const auto INITIAL_POSE = std::chrono::steady_clock::time_point();
 static const auto SUCCESSOR_POSE = std::nullopt;
 
-class SceneNode: public virtual Object {
+class SceneNode: public virtual DanglingBaseClass {
     template <class TAbsoluteMovable>
     friend class AbsoluteMovableSetter;
     SceneNode(const SceneNode& other) = delete;
@@ -199,29 +199,29 @@ public:
     std::shared_ptr<IParticleRenderer> get_particle_renderer() const;
     void add_child(
         const VariableAndHash<std::string>& name,
-        DanglingUniquePtr<SceneNode>&& node,
+        std::unique_ptr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState =  ChildParentState::PARENT_NOT_SET);
-    void set_parent(DanglingRef<SceneNode> parent);
+    void set_parent(DanglingBaseClassRef<SceneNode> parent);
     bool has_parent() const;
-    DanglingRef<SceneNode> parent();
-    DanglingRef<const SceneNode> parent() const;
+    DanglingBaseClassRef<SceneNode> parent();
+    DanglingBaseClassRef<const SceneNode> parent() const;
     void clear_renderable_instance(const VariableAndHash<std::string>& name);
     void clear_absolute_observer();
     void clear_sticky_absolute_observer();
     void clear();
-    DanglingRef<SceneNode> get_child(const VariableAndHash<std::string>& name);
-    DanglingRef<const SceneNode> get_child(const VariableAndHash<std::string>& name) const;
+    DanglingBaseClassRef<SceneNode> get_child(const VariableAndHash<std::string>& name);
+    DanglingBaseClassRef<const SceneNode> get_child(const VariableAndHash<std::string>& name) const;
     void remove_child(const VariableAndHash<std::string>& name);
     bool contains_child(const VariableAndHash<std::string>& name) const;
     void add_aggregate_child(
         const VariableAndHash<std::string>& name,
-        DanglingUniquePtr<SceneNode>&& node,
+        std::unique_ptr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_child(
         const VariableAndHash<std::string>& name,
-        DanglingUniquePtr<SceneNode>&& node,
+        std::unique_ptr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_position(
@@ -254,7 +254,7 @@ public:
         const FixedArray<ScenePos, 4, 4>& parent_mvp,
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
-        const DanglingPtr<const SceneNode>& camera_node,
+        const DanglingBaseClassPtr<const SceneNode>& camera_node,
         const IDynamicLights* dynamic_lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
@@ -373,7 +373,7 @@ private:
     void set_scene_and_state_unsafe(Scene& scene, SceneNodeState state);
     void setup_child_unsafe(
         const VariableAndHash<std::string>& name,
-        DanglingRef<SceneNode> node,
+        DanglingBaseClassRef<SceneNode> node,
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
     void clear_unsafe();
@@ -382,7 +382,7 @@ private:
         std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     uint32_t user_id_;
     Scene* scene_;
-    DanglingPtr<SceneNode> parent_;
+    DanglingBaseClassPtr<SceneNode> parent_;
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_;
     DanglingBaseClassPtr<IRelativeMovable> relative_movable_;
     std::unique_ptr<INodeModifier> node_modifier_;
@@ -419,6 +419,6 @@ private:
     std::string debug_message_;
 };
 
-std::ostream& operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node);
+std::ostream& operator << (std::ostream& ostr, DanglingBaseClassPtr<const SceneNode> node);
 
 }

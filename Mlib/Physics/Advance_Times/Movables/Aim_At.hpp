@@ -22,8 +22,8 @@ class AimAt: public IAbsoluteObserver, public IAdvanceTime, public virtual Dangl
 public:
     AimAt(
         AdvanceTimes& advance_times,
-        DanglingRef<SceneNode> follower_node,
-        DanglingRef<SceneNode> gun_node,
+        DanglingBaseClassRef<SceneNode> follower_node,
+        DanglingBaseClassRef<SceneNode> gun_node,
         float bullet_start_offset,
         float bullet_velocity,
         bool bullet_feels_gravity,
@@ -35,7 +35,7 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
 
     bool has_followed() const;
-    void set_followed(DanglingPtr<SceneNode> followed_node);
+    void set_followed(DanglingBaseClassPtr<SceneNode> followed_node);
 
     bool target_locked_on() const;
     void set_bullet_velocity(float value);
@@ -47,8 +47,8 @@ public:
 private:
     FixedArray<ScenePos, 3> absolute_point_to_aim_at_;
     FixedArray<ScenePos, 3> relative_point_to_aim_at_;
-    DanglingPtr<SceneNode> followed_node_;
-    DanglingPtr<SceneNode> gun_node_;
+    DanglingBaseClassPtr<SceneNode> followed_node_;
+    DanglingBaseClassPtr<SceneNode> gun_node_;
     const RigidBodyVehicle& follower_;
     const RigidBodyVehicle* followed_;
     float bullet_start_offset_;

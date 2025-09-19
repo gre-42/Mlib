@@ -15,7 +15,7 @@ DeferredInstantiator::DeferredInstantiator()
 DeferredInstantiator::~DeferredInstantiator() = default;
 
 void DeferredInstantiator::set_imposter_info(
-    const DanglingRef<SceneNode>& scene_node,
+    const DanglingBaseClassRef<SceneNode>& scene_node,
     const ImposterInfo& info)
 {
     if (imposters_created_) {

@@ -5,11 +5,11 @@
 
 using namespace Mlib;
 
-bool Mlib::has_aim_at(DanglingRef<SceneNode> node) {
+bool Mlib::has_aim_at(const DanglingBaseClassRef<SceneNode>& node) {
     return node->has_sticky_absolute_observer();
 }
 
-AimAt& Mlib::get_aim_at(DanglingRef<SceneNode> node) {
+AimAt& Mlib::get_aim_at(const DanglingBaseClassRef<SceneNode>& node) {
     auto aim_at = dynamic_cast<AimAt*>(&node->get_sticky_absolute_observer());
     if (aim_at == nullptr) {
         THROW_OR_ABORT("Sticky absolute observer is not an aim_at");

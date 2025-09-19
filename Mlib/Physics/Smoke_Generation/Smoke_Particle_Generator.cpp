@@ -102,14 +102,14 @@ void SmokeParticleGenerator::generate_root_node(
         ChildInstantiationOptions{
             .rendering_resources = &rendering_resources_,
             .instance_name = resource_name,
-            .scene_node = node.ref(DP_LOC),
+            .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
     scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
 }
 
 void SmokeParticleGenerator::generate_child_node(
-    DanglingRef<SceneNode> parent,
+    DanglingBaseClassRef<SceneNode> parent,
     const VariableAndHash<std::string>& resource_name,
     const VariableAndHash<std::string>& child_node_name,
     const FixedArray<ScenePos, 3>& relative_position,
@@ -134,10 +134,10 @@ void SmokeParticleGenerator::generate_child_node(
         ChildInstantiationOptions{
             .rendering_resources = &rendering_resources_,
             .instance_name = resource_name,
-            .scene_node = child_node.ref(DP_LOC),
+            .scene_node = child_node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
-    DanglingRef<SceneNode> child_node_ref = child_node.ref(DP_LOC);
+    auto child_node_ref = child_node.ref(CURRENT_SOURCE_LOCATION);
     parent->add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);
     scene_.register_node(child_node_name, child_node_ref);
 }

@@ -1,6 +1,6 @@
 #include "Players.hpp"
 #include <Mlib/Macro_Executor/Translator.hpp>
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -221,19 +221,19 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     return sstr.str();
 }
 
-std::map<std::string, DestructionFunctionsTokensObject<Player>>& Players::players() {
+std::map<std::string, DestructionFunctionsTokensRef<Player>>& Players::players() {
     return players_;
 }
 
-const std::map<std::string, DestructionFunctionsTokensObject<Player>>& Players::players() const {
+const std::map<std::string, DestructionFunctionsTokensRef<Player>>& Players::players() const {
     return players_;
 }
 
-std::map<std::string, DestructionFunctionsTokensObject<Team>>& Players::teams() {
+std::map<std::string, DestructionFunctionsTokensRef<Team>>& Players::teams() {
     return teams_;
 }
 
-const std::map<std::string, DestructionFunctionsTokensObject<Team>>& Players::teams() const {
+const std::map<std::string, DestructionFunctionsTokensRef<Team>>& Players::teams() const {
     return teams_;
 }
 

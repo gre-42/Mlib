@@ -34,7 +34,7 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
 {
     Linker linker{ physics_engine.advance_times_ };
     auto follower = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::follower);
-    DanglingRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
+    DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
     auto camera = follower_node->get_camera(CURRENT_SOURCE_LOCATION);
     const auto* ortho_camera = dynamic_cast<OrthoCamera*>(&camera.get());
     if (ortho_camera == nullptr) {

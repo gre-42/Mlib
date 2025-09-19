@@ -16,7 +16,7 @@ VerboseUnorderedMap<const AudioSource*, AudioSourceNode> AudioScene::source_node
     "Audio source",
     [](const AudioSource* s) { return (std::stringstream() << s).str(); }
 };
-DanglingPtr<SceneNode> AudioScene::listener_node_ = nullptr;
+DanglingBaseClassPtr<SceneNode> AudioScene::listener_node_ = nullptr;
 std::optional<DestructionFunctionsRemovalTokens> AudioScene::on_destroy_ = std::nullopt;
 
 void AudioScene::set_default_alpha(float alpha) {
@@ -38,7 +38,7 @@ void AudioScene::remove_source(AudioSource& source) {
 }
 
 void AudioScene::set_listener(
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     std::chrono::steady_clock::time_point time,
     std::chrono::steady_clock::duration velocity_dt)
 {

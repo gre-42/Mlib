@@ -11,7 +11,7 @@ namespace Mlib {
 template <class T>
 class VariableAndHash;
 template <class T>
-class DanglingPtr;
+class DanglingBaseClassPtr;
 class SceneNode;
 struct TrackElement;
 class RigidBodyVehicle;
@@ -62,7 +62,7 @@ public:
         SceneVehicle& vehicle,
         const std::string& seat) = 0;
     virtual void clear_next_vehicle() = 0;
-    virtual std::vector<DanglingPtr<SceneNode>> moving_nodes() const = 0;
+    virtual std::vector<DanglingBaseClassPtr<SceneNode>> moving_nodes() const = 0;
     virtual void notify_race_started() = 0;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,

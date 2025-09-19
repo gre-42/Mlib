@@ -45,9 +45,9 @@ CreateAimAt::CreateAimAt(PhysicsScene& physics_scene)
 void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
-    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent_follower_rigid_body_node), DP_LOC);
-    DanglingPtr<SceneNode> followed_node = nullptr;
+    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent_follower_rigid_body_node), DP_LOC);
+    DanglingBaseClassPtr<SceneNode> followed_node = nullptr;
     if (args.arguments.contains(KnownArgs::followed)) {
         followed_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::followed), DP_LOC).ptr();
     }

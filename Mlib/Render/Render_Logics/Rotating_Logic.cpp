@@ -160,7 +160,7 @@ void RotatingLogic::render_with_setup(
     notify_rendering(CURRENT_SOURCE_LOCATION);
     float aspect_ratio = lx.flength() / ly.flength();
 
-    DanglingRef<SceneNode> cn = scene_.get_node(VariableAndHash<std::string>{"camera"}, DP_LOC);
+    DanglingBaseClassRef<SceneNode> cn = scene_.get_node(VariableAndHash<std::string>{"camera"}, DP_LOC);
     cn->set_position(
         FixedArray<ScenePos, 3>{0.f, 0.f, user_object_.camera_z},
         std::nullopt);
@@ -172,7 +172,7 @@ void RotatingLogic::render_with_setup(
         bi.view.affine());
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
-        DanglingRef<SceneNode> on = scene_.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC);
+        DanglingBaseClassRef<SceneNode> on = scene_.get_node(VariableAndHash<std::string>{"obj"}, DP_LOC);
         on->set_scale(user_object_.scale);
         on->set_rotation(FixedArray<float, 3>{
             user_object_.angle_x,
@@ -181,7 +181,7 @@ void RotatingLogic::render_with_setup(
             std::nullopt);
     }
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
-        DanglingRef<SceneNode> bn = scene_
+        DanglingBaseClassRef<SceneNode> bn = scene_
             .get_node(VariableAndHash<std::string>{"obj"}, DP_LOC)
             ->get_child(VariableAndHash<std::string>{"beacon"});
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
@@ -200,7 +200,7 @@ void RotatingLogic::render_with_setup(
         1));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    DanglingPtr<const SceneNode> cn_ptr = cn.ptr();
+    DanglingBaseClassPtr<const SceneNode> cn_ptr = cn.ptr();
     scene_.render(vp, bi.model, cn_ptr, render_config, scene_graph_config, frame_id);
 }
 

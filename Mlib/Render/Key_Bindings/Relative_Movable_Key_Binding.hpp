@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
@@ -13,7 +13,7 @@ namespace Mlib {
 class SceneNode;
 
 struct RelativeMovableKeyBinding {
-    std::function<DanglingPtr<SceneNode>()> dynamic_node;
+    std::function<DanglingBaseClassPtr<SceneNode>()> dynamic_node;
     FixedArray<ScenePos, 3> translation;
     FixedArray<float, 3> rotation_axis;
     SceneDir velocity;

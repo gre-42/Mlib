@@ -13,8 +13,8 @@ LookAtMovable::LookAtMovable(
     AdvanceTimes& advance_times,
     Scene& scene,
     VariableAndHash<std::string> follower_name,
-    DanglingRef<SceneNode> follower_node,
-    DanglingRef<SceneNode> followed_node,
+    DanglingBaseClassRef<SceneNode> follower_node,
+    DanglingBaseClassRef<SceneNode> followed_node,
     IAbsoluteMovable& followed)
     : follower_setter{ *this }
     , followed_setter{ *this }
@@ -82,13 +82,13 @@ LookAtMovableFollowerNodeSetter::LookAtMovableFollowerNodeSetter(LookAtMovable& 
 
 void LookAtMovableFollowerNodeSetter::set_scene_node(
     Scene& scene,
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
     removal_tokens_.set(node->on_clear, loc);
     removal_tokens_.add([this, node](){
-        look_at_movable_.notify_destroyed(node.obj());
+        look_at_movable_.notify_destroyed(node.get());
     }, loc);
     node->set_absolute_movable({ look_at_movable_, loc });
 }
@@ -100,12 +100,12 @@ LookAtMovableFollowedNodeSetter::LookAtMovableFollowedNodeSetter(LookAtMovable& 
 
 void LookAtMovableFollowedNodeSetter::set_scene_node(
     Scene& scene,
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
     removal_tokens_.set(node->on_clear, loc);
     removal_tokens_.add([this, node](){
-        look_at_movable_.notify_destroyed(node.obj());
+        look_at_movable_.notify_destroyed(node.get());
     }, loc);
 }

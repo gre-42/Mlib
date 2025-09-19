@@ -21,7 +21,7 @@ public:
         RenderingResources& rendering_resources,
         RenderLogic& child_logic,
         ExternalRenderPassType render_pass_type,
-        DanglingRef<SceneNode> light_node,
+        DanglingBaseClassRef<SceneNode> light_node,
         std::shared_ptr<Light> light,
         VariableAndHash<std::string> black_node_name,
         bool with_depth_texture,
@@ -51,7 +51,7 @@ private:
     std::shared_ptr<FrameBuffer> fbs_[2];
     Lowpass lowpass_;
     ExternalRenderPassType render_pass_type_;
-    DanglingRef<SceneNode> light_node_;
+    DanglingBaseClassRef<SceneNode> light_node_;
     const VariableAndHash<std::string> black_node_name_;
     std::shared_ptr<Light> light_;
     bool with_depth_texture_;

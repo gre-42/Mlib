@@ -171,7 +171,7 @@ void Render::render_scene(
 }
 
 void Render::render_node(
-    DanglingUniquePtr<SceneNode>&& node,
+    std::unique_ptr<SceneNode>&& node,
     const FixedArray<float, 3>& background_color,
     bool rotate,
     float scale,

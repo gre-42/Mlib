@@ -49,7 +49,7 @@ void ChildRenderableInstance::operator () (
         ChildInstantiationOptions{
             .rendering_resources = &rendering_resources,
             .instance_name = VariableAndHash{ instance_name },
-            .scene_node = scene.get_node(node, DP_LOC),
+            .scene_node = scene.get_node(node, CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = resource_filter });
 }
 

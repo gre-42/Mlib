@@ -198,7 +198,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
         create_lights();
     }
     auto create_physics = [&](){
-        DanglingRef<SceneNode> node = scene.get_node(parent, DP_LOC);
+        DanglingBaseClassRef<SceneNode> node = scene.get_node(parent, DP_LOC);
 
         auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
             .object_pool = object_pool,

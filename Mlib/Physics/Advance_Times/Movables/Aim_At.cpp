@@ -14,8 +14,8 @@ using namespace Mlib;
 
 AimAt::AimAt(
     AdvanceTimes& advance_times,
-    DanglingRef<SceneNode> follower_node,
-    DanglingRef<SceneNode> gun_node,
+    DanglingBaseClassRef<SceneNode> follower_node,
+    DanglingBaseClassRef<SceneNode> gun_node,
     float bullet_start_offset,
     float bullet_velocity,
     bool bullet_feels_gravity,
@@ -108,7 +108,7 @@ bool AimAt::has_followed() const {
     return followed_ != nullptr;
 }
 
-void AimAt::set_followed(DanglingPtr<SceneNode> followed_node)
+void AimAt::set_followed(DanglingBaseClassPtr<SceneNode> followed_node)
 {
     followed_node_on_destroy_.clear();
     followed_node_ = followed_node;

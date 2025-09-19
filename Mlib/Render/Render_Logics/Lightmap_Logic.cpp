@@ -25,7 +25,7 @@ LightmapLogic::LightmapLogic(
     RenderingResources& rendering_resources,
     RenderLogic& child_logic,
     ExternalRenderPassType render_pass_type,
-    DanglingRef<SceneNode> light_node,
+    DanglingBaseClassRef<SceneNode> light_node,
     std::shared_ptr<Light> light,
     VariableAndHash<std::string> black_node_name,
     bool with_depth_texture,

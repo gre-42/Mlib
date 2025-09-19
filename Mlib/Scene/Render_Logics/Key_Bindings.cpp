@@ -384,7 +384,7 @@ void KeyBindings::increment_external_forces(
     }
     // Relative movable
     if (phase.group.penetration_class == PenetrationClass::BULLET_LINE) {
-        std::vector<std::pair<RelativeMovableKeyBinding&, DanglingRef<SceneNode>>> k_n;
+        std::vector<std::pair<RelativeMovableKeyBinding&, DanglingBaseClassRef<SceneNode>>> k_n;
         k_n.reserve(relative_movable_key_bindings_.size());
         for (auto& k : relative_movable_key_bindings_) {
             auto node = k->dynamic_node();

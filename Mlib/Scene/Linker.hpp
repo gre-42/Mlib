@@ -16,8 +16,8 @@ public:
     template <class TAbsoluteMovable>
     void link_absolute_movable_and_additional_node(
         Scene& scene,
-        DanglingRef<SceneNode> moved_node,
-        DanglingRef<SceneNode> observed_node,
+        DanglingBaseClassRef<SceneNode> moved_node,
+        DanglingBaseClassRef<SceneNode> observed_node,
         INodeSetter& moved_node_setter,
         INodeSetter& observed_node_setter,
         VariableAndHash<std::string> moved_node_name,
@@ -38,7 +38,7 @@ public:
     template <class TAbsoluteMovable>
     void link_absolute_movable(
         Scene& scene,
-        DanglingRef<SceneNode> node,
+        DanglingBaseClassRef<SceneNode> node,
         const VariableAndHash<std::string>& node_name,
         std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
         SourceLocation loc) const
@@ -52,7 +52,7 @@ public:
 
     template <class TRelativeMovable>
     void link_relative_movable(
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         const DanglingBaseClassRef<TRelativeMovable>& relative_movable,
         SourceLocation loc) const
     {

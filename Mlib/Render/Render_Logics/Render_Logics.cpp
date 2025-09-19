@@ -1,7 +1,7 @@
 #include "Render_Logics.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -11,8 +11,8 @@
 
 using namespace Mlib;
 
-static std::map<ZorderAndId, DestructionFunctionsTokensObject<RenderLogic>>::iterator
-    find_render_logic(const RenderLogic& render_logic, std::map<ZorderAndId, DestructionFunctionsTokensObject<RenderLogic>>& lst) {
+static std::map<ZorderAndId, DestructionFunctionsTokensRef<RenderLogic>>::iterator
+    find_render_logic(const RenderLogic& render_logic, std::map<ZorderAndId, DestructionFunctionsTokensRef<RenderLogic>>& lst) {
     return std::find_if(
         lst.begin(),
         lst.end(),

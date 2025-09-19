@@ -11,7 +11,7 @@ using namespace Mlib;
 
 RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     const std::string& filename,
-    DanglingRef<SceneNode> recorded_node,
+    DanglingBaseClassRef<SceneNode> recorded_node,
     RigidBodyPulses& rbp,
     const TransformationMatrix<double, double, 3>* geographic_coordinates,
     const CountdownPhysics* countdown_start)

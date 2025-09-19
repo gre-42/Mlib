@@ -270,7 +270,7 @@ void test_physics_engine(unsigned int seed) {
         key_configurations,
         ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT);
     auto append_lightmap_logic = [&](){
-        DanglingRef<SceneNode> light_node = scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC);
+        DanglingBaseClassRef<SceneNode> light_node = scene.get_node(VariableAndHash<std::string>{"light_node"}, DP_LOC);
         // Light without shadow
         light_node->add_light(std::make_unique<Light>(Light{
             .shadow_render_pass = ExternalRenderPassType::NONE}));

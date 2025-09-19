@@ -7,7 +7,7 @@ namespace Mlib {
 class SceneNode;
 
 struct CarControllerIdleBinding {
-    DanglingPtr<SceneNode> node;
+    DanglingBaseClassPtr<SceneNode> node;
     float surface_power;
     float steer_angle;
     float drive_relaxation;

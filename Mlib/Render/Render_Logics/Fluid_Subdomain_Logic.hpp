@@ -73,7 +73,7 @@ public:
 class FluidSubdomainLogic final: public MovingNodeLogic, private GenericPostProcessingLogic {
 public:
     FluidSubdomainLogic(
-        DanglingRef<SceneNode> skidmark_node,
+        DanglingBaseClassRef<SceneNode> skidmark_node,
         std::shared_ptr<Skidmark> skidmark,
         const FixedArray<SceneDir, 2>& directional_velocity,
         float radial_velocity,

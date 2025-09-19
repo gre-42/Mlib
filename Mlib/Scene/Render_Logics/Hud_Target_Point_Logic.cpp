@@ -21,8 +21,8 @@ HudTargetPointLogic::HudTargetPointLogic(
     RenderLogics& render_logics,
     const DanglingBaseClassRef<Player>& player,
     CollisionQuery& collision_query,
-    DanglingRef<SceneNode> gun_node,
-    DanglingPtr<SceneNode> exclusive_node,
+    DanglingBaseClassRef<SceneNode> gun_node,
+    const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
     YawPitchLookAtNodes* ypln,
     AdvanceTimes& advance_times,
     const std::shared_ptr<ITextureHandle>& texture,
@@ -35,21 +35,17 @@ HudTargetPointLogic::HudTargetPointLogic(
     , ypln_{ ypln }
     , scene_logic_{ scene_logic }
     , hud_tracker_{
-        exclusive_node,
+        exclusive_nodes,
         hud_error_behavior,
         center,
         size,
         texture }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , on_destroy_gun_node_{ gun_node->on_destroy, CURRENT_SOURCE_LOCATION }
-    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }
 {
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     on_player_delete_vehicle_internals_.add([this]() { object_pool_.remove(this); }, CURRENT_SOURCE_LOCATION);
-    if (exclusive_node != nullptr) {
-        on_clear_exclusive_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
-    }
     on_destroy_gun_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

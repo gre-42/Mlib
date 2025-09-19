@@ -101,7 +101,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                     ChildInstantiationOptions{
                         .rendering_resources = &rendering_resources_,
                         .instance_name = VariableAndHash<std::string>{ "beacon" },
-                        .scene_node = node.ref(DP_LOC),
+                        .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                         .interpolation_mode = PoseInterpolationMode::DISABLED,
                         .renderable_resource_filter = RenderableResourceFilter{}});
                 // node->set_scale(0.05);

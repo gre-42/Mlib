@@ -8,7 +8,7 @@
 
 using namespace Mlib;
 
-MovingNodeLogic::MovingNodeLogic(DanglingRef<SceneNode> skidmark_node)
+MovingNodeLogic::MovingNodeLogic(DanglingBaseClassRef<SceneNode> skidmark_node)
     : on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , skidmark_node_{ skidmark_node }
 {}

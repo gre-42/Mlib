@@ -13,7 +13,7 @@ class AvatarAnimationUpdater: public AnimationStateUpdater {
 public:
     explicit AvatarAnimationUpdater(
         const RigidBodyVehicle& rb,
-        DanglingRef<SceneNode> gun_node,
+        DanglingBaseClassRef<SceneNode> gun_node,
         const std::string& resource_wo_gun,
         const std::string& resource_w_gun);
     virtual ~AvatarAnimationUpdater() override;
@@ -22,7 +22,7 @@ public:
         const AnimationState& animation_state) override;
 private:
     const RigidBodyVehicle& rb_;
-    DanglingPtr<SceneNode> gun_node_;
+    DanglingBaseClassPtr<SceneNode> gun_node_;
     std::string resource_wo_gun_;
     std::string resource_w_gun_;
     float surface_power_;

@@ -30,7 +30,7 @@ SetRigidBodyGrindPoint::SetRigidBodyGrindPoint(PhysicsScene& physics_scene)
 
 void SetRigidBodyGrindPoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     if (rb.grind_state_.grind_point_.has_value()) {
         THROW_OR_ABORT("Rigid body grind point already set");

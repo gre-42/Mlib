@@ -30,7 +30,7 @@ BvhResource::BvhResource(
 
 static void instantiate_bvh(
     const VariableAndHash<std::string>& name,
-    const DanglingRef<SceneNode>& scene_node,
+    const DanglingBaseClassRef<SceneNode>& scene_node,
     const FixedArray<float, 3>& position_shift,
     const RenderableResourceFilter& renderable_resource_filter,
     const Bvh<float, 3, BvhResourcePayload>& bvh,
@@ -82,7 +82,7 @@ static void instantiate_bvh(
                 std::list<std::shared_ptr<ColoredVertexArray<CompressedScenePos>>>{})->
             instantiate_child_renderable(ChildInstantiationOptions{
                 .instance_name = VariableAndHash<std::string>{ "renderable_bvh" },
-                .scene_node = node.ref(DP_LOC),
+                .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                 .interpolation_mode = options.interpolation_mode,
                 .renderable_resource_filter = renderable_resource_filter});
         scene_node->add_child(VariableAndHash<std::string>{*name + "_data"}, std::move(node));
@@ -95,7 +95,7 @@ static void instantiate_bvh(
             1.f);
         instantiate_bvh(
             name,
-            node.ref(DP_LOC),
+            node.ref(CURRENT_SOURCE_LOCATION),
             position_shift + node->position().casted<float>(),
             renderable_resource_filter,
             cv,

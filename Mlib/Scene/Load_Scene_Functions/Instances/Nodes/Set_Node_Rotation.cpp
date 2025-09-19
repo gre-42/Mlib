@@ -29,7 +29,7 @@ SetNodeRotation::SetNodeRotation(PhysicsScene& physics_scene)
 
 void SetNodeRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name), DP_LOC);
     node->set_rotation(
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         SUCCESSOR_POSE);

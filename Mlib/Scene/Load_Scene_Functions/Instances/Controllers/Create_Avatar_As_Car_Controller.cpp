@@ -34,7 +34,7 @@ CreateAvatarAsCarController::CreateAvatarAsCarController(PhysicsScene& physics_s
 
 void CreateAvatarAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     if (rb.vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Avatar controller already set");

@@ -50,7 +50,7 @@ OriginalNodeHider::OriginalNodeHider(ImposterLogic& imposter_logic)
 {}
 
 bool OriginalNodeHider::node_shall_be_hidden(
-    const DanglingPtr<const SceneNode>& camera_node,
+    const DanglingBaseClassPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (!any(external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
@@ -63,7 +63,7 @@ bool OriginalNodeHider::node_shall_be_hidden(
 }
 
 bool ImposterNodeHider::node_shall_be_hidden(
-    const DanglingPtr<const SceneNode>& camera_node,
+    const DanglingBaseClassPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (!any(external_render_pass.pass & ExternalRenderPassType::STANDARD_MASK)) {
@@ -80,7 +80,7 @@ ImposterLogic::ImposterLogic(
     RenderingResources& rendering_resources,
     RenderLogic& child_logic,
     Scene& scene,
-    const DanglingRef<SceneNode>& orig_node,
+    const DanglingBaseClassRef<SceneNode>& orig_node,
     SelectedCameras& cameras,
     const std::string& debug_prefix,
     uint32_t max_texture_size,
@@ -172,19 +172,19 @@ void ImposterLogic::add_imposter(
     res.instantiate_child_renderable(ChildInstantiationOptions{
         .rendering_resources = &rendering_resources_,
         .instance_name = VariableAndHash<std::string>{ "imposter" },
-        .scene_node = new_imposter_node.ref(DP_LOC),
+        .scene_node = new_imposter_node.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
     new_imposter_node->insert_node_hider(
         renderable_scene_,
         { imposter_hider_, CURRENT_SOURCE_LOCATION });
-    scene_.add_root_imposter_node(renderable_scene_, new_imposter_node.ref(DP_LOC));
+    scene_.add_root_imposter_node(renderable_scene_, new_imposter_node.ref(CURRENT_SOURCE_LOCATION));
     imposter_node_ = std::move(new_imposter_node);
 }
 
 void ImposterLogic::delete_imposter_if_exists() {
     if (imposter_node_ != nullptr) {
         RenderSceneThreadGuard rstg{ scene_ };
-        scene_.delete_root_imposter_node(renderable_scene_, imposter_node_.ref(DP_LOC));
+        scene_.delete_root_imposter_node(renderable_scene_, {*imposter_node_, CURRENT_SOURCE_LOCATION});
         imposter_node_ = nullptr;
         fbs_ = nullptr;
     }
@@ -350,7 +350,7 @@ void ImposterLogic::render_without_setup(
                 frame_id.external_render_pass.time,
                 VariableAndHash<std::string>(),
                 orig_node_.ptr(),
-                imposter_camera_node.get(DP_LOC)
+                imposter_camera_node.get(CURRENT_SOURCE_LOCATION)
             },
             .time_id = 0};
         if (fbs_ == nullptr) {

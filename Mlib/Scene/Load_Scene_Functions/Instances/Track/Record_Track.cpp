@@ -35,7 +35,7 @@ RecordTrack::RecordTrack(PhysicsScene& physics_scene)
 
 void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(recorder_node);
     auto& at = global_object_pool.create<RigidBodyRecorder>(
         CURRENT_SOURCE_LOCATION,

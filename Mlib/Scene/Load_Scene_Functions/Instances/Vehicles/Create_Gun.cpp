@@ -92,10 +92,10 @@ private:
 void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> parent_rb_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent_rigid_body_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> parent_rb_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent_rigid_body_node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(parent_rb_node);
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    DanglingPtr<SceneNode> punch_angle_node = args.arguments.contains_non_null(KnownArgs::punch_angle_node)
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassPtr<SceneNode> punch_angle_node = args.arguments.contains_non_null(KnownArgs::punch_angle_node)
         ? scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::punch_angle_node), DP_LOC).ptr()
         : nullptr;
     float punch_angle_idle_std = args.arguments.at<float>(KnownArgs::punch_angle_idle_std) * degrees;

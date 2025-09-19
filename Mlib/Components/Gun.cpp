@@ -5,7 +5,7 @@
 
 using namespace Mlib;
 
-Gun& Mlib::get_gun(DanglingRef<SceneNode> node) {
+Gun& Mlib::get_gun(const DanglingBaseClassRef<SceneNode>& node) {
     auto gun = dynamic_cast<Gun*>(&node->get_absolute_observer());
     if (gun == nullptr) {
         THROW_OR_ABORT("Absolute observer is not a gun");

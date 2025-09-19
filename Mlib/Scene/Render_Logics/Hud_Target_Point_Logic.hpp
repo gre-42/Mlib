@@ -6,6 +6,8 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Tracker.hpp>
 #include <mutex>
+#include <optional>
+#include <vector>
 
 namespace Mlib {
 
@@ -29,8 +31,8 @@ public:
         RenderLogics& render_logics,
         const DanglingBaseClassRef<Player>& player,
         CollisionQuery& collision_query,
-        DanglingRef<SceneNode> gun_node,
-        DanglingPtr<SceneNode> exclusive_node,
+        DanglingBaseClassRef<SceneNode> gun_node,
+        const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
         YawPitchLookAtNodes* ypln,
         AdvanceTimes& advance_times,
         const std::shared_ptr<ITextureHandle>& texture,
@@ -60,13 +62,12 @@ public:
 private:
     ObjectPool& object_pool_;
     CollisionQuery& collision_query_;
-    DanglingRef<SceneNode> gun_node_;
+    DanglingBaseClassRef<SceneNode> gun_node_;
     YawPitchLookAtNodes* ypln_;
     RenderLogic& scene_logic_;
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     DestructionFunctionsRemovalTokens on_destroy_gun_node_;
-    DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
 
     RenderLogics& render_logics_;
 };

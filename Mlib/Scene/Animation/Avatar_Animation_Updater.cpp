@@ -15,7 +15,7 @@ using namespace Mlib;
 
 AvatarAnimationUpdater::AvatarAnimationUpdater(
     const RigidBodyVehicle& rb,
-    DanglingRef<SceneNode> gun_node,
+    DanglingBaseClassRef<SceneNode> gun_node,
     const std::string& resource_wo_gun,
     const std::string& resource_w_gun)
     : rb_{ rb }

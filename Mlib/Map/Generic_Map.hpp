@@ -3,6 +3,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <compare>
 #include <map>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 
@@ -42,7 +43,7 @@ public:
     mapped_type& get(const key_type& key) {
         auto it = this->find(key);
         if (it == this->end()) {
-            THROW_OR_ABORT("Could not find entry with key \"" + key + '"');
+            THROW_OR_ABORT((std::stringstream() << "Could not find entry with key \"" << key << '"').str());
         }
         return it->second;
     }

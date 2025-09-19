@@ -5,9 +5,9 @@ namespace Mlib {
 template <class T>
 class DestructionObservers;
 template <class T>
-class DanglingRef;
+class DanglingBaseClassRef;
 class SceneNode;
 
-using SceneNodeDestructionObservers = DestructionObservers<DanglingRef<const SceneNode>>;
+using SceneNodeDestructionObservers = DestructionObservers<DanglingBaseClassRef<const SceneNode>>;
 
 }

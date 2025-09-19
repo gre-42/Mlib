@@ -2,6 +2,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Sqrt_Constexpr.hpp>
 #include <Mlib/Physics/Cfd/Lbm/D2q9.hpp>
 #include <Mlib/Stats/Clamped.hpp>
 #include <cmath>
@@ -15,7 +16,7 @@ template <class TModel>
 class FluidSubdomain {
     using T = TModel::type;
     static const size_t ndirections = TModel::ndirections;
-    constexpr static const T speed_of_sound = 1 / std::sqrt((T)3);
+    constexpr static const T speed_of_sound = 1 / sqrt_constexpr((T)3);
     constexpr static const T speed_of_sound2 = squared(speed_of_sound);
     constexpr static const T speed_of_sound4 = squared(speed_of_sound2);
     constexpr static const T time_relaxation_constant = (T)0.55;
@@ -155,8 +156,8 @@ private:
             auto temp = temp_momentum_magnitudes_field_[v];
             for (size_t x = 1; x < subdomain_size_(0) - 1; ++x) {
                 for (size_t y = 1; y < subdomain_size_(1) - 1; ++y) {
-                    size_t source_x = x - dir(0);
-                    size_t source_y = y - dir(1);
+                    size_t source_x = x - (size_t)dir(0);
+                    size_t source_y = y - (size_t)dir(1);
                     good(x, y) = temp(source_x, source_y);
                 }
             }

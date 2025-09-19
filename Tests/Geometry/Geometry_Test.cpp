@@ -698,7 +698,7 @@ void test_shortest_path() {
     points_and_adjacency.adjacency(2, 1) = std::sqrt(sum(squared(points_and_adjacency.points[2] - points_and_adjacency.points[1])));
     points_and_adjacency.adjacency(2, 3) = std::sqrt(sum(squared(points_and_adjacency.points[2] - points_and_adjacency.points[3])));
     points_and_adjacency.adjacency(3, 2) = std::sqrt(sum(squared(points_and_adjacency.points[3] - points_and_adjacency.points[2])));
-    std::vector<size_t> targets{{ 0 }};
+    std::vector<size_t> targets{0};
     std::vector<size_t> predecessors;
     std::vector<double> total_distances;
     shortest_path_multiple_targets(

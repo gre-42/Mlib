@@ -22,7 +22,7 @@ public:
     explicit KeepOffsetFromMovableFollowerNodeSetter(KeepOffsetFromMovable& keep_offset);
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) override;
 private:
@@ -35,7 +35,7 @@ public:
     explicit KeepOffsetFromMovableFollowedNodeSetter(KeepOffsetFromMovable& keep_offset);
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) override;
 private:
@@ -51,7 +51,7 @@ public:
         AdvanceTimes& advance_times,
         Scene& scene,
         VariableAndHash<std::string> follower_name,
-        DanglingRef<SceneNode> followed_node,
+        DanglingBaseClassRef<SceneNode> followed_node,
         IAbsoluteMovable& followed,
         const FixedArray<float, 3>& offset);
     virtual ~KeepOffsetFromMovable() override;
@@ -66,7 +66,7 @@ private:
     AdvanceTimes& advance_times_;
     Scene& scene_;
     VariableAndHash<std::string> follower_name_;
-    DanglingPtr<SceneNode> followed_node_;
+    DanglingBaseClassPtr<SceneNode> followed_node_;
     IAbsoluteMovable* followed_;
     FixedArray<float, 3> offset_;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;

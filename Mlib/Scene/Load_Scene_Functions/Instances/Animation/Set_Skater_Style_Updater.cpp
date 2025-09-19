@@ -26,8 +26,8 @@ SetSkaterStyleUpdater::SetSkaterStyleUpdater(PhysicsScene& physics_scene)
 void SetSkaterStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingRef<SceneNode> skater_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::skater_node), DP_LOC);
-    DanglingRef<SceneNode> skateboard_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::skateboard_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> skater_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::skater_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> skateboard_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::skateboard_node), DP_LOC);
     std::string resource = args.arguments.at<std::string>(KnownArgs::resource);
     auto& rb = get_rigid_body_vehicle(skater_node);
     if (rb.animation_state_updater_ != nullptr) {

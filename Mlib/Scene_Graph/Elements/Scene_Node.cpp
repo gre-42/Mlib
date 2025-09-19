@@ -138,7 +138,7 @@ bool SceneNode::shutting_down() const {
     return shutting_down_;
 }
 
-void SceneNode::set_parent(DanglingRef<SceneNode> parent) {
+void SceneNode::set_parent(DanglingBaseClassRef<SceneNode> parent) {
     std::scoped_lock lock{ mutex_ };
     if (has_parent()) {
         THROW_OR_ABORT("Node already has a parent");
@@ -151,7 +151,7 @@ bool SceneNode::has_parent() const {
     return (parent_ != nullptr);
 }
 
-DanglingRef<SceneNode> SceneNode::parent() {
+DanglingBaseClassRef<SceneNode> SceneNode::parent() {
     std::shared_lock lock{ mutex_ };
     if (!has_parent()) {
         THROW_OR_ABORT("Node has no parent");
@@ -159,13 +159,13 @@ DanglingRef<SceneNode> SceneNode::parent() {
     return *parent_;
 }
 
-DanglingRef<const SceneNode> SceneNode::parent() const {
+DanglingBaseClassRef<const SceneNode> SceneNode::parent() const {
     return const_cast<SceneNode*>(this)->parent();
 }
 
 void SceneNode::setup_child_unsafe(
     const VariableAndHash<std::string>& name,
-    DanglingRef<SceneNode> node,
+    DanglingBaseClassRef<SceneNode> node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
@@ -180,8 +180,8 @@ void SceneNode::setup_child_unsafe(
         if (node->parent_ != nullptr) {
             THROW_OR_ABORT("Scene node \"" + *name + "\" already has a parent");
         }
-        node->parent_ = DanglingPtr<SceneNode>::from_object(*this, DP_LOC);
-    } else if (node->parent_ != DanglingPtr<SceneNode>::from_object(*this, DP_LOC)) {
+        node->parent_ = {*this, CURRENT_SOURCE_LOCATION};
+    } else if (node->parent_ != DanglingBaseClassPtr<SceneNode>{*this, CURRENT_SOURCE_LOCATION}) {
         THROW_OR_ABORT("Child parent mismatch");
     }
     if ((scene_ != nullptr) != (state_ != SceneNodeState::DETACHED)) {
@@ -492,11 +492,11 @@ void SceneNode::clear_unsafe() {
 
 void SceneNode::add_child(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& node,
+    std::unique_ptr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
-    auto nref = node.ref(DP_LOC);
+    auto nref = DanglingBaseClassRef<SceneNode>{*node, CURRENT_SOURCE_LOCATION};
     std::scoped_lock lock{ mutex_ };
     if (!children_.try_emplace(
         name,
@@ -508,16 +508,16 @@ void SceneNode::add_child(
     setup_child_unsafe(name, nref, child_registration_state, child_parent_state);
 }
 
-DanglingRef<SceneNode> SceneNode::get_child(const VariableAndHash<std::string>& name) {
+DanglingBaseClassRef<SceneNode> SceneNode::get_child(const VariableAndHash<std::string>& name) {
     std::shared_lock lock{ mutex_ };
     auto it = children_.try_get(name);
     if (it == nullptr) {
         THROW_OR_ABORT("Node does not have a child with name \"" + *name + '"');
     }
-    return it->scene_node.ref(DP_LOC);
+    return {*it->scene_node, CURRENT_SOURCE_LOCATION};
 }
 
-DanglingRef<const SceneNode> SceneNode::get_child(const VariableAndHash<std::string>& name) const {
+DanglingBaseClassRef<const SceneNode> SceneNode::get_child(const VariableAndHash<std::string>& name) const {
     return const_cast<SceneNode*>(this)->get_child(name);
 }
 
@@ -552,11 +552,11 @@ bool SceneNode::contains_child(const VariableAndHash<std::string>& name) const {
 
 void SceneNode::add_aggregate_child(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& node,
+    std::unique_ptr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
-    auto nref = node.ref(DP_LOC);
+    auto nref = DanglingBaseClassRef<SceneNode>{*node, CURRENT_SOURCE_LOCATION};
     std::scoped_lock lock{ mutex_ };
     if (!aggregate_children_.try_emplace(name, SceneNodeChild{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
@@ -569,7 +569,7 @@ void SceneNode::add_aggregate_child(
 
 void SceneNode::add_instances_child(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& node,
+    std::unique_ptr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
@@ -592,7 +592,7 @@ void SceneNode::add_instances_child(
             verbose_abort("Internal error: Instances node with name " + *name + " already exists");
         }
     };
-    auto nref = node.ref(DP_LOC);
+    auto nref = DanglingBaseClassRef<SceneNode>{*node, CURRENT_SOURCE_LOCATION};
     auto pm = node->physics_attributes();
     if (any(pm & PhysicsMaterial::ATTR_COLLIDE) &&
         !any(pm & PhysicsMaterial::ATTR_VISIBLE))
@@ -1035,7 +1035,7 @@ void SceneNode::render(
     const FixedArray<ScenePos, 4, 4>& parent_mvp,
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
-    const DanglingPtr<const SceneNode>& camera_node,
+    const DanglingBaseClassPtr<const SceneNode>& camera_node,
     const IDynamicLights* dynamic_lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
@@ -1696,21 +1696,21 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     if (!children_.empty()) {
         ostr << " " << ind1 << " Children (" << children_.size() << ")\n";
         for (const auto& [n, c] : children_) {
-            ostr << " " << ind2 << " " << *n << " #" << c.scene_node.nreferences() << '\n';
+            ostr << " " << ind2 << " " << *n << " #" << c.scene_node->nreferences() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     if (!aggregate_children_.empty()) {
         ostr << " " << ind1 << " Aggregates (" << aggregate_children_.size() << ")\n";
         for (const auto& [n, c] : aggregate_children_) {
-            ostr << " " << ind2 << " " << *n << " #" << c.scene_node.nreferences() << '\n';
+            ostr << " " << ind2 << " " << *n << " #" << c.scene_node->nreferences() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     if (!instances_children_.empty()) {
         ostr << " " << ind1 << " Instances (" << instances_children_.size() << ")\n";
         for (const auto& [n, c] : instances_children_) {
-            ostr << " " << ind2 << " " << *n << " #" << c.scene_node.nreferences() <<
+            ostr << " " << ind2 << " " << *n << " #" << c.scene_node->nreferences() <<
                 " #small=" << c.small_instances.size() <<
                 " #large=" << c.large_instances.size() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
@@ -1719,7 +1719,7 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     if (!collide_only_instances_children_.empty()) {
         ostr << " " << ind1 << " Collide-only instances (" << collide_only_instances_children_.size() << ")\n";
         for (const auto& [n, c] : collide_only_instances_children_) {
-            ostr << " " << ind2 << " " << *n << " #" << c.scene_node.nreferences() <<
+            ostr << " " << ind2 << " " << *n << " #" << c.scene_node->nreferences() <<
                 " #small=" << c.small_instances.size() <<
                 " #large=" << c.large_instances.size() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
@@ -1815,7 +1815,7 @@ void SceneNode::invalidate_transformation_history() {
     trafo_history_invalidated_ = true;
 }
 
-std::ostream& Mlib::operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node) {
+std::ostream& Mlib::operator << (std::ostream& ostr, DanglingBaseClassPtr<const SceneNode> node) {
     if (node != nullptr) {
         node->print(ostr);
     } else {

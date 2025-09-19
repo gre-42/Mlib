@@ -55,7 +55,7 @@ FluidSkidmarkRenderProgram::FluidSkidmarkRenderProgram() = default;
 FluidSkidmarkRenderProgram::~FluidSkidmarkRenderProgram() = default;
 
 FluidSubdomainLogic::FluidSubdomainLogic(
-    DanglingRef<SceneNode> skidmark_node,
+    DanglingBaseClassRef<SceneNode> skidmark_node,
     std::shared_ptr<Skidmark> skidmark,
     const FixedArray<SceneDir, 2>& directional_velocity,
     float radial_velocity,

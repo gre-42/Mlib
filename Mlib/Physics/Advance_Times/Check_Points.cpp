@@ -169,13 +169,13 @@ void CheckPoints::advance_time(float dt) {
             node->add_color_style(std::make_unique<ColorStyle>());
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
                 .beacon_node_name = VariableAndHash<std::string>{"beacon_node_" + std::to_string(user_id_) + '_' + std::to_string(i01_)},
-                .beacon_node = node.get(DP_LOC)});
+                .beacon_node = node.get(CURRENT_SOURCE_LOCATION)});
             scene_node_resources_.instantiate_child_renderable(
                 resource_name_,
                 ChildInstantiationOptions{
                     .rendering_resources = rendering_resources_,
                     .instance_name = VariableAndHash<std::string>{ "beacon" },
-                    .scene_node = node.ref(DP_LOC),
+                    .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                     .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = RenderableResourceFilter{}});
             node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });

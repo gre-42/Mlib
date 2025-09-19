@@ -27,14 +27,14 @@ public:
         SelectedCameras& cameras,
         const FixedArray<float, 3>& offset,
         const FixedArray<float, 3>& grid,
-        const DanglingRef<SceneNode>& follower_node);
+        const DanglingBaseClassRef<SceneNode>& follower_node);
     ~KeepOffsetFromCamera();
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) override;
 
@@ -47,7 +47,7 @@ private:
     const SelectedCameras& cameras_;
     FixedArray<float, 3> offset_;
     FixedArray<float, 3> grid_;
-    DanglingPtr<SceneNode> follower_node_;
+    DanglingBaseClassPtr<SceneNode> follower_node_;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
     std::unique_ptr<EventReceiverDeletionToken> camera_changed_deletion_token_;
 };

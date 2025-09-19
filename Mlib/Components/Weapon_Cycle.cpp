@@ -5,7 +5,7 @@
 
 using namespace Mlib;
 
-const WeaponCycle& Mlib::get_weapon_cycle(DanglingRef<const SceneNode> node) {
+const WeaponCycle& Mlib::get_weapon_cycle(const DanglingBaseClassRef<const SceneNode>& node) {
     auto wc = dynamic_cast<WeaponCycle*>(&node->get_node_modifier());
     if (wc == nullptr) {
         THROW_OR_ABORT("Node modifier is not a list of weapon cycles");
@@ -13,10 +13,10 @@ const WeaponCycle& Mlib::get_weapon_cycle(DanglingRef<const SceneNode> node) {
     return *wc;
 }
 
-WeaponCycle& Mlib::get_weapon_cycle(DanglingRef<SceneNode> node) {
-    return const_cast<WeaponCycle&>(get_weapon_cycle((DanglingRef<const SceneNode>)node));
+WeaponCycle& Mlib::get_weapon_cycle(const DanglingBaseClassRef<SceneNode>& node) {
+    return const_cast<WeaponCycle&>(get_weapon_cycle((const DanglingBaseClassRef<const SceneNode>&)node));
 }
 
-bool Mlib::has_weapon_cycle(DanglingRef<const SceneNode> node) {
+bool Mlib::has_weapon_cycle(const DanglingBaseClassRef<const SceneNode>& node) {
     return node->has_node_modifier();
 }

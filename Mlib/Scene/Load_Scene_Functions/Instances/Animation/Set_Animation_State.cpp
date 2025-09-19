@@ -40,7 +40,7 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
     args.arguments.validate(KnownArgs::options);
     for (const auto& node_name : args.arguments.try_at_vector<VariableAndHash<std::string>>(KnownArgs::nodes))
     {
-        DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
+        DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
         float animation_loop_end;
         if (args.arguments.contains(KnownArgs::animation_loop_end)) {
             auto le = args.arguments.at(KnownArgs::animation_loop_end);

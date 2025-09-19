@@ -7,7 +7,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
@@ -298,7 +298,7 @@ const VariableAndHash<std::string>& Player::scene_node_name() const {
     return vehicle()->scene_node_name();
 }
 
-void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
+void Player::set_gun_node(DanglingBaseClassRef<SceneNode> gun_node) {
     std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node != nullptr) {
         THROW_OR_ABORT("gun already set");
@@ -306,7 +306,7 @@ void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
     change_gun_node(gun_node.ptr());
 }
 
-void Player::change_gun_node(DanglingPtr<SceneNode> gun_node) {
+void Player::change_gun_node(DanglingBaseClassPtr<SceneNode> gun_node) {
     std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node != nullptr) {
         on_gun_node_destroyed_.clear();
@@ -747,7 +747,7 @@ std::optional<VariableAndHash<std::string>> Player::target_id() const {
     return target_id_;
 }
 
-DanglingPtr<SceneNode> Player::target_scene_node() const {
+DanglingBaseClassPtr<SceneNode> Player::target_scene_node() const {
     std::shared_lock lock{ mutex_ };
     return target_scene_node_;
 }
@@ -892,7 +892,7 @@ void Player::set_opponent(Player& opponent) {
     on_target_rigid_body_destroyed_.add([this](){ clear_opponent(); }, CURRENT_SOURCE_LOCATION);
 }
 
-DanglingRef<SceneNode> Player::scene_node() {
+DanglingBaseClassRef<SceneNode> Player::scene_node() {
     std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no scene node");
@@ -900,7 +900,7 @@ DanglingRef<SceneNode> Player::scene_node() {
     return vehicle_->scene_node();
 }
 
-DanglingRef<const SceneNode> Player::scene_node() const {
+DanglingBaseClassRef<const SceneNode> Player::scene_node() const {
     return const_cast<Player*>(this)->scene_node();
 }
 
@@ -1090,8 +1090,8 @@ bool Player::try_reset_vehicle(
     }
 }
 
-std::vector<DanglingPtr<SceneNode>> Player::moving_nodes() const {
-    std::vector<DanglingPtr<SceneNode>> result;
+std::vector<DanglingBaseClassPtr<SceneNode>> Player::moving_nodes() const {
+    std::vector<DanglingBaseClassPtr<SceneNode>> result;
     const auto& vs = vehicle_spawner().get_scene_vehicles();
     result.reserve(vs.size());
     for (const auto& v : vs) {

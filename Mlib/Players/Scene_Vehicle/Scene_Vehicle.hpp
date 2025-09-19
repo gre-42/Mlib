@@ -39,7 +39,7 @@ public:
     SceneVehicle(
         DeleteNodeMutex& delete_node_mutex,
         VariableAndHash<std::string> scene_node_name,
-        const DanglingRef<SceneNode>& scene_node,
+        const DanglingBaseClassRef<SceneNode>& scene_node,
         const DanglingBaseClassRef<RigidBodyVehicle>& rb);
     ~SceneVehicle();
     void create_vehicle_externals(
@@ -62,8 +62,8 @@ public:
         const CreateRoleExternals& create_vehicle_internals);
     VariableAndHash<std::string>& scene_node_name();
     const VariableAndHash<std::string>& scene_node_name() const;
-    DanglingRef<SceneNode> scene_node();
-    DanglingRef<const SceneNode> scene_node() const;
+    DanglingBaseClassRef<SceneNode> scene_node();
+    DanglingBaseClassRef<const SceneNode> scene_node() const;
     DanglingBaseClassRef<RigidBodyVehicle> rb();
     DanglingBaseClassRef<const RigidBodyVehicle> rb() const;
 private:
@@ -71,7 +71,7 @@ private:
     DestructionFunctionsRemovalTokens on_scene_node_destroyed_;
     DestructionFunctionsRemovalTokens on_rigid_body_destroyed_;
     VariableAndHash<std::string> scene_node_name_;
-    DanglingPtr<SceneNode> scene_node_;
+    DanglingBaseClassPtr<SceneNode> scene_node_;
     DanglingBaseClassPtr<RigidBodyVehicle> rb_;
     CreateVehicleExternals create_vehicle_externals_;
     CreateRoleExternals create_vehicle_internals_;

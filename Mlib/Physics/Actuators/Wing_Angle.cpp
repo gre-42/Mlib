@@ -4,7 +4,7 @@
 
 using namespace Mlib;
 
-WingAngle::WingAngle(DanglingPtr<SceneNode> node, float& angle, const FixedArray<float, 3>& rotation_axis)
+WingAngle::WingAngle(DanglingBaseClassPtr<SceneNode> node, float& angle, const FixedArray<float, 3>& rotation_axis)
     : node_{ node }
     , angle_{ angle }
     , rotation_axis_{ rotation_axis }

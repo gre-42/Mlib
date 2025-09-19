@@ -64,14 +64,14 @@ public:
     ~ButtonStates();
     float get_gamepad_axis(
         uint32_t gamepad_id,
-        int axis,
+        uint32_t axis,
         FilterType filter_type) const;
     bool get_gamepad_button_down(
         uint32_t gamepad_id,
         int button) const;
     bool get_gamepad_digital_axis(
         uint32_t gamepad_id,
-        int axis,
+        uint32_t axis,
         float sign_and_threshold) const;
     bool get_tap_analog_digital_axis(
         uint32_t gamepad_id,

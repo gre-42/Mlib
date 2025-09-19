@@ -14,8 +14,8 @@ class PermanentNodeContact: public IPermanentContact, public DestructionObserver
 public:
     PermanentNodeContact(
         PermanentContacts& permanent_contacts,
-        DanglingRef<SceneNode> scene_node0,
-        DanglingRef<SceneNode> scene_node1,
+        DanglingBaseClassRef<SceneNode> scene_node0,
+        DanglingBaseClassRef<SceneNode> scene_node1,
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1);
     
@@ -26,8 +26,8 @@ protected:
     RigidBodyPulses& rbp1_;
 private:
     PermanentContacts& permanent_contacts_;
-    DanglingRef<SceneNode> scene_node0_;
-    DanglingRef<SceneNode> scene_node1_;
+    DanglingBaseClassRef<SceneNode> scene_node0_;
+    DanglingBaseClassRef<SceneNode> scene_node1_;
 };
 
 }

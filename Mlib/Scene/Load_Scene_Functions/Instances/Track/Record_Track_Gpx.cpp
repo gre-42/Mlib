@@ -35,7 +35,7 @@ RecordTrackGpx::RecordTrackGpx(PhysicsScene& physics_scene)
 
 void RecordTrackGpx::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(recorder_node);
     auto& at = global_object_pool.create<RigidBodyRecorderGpx>(
         CURRENT_SOURCE_LOCATION,

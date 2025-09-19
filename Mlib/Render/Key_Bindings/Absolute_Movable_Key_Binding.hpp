@@ -13,7 +13,7 @@ namespace Mlib {
 class SceneNode;
 
 struct AbsoluteMovableKeyBinding {
-    DanglingPtr<SceneNode> node;
+    DanglingBaseClassPtr<SceneNode> node;
     VectorAtPosition<float, ScenePos, 3> force;
     FixedArray<float, 3> rotate;
     std::optional<float> car_surface_power;

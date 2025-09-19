@@ -26,7 +26,7 @@ SetAvailableSeats::SetAvailableSeats(PhysicsScene& physics_scene)
 void SetAvailableSeats::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     rb.drivers_.set_seats(args.arguments.at<std::vector<std::string>>(KnownArgs::value));
 }

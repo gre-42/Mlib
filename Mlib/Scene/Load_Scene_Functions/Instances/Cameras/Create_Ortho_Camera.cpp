@@ -35,7 +35,7 @@ CreateOrthoCamera::CreateOrthoCamera(PhysicsScene& physics_scene)
 
 void CreateOrthoCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto oc = std::make_unique<OrthoCamera>(
         OrthoCameraConfig(),
         OrthoCamera::Postprocessing::ENABLED);

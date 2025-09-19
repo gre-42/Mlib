@@ -56,7 +56,7 @@ void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     for (const auto& [i, prefix] : enumerate(node_prefixes)) {
-        DanglingRef<SceneNode> node = scene.get_node(VariableAndHash<std::string>{prefix + suffix}, DP_LOC);
+        DanglingBaseClassRef<SceneNode> node = scene.get_node(VariableAndHash<std::string>{prefix + suffix}, DP_LOC);
         node->clearing_pointers.add(playback);
         auto playback_object = playback->get_playback_object(i);
         node->set_absolute_movable(playback_object);

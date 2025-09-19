@@ -7,8 +7,8 @@
 using namespace Mlib;
 
 Wing::Wing(
-    DanglingPtr<SceneNode> angle_of_attack_node,
-    DanglingPtr<SceneNode> brake_angle_node,
+    DanglingBaseClassPtr<SceneNode> angle_of_attack_node,
+    DanglingBaseClassPtr<SceneNode> brake_angle_node,
     const TransformationMatrix<float, ScenePos, 3>& relative_location,
     const Interp<float>& fac,
     float lift_coefficient,

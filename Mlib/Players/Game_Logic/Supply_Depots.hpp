@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <Mlib/Scene_Precision.hpp>
@@ -17,7 +17,7 @@ class SceneNode;
 class DestructionFunctionsRemovalTokens;
 
 struct SupplyDepot {
-    DanglingRef<SceneNode> node;
+    DanglingBaseClassRef<SceneNode> node;
     FixedArray<CompressedScenePos, 3> center;
     std::map<std::string, uint32_t> supplies;
     float cooldown;
@@ -42,7 +42,7 @@ public:
         const FixedArray<CompressedScenePos, 3> position,
         const std::function<bool(SupplyDepot&)>& visitor);
     virtual void add_supply_depot(
-        DanglingRef<SceneNode> scene_node,
+        const DanglingBaseClassRef<SceneNode>& scene_node,
         const std::map<std::string, uint32_t>& supplies,
         float cooldown) override;
 private:

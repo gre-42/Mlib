@@ -22,7 +22,7 @@ public:
     explicit LookAtMovableFollowerNodeSetter(LookAtMovable& look_at_movable);
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) override;
 private:
@@ -35,7 +35,7 @@ public:
     explicit LookAtMovableFollowedNodeSetter(LookAtMovable& look_at_movable);
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) override;
 private:
@@ -51,8 +51,8 @@ public:
         AdvanceTimes& advance_times,
         Scene& scene,
         VariableAndHash<std::string> follower_name,
-        DanglingRef<SceneNode> follower_node,
-        DanglingRef<SceneNode> followed_node,
+        DanglingBaseClassRef<SceneNode> follower_node,
+        DanglingBaseClassRef<SceneNode> followed_node,
         IAbsoluteMovable& followed);
     virtual ~LookAtMovable() override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
@@ -67,8 +67,8 @@ private:
     AdvanceTimes& advance_times_;
     Scene& scene_;
     VariableAndHash<std::string> follower_name_;
-    DanglingPtr<SceneNode> follower_node_;
-    DanglingPtr<SceneNode> followed_node_;
+    DanglingBaseClassPtr<SceneNode> follower_node_;
+    DanglingBaseClassPtr<SceneNode> followed_node_;
     IAbsoluteMovable* followed_;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
 };

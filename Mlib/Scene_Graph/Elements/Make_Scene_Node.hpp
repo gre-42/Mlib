@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <memory>
 
 namespace Mlib {
 
 class AutoShutdownSceneNode {
 public:
-	inline AutoShutdownSceneNode(DanglingUniquePtr<SceneNode>&& node)
+	inline AutoShutdownSceneNode(std::unique_ptr<SceneNode>&& node)
 		: node_{ std::move(node) }
 	{}
 	inline ~AutoShutdownSceneNode() {
@@ -13,11 +14,11 @@ public:
 			node_->shutdown();
 		}
 	}
-	DanglingPtr<SceneNode> get(SourceLocation loc) const {
-		return node_.get(loc);
+	DanglingBaseClassPtr<SceneNode> get(SourceLocation loc) const {
+		return { node_.get(), loc };
 	}
-	DanglingRef<SceneNode> ref(SourceLocation loc) const {
-		return node_.ref(loc);
+	DanglingBaseClassRef<SceneNode> ref(SourceLocation loc) const {
+		return { *node_.get(), loc };
 	}
 	SceneNode* operator -> () {
 		return node_.operator->();
@@ -25,16 +26,16 @@ public:
 	const SceneNode* operator -> () const {
 		return node_.operator->();
 	}
-	operator DanglingUniquePtr<SceneNode>&& () {
+	operator std::unique_ptr<SceneNode>&& () {
 		return std::move(node_);
 	}
 private:
-	DanglingUniquePtr<SceneNode> node_;
+	std::unique_ptr<SceneNode> node_;
 };
 
 template <class... Args>
 AutoShutdownSceneNode make_unique_scene_node(Args&&... args) {
-	return { make_dunique<SceneNode>(std::forward<Args>(args)...) };
+	return { std::make_unique<SceneNode>(std::forward<Args>(args)...) };
 }
 
 }

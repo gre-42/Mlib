@@ -35,7 +35,7 @@ struct CheckPointPose {
 
 struct BeaconNode {
     VariableAndHash<std::string> beacon_node_name;
-    DanglingPtr<SceneNode> beacon_node;
+    DanglingBaseClassPtr<SceneNode> beacon_node;
     CheckPointPose* check_point_pose;
 };
 
@@ -81,7 +81,7 @@ private:
     TrackReader track_reader_;
     size_t nlaps_;
     std::string asset_id_;
-    std::vector<DanglingPtr<SceneNode>> moving_nodes_;
+    std::vector<DanglingBaseClassPtr<SceneNode>> moving_nodes_;
     std::vector<IAbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     VariableAndHash<std::string> resource_name_;

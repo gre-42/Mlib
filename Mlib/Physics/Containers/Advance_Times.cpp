@@ -1,5 +1,5 @@
 #include "Advance_Times.hpp"
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 
@@ -22,7 +22,7 @@ AdvanceTimes::~AdvanceTimes()
 }
 
 void AdvanceTimes::add_advance_time(const DanglingBaseClassRef<IAdvanceTime>& advance_time, SourceLocation loc) {
-    auto& o = advance_times_.emplace_back(new DestructionFunctionsTokensObject<IAdvanceTime>{ advance_time, loc }, loc);
+    auto& o = advance_times_.emplace_back(new DestructionFunctionsTokensRef<IAdvanceTime>{ advance_time, loc }, loc);
     o.first->on_destroy([this, advance_time](){ delete_advance_time(advance_time.get(), CURRENT_SOURCE_LOCATION); }, CURRENT_SOURCE_LOCATION);
 }
 

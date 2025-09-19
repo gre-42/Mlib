@@ -12,7 +12,7 @@ struct RenderSetup {
     FixedArray<ScenePos, 4, 4> vp;
     TransformationMatrix<float, ScenePos, 3> iv;
     std::unique_ptr<Camera> camera;
-    DanglingPtr<const SceneNode> camera_node;
+    DanglingBaseClassPtr<const SceneNode> camera_node;
 };
 
 }

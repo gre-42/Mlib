@@ -45,8 +45,8 @@ public:
         AdvanceTimes& advance_times,
         float cool_down,
         RigidBodyVehicle& parent_rb,
-        const DanglingRef<SceneNode>& node,
-        const DanglingPtr<SceneNode>& punch_angle_node,
+        const DanglingBaseClassRef<SceneNode>& node,
+        const DanglingBaseClassPtr<SceneNode>& punch_angle_node,
         const BulletProperties& bullet_properties,
         std::function<void(
             const std::optional<std::string>& player,
@@ -85,8 +85,8 @@ private:
     RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
     RigidBodyVehicle& parent_rb_;
-    DanglingPtr<SceneNode> node_;
-    DanglingPtr<SceneNode> punch_angle_node_;
+    DanglingBaseClassPtr<SceneNode> node_;
+    DanglingBaseClassPtr<SceneNode> punch_angle_node_;
     const BulletProperties& bullet_properties_;
     std::function<void(
         const std::optional<std::string>& player,

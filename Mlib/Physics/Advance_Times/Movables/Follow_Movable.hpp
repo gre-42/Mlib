@@ -23,7 +23,7 @@ public:
     explicit FollowerMovableNodeSetter(FollowMovable& follow);
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) override;
 private:
@@ -36,7 +36,7 @@ public:
     explicit FollowedMovableNodeSetter(FollowMovable& follow);
     virtual void set_scene_node(
         Scene& scene,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         VariableAndHash<std::string> node_name,
         SourceLocation loc) override;
 private:
@@ -50,7 +50,7 @@ class FollowMovable: public IAbsoluteMovable, public IAdvanceTime, public virtua
 public:
     FollowMovable(
         AdvanceTimes& advance_times,
-        DanglingRef<const SceneNode> followed_node,
+        const DanglingBaseClassRef<const SceneNode>& followed_node,
         IAbsoluteMovable& followed,
         float attachment_distance,
         const FixedArray<float, 3>& node_displacement,
@@ -61,7 +61,7 @@ public:
         float dt = 1.f / 60.f * seconds,
         float dt_ref = 1.f / 60.f * seconds);
     virtual ~FollowMovable() override;
-    void initialize(DanglingRef<SceneNode> follower_node);
+    void initialize(DanglingBaseClassRef<SceneNode> follower_node);
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
@@ -72,7 +72,7 @@ private:
     void notify_destroyed(SceneNode& destroyed_object);
     void advance_time(float dt);
     AdvanceTimes& advance_times_;
-    DanglingPtr<const SceneNode> followed_node_;
+    DanglingBaseClassPtr<const SceneNode> followed_node_;
     IAbsoluteMovable* followed_;
     float attachment_distance_;
     FixedArray<ScenePos, 2> attachment_position_;

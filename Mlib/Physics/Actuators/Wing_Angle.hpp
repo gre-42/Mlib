@@ -9,7 +9,7 @@ namespace Mlib {
 
 class WingAngle: public DestructionObserver<SceneNode&>, public IRelativeMovable, public virtual DanglingBaseClass {
 public:
-    explicit WingAngle(DanglingPtr<SceneNode> node, float& angle, const FixedArray<float, 3>& rotation_axis);
+    explicit WingAngle(DanglingBaseClassPtr<SceneNode> node, float& angle, const FixedArray<float, 3>& rotation_axis);
     virtual ~WingAngle() override;
 
     // DestructionObserver
@@ -21,7 +21,7 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
 private:
-    DanglingPtr<SceneNode> node_;
+    DanglingBaseClassPtr<SceneNode> node_;
     float& angle_;
     FixedArray<float, 3> rotation_axis_;
     FixedArray<ScenePos, 3> position_;

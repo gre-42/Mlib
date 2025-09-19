@@ -127,12 +127,12 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 ChildInstantiationOptions{
                     .rendering_resources = options.rendering_resources,
                     .instance_name = p.name,
-                    .scene_node = node.ref(DP_LOC),
+                    .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                     .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = options.renderable_resource_filter });
             auto node_name = VariableAndHash<std::string>{*p.name + "-" + std::to_string(i)};
             if (!p.supplies.empty()) {
-                options.supply_depots->add_supply_depot(node.ref(DP_LOC), p.supplies, p.supplies_cooldown);
+                options.supply_depots->add_supply_depot(node.ref(CURRENT_SOURCE_LOCATION), p.supplies, p.supplies_cooldown);
                 options.scene.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
             } else {
                 if (p.aggregate_mode == AggregateMode::NONE) {
@@ -140,7 +140,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                         if (options.imposters == nullptr) {
                             THROW_OR_ABORT("Imposter requested, but no imposters available");
                         }
-                        options.imposters->set_imposter_info(node.ref(DP_LOC), { *node_name, p.max_imposter_texture_size });
+                        options.imposters->set_imposter_info(node.ref(CURRENT_SOURCE_LOCATION), { *node_name, p.max_imposter_texture_size });
                     }
                     options.scene.auto_add_root_node(
                         node_name,
@@ -185,7 +185,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     ChildInstantiationOptions{
                         .rendering_resources = options.rendering_resources,
                         .instance_name = name,
-                        .scene_node = node.ref(DP_LOC),
+                        .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                         .interpolation_mode = PoseInterpolationMode::DISABLED,
                         .renderable_resource_filter = options.renderable_resource_filter});
                 if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
@@ -196,14 +196,13 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     world_node->add_instances_position(name, r.position, r.yangle, r.billboard_id);
                 }
             }
-            auto wn = world_node.get(DP_LOC);
             try {
                 options.scene.auto_add_root_node(
                     VariableAndHash<std::string>{*options.instance_name + '_' + node_infix + "_world"},
                     std::move(world_node),
                     RenderingDynamics::STATIC);
             } catch (const std::runtime_error& e) {
-                throw std::runtime_error((std::stringstream() << "Could not add root node: " << e.what() << '\n' << wn).str());
+                throw std::runtime_error((std::stringstream() << "Could not add root node: " << e.what()).str());
             }
         }
     };

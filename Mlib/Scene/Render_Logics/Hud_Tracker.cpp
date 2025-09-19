@@ -66,7 +66,7 @@ void HudTrackerTimeAdvancer::advance_time(const FixedArray<ScenePos, 3>& point) 
 }
 
 HudTracker::HudTracker(
-    DanglingPtr<SceneNode> exclusive_node,
+    const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
     HudErrorBehavior hud_error_behavior,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
@@ -82,11 +82,19 @@ HudTracker::HudTracker(
     , offset_(NAN)
     , smooth_offset_{ 0.2f }
     , is_visible_{ false }
-    , exclusive_node_ { exclusive_node }
     , vp_(NAN)
     , near_plane_{ NAN }
     , far_plane_{ NAN }
-{}
+{
+    if (exclusive_nodes.has_value()) {
+        exclusive_nodes_.emplace();
+        for (const auto& element : *exclusive_nodes) {
+            if (!exclusive_nodes_->emplace(element, CURRENT_SOURCE_LOCATION).second) {
+                THROW_OR_ABORT("Duplicate exclusive nodes");
+            }
+        }
+    }
+}
 
 HudTracker::~HudTracker() = default;
 
@@ -108,7 +116,7 @@ void HudTracker::render(
 {
     {
         std::scoped_lock lock0{ render_mutex_ };
-        if (exclusive_node_ == nullptr) {
+        if (!exclusive_nodes_.has_value()) {
             is_visible_ = true;
         } else if (setup.camera_node == nullptr) {
             // Hide the HUD if the camera node was deleted.
@@ -116,7 +124,7 @@ void HudTracker::render(
             // the HudTracker would no longer exist by now.
             is_visible_ = false;
         } else {
-            is_visible_ = (exclusive_node_ == setup.camera_node);
+            is_visible_ = exclusive_nodes_->contains(setup.camera_node);
         }
         vp_ = setup.vp;
         near_plane_ = setup.camera->get_near_plane();

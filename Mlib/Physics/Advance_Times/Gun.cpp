@@ -44,8 +44,8 @@ Gun::Gun(
     AdvanceTimes& advance_times,
     float cool_down,
     RigidBodyVehicle& parent_rb,
-    const DanglingRef<SceneNode>& node,
-    const DanglingPtr<SceneNode>& punch_angle_node,
+    const DanglingBaseClassRef<SceneNode>& node,
+    const DanglingBaseClassPtr<SceneNode>& punch_angle_node,
     const BulletProperties& bullet_properties,
     std::function<void(
         const std::optional<std::string>& player,
@@ -160,7 +160,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
     std::string suffix = "_bullet" + scene_.get_temporary_instance_suffix();
     auto bullet_node_name = VariableAndHash<std::string>{"car_node" + suffix};
     if (generate_smart_bullet_) {
-        auto np = node.ref(DP_LOC);
+        auto np = node.ref(CURRENT_SOURCE_LOCATION);
         scene_.add_root_node(
             bullet_node_name,
             std::move(node),
@@ -205,14 +205,14 @@ void Gun::generate_bullet(const StaticWorld& world) {
         rcu->flags_ = bullet_properties_.rigid_body_flags;
         auto& rc = *rcu;
         {
-            AbsoluteMovableSetter ams{ scene_, node.ref(DP_LOC), bullet_node_name, std::move(rcu), CURRENT_SOURCE_LOCATION };
+            AbsoluteMovableSetter ams{ scene_, node.ref(CURRENT_SOURCE_LOCATION), bullet_node_name, std::move(rcu), CURRENT_SOURCE_LOCATION };
             if (!bullet_properties_.renderable_resource_name->empty()) {
                 scene_node_resources_.instantiate_child_renderable(
                     bullet_properties_.renderable_resource_name,
                     ChildInstantiationOptions{
                         .rendering_resources = rendering_resources_,
                         .instance_name = VariableAndHash<std::string>{ "bullet" },
-                        .scene_node = node.ref(DP_LOC),
+                        .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                         .interpolation_mode = PoseInterpolationMode::ENABLED,
                         .renderable_resource_filter = RenderableResourceFilter{} });
             }

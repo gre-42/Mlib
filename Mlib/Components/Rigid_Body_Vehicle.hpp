@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-inline RigidBodyVehicle& get_rigid_body_vehicle(DanglingRef<SceneNode> node) {
+inline RigidBodyVehicle& get_rigid_body_vehicle(DanglingBaseClassRef<SceneNode> node) {
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
@@ -13,7 +13,7 @@ inline RigidBodyVehicle& get_rigid_body_vehicle(DanglingRef<SceneNode> node) {
     return *rb;
 }
 
-inline bool has_rigid_body_vehicle(DanglingRef<SceneNode> node) {
+inline bool has_rigid_body_vehicle(DanglingBaseClassRef<SceneNode> node) {
     return node->has_absolute_movable();
 }
 

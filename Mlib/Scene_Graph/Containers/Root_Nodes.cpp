@@ -11,7 +11,7 @@
 namespace Mlib {
 
 struct RootNodeInfo {
-    DanglingUniquePtr<SceneNode> ptr;
+    std::unique_ptr<SceneNode> ptr;
     // ScenePos max_center_distance;
 };
 
@@ -39,7 +39,7 @@ RootNodes::DefaultNodesMap& RootNodes::default_nodes() {
     return default_nodes_map_;
 }
 
-bool RootNodes::visit_all(const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const
+bool RootNodes::visit_all(const std::function<bool(const DanglingBaseClassRef<const SceneNode>&)>& op) const
 {
     for (const auto& [_, node] : default_nodes_map_) {
         if (!op(node)) {
@@ -56,7 +56,7 @@ bool RootNodes::visit_all(const std::function<bool(const DanglingRef<const Scene
 
 bool RootNodes::visit(
     const FixedArray<ScenePos, 3>& position,
-    const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const
+    const std::function<bool(const DanglingBaseClassRef<const SceneNode>&)>& op) const
 {
     for (const auto& [_, node] : default_nodes_map_) {
         if (!op(node)) {
@@ -92,7 +92,7 @@ void RootNodes::clear() {
 
 void RootNodes::add_root_node(
     const VariableAndHash<std::string>& name,
-    DanglingUniquePtr<SceneNode>&& scene_node,
+    std::unique_ptr<SceneNode>&& scene_node,
     SceneNodeState scene_node_state)
 {
     if (root_nodes_to_delete_.contains(name)) {
@@ -115,7 +115,7 @@ void RootNodes::add_root_node(
     default:
         THROW_OR_ABORT("Unsupported scene node state: " + std::to_string(int(scene_node_state)));
     }
-    auto ref = scene_node.ref(DP_LOC);
+    auto ref = DanglingBaseClassRef<SceneNode>{*scene_node, CURRENT_SOURCE_LOCATION};
     auto md2 = scene_node->max_center_distance2(BILLBOARD_ID_NONE);
     scene_.register_node(name, ref);
     try {
@@ -164,16 +164,16 @@ bool RootNodes::contains(const VariableAndHash<std::string>& name) const {
     return node_container_.contains(name);
 }
 
-std::optional<DanglingRef<SceneNode>> RootNodes::try_get(
+std::optional<DanglingBaseClassRef<SceneNode>> RootNodes::try_get(
     const VariableAndHash<std::string>& name,
-    SOURCE_LOCATION loc)
+    SourceLocation loc)
 {
     std::shared_lock lock{ scene_.mutex_ };
     auto it = node_container_.try_get(name);
     if (it == nullptr) {
         return std::nullopt;
     }
-    return it->ptr.ref(loc);
+    return DanglingBaseClassRef<SceneNode>{*it->ptr, loc};
 }
 
 bool RootNodes::no_root_nodes_scheduled_for_deletion() const {
@@ -218,7 +218,7 @@ size_t RootNodes::try_empty_the_trash_can() {
     emptying_trash_can_ = true;
     for (auto it = trash_can_.begin(); it != trash_can_.end();) {
         auto c = it++;
-        if (c->ptr.nreferences() == 0) {
+        if (c->ptr->nreferences() == 0) {
             trash_can_.erase(c);
         }
     }
@@ -228,7 +228,7 @@ size_t RootNodes::try_empty_the_trash_can() {
 
 void RootNodes::print_trash_can_references() const {
     for (const auto& node : trash_can_) {
-        node.ptr.print_references();
+        node.ptr->print_references();
     }
 }
 
@@ -284,7 +284,7 @@ void RootNodes::print(std::ostream& ostr) const {
     ostr << " Small static nodes: " << small_static_nodes_bvh_.size() << '\n';
     ostr << " Node container\n";
     for (const auto& [k, v] : node_container_) {
-        ostr << " " << *k << " #" << v.ptr.nreferences() << '\n';
+        ostr << " " << *k << " #" << v.ptr->nreferences() << '\n';
         v.ptr->print(ostr, 2);
     }
 }

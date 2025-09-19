@@ -33,7 +33,7 @@ CreateAvatarAsAvatarController::CreateAvatarAsAvatarController(PhysicsScene& phy
 
 void CreateAvatarAsAvatarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     auto& ypln = get_yaw_pitch_look_at_nodes(node);
     rb.avatar_controller_ = std::make_unique<AvatarAsAvatarController>(rb, ypln);

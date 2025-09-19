@@ -30,7 +30,7 @@ public:
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
         const DanglingBaseClassRef<Player>& player,
-        const DanglingRef<SceneNode>& node,
+        const DanglingBaseClassRef<SceneNode>& node,
         const VariableAndHash<std::string>& map_image_resource_name,
         const VariableAndHash<std::string>& locator_image_resource_name,
         std::unique_ptr<IWidget>&& widget,
@@ -61,7 +61,7 @@ public:
 
 private:
     RenderLogics& render_logics_;
-    DanglingRef<SceneNode> node_;
+    DanglingBaseClassRef<SceneNode> node_;
     CenteredTextureImageLogic centered_texture_image_logic_;
     FillWithTextureLogic locator_logic_;
     std::unique_ptr<IWidget> widget_;

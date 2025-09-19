@@ -95,7 +95,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         rva_(1)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = VariableAndHash<std::string>{ "plane" },
-            .scene_node = node.ref(DP_LOC),
+            .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
@@ -121,7 +121,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         rva_(0)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = VariableAndHash<std::string>{ "plane" },
-            .scene_node = node.ref(DP_LOC),
+            .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
@@ -144,7 +144,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         rva_(1)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = VariableAndHash<std::string>{ "plane" },
-            .scene_node = node.ref(DP_LOC),
+            .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
@@ -170,7 +170,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         rva_(0)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = VariableAndHash<std::string>{ "plane" },
-            .scene_node = node.ref(DP_LOC),
+            .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {

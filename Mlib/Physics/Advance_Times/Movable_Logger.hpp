@@ -15,7 +15,7 @@ class SceneNode;
 class MovableLogger: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     MovableLogger(
-        DanglingRef<SceneNode> scene_node,
+        DanglingBaseClassRef<SceneNode> scene_node,
         StatusWriter& status_writer,
         StatusComponents log_components);
     ~MovableLogger();

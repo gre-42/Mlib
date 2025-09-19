@@ -12,7 +12,7 @@ static const auto NO_ANIMATION = VariableAndHash<std::string>{"<no_animation>"};
 
 SkaterAnimationUpdater::SkaterAnimationUpdater(
     const RigidBodyVehicle& rb,
-    DanglingRef<SceneNode> skateboard_node,
+    DanglingBaseClassRef<SceneNode> skateboard_node,
     std::string resource)
     : rb_{ rb }
     , skateboard_node_{ skateboard_node.ptr() }

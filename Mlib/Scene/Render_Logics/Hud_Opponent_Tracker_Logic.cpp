@@ -20,7 +20,7 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     RenderLogics& render_logics,
     Players& players,
     const DanglingBaseClassRef<Player>& player,
-    DanglingPtr<SceneNode> exclusive_node,
+    const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
     AdvanceTimes& advance_times,
     const std::shared_ptr<ITextureHandle>& texture,
     const FixedArray<float, 2>& center,
@@ -30,20 +30,15 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     , player_{ player }
     , scene_logic_{ scene_logic }
     , hud_tracker_{
-        exclusive_node,
+        exclusive_nodes,
         hud_error_behavior,
         center,
         size,
         texture }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
-    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }
-    , exclusive_node_{ exclusive_node }
 {
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
-    if (exclusive_node_ != nullptr) {
-        on_clear_exclusive_node_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
-    }
     on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
     advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

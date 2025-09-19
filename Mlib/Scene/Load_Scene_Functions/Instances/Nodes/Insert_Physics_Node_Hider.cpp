@@ -31,8 +31,8 @@ InsertPhysicsNodeHider::InsertPhysicsNodeHider(PhysicsScene& physics_scene)
 class PhysicsNodeHiderWithEvent: public INodeHider, public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     PhysicsNodeHiderWithEvent(
-        DanglingRef<SceneNode> node_to_hide,
-        DanglingRef<SceneNode> camera_node)
+        DanglingBaseClassRef<SceneNode> node_to_hide,
+        DanglingBaseClassRef<SceneNode> camera_node)
         : node_to_hide_{ node_to_hide.ptr() }
         , camera_node_{ camera_node.ptr() }
     {}
@@ -50,9 +50,9 @@ public:
         if (camera_node_ == nullptr) {
             return;
         }
-        if (&destroyed_object == &node_to_hide_.obj()) {
+        if (&destroyed_object == node_to_hide_.get()) {
             camera_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-        } else if (&destroyed_object == &camera_node_.obj()) {
+        } else if (&destroyed_object == camera_node_.get()) {
             node_to_hide_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         } else {
             verbose_abort("Unknown destroyed object");
@@ -64,7 +64,7 @@ public:
     }
 
     virtual bool node_shall_be_hidden(
-        const DanglingPtr<const SceneNode>& camera_node,
+        const DanglingBaseClassPtr<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override
     {
         if (camera_node == nullptr) {
@@ -84,14 +84,14 @@ public:
     }
 
 private:
-    DanglingPtr<SceneNode> node_to_hide_;
-    DanglingPtr<SceneNode> camera_node_;
+    DanglingBaseClassPtr<SceneNode> node_to_hide_;
+    DanglingBaseClassPtr<SceneNode> camera_node_;
 };
 
 void InsertPhysicsNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node_to_hide), DP_LOC);
-    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::camera_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node_to_hide), DP_LOC);
+    DanglingBaseClassRef<SceneNode> camera_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::camera_node), DP_LOC);
     auto node_hider = std::make_unique<PhysicsNodeHiderWithEvent>(
         node_to_hide,
         camera_node);

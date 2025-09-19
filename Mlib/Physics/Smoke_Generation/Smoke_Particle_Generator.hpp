@@ -7,7 +7,7 @@
 namespace Mlib {
 
 template <class T>
-class DanglingRef;
+class DanglingBaseClassRef;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class Scene;
@@ -57,7 +57,7 @@ public:
         float animation_duration,
         const StaticWorld& static_world);
     void generate_child_node(
-        DanglingRef<SceneNode> parent,
+        DanglingBaseClassRef<SceneNode> parent,
         const VariableAndHash<std::string>& resource_name,
         const VariableAndHash<std::string>& child_node_name,
         const FixedArray<ScenePos, 3>& relative_position,

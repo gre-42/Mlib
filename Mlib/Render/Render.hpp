@@ -13,8 +13,6 @@ struct GLFWwindow;
 
 namespace Mlib {
 
-template <class T>
-class DanglingUniquePtr;
 class IWindow;
 struct RenderResults;
 class SceneNodeResources;
@@ -70,7 +68,7 @@ public:
         const std::vector<TransformationMatrix<float, ScenePos, 3>>* beacon_locations = nullptr) const;
 
     void render_node(
-        DanglingUniquePtr<SceneNode>&& node,
+        std::unique_ptr<SceneNode>&& node,
         const FixedArray<float, 3>& background_color,
         bool rotate,
         float scale,

@@ -103,12 +103,12 @@ void Mlib::create_scene_rod(
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ0, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = OBJ0,
-        .scene_node = scene_node0.ref(DP_LOC),
+        .scene_node = scene_node0.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ1, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = VariableAndHash<std::string>{ "obj1_0" },
-        .scene_node = scene_node1_0.ref(DP_LOC),
+        .scene_node = scene_node1_0.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node0->set_rotation({0.f, 0.f, 0.001f * float(M_PI)}, INITIAL_POSE);
     scene_node0->set_position({0.f, -4.f, 0.f}, INITIAL_POSE);

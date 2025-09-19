@@ -45,7 +45,7 @@ CreateHudOpponentZoom::CreateHudOpponentZoom(RenderableScene& renderable_scene)
 
 void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingPtr<SceneNode> exclusive_node = nullptr;
+    DanglingBaseClassPtr<SceneNode> exclusive_node = nullptr;
     if (args.arguments.contains_non_null(KnownArgs::exclusive_node)) {
         exclusive_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::exclusive_node), DP_LOC).ptr();
     }

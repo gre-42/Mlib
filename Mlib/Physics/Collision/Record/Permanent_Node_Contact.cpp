@@ -6,8 +6,8 @@ using namespace Mlib;
 
 PermanentNodeContact::PermanentNodeContact(
     PermanentContacts& permanent_contacts,
-    DanglingRef<SceneNode> scene_node0,
-    DanglingRef<SceneNode> scene_node1,
+    DanglingBaseClassRef<SceneNode> scene_node0,
+    DanglingBaseClassRef<SceneNode> scene_node1,
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1)
     : rbp0_{ rbp0 }
@@ -21,10 +21,10 @@ PermanentNodeContact::PermanentNodeContact(
 }
 
 void PermanentNodeContact::notify_destroyed(SceneNode& destroyed_object) {
-    if (&destroyed_object == &scene_node0_.obj()) {
+    if (&destroyed_object == &scene_node0_.get()) {
         scene_node1_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
     }
-    if (&destroyed_object == &scene_node1_.obj()) {
+    if (&destroyed_object == &scene_node1_.get()) {
         scene_node0_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
     }
     permanent_contacts_.remove(*this);

@@ -39,8 +39,8 @@ void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     Linker linker{ physics_engine.advance_times_ };
     auto follower = args.arguments.at(KnownArgs::follower);
     auto followed = args.arguments.at(KnownArgs::followed);
-    DanglingRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
-    DanglingRef<SceneNode> followed_node = scene.get_node(followed, DP_LOC);
+    DanglingBaseClassRef<SceneNode> follower_node = scene.get_node(follower, DP_LOC);
+    DanglingBaseClassRef<SceneNode> followed_node = scene.get_node(followed, DP_LOC);
     auto distance = args.arguments.at<float>(KnownArgs::distance);
     auto follow_movable = global_object_pool.create_unique<FollowMovable>(
         CURRENT_SOURCE_LOCATION,

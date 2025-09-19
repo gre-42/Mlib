@@ -55,7 +55,7 @@ ButtonStates::~ButtonStates() = default;
 #ifndef __ANDROID__
 float ButtonStates::get_gamepad_axis(
     uint32_t gamepad_id,
-    int axis,
+    uint32_t axis,
     FilterType filter_type) const
 {
     std::shared_lock lock{ gamepad_state_mutex_ };
@@ -66,7 +66,7 @@ float ButtonStates::get_gamepad_axis(
     if (!has_gamepad_[gamepad_id]) {
         return NAN;
     }
-    if ((size_t)axis >= (sizeof(gamepad_state_[0].axes) / sizeof(gamepad_state_[0].axes[0]))) {
+    if (integral_cast<size_t>(axis) >= (sizeof(gamepad_state_[0].axes) / sizeof(gamepad_state_[0].axes[0]))) {
         THROW_OR_ABORT("Unknown gamepad axis");
     }
     switch (filter_type) {
@@ -150,7 +150,7 @@ void ButtonStates::notify_gamepad_axis(uint32_t gamepad_id, int axis, float valu
 
 bool ButtonStates::get_gamepad_digital_axis(
     uint32_t gamepad_id,
-    int axis,
+    uint32_t axis,
     float sign_and_threshold) const
 {
     return make_digital(get_gamepad_axis(gamepad_id, axis, FilterType::NONE), sign_and_threshold);

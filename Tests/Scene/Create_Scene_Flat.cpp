@@ -167,22 +167,22 @@ void Mlib::create_scene_flat(
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ0, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = OBJ0,
-        .scene_node = scene_node0.ref(DP_LOC),
+        .scene_node = scene_node0.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ1, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = VariableAndHash<std::string>{ "obj1_0" },
-        .scene_node = scene_node1_0.ref(DP_LOC),
+        .scene_node = scene_node1_0.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ1, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = VariableAndHash<std::string>{ "obj1_1" },
-        .scene_node = scene_node1_1.ref(DP_LOC),
+        .scene_node = scene_node1_1.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable(OBJ1, ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = VariableAndHash<std::string>{ "obj1_2" },
-        .scene_node = scene_node1_2.ref(DP_LOC),
+        .scene_node = scene_node1_2.ref(CURRENT_SOURCE_LOCATION),
         .renderable_resource_filter = RenderableResourceFilter{}});
     if (getenv_default_bool("STACK", false)) {
         scene_node1_1->set_position(FixedArray<ScenePos, 3>{0.f, 4.f, 0.f}, INITIAL_POSE);
@@ -200,10 +200,10 @@ void Mlib::create_scene_flat(
     scene_nodeR->add_child(N1_0, std::move(scene_node1_0));
     scene_nodeR->add_child(N1_1, std::move(scene_node1_1));
     scene_nodeR->add_child(N1_2, std::move(scene_node1_2));
-    scene.register_node(N0, scene_node0.ref(DP_LOC));
-    scene.register_node(N1_0, scene_node1_0.ref(DP_LOC));
-    scene.register_node(N1_1, scene_node1_1.ref(DP_LOC));
-    scene.register_node(N1_2, scene_node1_2.ref(DP_LOC));
+    scene.register_node(N0, scene_node0.ref(CURRENT_SOURCE_LOCATION));
+    scene.register_node(N1_0, scene_node1_0.ref(CURRENT_SOURCE_LOCATION));
+    scene.register_node(N1_1, scene_node1_1.ref(CURRENT_SOURCE_LOCATION));
+    scene.register_node(N1_2, scene_node1_2.ref(CURRENT_SOURCE_LOCATION));
     scene_nodeR->set_position({0.f, -1.f, -40.f}, INITIAL_POSE);
     scene_nodeL->set_position({0.f, 50.f, -40.f}, INITIAL_POSE);
     scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);

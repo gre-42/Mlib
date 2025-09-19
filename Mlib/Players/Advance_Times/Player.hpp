@@ -95,7 +95,7 @@ enum class ControlSource;
 struct PlayerControlled {
     bool has_aim_at() const;
     AimAt& aim_at();
-    DanglingPtr<SceneNode> gun_node;
+    DanglingBaseClassPtr<SceneNode> gun_node;
 };
 
 class Player final:
@@ -145,8 +145,8 @@ public:
     void set_vehicle_spawner(VehicleSpawner& spawner, const std::string& desired_seat);
     DanglingBaseClassRef<RigidBodyVehicle> rigid_body();
     DanglingBaseClassRef<const RigidBodyVehicle> rigid_body() const;
-    DanglingRef<SceneNode> scene_node();
-    DanglingRef<const SceneNode> scene_node() const;
+    DanglingBaseClassRef<SceneNode> scene_node();
+    DanglingBaseClassRef<const SceneNode> scene_node() const;
     bool scene_node_scheduled_for_deletion() const;
     VehicleSpawner* next_scene_vehicle();
     const std::string& next_seat() const;
@@ -155,8 +155,8 @@ public:
     DanglingBaseClassRef<const SceneVehicle> vehicle() const;
     VehicleSpawner& vehicle_spawner();
     const VehicleSpawner& vehicle_spawner() const;
-    void set_gun_node(DanglingRef<SceneNode> gun_node);
-    void change_gun_node(DanglingPtr<SceneNode> gun_node);
+    void set_gun_node(DanglingBaseClassRef<SceneNode> gun_node);
+    void change_gun_node(DanglingBaseClassPtr<SceneNode> gun_node);
     bool has_way_points() const;
     void set_way_point_location_filter(JoinedWayPointSandbox filter);
     uint32_t user_id() const;
@@ -215,7 +215,7 @@ public:
     const Skills& skills(ControlSource control_source) const;
     Players& players();
     bool ramming() const;
-    DanglingPtr<SceneNode> target_scene_node() const;
+    DanglingBaseClassPtr<SceneNode> target_scene_node() const;
     DanglingBaseClassPtr<const RigidBodyVehicle> target_rb() const;
     void set_behavior(
         float stuck_velocity,
@@ -246,7 +246,7 @@ public:
         SceneVehicle& vehicle,
         const std::string& seat) override;
     virtual void clear_next_vehicle() override;
-    virtual std::vector<DanglingPtr<SceneNode>> moving_nodes() const override;
+    virtual std::vector<DanglingBaseClassPtr<SceneNode>> moving_nodes() const override;
     virtual void notify_race_started() override;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
@@ -296,7 +296,7 @@ private:
     VehicleSpawner* vehicle_spawner_;
     PlayerControlled controlled_;
     std::optional<VariableAndHash<std::string>> target_id_;
-    DanglingPtr<SceneNode> target_scene_node_;
+    DanglingBaseClassPtr<SceneNode> target_scene_node_;
     DanglingBaseClassPtr<RigidBodyVehicle> target_rb_;
     PlayerStats stats_;
     GameMode game_mode_;

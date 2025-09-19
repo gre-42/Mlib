@@ -17,7 +17,7 @@ class AbsoluteMovableSetter {
 public:
     AbsoluteMovableSetter(
         Scene& scene,
-        DanglingRef<SceneNode> node,
+        DanglingBaseClassRef<SceneNode> node,
         VariableAndHash<std::string> node_name,
         std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
         DanglingBaseClassPtr<INodeSetter> node_setter,
@@ -40,7 +40,7 @@ public:
         this->absolute_movable = std::move(absolute_movable);
     }
     AbsoluteMovableSetter(
-        DanglingRef<SceneNode> node,
+        DanglingBaseClassRef<SceneNode> node,
         std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
         SourceLocation loc)
         : absolute_movable{ nullptr, nullptr }
@@ -61,7 +61,7 @@ public:
     }
     AbsoluteMovableSetter(
         Scene& scene,
-        DanglingRef<SceneNode> node,
+        DanglingBaseClassRef<SceneNode> node,
         VariableAndHash<std::string> node_name,
         std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
         SourceLocation loc)
@@ -74,7 +74,7 @@ public:
             loc }
     {}
     AbsoluteMovableSetter(
-        DanglingRef<SceneNode> node,
+        DanglingBaseClassRef<SceneNode> node,
         DanglingBaseClassRef<TAbsoluteMovable> absolute_movable,
         SourceLocation loc)
         : absolute_movable_ptr_{ absolute_movable.ptr() }
@@ -104,7 +104,7 @@ private:
     VariableAndHash<std::string> node_name_;
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_ptr_;
     DanglingBaseClassPtr<INodeSetter> node_setter_;
-    DanglingRef<SceneNode> node_;
+    DanglingBaseClassRef<SceneNode> node_;
     std::scoped_lock<SafeAtomicRecursiveSharedMutex> lock_;
     SourceLocation loc_;
 };

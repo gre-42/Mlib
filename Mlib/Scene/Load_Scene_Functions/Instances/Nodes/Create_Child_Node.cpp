@@ -54,8 +54,8 @@ void CreateChildNode::operator () (
         rotation,
         scale,
         interpolation);
-    DanglingRef<SceneNode> nparent = scene.get_node(parent, DP_LOC);
-    DanglingRef<SceneNode> node_ref = node.ref(DP_LOC);
+    DanglingBaseClassRef<SceneNode> nparent = scene.get_node(parent, DP_LOC);
+    auto node_ref = node.ref(CURRENT_SOURCE_LOCATION);
     if (type == "aggregate") {
         nparent->add_aggregate_child(name, std::move(node), ChildRegistrationState::REGISTERED);
     } else if (type == "instances") {

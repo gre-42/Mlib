@@ -33,7 +33,7 @@ public:
     void increment_pitch(float dpitch, float relaxation);
     void set_pitch(float pitch);
 
-    void set_head_node(DanglingRef<SceneNode> head_node);
+    void set_head_node(DanglingBaseClassRef<SceneNode> head_node);
 
     void set_dpitch_head(float value);
     float get_dpitch_head() const;
@@ -47,7 +47,7 @@ private:
     float dpitch_max_;
     FixedArray<ScenePos, 3> relative_position_;
     float dpitch_head_;
-    DanglingPtr<SceneNode> head_node_;
+    DanglingBaseClassPtr<SceneNode> head_node_;
     std::function<float()> increment_pitch_error_;
 };
 

@@ -9,7 +9,7 @@ namespace Mlib {
 
 class UiFocus;
 template <class T>
-class DestructionFunctionsTokensObject;
+class DestructionFunctionsTokensRef;
 
 struct ZorderAndId {
     int z;
@@ -40,7 +40,7 @@ public:
 
 private:
     void insert(const DanglingBaseClassRef<RenderLogic>& render_logic, bool prepend, int z_order, SourceLocation loc);
-    std::map<ZorderAndId, DestructionFunctionsTokensObject<RenderLogic>> render_logics_;
+    std::map<ZorderAndId, DestructionFunctionsTokensRef<RenderLogic>> render_logics_;
     UiFocus& ui_focus_;
     int next_smallest_id_;
     int next_largest_id_;

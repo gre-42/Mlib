@@ -19,7 +19,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
-DECLARE_ARGUMENT(exclusive_node);
+DECLARE_ARGUMENT(exclusive_nodes);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(center);
 DECLARE_ARGUMENT(size);
@@ -40,9 +40,11 @@ CreateHudOpponentTracker::CreateHudOpponentTracker(RenderableScene& renderable_s
 
 void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingPtr<SceneNode> exclusive_node = nullptr;
-    if (args.arguments.contains_non_null(KnownArgs::exclusive_node)) {
-        exclusive_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::exclusive_node), DP_LOC).ptr();
+    std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>> exclusive_nodes;
+    if (args.arguments.contains_non_null(KnownArgs::exclusive_nodes)) {
+        exclusive_nodes = args.arguments.at_vector<VariableAndHash<std::string>>(
+            KnownArgs::exclusive_nodes,
+            [&scene=scene](const auto& n){ return (const DanglingBaseClassPtr<const SceneNode>&)scene.get_node(n, DP_LOC).ptr(); });
     }
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     object_pool.create<HudOpponentTrackerLogic>(
@@ -52,7 +54,7 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
         render_logics,
         players,
         player,
-        exclusive_node,
+        exclusive_nodes,
         physics_engine.advance_times_,
         RenderingContextStack::primary_rendering_resources().get_texture_lazy(
             ColormapWithModifiers{

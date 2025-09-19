@@ -6,7 +6,7 @@
 
 using namespace Mlib;
 
-CopyRotation::CopyRotation(DanglingRef<SceneNode> from)
+CopyRotation::CopyRotation(DanglingBaseClassRef<SceneNode> from)
     : from_{ from.ptr() }
     , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
 {}

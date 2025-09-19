@@ -5,7 +5,7 @@
 namespace Mlib {
 
 template <class T>
-class DanglingRef;
+class DanglingBaseClassRef;
 class SceneNode;
 
 struct ImposterInfo {
@@ -16,7 +16,7 @@ struct ImposterInfo {
 class IImposters {
 public:
     virtual void set_imposter_info(
-        const DanglingRef<SceneNode>& scene_node,
+        const DanglingBaseClassRef<SceneNode>& scene_node,
         const ImposterInfo& info) = 0;
 };
 

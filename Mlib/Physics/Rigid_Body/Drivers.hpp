@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <map>
 #include <set>
 #include <string>
@@ -11,7 +11,7 @@ class IPlayer;
 
 class Drivers {
 public:
-    using PlayersMap = std::map<std::string, DestructionFunctionsTokensObject<IPlayer>>;
+    using PlayersMap = std::map<std::string, DestructionFunctionsTokensRef<IPlayer>>;
 
     Drivers();
     ~Drivers();

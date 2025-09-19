@@ -75,7 +75,7 @@ CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_s
 void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    DanglingRef<SceneNode> node = player->scene_node();
+    DanglingBaseClassRef<SceneNode> node = player->scene_node();
     auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {
         lo = &lo->child_status_writer(args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::child));

@@ -16,7 +16,7 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
     SelectedCameras& cameras,
     const FixedArray<float, 3>& offset,
     const FixedArray<float, 3>& grid,
-    const DanglingRef<SceneNode>& follower_node)
+    const DanglingBaseClassRef<SceneNode>& follower_node)
     : on_destroy_follower_node_{ nullptr, CURRENT_SOURCE_LOCATION }
     , advance_times_{ advance_times }
     , scene_{ scene }
@@ -80,7 +80,7 @@ TransformationMatrix<float, ScenePos, 3> KeepOffsetFromCamera::get_new_absolute_
 
 void KeepOffsetFromCamera::set_scene_node(
     Scene& scene,
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {

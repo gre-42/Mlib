@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
@@ -33,7 +33,7 @@ public:
 	static void add_source(AudioSource& source, float alpha);
 	static void remove_source(AudioSource& source);
 	static void set_listener(
-		const DanglingRef<SceneNode>& node,
+		const DanglingBaseClassRef<SceneNode>& node,
 		std::chrono::steady_clock::time_point time,
 		std::chrono::steady_clock::duration velocity_dt);
 	static void set_source_transformation(
@@ -45,7 +45,7 @@ private:
 	static FastMutex mutex_;
 	static float default_alpha_;
 	static VerboseUnorderedMap<const AudioSource*, AudioSourceNode> source_nodes_;
-	static DanglingPtr<SceneNode> listener_node_;
+	static DanglingBaseClassPtr<SceneNode> listener_node_;
 	static std::optional<DestructionFunctionsRemovalTokens> on_destroy_;
 };
 

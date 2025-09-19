@@ -27,7 +27,7 @@ public:
         ObjectPool& object_pool,
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
-        DanglingRef<SceneNode> node,
+        DanglingBaseClassRef<SceneNode> node,
         DanglingBaseClassPtr<Player> player,
         FocusFilter focus_filter);
     virtual ~VisualMovableLogger();
@@ -55,7 +55,7 @@ public:
 
 private:
     DanglingBaseClassPtr<Player> player_;
-    DanglingRef<SceneNode> node_;
+    DanglingBaseClassRef<SceneNode> node_;
     AdvanceTimes& advance_times_;
     RenderLogics& render_logics_;
     DestructionFunctionsRemovalTokens on_node_clear_;

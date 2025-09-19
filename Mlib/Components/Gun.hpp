@@ -5,8 +5,8 @@ namespace Mlib {
 class Gun;
 class SceneNode;
 template <class T>
-class DanglingRef;
+class DanglingBaseClassRef;
 
-Gun& get_gun(DanglingRef<SceneNode> node);
+Gun& get_gun(const DanglingBaseClassRef<SceneNode>& node);
 
 }

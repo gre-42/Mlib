@@ -36,8 +36,8 @@ InsertRenderableNodeHider::InsertRenderableNodeHider(RenderableScene& renderable
 class RenderableNodeHiderWithEvent: public INodeHider, public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RenderableNodeHiderWithEvent(
-        const DanglingRef<SceneNode>& node_to_hide,
-        const DanglingRef<SceneNode>& camera_node,
+        const DanglingBaseClassRef<SceneNode>& node_to_hide,
+        const DanglingBaseClassRef<SceneNode>& camera_node,
         DanglingBaseClassRef<IRenderableScene> renderable_scene,
         const std::function<void()>& on_hide,
         const std::function<void()>& on_destroy,
@@ -69,9 +69,9 @@ public:
                 on_destroy_();
             }
         }
-        if (&destroyed_object == &node_to_hide_.obj()) {
+        if (&destroyed_object == node_to_hide_.get()) {
             camera_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-        } else if (&destroyed_object == &camera_node_.obj()) {
+        } else if (&destroyed_object == camera_node_.get()) {
             node_to_hide_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         } else {
             verbose_abort("Unknown destroyed object");
@@ -83,7 +83,7 @@ public:
     }
 
     virtual bool node_shall_be_hidden(
-        const DanglingPtr<const SceneNode>& camera_node,
+        const DanglingBaseClassPtr<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override
     {
         if (camera_node == nullptr) {
@@ -120,8 +120,8 @@ public:
     }
 
 private:
-    DanglingPtr<SceneNode> node_to_hide_;
-    DanglingPtr<SceneNode> camera_node_;
+    DanglingBaseClassPtr<SceneNode> node_to_hide_;
+    DanglingBaseClassPtr<SceneNode> camera_node_;
     DanglingBaseClassRef<IRenderableScene> renderable_scene_;
     std::function<void()> on_hide_;
     std::function<void()> on_destroy_;
@@ -132,9 +132,9 @@ private:
 void InsertRenderableNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    DanglingRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node_to_hide), DP_LOC);
-    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::camera_node), DP_LOC);
-    DanglingPtr<SceneNode> punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
+    DanglingBaseClassRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node_to_hide), DP_LOC);
+    DanglingBaseClassRef<SceneNode> camera_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::camera_node), DP_LOC);
+    DanglingBaseClassPtr<SceneNode> punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
         ? scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::punch_angle_node), DP_LOC).ptr()
         : nullptr;
     auto on_hide_or_update = [

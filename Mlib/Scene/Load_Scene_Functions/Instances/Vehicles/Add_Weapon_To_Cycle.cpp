@@ -43,7 +43,7 @@ AddWeaponToInventory::AddWeaponToInventory(PhysicsScene& physics_scene)
 
 void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), DP_LOC);
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
     WeaponCycle& wc = get_weapon_cycle(cycle_node);
     std::string ammo_type = args.arguments.at<std::string>(KnownArgs::ammo_type);

@@ -38,7 +38,7 @@ CreateLightWithoutShadow::CreateLightWithoutShadow(PhysicsScene& physics_scene)
 void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
-    DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
     node->add_light(std::make_unique<Light>(Light{
         .ambient = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::ambient),
         .diffuse = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::diffuse),

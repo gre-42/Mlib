@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
@@ -32,7 +32,7 @@ public:
     DeferredInstantiator();
     ~DeferredInstantiator();
     virtual void set_imposter_info(
-        const DanglingRef<SceneNode>& scene_node,
+        const DanglingBaseClassRef<SceneNode>& scene_node,
         const ImposterInfo& info) override;
     void create_imposters(
         IRenderableScene* renderable_scene,
@@ -48,7 +48,7 @@ public:
         StandardRenderLogic& standard_render_logic,
         PostProcessingLogic& post_processing_logic);
 private:
-    std::unordered_map<DanglingPtr<SceneNode>, ImposterInfoAndDestructionToken> infos_;
+    std::unordered_map<DanglingBaseClassPtr<SceneNode>, ImposterInfoAndDestructionToken> infos_;
     std::optional<FixedArray<float, 3>> background_color_;
     bool imposters_created_;
     mutable FastMutex background_color_mutex_;

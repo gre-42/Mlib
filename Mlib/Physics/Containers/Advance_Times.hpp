@@ -9,7 +9,7 @@ namespace Mlib {
 
 class IAdvanceTime;
 template <class T>
-class DestructionFunctionsTokensObject;
+class DestructionFunctionsTokensRef;
 template <class T>
 class DanglingBaseClassRef;
 struct StaticWorld;
@@ -24,7 +24,7 @@ public:
     bool empty() const;
 private:
     bool advancing_time_;
-    std::list<std::pair<std::unique_ptr<DestructionFunctionsTokensObject<IAdvanceTime>>, SourceLocation>> advance_times_;
+    std::list<std::pair<std::unique_ptr<DestructionFunctionsTokensRef<IAdvanceTime>>, SourceLocation>> advance_times_;
 };
 
 }

@@ -10,7 +10,7 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
     AdvanceTimes& advance_times,
     Scene& scene,
     VariableAndHash<std::string> follower_name,
-    DanglingRef<SceneNode> followed_node,
+    DanglingBaseClassRef<SceneNode> followed_node,
     IAbsoluteMovable& followed,
     const FixedArray<float, 3>& offset)
     : set_follower{ *this }
@@ -64,13 +64,13 @@ KeepOffsetFromMovableFollowerNodeSetter::KeepOffsetFromMovableFollowerNodeSetter
 
 void KeepOffsetFromMovableFollowerNodeSetter::set_scene_node(
     Scene& scene,
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
     removal_tokens_.set(node->on_clear, loc);
     removal_tokens_.add([this, node](){
-        keep_offset_.notify_destroyed(node.obj());
+        keep_offset_.notify_destroyed(node.get());
     }, loc);
     node->set_absolute_movable({ keep_offset_, loc });
 }
@@ -82,12 +82,12 @@ KeepOffsetFromMovableFollowedNodeSetter::KeepOffsetFromMovableFollowedNodeSetter
 
 void KeepOffsetFromMovableFollowedNodeSetter::set_scene_node(
     Scene& scene,
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
     removal_tokens_.set(node->on_clear, loc);
     removal_tokens_.add([this, node](){
-        keep_offset_.notify_destroyed(node.obj());
+        keep_offset_.notify_destroyed(node.get());
     }, loc);
 }

@@ -25,7 +25,7 @@ SetJumpDv::SetJumpDv(PhysicsScene& physics_scene)
 
 void SetJumpDv::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     rb.set_jump_dv(args.arguments.at<float>(KnownArgs::value) * kph);
 }

@@ -11,7 +11,7 @@ namespace Mlib {
 class SceneNode;
 
 struct CarControllerKeyBinding {
-    DanglingPtr<SceneNode> node;
+    DanglingBaseClassPtr<SceneNode> node;
     std::optional<float> surface_power;
     std::optional<float> steer_left_amount;
     std::optional<float> ascend_velocity;

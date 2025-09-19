@@ -7,6 +7,8 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Tracker.hpp>
 #include <mutex>
+#include <optional>
+#include <vector>
 
 namespace Mlib {
 
@@ -28,7 +30,7 @@ public:
         RenderLogics& render_logics,
         Players& players,
         const DanglingBaseClassRef<Player>& player,
-        DanglingPtr<SceneNode> exclusive_node,
+        const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
         AdvanceTimes& advance_times,
         const std::shared_ptr<ITextureHandle>& texture,
         const FixedArray<float, 2>& center,
@@ -60,10 +62,8 @@ private:
     RenderLogic& scene_logic_;
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
-    DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
 
     RenderLogics& render_logics_;
-    DanglingPtr<SceneNode> exclusive_node_;
 };
 
 }

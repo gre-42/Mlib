@@ -20,7 +20,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(gun_node);
-DECLARE_ARGUMENT(exclusive_node);
+DECLARE_ARGUMENT(exclusive_nodes);
 DECLARE_ARGUMENT(ypln_node);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(center);
@@ -42,10 +42,12 @@ CreateHudTargetPointLogic::CreateHudTargetPointLogic(RenderableScene& renderable
 
 void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
-    DanglingPtr<SceneNode> exclusive_node = nullptr;
-    if (args.arguments.contains_non_null(KnownArgs::exclusive_node)) {
-        exclusive_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::exclusive_node), DP_LOC).ptr();
+    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
+    std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>> exclusive_nodes;
+    if (args.arguments.contains_non_null(KnownArgs::exclusive_nodes)) {
+        exclusive_nodes = args.arguments.at_vector<VariableAndHash<std::string>>(
+            KnownArgs::exclusive_nodes,
+            [&scene=scene](const auto& n){ return (const DanglingBaseClassPtr<const SceneNode>&)scene.get_node(n, DP_LOC).ptr(); });
     }
     YawPitchLookAtNodes* ypln = nullptr;
     if (args.arguments.contains(KnownArgs::ypln_node)) {
@@ -63,7 +65,7 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         player,
         physics_engine.collision_query_,
         gun_node,
-        exclusive_node,
+        exclusive_nodes,
         ypln,
         physics_engine.advance_times_,
         RenderingContextStack::primary_rendering_resources().get_texture_lazy(

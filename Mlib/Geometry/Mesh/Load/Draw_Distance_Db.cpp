@@ -61,18 +61,18 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
                     return AddableStepDistances{ *(--it), dist[i] };
                 }
             };
-            ide_items_.try_emplace(
+            ide_items_.add(
                 resource_name,
                 texture_dictionary_lower,
                 dist_range(0),
                 flags);
             for (size_t i = 0; i < n; ++i) {
-                ide_items_.try_emplace(
+                ide_items_.add(
                     resource_name + "_l" + std::to_string(i),
                     texture_dictionary_lower,
                     dist_range(i),
                     flags);
-                ide_items_.try_emplace(
+                ide_items_.add(
                     resource_name + "_L" + std::to_string(i),
                     texture_dictionary_lower,
                     dist_range(i),

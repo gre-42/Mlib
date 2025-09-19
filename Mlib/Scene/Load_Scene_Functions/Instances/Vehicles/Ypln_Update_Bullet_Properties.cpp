@@ -32,8 +32,8 @@ YplnUpdateBulletProperties::YplnUpdateBulletProperties(PhysicsScene& physics_sce
 
 void YplnUpdateBulletProperties::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
-    DanglingRef<SceneNode> ypln_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::ypln_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> ypln_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::ypln_node), DP_LOC);
     auto& aim_at = get_aim_at(gun_node);
     auto& ypln = get_yaw_pitch_look_at_nodes(ypln_node);
 

@@ -12,7 +12,7 @@ using namespace Mlib;
 RigidBodyRecorder::RigidBodyRecorder(
     const std::string& filename,
     const TransformationMatrix<double, double, 3>* geographic_mapping,
-    DanglingRef<SceneNode> recorded_node,
+    DanglingBaseClassRef<SceneNode> recorded_node,
     RigidBodyPulses& rbp,
     const CountdownPhysics* countdown_start)
     : countdown_start_{ countdown_start }

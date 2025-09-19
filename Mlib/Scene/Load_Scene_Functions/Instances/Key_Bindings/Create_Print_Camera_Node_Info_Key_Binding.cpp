@@ -32,7 +32,7 @@ CreatePrintCameraNodeInfoKeyBinding::CreatePrintCameraNodeInfoKeyBinding(Rendera
 void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& kb = key_bindings.add_print_node_info_key_binding(std::unique_ptr<PrintNodeInfoKeyBinding>(new PrintNodeInfoKeyBinding{
-        .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingPtr<SceneNode> {
+        .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingBaseClassPtr<SceneNode> {
             auto name = sc.camera_node_name();
             return scene.get_node(name, DP_LOC).ptr();
         },

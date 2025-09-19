@@ -31,7 +31,7 @@ SetInventoryCapacity::SetInventoryCapacity(PhysicsScene& physics_scene)
 
 void SetInventoryCapacity::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::inventory_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::inventory_node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     rb.inventory_.set_capacity(
         args.arguments.at<std::string>(KnownArgs::item_type),

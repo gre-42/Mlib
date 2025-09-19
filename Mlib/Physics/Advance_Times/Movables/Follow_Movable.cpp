@@ -15,7 +15,7 @@ using namespace Mlib;
 
 FollowMovable::FollowMovable(
     AdvanceTimes& advance_times,
-    DanglingRef<const SceneNode> followed_node,
+    const DanglingBaseClassRef<const SceneNode>& followed_node,
     IAbsoluteMovable& followed,
     float attachment_distance,
     const FixedArray<float, 3>& node_displacement,
@@ -51,7 +51,7 @@ FollowMovable::~FollowMovable() {
     on_destroy.clear();
 }
 
-void FollowMovable::initialize(DanglingRef<SceneNode> follower_node) {
+void FollowMovable::initialize(DanglingBaseClassRef<SceneNode> follower_node) {
     initialized_ = true;
     advance_time(NAN);
     follower_node->set_absolute_pose(
@@ -134,13 +134,13 @@ FollowerMovableNodeSetter::FollowerMovableNodeSetter(FollowMovable& follow)
 
 void FollowerMovableNodeSetter::set_scene_node(
     Scene& scene,
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
     removal_tokens_.set(node->on_destroy, CURRENT_SOURCE_LOCATION);
     removal_tokens_.add([this, node](){
-        follow_.notify_destroyed(node.obj());
+        follow_.notify_destroyed(node.get());
     }, loc);
     node->set_absolute_movable({ follow_, loc });
 }
@@ -153,12 +153,12 @@ FollowedMovableNodeSetter::FollowedMovableNodeSetter(FollowMovable& follow)
 
 void FollowedMovableNodeSetter::set_scene_node(
     Scene& scene,
-    const DanglingRef<SceneNode>& node,
+    const DanglingBaseClassRef<SceneNode>& node,
     VariableAndHash<std::string> node_name,
     SourceLocation loc)
 {
     removal_tokens_.set(node->on_destroy, CURRENT_SOURCE_LOCATION);
     removal_tokens_.add([this, node](){
-        follow_.notify_destroyed(node.obj());
+        follow_.notify_destroyed(node.get());
     }, loc);
 }

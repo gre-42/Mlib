@@ -19,7 +19,7 @@ VisualMovableLogger::VisualMovableLogger(
     ObjectPool& object_pool,
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
-    DanglingRef<SceneNode> node,
+    DanglingBaseClassRef<SceneNode> node,
     DanglingBaseClassPtr<Player> player,
     FocusFilter focus_filter)
     : player_{ player }

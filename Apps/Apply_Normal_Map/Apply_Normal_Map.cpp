@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
                 VariableAndHash<std::string>{ "tl" },
                 ChildInstantiationOptions{
                     .instance_name = VariableAndHash<std::string>{ "tl" },
-                    .scene_node = scene_node.ref(DP_LOC),
+                    .scene_node = scene_node.ref(CURRENT_SOURCE_LOCATION),
                     .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = RenderableResourceFilter{}});
         }

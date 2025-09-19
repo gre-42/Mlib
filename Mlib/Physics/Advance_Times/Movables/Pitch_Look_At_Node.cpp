@@ -81,7 +81,7 @@ TransformationMatrix<float, ScenePos, 3> PitchLookAtNode::get_new_relative_model
         relative_position_};
 }
 
-void PitchLookAtNode::set_head_node(DanglingRef<SceneNode> head_node) {
+void PitchLookAtNode::set_head_node(DanglingBaseClassRef<SceneNode> head_node) {
     if (head_node_ != nullptr) {
         THROW_OR_ABORT("Head node already set");
     }

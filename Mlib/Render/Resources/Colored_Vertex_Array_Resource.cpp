@@ -2093,7 +2093,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
                 .rendering_resources = options.rendering_resources,
                 .instance_name = VariableAndHash<std::string>{
                     *options.instance_name + suffix + '_' + std::to_string(continuous_blending_z_order) },
-                .scene_node = node.ref(DP_LOC),
+                .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
                 .renderable_resource_filter = options.renderable_resource_filter});
         }
         if (options.max_imposter_texture_size != 0) {
@@ -2101,7 +2101,7 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
                 THROW_OR_ABORT("Imposters not set for \"" + *options.instance_name + '"');
             }
             auto imposter_node_name = *options.instance_name + "-" + std::to_string(options.scene.get_uuid());
-            options.imposters->set_imposter_info(node.ref(DP_LOC), { imposter_node_name, options.max_imposter_texture_size });
+            options.imposters->set_imposter_info(node.ref(CURRENT_SOURCE_LOCATION), { imposter_node_name, options.max_imposter_texture_size });
         }
         auto node_name = VariableAndHash<std::string>{*options.instance_name + suffix};
         options.scene.auto_add_root_node(
@@ -2157,14 +2157,14 @@ void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstanti
         instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = options.instance_name,
-            .scene_node = node.ref(DP_LOC),
+            .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = options.renderable_resource_filter});
         if (options.max_imposter_texture_size != 0) {
             if (options.imposters == nullptr) {
                 THROW_OR_ABORT("Imposters not set for \"" + *options.instance_name + '"');
             }
             auto imposter_node_name = *options.instance_name + "-" + std::to_string(options.scene.get_uuid());
-            options.imposters->set_imposter_info(node.ref(DP_LOC), { imposter_node_name, options.max_imposter_texture_size });
+            options.imposters->set_imposter_info(node.ref(CURRENT_SOURCE_LOCATION), { imposter_node_name, options.max_imposter_texture_size });
         }
         auto node_name = VariableAndHash<std::string>{*options.instance_name + "_cva_world"};
         options.scene.auto_add_root_node(

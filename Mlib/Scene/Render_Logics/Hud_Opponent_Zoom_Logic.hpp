@@ -24,7 +24,7 @@ public:
         RenderLogics& render_logics,
         Players& players,
         const DanglingBaseClassRef<Player>& player,
-        DanglingPtr<SceneNode> exclusive_node,
+        DanglingBaseClassPtr<SceneNode> exclusive_node,
         std::unique_ptr<IWidget>&& widget,
         float fov,
         float zoom);
@@ -51,7 +51,7 @@ private:
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
     std::unique_ptr<RenderLogic> scene_logic_;
-    DanglingPtr<SceneNode> exclusive_node_;
+    DanglingBaseClassPtr<SceneNode> exclusive_node_;
     std::unique_ptr<IWidget> widget_;
     float fov_;
     float scaled_fov_;

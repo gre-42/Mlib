@@ -69,7 +69,7 @@ CreateRotor::CreateRotor(PhysicsScene& physics_scene)
 
 void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC);
+    DanglingBaseClassRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::vehicle), DP_LOC);
     auto& vehicle_rb = get_rigid_body_vehicle(vehicle_node);
     FixedArray<float, 3> vehicle_mount_0(NAN);
     FixedArray<float, 3> vehicle_mount_1(NAN);
@@ -79,7 +79,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.contains(KnownArgs::blades)) {
         auto c = args.arguments.child(KnownArgs::blades);
         auto blades_node_name = c.at<VariableAndHash<std::string>>(BladesArgs::node);
-        DanglingRef<SceneNode> blades_node = scene.get_node(blades_node_name, DP_LOC);
+        DanglingBaseClassRef<SceneNode> blades_node = scene.get_node(blades_node_name, DP_LOC);
         blades_rb = &get_rigid_body_vehicle(blades_node);
         vehicle_mount_0 = c.at<EFixedArray<float, 3>>(BladesArgs::vehicle_mount_0);
         vehicle_mount_1 = c.at<EFixedArray<float, 3>>(BladesArgs::vehicle_mount_1);

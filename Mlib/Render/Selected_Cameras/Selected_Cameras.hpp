@@ -18,7 +18,7 @@ class Scene;
 enum class CameraCycleType;
 
 struct NodeAndCamera {
-    DanglingRef<SceneNode> node;
+    DanglingBaseClassRef<SceneNode> node;
     DanglingBaseClassRef<Camera> camera;
 };
 

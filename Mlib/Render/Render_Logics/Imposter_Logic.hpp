@@ -9,6 +9,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <memory>
 
 namespace Mlib {
 
@@ -30,7 +31,7 @@ class OriginalNodeHider: public INodeHider {
 public:
     explicit OriginalNodeHider(ImposterLogic& imposter_logic);
     virtual bool node_shall_be_hidden(
-        const DanglingPtr<const SceneNode>& camera_node,
+        const DanglingBaseClassPtr<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 private:
     ImposterLogic& imposter_logic_;
@@ -39,7 +40,7 @@ private:
 class ImposterNodeHider: public INodeHider {
 public:
     virtual bool node_shall_be_hidden(
-        const DanglingPtr<const SceneNode>& camera_node,
+        const DanglingBaseClassPtr<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 };
 
@@ -52,7 +53,7 @@ public:
         RenderingResources& rendering_resources,
         RenderLogic& child_logic,
         Scene& scene,
-        const DanglingRef<SceneNode>& orig_node,
+        const DanglingBaseClassRef<SceneNode>& orig_node,
         SelectedCameras& cameras,
         const std::string& debug_prefix,
         uint32_t max_texture_size,
@@ -89,7 +90,7 @@ private:
     RenderingResources& rendering_resources_;
     RenderLogic& child_logic_;
     Scene& scene_;
-    DanglingRef<SceneNode> orig_node_;
+    DanglingBaseClassRef<SceneNode> orig_node_;
     SelectedCameras& cameras_;
     std::shared_ptr<FrameBuffer> fbs_;
     ProjectedBbox old_projected_bbox_;
@@ -98,7 +99,7 @@ private:
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
     ColormapWithModifiers texture_;
-    DanglingUniquePtr<SceneNode> imposter_node_;
+    std::unique_ptr<SceneNode> imposter_node_;
     std::string debug_prefix_;
     uint32_t max_texture_size_;
     float down_sampling_;

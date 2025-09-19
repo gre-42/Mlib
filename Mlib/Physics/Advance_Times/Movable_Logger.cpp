@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 MovableLogger::MovableLogger(
-    DanglingRef<SceneNode> scene_node,
+    DanglingBaseClassRef<SceneNode> scene_node,
     StatusWriter& status_writer,
     StatusComponents log_components)
     : status_writer_{status_writer}

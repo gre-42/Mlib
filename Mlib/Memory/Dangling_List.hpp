@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <list>
 
@@ -36,7 +36,7 @@ public:
         return elements_.back();
     }
 private:
-    std::list<DestructionFunctionsTokensObject<T>> elements_;
+    std::list<DestructionFunctionsTokensRef<T>> elements_;
 };
 
 }
