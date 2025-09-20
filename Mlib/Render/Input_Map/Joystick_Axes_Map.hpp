@@ -8,7 +8,7 @@
 
 namespace Mlib {
 
-static const VerboseMap<uint32_t, std::optional<int>> joystick_axes_map{
+static const VerboseMap<uint32_t, std::optional<uint32_t>> joystick_axes_map{
     "Joystick axis",
     [](uint32_t key){ return std::to_string(key); },
     {

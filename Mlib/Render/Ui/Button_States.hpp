@@ -54,6 +54,10 @@ struct InputFilter: public ClampedExponentialSmoother<float> {
 struct RawAndFiltered {
     float raw;
     InputFilter filtered;
+    inline void set(float value) {
+        raw = value;
+        filtered(value);
+    }
 };
 
 class ButtonStates {
@@ -89,7 +93,7 @@ public:
         int axis) const;
 #ifdef __ANDROID__
     void notify_gamepad_button(uint32_t gamepad_id, int axis, bool pressed);
-    void notify_gamepad_axis(uint32_t gamepad_id, int axis, float value);
+    void notify_gamepad_axis(uint32_t gamepad_id, uint32_t axis, float value);
 #else
     void update_gamepad_state();
 #endif
@@ -101,7 +105,7 @@ public:
 private:
 #ifdef __ANDROID__
     std::unordered_map<uint32_t, std::unordered_map<int, bool>> gamepad_buttons_;
-    std::unordered_map<uint32_t, std::unordered_map<int, RawAndFiltered>> gamepad_axes_;
+    std::unordered_map<uint32_t, std::unordered_map<uint32_t, RawAndFiltered>> gamepad_axes_;
     mutable SafeAtomicRecursiveSharedMutex gamepad_button_mutex_;
     mutable SafeAtomicRecursiveSharedMutex gamepad_axes_mutex_;
 #else

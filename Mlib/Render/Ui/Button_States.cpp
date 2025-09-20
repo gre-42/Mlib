@@ -124,7 +124,7 @@ bool ButtonStates::get_gamepad_button_down(uint32_t gamepad_id, int button) cons
     return it->second;
 }
 
-float ButtonStates::get_gamepad_axis(uint32_t gamepad_id, int axis) const {
+float ButtonStates::get_gamepad_axis(uint32_t gamepad_id, uint32_t axis, FilterType filter_type) const {
     std::shared_lock lock{ gamepad_axes_mutex_ };
     auto git = gamepad_axes_.find(gamepad_id);
     if (git == gamepad_axes_.end()) {
@@ -134,7 +134,17 @@ float ButtonStates::get_gamepad_axis(uint32_t gamepad_id, int axis) const {
     if (it == git->second.end()) {
         return NAN;
     }
-    return it->second;
+    switch (filter_type) {
+    case FilterType::NONE:
+        return it->second.raw;
+    case FilterType::FILTERED:
+        auto res = it->second.filtered.xhat();
+        if (!res.has_value()) {
+            verbose_abort("Internal error: No interpolated gamepad state available");
+        }
+        return *res;
+    }
+    THROW_OR_ABORT("Unknown filter type: " + std::to_string((int)filter_type));
 }
 
 void ButtonStates::notify_gamepad_button(uint32_t gamepad_id, int axis, bool value) {
@@ -142,9 +152,9 @@ void ButtonStates::notify_gamepad_button(uint32_t gamepad_id, int axis, bool val
     gamepad_buttons_[gamepad_id][axis] = value;
 }
 
-void ButtonStates::notify_gamepad_axis(uint32_t gamepad_id, int axis, float value) {
+void ButtonStates::notify_gamepad_axis(uint32_t gamepad_id, uint32_t axis, float value) {
     std::scoped_lock lock{ gamepad_axes_mutex_ };
-    gamepad_axes_[gamepad_id][axis] = value;
+    gamepad_axes_[gamepad_id][axis].set(value);
 }
 #endif
 
