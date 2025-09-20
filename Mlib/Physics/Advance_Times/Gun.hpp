@@ -72,6 +72,8 @@ public:
     size_t nbullets_available() const;
     float cool_down() const;
     float bullet_damage() const;
+    void set_ypln_node(const DanglingBaseClassRef<SceneNode>& node);
+    DanglingBaseClassPtr<SceneNode> get_ypln_node() const;
 private:
     bool maybe_generate_bullet(const StaticWorld& world);
     void generate_bullet(const StaticWorld& world);
@@ -87,6 +89,7 @@ private:
     RigidBodyVehicle& parent_rb_;
     DanglingBaseClassPtr<SceneNode> node_;
     DanglingBaseClassPtr<SceneNode> punch_angle_node_;
+    DanglingBaseClassPtr<SceneNode> ypln_node_;
     const BulletProperties& bullet_properties_;
     std::function<void(
         const std::optional<std::string>& player,
@@ -110,6 +113,7 @@ private:
     DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     std::optional<DestructionFunctionsRemovalTokens> punch_angle_node_on_clear_;
+    std::optional<DestructionFunctionsRemovalTokens> ypln_node_on_clear_;
 };
 
 }

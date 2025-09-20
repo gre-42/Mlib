@@ -69,6 +69,7 @@ Gun::Gun(
     , parent_rb_{ parent_rb }
     , node_{ node.ptr() }
     , punch_angle_node_{ punch_angle_node }
+    , ypln_node_{ nullptr }
     , bullet_properties_{ bullet_properties }
     , generate_smart_bullet_{ std::move(generate_smart_bullet) }
     , generate_shot_audio_{ std::move(generate_shot_audio) }
@@ -297,4 +298,19 @@ float Gun::cool_down() const {
 
 float Gun::bullet_damage() const {
     return bullet_properties_.damage;
+}
+
+void Gun::set_ypln_node(const DanglingBaseClassRef<SceneNode>& node) {
+    if (ypln_node_ != nullptr) {
+        THROW_OR_ABORT("YPLN node already set");
+    }
+    ypln_node_ = node.ptr();
+    ypln_node_on_clear_.emplace(ypln_node_->on_clear, CURRENT_SOURCE_LOCATION);
+    punch_angle_node_on_clear_->add(
+        [this]() { ypln_node_ = nullptr; },
+        CURRENT_SOURCE_LOCATION);
+}
+
+DanglingBaseClassPtr<SceneNode> Gun::get_ypln_node() const {
+    return ypln_node_;
 }

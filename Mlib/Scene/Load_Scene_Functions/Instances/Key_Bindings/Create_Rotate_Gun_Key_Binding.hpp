@@ -5,9 +5,9 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class CreateRelKeyBinding: public LoadRenderableSceneInstanceFunction {
+class CreateRotateGunKeyBinding: public LoadRenderableSceneInstanceFunction {
 public:
-    explicit CreateRelKeyBinding(RenderableScene& renderable_scene);
+    explicit CreateRotateGunKeyBinding(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

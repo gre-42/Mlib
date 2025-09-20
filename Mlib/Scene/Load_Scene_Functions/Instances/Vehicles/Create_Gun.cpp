@@ -36,6 +36,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(parent_rigid_body_node);
 DECLARE_ARGUMENT(punch_angle_node);
+DECLARE_ARGUMENT(ypln_node);
 DECLARE_ARGUMENT(cool_down);
 DECLARE_ARGUMENT(bullet_type);
 DECLARE_ARGUMENT(ammo_type);
@@ -175,7 +176,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (auto macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash); macro.has_value()) {
         generate_muzzle_flash = [macro=*macro, mle=args.macro_line_executor](){ mle(macro, nullptr); };
     }
-    global_object_pool.create<Gun>(
+    auto& gun = global_object_pool.create<Gun>(
         CURRENT_SOURCE_LOCATION,
         &rendering_resources,
         scene,
@@ -196,4 +197,8 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
         generate_muzzle_flash);
+    if (args.arguments.contains_non_null(KnownArgs::ypln_node)) {
+        auto ypln_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::ypln_node), DP_LOC);
+        gun.set_ypln_node(ypln_node);
+    }
 }

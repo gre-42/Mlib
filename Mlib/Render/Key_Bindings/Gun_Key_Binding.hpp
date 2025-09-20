@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-class SceneNode;
+class Player;
 
 struct GunKeyBinding {
     DanglingBaseClassRef<Player> player;

@@ -195,6 +195,8 @@ public:
     FixedArray<float, 3> gun_direction() const;
     FixedArray<float, 3> punch_angle() const;
     bool has_gun_node() const;
+    const Gun& gun() const;
+    Gun& gun();
     void trigger_gun();
     bool has_weapon_cycle() const;
     Inventory& inventory();
@@ -276,8 +278,6 @@ private:
     void aim_and_shoot();
     void select_best_weapon_in_inventory();
     bool unstuck();
-    const Gun& gun() const;
-    Gun& gun();
     DestructionFunctions on_clear_vehicle_;
     DestructionFunctionsRemovalTokens on_vehicle_destroyed_;
     DestructionFunctionsRemovalTokens on_next_vehicle_destroyed_;
