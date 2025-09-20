@@ -9,8 +9,10 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Map.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Unordered_Set.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
+#include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
@@ -119,11 +121,12 @@ struct TrailerHitches {
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBodyVehicle:
+class RigidBodyVehicle final:
     public INodeSetter,
     public IAbsoluteMovable,
     public StatusWriter,
     public INodeHider,
+    public virtual DestructionNotifier,
     public virtual DanglingBaseClass {
 public:
     RigidBodyVehicle(
@@ -285,7 +288,6 @@ public:
     const ICollisionNormalModifier& get_collision_normal_modifier() const;
 
     DestructionObservers<const RigidBodyVehicle&> destruction_observers;
-    DestructionFunctions on_destroy;
     DestructionFunctionsRemovalTokens on_clear_scene_node_;
     Scene* scene_ = nullptr;
     DanglingBaseClassPtr<SceneNode> scene_node_;
@@ -344,6 +346,7 @@ public:
     ObjectPool& object_pool_;
     std::unique_ptr<ISurfaceNormal> surface_normal_;
     std::unique_ptr<ICollisionNormalModifier> collision_normal_modifier_;
+    DanglingUnorderedSet<const RigidBodyVehicle> non_colliders_;
 private:
     void advance_time_skate(
         const PhysicsEngineConfig& cfg,

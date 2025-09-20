@@ -204,6 +204,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
             fixed_zeros<float, 3>(),  // com
             bullet_velocity);
         rcu->flags_ = bullet_properties_.rigid_body_flags;
+        rcu->non_colliders_.emplace({parent_rb_, CURRENT_SOURCE_LOCATION}, CURRENT_SOURCE_LOCATION);
         auto& rc = *rcu;
         {
             AbsoluteMovableSetter ams{ scene_, node.ref(CURRENT_SOURCE_LOCATION), bullet_node_name, std::move(rcu), CURRENT_SOURCE_LOCATION };

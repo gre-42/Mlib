@@ -44,17 +44,26 @@ private:
 };
 
 template <class T>
-struct DestructionFunctionsTokensPtrComparator {
+class DestructionFunctionsTokensPtrComparator {
+public:
     using is_transparent = void;
 
-    bool operator () (const DestructionFunctionsTokensPtr<T>& lhs, const DestructionFunctionsTokensPtr<T>& rhs) const {
-        return lhs.get() == rhs.get();
+    template <class TLhs, class TRhs>
+    bool operator () (const TLhs& lhs, const TRhs& rhs) const {
+        return get(lhs) == get(rhs);
     }
-    bool operator () (const DestructionFunctionsTokensPtr<T>& lhs, const DanglingBaseClassPtr<T>& rhs) const {
-        return lhs.get() == rhs.get();
+private:
+    const T* get(const DestructionFunctionsTokensPtr<T>& v) const {
+        return v.get();
     }
-    bool operator () (const DanglingBaseClassPtr<T>& rhs, const DestructionFunctionsTokensPtr<T>& lhs) const {
-        return lhs.get() == rhs.get();
+    const T* get(const DanglingBaseClassPtr<T>& v) const {
+        return v.get();
+    }
+    const T* get(const DanglingBaseClassRef<T>& v) const {
+        return &v.get();
+    }
+    const T* get(const T& v) const {
+        return &v;
     }
 };
 
@@ -72,6 +81,12 @@ struct hash<Mlib::DestructionFunctionsTokensPtr<T>>
     }
     std::size_t operator()(const Mlib::DanglingBaseClassPtr<T>& s) const noexcept {
         return std::hash<T*>()(s.get());
+    }
+    std::size_t operator()(const Mlib::DanglingBaseClassRef<T>& s) const noexcept {
+        return std::hash<T*>()(&s.get());
+    }
+    std::size_t operator()(const T& s) const noexcept {
+        return std::hash<T*>()(&s);
     }
 };
 

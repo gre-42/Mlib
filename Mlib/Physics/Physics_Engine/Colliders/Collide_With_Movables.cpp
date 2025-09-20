@@ -28,6 +28,11 @@ static void collide_objects(
     {
         return;
     }
+    if (o0.rigid_body->non_colliders_.contains(o1.rigid_body) ||
+        o1.rigid_body->non_colliders_.contains(o0.rigid_body))
+    {
+        return;
+    }
     PhysicsMaterial included_materials =
         PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK |
         PhysicsMaterial::OBJ_BULLET_MASK |

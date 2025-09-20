@@ -5,6 +5,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Memory/Shared_Ptrs.hpp>
@@ -137,7 +138,7 @@ class RenderableWithStyle;
 static const auto INITIAL_POSE = std::chrono::steady_clock::time_point();
 static const auto SUCCESSOR_POSE = std::nullopt;
 
-class SceneNode: public virtual DanglingBaseClass {
+class SceneNode final: public virtual DestructionNotifier, public virtual DanglingBaseClass {
     template <class TAbsoluteMovable>
     friend class AbsoluteMovableSetter;
     SceneNode(const SceneNode& other) = delete;
@@ -368,7 +369,6 @@ public:
     mutable SharedPtrs clearing_pointers;
     mutable SharedPtrs destruction_pointers;
     mutable DestructionFunctions on_clear;
-    mutable DestructionFunctions on_destroy;
 private:
     void set_scene_and_state_unsafe(Scene& scene, SceneNodeState state);
     void setup_child_unsafe(
