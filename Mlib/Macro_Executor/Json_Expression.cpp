@@ -126,29 +126,16 @@ static nlohmann::json eval_recursion(
         }
         return v.get<std::string>();
     };
-    subst = [&subst_](const std::string_view& s){return Mlib::substitute_dollar(s, subst_);};
-    if (recursion == 0) {
-        if (std::isalpha(expression[0]) ||
-            (expression[0] == '.')  ||
-            (expression[0] == '#')  ||
-            (expression[0] == '-')  ||
-            (expression[0] == '$')  ||
-            (expression[0] == '_')  ||
-            (expression[0] == '^')  ||
-            (expression[0] == '\\') ||
-            (expression[0] == '/'))
-        {
-            return subst(expression);
-        }
-    }
     {
-        // static const DECLARE_REGEX(comparison_re, "^(\\S+) (==|!=|in|not in) (.+)$");
+        // static const DECLARE_REGEX(comparison_re, "^\((\\S+) (==|!=|in|not in) (.+)\)$");
         static const auto comparison_re = seq(
+            chr('('),
             group(plus(no_space)),
             chr(' '),
             group(par(str("=="), str("!="), str("<="), str(">="), str("in"), str("not in"), chr('-'))),
             chr(' '),
-            group(plus(adot)),
+            group(plus(no_chr(')'))),
+            chr(')'),
             eof);
         if (SMatch<4> match; regex_match(expression, match, comparison_re)) {
             std::string_view left = match[1].str();
@@ -173,6 +160,19 @@ static nlohmann::json eval_recursion(
             }
             verbose_abort("Unknown operator index: \"" + std::to_string(op) + "\". Line: \"" + std::string{expression} + '"');
         }
+    }
+    subst = [&subst_](const std::string_view& s){return Mlib::substitute_dollar(s, subst_);};
+    if (std::isalpha(expression[0]) ||
+        (expression[0] == '.')  ||
+        (expression[0] == '#')  ||
+        (expression[0] == '-')  ||
+        (expression[0] == '$')  ||
+        (expression[0] == '_')  ||
+        (expression[0] == '^')  ||
+        (expression[0] == '\\') ||
+        (expression[0] == '/'))
+    {
+        return subst(expression);
     }
     if ((expression.size() >= 2) && (expression[0] == '{') && (expression[expression.size() - 1] == '}')) {
         // static const DECLARE_REGEX(set_re, "^\\{(.*)\\}$");

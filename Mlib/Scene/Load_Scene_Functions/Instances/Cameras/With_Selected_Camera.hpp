@@ -5,9 +5,9 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class CreateCameraKeyBinding: public LoadRenderableSceneInstanceFunction {
+class WithSelectedCamera: public LoadRenderableSceneInstanceFunction {
 public:
-    explicit CreateCameraKeyBinding(RenderableScene& renderable_scene);
+    explicit WithSelectedCamera(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

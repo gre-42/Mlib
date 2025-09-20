@@ -16,7 +16,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Perspective_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Fit_Canvas_To_Renderables.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Set_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Set_Camera_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Avatar_As_Avatar_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Avatar_As_Car_Controller.hpp>
@@ -402,7 +401,6 @@ LoadScene::LoadScene(
             register_json_user_function(SetCapsuleSurfaceNormal::key, SetCapsuleSurfaceNormal::json_user_function);
             register_json_user_function(SetSlidingNormalModifier::key, SetSlidingNormalModifier::json_user_function);
             register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
-            register_json_user_function(SetCamera::key, SetCamera::json_user_function);
             register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);
             register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
             register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);

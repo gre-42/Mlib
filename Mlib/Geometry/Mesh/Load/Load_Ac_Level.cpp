@@ -96,7 +96,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         auto database = JsonMacroArguments(nlohmann::json{
             {"if_raceway_circular", circular},
             {"game_modes", std::vector<std::string>{"rally"}} });
-        auto required = std::vector<std::vector<std::string>>({{ "%selected_game_mode == 'rally'" }});
+        auto required = std::vector<std::vector<std::string>>({{ "(%selected_game_mode == 'rally')" }});
         result.push_back(ReplacementParameterAndFilename{
             .rp = ReplacementParameter{
                 .id = level_id,

@@ -287,6 +287,9 @@ bool is_word(char c);
 inline auto chr(char c) {
     return CharPredicate{[c](char c1){ return (c1 == c); }};
 }
+inline auto no_chr(char c) {
+    return CharPredicate{[c](char c1){ return (c1 != c); }};
+}
 static const auto space = CharPredicate{[](char c){return std::isspace(c);}};
 static const auto no_space = CharPredicate{[](char c){return !std::isspace(c);}};
 static const auto digit = CharPredicate{[](char c){return (c >= '0') && (c <= '9');}};

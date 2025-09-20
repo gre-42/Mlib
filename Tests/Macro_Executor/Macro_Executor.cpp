@@ -42,10 +42,10 @@ void test_eval() {
         {"hello_42", "world"},
         {"i", "42"},
     };
-    linfo() << "eval " << eval<bool>("'hello' == 'world'", JsonView{ nlohmann::json::object() });
-    linfo() << "eval " << eval<bool>("'hello' != 'world'", JsonView{ nlohmann::json::object() });
+    linfo() << "eval " << eval<bool>("('hello' == 'world')", JsonView{ nlohmann::json::object() });
+    linfo() << "eval " << eval<bool>("('hello' != 'world')", JsonView{ nlohmann::json::object() });
     linfo() << "eval " << eval<std::string>("%hello_$i", JsonView{ variables });
-    linfo() << "eval " << eval<bool>("%%levels/aircraft_carrier0/game_modes == 'hello'", JsonView{ nlohmann::json::object() });
+    linfo() << "eval " << eval<bool>("(%%levels/aircraft_carrier0/game_modes == 'hello')", JsonView{ nlohmann::json::object() });
 }
 
 void test_resolve() {
