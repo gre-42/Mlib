@@ -29,6 +29,7 @@ Shading Mlib::material_shading(PhysicsMaterial material, const OsmResourceConfig
         {PhysicsMaterial::SURFACE_BASE_WATER, Shading{ .diffuse = O(1.f), .specular = O(0.5f), .fresnel = f0 }},
         {PhysicsMaterial::SURFACE_BASE_TARMAC | PhysicsMaterial::SURFACE_WET, Shading{ .specular = O(0.f), .reflectance = O(1.f), .fresnel = f5 }},
         {PhysicsMaterial::SURFACE_BASE_DIRT | PhysicsMaterial::SURFACE_WET, Shading{ .specular = O(0.f), .reflectance = O(1.f), .fresnel = f5 }},
+        {PhysicsMaterial::SURFACE_BASE_DESERT_ROAD, Shading{ .specular = O(0.f), .fresnel = f2 }},
     };
     auto it = m.find(material);
     if (it == m.end()) {

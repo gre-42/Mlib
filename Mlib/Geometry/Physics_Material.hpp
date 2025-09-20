@@ -6,7 +6,7 @@
 namespace Mlib {
 
 static const size_t SURFACE_BASE_OFFSET = 23;
-static const size_t SURFACE_BASE_NBITS = 4;
+static const size_t SURFACE_BASE_NBITS = 5;
 static const size_t SURFACE_NBITS = SURFACE_BASE_NBITS + 1;
 
 enum class PhysicsMaterial: uint32_t {
@@ -34,21 +34,22 @@ enum class PhysicsMaterial: uint32_t {
     OBJ_GRASS                   = (1 << 20),
     OBJ_GROUND                  = (1 << 21),
     OBJ_WAY_AIR_SUPPORT         = (1 << 22),
-    SURFACE_BASE_TARMAC         = (1 << SURFACE_BASE_OFFSET),       //    1
-    SURFACE_BASE_GRAVEL         = (2 << SURFACE_BASE_OFFSET),       //   10
-    SURFACE_BASE_SNOW           = (3 << SURFACE_BASE_OFFSET),       //   11
-    SURFACE_BASE_ICE            = (4 << SURFACE_BASE_OFFSET),       //  100
-    SURFACE_BASE_SAND           = (5 << SURFACE_BASE_OFFSET),       //  101
-    SURFACE_BASE_GRASS          = (6 << SURFACE_BASE_OFFSET),       //  110
-    SURFACE_BASE_DIRT           = (7 << SURFACE_BASE_OFFSET),       //  111
-    SURFACE_BASE_TIRE           = (8 << SURFACE_BASE_OFFSET),       // 1000
-    SURFACE_BASE_STONE          = (9 << SURFACE_BASE_OFFSET),       // 1001
-    SURFACE_BASE_FOLIAGE        = (10 << SURFACE_BASE_OFFSET),      // 1010
-    SURFACE_BASE_METAL          = (11 << SURFACE_BASE_OFFSET),      // 1011
-    SURFACE_BASE_CONCRETE       = (12 << SURFACE_BASE_OFFSET),      // 1100
-    SURFACE_BASE_GLASS          = (13 << SURFACE_BASE_OFFSET),      // 1101
-    SURFACE_BASE_WATER          = (14 << SURFACE_BASE_OFFSET),      // 1110
-    SURFACE_BASE_FOOT           = (15 << SURFACE_BASE_OFFSET),      // 1111
+    SURFACE_BASE_TARMAC         = (1 << SURFACE_BASE_OFFSET),       //     1
+    SURFACE_BASE_GRAVEL         = (2 << SURFACE_BASE_OFFSET),       //    10
+    SURFACE_BASE_SNOW           = (3 << SURFACE_BASE_OFFSET),       //    11
+    SURFACE_BASE_ICE            = (4 << SURFACE_BASE_OFFSET),       //   100
+    SURFACE_BASE_SAND           = (5 << SURFACE_BASE_OFFSET),       //   101
+    SURFACE_BASE_GRASS          = (6 << SURFACE_BASE_OFFSET),       //   110
+    SURFACE_BASE_DIRT           = (7 << SURFACE_BASE_OFFSET),       //   111
+    SURFACE_BASE_TIRE           = (8 << SURFACE_BASE_OFFSET),       //  1000
+    SURFACE_BASE_STONE          = (9 << SURFACE_BASE_OFFSET),       //  1001
+    SURFACE_BASE_FOLIAGE        = (10 << SURFACE_BASE_OFFSET),      //  1010
+    SURFACE_BASE_METAL          = (11 << SURFACE_BASE_OFFSET),      //  1011
+    SURFACE_BASE_CONCRETE       = (12 << SURFACE_BASE_OFFSET),      //  1100
+    SURFACE_BASE_GLASS          = (13 << SURFACE_BASE_OFFSET),      //  1101
+    SURFACE_BASE_WATER          = (14 << SURFACE_BASE_OFFSET),      //  1110
+    SURFACE_BASE_FOOT           = (15 << SURFACE_BASE_OFFSET),      //  1111
+    SURFACE_BASE_DESERT_ROAD    = (16 << SURFACE_BASE_OFFSET),      // 10000
     SURFACE_WET                 = (1 << (0 + SURFACE_BASE_OFFSET + SURFACE_BASE_NBITS)),
 
     OBJ_BULLET_MASK = OBJ_BULLET_LINE_SEGMENT | OBJ_BULLET_MESH,

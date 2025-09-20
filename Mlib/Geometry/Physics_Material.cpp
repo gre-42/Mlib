@@ -47,6 +47,7 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"surface_base_glass", PhysicsMaterial::SURFACE_BASE_GLASS},
         {"surface_base_water", PhysicsMaterial::SURFACE_BASE_WATER},
         {"surface_base_foot", PhysicsMaterial::SURFACE_BASE_FOOT},
+        {"surface_base_desert_road", PhysicsMaterial::SURFACE_BASE_DESERT_ROAD},
         {"surface_wet", PhysicsMaterial::SURFACE_WET}
     };
     auto it = m.find(s);
@@ -127,6 +128,7 @@ static std::string physics_material_base_to_string(PhysicsMaterial p) {
         case PhysicsMaterial::SURFACE_BASE_GLASS: return "surface_base_glass";
         case PhysicsMaterial::SURFACE_BASE_WATER: return "surface_base_water";
         case PhysicsMaterial::SURFACE_BASE_FOOT: return "surface_base_foot";
+        case PhysicsMaterial::SURFACE_BASE_DESERT_ROAD: return "surface_base_desert_road";
         default: return "PhysicsMaterial(" + std::to_string((uint32_t)p) + ')';
     };
 }

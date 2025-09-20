@@ -22,6 +22,7 @@ ParticleType Mlib::material_skidmarks(PhysicsMaterial material) {
         {PhysicsMaterial::SURFACE_BASE_WATER, ParticleType::WATER_WAVE | ParticleType::SEA_SPRAY},
         {PhysicsMaterial::SURFACE_BASE_TARMAC | PhysicsMaterial::SURFACE_WET, ParticleType::SKIDMARK},
         {PhysicsMaterial::SURFACE_BASE_DIRT | PhysicsMaterial::SURFACE_WET, ParticleType::SKIDMARK},
+        {PhysicsMaterial::SURFACE_BASE_DESERT_ROAD, ParticleType::SKIDMARK},
     };
     auto it = m.find(material);
     if (it == m.end()) {
