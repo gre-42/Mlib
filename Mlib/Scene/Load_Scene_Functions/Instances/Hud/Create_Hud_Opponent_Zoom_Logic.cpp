@@ -21,7 +21,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
-DECLARE_ARGUMENT(exclusive_node);
+DECLARE_ARGUMENT(exclusive_nodes);
 DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
@@ -45,9 +45,11 @@ CreateHudOpponentZoom::CreateHudOpponentZoom(RenderableScene& renderable_scene)
 
 void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingBaseClassPtr<SceneNode> exclusive_node = nullptr;
-    if (args.arguments.contains_non_null(KnownArgs::exclusive_node)) {
-        exclusive_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::exclusive_node), DP_LOC).ptr();
+    std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>> exclusive_nodes;
+    if (args.arguments.contains_non_null(KnownArgs::exclusive_nodes)) {
+        exclusive_nodes = args.arguments.at_vector<VariableAndHash<std::string>>(
+            KnownArgs::exclusive_nodes,
+            [&scene=scene](const auto& n){ return (const DanglingBaseClassPtr<const SceneNode>&)scene.get_node(n, DP_LOC).ptr(); });
     }
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto cam_stream = std::make_unique<CameraStreamLogic>(
@@ -63,7 +65,7 @@ void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
         render_logics,
         players,
         player,
-        exclusive_node,
+        exclusive_nodes,
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),

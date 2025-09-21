@@ -29,7 +29,7 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
     RenderLogics& render_logics,
     Players& players,
     const DanglingBaseClassRef<Player>& player,
-    DanglingBaseClassPtr<SceneNode> exclusive_node,
+    const std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>>& exclusive_nodes,
     std::unique_ptr<IWidget>&& widget,
     float fov,
     float zoom)
@@ -37,18 +37,21 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
     , players_{ players }
     , player_{ player }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
-    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , scene_logic_{ std::move(scene_logic) }
-    , exclusive_node_{ exclusive_node }
     , widget_{ std::move(widget) }
     , fov_{ fov }
     , scaled_fov_{ std::atan(std::tan(fov_) / zoom) }
 {
     render_logics.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
-    if (exclusive_node_ != nullptr) {
-        on_clear_exclusive_node_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
-    }
     on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
+    if (exclusive_nodes.has_value()) {
+        exclusive_nodes_.emplace();
+        for (const auto& element : *exclusive_nodes) {
+            if (!exclusive_nodes_->emplace(element, CURRENT_SOURCE_LOCATION).second) {
+                THROW_OR_ABORT("Duplicate exclusive nodes");
+            }
+        }
+    }
 }
 
 HudOpponentZoomLogic::~HudOpponentZoomLogic() {
@@ -60,18 +63,22 @@ std::optional<RenderSetup> HudOpponentZoomLogic::try_render_setup(
     const LayoutConstraintParameters& ly,
     const RenderedSceneDescriptor& frame_id) const
 {
-    return std::nullopt;
+    return scene_logic_->render_setup(lx, ly, frame_id);
 }
 
-void HudOpponentZoomLogic::render_without_setup(
+void HudOpponentZoomLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     LOG_FUNCTION("HudOpponentZoomLogic::render");
+    if (exclusive_nodes_.has_value() && !exclusive_nodes_->contains(setup.camera_node)) {
+        return;
+    }
     if (!player_->has_scene_vehicle()) {
         return;
     }
