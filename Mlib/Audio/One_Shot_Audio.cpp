@@ -1,4 +1,5 @@
 #include "One_Shot_Audio.hpp"
+#include <Mlib/Audio/Audio_Periodicity.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
@@ -15,6 +16,8 @@ AudioSourceAndPosition::AudioSourceAndPosition(
     : source{ buffer, position_requirement, alpha }
     , position{ position }
 {}
+
+AudioSourceAndPosition::~AudioSourceAndPosition() = default;
 
 OneShotAudio::OneShotAudio(
     PositionRequirement position_requirement,
@@ -37,20 +40,20 @@ void OneShotAudio::advance_time(float dt, const StaticWorld& world) {
 void OneShotAudio::advance_time() {
     bool pause = paused_();
     std::scoped_lock lock{ mutex_ };
-    sources_.remove_if([](AudioSourceAndPosition& sp){
-        return sp.source.stopped();
+    sources_.remove_if([](auto& sp){
+        return sp->source.stopped();
     });
     if (pause) {
         for (auto &sp : sources_) {
-            sp.source.pause();
+            sp->source.pause();
         }
     } else {
         for (auto &sp : sources_) {
-            sp.source.unpause();
+            sp->source.unpause();
         }
     }
     for (auto& sp : sources_) {
-        AudioScene::set_source_transformation(sp.source, sp.position);
+        AudioScene::set_source_transformation(sp->source, sp->position);
     }
     // if (!pause && !sources_.empty()) {
     //     lraw() << "OneShotAudio::advance_time";
@@ -61,26 +64,28 @@ void OneShotAudio::advance_time() {
     // }
 }
 
-void OneShotAudio::play(
+std::shared_ptr<AudioSourceAndPosition> OneShotAudio::play(
     const AudioBuffer& audio_buffer,
     const AudioSourceState<ScenePos>& position,
+    AudioPeriodicity periodicity,
     const std::optional<Interval<float>>& distance_clamping,
     float gain,
     float alpha)
 {
     std::scoped_lock lock{ mutex_ };
-    auto& sp = sources_.emplace_back(
+    auto sp = sources_.emplace_back(std::make_shared<AudioSourceAndPosition>(
         audio_buffer,
         position_requirement_,
         alpha,
-        position);
-    AudioScene::set_source_transformation(sp.source, sp.position);
-    sp.source.set_loop(false);
-    sp.source.set_gain(gain);
+        position));
+    AudioScene::set_source_transformation(sp->source, sp->position);
+    sp->source.set_loop(periodicity == AudioPeriodicity::PERIODIC);
+    sp->source.set_gain(gain);
     if (distance_clamping.has_value()) {
-        sp.source.set_distance_clamping(*distance_clamping);
+        sp->source.set_distance_clamping(*distance_clamping);
     }
-    sp.source.play();
+    sp->source.play();
+    return sp;
 }
 
 void OneShotAudio::stop() {

@@ -99,6 +99,10 @@ void AudioSource::unpause() {
     }
 }
 
+void AudioSource::stop() {
+    AL_CHK(alSourceStop(source_));
+}
+
 void AudioSource::join() {
     while (true) {
         ALint source_state;

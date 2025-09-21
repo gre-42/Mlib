@@ -34,6 +34,8 @@ struct StaticWorld;
 template <class TPosition>
 struct AudioSourceState;
 
+using UpdateAudioSourceState = std::function<void(const AudioSourceState<ScenePos>*)>;
+
 class Gun final: public IAbsoluteObserver, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     Gun(RenderingResources* rendering_resources,
@@ -56,6 +58,7 @@ public:
             const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
         std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio,
         std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
+        std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio,
         ITrailStorage* bullet_trace_storage,
         std::string ammo_type,
         std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
@@ -99,6 +102,7 @@ private:
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet_;
     std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio_;
     std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio_;
+    std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio_;
     ITrailStorage* bullet_trace_storage_;
     std::string ammo_type_;
     bool triggered_;

@@ -1,5 +1,6 @@
 #include "Contact_Smoke_Generator.hpp"
 #include <Mlib/Audio/Audio_Entity_State.hpp>
+#include <Mlib/Audio/Audio_Periodicity.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
@@ -86,6 +87,7 @@ void ContactSmokeGenerator::notify_contact(
                 if (smoke_info.audio != nullptr) {
                     smoke_info.audio->play(
                         one_shot_audio_,
+                        AudioPeriodicity::APERIODIC,
                         {intersection_point, c.o1.rbp_.velocity_at_position(intersection_point)});
                 }
                 if (smoke_info.visual.has_value()) {

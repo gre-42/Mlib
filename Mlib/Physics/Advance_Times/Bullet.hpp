@@ -45,6 +45,7 @@ public:
     Bullet(
         Scene& scene,
         std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
+        std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position,
         SmokeParticleGenerator& smoke_generator,
         AdvanceTimes& advance_times,
         RigidBodyVehicle& rigid_body,
@@ -76,6 +77,7 @@ private:
     void notify_kill(RigidBodyVehicle& rigid_body_vehicle);
     Scene& scene_;
     std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio_;
+    std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position_;
     SmokeParticleGenerator& smoke_generator_;
     AdvanceTimes& advance_times_;
     RigidBodyPulses& rigid_body_pulses_;

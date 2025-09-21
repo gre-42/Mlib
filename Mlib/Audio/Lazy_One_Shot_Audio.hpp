@@ -13,6 +13,8 @@ class AudioResources;
 template <class TPosition>
 struct AudioSourceState;
 struct AudioFileInformation;
+struct AudioSourceAndPosition;
+enum class AudioPeriodicity;
 
 class LazyOneShotAudio {
 public:
@@ -21,8 +23,9 @@ public:
         VariableAndHash<std::string> resource_name,
         float alpha = NAN);
     void preload();
-    void play(
+    std::shared_ptr<AudioSourceAndPosition> play(
         OneShotAudio& one_shot_audio,
+        AudioPeriodicity periodicity,
         const AudioSourceState<ScenePos>& position);
 private:
     std::shared_ptr<AudioBuffer> buffer_;

@@ -55,6 +55,7 @@ Gun::Gun(
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
     std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio,
     std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
+    std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio,
     ITrailStorage* bullet_trace_storage,
     std::string ammo_type,
     std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
@@ -74,6 +75,7 @@ Gun::Gun(
     , generate_smart_bullet_{ std::move(generate_smart_bullet) }
     , generate_shot_audio_{ std::move(generate_shot_audio) }
     , generate_bullet_explosion_audio_{ std::move(generate_bullet_explosion_audio) }
+    , generate_bullet_engine_audio_{ std::move(generate_bullet_engine_audio) }
     , bullet_trace_storage_{ bullet_trace_storage }
     , ammo_type_{ std::move(ammo_type) }
     , triggered_{ false }
@@ -160,6 +162,10 @@ void Gun::generate_bullet(const StaticWorld& world) {
         + parent_rb_.velocity_at_position(absolute_model_matrix_.t);
     std::string suffix = "_bullet" + scene_.get_temporary_instance_suffix();
     auto bullet_node_name = VariableAndHash<std::string>{"car_node" + suffix};
+    UpdateAudioSourceState update_audio_source_state;
+    if (generate_bullet_engine_audio_) {
+        update_audio_source_state = generate_bullet_engine_audio_({absolute_model_matrix_.t, bullet_velocity});
+    }
     if (generate_smart_bullet_) {
         auto np = node.ref(CURRENT_SOURCE_LOCATION);
         scene_.add_root_node(
@@ -177,6 +183,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
         auto bullet = std::make_unique<Bullet>(
             scene_,
             generate_bullet_explosion_audio_,
+            update_audio_source_state,
             smoke_generator_,
             advance_times_,
             rc,
@@ -229,6 +236,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
         auto bullet = std::make_unique<Bullet>(
             scene_,
             generate_bullet_explosion_audio_,
+            update_audio_source_state,
             smoke_generator_,
             advance_times_,
             rc,

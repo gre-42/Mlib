@@ -14,6 +14,7 @@ struct BulletProperties {
     VariableAndHash<std::string> explosion_resource_name;
     float explosion_animation_time;
     VariableAndHash<std::string> explosion_audio_resource_name;
+    VariableAndHash<std::string> engine_audio_resource_name;
     RigidBodyVehicleFlags rigid_body_flags;
     float mass;
     float velocity;

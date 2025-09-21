@@ -21,14 +21,16 @@ void LazyOneShotAudio::preload() {
     }
 }
 
-void LazyOneShotAudio::play(
+std::shared_ptr<AudioSourceAndPosition> LazyOneShotAudio::play(
     OneShotAudio& one_shot_audio,
+    AudioPeriodicity periodicity,
     const AudioSourceState<ScenePos>& position)
 {
     preload();
-    one_shot_audio.play(
+    return one_shot_audio.play(
         *buffer_,
         position,
+        periodicity,
         info_->distance_clamping,
         info_->gain, alpha_);
 }

@@ -38,6 +38,7 @@ public:
     void play();
     void pause();
     void unpause();
+    void stop();
     void join();
     void mute();
     void unmute();

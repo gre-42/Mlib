@@ -1,5 +1,6 @@
 #include "Create_Damageable.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Audio/Audio_Periodicity.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/One_Shot_Audio.hpp>
@@ -77,7 +78,7 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
         ]
         (const AudioSourceState<ScenePos>& state, const StaticWorld& static_world)
         {
-            o.play(*shot_audio_buffer, state, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
+            o.play(*shot_audio_buffer, state, AudioPeriodicity::APERIODIC, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
         };
     }
     std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion =

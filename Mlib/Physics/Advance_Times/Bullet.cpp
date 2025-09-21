@@ -26,6 +26,7 @@ using namespace Mlib;
 Bullet::Bullet(
     Scene& scene,
     std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
+    std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position,
     SmokeParticleGenerator& smoke_generator,
     AdvanceTimes& advance_times,
     RigidBodyVehicle& rigid_body,
@@ -40,6 +41,7 @@ Bullet::Bullet(
     RotateBullet rotate_bullet)
     : scene_{ scene }
     , generate_bullet_explosion_audio_{ std::move(generate_bullet_explosion_audio) }
+    , update_engine_audio_position_{ std::move(update_engine_audio_position) }
     , smoke_generator_{ smoke_generator }
     , advance_times_{ advance_times }
     , rigid_body_pulses_{ rigid_body.rbp_ }
@@ -72,6 +74,9 @@ Bullet::Bullet(
 
 Bullet::~Bullet() {
     on_destroy.clear();
+    if (update_engine_audio_position_) {
+        update_engine_audio_position_(nullptr);
+    }
 }
 
 void Bullet::advance_time(float dt, const StaticWorld& world) {
@@ -107,6 +112,10 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
         trace_extender_->append_location(
             rigid_body_pulses_.abs_transformation(),
             TrailLocationType::MIDPOINT);
+    }
+    if (update_engine_audio_position_) {
+        AudioSourceState<ScenePos> state{rigid_body_pulses_.abs_position(), rigid_body_pulses_.v_com_};
+        update_engine_audio_position_(&state);
     }
 }
 

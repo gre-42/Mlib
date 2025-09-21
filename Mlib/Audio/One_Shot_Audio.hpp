@@ -17,6 +17,7 @@ class EventReceiverDeletionToken;
 class AudioBuffer;
 template <class T>
 struct Interval;
+enum class AudioPeriodicity;
 
 struct AudioSourceAndPosition {
     AudioSourceAndPosition(
@@ -24,6 +25,7 @@ struct AudioSourceAndPosition {
         PositionRequirement position_requirement,
         float alpha,
         const AudioSourceState<ScenePos>& position);
+    ~AudioSourceAndPosition();
     AudioSource source;
     AudioSourceState<ScenePos> position;
 };
@@ -39,16 +41,17 @@ public:
     ~OneShotAudio();
     void advance_time();
     virtual void advance_time(float dt, const StaticWorld& world) override;
-    void play(
+    std::shared_ptr<AudioSourceAndPosition> play(
         const AudioBuffer& audio_buffer,
         const AudioSourceState<ScenePos>& position,
+        AudioPeriodicity periodicity,
         const std::optional<Interval<float>>& distance_clamping,
         float gain,
         float alpha = NAN);
     void stop();
 private:
     PositionRequirement position_requirement_;
-    std::list<AudioSourceAndPosition> sources_;
+    std::list<std::shared_ptr<AudioSourceAndPosition>> sources_;
     mutable FastMutex mutex_;
     std::function<bool()> paused_;
     std::unique_ptr<EventReceiverDeletionToken> erdt_;

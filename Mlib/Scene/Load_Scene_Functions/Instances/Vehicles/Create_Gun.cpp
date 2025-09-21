@@ -1,5 +1,6 @@
 #include "Create_Gun.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Audio/Audio_Periodicity.hpp>
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/One_Shot_Audio.hpp>
@@ -151,12 +152,12 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         generate_shot_audio =
         [
             &o=one_shot_audio,
-            shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(*a),
-            &shot_audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(*a)
+            audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(*a),
+            &audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(*a)
         ]
         (const AudioSourceState<ScenePos>& state)
         {
-            o.play(*shot_audio_buffer, state, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
+            o.play(*audio_buffer, state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
         };
     }
     std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio;
@@ -164,12 +165,32 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         generate_bullet_explosion_audio =
         [
             &o=one_shot_audio,
-            shot_audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(a),
-            &shot_audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(a)
+            audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(a),
+            &audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(a)
         ]
         (const AudioSourceState<ScenePos>& state)
         {
-            o.play(*shot_audio_buffer, state, shot_audio_meta.distance_clamping, shot_audio_meta.gain);
+            o.play(*audio_buffer, state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
+        };
+    }
+    std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio;
+    if (const auto& a = bullet_props.engine_audio_resource_name; !a->empty()) {
+        generate_bullet_engine_audio =
+        [
+            &o=one_shot_audio,
+            audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(a),
+            &audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(a)
+        ]
+        (const AudioSourceState<ScenePos>& state) -> UpdateAudioSourceState
+        {
+            auto asp = o.play(*audio_buffer, state, AudioPeriodicity::PERIODIC, audio_meta.distance_clamping, audio_meta.gain);
+            return [asp](const AudioSourceState<ScenePos>* state){
+                if (state == nullptr) {
+                    asp->source.stop();
+                } else {
+                    asp->position = *state;
+                }
+            };
         };
     }
     std::function<void()> generate_muzzle_flash;
@@ -193,6 +214,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::move(generate_smart_bullet),
         std::move(generate_shot_audio),
         std::move(generate_bullet_explosion_audio),
+        std::move(generate_bullet_engine_audio),
         bullet_trace_storage,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,

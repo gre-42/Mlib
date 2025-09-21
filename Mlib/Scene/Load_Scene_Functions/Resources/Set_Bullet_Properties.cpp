@@ -15,6 +15,7 @@ DECLARE_ARGUMENT(hitbox);
 DECLARE_ARGUMENT(explosion_resource);
 DECLARE_ARGUMENT(explosion_animation_time);
 DECLARE_ARGUMENT(explosion_audio);
+DECLARE_ARGUMENT(engine_audio);
 DECLARE_ARGUMENT(rigid_body_flags);
 DECLARE_ARGUMENT(mass);
 DECLARE_ARGUMENT(velocity);
@@ -39,6 +40,7 @@ static void from_json(const nlohmann::json& j, BulletProperties& item) {
     item.explosion_resource_name = jv.at<std::string>(KnownBulletArgs::explosion_resource);
     item.explosion_animation_time = jv.at<float>(KnownBulletArgs::explosion_animation_time) * seconds;
     item.explosion_audio_resource_name = jv.at<VariableAndHash<std::string>>(KnownBulletArgs::explosion_audio, VariableAndHash<std::string>{});
+    item.engine_audio_resource_name = jv.at<VariableAndHash<std::string>>(KnownBulletArgs::engine_audio, VariableAndHash<std::string>{});
     item.rigid_body_flags = rigid_body_vehicle_flags_from_string(jv.at<std::string>(KnownBulletArgs::rigid_body_flags));
     item.mass = jv.at<float>(KnownBulletArgs::mass) * kg;
     item.velocity = jv.at<float>(KnownBulletArgs::velocity) * meters / seconds;
