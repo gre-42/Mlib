@@ -96,6 +96,7 @@ void Mlib::parse_osm_xml(
     std::string current_way = "<none>";
     std::string current_node = "<none>";
     std::map<OrderableFixedArray<CompressedScenePos, 2>, std::string> ordered_node_positions;
+    uint32_t nduplicates_remaining = 20;
 
     std::string line;
     while(std::getline(ifs, line)) {
@@ -135,9 +136,14 @@ void Mlib::parse_osm_xml(
                     safe_stod(lon)};
                 auto pos = bounds.normalization_matrix().transform(current_node_position).casted<CompressedScenePos>();
                 auto opos = OrderableFixedArray<CompressedScenePos, 2>{ pos };
-                auto it = ordered_node_positions.find(opos);
-                if (it != ordered_node_positions.end()) {
-                    lwarn() << "Detected duplicate points: " + current_node + ", " + it->second;
+                if (auto it = ordered_node_positions.find(opos); it != ordered_node_positions.end()) {
+                    if (nduplicates_remaining > 0) {
+                        lwarn() << "Detected duplicate points: " + current_node + ", " + it->second;
+                        if (nduplicates_remaining == 1) {
+                            lwarn() << "Further warnings suppressed";
+                        }
+                        --nduplicates_remaining;
+                    }
                 } else {
                     ordered_node_positions.insert(std::make_pair(opos, current_node));
                 }
