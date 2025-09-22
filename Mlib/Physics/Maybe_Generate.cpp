@@ -1,4 +1,5 @@
 #include "Maybe_Generate.hpp"
+#include <Mlib/Memory/Float_To_Integral.hpp>
 
 using namespace Mlib;
 
@@ -12,11 +13,12 @@ void MaybeGenerate::advance_time(float dt) {
     lifetime_ += dt;
 }
 
-bool MaybeGenerate::operator()(float generation_dt)
+uint32_t MaybeGenerate::operator()(float generation_dt)
 {
-    if (lifetime_ > generation_dt) {
-        lifetime_ = 0.f;
-        return true;
+    if (lifetime_ >= generation_dt) {
+        auto res = std::floor(lifetime_ / generation_dt);
+        lifetime_ -= res * generation_dt;
+        return float_to_integral<uint32_t>(res);
     }
-    return false;
+    return 0;
 }

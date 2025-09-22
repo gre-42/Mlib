@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Maybe_Generate.hpp>
@@ -6,13 +7,12 @@
 #include <Mlib/Scene_Precision.hpp>
 #include <compare>
 #include <map>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
 namespace Mlib {
 
-template <typename TData, size_t... tshape>
-class FixedArray;
 class SmokeParticleGenerator;
 class RigidBodyVehicle;
 struct IntersectionScene;
@@ -22,6 +22,7 @@ class OneShotAudio;
 struct ContactEmissions {
     MaybeGenerate maybe_generate;
     std::optional<ParticleTrailGenerator> particle_trail_generator;
+    std::optional<FixedArray<ScenePos, 3>> old_position;
 };
 
 struct ContactSmokeAndAudio {

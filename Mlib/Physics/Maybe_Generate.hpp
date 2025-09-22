@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 namespace Mlib {
 
@@ -7,7 +8,7 @@ public:
     explicit MaybeGenerate();
     ~MaybeGenerate();
     void advance_time(float dt);
-    bool operator()(float generation_dt);
+    uint32_t operator()(float generation_dt);
 private:
     float lifetime_;
 };

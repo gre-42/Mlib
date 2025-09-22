@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cmath>
+#include <cstddef>
 
 namespace Mlib {
 
@@ -86,6 +87,9 @@ struct PhysicsEngineConfig {
     float alignment_surface_cos_strict = 0.85f;
     float alignment_plane_cos = 0.7f;
     float alignment_slerp = 0.1f;
+
+    // Particles
+    uint32_t max_interpolated_particles = 20;
 };
 
 }

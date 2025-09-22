@@ -2,8 +2,10 @@
 #include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Audio/Audio_Periodicity.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
@@ -83,7 +85,7 @@ void ContactSmokeGenerator::notify_contact(
             return it->second;
         }();
         auto ce_generate = [&](ContactEmissions& ce){
-            if (ce.maybe_generate(1.f / f)) {
+            if (auto n = ce.maybe_generate(1.f / f); n != 0) {
                 if (smoke_info.audio != nullptr) {
                     smoke_info.audio->play(
                         one_shot_audio_,
@@ -102,14 +104,24 @@ void ContactSmokeGenerator::notify_contact(
                         dirx = -dirx;
                     }
                     dirx -= surface_normal.casted<float>() * dot0d(surface_normal.casted<float>(), dirx);
-                    ce.particle_trail_generator->generate(
-                        intersection_point,
-                        rotation,
-                        dirx * pvel,
-                        smoke_info.visual->particle,
-                        smoke_info.visual->smoke_particle_instance_prefix,
-                        ParticleContainer::INSTANCE,
-                        c.history.world);
+                    auto ptg_generate = [&](const FixedArray<ScenePos, 3>& p){
+                        ce.particle_trail_generator->generate(
+                            p,
+                            rotation,
+                            dirx * pvel,
+                            smoke_info.visual->particle,
+                            smoke_info.visual->smoke_particle_instance_prefix,
+                            ParticleContainer::INSTANCE,
+                            c.history.world);
+                    };
+                    if (!ce.old_position.has_value() || (n > c.history.cfg.max_interpolated_particles)) {
+                        ptg_generate(intersection_point);
+                    } else {
+                        for (uint32_t i = 1; i <= n; ++i) {
+                            ptg_generate(lerp(*ce.old_position, intersection_point, integral_to_float<ScenePos>(i) / n));
+                        }
+                    }
+                    ce.old_position.emplace(intersection_point);
                 }
             }
         };
