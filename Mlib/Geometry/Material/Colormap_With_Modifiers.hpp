@@ -42,6 +42,7 @@ struct ColormapWithModifiers {
     bool multiply_with_alpha = false;
     ColorMode color_mode = ColorMode::UNDEFINED;
     float alpha_fac = 1.f;
+    float alpha_exponent = 1.f;
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
     InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     InterpolationMode depth_interpolation = InterpolationMode::NEAREST;
@@ -85,6 +86,7 @@ struct ColormapWithModifiers {
         archive(multiply_with_alpha);
         archive(color_mode);
         archive(alpha_fac);
+        archive(alpha_exponent);
         archive(mipmap_mode);
         archive(magnifying_interpolation_mode);
         archive(depth_interpolation);

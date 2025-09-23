@@ -7,7 +7,8 @@ void stb_alpha_fac(
     int width,
     int height,
     int nrChannels,
-    float alpha_fac)
+    float alpha_fac,
+    float alpha_exponent)
 {
     if (nrChannels != 4) {
         THROW_OR_ABORT("nrChannels is not 4");
@@ -15,7 +16,9 @@ void stb_alpha_fac(
     for (int r = 0; r < height; ++r) {
         for (int c = 0; c < width; ++c) {
             int i = (r * width + c) * nrChannels + nrChannels - 1;
-            data[i] = (unsigned char)std::round(std::clamp(float(data[i]) * alpha_fac, 0.f, 255.f));
+            auto v = float(data[i]) / 255.f;
+            v = std::pow(v, alpha_exponent) * alpha_fac;
+            data[i] = (unsigned char)std::round(255.f * std::clamp(v, 0.f, 1.f));
         }
     }
 }

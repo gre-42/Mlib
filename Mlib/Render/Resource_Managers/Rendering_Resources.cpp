@@ -409,13 +409,14 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(
             si1.nrChannels,
             si0.nrChannels);
     }
-    if (color.alpha_fac != 1.f) {
+    if ((color.alpha_fac != 1.f) || (color.alpha_exponent != 1.f)) {
         stb_alpha_fac(
             si0.data(),
             si0.width,
             si0.height,
             si0.nrChannels,
-            color.alpha_fac);
+            color.alpha_fac,
+            color.alpha_exponent);
     }
     if (!color.color_to_replace.all_equal(-1.f)) {
         stb_replace_color(

@@ -5,4 +5,5 @@ void stb_alpha_fac(
     int width,
     int height,
     int nrChannels,
-    float alpha_fac);
+    float alpha_fac,
+    float alpha_exponent);

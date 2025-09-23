@@ -18,6 +18,7 @@ DECLARE_ARGUMENT(specular);
 DECLARE_ARGUMENT(normal);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(alpha_fac);
+DECLARE_ARGUMENT(alpha_exponent);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(desaturation_exponent);
 DECLARE_ARGUMENT(histogram);
@@ -112,6 +113,7 @@ struct RegisterJsonUserFunction {
             .multiply_with_alpha = args.arguments.at<bool>(KnownArgs::multiply_with_alpha, false),
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
             .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
+            .alpha_exponent = args.arguments.at<float>(KnownArgs::alpha_exponent, 1.f),
             .mipmap_mode = mipmap_mode,
             .magnifying_interpolation_mode = magnifying_interpolation_mode,
             .depth_interpolation = depth_interpolation,
