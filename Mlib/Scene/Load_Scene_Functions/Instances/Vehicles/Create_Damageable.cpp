@@ -63,6 +63,7 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
                 fixed_zeros<float, 3>(),
                 fixed_zeros<float, 3>(),
                 0.f,
+                0.f,
                 duration,
                 ParticleContainer::NODE,
                 static_world);

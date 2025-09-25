@@ -21,11 +21,13 @@ ParticleCreator::~ParticleCreator() = default;
 void ParticleCreator::add_particle(
     const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
     const FixedArray<float, 3>& velocity,
-    float air_resistance)
+    float air_resistance,
+    float texture_layer)
 {
     particles_instance_.add_particle(
         transformation_matrix,
         billboard_sequence_,
         velocity,
-        air_resistance);
+        air_resistance,
+        texture_layer);
 }

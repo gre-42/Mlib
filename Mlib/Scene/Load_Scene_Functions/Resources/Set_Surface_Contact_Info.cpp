@@ -13,6 +13,7 @@ namespace KnownRuleArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(vehicle_velocities);
 DECLARE_ARGUMENT(particle_frequencies);
+DECLARE_ARGUMENT(particle_layers);
 DECLARE_ARGUMENT(particle_velocities);
 }
 
@@ -47,10 +48,18 @@ static void rules_from_json(
 {
     JsonView jv{ j };
     jv.validate(KnownRuleArgs::options);
-    rule.smoke_particle_frequency = Interp<float>{
-        jv.at_vector<float>(KnownRuleArgs::vehicle_velocities, parse_velocity),
-        jv.at_vector<float>(KnownRuleArgs::particle_frequencies, parse_frequency),
-        OutOfRangeBehavior::CLAMP};
+    if (jv.contains(KnownRuleArgs::particle_frequencies)) {
+        rule.smoke_particle_frequency = Interp<float>{
+            jv.at_vector<float>(KnownRuleArgs::vehicle_velocities, parse_velocity),
+            jv.at_vector<float>(KnownRuleArgs::particle_frequencies, parse_frequency),
+            OutOfRangeBehavior::CLAMP};
+    }
+    if (jv.contains(KnownRuleArgs::particle_layers)) {
+        rule.smoke_particle_layer = Interp<float>{
+            jv.at_vector<float>(KnownRuleArgs::vehicle_velocities, parse_velocity),
+            jv.at<std::vector<float>>(KnownRuleArgs::particle_layers),
+            OutOfRangeBehavior::CLAMP};
+    }
     if (jv.contains(KnownRuleArgs::particle_velocities)) {
         rule.smoke_particle_velocity = Interp<float>{
             jv.at_vector<float>(KnownRuleArgs::vehicle_velocities, parse_velocity),

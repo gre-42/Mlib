@@ -66,10 +66,15 @@ void ContactSmokeGenerator::notify_contact(
     for (const auto& smoke_info : c.surface_contact_info->emission) {
         const auto& af = smoke_info.vehicle_velocity.smoke_particle_frequency;
         const auto& sf = smoke_info.tire_velocity.smoke_particle_frequency;
+        const auto& sl = smoke_info.tire_velocity.smoke_particle_layer;
         auto f =
             (af.empty() ? 0.f : af(dvel_a)) +
             (sf.empty() ? 0.f : sf(dvel_s));
         if (f < 1e-12f) {
+            continue;
+        }
+        auto texture_layer = sl.empty() ? 0.f : sl(dvel_s);
+        if (!sl.empty() && (texture_layer < 1e-12f)) {
             continue;
         }
         auto& tstg = [&]() -> ContactSmokeAndAudio& {
@@ -109,6 +114,7 @@ void ContactSmokeGenerator::notify_contact(
                             p,
                             rotation,
                             dirx * pvel,
+                            texture_layer,
                             smoke_info.visual->particle,
                             smoke_info.visual->smoke_particle_instance_prefix,
                             ParticleContainer::INSTANCE,
@@ -169,13 +175,23 @@ void ContactSmokeGenerator::notify_contact(
     }
 }
 
-void ContactSmokeGenerator::advance_time(float dt) {
-    for (auto& [_, m] : tire_smoke_trail_generators_) {
-        for (auto& [_1, g] : m.smoke) {
-            g.maybe_generate.advance_time(dt);
-        }
-        for (auto& [_1, g] : m.audio) {
-            g.maybe_generate.advance_time(dt);
-        }
+void ContactSmokeGenerator::advance_time(
+    RigidBodyVehicle& vehicle,
+    const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase)
+{
+    if (!phase.group.rigid_bodies.contains(&vehicle.rbp_)) {
+        return;
+    }
+    auto it = tire_smoke_trail_generators_.find(&vehicle);
+    if (it == tire_smoke_trail_generators_.end()) {
+        return;
+    }
+    auto dt = cfg.dt_substeps(phase);
+    for (auto& [_1, g] : it->second.smoke) {
+        g.maybe_generate.advance_time(dt);
+    }
+    for (auto& [_1, g] : it->second.audio) {
+        g.maybe_generate.advance_time(dt);
     }
 }

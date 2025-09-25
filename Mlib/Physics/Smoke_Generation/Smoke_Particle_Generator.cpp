@@ -33,6 +33,7 @@ void SmokeParticleGenerator::generate_root(
     const FixedArray<float, 3>& rotation,
     const FixedArray<float, 3>& velocity,
     float air_resistance,
+    float texture_layer,
     float animation_duration,
     ParticleContainer particle_container,
     const StaticWorld& static_world)
@@ -53,7 +54,8 @@ void SmokeParticleGenerator::generate_root(
             position,
             rotation,
             velocity,
-            air_resistance);
+            air_resistance,
+            texture_layer);
     } else {
         THROW_OR_ABORT("Unknown particle type");
     }
@@ -64,14 +66,16 @@ void SmokeParticleGenerator::generate_instance(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     const FixedArray<float, 3>& velocity,
-    float air_resistance)
+    float air_resistance,
+    float texture_layer)
 {
     particle_renderer_->get_instantiator(resource_name).add_particle(
         TransformationMatrix<float, ScenePos, 3>{
             tait_bryan_angles_2_matrix(rotation),
             position},
         velocity,
-        air_resistance);
+        air_resistance,
+        texture_layer);
 }
 
 void SmokeParticleGenerator::generate_root_node(

@@ -18,6 +18,8 @@ class RigidBodyVehicle;
 struct IntersectionScene;
 struct SurfaceSmokeInfo;
 class OneShotAudio;
+struct PhysicsEngineConfig;
+struct PhysicsPhase;
 
 struct ContactEmissions {
     MaybeGenerate maybe_generate;
@@ -45,7 +47,10 @@ public:
         const FixedArray<float, 3>& rotation,
         const FixedArray<SceneDir, 3>& surface_normal,
         const IntersectionScene& c);
-    void advance_time(float dt);
+    void advance_time(
+        RigidBodyVehicle& vehicle,
+        const PhysicsEngineConfig& cfg,
+        const PhysicsPhase& phase);
 private:
     OneShotAudio& one_shot_audio_;
     SmokeParticleGenerator& air_smoke_particle_generator_;

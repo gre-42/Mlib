@@ -13,6 +13,7 @@ namespace Mlib {
 struct SurfaceSmokeRule {
     // Has a standard constructor for JSON parsing (needs to be default-constructible).
     Interp<float> smoke_particle_frequency = Interp<float>{ {}, {} };
+    Interp<float> smoke_particle_layer = Interp<float>{ {}, {} };
     Interp<float> smoke_particle_velocity = Interp<float>{ {}, {} };
 };
 

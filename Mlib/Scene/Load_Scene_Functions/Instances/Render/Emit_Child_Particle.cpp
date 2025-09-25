@@ -41,7 +41,8 @@ void EmitChildParticle::operator () (
         get_instantiator(resource).add_particle(
             location,
             fixed_zeros<float, 3>(),    // velocity
-            0.f);                       // air_resistance
+            0.f,                        // air_resistance
+            0.f);                       // texture_layer
 }
 
 namespace {

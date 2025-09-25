@@ -41,6 +41,7 @@ void EngineExhaust::notify_rotation(
             relative_location_.t,
             matrix_2_tait_bryan_angles(relative_location_.R),
             fixed_zeros<SceneDir, 3>(),     // velocity
+            0.f,                            // texture_layer
             particle_.particle,
             "exhaust",
             ParticleContainer::INSTANCE,

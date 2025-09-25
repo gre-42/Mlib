@@ -45,7 +45,8 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
         const BillboardSequence& sequence,
         const FixedArray<float, 3>& velocity,
-        float air_resistance);
+        float air_resistance,
+        float texture_layer);
 
     void move(float dt, const StaticWorld& world);
 

@@ -55,7 +55,8 @@ void DynamicInstanceBuffers::append(
     const TransformationMatrix<float, float, 3>& transformation_matrix,
     const BillboardSequence& sequence,
     const FixedArray<float, 3>& velocity,
-    float air_resistance)
+    float air_resistance,
+    float texture_layer)
 {
     if (sequence.billboard_ids.empty()) {
         THROW_OR_ABORT("Billboard sequence is empty");
@@ -84,7 +85,7 @@ void DynamicInstanceBuffers::append(
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.append(m);
         if (has_per_instance_continuous_texture_layer_) {
-            texture_layers_->append(0.f);
+            texture_layers_->append(texture_layer);
         }
         animation_times_[tmp_num_instances_] = 0.f;
         billboard_sequences_[tmp_num_instances_] = &sequence;
@@ -94,6 +95,9 @@ void DynamicInstanceBuffers::append(
 
 void DynamicInstanceBuffers::move(float dt, const StaticWorld& world) {
     if (num_billboard_atlas_components_ == 0) {
+        return;
+    }
+    if (clear_on_update_ == ClearOnUpdate::YES) {
         return;
     }
     for (size_t i = 0; i < tmp_length();) {

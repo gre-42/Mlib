@@ -24,6 +24,7 @@ public:
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
+        float texture_layer,
         const ParticleDescriptor& trail,
         const std::string& instance_prefix,
         ParticleContainer particle_container,

@@ -38,6 +38,7 @@ public:
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
         float air_resistance,
+        float texture_layer,
         float animation_duration,
         ParticleContainer particle_container,
         const StaticWorld& static_world);
@@ -46,7 +47,8 @@ public:
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
-        float air_resistance);
+        float air_resistance,
+        float texture_layer);
     void generate_root_node(
         const VariableAndHash<std::string>& resource_name,
         const VariableAndHash<std::string>& node_name,

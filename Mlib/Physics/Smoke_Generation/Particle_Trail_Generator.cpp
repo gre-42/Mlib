@@ -17,6 +17,7 @@ void ParticleTrailGenerator::generate(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     const FixedArray<float, 3>& velocity,
+    float texture_layer,
     const ParticleDescriptor& trail,
     const std::string& instance_prefix,
     ParticleContainer particle_container,
@@ -38,6 +39,7 @@ void ParticleTrailGenerator::generate(
         r,
         velocity,
         trail.air_resistance,
+        texture_layer,
         trail.animation_duration,
         particle_container,
         static_world);

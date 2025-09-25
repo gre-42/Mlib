@@ -141,15 +141,15 @@ void PhysicsEngine::move_rigid_bodies(
         auto& rb = rbm.rigid_body;
         assert_true(rb->mass() != INFINITY);
         rb->advance_time(cfg_, world, beacons, phase);
+        if (contact_smoke_generator_ == nullptr) {
+            THROW_OR_ABORT("contact_smoke_generator not set");
+        }
+        contact_smoke_generator_->advance_time(rb.get(), cfg_, phase);
     }
 }
 
 void PhysicsEngine::move_particles(const StaticWorld& world)
 {
-    if (contact_smoke_generator_ == nullptr) {
-        THROW_OR_ABORT("contact_smoke_generator not set");
-    }
-    contact_smoke_generator_->advance_time(cfg_.dt);
     if (trail_renderer_ != nullptr) {
         trail_renderer_->move(cfg_.dt, world);
     }

@@ -15,7 +15,8 @@ public:
     virtual void add_particle(
         const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
         const FixedArray<float, 3>& velocity,
-        float air_resistance) = 0;
+        float air_resistance,
+        float texture_layer) = 0;
     
 };
 

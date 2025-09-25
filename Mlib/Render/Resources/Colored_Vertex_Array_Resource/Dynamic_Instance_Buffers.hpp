@@ -43,7 +43,8 @@ public:
         const TransformationMatrix<float, float, 3>& transformation_matrix,
         const BillboardSequence& sequence,
         const FixedArray<float, 3>& velocity,
-        float air_resistance);
+        float air_resistance,
+        float texture_layer);
     void move(float dt, const StaticWorld& world);
     size_t capacity() const;
     size_t tmp_length() const;
