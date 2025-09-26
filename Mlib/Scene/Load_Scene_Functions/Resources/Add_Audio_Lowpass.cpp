@@ -14,25 +14,23 @@ namespace {
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(gain);
-DECLARE_ARGUMENT(distance_clamping);
-DECLARE_ARGUMENT(lowpass);
+DECLARE_ARGUMENT(high_gain);
 }
 
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "add_audio",
+            "add_audio_lowpass",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
                 args.arguments.validate(KnownArgs::options);
-                AudioResourceContextStack::primary_audio_resources()->add_buffer(
+                AudioResourceContextStack::primary_audio_resources()->add_lowpass(
                     args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
-                    args.arguments.path(KnownArgs::filename),
-                    args.arguments.at<float>(KnownArgs::gain, 1.f),
-                    args.arguments.try_at<Interval<float>>(KnownArgs::distance_clamping),
-                    args.arguments.try_at_non_null<VariableAndHash<std::string>>(KnownArgs::lowpass));
+                    AudioLowpassInformation{
+                        args.arguments.at<float>(KnownArgs::gain),
+                        args.arguments.at<float>(KnownArgs::high_gain)
+                    });
             });
     }
 } obj;

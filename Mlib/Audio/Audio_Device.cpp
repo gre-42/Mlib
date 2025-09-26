@@ -1,4 +1,5 @@
 #include "Audio_Device.hpp"
+#include <Mlib/Audio/OpenALSoft_efx.h>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -40,4 +41,13 @@ std::string AudioDevice::get_name() const {
         THROW_OR_ABORT("Could not read audio device name");
     }
     return name;
+}
+
+unsigned int AudioDevice::get_max_auxiliary_sends() const {
+    ALCint max_auxiliary_sends = 0;
+    alcGetIntegerv(device_, ALC_MAX_AUXILIARY_SENDS, 1, &max_auxiliary_sends);
+    if (ALCenum error = alcGetError(device_); error != ALC_NO_ERROR) {
+        THROW_OR_ABORT("Could obtain max auxiliary sends per source, code: " + std::to_string(error));
+    }
+    return max_auxiliary_sends;
 }

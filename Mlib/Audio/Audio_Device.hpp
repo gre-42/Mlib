@@ -17,6 +17,7 @@ public:
 
     unsigned int get_frequency() const;
     std::string get_name() const;
+    unsigned int get_max_auxiliary_sends() const;
 
 private:
     ALCdevice *device_;

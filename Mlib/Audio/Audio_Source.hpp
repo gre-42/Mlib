@@ -8,6 +8,7 @@ namespace Mlib {
 template <typename TData, size_t... tshape>
 class FixedArray;
 class AudioBuffer;
+class AudioLowpass;
 template <class TPosition>
 struct AudioSourceState;
 template <class T>
@@ -35,6 +36,7 @@ public:
     void set_pitch(float f);
     void set_position(const AudioSourceState<float>& position);
     void set_distance_clamping(const Interval<float>& interval);
+    void set_lowpass(const AudioLowpass& lowpass);
     void play();
     void pause();
     void unpause();

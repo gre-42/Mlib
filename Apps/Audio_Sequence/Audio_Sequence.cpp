@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
         std::list<AudioBufferAndFrequency> buffers;
         for (const auto& i : items) {
             buffers.push_back(AudioBufferAndFrequency{
-                .buffer = std::make_shared<AudioBuffer>(AudioBuffer::from_wave(i.filename)),
+                .buffer = AudioBuffer::from_wave(i.filename),
                 .frequency = i.frequency});
         }
         AudioBufferSequence buffer_seq{std::vector(buffers.begin(), buffers.end())};

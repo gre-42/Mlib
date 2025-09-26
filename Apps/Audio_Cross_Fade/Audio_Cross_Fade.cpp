@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
         list_audio_devices(linfo(LogFlags::NO_APPEND_NEWLINE).ref());
         AudioDevice device;
         AudioContext context{device, safe_stou(args.named_value("--audio_frequency", "0"))};
-        std::list<AudioBuffer> buffers;
+        std::list<std::shared_ptr<AudioBuffer>> buffers;
         for (const auto& l : args.unnamed_values()) {
             buffers.emplace_back(AudioBuffer::from_wave(l));
         }
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         CrossFade cross_fade{ PositionRequirement::POSITION_NOT_REQUIRED, paused, paused_changed, dgain };
         cross_fade.start_background_thread(dt_fade);
         for (const auto& b : buffers) {
-            cross_fade.play(b, gain_factor, pitch);
+            cross_fade.play(*b, gain_factor, pitch);
             Mlib::sleep_for(std::chrono::duration<float>(dt_append));
         }
     } catch (const std::runtime_error& e) {

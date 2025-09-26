@@ -1,5 +1,6 @@
 #include "Audio_Context.hpp"
 #include <Mlib/Audio/Audio_Device.hpp>
+#include <Mlib/Audio/OpenALSoft_efx.h>
 #include <Mlib/Audio/OpenAL_al.h>
 #include <Mlib/Audio/OpenAL_alc.h>
 #include <Mlib/Memory/Integral_Cast.hpp>
@@ -10,8 +11,20 @@
 
 using namespace Mlib;
 
-AudioContext::AudioContext(AudioDevice& device, unsigned int frequency) {
-    ALCint attrlist[] = {ALC_FREQUENCY, integral_cast<ALCint>(frequency), 0};
+AudioContext::AudioContext(
+    AudioDevice& device,
+    unsigned int frequency,
+    unsigned int max_auxiliary_sends)
+{
+    if (alcIsExtensionPresent(device.device_, "ALC_EXT_EFX") == AL_FALSE) {
+        THROW_OR_ABORT("OpenAL effects extension not present");
+    }
+    ALCint attrlist[] = {
+        ALC_FREQUENCY,
+        integral_cast<ALCint>(frequency),
+        0,
+        ALC_MAX_AUXILIARY_SENDS,
+        integral_cast<ALCint>(max_auxiliary_sends)};
     auto *context = alcCreateContext(device.device_, frequency == 0 ? nullptr : attrlist);
     if (context == nullptr) {
         THROW_OR_ABORT("Could not create audio context, code: " +
@@ -19,8 +32,7 @@ AudioContext::AudioContext(AudioDevice& device, unsigned int frequency) {
     }
     dgs_.add([context, d = device.device_]() {
         alcDestroyContext(context);
-        ALCenum error = alcGetError(d);
-        if (error != ALC_NO_ERROR) {
+        if (ALCenum error = alcGetError(d); error != ALC_NO_ERROR) {
             verbose_abort("Could not destroy context, code: " + std::to_string(error));
         }
     });
@@ -34,6 +46,7 @@ AudioContext::AudioContext(AudioDevice& device, unsigned int frequency) {
                           std::to_string(alcGetError(d)));
         }
     });
+    linfo() << "Device supports " << device.get_max_auxiliary_sends() << " aux sends per source";
 }
 
 AudioContext::~AudioContext() = default;

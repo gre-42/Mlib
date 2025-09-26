@@ -66,6 +66,7 @@ void OneShotAudio::advance_time() {
 
 std::shared_ptr<AudioSourceAndPosition> OneShotAudio::play(
     const AudioBuffer& audio_buffer,
+    const AudioLowpass* lowpass,
     const AudioSourceState<ScenePos>& position,
     AudioPeriodicity periodicity,
     const std::optional<Interval<float>>& distance_clamping,
@@ -83,6 +84,9 @@ std::shared_ptr<AudioSourceAndPosition> OneShotAudio::play(
     sp->source.set_gain(gain);
     if (distance_clamping.has_value()) {
         sp->source.set_distance_clamping(*distance_clamping);
+    }
+    if (lowpass != nullptr) {
+        sp->source.set_lowpass(*lowpass);
     }
     sp->source.play();
     return sp;

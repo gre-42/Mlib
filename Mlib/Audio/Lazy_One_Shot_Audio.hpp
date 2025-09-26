@@ -8,11 +8,12 @@
 namespace Mlib {
 
 class AudioBuffer;
+class AudioLowpass;
 class OneShotAudio;
 class AudioResources;
 template <class TPosition>
 struct AudioSourceState;
-struct AudioFileInformation;
+struct AudioMetaInformation;
 struct AudioSourceAndPosition;
 enum class AudioPeriodicity;
 
@@ -29,7 +30,7 @@ public:
         const AudioSourceState<ScenePos>& position);
 private:
     std::shared_ptr<AudioBuffer> buffer_;
-    const AudioFileInformation* info_;
+    const AudioMetaInformation* info_;
     float alpha_;
     AudioResources& resources_;
     VariableAndHash<std::string> resource_name_;

@@ -157,7 +157,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         ]
         (const AudioSourceState<ScenePos>& state)
         {
-            o.play(*audio_buffer, state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
+            o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
         };
     }
     std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio;
@@ -170,7 +170,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         ]
         (const AudioSourceState<ScenePos>& state)
         {
-            o.play(*audio_buffer, state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
+            o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
         };
     }
     std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio;
@@ -183,7 +183,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         ]
         (const AudioSourceState<ScenePos>& state) -> UpdateAudioSourceState
         {
-            auto asp = o.play(*audio_buffer, state, AudioPeriodicity::PERIODIC, audio_meta.distance_clamping, audio_meta.gain);
+            auto asp = o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::PERIODIC, audio_meta.distance_clamping, audio_meta.gain);
             return [asp](const AudioSourceState<ScenePos>* state){
                 if (state == nullptr) {
                     asp->source.stop();

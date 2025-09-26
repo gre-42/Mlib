@@ -29,8 +29,10 @@ std::shared_ptr<AudioSourceAndPosition> LazyOneShotAudio::play(
     preload();
     return one_shot_audio.play(
         *buffer_,
+        info_->lowpass.get(),
         position,
         periodicity,
         info_->distance_clamping,
-        info_->gain, alpha_);
+        info_->gain,
+        alpha_);
 }

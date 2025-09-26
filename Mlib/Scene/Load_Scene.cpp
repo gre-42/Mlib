@@ -141,7 +141,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Sliding_Normal_Modifier.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Render_Fps.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Textures_Lazy.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio_Sequence.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Blend_Map_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Bvh_Resource.hpp>
@@ -428,7 +427,6 @@ LoadScene::LoadScene(
             register_json_user_function(VisualNodeStatus3rd::key, VisualNodeStatus3rd::json_user_function);
 
             // Resources
-            register_json_user_function(AddAudio::key, AddAudio::json_user_function);
             register_json_user_function(AddAudioSequence::key, AddAudioSequence::json_user_function);
             register_json_user_function(AddBlendMapTexture::key, AddBlendMapTexture::json_user_function);
             register_json_user_function(AddBvhResource::key, AddBvhResource::json_user_function);

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Audio/OpenAL_al.h>
 #include <cstdint>
-#include <optional>
+#include <memory>
 #include <string>
 
 namespace Mlib {
@@ -14,14 +14,13 @@ class AudioBuffer {
     AudioBuffer &operator=(const AudioBuffer&) = delete;
 
 public:
-    explicit AudioBuffer(ALuint buffer);
-    AudioBuffer(AudioBuffer&& other) noexcept;
+    explicit AudioBuffer(ALuint handle);
     ~AudioBuffer();
-    static AudioBuffer from_wave(const std::string& filename);
+    static std::shared_ptr<AudioBuffer> from_wave(const std::string& filename);
     uint32_t nchannels() const;
 
 private:
-    std::optional<ALuint> buffer_;
+    ALuint handle_;
 };
 
 }

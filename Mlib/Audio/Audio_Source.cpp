@@ -2,8 +2,10 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Audio/Audio_Buffer.hpp>
 #include <Mlib/Audio/Audio_Entity_State.hpp>
+#include <Mlib/Audio/Audio_Lowpass.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Audio/OpenALSoft_efx.h>
 #include <Mlib/Geometry/Intersection/Interval.hpp>
 #include <Mlib/Physics/Units.hpp>
 
@@ -29,10 +31,7 @@ AudioSource::AudioSource(
     float alpha)
     : AudioSource{ position_requirement, alpha }
 {
-    if (!buffer.buffer_.has_value()) {
-        THROW_OR_ABORT("Cannot attach null audio buffer");
-    }
-    AL_CHK(alSourcei(source_, AL_BUFFER, (ALint)(*buffer.buffer_)));
+    AL_CHK(alSourcei(source_, AL_BUFFER, integral_cast<ALint>(buffer.handle_)));
     nchannels_ = buffer.nchannels();
 }
 
@@ -81,6 +80,10 @@ void AudioSource::set_position(const AudioSourceState<float>& position) {
 void AudioSource::set_distance_clamping(const Interval<float>& interval) {
     AL_CHK(alSourcef(source_, AL_REFERENCE_DISTANCE, interval.min));
     AL_CHK(alSourcef(source_, AL_MAX_DISTANCE, interval.max));
+}
+
+void AudioSource::set_lowpass(const AudioLowpass& lowpass) {
+    AL_CHK(alSourcei(source_, AL_DIRECT_FILTER, lowpass.handle_));
 }
 
 void AudioSource::play() {

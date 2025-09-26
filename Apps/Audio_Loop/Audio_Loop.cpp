@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
         AudioDevice device;
         AudioContext context{ device, safe_stou(args.named_value("--audio_frequency", "0")) };
         auto buffer = AudioBuffer::from_wave(args.unnamed_value(0));
-        AudioSource source{buffer, PositionRequirement::POSITION_NOT_REQUIRED};
+        AudioSource source{*buffer, PositionRequirement::POSITION_NOT_REQUIRED};
         source.set_loop(args.has_named("--loop"));
         source.set_pitch(safe_stof(args.named_value("--pitch", "1")));
         source.set_gain(safe_stof(args.named_value("--gain", "1")));
