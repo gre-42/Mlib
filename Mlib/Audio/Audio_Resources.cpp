@@ -71,9 +71,7 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const VariableAndHash<st
         return *it;
     }
     auto& fit = buffer_filenames_.get(name);
-    auto buffer = AudioBuffer::from_wave(fit.filename);
-    buffers_.add(name, buffer);
-    return buffer;
+    return buffers_.add(name, AudioBuffer::from_wave(fit.filename));
 }
 
 void AudioResources::preload_buffer(const VariableAndHash<std::string>& name) const {
@@ -122,8 +120,7 @@ std::shared_ptr<AudioBufferSequenceWithHysteresis> AudioResources::get_buffer_se
             .frequency = i.frequency});
     }
     auto seq = std::make_shared<AudioBufferSequenceWithHysteresis>(std::vector(buffers.begin(), buffers.end()), it.hysteresis_step);
-    buffer_sequences_.add(name, seq);
-    return seq;
+    return buffer_sequences_.add(name, seq);
 }
 
 void AudioResources::add_equalizer(
