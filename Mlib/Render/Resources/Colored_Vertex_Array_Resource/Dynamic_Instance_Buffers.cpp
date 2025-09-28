@@ -107,7 +107,7 @@ void DynamicInstanceBuffers::move_renderables(float dt) {
     if (clear_on_update_ == ClearOnUpdate::YES) {
         return;
     }
-    std::unordered_map<const InternalParticleProperties*, float> air_resistances;
+    std::unordered_map<float, float> air_resistances;
     for (size_t i = 0; i < tmp_length();) {
         auto& ai = animation_times_[i];
         auto& bi = billboard_sequences_[i];
@@ -115,9 +115,9 @@ void DynamicInstanceBuffers::move_renderables(float dt) {
         auto advance_position = [&](FixedArray<float, 3>& position) {
             position += props.velocity * dt;
             if (props.air_resistance_halflife != INFINITY) {
-                auto it = air_resistances.find(&props);
+                auto it = air_resistances.find(props.air_resistance_halflife);
                 if (it == air_resistances.end()) {
-                    auto res = air_resistances.try_emplace(&props, std::pow(0.5f, dt / props.air_resistance_halflife));
+                    auto res = air_resistances.try_emplace(props.air_resistance_halflife, std::pow(0.5f, dt / props.air_resistance_halflife));
                     if (!res.second) {
                         verbose_abort("DynamicInstanceBuffers::move_renderables internal error");
                     }
