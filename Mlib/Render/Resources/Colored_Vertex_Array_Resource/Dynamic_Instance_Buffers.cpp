@@ -98,7 +98,7 @@ void DynamicInstanceBuffers::append(
 }
 
 void DynamicInstanceBuffers::set_wind_vector(const FixedArray<float, 3>& wind_vector) {
-    wind_vector_ = wind_vector_;
+    wind_vector_ = wind_vector;
 }
 
 void DynamicInstanceBuffers::move_renderables(std::chrono::steady_clock::time_point time) {

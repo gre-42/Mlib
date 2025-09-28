@@ -49,5 +49,5 @@ unsigned int AudioDevice::get_max_auxiliary_sends() const {
     if (ALCenum error = alcGetError(device_); error != ALC_NO_ERROR) {
         THROW_OR_ABORT("Could obtain max auxiliary sends per source, code: " + std::to_string(error));
     }
-    return max_auxiliary_sends;
+    return integral_cast<unsigned int>(max_auxiliary_sends);
 }

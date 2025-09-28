@@ -83,7 +83,7 @@ void AudioSource::set_distance_clamping(const Interval<float>& interval) {
 }
 
 void AudioSource::set_lowpass(const AudioLowpass& lowpass) {
-    AL_CHK(alSourcei(source_, AL_DIRECT_FILTER, lowpass.handle_));
+    AL_CHK(alSourcei(source_, AL_DIRECT_FILTER, integral_cast<ALint>(lowpass.handle_)));
 }
 
 void AudioSource::play() {
