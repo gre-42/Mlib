@@ -148,7 +148,7 @@ void Bullet::notify_collided(
         intersection_point,
         fixed_zeros<float, 3>(),
         fixed_zeros<float, 3>(),
-        0.f,
+        INFINITY,
         0.f,
         props_.explosion_animation_time,
         ParticleContainer::NODE,

@@ -46,7 +46,7 @@ void EmitChildParticle::operator () (
             time_point,
             location,
             fixed_zeros<float, 3>(),    // velocity
-            0.f,                        // air_resistance_halflife
+            INFINITY,                   // air_resistance_halflife
             0.f);                       // texture_layer
 }
 

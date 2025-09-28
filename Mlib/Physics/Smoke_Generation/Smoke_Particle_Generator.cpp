@@ -32,7 +32,7 @@ void SmokeParticleGenerator::generate_root(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     const FixedArray<float, 3>& velocity,
-    float air_resistance,
+    float air_resistance_halflife,
     float texture_layer,
     float animation_duration,
     ParticleContainer particle_container,
@@ -45,7 +45,7 @@ void SmokeParticleGenerator::generate_root(
             position,
             rotation,
             velocity,
-            air_resistance,
+            air_resistance_halflife,
             animation_duration,
             static_world);
     } else if (particle_container == ParticleContainer::INSTANCE) {
@@ -54,7 +54,7 @@ void SmokeParticleGenerator::generate_root(
             position,
             rotation,
             velocity,
-            air_resistance,
+            air_resistance_halflife,
             texture_layer,
             static_world);
     } else {
@@ -67,7 +67,7 @@ void SmokeParticleGenerator::generate_instance(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     const FixedArray<float, 3>& velocity,
-    float air_resistance,
+    float air_resistance_halflife,
     float texture_layer,
     const StaticWorld& static_world)
 {
@@ -77,7 +77,7 @@ void SmokeParticleGenerator::generate_instance(
             tait_bryan_angles_2_matrix(rotation),
             position},
         velocity,
-        air_resistance,
+        air_resistance_halflife,
         texture_layer);
 }
 
@@ -87,7 +87,7 @@ void SmokeParticleGenerator::generate_root_node(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     const FixedArray<float, 3>& velocity,
-    float air_resistance,
+    float air_resistance_halflife,
     float animation_duration,
     const StaticWorld& static_world)
 {

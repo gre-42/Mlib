@@ -37,7 +37,7 @@ public:
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
-        float air_resistance,
+        float air_resistance_halflife,
         float texture_layer,
         float animation_duration,
         ParticleContainer particle_container,
@@ -47,7 +47,7 @@ public:
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
-        float air_resistance,
+        float air_resistance_halflife,
         float texture_layer,
         const StaticWorld& static_world);
     void generate_root_node(
@@ -56,7 +56,7 @@ public:
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
-        float air_resistance,
+        float air_resistance_halflife,
         float animation_duration,
         const StaticWorld& static_world);
     void generate_child_node(
