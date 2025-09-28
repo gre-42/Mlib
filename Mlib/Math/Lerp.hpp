@@ -11,7 +11,9 @@ auto lerp(const TData& a, const TData& b, const TAlpha& alpha) {
 
 template <class TData, class TAlpha>
 auto lerp_symm(const TData& a, const TData& b, const TAlpha& alpha) {
-    if (alpha < 0.5) {
+    if (alpha == 0.5) {
+        return (funpack(a) + funpack(b)) / 2;
+    } else if (alpha < 0.5) {
         return lerp(a, b, alpha);
     } else {
         return lerp(b, a, 1 - alpha);

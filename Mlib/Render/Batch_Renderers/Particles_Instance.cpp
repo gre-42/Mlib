@@ -1,6 +1,7 @@
 #include "Particles_Instance.hpp"
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Render/Batch_Renderers/Infer_Shader_Properties.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
@@ -8,6 +9,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Clear_On_Update.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
@@ -73,7 +75,7 @@ void ParticlesInstance::add_particle(
 
 void ParticlesInstance::move(float dt, const StaticWorld& world) {
     std::scoped_lock lock{ mutex_ };
-    dynamic_instance_buffers_->move(dt, world);
+    dynamic_instance_buffers_->set_wind_vector(world.wind->vector);
 }
 
 void ParticlesInstance::preload() const {
@@ -94,7 +96,7 @@ void ParticlesInstance::render(
     {
         // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
         std::scoped_lock lock{ mutex_ };
-        dynamic_instance_buffers_->update(frame_id.time_id);
+        dynamic_instance_buffers_->update(frame_id.external_render_pass.time, frame_id.time_id);
         offset = offset_;
     }
     if (dynamic_instance_buffers_->num_instances() == 0) {

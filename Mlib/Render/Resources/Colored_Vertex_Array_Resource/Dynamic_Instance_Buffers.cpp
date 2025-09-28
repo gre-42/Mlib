@@ -1,15 +1,16 @@
 #include "Dynamic_Instance_Buffers.hpp"
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
-#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
+#include <Mlib/Math/Lerp.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Clear_On_Update.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
-#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
+#include <unordered_map>
 
 using namespace Mlib;
 
@@ -31,6 +32,8 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
     , gl_num_instances_{ 0 }
     , transformation_mode_{ transformation_mode }
     , clear_on_update_{ clear_on_update }
+    , wind_vector_{ fixed_zeros<float, 3>() }
+    , latest_update_time_{ std::chrono::steady_clock::time_point() }
     , latest_update_time_id_{ RENDER_TIME_ID_END }
 {
     if (num_billboard_atlas_components > 0) {
@@ -55,7 +58,7 @@ void DynamicInstanceBuffers::append(
     const TransformationMatrix<float, float, 3>& transformation_matrix,
     const BillboardSequence& sequence,
     const FixedArray<float, 3>& velocity,
-    float air_resistance,
+    float air_resistance_halflife,
     float texture_layer)
 {
     if (sequence.billboard_ids.empty()) {
@@ -81,7 +84,7 @@ void DynamicInstanceBuffers::append(
     if (transformation_mode_ == TransformationMode::ALL) {
         rotation_quaternion_.append(m);
     }
-    particle_properties_[tmp_num_instances_] = { velocity, air_resistance };
+    particle_properties_[tmp_num_instances_] = { velocity, air_resistance_halflife };
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.append(m);
         if (has_per_instance_continuous_texture_layer_) {
@@ -93,22 +96,35 @@ void DynamicInstanceBuffers::append(
     ++tmp_num_instances_;
 }
 
-void DynamicInstanceBuffers::move(float dt, const StaticWorld& world) {
+void DynamicInstanceBuffers::set_wind_vector(const FixedArray<float, 3>& wind_vector) {
+    wind_vector_ = wind_vector_;
+}
+
+void DynamicInstanceBuffers::move_renderables(float dt) {
     if (num_billboard_atlas_components_ == 0) {
         return;
     }
     if (clear_on_update_ == ClearOnUpdate::YES) {
         return;
     }
+    std::unordered_map<const InternalParticleProperties*, float> air_resistances;
     for (size_t i = 0; i < tmp_length();) {
         auto& ai = animation_times_[i];
         auto& bi = billboard_sequences_[i];
         auto& props = particle_properties_[i];
         auto advance_position = [&](FixedArray<float, 3>& position) {
             position += props.velocity * dt;
-            props.velocity =
-                (1 - props.air_resistance) * props.velocity +
-                world.wind->vector * props.air_resistance;
+            if (props.air_resistance_halflife != INFINITY) {
+                auto it = air_resistances.find(&props);
+                if (it == air_resistances.end()) {
+                    auto res = air_resistances.try_emplace(&props, std::pow(0.5f, dt / props.air_resistance_halflife));
+                    if (!res.second) {
+                        verbose_abort("DynamicInstanceBuffers::move_renderables internal error");
+                    }
+                    it = res.first;
+                }
+                props.velocity = lerp(props.velocity, wind_vector_, 1.f - it->second);
+            }
         };
         if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
             advance_position(position_yangles_[i].row_range<0, 3>());
@@ -187,7 +203,9 @@ bool DynamicInstanceBuffers::copy_in_progress() const {
 void DynamicInstanceBuffers::wait() const {
 }
 
-void DynamicInstanceBuffers::update(RenderTimeId time_id)
+void DynamicInstanceBuffers::update(
+    std::chrono::steady_clock::time_point time,
+    RenderTimeId time_id)
 {
     if ((clear_on_update_ == ClearOnUpdate::YES) && (time_id == latest_update_time_id_)) {
         return;
@@ -196,6 +214,15 @@ void DynamicInstanceBuffers::update(RenderTimeId time_id)
     gl_num_instances_ = integral_cast<GLsizei>(tmp_num_instances_);
     if (tmp_num_instances_ == 0) {
         return;
+    }
+    if (latest_update_time_ == std::chrono::steady_clock::time_point()) {
+        latest_update_time_ = time;
+        return;
+    } else if (latest_update_time_ == time) {
+        return;
+    } else {
+        move_renderables(std::chrono::duration<float>(time - latest_update_time_).count() * seconds);
+        latest_update_time_ = time;
     }
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.update();

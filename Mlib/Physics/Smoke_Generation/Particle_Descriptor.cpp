@@ -8,7 +8,7 @@
 namespace ParticleDescriptorArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource);
-DECLARE_ARGUMENT(air_resistance);
+DECLARE_ARGUMENT(air_resistance_halflife);
 DECLARE_ARGUMENT(animation_duration);
 DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(type);
@@ -33,7 +33,7 @@ void Mlib::from_json(const nlohmann::json& j, ParticleDescriptor& item) {
     jv.validate(ParticleDescriptorArgs::options);
 
     item.resource_name = jv.at<std::string>(ParticleDescriptorArgs::resource);
-    item.air_resistance = jv.at<float>(ParticleDescriptorArgs::air_resistance);
+    item.air_resistance_halflife = jv.at<float>(ParticleDescriptorArgs::air_resistance_halflife) * seconds;
     item.animation_duration = jv.at<float>(ParticleDescriptorArgs::animation_duration, NAN) * seconds;
     item.rotation = particle_rotation_from_string(jv.at<std::string>(ParticleDescriptorArgs::rotation, "emitter"));
     item.type = particle_type_from_string(jv.at<std::string>(ParticleDescriptorArgs::type));

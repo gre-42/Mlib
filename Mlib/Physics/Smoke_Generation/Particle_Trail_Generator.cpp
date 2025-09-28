@@ -38,7 +38,7 @@ void ParticleTrailGenerator::generate(
         position,
         r,
         velocity,
-        trail.air_resistance,
+        trail.air_resistance_halflife,
         texture_layer,
         trail.animation_duration,
         particle_container,

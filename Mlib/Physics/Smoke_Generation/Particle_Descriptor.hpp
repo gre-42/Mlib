@@ -16,7 +16,7 @@ enum class ParticleType;
 
 struct ParticleDescriptor {
     VariableAndHash<std::string> resource_name;
-    float air_resistance;
+    float air_resistance_halflife;
     float animation_duration;
     ParticleRotation rotation;
     ParticleType type;

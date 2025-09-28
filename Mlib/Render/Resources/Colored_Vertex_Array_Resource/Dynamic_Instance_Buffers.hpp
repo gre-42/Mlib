@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Billboard_Sequence.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Billboard_Ids.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Continuous_Texture_Layer.hpp>
@@ -23,7 +24,7 @@ struct StaticWorld;
 
 struct InternalParticleProperties {
     FixedArray<float, 3> velocity = uninitialized;
-    float air_resistance;
+    float air_resistance_halflife;
 };
 
 class DynamicInstanceBuffers: public IInstanceBuffers {
@@ -43,9 +44,9 @@ public:
         const TransformationMatrix<float, float, 3>& transformation_matrix,
         const BillboardSequence& sequence,
         const FixedArray<float, 3>& velocity,
-        float air_resistance,
+        float air_resistance_halflife,
         float texture_layer);
-    void move(float dt, const StaticWorld& world);
+    void set_wind_vector(const FixedArray<float, 3>& wind_vector);
     size_t capacity() const;
     size_t tmp_length() const;
     bool tmp_empty() const;
@@ -53,7 +54,9 @@ public:
     // IInstanceBuffers
     virtual bool copy_in_progress() const override;
     virtual void wait() const override;
-    void update(RenderTimeId time_id);
+    void update(
+        std::chrono::steady_clock::time_point time,
+        RenderTimeId time_id);
     virtual void bind(
         GLuint instance_attribute_index,
         GLuint rotation_quaternion_attribute_index,
@@ -63,6 +66,8 @@ public:
     virtual GLsizei num_instances() const override;
     virtual bool has_continuous_texture_layer() const override;
 private:
+    void move_renderables(float dt);
+
     DynamicPositionYAngles position_yangles_;
     DynamicPosition position_;
     DynamicRotationQuaternion rotation_quaternion_;
@@ -78,6 +83,8 @@ private:
     std::vector<float> animation_times_;
     std::vector<const BillboardSequence*> billboard_sequences_;
     ClearOnUpdate clear_on_update_;
+    FixedArray<float, 3> wind_vector_;
+    std::chrono::steady_clock::time_point latest_update_time_;
     RenderTimeId latest_update_time_id_;
 };
 
