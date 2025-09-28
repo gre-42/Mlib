@@ -55,6 +55,7 @@ size_t DynamicInstanceBuffers::num_billboard_atlas_components() const {
 }
 
 void DynamicInstanceBuffers::append(
+    std::chrono::steady_clock::time_point time,
     const TransformationMatrix<float, float, 3>& transformation_matrix,
     const BillboardSequence& sequence,
     const FixedArray<float, 3>& velocity,
@@ -84,7 +85,7 @@ void DynamicInstanceBuffers::append(
     if (transformation_mode_ == TransformationMode::ALL) {
         rotation_quaternion_.append(m);
     }
-    particle_properties_[tmp_num_instances_] = { velocity, air_resistance_halflife };
+    particle_properties_[tmp_num_instances_] = { time, velocity, air_resistance_halflife};
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.append(m);
         if (has_per_instance_continuous_texture_layer_) {
@@ -100,30 +101,28 @@ void DynamicInstanceBuffers::set_wind_vector(const FixedArray<float, 3>& wind_ve
     wind_vector_ = wind_vector_;
 }
 
-void DynamicInstanceBuffers::move_renderables(float dt) {
+void DynamicInstanceBuffers::move_renderables(std::chrono::steady_clock::time_point time) {
     if (num_billboard_atlas_components_ == 0) {
         return;
     }
     if (clear_on_update_ == ClearOnUpdate::YES) {
         return;
     }
-    std::unordered_map<float, float> air_resistances;
     for (size_t i = 0; i < tmp_length();) {
         auto& ai = animation_times_[i];
         auto& bi = billboard_sequences_[i];
         auto& props = particle_properties_[i];
+        float dt = std::chrono::duration<float>(time - props.time).count() * seconds;
+        if (dt <= 0) {
+            ++i;
+            continue;
+        }
+        props.time = time;
         auto advance_position = [&](FixedArray<float, 3>& position) {
             position += props.velocity * dt;
             if (props.air_resistance_halflife != INFINITY) {
-                auto it = air_resistances.find(props.air_resistance_halflife);
-                if (it == air_resistances.end()) {
-                    auto res = air_resistances.try_emplace(props.air_resistance_halflife, std::pow(0.5f, dt / props.air_resistance_halflife));
-                    if (!res.second) {
-                        verbose_abort("DynamicInstanceBuffers::move_renderables internal error");
-                    }
-                    it = res.first;
-                }
-                props.velocity = lerp(props.velocity, wind_vector_, 1.f - it->second);
+                auto alpha = std::pow(0.5f, dt / props.air_resistance_halflife);
+                props.velocity = lerp(props.velocity, wind_vector_, 1.f - alpha);
             }
         };
         if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
@@ -215,15 +214,11 @@ void DynamicInstanceBuffers::update(
     if (tmp_num_instances_ == 0) {
         return;
     }
-    if (latest_update_time_ == std::chrono::steady_clock::time_point()) {
-        latest_update_time_ = time;
+    if (latest_update_time_ == time) {
         return;
-    } else if (latest_update_time_ == time) {
-        return;
-    } else {
-        move_renderables(std::chrono::duration<float>(time - latest_update_time_).count() * seconds);
-        latest_update_time_ = time;
     }
+    move_renderables(time);
+    latest_update_time_ = time;
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.update();
         if (clear_on_update_ == ClearOnUpdate::YES) {

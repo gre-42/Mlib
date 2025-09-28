@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box_Json.hpp>
 #include <Mlib/Geometry/Intersection/Interval_Json.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
-#include <Mlib/Json/Chrono.hpp>
+#include <Mlib/Json/Chrono_Duration.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Units.hpp>

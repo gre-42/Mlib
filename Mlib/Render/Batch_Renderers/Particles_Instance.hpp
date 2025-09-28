@@ -3,6 +3,7 @@
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
+#include <chrono>
 #include <list>
 #include <memory>
 
@@ -42,6 +43,7 @@ public:
     size_t num_billboard_atlas_components() const;
 
     void add_particle(
+        std::chrono::steady_clock::time_point time,
         const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
         const BillboardSequence& sequence,
         const FixedArray<float, 3>& velocity,

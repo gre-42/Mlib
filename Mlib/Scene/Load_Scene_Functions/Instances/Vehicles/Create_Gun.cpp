@@ -6,6 +6,7 @@
 #include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
+#include <Mlib/Json/Chrono_Time_Point.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -21,6 +22,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
@@ -193,9 +195,19 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             };
         };
     }
-    std::function<void()> generate_muzzle_flash;
+    std::function<void(const StaticWorld&)> generate_muzzle_flash;
     if (auto macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash); macro.has_value()) {
-        generate_muzzle_flash = [macro=*macro, mle=args.macro_line_executor](){ mle(macro, nullptr); };
+        generate_muzzle_flash =
+        [
+            macro=*macro,
+            mle=args.macro_line_executor
+        ](const StaticWorld& world)
+        {
+            nlohmann::json let{
+                {"time_point", world.time}
+            };
+            mle.inserted_block_arguments(let)(macro, nullptr);
+        };
     }
     auto& gun = global_object_pool.create<Gun>(
         CURRENT_SOURCE_LOCATION,

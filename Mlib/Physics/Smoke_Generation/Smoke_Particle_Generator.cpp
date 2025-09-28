@@ -55,7 +55,8 @@ void SmokeParticleGenerator::generate_root(
             rotation,
             velocity,
             air_resistance,
-            texture_layer);
+            texture_layer,
+            static_world);
     } else {
         THROW_OR_ABORT("Unknown particle type");
     }
@@ -67,9 +68,11 @@ void SmokeParticleGenerator::generate_instance(
     const FixedArray<float, 3>& rotation,
     const FixedArray<float, 3>& velocity,
     float air_resistance,
-    float texture_layer)
+    float texture_layer,
+    const StaticWorld& static_world)
 {
     particle_renderer_->get_instantiator(resource_name).add_particle(
+        static_world.time,
         TransformationMatrix<float, ScenePos, 3>{
             tait_bryan_angles_2_matrix(rotation),
             position},

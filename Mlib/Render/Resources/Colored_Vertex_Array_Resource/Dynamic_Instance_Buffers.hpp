@@ -8,6 +8,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Rotation_Quaternion.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Render_Time_Id.hpp>
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,7 @@ enum class ClearOnUpdate;
 struct StaticWorld;
 
 struct InternalParticleProperties {
+    std::chrono::steady_clock::time_point time;
     FixedArray<float, 3> velocity = uninitialized;
     float air_resistance_halflife;
 };
@@ -41,6 +43,7 @@ public:
 
     size_t num_billboard_atlas_components() const;
     void append(
+        std::chrono::steady_clock::time_point time,
         const TransformationMatrix<float, float, 3>& transformation_matrix,
         const BillboardSequence& sequence,
         const FixedArray<float, 3>& velocity,
@@ -66,7 +69,7 @@ public:
     virtual GLsizei num_instances() const override;
     virtual bool has_continuous_texture_layer() const override;
 private:
-    void move_renderables(float dt);
+    void move_renderables(std::chrono::steady_clock::time_point time);
 
     DynamicPositionYAngles position_yangles_;
     DynamicPosition position_;

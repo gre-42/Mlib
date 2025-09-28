@@ -1,7 +1,7 @@
 #include "Osm_Resource_Config.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box_Json.hpp>
-#include <Mlib/Json/Chrono.hpp>
+#include <Mlib/Json/Chrono_Duration.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Waysides_Surface.hpp>

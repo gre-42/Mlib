@@ -48,7 +48,8 @@ public:
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
         float air_resistance,
-        float texture_layer);
+        float texture_layer,
+        const StaticWorld& static_world);
     void generate_root_node(
         const VariableAndHash<std::string>& resource_name,
         const VariableAndHash<std::string>& node_name,

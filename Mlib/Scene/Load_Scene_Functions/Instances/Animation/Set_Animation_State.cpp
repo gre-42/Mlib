@@ -1,6 +1,6 @@
 #include "Set_Animation_State.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Json/Chrono.hpp>
+#include <Mlib/Json/Chrono_Duration.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>

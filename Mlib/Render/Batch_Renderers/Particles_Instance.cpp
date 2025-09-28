@@ -54,6 +54,7 @@ size_t ParticlesInstance::num_billboard_atlas_components() const {
 }
 
 void ParticlesInstance::add_particle(
+    std::chrono::steady_clock::time_point time,
     const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
     const BillboardSequence& sequence,
     const FixedArray<float, 3>& velocity,
@@ -69,7 +70,7 @@ void ParticlesInstance::add_particle(
         auto trafo = TransformationMatrix<float, float, 3>{
             transformation_matrix.R,
             (transformation_matrix.t - offset_).casted<float>()};
-        dynamic_instance_buffers_->append(trafo, sequence, velocity, air_resistance, texture_layer);
+        dynamic_instance_buffers_->append(time, trafo, sequence, velocity, air_resistance, texture_layer);
     }
 }
 

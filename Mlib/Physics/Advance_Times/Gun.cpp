@@ -59,7 +59,7 @@ Gun::Gun(
     ITrailStorage* bullet_trace_storage,
     std::string ammo_type,
     std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
-    std::function<void()> generate_muzzle_flash)
+    std::function<void(const StaticWorld&)> generate_muzzle_flash)
     : rendering_resources_{ rendering_resources }
     , scene_{ scene }
     , scene_node_resources_{ scene_node_resources }
@@ -144,7 +144,7 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
     time_since_last_shot_ = 0;
     generate_bullet(world);
     if (generate_muzzle_flash_) {
-        generate_muzzle_flash();
+        generate_muzzle_flash(world);
     }
     if (generate_shot_audio_) {
         generate_shot_audio();
@@ -262,11 +262,11 @@ void Gun::generate_bullet(const StaticWorld& world) {
     }
 }
 
-void Gun::generate_muzzle_flash() {
+void Gun::generate_muzzle_flash(const StaticWorld& world) {
     if (!generate_muzzle_flash_) {
         THROW_OR_ABORT("Muzzle flash hider not set");
     }
-    generate_muzzle_flash_();
+    generate_muzzle_flash_(world);
 }
 
 void Gun::generate_shot_audio() {
