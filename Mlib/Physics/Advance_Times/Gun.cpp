@@ -54,7 +54,7 @@ Gun::Gun(
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
     std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio,
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
+    std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion&)> generate_bullet_explosion_audio,
     std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio,
     ITrailStorage* bullet_trace_storage,
     std::string ammo_type,

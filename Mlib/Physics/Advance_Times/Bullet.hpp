@@ -27,6 +27,7 @@ class SmokeParticleGenerator;
 class ITrailExtender;
 class IDynamicLight;
 class DynamicLights;
+struct BulletExplosion;
 struct BulletProperties;
 template <class TPosition>
 struct AudioSourceState;
@@ -44,7 +45,7 @@ class Bullet final:
 public:
     Bullet(
         Scene& scene,
-        std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
+        std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion&)> generate_bullet_explosion_audio,
         std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position,
         SmokeParticleGenerator& smoke_generator,
         AdvanceTimes& advance_times,
@@ -64,6 +65,7 @@ public:
         const FixedArray<ScenePos, 3>& intersection_point,
         const StaticWorld& world,
         RigidBodyVehicle& rigid_body,
+        PhysicsMaterial physics_material,
         CollisionRole collision_role,
         CollisionType& collision_type,
         bool& abort) override;
@@ -76,7 +78,7 @@ private:
         float amount);
     void notify_kill(RigidBodyVehicle& rigid_body_vehicle);
     Scene& scene_;
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio_;
+    std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion&)> generate_bullet_explosion_audio_;
     std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position_;
     SmokeParticleGenerator& smoke_generator_;
     AdvanceTimes& advance_times_;

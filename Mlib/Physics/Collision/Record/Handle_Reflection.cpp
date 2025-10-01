@@ -90,10 +90,10 @@ static void handle_extended_reflection(
                 : intersection_point,
             [c, normal](float lambda_final){
                 for (auto& c0 : c.o0.collision_observers_) {
-                    c0->notify_impact(c.o1, CollisionRole::PRIMARY, normal.casted<float>(), lambda_final, c.history.base_log);
+                    c0->notify_impact(c.o1, c.mesh1_material, CollisionRole::PRIMARY, normal.casted<float>(), lambda_final, c.history.base_log);
                 }
                 for (auto& c1 : c.o1.collision_observers_) {
-                    c1->notify_impact(c.o0, CollisionRole::SECONDARY, normal.casted<float>(), lambda_final, c.history.base_log);
+                    c1->notify_impact(c.o0, c.mesh0_material, CollisionRole::SECONDARY, normal.casted<float>(), lambda_final, c.history.base_log);
                 }
             });
         normal_impulse = &ci->normal_impulse();

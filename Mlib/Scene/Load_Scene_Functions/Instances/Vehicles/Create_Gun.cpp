@@ -162,19 +162,21 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
         };
     }
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio;
-    if (const auto& a = bullet_props.explosion_audio_resource_name; !a->empty()) {
+    std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion& e)>
         generate_bullet_explosion_audio =
         [
             &o=one_shot_audio,
-            audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(a),
-            &audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(a)
+            a=AudioResourceContextStack::primary_audio_resources()
         ]
-        (const AudioSourceState<ScenePos>& state)
+        (const AudioSourceState<ScenePos>& state, const BulletExplosion& e)
         {
+            if (e.audio_resource_name->empty()) {
+                return;
+            }
+            auto audio_buffer = a->get_buffer(e.audio_resource_name);
+            auto& audio_meta = a->get_buffer_meta(e.audio_resource_name);
             o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
         };
-    }
     std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio;
     if (const auto& a = bullet_props.engine_audio_resource_name; !a->empty()) {
         generate_bullet_engine_audio =

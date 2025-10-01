@@ -32,6 +32,7 @@ float calculate_damage(
 
 void Crash::notify_impact(
     RigidBodyVehicle& rigid_body,
+    PhysicsMaterial physics_material,
     CollisionRole collision_role,
     const FixedArray<float, 3>& normal,
     float lambda_final,

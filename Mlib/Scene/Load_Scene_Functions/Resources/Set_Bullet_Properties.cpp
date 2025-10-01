@@ -8,13 +8,19 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 
+namespace KnownExplosionArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(materials);
+DECLARE_ARGUMENT(resource);
+DECLARE_ARGUMENT(animation_time);
+DECLARE_ARGUMENT(audio);
+}
+
 namespace KnownBulletArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(renderable);
 DECLARE_ARGUMENT(hitbox);
-DECLARE_ARGUMENT(explosion_resource);
-DECLARE_ARGUMENT(explosion_animation_time);
-DECLARE_ARGUMENT(explosion_audio);
+DECLARE_ARGUMENT(explosions);
 DECLARE_ARGUMENT(engine_audio);
 DECLARE_ARGUMENT(rigid_body_flags);
 DECLARE_ARGUMENT(mass);
@@ -31,15 +37,25 @@ DECLARE_ARGUMENT(light_after_impact);
 
 namespace Mlib {
 
+static void from_json(const nlohmann::json& j, BulletExplosion& item) {
+    JsonView jv{ j };
+    jv.validate(KnownExplosionArgs::options);
+
+    if (jv.contains(KnownExplosionArgs::materials)) {
+        item.materials = jv.at<std::unordered_set<PhysicsMaterial>>(KnownExplosionArgs::materials);
+    }
+    item.resource_name = jv.at<std::string>(KnownExplosionArgs::resource);
+    item.animation_time = jv.at<float>(KnownExplosionArgs::animation_time) * seconds;
+    item.audio_resource_name = jv.at<VariableAndHash<std::string>>(KnownExplosionArgs::audio, VariableAndHash<std::string>{});
+}
+
 static void from_json(const nlohmann::json& j, BulletProperties& item) {
     JsonView jv{ j };
     jv.validate(KnownBulletArgs::options);
 
     item.renderable_resource_name = jv.at_non_null<std::string>(KnownBulletArgs::renderable, "");
     item.hitbox_resource_name = jv.at<std::string>(KnownBulletArgs::hitbox);
-    item.explosion_resource_name = jv.at<std::string>(KnownBulletArgs::explosion_resource);
-    item.explosion_animation_time = jv.at<float>(KnownBulletArgs::explosion_animation_time) * seconds;
-    item.explosion_audio_resource_name = jv.at<VariableAndHash<std::string>>(KnownBulletArgs::explosion_audio, VariableAndHash<std::string>{});
+    item.explosions = jv.at<std::vector<BulletExplosion>>(KnownBulletArgs::explosions);
     item.engine_audio_resource_name = jv.at<VariableAndHash<std::string>>(KnownBulletArgs::engine_audio, VariableAndHash<std::string>{});
     item.rigid_body_flags = rigid_body_vehicle_flags_from_string(jv.at<std::string>(KnownBulletArgs::rigid_body_flags));
     item.mass = jv.at<float>(KnownBulletArgs::mass) * kg;

@@ -2,19 +2,29 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Smoke_Generation/Constant_Particle_Trail.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <cstdint>
+#include <optional>
 #include <string>
+#include <unordered_set>
+#include <vector>
 
 namespace Mlib {
 
+enum class PhysicsMaterial: u_int32_t;
 enum class RigidBodyVehicleFlags;
+
+struct BulletExplosion {
+    std::optional<std::unordered_set<PhysicsMaterial>> materials;
+    VariableAndHash<std::string> resource_name;
+    float animation_time;
+    VariableAndHash<std::string> audio_resource_name;
+};
 
 struct BulletProperties {
     VariableAndHash<std::string> renderable_resource_name;
     VariableAndHash<std::string> hitbox_resource_name;
-    VariableAndHash<std::string> explosion_resource_name;
-    float explosion_animation_time;
-    VariableAndHash<std::string> explosion_audio_resource_name;
     VariableAndHash<std::string> engine_audio_resource_name;
+    std::vector<BulletExplosion> explosions;
     RigidBodyVehicleFlags rigid_body_flags;
     float mass;
     float velocity;

@@ -25,7 +25,7 @@ using namespace Mlib;
 
 Bullet::Bullet(
     Scene& scene,
-    std::function<void(const AudioSourceState<ScenePos>&)> generate_bullet_explosion_audio,
+    std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion&)> generate_bullet_explosion_audio,
     std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position,
     SmokeParticleGenerator& smoke_generator,
     AdvanceTimes& advance_times,
@@ -124,6 +124,7 @@ void Bullet::notify_collided(
     const FixedArray<ScenePos, 3>& intersection_point,
     const StaticWorld& world,
     RigidBodyVehicle& rigid_body,
+    PhysicsMaterial physics_material,
     CollisionRole collision_role,
     CollisionType& collision_type,
     bool& abort)
@@ -142,24 +143,31 @@ void Bullet::notify_collided(
     if (light_before_impact_ != nullptr) {
         light_before_impact_ = nullptr;
     }
-    smoke_generator_.generate_root(
-        props_.explosion_resource_name,
-        VariableAndHash<std::string>{"explosion" + smoke_generator_.generate_suffix()},
-        intersection_point,
-        fixed_zeros<float, 3>(),
-        fixed_zeros<float, 3>(),
-        INFINITY,
-        0.f,
-        props_.explosion_animation_time,
-        ParticleContainer::NODE,
-        world);
+    for (const auto& e : props_.explosions) {
+        if (e.materials.has_value() &&
+            !e.materials->contains(physics_material & PhysicsMaterial::SURFACE_BASE_MASK))
+        {
+            continue;
+        }
+        smoke_generator_.generate_root(
+            e.resource_name,
+            VariableAndHash<std::string>{"explosion" + smoke_generator_.generate_suffix()},
+            intersection_point,
+            fixed_zeros<float, 3>(),
+            fixed_zeros<float, 3>(),
+            INFINITY,
+            0.f,
+            e.animation_time,
+            ParticleContainer::NODE,
+            world);
+        if (generate_bullet_explosion_audio_) {
+            generate_bullet_explosion_audio_({intersection_point, fixed_zeros<float, 3>()}, e);
+        }
+    }
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(
             TransformationMatrix<float, ScenePos, 3>{rigid_body_pulses_.rotation_, intersection_point},
             TrailLocationType::ENDPOINT);
-    }
-    if (generate_bullet_explosion_audio_) {
-        generate_bullet_explosion_audio_({intersection_point, fixed_zeros<float, 3>()});
     }
 }
 
