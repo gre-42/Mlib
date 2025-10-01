@@ -26,7 +26,8 @@ float calculate_damage(
 {
     float fac = dot0d(rbp.abs_z(), normal);
     fac = std::sqrt(1 - std::min(1.f, squared(fac)));
-    return damage_raw * squared(std::max(0.f, -lambda_final / (kg * kph))) * fac;
+    auto dv = -lambda_final / rbp.mass_;
+    return damage_raw * squared(std::max(0.f, dv / kph)) * fac;
 }
 
 void Crash::notify_impact(
