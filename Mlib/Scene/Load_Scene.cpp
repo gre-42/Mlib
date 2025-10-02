@@ -118,7 +118,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Burn_In.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Connect_Trailer.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Aim_At.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Crash.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Delta_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Engine.hpp>
@@ -130,7 +129,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Wing.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Follow_Node.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Actor_Task.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Bevel_Box_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Capsule_Surface_Normal.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_RigidBody_Grind_Point.hpp>
@@ -310,7 +308,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreateCarControllerKeyBinding::key, CreateCarControllerKeyBinding::json_user_function);
             register_json_user_function(CreateCarController::key, CreateCarController::json_user_function);
             register_json_user_function(CreateAimAt::key, CreateAimAt::json_user_function);
-            register_json_user_function(CreateCrash::key, CreateCrash::json_user_function);
             register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);
             register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
             register_json_user_function(CreateDestinationReachedAi::key, CreateDestinationReachedAi::json_user_function);
@@ -395,7 +392,6 @@ LoadScene::LoadScene(
             register_json_user_function(SceneToTexture::key, SceneToTexture::json_user_function);
             register_json_user_function(SetBackgroundColor::key, SetBackgroundColor::json_user_function);
             register_json_user_function(FitCanvasToRenderables::key, FitCanvasToRenderables::json_user_function);
-            register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
             register_json_user_function(SetBevelBoxSurfaceNormal::key, SetBevelBoxSurfaceNormal::json_user_function);
             register_json_user_function(SetCapsuleSurfaceNormal::key, SetCapsuleSurfaceNormal::json_user_function);
             register_json_user_function(SetSlidingNormalModifier::key, SetSlidingNormalModifier::json_user_function);

@@ -347,6 +347,7 @@ public:
     std::unique_ptr<ISurfaceNormal> surface_normal_;
     std::unique_ptr<ICollisionNormalModifier> collision_normal_modifier_;
     DanglingUnorderedSet<const RigidBodyVehicle> non_colliders_;
+    FixedArray<float, 3> damage_absorption_direction_;
 private:
     void advance_time_skate(
         const PhysicsEngineConfig& cfg,

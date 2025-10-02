@@ -103,6 +103,7 @@ RigidBodyVehicle::RigidBodyVehicle(
     , next_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , actor_task_{ ActorTask::UNDEFINED }
     , object_pool_{ object_pool }
+    , damage_absorption_direction_{ fixed_zeros<float, 3>() }
 {
     if (name_.empty()) {
         THROW_OR_ABORT("No name given for rigid body vehicle");

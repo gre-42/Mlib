@@ -14,8 +14,8 @@ using namespace Mlib;
 Crash::Crash(
     RigidBodyVehicle& rigid_body,
     float damage)
-    : rigid_body_{rigid_body}
-    , damage_{damage}
+    : rigid_body_{ rigid_body }
+    , damage_{ damage }
 {}
 
 static float calculate_damage(
@@ -24,14 +24,8 @@ static float calculate_damage(
     const FixedArray<float, 3>& normal,
     float lambda_final)
 {
-    float fac = [&](){
-        if (rigid_body.is_avatar()) {
-            return 1.f;
-        } else {
-            auto fac = dot0d(rigid_body.rbp_.abs_z(), normal);
-            return std::sqrt(1 - std::min(1.f, squared(fac)));
-        }
-    }();
+    auto fac = dot0d(dot1d(rigid_body.rbp_.rotation_, rigid_body.damage_absorption_direction_), normal);
+    fac = std::sqrt(1 - std::min(1.f, squared(fac)));
     auto dv = -lambda_final / rigid_body.rbp_.mass_;
     return damage_raw * squared(std::max(0.f, dv / kph)) * fac;
 }

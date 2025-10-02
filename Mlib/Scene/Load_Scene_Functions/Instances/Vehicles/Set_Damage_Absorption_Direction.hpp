@@ -5,9 +5,9 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class CreateCrash: public LoadPhysicsSceneInstanceFunction {
+class SetDamageAbsorptionDirection: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit CreateCrash(PhysicsScene& physics_scene);
+    explicit SetDamageAbsorptionDirection(PhysicsScene& physics_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

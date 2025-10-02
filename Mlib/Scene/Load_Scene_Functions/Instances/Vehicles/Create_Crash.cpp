@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Advance_Times/Crash.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -17,16 +18,8 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(damage);
 }
 
-const std::string CreateCrash::key = "crash";
-
-LoadSceneJsonUserFunction CreateCrash::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateCrash(args.physics_scene()).execute(args);
-};
-
 CreateCrash::CreateCrash(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateCrash::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -37,4 +30,20 @@ void CreateCrash::execute(const LoadSceneJsonUserFunctionArgs& args)
         rb,
         args.arguments.at<float>(KnownArgs::damage));
     rb.collision_observers_.emplace_back(std::move(d));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "crash",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                CreateCrash(args.physics_scene()).execute(args);
+            });
+    }
+} obj;
+
 }
