@@ -29,6 +29,7 @@ DeletingDamageable::DeletingDamageable(
     , generate_explosion_{ std::move(generate_explosion) }
     , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear, CURRENT_SOURCE_LOCATION }
     , rb_on_destroy_{ rb_->on_destroy, CURRENT_SOURCE_LOCATION }
+    , explosion_generated_{ false }
 {
     if (rb_->damageable_ != nullptr) {
         THROW_OR_ABORT("Rigid body already has a damageable");
@@ -45,12 +46,15 @@ DeletingDamageable::~DeletingDamageable() {
 }
 
 void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
-    if (delete_node_when_health_leq_zero_ && (health() <= 0)) {
-        if (generate_explosion_) {
+    if (health() <= 0) {
+        if (!explosion_generated_ && generate_explosion_) {
             auto pos = rb_->rbp_.abs_position();
             generate_explosion_({pos, rb_->velocity_at_position(pos)}, world);
+            explosion_generated_ = true;
         }
-        scene_.delete_root_node(root_node_name_);
+        if (delete_node_when_health_leq_zero_) {
+            scene_.delete_root_node(root_node_name_);
+        }
     }
 }
 

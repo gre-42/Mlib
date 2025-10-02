@@ -60,6 +60,7 @@ protected:
     DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     DestructionFunctionsRemovalTokens rb_on_destroy_;
+    bool explosion_generated_;
 };
 
 }
