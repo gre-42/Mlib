@@ -14,7 +14,7 @@ public:
         if (!res.second) {
             return res;
         }
-        res.first->second.add([this, it=res.first](){ elements_.erase(it); }, loc);
+        res.first->second.add([this, it=res.first](){ elements_.extract(it); }, loc);
         return res;
     }
     template <class TKey>

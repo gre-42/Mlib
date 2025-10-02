@@ -12,7 +12,10 @@ public:
     template <class TElement>
     decltype(auto) emplace_back(const TElement& element, SourceLocation loc) {
         auto it = elements_.emplace(elements_.end(), element, element->on_destroy, loc);
-        it->on_destroy([this, it](){ elements_.erase(it); }, loc);
+        it->on_destroy([this, it](){
+            std::list<DestructionFunctionsTokensRef<T>> tmp;
+            tmp.splice(tmp.end(), elements_, it);
+        }, loc);
         return it;
     }
     template <class TElement>

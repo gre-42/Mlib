@@ -24,9 +24,9 @@ SceneVehicle::SceneVehicle(
 }
 
 SceneVehicle::~SceneVehicle() {
+    on_destroy.clear();
     scene_node_ = nullptr;
     rb_ = nullptr;
-    on_destroy.clear();
 }
 
 void SceneVehicle::create_vehicle_externals(

@@ -248,6 +248,9 @@ void Player::reset_node() {
         externals_mode_ = ExternalsMode::NONE;
         internals_mode_.seat.clear();
     }
+    if (vehicle_spawner_ != nullptr) {
+        vehicle_spawner_->check_consistency();
+    }
 }
 
 void Player::set_vehicle_spawner(
@@ -645,6 +648,7 @@ std::optional<std::string> Player::best_weapon_in_inventory() const {
 
 bool Player::has_scene_vehicle() const {
     std::shared_lock lock{ mutex_ };
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_ == nullptr) {
         return false;
     }
@@ -663,6 +667,7 @@ bool Player::has_scene_vehicle() const {
 
 bool Player::has_vehicle_controller() const {
     std::shared_lock lock{ mutex_ };
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     return rigid_body()->has_vehicle_controller();
 }
 
@@ -672,6 +677,7 @@ const Gun& Player::gun() const {
 
 Gun& Player::gun() {
     std::shared_lock lock{ mutex_ };
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Gun node not set");
     }

@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <sstream>
 
 using namespace Mlib;
 
@@ -124,7 +125,19 @@ void VehicleSpawner::set_spawn_vehicle(
     try_spawn_vehicle_ = std::move(try_spawn_vehicle);
 }
 
+void VehicleSpawner::check_consistency() const {
+    if (player_ != nullptr) {
+        if (player_->has_scene_vehicle() != !scene_vehicles_.empty()) {
+            verbose_abort(
+                (std::stringstream() << "VehicleSpawner inconsistency detected: " <<
+                (int)player_->has_scene_vehicle() << " - " <<
+                (int)!scene_vehicles_.empty()).str());
+        }
+    }
+}
+
 bool VehicleSpawner::has_scene_vehicle() const {
+    check_consistency();
     return !scene_vehicles_.empty();
 }
 

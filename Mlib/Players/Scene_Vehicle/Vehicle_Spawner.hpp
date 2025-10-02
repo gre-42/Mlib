@@ -95,6 +95,8 @@ public:
     SpawnTrigger get_spawn_trigger() const;
 
     void advance_time(float dt);
+
+    void check_consistency() const;
 private:
     void notify_spawn();
     Scene& scene_;
