@@ -10,7 +10,7 @@
 
 namespace Mlib {
 
-enum class PhysicsMaterial: u_int32_t;
+enum class PhysicsMaterial: uint32_t;
 enum class RigidBodyVehicleFlags;
 
 struct BulletExplosion {
