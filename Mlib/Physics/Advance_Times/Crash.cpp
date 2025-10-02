@@ -18,15 +18,21 @@ Crash::Crash(
     , damage_{damage}
 {}
 
-float calculate_damage(
-    const RigidBodyPulses& rbp,
+static float calculate_damage(
+    const RigidBodyVehicle& rigid_body,
     float damage_raw,
     const FixedArray<float, 3>& normal,
     float lambda_final)
 {
-    float fac = dot0d(rbp.abs_z(), normal);
-    fac = std::sqrt(1 - std::min(1.f, squared(fac)));
-    auto dv = -lambda_final / rbp.mass_;
+    float fac = [&](){
+        if (rigid_body.is_avatar()) {
+            return 1.f;
+        } else {
+            auto fac = dot0d(rigid_body.rbp_.abs_z(), normal);
+            return std::sqrt(1 - std::min(1.f, squared(fac)));
+        }
+    }();
+    auto dv = -lambda_final / rigid_body.rbp_.mass_;
     return damage_raw * squared(std::max(0.f, dv / kph)) * fac;
 }
 
@@ -46,11 +52,11 @@ void Crash::notify_impact(
                 if (!std::isnan(damage0)) {
                     THROW_OR_ABORT("List contains multiple crashes");
                 }
-                damage0 = calculate_damage(rigid_body_.rbp_, d->damage_, normal, lambda_final);
+                damage0 = calculate_damage(rigid_body_, d->damage_, normal, lambda_final);
             }
         }
         if (!std::isnan(damage0)) {
-            float damage1 = calculate_damage(rigid_body.rbp_, damage_, normal, lambda_final);
+            float damage1 = calculate_damage(rigid_body, damage_, normal, lambda_final);
             float min_damage = std::min(damage0, damage1);
             damage0 -= min_damage;
             damage1 -= min_damage;
