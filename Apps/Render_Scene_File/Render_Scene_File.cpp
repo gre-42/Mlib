@@ -20,6 +20,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
+#include <Mlib/Render/IWindow.hpp>
 #include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
@@ -722,6 +723,7 @@ int main(int argc, char** argv) {
                 std::function<void()> exit = [&render](){
                     render.request_window_close();
                 };
+                render.window().set_title(main_scene_filename);
                 load_scene.reset(new LoadScene(
                     &search_path,
                     main_scene_filename,

@@ -61,6 +61,10 @@ Window::~Window() {
     window_ = nullptr;
 }
 
+void Window::set_title(const std::string& title) {
+    GLFW_CHK(glfwSetWindowTitle(window_, title.c_str()));
+}
+
 bool Window::close_requested() {
     auto result = GLFW_ABORT(glfwWindowShouldClose(window_));
     return (result == GLFW_TRUE);

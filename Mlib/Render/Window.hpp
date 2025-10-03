@@ -33,9 +33,10 @@ public:
     GLFWwindow& glfw_window() const;
     FixedArray<float, 2> dpi() const;
     void draw() const;
-    void make_current() const override;
-    void unmake_current() const override;
-    bool is_initialized() const override;
+    virtual void set_title(const std::string& title) override;
+    virtual void make_current() const override;
+    virtual void unmake_current() const override;
+    virtual bool is_initialized() const override;
 private:
     GLFWwindow* window_;
     bool use_double_buffering_;
