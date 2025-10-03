@@ -144,7 +144,7 @@ void SceneSelectorLogic::render_without_setup(
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);
     if (ew_->result_may_have_changed()) {
         for (const auto& [i, s] : enumerate(scene_files_)) {
-            scene_titles_.at(i) = ew_->eval<std::string>(s.name());
+            scene_titles_.at(i) = ew_->eval<std::string>(s.name(), s.locals());
         }
         renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
     }

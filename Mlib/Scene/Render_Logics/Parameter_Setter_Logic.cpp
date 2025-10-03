@@ -169,7 +169,7 @@ void ParameterSetterLogic::render_without_setup(
     if (ew_->result_may_have_changed()) {
         renderable_text_->set_charset(VariableAndHash{ew_->eval<std::string>(charset_)});
         for (const auto& [i, o] : enumerate(options_)) {
-            cached_titles_.at(i) = ew_->eval<std::string>(o.title);
+            cached_titles_.at(i) = ew_->eval<std::string>(o.title, o.database);
         }
     }
     LOG_FUNCTION("ParameterSetterLogic::render");
