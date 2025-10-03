@@ -368,7 +368,7 @@ float Player::car_health() const {
 }
 
 std::string Player::vehicle_name() const {
-    std::shared_lock lock0{ mutex_ };
+    std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no scene vehicle, cannot get vehicle name");
     }
@@ -648,7 +648,6 @@ std::optional<std::string> Player::best_weapon_in_inventory() const {
 
 bool Player::has_scene_vehicle() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_ == nullptr) {
         return false;
     }
