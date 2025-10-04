@@ -23,6 +23,7 @@ class ButtonStates;
 class CursorStates;
 class ButtonPress;
 class UiFocuses;
+class Users;
 class RenderLogics;
 class ThreadSafeString;
 class SurfaceContactDb;
@@ -53,6 +54,7 @@ public:
         LockableKeyConfigurations& key_configurations,
         LockableKeyDescriptions& key_descriptions,
         UiFocuses& ui_focuses,
+        Users& users,
         LayoutConstraints& layout_constraints,
         RenderLogicGallery& gallery,
         AssetReferences& asset_references,

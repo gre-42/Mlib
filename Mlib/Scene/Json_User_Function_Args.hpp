@@ -14,6 +14,7 @@ class JsonMacroArguments;
 class MacroLineExecutor;
 class NotifyingJsonMacroArguments;
 class UiFocuses;
+class Users;
 class RenderLogicGallery;
 class PhysicsScene;
 class PhysicsScenes;
@@ -52,6 +53,7 @@ struct LoadSceneJsonUserFunctionArgs {
     LockableKeyConfigurations& key_configurations;
     LockableKeyDescriptions& key_descriptions;
     UiFocuses& ui_focuses;
+    Users& users;
     LayoutConstraints& layout_constraints;
     std::atomic_size_t& num_renderings;
     RealtimeDependentFps& render_set_fps;

@@ -11,7 +11,6 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Render/Deferred_Instantiator.hpp>
@@ -114,7 +113,6 @@ public:
     Players players_;
     SupplyDepots supply_depots_;
     std::unique_ptr<GameLogic> game_logic_;
-    Users users_;
     UsageCounter usage_counter_;
     CountdownPhysics countdown_start_;
 

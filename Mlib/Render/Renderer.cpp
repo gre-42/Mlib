@@ -149,15 +149,31 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
 
 class RendererUserClass {
 public:
+    std::function<void(uint32_t)>* char_callback;
     ButtonStates* button_states;
     CursorStates* cursor_states;
     CursorStates* scroll_wheel_states;
 };
 
+void character_callback(GLFWwindow* window, uint32_t codepoint) {
+    GLFW_CHK(auto* user_object = (RendererUserClass*)glfwGetWindowUserPointer(window));
+    try {
+        (*user_object->char_callback)(codepoint);
+    } catch (...) {
+        add_unhandled_exception(std::current_exception());
+    }
+}
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     GLFW_CHK(auto* user_object = (RendererUserClass*)glfwGetWindowUserPointer(window));
     try {
         user_object->button_states->notify_key_event(key, action);
+        if ((key == GLFW_KEY_BACKSPACE) &&
+            ((action == GLFW_PRESS) || (action == GLFW_REPEAT)) &&
+            (user_object->char_callback != nullptr))
+        {
+            (*user_object->char_callback)('\b');
+        }
     } catch (...) {
         add_unhandled_exception(std::current_exception());
     }
@@ -197,6 +213,7 @@ void Renderer::render_and_handle_events(
     RenderLogic& logic,
     const std::function<void()>& event_handler,
     const SceneGraphConfig& scene_graph_config,
+    std::function<void(uint32_t)>* char_callback,
     ButtonStates* button_states,
     CursorStates* cursor_states,
     CursorStates* scroll_wheel_states)
@@ -206,7 +223,7 @@ void Renderer::render_and_handle_events(
             ThreadInitializer ti{"Render", ThreadAffinity::POOL};
             render(logic, scene_graph_config);
         })};
-    handle_events(*this, button_states, cursor_states, scroll_wheel_states, input_config_, event_handler);
+    handle_events(*this, char_callback, button_states, cursor_states, scroll_wheel_states, input_config_, event_handler);
 }
 
 bool Renderer::continue_rendering() const {
@@ -220,6 +237,7 @@ bool Renderer::continue_rendering() const {
 
 void Mlib::handle_events(
     Renderer& renderer,
+    std::function<void(uint32_t)>* char_callback,
     ButtonStates* button_states,
     CursorStates* cursor_states,
     CursorStates* scroll_wheel_states,
@@ -227,6 +245,7 @@ void Mlib::handle_events(
     const std::function<void()>& callback)
 {
     RendererUserClass user_object{
+        .char_callback = char_callback,
         .button_states = button_states,
         .cursor_states = cursor_states,
         .scroll_wheel_states = scroll_wheel_states};
@@ -235,6 +254,10 @@ void Mlib::handle_events(
         GLFWwindow* window_handle = &renderer.window_.glfw_window();
         GLFW_CHK(glfwSetWindowUserPointer(window_handle, &user_object));
         dgs.add([window_handle]() {GLFW_ABORT(glfwSetWindowUserPointer(window_handle, nullptr));});
+        if (char_callback != nullptr) {
+            GLFW_CHK(glfwSetCharCallback(window_handle, character_callback));
+            dgs.add([window_handle]() {GLFW_ABORT(glfwSetCharCallback(window_handle, nullptr));});
+        }
         if (button_states != nullptr) {
             GLFW_CHK(glfwSetKeyCallback(window_handle, key_callback));
             dgs.add([window_handle]() {GLFW_ABORT(glfwSetKeyCallback(window_handle, nullptr));});

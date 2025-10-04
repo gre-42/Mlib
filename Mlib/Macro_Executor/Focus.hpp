@@ -7,6 +7,7 @@
 #include <iosfwd>
 #include <list>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -101,6 +102,14 @@ enum class PersistedValueType {
     CUSTOM
 };
 
+struct EditFocus {
+    std::string menu_id;
+    std::string entry_id;
+    std::string persisted;
+    std::string global;
+    std::string value;
+};
+
 class UiFocus {
 public:
     explicit UiFocus(std::string filename);
@@ -113,6 +122,7 @@ public:
     std::vector<SubmenuHeader> submenu_headers;
     std::vector<FocusFilter> focus_filters;
     std::map<std::string, std::atomic_size_t> all_selection_ids;
+    std::optional<EditFocus> editing;
     void set_persisted_selection_id(const std::string& submenu, const std::string& s, PersistedValueType cb);
     std::string get_persisted_selection_id(const std::string& submenu) const;
     void set_requires_reload(std::string submenu, std::string reason);
@@ -132,6 +142,7 @@ public:
     void load();
     void save();
     void pop_invalid_focuses();
+    FastMutex edit_mutex;
 private:
     bool get_has_changes() const;
     std::map<std::string, ThreadSafeString> loaded_persistent_selection_ids;

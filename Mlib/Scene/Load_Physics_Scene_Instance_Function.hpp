@@ -26,7 +26,6 @@ struct SceneConfig;
 class SetFps;
 class RenderLogic;
 class GameLogic;
-class Users;
 class BaseLog;
 class DeleteNodeMutex;
 struct RenderingContext;
@@ -72,7 +71,6 @@ protected:
     EventEmitter& paused_changed;
     SetFps& physics_set_fps;
     GameLogic* game_logic;
-    Users& users;
     CountdownPhysics& countdown_start;
     UiFocus& ui_focus;
     BaseLog& base_log;

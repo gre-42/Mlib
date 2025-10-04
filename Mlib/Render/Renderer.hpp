@@ -25,6 +25,7 @@ struct InputConfig;
 class Renderer {
     friend void handle_events(
         Renderer &renderer,
+        std::function<void(uint32_t)>* char_callback,
         ButtonStates *button_states,
         CursorStates *cursor_states,
         CursorStates *scroll_wheel_states,
@@ -47,6 +48,7 @@ public:
         RenderLogic& logic,
         const std::function<void()>& event_callback,
         const SceneGraphConfig& scene_graph_config,
+        std::function<void(uint32_t)>* char_callback,
         ButtonStates* button_states,
         CursorStates* cursor_states,
         CursorStates* scroll_wheel_states);
@@ -63,6 +65,7 @@ private:
 
 void handle_events(
     Renderer& renderer,
+    std::function<void(uint32_t)>* char_callback,
     ButtonStates* button_states,
     CursorStates* cursor_states,
     CursorStates* scroll_wheel_states,

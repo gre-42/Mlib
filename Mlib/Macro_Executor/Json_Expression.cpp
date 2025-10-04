@@ -48,21 +48,27 @@ static T get(
 static const nlohmann::json& at(
     const std::string_view& s,
     const nlohmann::json& globals,
-    const nlohmann::json& locals)
+    const nlohmann::json& locals,
+    const nlohmann::json& block)
 {
     auto git = globals.find(s);
     auto lit = locals.find(s);
-    if ((git == globals.end()) && (lit == locals.end())) {
+    auto bit = block.find(s);
+    auto nfound = int(git != globals.end()) + int(lit != locals.end()) + int(bit != block.end());
+    if (nfound == 0) {
         THROW_OR_ABORT("Could not find variable: \"" + std::string{ s } + '"');
     }
-    if ((git != globals.end()) && (lit != locals.end())) {
-        THROW_OR_ABORT("Found variable in both, globals and locals: \"" + std::string{ s } + '"');
+    if (nfound > 1) {
+        THROW_OR_ABORT("Found variable in multiple dictionaries (globals, locals, block): \"" + std::string{ s } + '"');
     }
     if (git != globals.end()) {
         return *git;
     }
     if (lit != locals.end()) {
         return *lit;
+    }
+    if (bit != block.end()) {
+        return *bit;
     }
     verbose_abort("Get variable internal error");
 }
@@ -76,6 +82,7 @@ static nlohmann::json eval_recursion(
     std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
+    const JsonView& block,
     const AssetReferences& asset_references,
     size_t recursion)
 {
@@ -86,7 +93,7 @@ static nlohmann::json eval_recursion(
         return "";
     }
     std::function<std::string(const std::string_view&)> subst;
-    auto subst_ = [&globals, &locals, &asset_references, &subst](const std::string_view& s) {
+    auto subst_ = [&globals, &locals, &block, &asset_references, &subst](const std::string_view& s) {
         if (s.empty()) {
             THROW_OR_ABORT("Received empty substitution variable");
         }
@@ -118,7 +125,7 @@ static nlohmann::json eval_recursion(
                 return db.at<std::string>(match[DbQueryGroups::value].str());
             }
         }
-        const auto& v = at(s, globals.json(), locals.json());
+        const auto& v = at(s, globals.json(), locals.json(), block.json());
         if (v.type() != nlohmann::detail::value_t::string) {
             std::stringstream sstr;
             sstr << "Variable \"" << s << "\" is not of type string. Value: \"" << v << '"';
@@ -141,8 +148,8 @@ static nlohmann::json eval_recursion(
             std::string_view left = match[1].str();
             auto op = match[2].parallel_index;
             std::string_view right = match[3].str();
-            auto e_left = eval_recursion(left, globals, locals, asset_references, recursion + 1);
-            auto e_right = eval_recursion(right, globals, locals, asset_references, recursion + 1);
+            auto e_left = eval_recursion(left, globals, locals, block, asset_references, recursion + 1);
+            auto e_right = eval_recursion(right, globals, locals, block, asset_references, recursion + 1);
             switch (op) {
                 case 0: return e_left == e_right;
                 case 1: return e_left != e_right;
@@ -179,13 +186,16 @@ static nlohmann::json eval_recursion(
         // static const DECLARE_REGEX(comma_re, ", ");
         static const auto comma_re = par(str(", "), NC);
         std::set<nlohmann::json> result;
-        find_all_templated(expression.substr(1, expression.size() - 2), comma_re, [&](const SMatch<2>& match2b) {
+        auto rem = find_all_templated(expression.substr(1, expression.size() - 2), comma_re, [&](const SMatch<2>& match2b) {
             if (match2b[1].matched()) {
-                if (!result.insert(eval_recursion(match2b[1].str(), globals, locals, asset_references, recursion + 1)).second) {
+                if (!result.insert(eval_recursion(match2b[1].str(), globals, locals, block, asset_references, recursion + 1)).second) {
                     THROW_OR_ABORT("Duplicate element: \"" + std::string{ match2b[1].str() } + '"');
                 }
             }
             });
+        if (!rem.empty()) {
+            THROW_OR_ABORT("Could not parse \"" + std::string(expression) + "\". Remainder: \"" + std::string(rem) + '"');
+        }
         return result;
     }
     {
@@ -264,14 +274,14 @@ static nlohmann::json eval_recursion(
                 THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ expression } + '"');
             }
             auto dict_name = subst(match[DictQueryGroups::dict].str());
-            const auto& dict = at(dict_name, globals.json(), locals.json());
+            const auto& dict = at(dict_name, globals.json(), locals.json(), block.json());
             if (dict.type() != nlohmann::detail::value_t::object) {
                 THROW_OR_ABORT("Variable \"" + dict_name + "\" is not a dictionary");
             }
             auto key_name = subst(match[DictQueryGroups::key].str());
             var = JsonView{ dict }.at(key_name);
         } else {
-            var = at(subst(expression.substr(1)), globals.json(), locals.json());
+            var = at(subst(expression.substr(1)), globals.json(), locals.json(), block.json());
         }
         if (expression[0] == '!') {
             if (var.type() != nlohmann::detail::value_t::boolean) {
@@ -289,9 +299,24 @@ nlohmann::json Mlib::eval(
     std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
+    const JsonView& block,
     const AssetReferences& asset_references)
 {
-    return eval_recursion(expression, globals, locals, asset_references, 0);
+    return eval_recursion(expression, globals, locals, block, asset_references, 0);
+}
+
+nlohmann::json Mlib::eval(
+    std::string_view expression,
+    const JsonView& globals,
+    const JsonView& locals,
+    const AssetReferences& asset_references)
+{
+    return eval(
+        expression,
+        globals,
+        locals,
+        JsonView{ nlohmann::json::object() },
+        asset_references);
 }
 
 nlohmann::json Mlib::eval(
@@ -323,13 +348,29 @@ bool Mlib::eval<bool>(
     std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
+    const JsonView& block,
     const AssetReferences& asset_references)
 {
-    auto result = eval(expression, globals, locals, asset_references);
+    auto result = eval(expression, globals, locals, block, asset_references);
     if (result.type() != nlohmann::detail::value_t::boolean) {
         THROW_OR_ABORT("Expression is not of type bool: \"" + std::string{ expression } + '"');
     }
     return result;
+}
+
+template <>
+bool Mlib::eval<bool>(
+    std::string_view expression,
+    const JsonView& globals,
+    const JsonView& locals,
+    const AssetReferences& asset_references)
+{
+    return eval<bool>(
+        expression,
+        globals,
+        locals,
+        JsonView{ nlohmann::json::object() },
+        asset_references);
 }
 
 template <>
@@ -364,13 +405,29 @@ std::string Mlib::eval<std::string>(
     std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
+    const JsonView& block,
     const AssetReferences& asset_references)
 {
-    auto result = eval(expression, globals, locals, asset_references);
+    auto result = eval(expression, globals, locals, block, asset_references);
     if (result.type() != nlohmann::detail::value_t::string) {
         THROW_OR_ABORT("Expression is not of type string: \"" + std::string{ expression } + '"');
     }
     return result;
+}
+
+template <>
+std::string Mlib::eval<std::string>(
+    std::string_view expression,
+    const JsonView& globals,
+    const JsonView& locals,
+    const AssetReferences& asset_references)
+{
+    return eval<std::string>(
+        expression,
+        globals,
+        locals,
+        JsonView{ nlohmann::json::object() },
+        asset_references);
 }
 
 template <>

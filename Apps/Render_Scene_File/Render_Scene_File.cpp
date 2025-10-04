@@ -17,6 +17,7 @@
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
@@ -220,6 +221,7 @@ JThread loader_thread(
 }
 
 static void main_func(
+    std::function<void(uint32_t)> char_callback,
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
@@ -231,7 +233,7 @@ static void main_func(
     if (renderer == nullptr) {
         linfo() << "Exiting because of --no_render";
     } else {
-        handle_events(*renderer, &button_states, &cursor_states, &scroll_wheel_states, input_config, event_callback);
+        handle_events(*renderer, &char_callback, &button_states, &cursor_states, &scroll_wheel_states, input_config, event_callback);
         if (args_num_renderings != SIZE_MAX) {
             linfo() << "Exiting because of --num_renderings";
         }
@@ -698,6 +700,7 @@ int main(int argc, char** argv) {
                 };
                 RenderingContextGuard rcg{ primary_rendering_context };
 
+                Users users;
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
@@ -743,6 +746,7 @@ int main(int argc, char** argv) {
                     key_configurations,
                     key_descriptions,
                     ui_focuses,
+                    users,
                     layout_constraints,
                     gallery,
                     asset_references,
@@ -761,6 +765,17 @@ int main(int argc, char** argv) {
                     velocity_dt)};
                 try {
                     main_func(
+                        [&f0=ui_focuses[0]](uint32_t c){
+                            std::scoped_lock lock{ f0.edit_mutex };
+                            if (f0.editing.has_value()) {
+                                auto& value = f0.editing->value;
+                                if (std::isalpha(c) || std::isdigit(c)) {
+                                    value += c;
+                                } else if ((c == '\b') && (!value.empty())) {
+                                    value = value.substr(0, value.length() - 1);
+                                }
+                            }
+                        },
                         button_states,
                         cursor_states,
                         scroll_wheel_states,

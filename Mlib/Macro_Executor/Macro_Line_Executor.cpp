@@ -492,13 +492,13 @@ nlohmann::json MacroLineExecutor::eval(const std::string& expression) const {
 template <class T>
 T MacroLineExecutor::eval(const std::string& expression, const JsonView& variables) const {
     auto global_args = global_json_macro_arguments_.json_macro_arguments();
-    return Mlib::eval<T>(expression, global_args, variables, asset_references_);
+    return Mlib::eval<T>(expression, global_args, variables, block_arguments(), asset_references_);
 }
 
 template <class T>
 T MacroLineExecutor::eval(const std::string& expression) const {
     auto global_args = global_json_macro_arguments_.json_macro_arguments();
-    return Mlib::eval<T>(expression, global_args, JsonView{ block_arguments_ }, asset_references_);
+    return Mlib::eval<T>(expression, global_args, block_arguments(), asset_references_);
 }
 
 bool MacroLineExecutor::eval(const BooleanExpression& expression) const {

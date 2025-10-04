@@ -1,5 +1,4 @@
 #include "List_View.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
@@ -297,7 +296,9 @@ bool ListView::has_selected_element() const {
 }
 
 size_t ListView::selected_element() const {
-    assert_true(has_selected_element());
+    if (!has_selected_element()) {
+        THROW_OR_ABORT("No element is selected");
+    }
     return selection_index_;
 }
 

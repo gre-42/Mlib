@@ -29,7 +29,7 @@ void find_all(
     const std::function<void(const Mlib::re::cmatch&)>& f);
 
 template <class TRegex>
-void find_all_templated(
+std::string_view find_all_templated(
     const std::string_view& str,
     const TRegex& pattern,
     const std::function<void(const TemplateRegex::SMatch<TRegex::ngroups + 1>&)>& f)
@@ -40,6 +40,7 @@ void find_all_templated(
         f(match);
         search_start = search_start.substr(search_start.length() - match.suffix().length());
     }
+    return search_start;
 }
 
 std::list<std::pair<std::string, std::string>> find_all_name_values(

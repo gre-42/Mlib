@@ -1,6 +1,6 @@
 #include "Replacement_Parameter.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Json/Misc.hpp>
+#include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
@@ -49,31 +49,33 @@ ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const
 }
 
 void Mlib::from_json(const nlohmann::json& j, ReplacementParameterRequired& rp) {
-    validate(j, KnownRequired::options);
-    expression_from_json(j.at(KnownRequired::fixed), rp.fixed);
-    expression_from_json(j.at(KnownRequired::dynamic), rp.dynamic);
-    rp.focus_mask = j.contains(KnownRequired::focus_mask)
-        ? focus_from_string(j.at(KnownRequired::focus_mask).get<std::string>())
+    JsonView jv{ j };
+    jv.validate(KnownRequired::options);
+    expression_from_json(jv.at(KnownRequired::fixed), rp.fixed);
+    expression_from_json(jv.at(KnownRequired::dynamic), rp.dynamic);
+    rp.focus_mask = jv.contains(KnownRequired::focus_mask)
+        ? focus_from_string(jv.at(KnownRequired::focus_mask).get<std::string>())
         : Focus::ALWAYS;
 }
 
 void Mlib::from_json(const nlohmann::json& j, ReplacementParameter& rp) {
-    validate(j, KnownArgs::options);
-    j.at(KnownArgs::id).get_to(rp.id);
-    j.at(KnownArgs::title).get_to(rp.title);
-    if (j.contains(KnownArgs::required)) {
-        j.at(KnownArgs::required).get_to(rp.required);
+    JsonView jv{ j };
+    jv.validate(KnownArgs::options);
+    jv.at(KnownArgs::id).get_to(rp.id);
+    jv.at(KnownArgs::title).get_to(rp.title);
+    if (jv.contains(KnownArgs::required)) {
+        jv.at(KnownArgs::required).get_to(rp.required);
     }
-    if (j.contains(KnownArgs::database)) {
-        rp.database.merge(JsonMacroArguments{j.at(KnownArgs::database)});
+    if (jv.contains(KnownArgs::database)) {
+        rp.database.merge(JsonMacroArguments{jv.at(KnownArgs::database)});
     }
-    if (j.contains(KnownArgs::on_init)) {
-        j.at(KnownArgs::on_init).get_to(rp.on_init);
+    if (jv.contains(KnownArgs::on_init)) {
+        jv.at(KnownArgs::on_init).get_to(rp.on_init);
     }
-    if (j.contains(KnownArgs::on_before_select)) {
-        j.at(KnownArgs::on_before_select).get_to(rp.on_before_select);
+    if (jv.contains(KnownArgs::on_before_select)) {
+        jv.at(KnownArgs::on_before_select).get_to(rp.on_before_select);
     }
-    if (j.contains(KnownArgs::on_execute)) {
-        j.at(KnownArgs::on_execute).get_to(rp.on_execute);
+    if (jv.contains(KnownArgs::on_execute)) {
+        jv.at(KnownArgs::on_execute).get_to(rp.on_execute);
     }
 }

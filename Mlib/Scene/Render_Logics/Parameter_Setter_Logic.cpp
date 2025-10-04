@@ -182,6 +182,16 @@ void ParameterSetterLogic::render_without_setup(
         *ew,
         ly,
         [this](size_t index) {
+            {
+                const auto& o = options_.at(index);
+                std::scoped_lock lock{ ui_focus_.edit_mutex };
+                if (ui_focus_.editing.has_value() &&
+                    (ui_focus_.editing->menu_id == id_) &&
+                    (ui_focus_.editing->entry_id == o.id))
+                {
+                    return ui_focus_.editing->value + '|';
+                }
+            }
             return cached_titles_.at(index);
         }};
     list_view_.render_and_handle_input(lx, ly, drawer);

@@ -13,12 +13,9 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(content);
 }
 
-ForEachUser::ForEachUser(PhysicsScene& physics_scene) 
-    : LoadPhysicsSceneInstanceFunction{ physics_scene }
-{}
-
 void ForEachUser::execute(const LoadSceneJsonUserFunctionArgs &args) {
-    users.for_each_user(
+    args.arguments.validate(KnownArgs::options);
+    args.users.for_each_user(
         [l = args.arguments.at(KnownArgs::content),
          mle = args.macro_line_executor](uint32_t i)
         {
@@ -39,8 +36,7 @@ struct RegisterJsonUserFunction {
             "for_each_user",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
-                ForEachUser(args.physics_scene()).execute(args);
+                ForEachUser::execute(args);
             });
     }
 } obj;

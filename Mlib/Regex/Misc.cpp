@@ -28,27 +28,35 @@ static void iterate_replacements(
     }
 }
 
-// "(?:\\$(\\$[$\\w/{}]+|\\w+)-?|([^$]+)|.)");
+// "(?:\\$(\\$[$\\w/{}]+|\\w+)-?|([^$]+))"
 static const auto ddw = seq(chr('$'), plus(par(chr('$'), word, chr('/'), chr('{'), chr('}')))); // \\$[$\\w/{}]+
 static const auto left = seq(group(par(ddw, plus(word))), opt(chr('-')));
 static const auto nd = CharPredicate{[](char c){ return (c != '$'); }};
 static const auto right = group(plus(nd));
-static const auto s0 = par(seq(chr('$'), left), right, adot);
+static const auto s0 = par(seq(chr('$'), left), right);
 
 std::string Mlib::substitute_dollar(const std::string_view& str, const std::function<std::string(std::string_view)>& replacements) {
-    if ((str.length() >= 3) && (str[0] == '$') && (str[1] == '{') && (str[str.length() - 1] == '}')) {
-        return replacements(substitute_dollar(str.substr(2, str.length() - 3), replacements));
-    }
+    auto rem = str;
     std::string new_line;
-    find_all_templated(str, s0, [&](const TemplateRegex::SMatch<3>& v) {
-        if (v[1].matched()) {
-            new_line += replacements(v[1].str());
-        } else if (v[2].matched()) {
-            new_line += v[2].str();
-        } else {
-            THROW_OR_ABORT("Could not parse \"" + std::string(str) + '"');
+    while (!rem.empty()) {
+        if ((rem.length() >= 3) && (rem[0] == '$') && (rem[1] == '{') && (rem[rem.length() - 1] == '}')) {
+            return replacements(substitute_dollar(rem.substr(2, rem.length() - 3), replacements));
         }
-    });
+        bool found = false;
+        rem = find_all_templated(rem, s0, [&](const TemplateRegex::SMatch<3>& v) {
+            if (v[1].matched()) {
+                new_line += replacements(v[1].str());
+            } else if (v[2].matched()) {
+                new_line += v[2].str();
+            } else {
+                verbose_abort("Internal error parsing string \"" + std::string(str) + "\". Remainder: \"" + std::string(rem) + '"');
+            }
+            found = true;
+        });
+        if (!found) {
+            THROW_OR_ABORT("Could not parse \"" + std::string(str) + "\". Remainder: \"" + std::string(rem) + '"');
+        }
+    }
     return new_line;
 }
 

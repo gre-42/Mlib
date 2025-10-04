@@ -1222,6 +1222,7 @@ int main(int argc, char** argv) {
             lrl,
             [&window_logic]() { window_logic.handle_events(); },
             SceneGraphConfig(),
+            nullptr,
             &button_states);
         if (unhandled_exceptions_occured()) {
             print_unhandled_exceptions();

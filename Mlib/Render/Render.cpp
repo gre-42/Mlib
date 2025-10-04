@@ -126,6 +126,7 @@ void Render::render(
     RenderLogic& logic,
     const std::function<void()>& event_callback,
     const SceneGraphConfig& scene_graph_config,
+    std::function<void(uint32_t)>* char_callback,
     ButtonStates* button_states,
     CursorStates* cursor_states,
     CursorStates* scroll_wheel_states) const
@@ -134,6 +135,7 @@ void Render::render(
         logic,
         event_callback,
         scene_graph_config,
+        char_callback,
         button_states,
         cursor_states,
         scroll_wheel_states);
@@ -167,7 +169,7 @@ void Render::render_scene(
         button_states,
         key_configurations,
         ReadPixelsRole::INTERMEDIATE | ReadPixelsRole::SCREENSHOT };
-    render(read_pixels_logic, []() {}, scene_graph_config, &button_states);
+    render(read_pixels_logic, []() {}, scene_graph_config, nullptr, &button_states);
 }
 
 void Render::render_node(

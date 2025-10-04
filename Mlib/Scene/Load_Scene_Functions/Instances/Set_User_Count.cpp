@@ -13,13 +13,9 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(user_count);
 }
 
-SetUserCount::SetUserCount(PhysicsScene& physics_scene) 
-    : LoadPhysicsSceneInstanceFunction{ physics_scene }
-{}
-
 void SetUserCount::execute(const LoadSceneJsonUserFunctionArgs &args) {
     args.arguments.validate(KnownArgs::options);
-    users.set_user_count(args.arguments.at<uint32_t>(KnownArgs::user_count));
+    args.users.set_user_count(args.arguments.at<uint32_t>(KnownArgs::user_count));
 }
 
 namespace {
@@ -30,7 +26,7 @@ struct RegisterJsonUserFunction {
             "set_user_count",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                SetUserCount(args.physics_scene()).execute(args);
+                SetUserCount::execute(args);
             });
     }
 } obj;
