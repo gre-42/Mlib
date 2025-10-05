@@ -49,9 +49,12 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (game_logic == nullptr) {
         THROW_OR_ABORT("Game logic is null, cannot create player");
     }
-    auto user_account = std::make_shared<UserAccount>(
-        args.macro_line_executor,
-        args.arguments.at<std::string>(KnownArgs::user_account_key));
+    std::shared_ptr<UserAccount> user_account;
+    if (auto user_account_key = args.arguments.try_at_non_null<std::string>(KnownArgs::user_account_key);
+        user_account_key.has_value())
+    {
+        user_account = std::make_shared<UserAccount>(args.macro_line_executor, *user_account_key);
+    }
     auto player = global_object_pool.create_unique<Player>(
         CURRENT_SOURCE_LOCATION,
         scene,

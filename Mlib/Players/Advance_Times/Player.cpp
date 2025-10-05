@@ -338,7 +338,11 @@ std::string Player::id() const {
 }
 
 std::string Player::title() const {
-    return user_account_->name();
+    if (user_account_ != nullptr) {
+        return user_account_->name();
+    } else {
+        return id();
+    }
 }
 
 const std::string& Player::team_name() const {
