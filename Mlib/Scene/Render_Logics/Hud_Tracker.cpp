@@ -87,7 +87,10 @@ HudTracker::HudTracker(
     , far_plane_{ NAN }
 {
     if (exclusive_nodes.has_value()) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         exclusive_nodes_.emplace();
+#pragma GCC diagnostic pop
         for (const auto& element : *exclusive_nodes) {
             if (!exclusive_nodes_->emplace(element, CURRENT_SOURCE_LOCATION).second) {
                 THROW_OR_ABORT("Duplicate exclusive nodes");

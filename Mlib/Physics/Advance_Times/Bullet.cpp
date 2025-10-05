@@ -83,7 +83,8 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
     lifetime_ += dt;
     if (lifetime_ > props_.max_lifetime) {
         scene_.delete_root_node(bullet_node_name_);
-        lifetime_ = INFINITY;
+        // Deactivated, because the object is deleted here because of "delete_root_node"
+        // lifetime_ = INFINITY;
         return;
     }
     if (rotate_bullet_) {
