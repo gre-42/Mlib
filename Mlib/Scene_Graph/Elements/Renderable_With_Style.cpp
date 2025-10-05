@@ -14,11 +14,11 @@ RenderableWithStyle::RenderableWithStyle(std::shared_ptr<const Renderable> rende
 RenderableWithStyle::~RenderableWithStyle() = default;
 
 const ColorStyle* RenderableWithStyle::style(
-    const std::list<const ColorStyle*>& color_styles,
+    const std::list<std::shared_ptr<const ColorStyle>>& color_styles,
     const VariableAndHash<std::string>& name) const
 {
     Hasher hasher0{ SEED };
-    for (const auto* style : color_styles) {
+    for (const auto& style : color_styles) {
         if (style->matches(name)) {
             hasher0.combine(style->get_hash());
         }
@@ -51,7 +51,9 @@ const ColorStyle* RenderableWithStyle::style(
         Hasher hasher1{ SEED };
         for (const auto& style : color_styles) {
             if (style->matches(name)) {
-                std::scoped_lock lock{style->hash_mutex_};
+                std::scoped_lock lock{
+                    style->hash_mutex_,
+                    style->parameter_mutex_};
                 hasher1.combine(style->hash_.get());
                 style_->insert(*style);
             }

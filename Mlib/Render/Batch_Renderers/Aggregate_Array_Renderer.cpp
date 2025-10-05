@@ -407,7 +407,7 @@ void AggregateArrayRenderer::render_aggregates(
     const RenderConfig& render_config,
     const RenderedSceneDescriptor& frame_id,
     const AnimationState* animation_state,
-    const std::list<const ColorStyle*>& color_styles) const
+    const std::list<std::shared_ptr<const ColorStyle>>& color_styles) const
 {
     std::unique_lock lock_guard{ mutex_ };
     if (!is_initialized_) {

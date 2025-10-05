@@ -264,7 +264,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderedSceneDescriptor& frame_id,
         const std::shared_ptr<const AnimationState>& animation_state,
-        const std::list<const ColorStyle*>& color_styles,
+        const std::list<std::shared_ptr<const ColorStyle>>& color_styles,
         SceneNodeVisibility visibility = SceneNodeVisibility::VISIBLE) const;
     void append_sorted_aggregates_to_queue(
         const FixedArray<ScenePos, 4, 4>& parent_mvp,
@@ -406,7 +406,7 @@ private:
     PoseInterpolationMode interpolation_mode_;
     SceneNodeDomain domain_;
     std::shared_ptr<AnimationState> animation_state_;
-    std::list<std::unique_ptr<ColorStyle>> color_styles_;
+    std::list<std::shared_ptr<ColorStyle>> color_styles_;
     std::unique_ptr<AnimationStateUpdater> animation_state_updater_;
     SceneNodeBone bone_;
     VariableAndHash<std::string> periodic_animation_;

@@ -22,7 +22,7 @@ public:
         return renderable_.get();
     }
     const ColorStyle* style(
-        const std::list<const ColorStyle*>& color_styles,
+        const std::list<std::shared_ptr<const ColorStyle>>& color_styles,
         const VariableAndHash<std::string>& name) const;
 private:
     std::shared_ptr<const Renderable> renderable_;

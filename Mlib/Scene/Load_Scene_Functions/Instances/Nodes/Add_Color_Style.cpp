@@ -30,6 +30,7 @@ AddColorStyle::AddColorStyle(PhysicsScene& physics_scene)
 
 void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     using ReflectionMaps = junordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>>;
     ReflectionMaps parsed_reflection_maps;
     if (auto rm = args.arguments.try_at<ReflectionMaps>(KnownArgs::reflection_maps)) {
@@ -66,7 +67,6 @@ struct RegisterJsonUserFunction {
             "add_color_style",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 AddColorStyle(args.physics_scene()).execute(args);            
             });
     }

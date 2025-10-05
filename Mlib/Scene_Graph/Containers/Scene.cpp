@@ -461,10 +461,10 @@ void Scene::render(
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
     std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
     ListsOfBlended blended;
-    std::list<const ColorStyle*> color_styles;
+    std::list<std::shared_ptr<const ColorStyle>> color_styles;
     {
         for (const auto& s : color_styles_.shared()) {
-            color_styles.push_back(s.get());
+            color_styles.push_back(s);
         }
     }
     std::shared_ptr<AnimationState> animation_state;
@@ -950,6 +950,10 @@ void Scene::set_animation_state(
 void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
     color_style->compute_hash();
     color_styles_.push_back(std::move(color_style));
+}
+
+void Scene::clear_color_styles() {
+    color_styles_.clear();
 }
 
 DeleteNodeMutex& Scene::delete_node_mutex() const {

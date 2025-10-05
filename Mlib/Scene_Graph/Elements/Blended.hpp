@@ -22,7 +22,7 @@ public:
         const FixedArray<ScenePos, 4, 4>& mvp,
         const TransformationMatrix<float, ScenePos, 3>& m,
         std::shared_ptr<const AnimationState> animation_state,
-        const std::list<const ColorStyle*>& ecolor_styles);
+        const std::list<std::shared_ptr<const ColorStyle>>& color_styles);
     ~Blended();
     FixedArray<ScenePos, 4, 4> mvp;
     TransformationMatrix<float, ScenePos, 3> m;

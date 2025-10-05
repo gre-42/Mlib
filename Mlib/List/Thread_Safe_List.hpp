@@ -31,6 +31,10 @@ public:
 	void push_back(TArgs&& arg) {
 		container_.push_back(std::forward<TArgs>(arg));
 	}
+	void clear() {
+		std::scoped_lock lock{ mutex_ };
+		container_.clear();
+	}
 	GuardedIterable<typename TBaseList::iterator, std::scoped_lock<TMutex>> scoped() {
 		return { mutex_, container_.begin(), container_.end() };
 	}

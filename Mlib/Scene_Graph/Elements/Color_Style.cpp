@@ -4,6 +4,7 @@
 using namespace Mlib;
 
 void ColorStyle::insert(const ColorStyle& other) {
+    std::scoped_lock lock{ parameter_mutex_ };
     if (!other.emissive.all_equal(-1.f)) {
         this->emissive = other.emissive;
     }
@@ -65,7 +66,7 @@ ColorStyle& ColorStyle::compute_hash() {
 }
 
 void ColorStyle::set_emissive(const FixedArray<float, 3>& value) {
-    std::scoped_lock lock{ hash_mutex_ };
+    std::scoped_lock lock{ parameter_mutex_, hash_mutex_ };
     emissive = value;
     hash_.reset();
     compute_hash();

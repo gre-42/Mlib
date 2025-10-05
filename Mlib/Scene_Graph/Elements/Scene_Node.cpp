@@ -1044,7 +1044,7 @@ void SceneNode::render(
     const SceneGraphConfig& scene_graph_config,
     const RenderedSceneDescriptor& frame_id,
     const std::shared_ptr<const AnimationState>& animation_state,
-    const std::list<const ColorStyle*>& color_styles,
+    const std::list<std::shared_ptr<const ColorStyle>>& color_styles,
     SceneNodeVisibility visibility) const
 {
     assert_true(is_visible_for_user(frame_id.external_render_pass.user_id));
@@ -1080,10 +1080,11 @@ void SceneNode::render(
     const std::shared_ptr<const AnimationState>& estate = animation_state_ != nullptr
         ? animation_state_
         : animation_state;
-    std::list<const ColorStyle*> ecolor_styles = color_styles;
-    for (const auto& s : color_styles_) {
-        ecolor_styles.push_back(s.get());
-    }
+    std::list<std::shared_ptr<const ColorStyle>> ecolor_styles = color_styles;
+    ecolor_styles.insert(
+        ecolor_styles.end(),
+        color_styles_.begin(),
+        color_styles_.end());
     if (visibility == SceneNodeVisibility::VISIBLE) {
         DynamicStyle dynamic_style{dynamic_lights == nullptr
             ? fixed_zeros<float, 3>()

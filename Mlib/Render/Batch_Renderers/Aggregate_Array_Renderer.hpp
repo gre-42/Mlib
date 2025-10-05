@@ -34,7 +34,7 @@ public:
         const RenderConfig& render_config,
         const RenderedSceneDescriptor& frame_id,
         const AnimationState* animation_state,
-        const std::list<const ColorStyle*>& color_styles) const override;
+        const std::list<std::shared_ptr<const ColorStyle>>& color_styles) const override;
     virtual FixedArray<ScenePos, 3> offset() const override;
 
 private:

@@ -137,6 +137,7 @@ public:
         std::unique_ptr<AnimationState>&& animation_state,
         AnimationStateAlreadyExistsBehavior already_exists_behavior);
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
+    void clear_color_styles();
     void wait_for_cleanup() const;
     void notify_cleanup_required();
     void notify_cleanup_done();
@@ -174,7 +175,7 @@ private:
     size_t uuid_;
     std::atomic_bool shutting_down_;
     std::shared_ptr<AnimationState> animation_state_;
-    ThreadSafeList<std::unique_ptr<const ColorStyle>> color_styles_;
+    ThreadSafeList<std::shared_ptr<const ColorStyle>> color_styles_;
     SceneNodeResources* scene_node_resources_;
     ITrailRenderer* trail_renderer_;
     IDynamicLights* dynamic_lights_;

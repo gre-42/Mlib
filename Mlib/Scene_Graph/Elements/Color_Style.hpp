@@ -29,6 +29,7 @@ struct ColorStyle {
     };
     std::unordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>> reflection_maps;
     float reflection_strength = 1.f;
+    mutable FastMutex parameter_mutex_;
     CachedHash hash_;
     mutable FastMutex hash_mutex_;
     size_t get_hash() const;
