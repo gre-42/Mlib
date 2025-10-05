@@ -249,6 +249,9 @@ JThread loader_thread(
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
                 // GlContextGuard gcg{ render2.window() };
                 load_scene();
+                renderable_scenes["primary_scene_0"].instantiate_audio_listener(
+                    render_delay,
+                    velocity_dt);
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : physics_scenes.guarded_iterable()) {
@@ -262,9 +265,6 @@ JThread loader_thread(
                     }
                 }
                 load_scene_finished = true;
-                renderable_scenes["primary_scene_0"].instantiate_audio_listener(
-                    render_delay,
-                    velocity_dt);
             }
 
             print_debug_info(args, physics_scenes);

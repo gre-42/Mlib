@@ -957,6 +957,7 @@ bool RigidBodyVehicle::node_shall_be_hidden(
     const DanglingBaseClassPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
+    std::scoped_lock lock{ flags_mutex_ };
     return is_deactivated_avatar();
 }
 
@@ -1027,6 +1028,7 @@ RigidBodyMissileController& RigidBodyVehicle::missile_controller() {
 }
 
 void RigidBodyVehicle::deactivate_avatar() {
+    std::scoped_lock lock{ flags_mutex_ };
     if (!any(flags_ & RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR)) {
         THROW_OR_ABORT("Rigid body vehicle is not an activated avatar");
     }
@@ -1035,6 +1037,7 @@ void RigidBodyVehicle::deactivate_avatar() {
 }
 
 void RigidBodyVehicle::activate_avatar() {
+    std::scoped_lock lock{ flags_mutex_ };
     if (!any(flags_ & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
         THROW_OR_ABORT("Rigid body vehicle is not a deactivated avatar");
     }

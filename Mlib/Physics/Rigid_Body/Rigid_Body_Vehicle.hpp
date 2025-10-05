@@ -25,6 +25,7 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <Mlib/Threads/Fast_Mutex.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <map>
 #include <memory>
@@ -304,6 +305,7 @@ public:
     StringWithHashUnorderedMap<RigidBodyEngine> engines_;
     StringWithHashUnorderedMap<RigidBodyDeltaEngine> delta_engines_;
     RigidBodyVehicleFlags flags_;
+    mutable FastMutex flags_mutex_;
     Inventory inventory_;
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
