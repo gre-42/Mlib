@@ -24,10 +24,7 @@ struct RegisterJsonUserFunction {
                 auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
                 auto variables = args.arguments.at(KnownArgs::variables);
                 for (const auto& [k, v] : variables.items()) {
-                    if (v.type() != nlohmann::detail::value_t::string) {
-                        THROW_OR_ABORT("Value of \"" + k + "\" is not of type string");
-                    }
-                    args.ui_focuses[user_id].set_persisted_selection_id(k, v.get<std::string>(), PersistedValueType::DEFAULT);
+                    args.ui_focuses[user_id].set_persisted_selection_id(k, v, PersistedValueType::DEFAULT);
                 }
             });
     }

@@ -57,6 +57,9 @@ public:
     T eval(const std::string& expression) const;
     template <class T>
     T eval(const std::string& expression, const JsonView& variables) const;
+    nlohmann::json at(const std::string& key) const;
+    template <class T>
+    T at(const std::string& key) const;
     bool eval(const BooleanExpression& expression) const;
     bool eval(const BooleanExpression& expression, const JsonView& variables) const;
     bool eval_boolean_expression(const nlohmann::json& j) const;

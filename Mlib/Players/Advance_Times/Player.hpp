@@ -57,6 +57,7 @@ class CountdownPhysics;
 class SceneVehicle;
 class VehicleSpawner;
 class VehicleSpawners;
+class UserAccount;
 
 enum class GameMode {
     PHOTOS,
@@ -127,6 +128,7 @@ public:
         std::string user_name,
         std::string id,
         std::string team,
+        std::shared_ptr<UserAccount> user_account,
         GameMode game_mode,
         PlayerRole player_role,
         UnstuckMode unstuck_mode,
@@ -331,6 +333,7 @@ private:
     const SupplyDepotsWaypointsCollection& supply_depots_waypoints_collection_;
     const SupplyDepotsWaypoints* supply_depots_waypoints_;
     Spawner& spawner_;
+    std::shared_ptr<UserAccount> user_account_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 

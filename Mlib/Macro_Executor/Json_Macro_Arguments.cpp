@@ -79,21 +79,58 @@ JsonMacroArguments::JsonMacroArguments(
 
 JsonMacroArguments::~JsonMacroArguments() = default;
 
-void JsonMacroArguments::set(std::string_view key, nlohmann::json value) {
-    j_[key] = std::move(value);
+static void set_internal(
+    nlohmann::json& j,
+    const std::string_view& key,
+    nlohmann::json value)
+{
+    j[key] = std::move(value);
 }
 
-void JsonMacroArguments::merge(const JsonMacroArguments& other, std::string_view prefix) {
+static void set_internal(
+    nlohmann::json& j,
+    const std::vector<std::string>& key,
+    nlohmann::json value,
+    size_t rec = 0)
+{
+    if (rec >= key.size()) {
+        THROW_OR_ABORT("Attempt to set empty JSON key path");
+    }
+    if (rec == key.size() - 1) {
+        j[key[rec]] = std::move(value);
+    } else {
+        set_internal(j[key[rec]], key, value, rec + 1);
+    }
+}
+
+template <JsonKey Key>
+void JsonMacroArguments::set_generic(const Key& key, nlohmann::json value) {
+    set_internal(j_, key, value);
+}
+
+void JsonMacroArguments::set(const std::string_view& key, nlohmann::json value) {
+    set_generic(key, value);
+}
+
+void JsonMacroArguments::set(const std::vector<std::string>& key, nlohmann::json value) {
+    set_generic(key, value);
+}
+
+void JsonMacroArguments::merge(const JsonView& other, std::string_view prefix) {
     if (prefix.empty()) {
-        for (const auto& [key, value] : other.j_.items()) {
+        for (const auto& [key, value] : other.json().items()) {
             j_[key] = value;
         }
     } else {
         auto sp = std::string{ prefix };
-        for (const auto& [key, value] : other.j_.items()) {
+        for (const auto& [key, value] : other.json().items()) {
             j_[sp + key] = value;
         }
     }
+}
+
+void JsonMacroArguments::clear() {
+    j_ = nlohmann::json::object();
 }
 
 static nlohmann::json subst_and_replace(

@@ -28,9 +28,10 @@ static void iterate_replacements(
     }
 }
 
-// "(?:\\$(\\$[$\\w/{}]+|\\w+)-?|([^$]+))"
+// "(?:\\$(\\$[$\\w/{}]+|\\w+|\\{[$\\w/]+\\})-?|([^$]+))"
 static const auto ddw = seq(chr('$'), plus(par(chr('$'), word, chr('/'), chr('{'), chr('}')))); // \\$[$\\w/{}]+
-static const auto left = seq(group(par(ddw, plus(word))), opt(chr('-')));
+static const auto ddi = seq(chr('{'), plus(par(chr('$'), word, chr('/'))), chr('}'));           // \\{?[$\\w/]+\\}?
+static const auto left = seq(group(par(ddw, plus(word), ddi)), opt(chr('-')));
 static const auto nd = CharPredicate{[](char c){ return (c != '$'); }};
 static const auto right = group(plus(nd));
 static const auto s0 = par(seq(chr('$'), left), right);
@@ -39,13 +40,15 @@ std::string Mlib::substitute_dollar(const std::string_view& str, const std::func
     auto rem = str;
     std::string new_line;
     while (!rem.empty()) {
-        if ((rem.length() >= 3) && (rem[0] == '$') && (rem[1] == '{') && (rem[rem.length() - 1] == '}')) {
-            return replacements(substitute_dollar(rem.substr(2, rem.length() - 3), replacements));
-        }
         bool found = false;
         rem = find_all_templated(rem, s0, [&](const TemplateRegex::SMatch<3>& v) {
             if (v[1].matched()) {
-                new_line += replacements(v[1].str());
+                const auto s = v[1].str();
+                if ((s.length() >= 2) && (s[0] == '{') && (s[s.length() - 1] == '}')) {
+                    new_line += replacements(substitute_dollar(s.substr(1, s.length() - 2), replacements));
+                } else {
+                    new_line += replacements(v[1].str());
+                }
             } else if (v[2].matched()) {
                 new_line += v[2].str();
             } else {

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Json/Json_Key.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Strings/Join_Arguments.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -64,15 +65,17 @@ public:
     }
     std::optional<nlohmann::json> try_at(std::string_view name) const;
     std::optional<nlohmann::json> try_at_non_null(std::string_view name) const;
-    template <class T>
-    std::optional<T> try_at(std::string_view name) const {
+    std::optional<nlohmann::json> try_at(const std::vector<std::string>& name) const;
+    std::optional<nlohmann::json> try_at_non_null(const std::vector<std::string>& name) const;
+    template <class T, JsonKey Key>
+    std::optional<T> try_at(const Key& name) const {
         if (!contains(name)) {
             return std::nullopt;
         }
         return at<T>(name);
     }
-    template <class T>
-    std::optional<T> try_at_non_null(std::string_view name) const {
+    template <class T, JsonKey Key>
+    std::optional<T> try_at_non_null(const Key& name) const {
         if (!contains_non_null(name)) {
             return std::nullopt;
         }
@@ -80,6 +83,8 @@ public:
     }
     bool contains(std::string_view name) const;
     bool contains_non_null(std::string_view name) const;
+    bool contains(const std::vector<std::string>& name) const;
+    bool contains_non_null(const std::vector<std::string>& name) const;
     template <class T>
     T get() const {
         return j_.get<T>();
@@ -89,8 +94,9 @@ public:
         return Mlib::get_vector<TData>(j_, op);
     }
     nlohmann::json at(std::string_view name) const;
-    template <class T>
-    T at(std::string_view name) const {
+    nlohmann::json at(const std::vector<std::string>& path) const;
+    template <class T, JsonKey Key>
+    T at(const Key& name) const {
         if (j_.type() == nlohmann::detail::value_t::null) {
             THROW_OR_ABORT("Attempt to retrieve value for key on null object: \"" + std::string{ name } + '"');
         }
@@ -105,42 +111,42 @@ public:
             throw std::runtime_error("Error retrieving key \"" + std::string{ name } + "\": " + e.what());
         }
     }
-    template <class T>
-    T at(std::string_view name, const T& default_) const {
+    template <class T, JsonKey Key>
+    T at(const Key& name, const T& default_) const {
         return j_.contains(name)
             ? at<T>(name)
             : default_;
     }
-    template <class T>
-    T at_non_null(std::string_view name, const T& default_) const {
+    template <class T, JsonKey Key>
+    T at_non_null(const Key& name, const T& default_) const {
         return contains_non_null(name)
             ? at<T>(name)
             : default_;
     }
-    template <class TData>
-    auto try_at_vector(std::string_view name) const {
+    template <class TData, JsonKey Key>
+    auto try_at_vector(const Key& name) const {
         return contains_non_null(name)
             ? at<std::vector<TData>>(name)
             : std::vector<TData>();
     }
-    template <class TData, class TOperation>
-    auto at_vector(std::string_view name, const TOperation& op) const {
+    template <class TData, class TOperation, JsonKey Key>
+    auto at_vector(const Key& name, const TOperation& op) const {
         const auto& val = j_.at(name);
         if (val.type() != nlohmann::detail::value_t::array) {
             THROW_OR_ABORT("Type is not array for key \"" + std::string{ name } + '"');
         }
         return Mlib::get_vector<TData>(val, op);
     }
-    template <class TData, class TOperation>
-    auto try_at_vector(std::string_view name, const TOperation& op) const {
+    template <class TData, class TOperation, JsonKey Key>
+    auto try_at_vector(const Key& name, const TOperation& op) const {
         if (!contains_non_null(name)) {
             using TRet = decltype(at_vector<TData>(name, op));
             return TRet();
         }
         return at_vector<TData>(name, op);
     }
-    template <class TData, class TOperation>
-    auto at_vector_non_null(std::string_view name, const TOperation& op) const {
+    template <class TData, class TOperation, JsonKey Key>
+    auto at_vector_non_null(const Key& name, const TOperation& op) const {
         const auto& val = j_.at(name);
         if ((val.type() != nlohmann::detail::value_t::array) &&
             (val.type() != nlohmann::detail::value_t::null))
@@ -149,8 +155,8 @@ public:
         }
         return Mlib::get_vector_non_null<TData>(val, op);
     }
-    template <class TData, class TOperation>
-    auto at_vector_non_null_optional(std::string_view name, const TOperation& op) const {
+    template <class TData, class TOperation, JsonKey Key>
+    auto at_vector_non_null_optional(const Key& name, const TOperation& op) const {
         if (!j_.contains(name)) {
             return decltype(at_vector_non_null<TData>(name, op))();
         }

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Executor/Boolean_Expression.hpp>
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <functional>
@@ -105,8 +105,8 @@ enum class PersistedValueType {
 struct EditFocus {
     std::string menu_id;
     std::string entry_id;
-    std::string persisted;
-    std::string global;
+    std::vector<std::string> persisted;
+    std::vector<std::string> global;
     std::string value;
 };
 
@@ -123,8 +123,15 @@ public:
     std::vector<FocusFilter> focus_filters;
     std::map<std::string, std::atomic_size_t> all_selection_ids;
     std::optional<EditFocus> editing;
-    void set_persisted_selection_id(const std::string& submenu, const std::string& s, PersistedValueType cb);
-    std::string get_persisted_selection_id(const std::string& submenu) const;
+    void set_persisted_selection_id(
+        const std::string_view& submenu,
+        const nlohmann::json& s,
+        PersistedValueType cb);
+    void set_persisted_selection_id(
+        const std::vector<std::string>& submenu,
+        const nlohmann::json& s,
+        PersistedValueType cb);
+    nlohmann::json get_persisted_selection_id(const std::string& submenu) const;
     void set_requires_reload(std::string submenu, std::string reason);
     void clear_requires_reload(const std::string& submenu);
     const std::map<std::string, std::string>& requires_reload() const;
@@ -145,8 +152,10 @@ public:
     FastMutex edit_mutex;
 private:
     bool get_has_changes() const;
-    std::map<std::string, ThreadSafeString> loaded_persistent_selection_ids;
-    std::map<std::string, ThreadSafeString> current_persistent_selection_ids;
+    template <JsonKey Key>
+    void set_persisted_selection_id_generic(const Key& submenu, const nlohmann::json& s, PersistedValueType cb);
+    NotifyingJsonMacroArguments loaded_persistent_selection_ids;
+    NotifyingJsonMacroArguments current_persistent_selection_ids;
     std::string filename_;
     bool has_changes_;
     std::map<std::string, std::string> requires_reload_;

@@ -545,6 +545,15 @@ bool MacroLineExecutor::eval_boolean_expression(const nlohmann::json& j, const J
     return eval(expression, variables);
 }
 
+nlohmann::json MacroLineExecutor::at(const std::string& key) const {
+    return global_json_macro_arguments_.at(key);
+}
+
+template <class T>
+T MacroLineExecutor::at(const std::string& key) const {
+    return global_json_macro_arguments_.at<T>(key);
+}
+
 JsonMacroArgumentsObserverToken MacroLineExecutor::add_observer(std::function<void()> func) {
     return global_json_macro_arguments_.add_observer(std::move(func));
 }
@@ -557,6 +566,7 @@ JsonView MacroLineExecutor::block_arguments() const {
     return JsonView{ block_arguments_ };
 }
 
+template std::string MacroLineExecutor::at<std::string>(const std::string& key) const;
 template bool MacroLineExecutor::eval<bool>(const std::string& expression, const JsonView& variables) const;
 template bool MacroLineExecutor::eval<bool>(const std::string& expression) const;
 template std::string MacroLineExecutor::eval<std::string>(const std::string& expression, const JsonView& variables) const;

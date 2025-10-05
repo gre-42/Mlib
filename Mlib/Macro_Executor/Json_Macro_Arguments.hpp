@@ -37,8 +37,10 @@ public:
     JsonMacroArguments(const nlohmann::json& j, Filter::With, const std::set<std::string>& with);
     JsonMacroArguments(const nlohmann::json& j, Filter::Without, const std::set<std::string>& without);
     ~JsonMacroArguments();
-    void set(std::string_view key, nlohmann::json value);
-    void merge(const JsonMacroArguments& other, std::string_view prefix="");
+    void set(const std::string_view& key, nlohmann::json value);
+    void set(const std::vector<std::string>& key, nlohmann::json value);
+    void merge(const JsonView& other, std::string_view prefix="");
+    void clear();
     void insert_json(const nlohmann::json& j);
     void insert_json(const nlohmann::json& j, Filter::With, const std::set<std::string>& with);
     void insert_json(const nlohmann::json& j, Filter::Without, const std::set<std::string>& without);
@@ -108,6 +110,8 @@ public:
         return j_.items();
     }
 private:
+    template <JsonKey Key>
+    void set_generic(const Key& key, nlohmann::json value);
     nlohmann::json j_;
     std::function<std::list<std::string>(const std::filesystem::path& f)> fpathes_;
     std::function<FPath(const std::filesystem::path& f)> fpath_;

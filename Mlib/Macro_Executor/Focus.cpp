@@ -192,26 +192,44 @@ void UiFocus::clear() {
 }
 
 void UiFocus::set_persisted_selection_id(
-    const std::string& submenu,
-    const std::string& s,
+    const std::string_view& submenu,
+    const nlohmann::json& s,
+    PersistedValueType cb)
+{
+    set_persisted_selection_id_generic(submenu, s, cb);
+}
+
+void UiFocus::set_persisted_selection_id(
+    const std::vector<std::string>& submenu,
+    const nlohmann::json& s,
+    PersistedValueType cb)
+{
+    set_persisted_selection_id_generic(submenu, s, cb);
+}
+    
+template <JsonKey Key>
+void UiFocus::set_persisted_selection_id_generic(
+    const Key& submenu,
+    const nlohmann::json& s,
     PersistedValueType cb)
 {
     if (cb == PersistedValueType::CUSTOM) {
-        current_persistent_selection_ids[submenu] = s;
+        current_persistent_selection_ids.set_and_notify(submenu, s);
         has_changes_ = get_has_changes();
     } else if (!current_persistent_selection_ids.contains(submenu)) {
-        loaded_persistent_selection_ids[submenu] = s;
-        current_persistent_selection_ids[submenu] = s;
+        loaded_persistent_selection_ids.set_and_notify(submenu, s);
+        current_persistent_selection_ids.set_and_notify(submenu, s);
     }
 }
 
-std::string UiFocus::get_persisted_selection_id(const std::string& submenu) const
+nlohmann::json UiFocus::get_persisted_selection_id(const std::string& submenu) const
 {
-    auto it = current_persistent_selection_ids.find(submenu);
-    if (it == current_persistent_selection_ids.end()) {
+    auto c = current_persistent_selection_ids.json_macro_arguments();
+    auto it = c->try_at(submenu);
+    if (!it.has_value()) {
         THROW_OR_ABORT("Could not find persisted submenu \"" + submenu + '"');
     }
-    return (std::string)it->second;
+    return *it;
 }
 
 void UiFocus::set_requires_reload(std::string submenu, std::string reason) {
@@ -238,22 +256,38 @@ bool UiFocus::can_save() const {
     return !filename_.empty();
 }
 
-bool UiFocus::get_has_changes() const {
-    for (const auto& [k, v] : current_persistent_selection_ids) {
-        auto it = loaded_persistent_selection_ids.find(k);
-        if (it == loaded_persistent_selection_ids.end()) {
+static bool has_changes_rec(const JsonView& c, const JsonView& l){
+    for (const auto& [k, v] : c.json().items()) {
+        auto it = l.try_at(k);
+        if (!it.has_value()) {
             return true;
         }
-        if (it->second != v) {
+        if (v.type() == nlohmann::detail::value_t::object) {
+            if (has_changes_rec(JsonView{v}, JsonView{*it})) {
+                return true;
+            }
+        } else if (*it != v) {
             return true;
         }
     }
-    for (const auto& [k, _] : loaded_persistent_selection_ids) {
-        if (!current_persistent_selection_ids.contains(k)) {
+    for (const auto& [k, v] : l.json().items()) {
+        auto it = c.try_at(k);
+        if (!it.has_value()) {
             return true;
+        }
+        if (v.type() == nlohmann::detail::value_t::object) {
+            if (has_changes_rec(JsonView{*it}, JsonView{v})) {
+                return true;
+            }
         }
     }
     return false;
+};
+
+bool UiFocus::get_has_changes() const {
+    auto c = current_persistent_selection_ids.json_macro_arguments();
+    auto l = loaded_persistent_selection_ids.json_macro_arguments();
+    return has_changes_rec(c, l);
 }
 
 void UiFocus::load() {
@@ -263,8 +297,9 @@ void UiFocus::load() {
     }
     nlohmann::json j;
     *f >> j;
-    loaded_persistent_selection_ids = j.get<std::map<std::string, ThreadSafeString>>();
-    current_persistent_selection_ids = loaded_persistent_selection_ids;
+    JsonView jv{ j };
+    loaded_persistent_selection_ids.assign_and_notify(jv);
+    current_persistent_selection_ids.assign_and_notify(jv);
 }
 
 void UiFocus::save() {
@@ -272,12 +307,13 @@ void UiFocus::save() {
     if (f->fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename_ + "\" for write");
     }
-    nlohmann::json j = current_persistent_selection_ids;
+    auto c = current_persistent_selection_ids.json_macro_arguments();
+    nlohmann::json j = c;
     *f << j;
     if (f->fail()) {
         THROW_OR_ABORT("Could not write to file \"" + filename_ + '"');
     }
-    loaded_persistent_selection_ids = current_persistent_selection_ids;
+    loaded_persistent_selection_ids.assign_and_notify(c);
 }
 
 void UiFocus::pop_invalid_focuses() {

@@ -34,6 +34,7 @@
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Players/Team/Team.hpp>
+#include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -114,6 +115,7 @@ Player::Player(
     std::string user_name,
     std::string id,
     std::string team,
+    std::shared_ptr<UserAccount> user_account,
     GameMode game_mode,
     PlayerRole player_role,
     UnstuckMode unstuck_mode,
@@ -165,6 +167,7 @@ Player::Player(
     , supply_depots_waypoints_collection_{ supply_depots_waypoints_collection }
     , supply_depots_waypoints_{ nullptr }
     , spawner_{ spawner }
+    , user_account_{ std::move(user_account) }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
 }
@@ -335,7 +338,7 @@ std::string Player::id() const {
 }
 
 std::string Player::title() const {
-    return id();
+    return user_account_->name();
 }
 
 const std::string& Player::team_name() const {

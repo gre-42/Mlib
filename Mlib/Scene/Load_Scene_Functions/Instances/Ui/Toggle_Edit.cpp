@@ -40,8 +40,8 @@ void ToggleEdit::execute(const LoadSceneJsonUserFunctionArgs& args) {
         ui_focus.editing = EditFocus{
             .menu_id = args.arguments.at<std::string>(KnownArgs::menu_id),
             .entry_id = args.arguments.at<std::string>(KnownArgs::entry_id),
-            .persisted = args.arguments.at<std::string>(KnownArgs::persisted),
-            .global = args.arguments.at<std::string>(KnownArgs::global),
+            .persisted = args.arguments.at<std::vector<std::string>>(KnownArgs::persisted),
+            .global = args.arguments.at<std::vector<std::string>>(KnownArgs::global),
             .value = args.arguments.at<std::string>(KnownArgs::value)};
     }
 }

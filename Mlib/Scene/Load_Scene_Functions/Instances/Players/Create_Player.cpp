@@ -2,11 +2,13 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -20,6 +22,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(user_id);
 DECLARE_ARGUMENT(user_name);
+DECLARE_ARGUMENT(user_account_key);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(game_mode);
@@ -46,6 +49,9 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (game_logic == nullptr) {
         THROW_OR_ABORT("Game logic is null, cannot create player");
     }
+    auto user_account = std::make_shared<UserAccount>(
+        args.macro_line_executor,
+        args.arguments.at<std::string>(KnownArgs::user_account_key));
     auto player = global_object_pool.create_unique<Player>(
         CURRENT_SOURCE_LOCATION,
         scene,
@@ -61,6 +67,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::user_name, ""),
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::team),
+        std::move(user_account),
         game_mode_from_string(args.arguments.at<std::string>(KnownArgs::game_mode)),
         player_role_from_string(args.arguments.at<std::string>(KnownArgs::player_role)),
         unstuck_mode_from_string(args.arguments.at<std::string>(KnownArgs::unstuck_mode)),

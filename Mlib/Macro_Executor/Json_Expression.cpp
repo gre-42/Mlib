@@ -124,14 +124,29 @@ static nlohmann::json eval_recursion(
             } else {
                 return db.at<std::string>(match[DbQueryGroups::value].str());
             }
+        } else if (s[0] == '/') {
+            // static const DECLARE_REGEX(query_re, "^.([^/]+)/([^/]+)$");
+            static const auto query_re = seq(adot, NSL, sl, NSL, eof);
+            SMatch<3> match;
+            if (!regex_match(s, match, query_re)) {
+                THROW_OR_ABORT("Could not parse asset path: \"" + std::string{ s } + '"');
+            }
+            auto dict_name = subst(match[DictQueryGroups::dict].str());
+            const auto& dict = at(dict_name, globals.json(), locals.json(), block.json());
+            if (dict.type() != nlohmann::detail::value_t::object) {
+                THROW_OR_ABORT("Variable \"" + dict_name + "\" is not a dictionary");
+            }
+            auto key_name = subst(match[DictQueryGroups::key].str());
+            return JsonView{ dict }.at<std::string>(key_name);
+        } else {
+            const auto& v = at(s, globals.json(), locals.json(), block.json());
+            if (v.type() != nlohmann::detail::value_t::string) {
+                std::stringstream sstr;
+                sstr << "Variable \"" << s << "\" is not of type string. Value: \"" << v << '"';
+                THROW_OR_ABORT(sstr.str());
+            }
+            return v.get<std::string>();
         }
-        const auto& v = at(s, globals.json(), locals.json(), block.json());
-        if (v.type() != nlohmann::detail::value_t::string) {
-            std::stringstream sstr;
-            sstr << "Variable \"" << s << "\" is not of type string. Value: \"" << v << '"';
-            THROW_OR_ABORT(sstr.str());
-        }
-        return v.get<std::string>();
     };
     {
         // static const DECLARE_REGEX(comparison_re, "^\((\\S+) (==|!=|in|not in) (.+)\)$");
