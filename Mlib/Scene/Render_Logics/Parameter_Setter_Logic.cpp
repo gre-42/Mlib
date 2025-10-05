@@ -102,6 +102,7 @@ ParameterSetterLogic::ParameterSetterLogic(
             : selected_id(ui_focus.get_persisted_selection_id(persisted_), options_),
         contents_,
         ListViewOrientation::VERTICAL,
+        ui_focus,
         user_id,
         [this, oc = std::move(on_change)](){
             if (!ew_->eval(required_)) {
@@ -185,11 +186,11 @@ void ParameterSetterLogic::render_without_setup(
             {
                 const auto& o = options_.at(index);
                 std::scoped_lock lock{ ui_focus_.edit_mutex };
-                if (ui_focus_.editing.has_value() &&
-                    (ui_focus_.editing->menu_id == id_) &&
-                    (ui_focus_.editing->entry_id == o.id))
+                if (ui_focus_.edit_focus.has_value() &&
+                    (ui_focus_.edit_focus->menu_id == id_) &&
+                    (ui_focus_.edit_focus->entry_id == o.id))
                 {
-                    return ui_focus_.editing->value + '|';
+                    return "$ " + ui_focus_.edit_focus->value;
                 }
             }
             return cached_titles_.at(index);

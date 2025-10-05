@@ -68,6 +68,7 @@ VideoModeSelectorLogic::VideoModeSelectorLogic(
         ui_focus.all_selection_ids.at(id_),
         contents_,
         ListViewOrientation::VERTICAL,
+        ui_focus,
         user_id}
 {}
 

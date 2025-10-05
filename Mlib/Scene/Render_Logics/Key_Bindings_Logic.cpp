@@ -67,6 +67,7 @@ KeyBindingsLogic::KeyBindingsLogic(
     FocusFilter focus_filter,
     std::unique_ptr<ExpressionWatcher>&& ew,
     ButtonStates& button_states,
+    UiFocus& ui_focus,
     std::atomic_size_t& selection_index,
     uint32_t user_id)
     : user_id_{ user_id }
@@ -90,6 +91,7 @@ KeyBindingsLogic::KeyBindingsLogic(
         selection_index,
         contents_,
         ListViewOrientation::VERTICAL,
+        ui_focus,
         user_id}
     , ot_{ ew_->add_observer([this](){
         list_view_.notify_change_visibility();

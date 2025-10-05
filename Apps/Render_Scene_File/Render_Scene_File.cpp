@@ -767,8 +767,8 @@ int main(int argc, char** argv) {
                     main_func(
                         [&f0=ui_focuses[0]](uint32_t c){
                             std::scoped_lock lock{ f0.edit_mutex };
-                            if (f0.editing.has_value()) {
-                                auto& value = f0.editing->value;
+                            if (f0.edit_focus.has_value()) {
+                                auto& value = f0.edit_focus->value;
                                 if (std::isalpha(c) || std::isdigit(c)) {
                                     value += c;
                                 } else if ((c == '\b') && (!value.empty())) {

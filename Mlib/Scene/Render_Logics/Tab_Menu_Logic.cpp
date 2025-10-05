@@ -101,6 +101,7 @@ TabMenuLogic::TabMenuLogic(
         (size_t)ui_focus.menu_selection_ids[id_],
         contents_,
         ListViewOrientation::HORIZONTAL,
+        ui_focus,
         user_id,
         [this, on_change](){
             merge_substitutions();
@@ -136,7 +137,7 @@ void TabMenuLogic::render_without_setup(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("TabMenuLogic::render");
-    if (on_execute_ && confirm_button_.keys_pressed()) {
+    if (on_execute_ && confirm_button_.keys_pressed() && !ui_focus_.editing()) {
         on_execute_();
     }
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS, RegionRoundMode::ENABLED);

@@ -26,18 +26,18 @@ ToggleEdit::ToggleEdit(RenderableScene& renderable_scene)
 void ToggleEdit::execute(const LoadSceneJsonUserFunctionArgs& args) {
     args.arguments.validate(KnownArgs::options);
     std::scoped_lock lock{ ui_focus.edit_mutex };
-    if (ui_focus.editing.has_value()) {
-        if (!ui_focus.editing->global.empty()) {
+    if (ui_focus.edit_focus.has_value()) {
+        if (!ui_focus.edit_focus->global.empty()) {
             args.external_json_macro_arguments.set_and_notify(
-                ui_focus.editing->global,
-                ui_focus.editing->value);
+                ui_focus.edit_focus->global,
+                ui_focus.edit_focus->value);
         }
-        if (!ui_focus.editing->persisted.empty()) {
-            ui_focus.set_persisted_selection_id(ui_focus.editing->persisted, ui_focus.editing->value, PersistedValueType::CUSTOM);
+        if (!ui_focus.edit_focus->persisted.empty()) {
+            ui_focus.set_persisted_selection_id(ui_focus.edit_focus->persisted, ui_focus.edit_focus->value, PersistedValueType::CUSTOM);
         }
-        ui_focus.editing.reset();
+        ui_focus.edit_focus.reset();
     } else {
-        ui_focus.editing = EditFocus{
+        ui_focus.edit_focus = EditFocus{
             .menu_id = args.arguments.at<std::string>(KnownArgs::menu_id),
             .entry_id = args.arguments.at<std::string>(KnownArgs::entry_id),
             .persisted = args.arguments.at<std::vector<std::string>>(KnownArgs::persisted),

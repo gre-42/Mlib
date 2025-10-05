@@ -56,7 +56,11 @@ void MenuLogic::handle_events() {
     LOG_FUNCTION("FlyingCameraLogic::render");
     for (auto [user_id, start] : tenumerate<uint32_t>(keys_->start)) {
         if (start.keys_pressed()) {
-            auto& focuses = user_object_.ui_focuses[user_id].focuses;
+            auto& ui_focuses = user_object_.ui_focuses[user_id];
+            auto& focuses = ui_focuses.focuses;
+            if (ui_focuses.editing()) {
+                continue;
+            }
             std::scoped_lock lock{focuses.mutex};
             if (focuses.has_focus(Focus::MENU_ANY)) {
                 if (!focuses.has_focus(Focus::QUERY_CONTAINS | Focus::GAME_OVER) &&

@@ -11,6 +11,7 @@ class TextResource;
 class IListViewContents;
 class IListViewDrawer;
 enum class ListViewOrientation;
+class UiFocus;
 struct LayoutConstraintParameters;
 
 class ListView {
@@ -21,6 +22,7 @@ public:
         size_t selection_index,
         const IListViewContents& contents,
         ListViewOrientation orientation,
+        UiFocus& ui_focus,
         uint32_t user_id,
         std::function<void()> on_change = std::function<void()>());
     ~ListView();
@@ -42,6 +44,7 @@ private:
     std::string debug_hint_;
     size_t selection_index_;
     const IListViewContents& contents_;
+    UiFocus& ui_focus_;
     const std::function<void()> on_change_;
     ButtonPress previous_;
     ButtonPress next_;

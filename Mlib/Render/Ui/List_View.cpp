@@ -1,4 +1,5 @@
 #include "List_View.hpp"
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
@@ -20,11 +21,13 @@ ListView::ListView(
     size_t selection_index,
     const IListViewContents& contents,
     ListViewOrientation orientation,
+    UiFocus& ui_focus,
     uint32_t user_id,
     std::function<void()> on_change)
     : debug_hint_{ std::move(debug_hint) }
     , selection_index_{ selection_index }
     , contents_{ contents }
+    , ui_focus_{ ui_focus }
     , on_change_{ std::move(on_change) }
     , previous_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "left" : "up", "" }
     , next_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "right" : "down", "" }
@@ -146,22 +149,22 @@ void ListView::handle_input(size_t left, size_t right) {
         }
     };
     size_t old_selection_index = selection_index_;
-    if (previous_.keys_pressed()) {
+    if (previous_.keys_pressed() && !ui_focus_.editing()) {
         go_to_previous();
     }
-    if (next_.keys_pressed()) {
+    if (next_.keys_pressed() && !ui_focus_.editing()) {
         go_to_next();
     }
-    if (previous_fast_.keys_pressed()) {
+    if (previous_fast_.keys_pressed() && !ui_focus_.editing()) {
         go_to_previous_fast();
     }
-    if (next_fast_.keys_pressed()) {
+    if (next_fast_.keys_pressed() && !ui_focus_.editing()) {
         go_to_next_fast();
     }
-    if (first_.keys_pressed()) {
+    if (first_.keys_pressed() && !ui_focus_.editing()) {
         go_to_first();
     }
-    if (last_.keys_pressed()) {
+    if (last_.keys_pressed() && !ui_focus_.editing()) {
         go_to_last();
     }
     if (selection_index_ != old_selection_index) {

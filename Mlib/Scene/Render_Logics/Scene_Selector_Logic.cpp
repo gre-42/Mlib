@@ -107,6 +107,7 @@ SceneSelectorLogic::SceneSelectorLogic(
         ui_focus.all_selection_ids.at(id_),
         contents_,
         ListViewOrientation::VERTICAL,
+        ui_focus,
         user_id,
         [this, oc = std::move(on_change)]() {
             next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename();

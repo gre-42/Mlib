@@ -122,7 +122,8 @@ public:
     std::vector<SubmenuHeader> submenu_headers;
     std::vector<FocusFilter> focus_filters;
     std::map<std::string, std::atomic_size_t> all_selection_ids;
-    std::optional<EditFocus> editing;
+    std::optional<EditFocus> edit_focus;
+    bool editing() const;
     void set_persisted_selection_id(
         const std::string_view& submenu,
         const nlohmann::json& s,
@@ -149,7 +150,7 @@ public:
     void load();
     void save();
     void pop_invalid_focuses();
-    FastMutex edit_mutex;
+    mutable FastMutex edit_mutex;
 private:
     bool get_has_changes() const;
     template <JsonKey Key>

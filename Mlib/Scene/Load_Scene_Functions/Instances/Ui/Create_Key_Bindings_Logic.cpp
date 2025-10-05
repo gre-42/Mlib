@@ -75,6 +75,7 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::move(focus_filter),
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.button_states,
+        ui_focus,
         ui_focus.all_selection_ids.at(id),
         args.arguments.at<uint32_t>(KnownArgs::user_id));
     render_logics.append(

@@ -22,6 +22,7 @@ struct ReplacementParameter;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class ExpressionWatcher;
+class UiFocus;
 
 struct LockedKeyBindings {
     LockedKeyBindings(
@@ -63,6 +64,7 @@ public:
         FocusFilter focus_filter,
         std::unique_ptr<ExpressionWatcher>&& ew,
         ButtonStates& button_states,
+        UiFocus& ui_focus,
         std::atomic_size_t& selection_index,
         uint32_t user_id);
     ~KeyBindingsLogic();

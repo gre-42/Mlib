@@ -191,6 +191,11 @@ void UiFocus::clear() {
     focus_filters.clear();
 }
 
+bool UiFocus::editing() const {
+    std::scoped_lock lock{ edit_mutex };
+    return edit_focus.has_value();
+}
+
 void UiFocus::set_persisted_selection_id(
     const std::string_view& submenu,
     const nlohmann::json& s,
