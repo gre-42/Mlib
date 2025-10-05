@@ -40,20 +40,7 @@ bool ThreadSafeJson::operator != (const ThreadSafeJson& other) const {
 
 std::partial_ordering ThreadSafeJson::operator <=> (const ThreadSafeJson& other) const {
     std::scoped_lock lock{ mutex_, other.mutex_ };
-#ifdef __clang__
-    if (j_ < other.j_) {
-        return std::partial_ordering::less;
-    }
-    if (j_ == other.j_) {
-        return std::partial_ordering::equal;
-    }
-    if (j_ > other.j_) {
-        return std::partial_ordering::greater;
-    }
-    THROW_OR_ABORT("Invalid string comparison");
-#else
     return j_ <=> other.j_;
-#endif
 }
 
 nlohmann::json ThreadSafeJson::json() const {

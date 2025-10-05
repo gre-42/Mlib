@@ -81,13 +81,9 @@ void RootNodes::clear() {
             }
             node.mapped().ptr->shutdown();
             scene_.unregister_node(node.key());
-            root_nodes_to_delete_.erase(node.key());
             trash_can_.push_back(std::move(node.mapped()));
             // linfo() << "add " << node.key();
         });
-    if (!root_nodes_to_delete_.empty()) {
-        verbose_abort("Root nodes to delete remain after clear");
-    }
 }
 
 void RootNodes::add_root_node(
@@ -95,9 +91,6 @@ void RootNodes::add_root_node(
     std::unique_ptr<SceneNode>&& scene_node,
     SceneNodeState scene_node_state)
 {
-    if (root_nodes_to_delete_.contains(name)) {
-        THROW_OR_ABORT("Node \"" + *name + "\" is scheduled for deletion");
-    }
     if (node_container_.contains(name)) {
         THROW_OR_ABORT("Node \"" + *name + "\" already exists");
     }
@@ -176,40 +169,6 @@ std::optional<DanglingBaseClassRef<SceneNode>> RootNodes::try_get(
     return DanglingBaseClassRef<SceneNode>{*it->ptr, loc};
 }
 
-bool RootNodes::no_root_nodes_scheduled_for_deletion() const {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    return root_nodes_to_delete_.empty();
-}
-
-bool RootNodes::root_node_scheduled_for_deletion(const VariableAndHash<std::string>& name) const {
-    std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
-    if (!node_container_.contains(name)) {
-        THROW_OR_ABORT("No root node with name \"" + *name + "\" exists");
-    }
-    return root_nodes_to_delete_.contains(name);
-}
-
-void RootNodes::schedule_delete_root_node(const VariableAndHash<std::string>& name) {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
-    if (!node_container_.contains(name)) {
-        verbose_abort("No root node with name \"" + *name + "\" exists");
-    }
-    if (!root_nodes_to_delete_.insert(name).second) {
-        verbose_abort("Node \"" + *name + "\" is already scheduled for deletion");
-    }
-}
-
-void RootNodes::delete_scheduled_root_nodes() const {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    auto self = const_cast<RootNodes*>(this);
-    std::unique_lock lock{ self->root_nodes_to_delete_mutex_ };
-    clear_set_recursively(self->root_nodes_to_delete_, [self, &lock](const auto& name){
-        UnlockGuard ulock{ lock };
-        self->delete_root_node(name);
-    });
-}
-
 size_t RootNodes::try_empty_the_trash_can() {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (emptying_trash_can_) {
@@ -247,7 +206,6 @@ void RootNodes::delete_root_node(const VariableAndHash<std::string>& name) {
         if (default_nodes_map_.erase(name) == 0) {
             small_static_nodes_bvh_.clear();
         }
-        root_nodes_to_delete_.erase(name);
         UnlockGuard ulock{ lock };
         it.mapped().ptr->shutdown();
         trash_can_.push_back(std::move(it.mapped()));
@@ -267,7 +225,6 @@ void RootNodes::delete_root_nodes(const Mlib::re::cregex& regex) {
             if (default_nodes_map_.erase(n.first) == 0) {
                 small_static_nodes_bvh_.clear();
             }
-            root_nodes_to_delete_.erase(n.first);
             UnlockGuard ulock{ lock };
             n.second.ptr->shutdown();
             // linfo() << "add " << n.second.ptr.get(DP_LOC).get() << " " << n.first;

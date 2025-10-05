@@ -39,20 +39,7 @@ bool ThreadSafeString::operator != (const ThreadSafeString& other) const {
 
 std::strong_ordering ThreadSafeString::operator <=> (const ThreadSafeString& other) const {
     std::scoped_lock lock{ mutex_, other.mutex_ };
-#ifdef __clang__
-    if (str_ < other.str_) {
-        return std::strong_ordering::less;
-    }
-    if (str_ == other.str_) {
-        return std::strong_ordering::equal;
-    }
-    if (str_ > other.str_) {
-        return std::strong_ordering::greater;
-    }
-    THROW_OR_ABORT("Invalid string comparison");
-#else
     return str_ <=> other.str_;
-#endif
 }
 
 ThreadSafeString::operator std::string() const {

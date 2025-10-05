@@ -214,21 +214,6 @@ void Scene::move_root_node_to_bvh(const VariableAndHash<std::string>& name) {
     }
 }
 
-bool Scene::root_node_scheduled_for_deletion(
-    const VariableAndHash<std::string>& name,
-    bool must_exist) const
-{
-    return morn_.root_node_scheduled_for_deletion(name, must_exist);
-}
-
-void Scene::schedule_delete_root_node(const VariableAndHash<std::string>& name) {
-    root_nodes_.schedule_delete_root_node(name);
-}
-
-void Scene::delete_scheduled_root_nodes() const {
-    morn_.delete_scheduled_root_nodes();
-}
-
 void Scene::try_delete_root_node(const VariableAndHash<std::string>& name) {
     if (nodes_.contains(name)) {
         delete_root_node(name);
@@ -273,7 +258,7 @@ void Scene::try_delete_node(const VariableAndHash<std::string>& name) {
 void Scene::delete_node(const VariableAndHash<std::string>& name) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     try {
-        DanglingBaseClassPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
+        DanglingBaseClassPtr<SceneNode> node = get_node(name, CURRENT_SOURCE_LOCATION).ptr();
         if (!node->shutting_down()) {
             if (node->has_parent()) {
                 DanglingBaseClassRef<SceneNode> parent = node->parent();
@@ -403,16 +388,14 @@ void Scene::unregister_nodes(const Mlib::re::cregex& regex) {
 
 DanglingBaseClassRef<SceneNode> Scene::get_node(const VariableAndHash<std::string>& name, SourceLocation loc) const {
     std::shared_lock lock{ mutex_ };
-    if (delete_node_mutex_.this_thread_is_deleter_thread() &&
-        morn_.root_node_scheduled_for_deletion(name, false))
-    {
-        THROW_OR_ABORT("Node \"" + *name + "\" is scheduled for deletion");
+    auto it = nodes_.try_get(name);
+    if (it == nullptr) {
+        THROW_OR_ABORT("Could not find node with name (2) \"" + *name + '"');
     }
-    auto res = get_node_that_may_be_scheduled_for_deletion(name).set_loc(loc);
     // Only for debugging purposes, as it
     // overwrites the debug-message with each call.
     // res->set_debug_message(name);
-    return res;
+    return **it;
 }
 
 DanglingBaseClassPtr<SceneNode> Scene::try_get_node(const VariableAndHash<std::string>& name, SourceLocation loc) const {
@@ -428,22 +411,10 @@ std::list<std::pair<VariableAndHash<std::string>, DanglingBaseClassRef<SceneNode
     std::list<std::pair<VariableAndHash<std::string>, DanglingBaseClassRef<SceneNode>>> result;
     for (const auto& [name, node] : nodes_) {
         if (Mlib::re::regex_match(*name, regex)) {
-            if (morn_.root_node_scheduled_for_deletion(name, false)) {
-                THROW_OR_ABORT("Node \"" + *name + "\" is scheduled for deletion");
-            }
             result.emplace_back(name, *node);
         }
     }
     return result;
-}
-
-DanglingBaseClassRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const VariableAndHash<std::string>& name) const {
-    std::shared_lock lock{ mutex_ };
-    auto it = nodes_.try_get(name);
-    if (it == nullptr) {
-        THROW_OR_ABORT("Could not find node with name (2) \"" + *name + '"');
-    }
-    return **it;
 }
 
 bool Scene::visit_all(const std::function<bool(
@@ -861,9 +832,6 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     {
         std::unique_lock lock{mutex_};
-        if (!morn_.no_root_nodes_scheduled_for_deletion()) {
-            THROW_OR_ABORT("Moving with root nodes scheduled for deletion");
-        }
         {
             auto &drn = root_nodes_.default_nodes();
             for (auto it = drn.begin(); it != drn.end();) {

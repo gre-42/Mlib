@@ -111,7 +111,6 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
             }
         }
         // TimeGuard tg1{"scene.move"};
-        scene_.delete_scheduled_root_nodes();
         scene_.move(physics_cfg_.dt, time);
     }
     physics_engine_.move_advance_times(world);

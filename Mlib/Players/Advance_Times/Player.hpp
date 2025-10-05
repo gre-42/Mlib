@@ -149,7 +149,6 @@ public:
     DanglingBaseClassRef<const RigidBodyVehicle> rigid_body() const;
     DanglingBaseClassRef<SceneNode> scene_node();
     DanglingBaseClassRef<const SceneNode> scene_node() const;
-    bool scene_node_scheduled_for_deletion() const;
     VehicleSpawner* next_scene_vehicle();
     const std::string& next_seat() const;
     const VariableAndHash<std::string>& scene_node_name() const;

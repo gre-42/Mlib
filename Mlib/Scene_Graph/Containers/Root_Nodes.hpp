@@ -7,7 +7,6 @@
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <functional>
 #include <string>
-#include <unordered_set>
 
 namespace Mlib {
 
@@ -44,10 +43,6 @@ public:
     void move_node_to_bvh(const VariableAndHash<std::string>& name);
     void delete_root_node(const VariableAndHash<std::string>& name);
     void delete_root_nodes(const Mlib::re::cregex& regex);
-    bool no_root_nodes_scheduled_for_deletion() const;
-    bool root_node_scheduled_for_deletion(const VariableAndHash<std::string>& name) const;
-    void schedule_delete_root_node(const VariableAndHash<std::string>& name);
-    void delete_scheduled_root_nodes() const;
     size_t try_empty_the_trash_can();
     void print_trash_can_references() const;
     void print(std::ostream& ostr) const;
@@ -58,8 +53,6 @@ private:
     SmallStaticNodesBvh small_static_nodes_bvh_;    // Contains nodes that are small and static
     NodeContainer node_container_;
     TrashCan trash_can_;
-    std::unordered_set<VariableAndHash<std::string>> root_nodes_to_delete_;
-    mutable FastMutex root_nodes_to_delete_mutex_;
     bool emptying_trash_can_;
 };
 

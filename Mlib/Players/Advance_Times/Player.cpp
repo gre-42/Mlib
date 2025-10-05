@@ -584,9 +584,6 @@ void Player::trigger_gun() {
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Player::trigger despite gun nullptr");
     }
-    if (scene_node_scheduled_for_deletion()) {
-        THROW_OR_ABORT("Attempt to trigger gun despite scene node scheduled for deletion");
-    }
     gun().trigger(this, &team().get());
 }
 
@@ -663,9 +660,6 @@ bool Player::has_scene_vehicle() const {
     if (delete_node_mutex_.this_thread_is_deleter_thread()) {
         if (vehicle_->scene_node()->shutting_down()) {
             verbose_abort("Player::has_rigid_body: Scene node shutting down");
-        }
-        if (scene_.root_node_scheduled_for_deletion(vehicle_->scene_node_name())) {
-            return false;
         }
     }
     return true;
@@ -914,10 +908,6 @@ DanglingBaseClassRef<SceneNode> Player::scene_node() {
 
 DanglingBaseClassRef<const SceneNode> Player::scene_node() const {
     return const_cast<Player*>(this)->scene_node();
-}
-
-bool Player::scene_node_scheduled_for_deletion() const {
-    return scene_.root_node_scheduled_for_deletion(vehicle()->scene_node_name());
 }
 
 VehicleSpawner* Player::next_scene_vehicle() {

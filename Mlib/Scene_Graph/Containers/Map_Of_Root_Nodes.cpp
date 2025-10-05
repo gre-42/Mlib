@@ -18,20 +18,6 @@ RootNodes& MapOfRootNodes::create(VariableAndHash<std::string> name) {
     return root_nodes_.add(std::move(name), scene_);
 }
 
-bool MapOfRootNodes::root_node_scheduled_for_deletion(const VariableAndHash<std::string>& name, bool must_exist) const {
-    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    for (const auto& [_, v] : root_nodes_) {
-        if (v.contains(name)) {
-            return v.root_node_scheduled_for_deletion(name);
-        }
-    }
-    if (must_exist) {
-        THROW_OR_ABORT("MapOfRootNodes::root_node_scheduled_for_deletion: Could not find root node with name \"" + *name + '"');
-    } else {
-        return false;
-    }
-}
-
 void MapOfRootNodes::shutdown() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (auto& [_, v] : root_nodes_) {
@@ -44,23 +30,6 @@ void MapOfRootNodes::print_trash_can_references() const {
     for (auto& [_, v] : root_nodes_) {
         v.print_trash_can_references();
     }
-}
-
-void MapOfRootNodes::delete_scheduled_root_nodes() const {
-    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    for (const auto& [_, v] : root_nodes_) {
-        v.delete_scheduled_root_nodes();
-    }
-}
-
-bool MapOfRootNodes::no_root_nodes_scheduled_for_deletion() const {
-    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    for (const auto& [_, v] : root_nodes_) {
-        if (!v.no_root_nodes_scheduled_for_deletion()) {
-            return false;
-        }
-    }
-    return true;
 }
 
 size_t MapOfRootNodes::try_empty_the_trash_can() {

@@ -96,11 +96,6 @@ public:
         const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
         const DanglingBaseClassRef<SceneNode>& scene_node);
     void move_root_node_to_bvh(const VariableAndHash<std::string>& name);
-    bool root_node_scheduled_for_deletion(
-        const VariableAndHash<std::string>& name,
-        bool must_exist = true) const;
-    void schedule_delete_root_node(const VariableAndHash<std::string>& name);
-    void delete_scheduled_root_nodes() const;
     void try_delete_root_node(const VariableAndHash<std::string>& name);
     void delete_root_imposter_node(
         const DanglingBaseClassPtr<IRenderableScene>& renderable_scene,
@@ -150,7 +145,6 @@ public:
     void clear_render_thread();
     void assert_this_thread_is_render_thread() const;
 private:
-    DanglingBaseClassRef<SceneNode> get_node_that_may_be_scheduled_for_deletion(const VariableAndHash<std::string>& name) const;
     // Must be above garbage-collected members for
     // deregistration of child nodes in SceneNode
     // dtor to work.

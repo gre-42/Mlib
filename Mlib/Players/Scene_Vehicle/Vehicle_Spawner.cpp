@@ -173,9 +173,6 @@ void VehicleSpawner::set_scene_vehicles(
         if (v->scene_node()->shutting_down()) {
             THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player received scene node that is shutting down");
         }
-        if (scene_.root_node_scheduled_for_deletion(v->scene_node_name())) {
-            THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player received root node scheduled for deletion");
-        }
     }
     for (auto& l : scene_vehicles) {
         auto res = scene_vehicles_.emplace_back(

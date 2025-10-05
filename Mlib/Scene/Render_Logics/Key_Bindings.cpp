@@ -605,9 +605,6 @@ void KeyBindings::increment_external_forces(
     // Plane controller
     if (enable_controls) {
         for (const auto& k : plane_controller_idle_bindings_) {
-            if (k->player->scene_node_scheduled_for_deletion()) {
-                continue;
-            }
             auto rb = k->player->rigid_body();
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
@@ -617,9 +614,6 @@ void KeyBindings::increment_external_forces(
         }
     }
     for (auto& k : plane_controller_key_bindings_) {
-        if (k->player->scene_node_scheduled_for_deletion()) {
-            continue;
-        }
         auto rb = k->player->rigid_body();
         if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
             continue;
@@ -653,9 +647,6 @@ void KeyBindings::increment_external_forces(
     }
     if (enable_controls) {
         for (const auto& k : plane_controller_idle_bindings_) {
-            if (k->player->scene_node_scheduled_for_deletion()) {
-                continue;
-            }
             auto rb = k->player->rigid_body();
             if (!phase.group.rigid_bodies.contains(&rb->rbp_)) {
                 continue;
@@ -665,9 +656,6 @@ void KeyBindings::increment_external_forces(
     }
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
-        if (k->player->scene_node_scheduled_for_deletion()) {
-            continue;
-        }
         if (phase.group.penetration_class != PenetrationClass::BULLET_LINE) {
             continue;
         }
@@ -689,9 +677,6 @@ void KeyBindings::increment_external_forces(
     }
     // Gun
     for (auto& k : gun_key_bindings_) {
-        if (k->player->scene_node_scheduled_for_deletion()) {
-            continue;
-        }
         if (phase.group.penetration_class != PenetrationClass::BULLET_LINE) {
             continue;
         }
@@ -701,9 +686,6 @@ void KeyBindings::increment_external_forces(
     }
     // Player
     for (auto& k : player_key_bindings_) {
-        if (k->player->scene_node_scheduled_for_deletion()) {
-            continue;
-        }
         if (phase.group.penetration_class != PenetrationClass::BULLET_LINE) {
             continue;
         }
