@@ -118,7 +118,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Burn_In.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Connect_Trailer.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Aim_At.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Delta_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
@@ -310,7 +309,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreateCarControllerKeyBinding::key, CreateCarControllerKeyBinding::json_user_function);
             register_json_user_function(CreateCarController::key, CreateCarController::json_user_function);
             register_json_user_function(CreateAimAt::key, CreateAimAt::json_user_function);
-            register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);
             register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
             register_json_user_function(CreateDestinationReachedAi::key, CreateDestinationReachedAi::json_user_function);
             register_json_user_function(CreateEngine::key, CreateEngine::json_user_function);

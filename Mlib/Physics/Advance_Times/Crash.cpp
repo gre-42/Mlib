@@ -1,6 +1,7 @@
 #include "Crash.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Physics/Interfaces/Damage_Source.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -73,10 +74,10 @@ void Crash::notify_impact(
                 }
             }
             if (rigid_body_.damageable_ != nullptr) {
-                rigid_body_.damageable_->damage(damage0);
+                rigid_body_.damageable_->damage(damage0, DamageSource::CRASH);
             }
             if (rigid_body.damageable_ != nullptr) {
-                rigid_body.damageable_->damage(damage1);
+                rigid_body.damageable_->damage(damage1, DamageSource::CRASH);
             }
         }
     }

@@ -45,11 +45,13 @@ DECLARE_ARGUMENT(waypoint_dy);
 }
 
 CreateRigidDisk::CreateRigidDisk(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args) const
 {
+    args.arguments.validate(KnownArgs::options);
+
     (*this)(CreateRigidDiskArgs{
         global_object_pool,
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
@@ -149,7 +151,6 @@ struct RegisterJsonUserFunction {
             "rigid_disk",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateRigidDisk(args.physics_scene()).execute(args);
             });
     }

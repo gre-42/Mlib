@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
+#include <Mlib/Physics/Interfaces/Damage_Source.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ITeam.hpp>
@@ -188,7 +189,7 @@ void Bullet::cause_damage(RigidBodyVehicle& rigid_body, float amount) {
     if (rigid_body.damageable_->health() <= 0.f) {
         return;
     }
-    rigid_body.damageable_->damage(amount);
+    rigid_body.damageable_->damage(amount, DamageSource::BULLET);
     if (rigid_body.damageable_->health() <= 0.f) {
         notify_kill(const_cast<RigidBodyVehicle&>(rigid_body));
         for (const auto& [p, _] : rigid_body.passengers_) {

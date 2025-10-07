@@ -39,11 +39,13 @@ DECLARE_ARGUMENT(flags);
 }
 
 CreateRigidStatics::CreateRigidStatics(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     auto absolute_model_matrix = transformation_matrix_from_json<float, ScenePos, 3>(
         args.arguments.at(KnownArgs::transformation));
 
@@ -116,7 +118,6 @@ struct RegisterJsonUserFunction {
             "rigid_statics",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateRigidStatics(args.physics_scene()).execute(args);
             });
     }

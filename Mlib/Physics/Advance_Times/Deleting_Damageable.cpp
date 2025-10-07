@@ -4,6 +4,7 @@
 #include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Physics/Interfaces/Damage_Source.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -18,7 +19,7 @@ DeletingDamageable::DeletingDamageable(
     float health,
     bool delete_node_when_health_leq_zero,
     std::shared_ptr<Translator> translator,
-    std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion)
+    GenerateExplosions generate_explosions)
     : scene_{ scene }
     , advance_times_{ advance_times }
     , root_node_name_{ std::move(root_node_name) }
@@ -26,9 +27,10 @@ DeletingDamageable::DeletingDamageable(
     , delete_node_when_health_leq_zero_{ delete_node_when_health_leq_zero }
     , rb_{ &get_rigid_body_vehicle(scene.get_node(root_node_name_, DP_LOC)) }
     , translator_{ std::move(translator) }
-    , generate_explosion_{ std::move(generate_explosion) }
+    , generate_explosions_{ std::move(generate_explosions) }
     , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear, CURRENT_SOURCE_LOCATION }
     , rb_on_destroy_{ rb_->on_destroy, CURRENT_SOURCE_LOCATION }
+    , final_damage_sources_{ DamageSource::NONE }
     , explosion_generated_{ false }
 {
     if (rb_->damageable_ != nullptr) {
@@ -46,15 +48,21 @@ DeletingDamageable::~DeletingDamageable() {
 }
 
 void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
-    if (health() <= 0) {
-        if (!explosion_generated_ && generate_explosion_) {
+    if (!explosion_generated_ && (health() <= 0)) {
+        for (const auto& g : generate_explosions_) {
+            if (!any(g.damage_sources & final_damage_sources_)) {
+                continue;
+            }
+            if (!g.generate) {
+                continue;
+            }
             auto pos = rb_->rbp_.abs_position();
-            generate_explosion_({pos, rb_->velocity_at_position(pos)}, world);
-            explosion_generated_ = true;
+            g.generate({pos, rb_->velocity_at_position(pos)}, world);
         }
         if (delete_node_when_health_leq_zero_) {
             scene_.delete_root_node(root_node_name_);
         }
+        explosion_generated_ = true;
     }
 }
 
@@ -85,7 +93,10 @@ float DeletingDamageable::health() const {
     return health_;
 }
 
-void DeletingDamageable::damage(float amount) {
+void DeletingDamageable::damage(float amount, DamageSource source) {
     std::scoped_lock lock{health_mutex_};
     health_ -= amount;
+    if (health_ <= 0) {
+        final_damage_sources_ |= source;
+    }
 }

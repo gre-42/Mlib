@@ -3,7 +3,6 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
 #include <Mlib/Object.hpp>
-#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
@@ -25,10 +24,16 @@ template <class TPosition>
 struct AudioSourceState;
 struct StaticWorld;
 
+struct GenerateExplosion {
+    DamageSource damage_sources;
+    std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate;
+};
+
 class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter, public virtual DanglingBaseClass {
     DeletingDamageable(const DeletingDamageable&) = delete;
     DeletingDamageable& operator = (const DeletingDamageable&) = delete;
 public:
+    using GenerateExplosions = std::vector<GenerateExplosion>;
     explicit DeletingDamageable(
         Scene& scene,
         AdvanceTimes& advance_times,
@@ -36,7 +41,7 @@ public:
         float health,
         bool delete_node_when_health_leq_zero,
         std::shared_ptr<Translator> translator,
-        std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion);
+        GenerateExplosions generate_explosion);
     virtual ~DeletingDamageable() override;
     // IAdvanceTime
     virtual void advance_time(float dt, const StaticWorld& world) override;
@@ -46,7 +51,7 @@ public:
     virtual StatusWriter& child_status_writer(const std::vector<VariableAndHash<std::string>>& name) override;
     // IDamageable
     virtual float health() const override;
-    virtual void damage(float amount) override;
+    virtual void damage(float amount, DamageSource source) override;
 protected:
     Scene& scene_;
     AdvanceTimes& advance_times_;
@@ -56,10 +61,12 @@ protected:
     bool delete_node_when_health_leq_zero_;
     RigidBodyVehicle* rb_;
     std::shared_ptr<Translator> translator_;
-    std::function<void(const AudioSourceState<ScenePos>&, const StaticWorld&)> generate_explosion_;
+    GenerateExplosions generate_explosions_;
     DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     DestructionFunctionsRemovalTokens rb_on_destroy_;
+    DamageSource final_damage_sources_;
+    // This field is needed if "delete_node_when_health_leq_zero == false".
     bool explosion_generated_;
 };
 

@@ -10,14 +10,14 @@ using namespace Mlib;
 RigidBodyVehicleController::RigidBodyVehicleController(
     RigidBodyVehicle& rb,
     SteeringType steering_type)
-: steering_type{ steering_type },
-  rb_{ rb },
-  surface_power_{ NAN },
-  drive_relaxation_{ 0.f },
-  steer_angle_{ NAN },
-  steer_relaxation_{ 0.f },
-  target_height_{ NAN },
-  trailer_{ nullptr }
+    : steering_type{ steering_type }
+    , rb_{ rb }
+    , surface_power_{ NAN }
+    , drive_relaxation_{ 0.f }
+    , steer_angle_{ NAN }
+    , steer_relaxation_{ 0.f }
+    , target_height_{ NAN }
+    , trailer_{ nullptr }
 {}
 
 RigidBodyVehicleController::~RigidBodyVehicleController() = default;

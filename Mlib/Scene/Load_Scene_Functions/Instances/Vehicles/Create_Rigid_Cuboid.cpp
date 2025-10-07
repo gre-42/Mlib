@@ -44,11 +44,13 @@ DECLARE_ARGUMENT(waypoint_dy);
 }
 
 CreateRigidCuboid::CreateRigidCuboid(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args) const
 {
+    args.arguments.validate(KnownArgs::options);
+
     (*this)(CreateRigidCuboidArgs{
         global_object_pool,
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
@@ -149,7 +151,6 @@ struct RegisterJsonUserFunction {
             "rigid_cuboid",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateRigidCuboid(args.physics_scene()).execute(args);
             });
     }
