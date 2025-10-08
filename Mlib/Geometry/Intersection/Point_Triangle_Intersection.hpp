@@ -67,6 +67,9 @@ TData distance_point_to_triangle(
     include_edge(v[1], v[2]);
     include_edge(v[2], v[0]);
     if (is_inside) {
+        if (closest_point != nullptr) {
+            *closest_point = pt;
+        }
         return 0;
     } else if (!std::isnan(result_edge)) {
         return result_edge;
