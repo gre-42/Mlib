@@ -1,5 +1,4 @@
 #include "Rigid_Body_Engine.hpp"
-#include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listeners.hpp>
@@ -16,14 +15,12 @@ using namespace Mlib;
 
 RigidBodyEngine::RigidBodyEngine(
     const std::optional<EnginePower>& engine_power,
-    bool hand_brake_pulled,
     std::shared_ptr<IEngineEventListener> listener)
     : engine_power_intent_{
         .surface_power = 0.f,
         .drive_relaxation = 0.f}
     , engine_power_{ engine_power }
     , ntires_old_{ 0 }
-    , hand_brake_pulled_{ hand_brake_pulled }
     , listener_{ std::move(listener) }
 {
     if (!engine_power.has_value() && (listener_ != nullptr)) {
@@ -72,15 +69,19 @@ TirePowerIntent RigidBodyEngine::consume_tire_power(
     float max_surface_power = (ntires_old_ == 0) || !engine_power_.has_value()
         ? 0.f
         : engine_power_->get_power();
-    if (hand_brake_pulled_ || std::isnan(max_surface_power)) {
+    if (std::isnan(max_surface_power)) {
         return TirePowerIntent{
             .power = NAN,
             .relaxation = 1.f,
             .type = TirePowerIntentType::BRAKE};
-    } else if (std::isnan(engine_power_intent_.surface_power)) {
+    } else if (std::isnan(engine_power_intent_.surface_power) ||
+               (engine_power_intent_.parking_brake_pulled != 0.f))
+    {
         return TirePowerIntent{
             .power = NAN,
-            .relaxation = engine_power_intent_.drive_relaxation,
+            .relaxation = std::min(
+                engine_power_intent_.drive_relaxation +
+                engine_power_intent_.parking_brake_pulled, 1.f),
             .type = TirePowerIntentType::BRAKE};
     } else {
         float max_relaxation = std::max(engine_power_intent_.drive_relaxation, delta_intent.delta_relaxation);
@@ -141,15 +142,17 @@ TirePowerIntent RigidBodyEngine::consume_rotor_power(
     float max_surface_power = (ntires_old_ == 0) || !engine_power_.has_value()
         ? 0.f
         : engine_power_->get_power();
-    if (hand_brake_pulled_ || std::isnan(max_surface_power)) {
+    if (std::isnan(max_surface_power)) {
         return TirePowerIntent{
             .power = NAN,
             .relaxation = 1.f,
             .type = TirePowerIntentType::BRAKE};
-    } else if (std::isnan(engine_power_intent_.surface_power)) {
+    } else if ((engine_power_intent_.parking_brake_pulled != 0.f) || std::isnan(engine_power_intent_.surface_power)) {
         return TirePowerIntent{
             .power = NAN,
-            .relaxation = engine_power_intent_.drive_relaxation,
+            .relaxation = std::min(
+                engine_power_intent_.drive_relaxation +
+                engine_power_intent_.parking_brake_pulled, 1.f),
             .type = TirePowerIntentType::BRAKE};
     } else {
         float max_relaxation = std::max(engine_power_intent_.drive_relaxation, delta_intent.delta_relaxation);
@@ -240,6 +243,5 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyEngine& engi
         ostr << *engine.engine_power_ << '\n';
     }
     ostr << "   ntires_old " << engine.ntires_old_ << '\n';
-    ostr << "   hand_brake_pulled " << (int)engine.hand_brake_pulled_ << '\n';
     return ostr;
 }

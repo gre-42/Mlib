@@ -134,6 +134,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         b_rb->rbp_.w_ = 0.f;
         b.get_primary_scene_vehicle()->scene_node()->invalidate_transformation_history();
         b_rb->activate_avatar();
+        a_rb_old->park_vehicle();
     }
     ExternalsMode a_em_old = ap->externals_mode();
     ap->reset_node();

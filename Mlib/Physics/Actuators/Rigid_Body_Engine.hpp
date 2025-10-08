@@ -33,7 +33,6 @@ class RigidBodyEngine: public StatusWriter {
 public:
     explicit RigidBodyEngine(
         const std::optional<EnginePower>& engine_power,
-        bool hand_brake_pulled,
         std::shared_ptr<IEngineEventListener> listener);
     ~RigidBodyEngine();
 
@@ -68,7 +67,6 @@ private:
     std::set<const float*> tires_w_;
     std::optional<EnginePower> engine_power_;
     size_t ntires_old_;
-    bool hand_brake_pulled_;
     std::shared_ptr<IEngineEventListener> listener_;
 };
 

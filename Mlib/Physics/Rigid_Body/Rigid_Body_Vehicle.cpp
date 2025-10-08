@@ -746,10 +746,12 @@ void RigidBodyVehicle::set_surface_power(
     auto& e = engines_.get(engine_name);
     e.set_surface_power(
         EnginePowerIntent{
+            .state = engine_power_intent.state,
             .surface_power = revert_surface_power_state_.revert_surface_power_
                 ? -engine_power_intent.surface_power
                 : engine_power_intent.surface_power,
-            .drive_relaxation = engine_power_intent.drive_relaxation});
+            .drive_relaxation = engine_power_intent.drive_relaxation,
+            .parking_brake_pulled = engine_power_intent.parking_brake_pulled});
 }
 
 void RigidBodyVehicle::set_delta_surface_power(
@@ -761,6 +763,16 @@ void RigidBodyVehicle::set_delta_surface_power(
         EnginePowerDeltaIntent{
             .delta_power = engine_power_delta_intent.delta_power,
             .delta_relaxation = engine_power_delta_intent.delta_relaxation});
+}
+
+void RigidBodyVehicle::park_vehicle() {
+    for (const auto& [n, _] : engines_) {
+        set_surface_power(n, EnginePowerIntent{
+            .state = EngineState::OFF,
+            .surface_power = 0.f,
+            .drive_relaxation = 0.f,
+            .parking_brake_pulled = 1.f});
+    }
 }
 
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {

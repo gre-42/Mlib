@@ -47,7 +47,7 @@ DECLARE_ARGUMENT(tesuffix);
 DECLARE_ARGUMENT(tedecimate);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
-DECLARE_ARGUMENT(hand_brake_pulled);
+DECLARE_ARGUMENT(parking_brake_pulled);
 DECLARE_ARGUMENT(velocity);
 DECLARE_ARGUMENT(angular_velocity);
 DECLARE_ARGUMENT(mute);
@@ -278,7 +278,6 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 rb.engines_.add(
                     VariableAndHash<std::string>{ "front" },
                     std::move(engine_power),
-                    args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
                     engine_listeners);
             }
             {
@@ -293,7 +292,6 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 rb.engines_.add(
                     VariableAndHash<std::string>{ "rear" },
                     std::move(engine_power),
-                    args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
                     engine_listeners);
             }
         } else if (vdb.contains_non_null(KnownDb::powers)) {
@@ -308,14 +306,15 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             rb.engines_.add(
                 VariableAndHash<std::string>{ "engine" },
                 std::move(engine_power),
-                args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
                 engine_listeners);
         } else {
             rb.engines_.add(
                 VariableAndHash<std::string>{ "engine" },
                 std::nullopt,   // power
-                args.arguments.at<bool>(KnownArgs::hand_brake_pulled),
                 nullptr);       // listeners
+        }
+        if (args.arguments.at<bool>(KnownArgs::parking_brake_pulled)) {
+            rb.park_vehicle();
         }
 
         wdb.validate(KnownWheels::options);

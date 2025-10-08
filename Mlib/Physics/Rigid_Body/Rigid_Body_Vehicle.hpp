@@ -212,6 +212,7 @@ public:
     void set_delta_surface_power(
         const VariableAndHash<std::string>& delta_engine_name,
         const EnginePowerDeltaIntent& engine_power_delta_intent);
+    void park_vehicle();
     float get_tire_break_force(size_t id) const;
     FixedArray<ScenePos, 3> get_abs_tire_contact_position(size_t id) const;
     const Tire& get_tire(size_t id) const;

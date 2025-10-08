@@ -32,7 +32,6 @@ DECLARE_ARGUMENT(powers);
 DECLARE_ARGUMENT(gear_ratios);
 DECLARE_ARGUMENT(w_clutch);
 DECLARE_ARGUMENT(max_dw);
-DECLARE_ARGUMENT(hand_brake_pulled);
 DECLARE_ARGUMENT(audio);
 DECLARE_ARGUMENT(exhaust);
 }
@@ -144,6 +143,5 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
     rb.engines_.add(
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         engine_power,
-        args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
         engine_listeners);
 }
