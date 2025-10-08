@@ -25,6 +25,7 @@
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
@@ -707,6 +708,7 @@ void android_main(android_app* app) {
                 };
                 RenderingContextGuard rcg{ primary_rendering_context };
 
+                Users users;
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
@@ -740,6 +742,7 @@ void android_main(android_app* app) {
                     key_configurations,
                     key_descriptions,
                     ui_focuses,
+                    users,
                     layout_constraints,
                     gallery,
                     asset_references,
