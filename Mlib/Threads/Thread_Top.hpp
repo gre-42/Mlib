@@ -13,7 +13,7 @@ struct ThreadIdentifier {
 
 class FunctionGuard {
 public:
-    explicit FunctionGuard(std::string task_name);
+    explicit FunctionGuard(std::string task_name = "");
     ~FunctionGuard();
     void update(std::string task_name);
 private:

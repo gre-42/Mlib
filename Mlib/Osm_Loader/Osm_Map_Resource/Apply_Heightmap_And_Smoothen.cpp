@@ -50,7 +50,7 @@ void Mlib::apply_heightmap_and_smoothen(
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors)
 {
-    FunctionGuard fg{ "Apply heightmap and smoothen" };
+    FunctionGuard fg;
     if (config.heightmap.empty() &&
         (config.street_edge_smoothness == 0) &&
         (config.terrain_edge_smoothness == 0))
