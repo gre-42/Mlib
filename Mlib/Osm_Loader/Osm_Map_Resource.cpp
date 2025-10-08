@@ -1609,6 +1609,7 @@ OsmMapResource::OsmMapResource(
     fg.update("Save obj files if requested");
     save_to_obj_file_if_requested(debug_prefix);
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
+    fg.update("Navigation");
     {
         FunctionGuard fgw{ "Calculate waypoints" };
         std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
