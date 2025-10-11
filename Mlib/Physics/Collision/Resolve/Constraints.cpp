@@ -39,7 +39,7 @@ void GenericNormalContactInfo1<TRigidBodyPulsesArg, TRigidBodyPulsesField>::solv
     float mc = rbp_.effective_mass({ .vector = snormal, .position = p_ });
     float lambda = - mc * (-v + pc.v(dt));
     lambda = pc_.clamped_lambda(relaxation * lambda);
-    rbp_.integrate_impulse({.vector = -snormal * lambda, .position = p_}, 0.f, dt);
+    rbp_.integrate_impulse({.vector = -snormal * lambda, .position = p_}, 0.f, dt, CURRENT_SOURCE_LOCATION);
     // linfo() << v << " | " << snormal << " | " << relaxation << " | " << lambda << " o=" << pc.overlap << " s=" << pc.slop << " T=" << pc.normal_impulse.lambda_total;
 }
 
@@ -65,8 +65,8 @@ void NormalContactInfo2::solve(float dt, float relaxation, size_t iteration, siz
     float mc1 = rbp1_.effective_mass({ .vector = snormal, .position = p_ });
     float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(dt));
     lambda = pc_.clamped_lambda(relaxation * lambda);
-    rbp0_.integrate_impulse({.vector = -snormal * lambda, .position = p_}, 0.f, dt);
-    rbp1_.integrate_impulse({.vector = snormal * lambda, .position = p_}, 0.f, dt);
+    rbp0_.integrate_impulse({.vector = -snormal * lambda, .position = p_}, 0.f, dt, CURRENT_SOURCE_LOCATION);
+    rbp1_.integrate_impulse({.vector = snormal * lambda, .position = p_}, 0.f, dt, CURRENT_SOURCE_LOCATION);
     // lerr() << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x);
 }
 
@@ -98,7 +98,7 @@ void GenericLineContactInfo1<tnullspace>::solve(float dt, float relaxation, size
         FixedArray<float, 3> n = dv / std::sqrt(len2);
         float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
         FixedArray<float, 3> lambda = - relaxation * mc0 * dv;
-        rbp0_.integrate_impulse({.vector = -lambda, .position = lec_.pec.p0}, 0.f, dt);
+        rbp0_.integrate_impulse({.vector = -lambda, .position = lec_.pec.p0}, 0.f, dt, CURRENT_SOURCE_LOCATION);
     }
 }
 
@@ -128,8 +128,8 @@ void GenericLineContactInfo2<tnullspace>::solve(float dt, float relaxation, size
         float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
         float mc1 = rbp1_.effective_mass({ .vector = n, .position = lec_.pec.p1 });
         FixedArray<float, 3> lambda = - relaxation * (mc0 * mc1 / (mc0 + mc1)) * dv;
-        rbp0_.integrate_impulse({.vector = -lambda, .position = lec_.pec.p0}, 0.f, dt);
-        rbp1_.integrate_impulse({.vector = lambda, .position = lec_.pec.p1}, 0.f, dt);
+        rbp0_.integrate_impulse({.vector = -lambda, .position = lec_.pec.p0}, 0.f, dt, CURRENT_SOURCE_LOCATION);
+        rbp1_.integrate_impulse({.vector = lambda, .position = lec_.pec.p1}, 0.f, dt, CURRENT_SOURCE_LOCATION);
     }
 }
 
@@ -150,7 +150,7 @@ void PlaneContactInfo1::solve(float dt, float relaxation, size_t iteration, size
     float mc0 = rbp0_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p0 });
     float lambda = - mc0 * dv_len;
     lambda = pec_.clamped_lambda(relaxation * lambda);
-    rbp0_.integrate_impulse({.vector = - pec.plane_normal * lambda, .position = pec.pec.p0}, 0.f, dt);
+    rbp0_.integrate_impulse({.vector = - pec.plane_normal * lambda, .position = pec.pec.p0}, 0.f, dt, CURRENT_SOURCE_LOCATION);
 }
 
 PlaneContactInfo2::PlaneContactInfo2(
@@ -172,8 +172,8 @@ void PlaneContactInfo2::solve(float dt, float relaxation, size_t iteration, size
     float mc1 = rbp1_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p1 });
     float lambda = - (mc0 * mc1 / (mc0 + mc1)) * dv_len;
     lambda = pec_.clamped_lambda(relaxation * lambda);
-    rbp0_.integrate_impulse({.vector = -pec.plane_normal * lambda, .position = pec.pec.p0}, 0.f, dt);
-    rbp1_.integrate_impulse({.vector = pec.plane_normal * lambda, .position = pec.pec.p1}, 0.f, dt);
+    rbp0_.integrate_impulse({.vector = -pec.plane_normal * lambda, .position = pec.pec.p0}, 0.f, dt, CURRENT_SOURCE_LOCATION);
+    rbp1_.integrate_impulse({.vector = pec.plane_normal * lambda, .position = pec.pec.p1}, 0.f, dt, CURRENT_SOURCE_LOCATION);
 }
 
 FrictionContactInfo1::FrictionContactInfo1(
@@ -238,7 +238,7 @@ void FrictionContactInfo1::solve(float dt, float relaxation, size_t iteration, s
             }
         }
         lambda = lambda_total_ - lambda_total_old;
-        rbp_.integrate_impulse({.vector = -lambda, .position = p_}, extra_w_, dt);
+        rbp_.integrate_impulse({.vector = -lambda, .position = p_}, extra_w_, dt, CURRENT_SOURCE_LOCATION);
     }
 }
 
@@ -324,8 +324,8 @@ void FrictionContactInfo2::solve(float dt, float relaxation, size_t iteration, s
             lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
         }
         lambda = lambda_total_ - lambda_total_old;
-        rbp0_.integrate_impulse({.vector = -lambda, .position = p_}, 0.f, dt);
-        rbp1_.integrate_impulse({.vector = lambda, .position = p_}, 0.f, dt);
+        rbp0_.integrate_impulse({.vector = -lambda, .position = p_}, 0.f, dt, CURRENT_SOURCE_LOCATION);
+        rbp1_.integrate_impulse({.vector = lambda, .position = p_}, 0.f, dt, CURRENT_SOURCE_LOCATION);
     }
 }
 
@@ -374,6 +374,11 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
     if (rb_.grind_state_.grinding_) {
         return;
     }
+    const auto& tire = rb_.tires_.get(tire_id_);
+
+    if (tire.rbp != nullptr) {
+        rb_.update_tire_angular_velocity(tire_id_);
+    }
     float force_min;
     float force_max;
     handle_tire_triangle_intersection(
@@ -391,8 +396,6 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
         force_min,
         force_max);
 
-    const auto& tire = rb_.tires_.get(tire_id_);
-
     float tv_len = rb_.get_tire_angular_velocity(tire_id_) * rb_.get_tire_radius(tire_id_);
     FixedArray<float, 3> tv = n3_ * tv_len;
 
@@ -408,7 +411,9 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
     // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
     // x3 /= std::sqrt(sum(squared(x3)));
     // fci_.set_b(v - 1000.f * x3 * tire.accel_x * cfg_.dt_substeps());
-    fci_.set_b(b0_ - tv);
+    if (tire.rbp == nullptr) {
+        fci_.set_b(b0_ - tv);
+    }
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal.casted<float>(), tire_id_) - b0_;
     float slip;
     {
@@ -455,6 +460,9 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
         signed_min(force_max * cfg_.dt_substeps(phase_), std::abs(r(0))),
         std::abs(r(1)));
     fci_.solve(dt, relaxation, iteration, niterations);
+    if (tire.rbp != nullptr) {
+        rb_.update_tire_angular_velocity(tire_id_);
+    }
 }
 
 // void TireContactInfo1::finalize() {
@@ -479,7 +487,7 @@ void ShockAbsorberContactInfo1::solve(float dt, float relaxation, size_t iterati
             rbp_.velocity_at_position(p_),
             snormal);
     float J = sc_.clamped_lambda(1.f / (float)niterations * F * dt);
-    rbp_.integrate_impulse({.vector = -snormal * sc.fit * J, .position = p_ }, 0.f, dt);
+    rbp_.integrate_impulse({.vector = -snormal * sc.fit * J, .position = p_ }, 0.f, dt, CURRENT_SOURCE_LOCATION);
 }
 
 ShockAbsorberContactInfo2::ShockAbsorberContactInfo2(
@@ -502,12 +510,12 @@ void ShockAbsorberContactInfo2::solve(float dt, float relaxation, size_t iterati
             sc.normal_impulse.normal.casted<float>());
     float J = sc_.clamped_lambda(1.f / (float)niterations * F * dt);
     auto lambda = sc.normal_impulse.normal.casted<float>() * J;
-    rbp0_.integrate_impulse({.vector = lambda, .position = p_ }, 0.f, dt);
-    rbp1_.integrate_impulse({.vector = -lambda, .position = p_ }, 0.f, dt);
+    rbp0_.integrate_impulse({.vector = lambda, .position = p_ }, 0.f, dt, CURRENT_SOURCE_LOCATION);
+    rbp1_.integrate_impulse({.vector = -lambda, .position = p_ }, 0.f, dt, CURRENT_SOURCE_LOCATION);
 }
 
 void Mlib::solve_contacts(std::list<std::unique_ptr<IContactInfo>>& cis, float dt) {
-    size_t niterations = 5;
+    size_t niterations = 50;
     for (size_t i = 0; i < niterations; ++i) {
         // linfo() << "solve_contacts " << i;
         for (const auto& ci : cis) {

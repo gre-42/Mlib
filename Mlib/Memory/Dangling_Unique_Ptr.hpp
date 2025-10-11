@@ -61,7 +61,7 @@ template <class T>
 void print_source_locations(const ReferenceCounter& v) {
     for (const auto& [ptr, psl] : locs<T>()) {
         if (psl.target == &v) {
-            lerr() << psl.loc.file_name() << ':' << psl.loc.line();
+            lerr() << psl.loc;
         }
     }
 }

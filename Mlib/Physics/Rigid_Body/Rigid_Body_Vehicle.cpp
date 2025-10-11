@@ -183,7 +183,7 @@ void RigidBodyVehicle::integrate_force(
     const PhysicsPhase& phase)
 {
     auto dt = cfg.dt_substeps(phase);
-    rbp_.integrate_impulse({.vector = F.vector * dt, .position = F.position}, 0.f, dt);
+    rbp_.integrate_impulse({.vector = F.vector * dt, .position = F.position}, 0.f, dt, CURRENT_SOURCE_LOCATION);
     // if (float len = sum(squared(F.vector)); len > 1e-12) {
     //     auto location = TransformationMatrix<float, ScenePos, 3>::identity();
     //     location.t() = F.position;
@@ -456,6 +456,20 @@ void RigidBodyVehicle::advance_time_skate(
     }
 }
 
+void RigidBodyVehicle::finalize_collisions(CollisionHistory& c) {
+    if (!c.phase.group.rigid_bodies.contains(&rbp_)) {
+        return;
+    }
+    if (is_deactivated_avatar()) {
+        THROW_OR_ABORT("Attempt to finalize collisions of deactivated avatar");
+    }
+    for (auto& [tire_id, tire] : tires_) {
+        if (tire.rbp != nullptr) {
+            update_tire_angular_velocity(tire_id);
+        }
+    }
+}
+
 void RigidBodyVehicle::advance_time(
     const PhysicsEngineConfig& cfg,
     const StaticWorld& world,
@@ -600,7 +614,39 @@ FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_z(size_t id) const {
 }
 
 float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
+    verify_tire_angular_velocity(id);
     return get_tire(id).angular_velocity;
+}
+
+void RigidBodyVehicle::update_tire_angular_velocity(size_t id) {
+    auto& tire = get_tire(id);
+    if (tire.rbp == nullptr) {
+        std::stringstream sstr;
+        sstr <<
+            "Vehicle \"" << name() <<
+            "\": tire " << id <<
+            " has no rigid body";
+        THROW_OR_ABORT(sstr.str());
+    }
+    auto abs_rotation_axis = dot1d(rbp_.rotation_, tire.rotation_axis());
+    tire.angular_velocity = dot0d(tire.rbp->w_, abs_rotation_axis);
+}
+
+void RigidBodyVehicle::verify_tire_angular_velocity(size_t id) const {
+    const auto& tire = get_tire(id);
+    if (tire.rbp != nullptr) {
+        auto abs_rotation_axis = dot1d(rbp_.rotation_, tire.rotation_axis());
+        if (std::abs((tire.angular_velocity / rpm) - (dot0d(tire.rbp->w_, abs_rotation_axis) / rpm)) > 0.1) {
+            std::stringstream sstr;
+            sstr <<
+                "Last update: " << tire.rbp->last_update_source_location_ <<
+                " vehicle: \"" << name() <<
+                "\": tire " << id <<
+                " scalar RPM: " << (tire.angular_velocity / rpm) <<
+                " vectorial RPM: " << (dot0d(tire.rbp->w_, abs_rotation_axis) / rpm);
+            THROW_OR_ABORT(sstr.str());
+        }
+    }
 }
 
 void RigidBodyVehicle::set_tire_angular_velocity(

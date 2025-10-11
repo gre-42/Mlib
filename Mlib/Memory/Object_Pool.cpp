@@ -105,7 +105,7 @@ void ObjectPool::clear() {
 void ObjectPool::assert_no_leaks() const {
     if (!ptrs_.empty()) {
         for (const auto& p : ptrs_) {
-            lerr() << p.loc.file_name() << ':' << p.loc.line();
+            lerr() << p.loc;
         }
         verbose_abort("Memory leaks detected in ObjctPool");
     }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Source_Location.hpp>
 
 namespace Mlib {
 
@@ -17,7 +18,7 @@ public:
 
     FixedArray<float, 3> velocity_at_position(const FixedArray<ScenePos, 3>& position) const;
     float effective_mass(const VectorAtPosition<float, ScenePos, 3>& vp) const;
-    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt);
+    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt, const SourceLocation& loc);
 private:
     const RigidBodyPulses& vehicle_;
     RigidBodyPulses& wheel_;

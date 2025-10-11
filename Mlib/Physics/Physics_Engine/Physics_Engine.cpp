@@ -120,6 +120,9 @@ void PhysicsEngine::collide(
     collide_with_terrain(
         rigid_bodies_,
         history);
+    for (const auto& o : rigid_bodies_.transformed_objects()) {
+        o.rigid_body->finalize_collisions(history);
+    }
     // Handling rays before grind_infos so new grind_infos can be created
     // by rays also.
     collide_raycast_intersections(raycast_intersections);

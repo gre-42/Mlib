@@ -12,7 +12,7 @@ DanglingBaseClass::~DanglingBaseClass() {
 void DanglingBaseClass::print_references() const {
     lerr() << "Remaining locations: " << locs_.size();
     for (const auto& [p, l] : locs_) {
-        lerr() << l.file_name() << ':' << l.line();
+        lerr() << l;
     }
 }
 

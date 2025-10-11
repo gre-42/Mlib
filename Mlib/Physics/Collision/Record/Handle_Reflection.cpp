@@ -196,9 +196,12 @@ static void handle_extended_reflection(
                     FixedArray<ScenePos, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
                     FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
                     FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
+                    auto& tire = c.o1.tires_.get(c.tire_id1);
                     c.history.contact_infos.push_back(std::unique_ptr<IContactInfo>(new TireContactInfo1{
                         FrictionContactInfo1{
-                            c.o1.rbp_,
+                            (tire.rbp == nullptr)
+                                ? c.o1.rbp_
+                                : *tire.rbp,
                             *normal_impulse,
                             contact_position,
                             NAN, // clamping handled by "TireContactInfo1" // c.o1.tires_.at(c.tire_id1).stiction_coefficient(-force_n1),

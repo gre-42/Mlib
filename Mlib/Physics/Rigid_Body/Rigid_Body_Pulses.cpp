@@ -31,6 +31,7 @@ RigidBodyPulses::RigidBodyPulses(
     , rotation_{ tait_bryan_angles_2_matrix(rotation) }
     , abs_com_{ dot1d(rotation_, com_).casted<ScenePos>() + position }
     , penetration_limits_{ penetration_limits }
+    , last_update_source_location_{ CURRENT_SOURCE_LOCATION }
     , I_is_diagonal_{ I_is_diagonal }
     , abs_I_{ fixed_nans<float, 3, 3>() }
     , abs_I_inv_{ fixed_nans<float, 3, 3>() }
@@ -166,7 +167,7 @@ void RigidBodyPulses::integrate_delta_angular_momentum(const FixedArray<float, 3
     }
 }
 
-void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt)
+void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt, const SourceLocation& loc)
 {
     auto thr = 10e3f * kg * 1000.f * kph;
     if (any(abs(J.vector) > thr)) {
@@ -174,6 +175,7 @@ void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 
     }
     integrate_delta_v(J.vector / mass_, dt);
     integrate_delta_angular_momentum(cross((J.position - abs_com_).casted<float>(), J.vector), extra_w, dt);
+    last_update_source_location_ = loc;
 }
 
 float RigidBodyPulses::energy() const {

@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Physics_Engine/Penetration_Limits_Factory.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Source_Location.hpp>
 #include <iosfwd>
 
 namespace Mlib {
@@ -44,7 +45,7 @@ public:
     void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<ScenePos, 3>& position);
     void integrate_delta_v(const FixedArray<float, 3>& dv, float dt);
     void integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w, float dt);
-    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt);
+    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w, float dt, const SourceLocation& loc);
     float energy() const;
     float effective_mass(const VectorAtPosition<float, ScenePos, 3>& vp) const;
 
@@ -60,6 +61,7 @@ public:
     FixedArray<ScenePos, 3> abs_com_;
     
     PenetrationLimitsFactory penetration_limits_;
+    SourceLocation last_update_source_location_;
 private:
     bool I_is_diagonal_;
     void update_abs_I_and_inv();

@@ -19,7 +19,7 @@ DestructionFunctions::~DestructionFunctions() {
 void DestructionFunctions::print_source_locations() const {
     for (const auto& [_, funcs] : funcs_) {
         for (const auto& e : funcs) {
-            lerr() << e.loc.file_name() << ':' << e.loc.line();
+            lerr() << e.loc;
         }
     }
 }
@@ -60,7 +60,7 @@ void DestructionFunctions::clear() {
     clear_map_recursively(funcs_, [&lock](auto& node) {
         node.key()->funcs_ = nullptr;
         clear_list_recursively_with_lock(node.mapped(), lock, [](auto& e) {
-            // lerr() << e.loc.file_name() << ':' << e.loc.line();
+            // lerr() << e.loc;
             e.func();
         });
     });

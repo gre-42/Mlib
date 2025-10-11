@@ -212,8 +212,8 @@ void FrameBufferStorage::gc_deallocate() {
 
 void FrameBufferStorage::bind_draw(SourceLocation loc) const {
     if (status_ == FrameBufferStatus::BOUND) {
-        lerr() << create_loc_.file_name() << ':' << create_loc_.line();
-        lerr() << bind_loc_.file_name() << ':' << bind_loc_.line();
+        lerr() << create_loc_;
+        lerr() << bind_loc_;
         THROW_OR_ABORT("Frame buffer has already been bound");
     }
     status_ = FrameBufferStatus::BOUND;
@@ -223,8 +223,8 @@ void FrameBufferStorage::bind_draw(SourceLocation loc) const {
 
 void FrameBufferStorage::bind(SourceLocation loc) const {
     if (status_ == FrameBufferStatus::BOUND) {
-        lerr() << create_loc_.file_name() << ':' << create_loc_.line();
-        lerr() << bind_loc_.file_name() << ':' << bind_loc_.line();
+        lerr() << create_loc_;
+        lerr() << bind_loc_;
         THROW_OR_ABORT("Frame buffer has already been bound");
     }
     status_ = FrameBufferStatus::BOUND;
@@ -234,8 +234,8 @@ void FrameBufferStorage::bind(SourceLocation loc) const {
 
 void FrameBufferStorage::unbind() const {
     if (status_ != FrameBufferStatus::BOUND) {
-        lerr() << create_loc_.file_name() << ':' << create_loc_.line();
-        lerr() << bind_loc_.file_name() << ':' << bind_loc_.line();
+        lerr() << create_loc_;
+        lerr() << bind_loc_;
         verbose_abort("Frame buffer has not been bound");
     }
     status_ = FrameBufferStatus::WRITTEN;

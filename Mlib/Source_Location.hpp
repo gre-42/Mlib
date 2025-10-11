@@ -1,4 +1,5 @@
 #pragma once
+#include <iosfwd>
 
 #ifdef __clang__
 
@@ -36,3 +37,9 @@ using SourceLocation = std::source_location;
 }
 
 #endif
+
+namespace Mlib {
+
+std::ostream& operator << (std::ostream& ostr, const SourceLocation& loc);
+
+}

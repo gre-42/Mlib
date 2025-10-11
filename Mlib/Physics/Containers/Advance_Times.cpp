@@ -15,7 +15,7 @@ AdvanceTimes::~AdvanceTimes()
     if (!advance_times_.empty()) {
         lerr() << "~AdvanceTimes: " << advance_times_.size() << " advance_times still exist.";
         for (const auto& [_, loc] : advance_times_) {
-            lerr() << "  " << loc.file_name() << ':' << loc.line();
+            lerr() << "  " << loc;
         }
         verbose_abort("Aborting due to dangling pointers in AdvanceTimes");
     }
@@ -39,7 +39,7 @@ void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceL
             }
         }
         if (nfound != 1) {
-            lerr() << loc.file_name() << ':' << loc.line();
+            lerr() << loc;
             verbose_abort("Could not delete advance time (0), #found: " + std::to_string(nfound));
         }
     } else {
@@ -55,7 +55,7 @@ void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceL
             return false;
         });
         if (nfound != 1) {
-            lerr() << loc.file_name() << ':' << loc.line();
+            lerr() << loc;
             verbose_abort("Could not delete advance time (1), #found: " + std::to_string(nfound));
         }
     }

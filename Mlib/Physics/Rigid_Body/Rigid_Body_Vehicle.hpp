@@ -152,6 +152,7 @@ public:
         const PhysicsEngineConfig& cfg,
         const PhysicsPhase& phase);
     void collide_with_air(CollisionHistory& c);
+    void finalize_collisions(CollisionHistory& c);
     void advance_time(
         const PhysicsEngineConfig& cfg,
         const StaticWorld& world,
@@ -177,6 +178,8 @@ public:
     void set_wing_brake_angle(size_t id, float angle);
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;
+    void update_tire_angular_velocity(size_t id);
+    void verify_tire_angular_velocity(size_t id) const;
     void set_tire_angular_velocity(
         size_t id,
         float w,
