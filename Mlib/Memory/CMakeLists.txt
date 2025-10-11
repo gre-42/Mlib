@@ -6,4 +6,4 @@ my_add_library(MlibMemory "1" "" "${mlib_excluded_files}")
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibMemory MlibOs)
+target_link_libraries(MlibMemory MlibOs Mlib)
