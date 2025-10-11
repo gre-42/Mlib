@@ -125,6 +125,7 @@ Player::Player(
     const CountdownPhysics& countdown_start)
     : car_movement{ *this }
     , avatar_movement{ *this }
+    , on_avatar_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_vehicle_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_next_vehicle_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_target_scene_node_cleared_{ nullptr, CURRENT_SOURCE_LOCATION }
@@ -214,6 +215,7 @@ void Player::reset_node() {
         std::scoped_lock lock{ mutex_ };
         if (vehicle_spawner_ != nullptr) {
             on_clear_vehicle_.clear();
+            on_avatar_destroyed_.clear();
             on_vehicle_destroyed_.clear();
             vehicle_ = nullptr;
             vehicle_spawner_ = nullptr;
@@ -279,11 +281,19 @@ void Player::set_vehicle_spawner(
         THROW_OR_ABORT("Seat \"" + desired_seat + "\" is already occupied in vehicle \"" + pv->rb()->name() + '"');
     }
     pv->rb()->drivers_.add(desired_seat, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    on_vehicle_destroyed_.set(pv->on_destroy, CURRENT_SOURCE_LOCATION);
-    on_vehicle_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
+    if (pv->rb()->is_avatar()) {
+        // The avatar can be destroyed during its dying animation
+        // or while sitting in a vehicle.
+        on_avatar_destroyed_.set(pv->on_destroy, CURRENT_SOURCE_LOCATION);
+        on_avatar_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
+        on_vehicle_destroyed_.clear();
+    } else {
+        on_vehicle_destroyed_.set(pv->on_destroy, CURRENT_SOURCE_LOCATION);
+        on_vehicle_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
+    }
     internals_mode_.seat = desired_seat;
     vehicle_ = pv.ptr().set_loc(CURRENT_SOURCE_LOCATION);
-    vehicle_spawner_ = &spawner;
+    vehicle_spawner_ = { &spawner, CURRENT_SOURCE_LOCATION };
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> Player::rigid_body() {
@@ -910,7 +920,7 @@ DanglingBaseClassRef<const SceneNode> Player::scene_node() const {
     return const_cast<Player*>(this)->scene_node();
 }
 
-VehicleSpawner* Player::next_scene_vehicle() {
+DanglingBaseClassPtr<VehicleSpawner> Player::next_scene_vehicle() {
     return next_scene_vehicle_;
 }
 
@@ -931,14 +941,14 @@ DanglingBaseClassRef<const SceneVehicle> Player::vehicle() const {
     return const_cast<Player*>(this)->vehicle();
 }
 
-VehicleSpawner& Player::vehicle_spawner() {
+DanglingBaseClassRef<VehicleSpawner> Player::vehicle_spawner() {
     if (vehicle_spawner_ == nullptr) {
         THROW_OR_ABORT("Player has no vehicle spawner");
     }
     return *vehicle_spawner_;
 }
 
-const VehicleSpawner& Player::vehicle_spawner() const {
+DanglingBaseClassRef<const VehicleSpawner> Player::vehicle_spawner() const {
     return const_cast<Player*>(this)->vehicle_spawner();
 }
 
@@ -948,7 +958,7 @@ void Player::set_next_vehicle(
     const std::string& seat)
 {
     clear_next_vehicle();
-    next_scene_vehicle_ = &spawner;
+    next_scene_vehicle_ = { &spawner, CURRENT_SOURCE_LOCATION };
     next_seat_ = seat;
     on_next_vehicle_destroyed_.set(vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
     on_next_vehicle_destroyed_.add([this](){
@@ -984,7 +994,7 @@ void Player::select_next_vehicle(
         if (!s->has_scene_vehicle()) {
             continue;
         }
-        if (vehicle_spawner_ == s.get()) {
+        if (vehicle_spawner_.get() == s.get()) {
             continue;
         }
         auto v = s->get_primary_scene_vehicle();
@@ -1053,7 +1063,7 @@ bool Player::can_reset_vehicle(
         THROW_OR_ABORT("Player has no vehicle spawner");
     }
     return spawner_.can_spawn_at_spawn_point(
-        *vehicle_spawner_,
+        *vehicle_spawner_.get(),
         trafo.casted<SceneDir, CompressedScenePos>());
 }
 
@@ -1077,7 +1087,7 @@ bool Player::try_reset_vehicle(
         verbose_abort("Vehicle spawner not null after deletion");
     }
     if (!spawner_.try_spawn_at_spawn_point(
-        *vs,
+        *vs.get(),
         trafo.casted<SceneDir, CompressedScenePos>()))
     {
         if (vehicle_spawner_ != nullptr) {
@@ -1094,9 +1104,9 @@ bool Player::try_reset_vehicle(
 
 std::vector<DanglingBaseClassPtr<SceneNode>> Player::moving_nodes() const {
     std::vector<DanglingBaseClassPtr<SceneNode>> result;
-    const auto& vs = vehicle_spawner().get_scene_vehicles();
-    result.reserve(vs.size());
-    for (const auto& v : vs) {
+    const auto vs = vehicle_spawner()->get_scene_vehicles(CURRENT_SOURCE_LOCATION);
+    result.reserve(vs->size());
+    for (const auto& v : vs.get()) {
         result.push_back(v->scene_node().ptr());
     }
     return result;

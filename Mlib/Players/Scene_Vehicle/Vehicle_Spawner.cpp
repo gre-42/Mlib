@@ -152,8 +152,8 @@ DanglingBaseClassRef<const SceneVehicle> VehicleSpawner::get_primary_scene_vehic
     return const_cast<VehicleSpawner*>(this)->get_primary_scene_vehicle();
 }
 
-const DanglingList<SceneVehicle>& VehicleSpawner::get_scene_vehicles() const {
-    return scene_vehicles_;
+DanglingBaseClassRef<const DanglingList<SceneVehicle>> VehicleSpawner::get_scene_vehicles(SourceLocation loc) const {
+    return { scene_vehicles_, loc };
 }
 
 void VehicleSpawner::set_scene_vehicles(

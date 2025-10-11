@@ -149,13 +149,13 @@ public:
     DanglingBaseClassRef<const RigidBodyVehicle> rigid_body() const;
     DanglingBaseClassRef<SceneNode> scene_node();
     DanglingBaseClassRef<const SceneNode> scene_node() const;
-    VehicleSpawner* next_scene_vehicle();
+    DanglingBaseClassPtr<VehicleSpawner> next_scene_vehicle();
     const std::string& next_seat() const;
     const VariableAndHash<std::string>& scene_node_name() const;
     DanglingBaseClassRef<SceneVehicle> vehicle();
     DanglingBaseClassRef<const SceneVehicle> vehicle() const;
-    VehicleSpawner& vehicle_spawner();
-    const VehicleSpawner& vehicle_spawner() const;
+    DanglingBaseClassRef<VehicleSpawner> vehicle_spawner();
+    DanglingBaseClassRef<const VehicleSpawner> vehicle_spawner() const;
     void set_gun_node(DanglingBaseClassRef<SceneNode> gun_node);
     void change_gun_node(DanglingBaseClassPtr<SceneNode> gun_node);
     bool has_way_points() const;
@@ -280,6 +280,7 @@ private:
     void select_best_weapon_in_inventory();
     bool unstuck();
     DestructionFunctions on_clear_vehicle_;
+    DestructionFunctionsRemovalTokens on_avatar_destroyed_;
     DestructionFunctionsRemovalTokens on_vehicle_destroyed_;
     DestructionFunctionsRemovalTokens on_next_vehicle_destroyed_;
     DestructionFunctionsRemovalTokens on_target_scene_node_cleared_;
@@ -294,7 +295,7 @@ private:
     std::string id_;
     std::string team_;
     DanglingBaseClassPtr<SceneVehicle> vehicle_;
-    VehicleSpawner* vehicle_spawner_;
+    DanglingBaseClassPtr<VehicleSpawner> vehicle_spawner_;
     PlayerControlled controlled_;
     std::optional<VariableAndHash<std::string>> target_id_;
     DanglingBaseClassPtr<SceneNode> target_scene_node_;
@@ -314,7 +315,7 @@ private:
     size_t nunstucked_;
     SkillMap skills_;
     DeleteNodeMutex& delete_node_mutex_;
-    VehicleSpawner* next_scene_vehicle_;
+    DanglingBaseClassPtr<VehicleSpawner> next_scene_vehicle_;
     bool reset_vehicle_to_last_checkpoint_requested_;
     std::string next_seat_;
     std::map<

@@ -75,7 +75,7 @@ public:
     bool has_scene_vehicle() const;
     DanglingBaseClassRef<SceneVehicle> get_primary_scene_vehicle();
     DanglingBaseClassRef<const SceneVehicle> get_primary_scene_vehicle() const;
-    const DanglingList<SceneVehicle>& get_scene_vehicles() const;
+    DanglingBaseClassRef<const DanglingList<SceneVehicle>> get_scene_vehicles(SourceLocation loc) const;
     void set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle, DeleteFromPool<SceneVehicle>>>&& scene_vehicle);
     
     void set_spawn_vehicle(

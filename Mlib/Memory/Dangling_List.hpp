@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
 #include <Mlib/Source_Location.hpp>
@@ -7,7 +8,7 @@
 namespace Mlib {
 
 template <class T>
-class DanglingList {
+class DanglingList: public virtual DanglingBaseClass {
 public:
     template <class TElement>
     decltype(auto) emplace_back(const TElement& element, SourceLocation loc) {

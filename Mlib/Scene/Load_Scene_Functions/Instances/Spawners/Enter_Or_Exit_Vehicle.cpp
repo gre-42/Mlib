@@ -35,7 +35,7 @@ void EnterOrExitVehicle::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& destination = vehicle_spawners.get(destination_name);
     auto seat = args.arguments.at<std::string>(KnownArgs::seat);
     player->set_next_vehicle(destination, destination.get_primary_scene_vehicle().get(), seat);
-    if (!game_logic->vehicle_changer.change_vehicle(player->vehicle_spawner())) {
+    if (!game_logic->vehicle_changer.change_vehicle(player->vehicle_spawner().get())) {
         THROW_OR_ABORT("Player \"" + player_name + "\" could not enter \"" + destination_name + '"');
     }
 }

@@ -175,8 +175,9 @@ bool Bystanders::delete_for_vip(
     if (!spawner.has_scene_vehicle()) {
         THROW_OR_ABORT("Spawner has no scene vehicle");
     }
+    auto scene_vehicles = spawner.get_scene_vehicles(CURRENT_SOURCE_LOCATION);
     size_t ndelete_votes = 0;
-    for (const auto& vehicle : spawner.get_scene_vehicles()) {
+    for (const auto& vehicle : scene_vehicles.get()) {
         FixedArray<ScenePos, 3> player_pos = vehicle->scene_node()->position();
         for (const auto& vip : vips) {
             ScenePos dist2 = sum(squared(player_pos - vip.position));
@@ -213,7 +214,7 @@ bool Bystanders::delete_for_vip(
             }
         }
     }
-    if (ndelete_votes == spawner.get_scene_vehicles().size() * vips.size()) {
+    if (ndelete_votes == scene_vehicles->size() * vips.size()) {
         // TimeGuard time_guard{"delete", "delete"};
         // std::scoped_lock lock{ delete_node_mutex_ };
         spawner.delete_vehicle();
@@ -265,7 +266,7 @@ void Bystanders::handle_bystanders() {
         //     }
         // }
         if (std::ranges::any_of(vips.begin(), vips.end(),
-            [&spawner](const auto& vip){ return &vip.player.vehicle_spawner() == spawner.get(); }))
+            [&spawner](const auto& vip){ return &vip.player.vehicle_spawner().get() == spawner.get(); }))
         {
             continue;
         }

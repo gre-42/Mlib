@@ -37,9 +37,9 @@ bool VehicleChanger::change_vehicle(VehicleSpawner& s) {
         THROW_OR_ABORT("Next scene node equals current node");
     }
     auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle()->scene_node());
-    auto* other_player = next_rb.drivers_.try_get(p->next_seat()).get();
+    auto other_player = next_rb.drivers_.try_get(p->next_seat());
     if (other_player == nullptr) {
-        enter_vehicle(s, *next_vehicle);
+        enter_vehicle(s, *next_vehicle.get());
         return true;
     }
     return false;
@@ -65,14 +65,14 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     InternalsMode b_seat_old = b.internals_mode();
     InternalsMode a_seat_old = a.internals_mode();
 
-    VehicleSpawner& b_spawner = b.vehicle_spawner();
-    VehicleSpawner& a_spawner = a.vehicle_spawner();
+    auto b_spawner = b.vehicle_spawner();
+    auto a_spawner = a.vehicle_spawner();
 
     b.reset_node();
     a.reset_node();
 
-    b.set_vehicle_spawner(a_spawner, b.next_seat());
-    a.set_vehicle_spawner(b_spawner, a.next_seat());
+    b.set_vehicle_spawner(a_spawner.get(), b.next_seat());
+    a.set_vehicle_spawner(b_spawner.get(), a.next_seat());
 
     if (a_ec_old != ExternalsMode::NONE) {
         a.create_vehicle_externals(a_ec_old);
