@@ -36,7 +36,7 @@ void EngineExhaust::notify_rotation(
         engine_angular_velocity,
         tires_angular_velocity,
         max_surface_power);
-    if ((p > p_reference_) && maybe_generate_(particle_.generation_dt)) {
+    if ((p >= p_reference_) && maybe_generate_(particle_.generation_dt)) {
         trail_generator_.generate(
             relative_location_.t,
             matrix_2_tait_bryan_angles(relative_location_.R),
