@@ -240,7 +240,7 @@ public:
     template <class TDerived>
         requires std::is_convertible_v<TDerived&, T&>
     DanglingBaseClassRef(TDerived& b, SourceLocation loc)
-        : DanglingBaseClassRef{ const_cast<TDerived&>(b), b, loc }
+        : DanglingBaseClassRef{ const_cast<std::remove_const_t<TDerived>&>(b), b, loc }
     {}
     ~DanglingBaseClassRef() {
         b_.remove_source_location(this);
