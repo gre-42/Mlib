@@ -90,7 +90,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
             s_hitboxes,
             d_hitboxes,
             {},
-            CollidableMode::STATIC);
+            CollidableMode::COLLIDE);
         rb.release();
     } catch (const TriangleException<double>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {

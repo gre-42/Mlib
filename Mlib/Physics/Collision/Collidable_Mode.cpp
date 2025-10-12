@@ -7,8 +7,8 @@ using namespace Mlib;
 CollidableMode Mlib::collidable_mode_from_string(const std::string& mode) {
     static std::map<std::string, CollidableMode> m{
         {"none", CollidableMode::NONE},
-        {"static", CollidableMode::STATIC},
-        {"moving", CollidableMode::MOVING}
+        {"collide", CollidableMode::COLLIDE},
+        {"collide|move", CollidableMode::COLLIDE | CollidableMode::MOVE}
     };
     auto it = m.find(mode);
     if (it == m.end()) {

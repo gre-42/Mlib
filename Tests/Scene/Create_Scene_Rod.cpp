@@ -135,8 +135,8 @@ void Mlib::create_scene_rod(
         AbsoluteMovableSetter ams0{scene, scene.get_node(OBJ, DP_LOC)->get_child(N0), N0, std::move(rb0), CURRENT_SOURCE_LOCATION};
         AbsoluteMovableSetter ams1_0{scene, scene.get_node(OBJ, DP_LOC)->get_child(N1_0), N1_0, std::move(rb1_0), CURRENT_SOURCE_LOCATION};
 
-        pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, triangles01, {}, {}, CollidableMode::STATIC);
-        pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, triangles1, {}, {}, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, triangles01, {}, {}, CollidableMode::COLLIDE);
+        pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, triangles1, {}, {}, CollidableMode::COLLIDE | CollidableMode::MOVE);
         ams0.absolute_movable.release();
         ams1_0.absolute_movable.release();
     }

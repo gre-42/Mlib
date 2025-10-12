@@ -122,7 +122,7 @@ void ExplosionRocksResource::instantiate_root_renderables(const RootInstantiatio
                 {},
                 {},
                 std::list<TypedMesh<std::shared_ptr<IIntersectable>>>{},
-                CollidableMode::NONE);
+                CollidableMode::MOVE);
             ams.absolute_movable.release();
         }
         options.scene.auto_add_root_node(

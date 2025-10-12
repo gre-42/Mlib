@@ -73,15 +73,15 @@ void RigidBodies::add_rigid_body(
     const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables,
     CollidableMode collidable_mode)
 {
-    if (is_colliding_ && (collidable_mode != CollidableMode::NONE)) {
+    if (is_colliding_ && any(collidable_mode & CollidableMode::COLLIDE)) {
         THROW_OR_ABORT("Attempt to add rigid body during collision-phase (0)");
     }
     auto& rb = rigid_body;
     bool has_meshes_or_intersectables = !s_hitboxes.empty() || !d_hitboxes.empty() || !intersectables.empty();
-    if ((collidable_mode == CollidableMode::NONE) && has_meshes_or_intersectables) {
+    if (!any(collidable_mode & CollidableMode::COLLIDE) && has_meshes_or_intersectables) {
         THROW_OR_ABORT("Non-collidable has meshes or intersectables: \"" + rb.name() + '"');
     }
-    if ((collidable_mode != CollidableMode::NONE) && !has_meshes_or_intersectables) {
+    if (any(collidable_mode & CollidableMode::COLLIDE) && !has_meshes_or_intersectables) {
         THROW_OR_ABORT("Collidable has no meshes or intersectables: \"" + rb.name() + '"');
     }
     {
@@ -95,7 +95,7 @@ void RigidBodies::add_rigid_body(
         verbose_abort("Could not insert collidable mode");
     }
     auto rng = welzl_rng();
-    if (collidable_mode == CollidableMode::STATIC) {
+    if (collidable_mode == CollidableMode::COLLIDE) {
         if (rb.mass() != INFINITY) {
             THROW_OR_ABORT("Terrain requires infinite mass");
         }
@@ -215,7 +215,8 @@ void RigidBodies::add_rigid_body(
         };
         add_hitboxes(s_hitboxes);
         add_hitboxes(d_hitboxes);
-    } else if ((collidable_mode == CollidableMode::MOVING) ||
+    } else if ((collidable_mode == (CollidableMode::COLLIDE | CollidableMode::MOVE)) ||
+               (collidable_mode == CollidableMode::MOVE) ||
                (collidable_mode == CollidableMode::NONE))
     {
         if (!std::isfinite(rb.mass())) {
@@ -295,7 +296,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
         THROW_OR_ABORT("Could not find rigid body for deletion (collidable mode)");
     }
     if (rigid_body.mass() == INFINITY) {
-        if (it->second == CollidableMode::STATIC) {
+        if (it->second == CollidableMode::COLLIDE) {
             convex_mesh_bvh_.clear();
             triangle_bvh_.clear();
             ridge_bvh_.clear();
@@ -306,7 +307,8 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
         } else {
             THROW_OR_ABORT("Could not delete rigid body (3)");
         }
-    } else if ((it->second == CollidableMode::MOVING) ||
+    } else if ((it->second == (CollidableMode::COLLIDE | CollidableMode::MOVE)) ||
+               (it->second == CollidableMode::MOVE) ||
                (it->second == CollidableMode::NONE))
     {
         {
@@ -521,7 +523,11 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
         .divider = cfg_.nsubsteps
     });
     for (auto& m : objects_) {
-        if (!m.has_meshes()) {
+        auto it = collidable_modes_.find(&m.rigid_body.get());
+        if (it == collidable_modes_.end()) {
+            THROW_OR_ABORT("Could not determine collidable mode");
+        }
+        if (it->second == CollidableMode::MOVE) {
             non_colliders_group.rigid_bodies.insert(&m.rigid_body->rbp_);
         }
     }

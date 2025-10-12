@@ -215,7 +215,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             .geographic_coordinates = scene_node_resources.get_geographic_mapping(WORLD),
             .waypoint_dy = (CompressedScenePos)1.2f,
             .hitboxes = VariableAndHash<std::string>{name + "_hitboxes"},
-            .collidable_mode = CollidableMode::MOVING});
+            .collidable_mode = CollidableMode::COLLIDE | CollidableMode::MOVE});
 
         std::shared_ptr<EngineEventListeners> engine_listeners;
         auto add_engine_listener = [&](std::shared_ptr<IEngineEventListener> l){

@@ -149,8 +149,8 @@ void Mlib::create_scene_slide(
         AbsoluteMovableSetter ams_slide{scene, scene.get_node(OBJ_SLIDE, DP_LOC), OBJ_SLIDE, std::move(rb_slide), CURRENT_SOURCE_LOCATION};
         AbsoluteMovableSetter ams_box{scene, scene.get_node(OBJ_BOX, DP_LOC), OBJ_BOX, std::move(rb_box), CURRENT_SOURCE_LOCATION};
 
-        pe.rigid_bodies_.add_rigid_body(*ams_slide.absolute_movable, triangles_slide, {}, {}, CollidableMode::STATIC);
-        pe.rigid_bodies_.add_rigid_body(*ams_box.absolute_movable, triangles_box, {}, {}, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(*ams_slide.absolute_movable, triangles_slide, {}, {}, CollidableMode::COLLIDE);
+        pe.rigid_bodies_.add_rigid_body(*ams_box.absolute_movable, triangles_box, {}, {}, CollidableMode::COLLIDE | CollidableMode::MOVE);
         ams_slide.absolute_movable.release();
         ams_box.absolute_movable.release();
     }

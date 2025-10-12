@@ -225,10 +225,10 @@ void Mlib::create_scene_flat(
         AbsoluteMovableSetter<RigidBodyVehicle> ams1_1{scene, scene.get_node(N1_1, DP_LOC), N1_1, std::move(rb1_1), CURRENT_SOURCE_LOCATION};
         AbsoluteMovableSetter<RigidBodyVehicle> ams1_2{scene, scene.get_node(N1_2, DP_LOC), N1_2, std::move(rb1_2), CURRENT_SOURCE_LOCATION};
 
-        pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, { triangles0 }, {}, {}, CollidableMode::STATIC);
-        pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, quads1, {}, {}, CollidableMode::MOVING);
-        pe.rigid_bodies_.add_rigid_body(*ams1_1.absolute_movable, quads1, {}, {}, CollidableMode::MOVING);
-        pe.rigid_bodies_.add_rigid_body(*ams1_2.absolute_movable, {}, {}, intersectables1, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(*ams0.absolute_movable, { triangles0 }, {}, {}, CollidableMode::COLLIDE);
+        pe.rigid_bodies_.add_rigid_body(*ams1_0.absolute_movable, quads1, {}, {}, CollidableMode::COLLIDE | CollidableMode::MOVE);
+        pe.rigid_bodies_.add_rigid_body(*ams1_1.absolute_movable, quads1, {}, {}, CollidableMode::COLLIDE | CollidableMode::MOVE);
+        pe.rigid_bodies_.add_rigid_body(*ams1_2.absolute_movable, {}, {}, intersectables1, CollidableMode::COLLIDE | CollidableMode::MOVE);
         ams0.absolute_movable.release();
         ams1_0.absolute_movable.release();
         ams1_1.absolute_movable.release();

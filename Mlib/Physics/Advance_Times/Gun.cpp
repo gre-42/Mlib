@@ -230,7 +230,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
                 scene_node_resources_.get_arrays(bullet_properties_.hitbox_resource_name, ColoredVertexArrayFilter{})->scvas,
                 scene_node_resources_.get_arrays(bullet_properties_.hitbox_resource_name, ColoredVertexArrayFilter{})->dcvas,
                 std::list<TypedMesh<std::shared_ptr<IIntersectable>>>{},
-                CollidableMode::MOVING);
+                CollidableMode::COLLIDE | CollidableMode::MOVE);
             ams.absolute_movable.release();
         }
         auto bullet = std::make_unique<Bullet>(
