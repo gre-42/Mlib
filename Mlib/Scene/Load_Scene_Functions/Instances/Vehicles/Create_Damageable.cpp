@@ -25,6 +25,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(damage_sources);
 DECLARE_ARGUMENT(animation);
 DECLARE_ARGUMENT(animation_duration);
+DECLARE_ARGUMENT(particle_container);
 DECLARE_ARGUMENT(audio);
 };
 
@@ -62,7 +63,8 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
                     resource = *resource,
                     node = *node,
                     &scene = scene,
-                    duration = ev.at<float>(KnownExplosionArgs::animation_duration) * seconds
+                    duration = ev.at<float>(KnownExplosionArgs::animation_duration) * seconds,
+                    particle_container = ev.at<ParticleContainer>(KnownExplosionArgs::particle_container)
                 ]
                 (const AudioSourceState<ScenePos>& state, const StaticWorld& static_world)
                 {
@@ -75,7 +77,7 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
                         0.f,
                         0.f,
                         duration,
-                        ParticleContainer::NODE,
+                        particle_container,
                         static_world);
                 };
             }

@@ -110,6 +110,8 @@ void Mlib::collide_convex_meshes(
     }
     auto line_mask = [&](){
         switch (history.phase.group.penetration_class) {
+            case PenetrationClass::NONE:
+                THROW_OR_ABORT("PenetrationClass::NONE in collide_convex_meshes");
             case PenetrationClass::BULLET_LINE:
                 return PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT;
             case PenetrationClass::STANDARD:

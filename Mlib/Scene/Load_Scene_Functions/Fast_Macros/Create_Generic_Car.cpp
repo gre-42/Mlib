@@ -256,6 +256,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                     scene_node_resources,
                     particle_renderer,
                     scene,
+                    physics_engine.rigid_bodies_,
                     jv.at<ConstantParticleTrail>(KnownExhaust::particle),
                     transformation_matrix_from_json<SceneDir, ScenePos, 3>(
                         jv.at(KnownExhaust::location)),

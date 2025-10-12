@@ -113,13 +113,15 @@ void PhysicsEngine::collide(
     collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)
         ? CollisionDirection::BACKWARD
         : CollisionDirection::FORWARD;
-    collide_with_movables(
-        collision_direction_,
-        rigid_bodies_,
-        history);
-    collide_with_terrain(
-        rigid_bodies_,
-        history);
+    if (phase.group.penetration_class != PenetrationClass::NONE) {
+        collide_with_movables(
+            collision_direction_,
+            rigid_bodies_,
+            history);
+        collide_with_terrain(
+            rigid_bodies_,
+            history);
+    }
     for (const auto& o : rigid_bodies_.transformed_objects()) {
         o.rigid_body->finalize_collisions(history);
     }

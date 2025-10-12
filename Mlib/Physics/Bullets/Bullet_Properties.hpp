@@ -12,10 +12,12 @@ namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
 enum class RigidBodyVehicleFlags;
+enum class ParticleContainer;
 
 struct BulletExplosion {
     std::optional<std::unordered_set<PhysicsMaterial>> materials;
     VariableAndHash<std::string> resource_name;
+    ParticleContainer particle_container;
     float animation_time;
     VariableAndHash<std::string> audio_resource_name;
 };

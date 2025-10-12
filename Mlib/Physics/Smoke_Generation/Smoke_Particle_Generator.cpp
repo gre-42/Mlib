@@ -1,6 +1,8 @@
 #include "Smoke_Particle_Generator.hpp"
+#include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
-#include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -8,6 +10,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -15,15 +18,33 @@
 
 using namespace Mlib;
 
+void Mlib::from_json(const nlohmann::json& j, ParticleContainer& pc) {
+    if (j.type() != nlohmann::detail::value_t::string) {
+        THROW_OR_ABORT("Particle container is not of type string");
+    }
+    static const std::map<std::string, ParticleContainer> m{
+        {"physics", ParticleContainer::PHYSICS},
+        {"node", ParticleContainer::NODE},
+        {"instance", ParticleContainer::INSTANCE}};
+    auto s = j.get<std::string>();
+    auto it = m.find(s);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown particle container: \"" + s + '"');
+    }
+    pc = it->second;
+}
+
 SmokeParticleGenerator::SmokeParticleGenerator(
     RenderingResources& rendering_resources,
     SceneNodeResources& scene_node_resources,
     std::shared_ptr<IParticleRenderer> particle_renderer,
-    Scene& scene)
+    Scene& scene,
+    RigidBodies& rigid_bodies)
     : rendering_resources_{ rendering_resources }
     , scene_node_resources_{ scene_node_resources }
     , particle_renderer_{ std::move(particle_renderer) }
     , scene_{ scene }
+    , rigid_bodies_{ rigid_bodies }
 {}
 
 void SmokeParticleGenerator::generate_root(
@@ -38,7 +59,16 @@ void SmokeParticleGenerator::generate_root(
     ParticleContainer particle_container,
     const StaticWorld& static_world)
 {
-    if (particle_container == ParticleContainer::NODE) {
+    switch (particle_container) {
+    case ParticleContainer::PHYSICS:
+        generate_physics_node(
+            resource_name,
+            position,
+            rotation,
+            animation_duration,
+            static_world);
+        return;
+    case ParticleContainer::NODE:
         generate_root_node(
             resource_name,
             node_name,
@@ -48,7 +78,8 @@ void SmokeParticleGenerator::generate_root(
             air_resistance_halflife,
             animation_duration,
             static_world);
-    } else if (particle_container == ParticleContainer::INSTANCE) {
+        return;
+    case ParticleContainer::INSTANCE:
         generate_instance(
             resource_name,
             position,
@@ -57,9 +88,9 @@ void SmokeParticleGenerator::generate_root(
             air_resistance_halflife,
             texture_layer,
             static_world);
-    } else {
-        THROW_OR_ABORT("Unknown particle type");
+        return;
     }
+    THROW_OR_ABORT("Unknown particle type");
 }
 
 void SmokeParticleGenerator::generate_instance(
@@ -79,6 +110,32 @@ void SmokeParticleGenerator::generate_instance(
         velocity,
         air_resistance_halflife,
         texture_layer);
+}
+
+void SmokeParticleGenerator::generate_physics_node(
+    const VariableAndHash<std::string>& resource_name,
+    const FixedArray<ScenePos, 3>& position,
+    const FixedArray<float, 3>& rotation,
+    float animation_duration,
+    const StaticWorld& static_world)
+{
+    AnimationState animation_state{
+        .reference_time = AperiodicReferenceTime{
+            static_world.time,
+            std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                std::chrono::duration<float>(animation_duration / seconds))},
+        .delete_node_when_aperiodic_animation_finished = true};
+    auto absolute_model_matrix = OffsetAndTaitBryanAngles<SceneDir, ScenePos, 3>{rotation, position}.to_matrix();
+    scene_node_resources_.instantiate_root_renderables(
+        resource_name,
+        RootInstantiationOptions{
+            .rendering_resources = &rendering_resources_,
+            .animation_state = &animation_state,
+            .rigid_bodies = &rigid_bodies_,
+            .instance_name = resource_name,
+            .absolute_model_matrix = absolute_model_matrix,
+            .scene = scene_,
+            .renderable_resource_filter = RenderableResourceFilter{}});
 }
 
 void SmokeParticleGenerator::generate_root_node(

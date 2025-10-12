@@ -2,6 +2,7 @@
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 #include <memory>
+#include <nlohmann/json_fwd.hpp>
 #include <string>
 
 namespace Mlib {
@@ -15,14 +16,18 @@ class SceneNode;
 class SceneNodeResources;
 class RenderingResources;
 class IParticleRenderer;
+class RigidBodies;
 template <class T>
 class VariableAndHash;
 struct StaticWorld;
 
 enum class ParticleContainer {
+    PHYSICS,
     NODE,
     INSTANCE
 };
+
+void from_json(const nlohmann::json& j, ParticleContainer& pc);
 
 class SmokeParticleGenerator {
 public:
@@ -30,7 +35,8 @@ public:
         RenderingResources& rendering_resources,
         SceneNodeResources& scene_node_resources,
         std::shared_ptr<IParticleRenderer> particle_renderer,
-        Scene& scene);
+        Scene& scene,
+        RigidBodies& rigid_bodies);
     void generate_root(
         const VariableAndHash<std::string>& resource_name,
         const VariableAndHash<std::string>& node_name,
@@ -49,6 +55,12 @@ public:
         const FixedArray<float, 3>& velocity,
         float air_resistance_halflife,
         float texture_layer,
+        const StaticWorld& static_world);
+    void generate_physics_node(
+        const VariableAndHash<std::string>& resource_name,
+        const FixedArray<ScenePos, 3>& position,
+        const FixedArray<float, 3>& rotation,
+        float animation_duration,
         const StaticWorld& static_world);
     void generate_root_node(
         const VariableAndHash<std::string>& resource_name,
@@ -71,6 +83,7 @@ private:
     SceneNodeResources& scene_node_resources_;
     std::shared_ptr<IParticleRenderer> particle_renderer_;
     Scene& scene_;
+    RigidBodies& rigid_bodies_;
 };
 
 }

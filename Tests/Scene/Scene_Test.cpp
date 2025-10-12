@@ -145,9 +145,9 @@ void test_physics_engine(unsigned int seed) {
     auto air_particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE);
     auto skidmark_particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SKIDMARK);
     auto sea_spray_particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SEA_SPRAY);
-    SmokeParticleGenerator air_smoke_particle_generator{ rendering_resources, scene_node_resources, air_particle_renderer, scene };
-    SmokeParticleGenerator skidmark_smoke_particle_generator{ rendering_resources, scene_node_resources, skidmark_particle_renderer, scene };
-    SmokeParticleGenerator sea_spray_smoke_particle_generator{ rendering_resources, scene_node_resources, sea_spray_particle_renderer, scene };
+    SmokeParticleGenerator air_smoke_particle_generator{ rendering_resources, scene_node_resources, air_particle_renderer, scene, pe.rigid_bodies_ };
+    SmokeParticleGenerator skidmark_smoke_particle_generator{ rendering_resources, scene_node_resources, skidmark_particle_renderer, scene, pe.rigid_bodies_ };
+    SmokeParticleGenerator sea_spray_smoke_particle_generator{ rendering_resources, scene_node_resources, sea_spray_particle_renderer, scene, pe.rigid_bodies_ };
     ContactSmokeGenerator contact_smoke_generator{
         one_shot_audio,
         air_smoke_particle_generator,

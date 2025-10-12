@@ -1,17 +1,19 @@
-#include "Set_Bullet_Properties.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
+#include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 
 namespace KnownExplosionArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(materials);
 DECLARE_ARGUMENT(resource);
+DECLARE_ARGUMENT(particle_container);
 DECLARE_ARGUMENT(animation_time);
 DECLARE_ARGUMENT(audio);
 }
@@ -45,6 +47,7 @@ static void from_json(const nlohmann::json& j, BulletExplosion& item) {
         item.materials = jv.at<std::unordered_set<PhysicsMaterial>>(KnownExplosionArgs::materials);
     }
     item.resource_name = jv.at<std::string>(KnownExplosionArgs::resource);
+    item.particle_container = jv.at<ParticleContainer>(KnownExplosionArgs::particle_container);
     item.animation_time = jv.at<float>(KnownExplosionArgs::animation_time) * seconds;
     item.audio_resource_name = jv.at<VariableAndHash<std::string>>(KnownExplosionArgs::audio, VariableAndHash<std::string>{});
 }
@@ -82,12 +85,20 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(properties);
 }
 
-const std::string SetBulletProperties::key = "set_bullet_properties";
+namespace {
 
-LoadSceneJsonUserFunction SetBulletProperties::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    args.bullet_property_db.add(
-        args.arguments.at<std::string>(KnownArgs::name),
-        args.arguments.at<BulletProperties>(KnownArgs::properties));
-};
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_bullet_properties",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                args.arguments.validate(KnownArgs::options);
+                args.bullet_property_db.add(
+                    args.arguments.at<std::string>(KnownArgs::name),
+                    args.arguments.at<BulletProperties>(KnownArgs::properties));
+            });
+    }
+} obj;
+
+}

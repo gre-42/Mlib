@@ -73,7 +73,7 @@ void RigidBodies::add_rigid_body(
     const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables,
     CollidableMode collidable_mode)
 {
-    if (is_colliding_) {
+    if (is_colliding_ && (collidable_mode != CollidableMode::NONE)) {
         THROW_OR_ABORT("Attempt to add rigid body during collision-phase (0)");
     }
     auto& rb = rigid_body;
@@ -513,7 +513,18 @@ std::vector<CollisionGroup> RigidBodies::collision_groups() {
         });
     PowerOfTwoDivider<size_t> p2d{ cfg_.nsubsteps };
     std::vector<CollisionGroup> result;
-    result.reserve(1 + clusters.size());
+    result.reserve(2 + clusters.size());
+
+    auto& non_colliders_group = result.emplace_back(CollisionGroup{
+        .penetration_class = PenetrationClass::NONE,
+        .nsubsteps = 1,
+        .divider = cfg_.nsubsteps
+    });
+    for (auto& m : objects_) {
+        if (!m.has_meshes()) {
+            non_colliders_group.rigid_bodies.insert(&m.rigid_body->rbp_);
+        }
+    }
 
     auto& bullet_line_group = result.emplace_back(CollisionGroup{
         .penetration_class = PenetrationClass::BULLET_LINE,

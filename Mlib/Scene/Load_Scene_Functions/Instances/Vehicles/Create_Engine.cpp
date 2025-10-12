@@ -134,6 +134,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
                 scene_node_resources,
                 particle_renderer,
                 scene,
+                physics_engine.rigid_bodies_,
                 jv.at<ConstantParticleTrail>(Exhaust::particle),
                 transformation_matrix_from_json<SceneDir, ScenePos, 3>(
                     jv.at(Exhaust::location)),

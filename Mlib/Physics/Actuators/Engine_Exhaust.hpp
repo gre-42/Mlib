@@ -15,6 +15,7 @@ class RenderingResources;
 class SceneNodeResources;
 class IParticleRenderer;
 class Scene;
+class RigidBodies;
 
 class EngineExhaust: public IEngineEventListener {
 public:
@@ -23,6 +24,7 @@ public:
         SceneNodeResources& scene_node_resources,
         std::shared_ptr<IParticleRenderer> particle_renderer,
         Scene& scene,
+        RigidBodies& rigid_bodies,
         const ConstantParticleTrail& particle,
         const TransformationMatrix<SceneDir, ScenePos, 3>& relative_location,
         float p_reference);

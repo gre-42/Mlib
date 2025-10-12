@@ -153,7 +153,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Binary_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Blending_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Grid_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Delete_Mesh.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Contour_Edges.hpp>
@@ -174,7 +173,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Animated_Dynamic_Light_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Bounds.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Bullet_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Constant_Dynamic_Light_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Shade_Auto.hpp>
@@ -450,7 +448,6 @@ LoadScene::LoadScene(
             register_json_user_function(Repeat::key, Repeat::json_user_function);
             register_json_user_function(SaveTextureArrayPng::key, SaveTextureArrayPng::json_user_function);
             register_json_user_function(SaveTexturePng::key, SaveTexturePng::json_user_function);
-            register_json_user_function(CreateSquareResource::key, CreateSquareResource::json_user_function);
             register_json_user_function(CreateGridResource::key, CreateGridResource::json_user_function);
             register_json_user_function(MergeBlendedMaterials::key, MergeBlendedMaterials::json_user_function);
             register_json_user_function(MergeMeshes::key, MergeMeshes::json_user_function);
@@ -461,7 +458,6 @@ LoadScene::LoadScene(
             register_json_user_function(SetAnimatedDynamicLightProperties::key, SetAnimatedDynamicLightProperties::json_user_function);
             register_json_user_function(SetBounds::key, SetBounds::json_user_function);
             register_json_user_function(SetConstantDynamicLightProperties::key, SetConstantDynamicLightProperties::json_user_function);
-            register_json_user_function(SetBulletProperties::key, SetBulletProperties::json_user_function);
             register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
             register_json_user_function(SmoothenEdges::key, SmoothenEdges::json_user_function);
             register_json_user_function(ShadeAuto::key, ShadeAuto::json_user_function);

@@ -47,6 +47,12 @@ public:
     void seed(unsigned int seed) {
         index_.seed(seed);
     }
+    decltype(auto) begin() const {
+        return resources_.begin();
+    }
+    decltype(auto) end() const {
+        return resources_.end();
+    }
 private:
     FastUniformIntRandomNumberGenerator<size_t> index_;
     std::vector<TResource> resources_;

@@ -15,4 +15,9 @@ struct Interval {
     }
 };
 
+template <class T>
+Interval<T> operator * (const Interval<T>& a, const T& b) {
+    return { a.min * b, a.max * b };
+}
+
 }

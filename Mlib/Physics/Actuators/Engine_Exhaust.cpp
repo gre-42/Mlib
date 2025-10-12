@@ -9,6 +9,7 @@ EngineExhaust::EngineExhaust(
     SceneNodeResources& scene_node_resources,
     std::shared_ptr<IParticleRenderer> particle_renderer,
     Scene& scene,
+    RigidBodies& rigid_bodies,
     const ConstantParticleTrail& particle,
     const TransformationMatrix<SceneDir, ScenePos, 3>& relative_location,
     float p_reference)
@@ -16,7 +17,8 @@ EngineExhaust::EngineExhaust(
         rendering_resources,
         scene_node_resources,
         particle_renderer,
-        scene }
+        scene,
+        rigid_bodies }
     , trail_generator_{ smoke_generator_ }
     , particle_{ particle }
     , relative_location_{ relative_location }

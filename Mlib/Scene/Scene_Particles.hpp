@@ -8,6 +8,7 @@ namespace Mlib {
 class SceneNodeResources;
 class RenderingResources;
 class Scene;
+class RigidBodies;
 class ParticleResources;
 template <class T>
 class VariableAndHash;
@@ -19,6 +20,7 @@ struct SceneParticles {
         RenderingResources& rendering_resources,
         ParticleResources& particle_resources,
         Scene& scene,
+        RigidBodies& rigid_bodies,
         const VariableAndHash<std::string>& node_name,
         ParticleType particle_type);
     ~SceneParticles();

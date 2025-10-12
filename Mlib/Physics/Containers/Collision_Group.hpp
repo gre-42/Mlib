@@ -8,6 +8,7 @@ class RigidBodyPulses;
 class CollisionMesh;
 
 enum class PenetrationClass {
+    NONE,
     STANDARD,
     BULLET_LINE,
 };

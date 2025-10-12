@@ -13,10 +13,11 @@ SceneParticles::SceneParticles(
     RenderingResources& rendering_resources,
     ParticleResources& particle_resources,
     Scene& scene,
+    RigidBodies& rigid_bodies,
     const VariableAndHash<std::string>& node_name,
     ParticleType particle_type)
     : particle_renderer{ std::make_shared<ParticleRenderer>(particle_resources, particle_type) }
-    , smoke_particle_generator{ rendering_resources, scene_node_resources, particle_renderer, scene }
+    , smoke_particle_generator{ rendering_resources, scene_node_resources, particle_renderer, scene, rigid_bodies }
 {
     switch (particle_type) {
         case ParticleType::NONE:

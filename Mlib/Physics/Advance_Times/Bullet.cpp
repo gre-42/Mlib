@@ -160,7 +160,7 @@ void Bullet::notify_collided(
             INFINITY,
             0.f,
             e.animation_time,
-            ParticleContainer::NODE,
+            e.particle_container,
             world);
         if (generate_bullet_explosion_audio_) {
             generate_bullet_explosion_audio_({intersection_point, fixed_zeros<float, 3>()}, e);
