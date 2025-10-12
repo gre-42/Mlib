@@ -61,6 +61,8 @@ void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
         }
         if (delete_node_when_health_leq_zero_) {
             scene_.delete_root_node(root_node_name_);
+            // The object is deleted from here on, so return.
+            return;
         }
         explosion_generated_ = true;
     }
