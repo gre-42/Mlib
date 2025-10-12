@@ -93,7 +93,7 @@ void WeaponCycle::equip_previous_weapon(std::optional<std::string> player_name) 
     desired_.player_name = std::move(player_name);
 }
 
-std::string WeaponCycle::ammo_type() const {
+InventoryItem WeaponCycle::ammo_type() const {
     auto it = weapon_infos_.find(equipped_.weapon_name);
     if (it == weapon_infos_.end()) {
         THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + equipped_.weapon_name + '"');

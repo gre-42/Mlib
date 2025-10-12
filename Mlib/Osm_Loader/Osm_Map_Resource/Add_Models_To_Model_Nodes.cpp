@@ -73,11 +73,13 @@ void Mlib::add_models_to_model_nodes(
                 // supplies:a                      4
                 // supplies:b                      2
                 static const DECLARE_REGEX(supplies_re, "^supplies:(.*)$");
+                static const auto COOLDOWN_SECONDS = VariableAndHash<std::string>{"meta:cooldown_seconds"};
                 Mlib::re::cmatch supplies_match;
                 if (Mlib::re::regex_match(k, supplies_match, supplies_re)) {
-                    if (supplies_match[1].str() == "meta:cooldown_seconds") {
+                    auto k1 = VariableAndHash<std::string>{supplies_match[1].str()};
+                    if (k1 == COOLDOWN_SECONDS) {
                         prn.supplies_cooldown = safe_stof(v) * seconds;
-                    } else if (!prn.supplies.try_emplace(supplies_match[1].str(), safe_stox<uint32_t>(v, "supplies")).second) {
+                    } else if (!prn.supplies.try_emplace(k1, safe_stox<uint32_t>(v, "supplies")).second) {
                         THROW_OR_ABORT("Could not insert supplies");
                     }
                 }

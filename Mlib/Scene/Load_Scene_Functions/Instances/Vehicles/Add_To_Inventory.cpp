@@ -34,6 +34,6 @@ void AddToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::inventory_node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     rb.inventory_.add(
-        args.arguments.at<std::string>(KnownArgs::item_type),
+        args.arguments.at<InventoryItem>(KnownArgs::item_type),
         args.arguments.at<uint32_t>(KnownArgs::amount));
 }

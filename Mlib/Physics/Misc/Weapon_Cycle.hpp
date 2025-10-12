@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Modifier.hpp>
 #include <compare>
 #include <functional>
@@ -15,7 +16,7 @@ struct BulletProperties;
 struct WeaponInfo {
     std::function<void()> create_weapon;
     std::function<void(const std::string& player_name)> create_externals;
-    std::string ammo_type;
+    InventoryItem ammo_type;
     const BulletProperties& bullet_properties;
     float cool_down;
     double range_min;
@@ -43,7 +44,7 @@ public:
         std::string weapon_name);
     void equip_next_weapon(std::optional<std::string> player_name);
     void equip_previous_weapon(std::optional<std::string> player_name);
-    std::string ammo_type() const;
+    InventoryItem ammo_type() const;
     const std::map<std::string, WeaponInfo>& weapon_infos() const;
 private:
     std::map<std::string, WeaponInfo> weapon_infos_;

@@ -1,11 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <Mlib/Scene_Precision.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
-#include <map>
 #include <optional>
 #include <string>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -19,7 +19,7 @@ struct ObjectResourceDescriptor {
     AggregateMode aggregate_mode;
     bool create_imposter;
     uint32_t max_imposter_texture_size;
-    std::map<std::string, uint32_t> supplies;
+    std::unordered_map<InventoryItem, uint32_t> supplies;
     float supplies_cooldown;
     template <class Archive>
     void serialize(Archive& archive) {

@@ -13,7 +13,18 @@
 using namespace Mlib;
 
 bool SupplyDepot::is_cooling_down() const {
-    return time_since_last_visit < cooldown;
+    return time_since_first_sale < cooldown;
+}
+
+void SupplyDepot::notify_first_sale() {
+    time_since_first_sale = 0.f;
+    node->color_style(VariableAndHash<std::string>{""}).set_emissive(fixed_full<float, 3>(2.f));
+}
+
+void SupplyDepot::notify_reset() {
+    remaining_supplies = initial_supplies;
+    time_since_first_sale = cooldown;
+    node->color_style(VariableAndHash<std::string>{""}).set_emissive(fixed_full<float, 3>(-1.f));
 }
 
 SupplyDepots::SupplyDepots(
@@ -35,8 +46,7 @@ SupplyDepots::~SupplyDepots()
 void SupplyDepots::reset_cooldown() {
     bvh_.visit_all([](const auto& d){
         auto& payload = const_cast<SupplyDepot&>(d.payload());
-        payload.time_since_last_visit = payload.cooldown;
-        payload.node->color_style(VariableAndHash<std::string>{""}).set_emissive(fixed_full<float, 3>(-1.f));
+        payload.notify_reset();
         return true;
     });
 }
@@ -50,9 +60,9 @@ bool SupplyDepots::visit_supply_depots(
         AxisAlignedBoundingBox<CompressedScenePos, 3>::from_center_and_radius(bs.center, bs.radius),
         [&](const SupplyDepot& supply_depot)
         {
-            if (supply_depot.is_cooling_down()) {
-                return true;
-            }
+            // if (supply_depot.is_cooling_down()) {
+            //     return true;
+            // }
             if (!bs.contains(supply_depot.center)) {
                 return true;
             }
@@ -74,9 +84,9 @@ void SupplyDepots::handle_supply_depots(float dt) {
     bvh_.visit_all([&dt](const auto& entry){
         auto& supply_depot = const_cast<SupplyDepot&>(entry.payload());
         bool old_cd = supply_depot.is_cooling_down();
-        supply_depot.time_since_last_visit += dt;
+        supply_depot.time_since_first_sale += dt;
         if (old_cd && !supply_depot.is_cooling_down()) {
-            supply_depot.node->color_style(VariableAndHash<std::string>{""}).set_emissive(fixed_full<float, 3>(-1.f));
+            supply_depot.notify_reset();
         }
         return true;
     });
@@ -89,15 +99,22 @@ void SupplyDepots::handle_supply_depots(float dt) {
             rb->rbp_.abs_position().casted<CompressedScenePos>(),
             [&rb](SupplyDepot& supply_depot)
             {
-                for (const auto& [item_type, navail] : supply_depot.supplies) {
+                bool cd = supply_depot.is_cooling_down();
+                for (auto& [item_type, navail] : supply_depot.remaining_supplies) {
                     if (!rb->inventory_.knows_item_type(item_type)) {
                         continue;
                     }
                     uint32_t free = rb->inventory_.nfree(item_type);
-                    rb->inventory_.add(item_type, std::min(free, navail));
+                    uint32_t ntaken = std::min(free, navail);
+                    if (ntaken != 0) {
+                        rb->inventory_.add(item_type, ntaken);
+                        navail -= ntaken;
+                        if (!cd) {
+                            supply_depot.notify_first_sale();
+                            cd = true;
+                        }
+                    }
                 }
-                supply_depot.time_since_last_visit = 0.f;
-                supply_depot.node->color_style(VariableAndHash<std::string>{""}).set_emissive(fixed_full<float, 3>(2.f));
                 return true;
             });
     }
@@ -105,7 +122,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
 
 void SupplyDepots::add_supply_depot(
     const DanglingBaseClassRef<SceneNode>& scene_node,
-    const std::map<std::string, uint32_t>& supplies,
+    const std::unordered_map<InventoryItem, uint32_t>& supplies,
     float cooldown)
 {
     auto center = scene_node->absolute_model_matrix().t.casted<CompressedScenePos>();
@@ -114,9 +131,10 @@ void SupplyDepots::add_supply_depot(
         SupplyDepot{
             .node = scene_node,
             .center = center,
-            .supplies = supplies,
+            .initial_supplies = supplies,
+            .remaining_supplies = supplies,
             .cooldown = cooldown,
-            .time_since_last_visit = cooldown,
+            .time_since_first_sale = cooldown,
             .node_on_clear = std::make_shared<DestructionFunctionsRemovalTokens>(scene_node->on_clear, CURRENT_SOURCE_LOCATION) });
     auto& rt = global_object_pool.create<RelativeTransformer>(
         CURRENT_SOURCE_LOCATION,

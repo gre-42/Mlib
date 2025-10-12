@@ -5,7 +5,6 @@
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
-#include <map>
 #include <memory>
 
 namespace Mlib {
@@ -19,11 +18,14 @@ class DestructionFunctionsRemovalTokens;
 struct SupplyDepot {
     DanglingBaseClassRef<SceneNode> node;
     FixedArray<CompressedScenePos, 3> center;
-    std::map<std::string, uint32_t> supplies;
+    std::unordered_map<InventoryItem, uint32_t> initial_supplies;
+    std::unordered_map<InventoryItem, uint32_t> remaining_supplies;
     float cooldown;
-    float time_since_last_visit;
+    float time_since_first_sale;
     std::shared_ptr<DestructionFunctionsRemovalTokens> node_on_clear;
     bool is_cooling_down() const;
+    void notify_first_sale();
+    void notify_reset();
 };
 
 class SupplyDepots: public ISupplyDepots {
@@ -43,7 +45,7 @@ public:
         const std::function<bool(SupplyDepot&)>& visitor);
     virtual void add_supply_depot(
         const DanglingBaseClassRef<SceneNode>& scene_node,
-        const std::map<std::string, uint32_t>& supplies,
+        const std::unordered_map<InventoryItem, uint32_t>& supplies,
         float cooldown) override;
 private:
     Bvh<CompressedScenePos, 3, SupplyDepot> bvh_;

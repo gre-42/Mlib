@@ -7,6 +7,7 @@
 #include <Mlib/Memory/Destruction_Guards.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
+#include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
@@ -105,7 +106,7 @@ private:
     std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion&)> generate_bullet_explosion_audio_;
     std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio_;
     ITrailStorage* bullet_trace_storage_;
-    std::string ammo_type_;
+    InventoryItem ammo_type_;
     bool triggered_;
     IPlayer* player_;
     ITeam* team_;

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -14,16 +15,16 @@ class Inventory {
 public:
     explicit Inventory();
     ~Inventory();
-    bool knows_item_type(const std::string& item_type) const;
-    void set_capacity(const std::string& item_type, uint32_t value);
-    uint32_t navailable(const std::string& item_type) const;
-    uint32_t nfree(const std::string& item_type) const;
-    void add(const std::string& item_type, uint32_t amount);
-    void take(const std::string& item_type, uint32_t amount);
+    bool knows_item_type(const InventoryItem& item_type) const;
+    void set_capacity(const InventoryItem& item_type, uint32_t value);
+    uint32_t navailable(const InventoryItem& item_type) const;
+    uint32_t nfree(const InventoryItem& item_type) const;
+    void add(const InventoryItem& item_type, uint32_t amount);
+    void take(const InventoryItem& item_type, uint32_t amount);
 private:
-    const ItemInfo& item(const std::string& item_type) const;
-    ItemInfo& item(const std::string& item_type);
-    std::map<std::string, ItemInfo> items_;
+    const ItemInfo& item(const InventoryItem& item_type) const;
+    ItemInfo& item(const InventoryItem& item_type);
+    std::unordered_map<InventoryItem, ItemInfo> items_;
 };
 
 }

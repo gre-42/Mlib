@@ -1,7 +1,8 @@
 #pragma once
+#include <Mlib/Physics/Misc/Inventory_Item.hpp>
 #include <cstdint>
-#include <map>
 #include <string>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -13,7 +14,7 @@ class ISupplyDepots {
 public:
     virtual void add_supply_depot(
         const DanglingBaseClassRef<SceneNode>& scene_node,
-        const std::map<std::string, uint32_t>& supply_depot,
+        const std::unordered_map<InventoryItem, uint32_t>& supply_depot,
         float cooldown) = 0;
 };
 
