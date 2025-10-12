@@ -128,7 +128,7 @@ void VehicleSpawner::set_spawn_vehicle(
 void VehicleSpawner::check_consistency() const {
     if (player_ != nullptr) {
         if (player_->has_scene_vehicle() != !scene_vehicles_.empty()) {
-            verbose_abort(
+            THROW_OR_ABORT(
                 (std::stringstream() << "VehicleSpawner inconsistency detected: " <<
                 (int)player_->has_scene_vehicle() << " - " <<
                 (int)!scene_vehicles_.empty()).str());

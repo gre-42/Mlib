@@ -215,7 +215,10 @@ void Player::reset_node() {
         std::scoped_lock lock{ mutex_ };
         if (vehicle_spawner_ != nullptr) {
             on_clear_vehicle_.clear();
-            on_avatar_destroyed_.clear();
+            // The avatar can be destroyed during its dying
+            // animation or while sitting in a vehicle,
+            // so do not clear "on_avatar_destroyed_".
+            // on_avatar_destroyed_.clear();
             on_vehicle_destroyed_.clear();
             vehicle_ = nullptr;
             vehicle_spawner_ = nullptr;
@@ -282,8 +285,8 @@ void Player::set_vehicle_spawner(
     }
     pv->rb()->drivers_.add(desired_seat, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     if (pv->rb()->is_avatar()) {
-        // The avatar can be destroyed during its dying animation
-        // or while sitting in a vehicle.
+        // The avatar can be destroyed during its dying
+        // animation or while sitting in a vehicle.
         on_avatar_destroyed_.set(pv->on_destroy, CURRENT_SOURCE_LOCATION);
         on_avatar_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
         on_vehicle_destroyed_.clear();
