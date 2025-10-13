@@ -193,8 +193,8 @@ void Gun::generate_bullet(const StaticWorld& world) {
             bullet_node_name,
             bullet_properties_,
             bullet_trace_storage_ == nullptr
-            ? nullptr
-            : bullet_trace_storage_->add_trail_extender(),
+                ? nullptr
+                : bullet_trace_storage_->add_trail_extender(),
             dynamic_lights_,
             world,
             RotateBullet::NO);
