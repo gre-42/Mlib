@@ -91,6 +91,8 @@ Sample_SoloMesh::Sample_SoloMesh(
 Sample_SoloMesh::~Sample_SoloMesh()
 {
     cleanup();
+    dtFreeNavMeshQuery(m_navQuery);
+    m_navQuery = 0;
 }
 
 void Sample_SoloMesh::cleanup()

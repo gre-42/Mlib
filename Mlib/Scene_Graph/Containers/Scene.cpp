@@ -33,8 +33,10 @@
 
 using namespace Mlib;
 
+using NodeItem = std::pair<const VariableAndHash<std::string>, DanglingBaseClassRef<SceneNode>>;
 using NodeRawPtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
 using NodeDanglingPtrs = ChunkedArray<std::list<std::vector<DanglingBaseClassPtr<const SceneNode>>>>;
+using NodeItemPtrs = ChunkedArray<std::list<std::vector<const NodeItem*>>>;
 static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
@@ -833,8 +835,15 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     {
         std::unique_lock lock{mutex_};
         {
-            auto &drn = root_nodes_.default_nodes();
-            for (auto it = drn.begin(); it != drn.end();) {
+            auto& drn = root_nodes_.default_nodes();
+            NodeItemPtrs nodes{ CHUNK_SIZE };
+            for (const auto& it : drn) {
+                nodes.emplace_back(&it);
+            }
+            for (const auto& it : nodes) {
+                if (it->second->shutting_down()) {
+                    continue;
+                }
                 it->second->move(
                     TransformationMatrix<float, ScenePos, 3>::identity(),
                     dt,
@@ -843,9 +852,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                     nullptr);  // animation_state
                 if (it->second->to_be_deleted(time)) {
                     UnlockGuard ug{lock};
-                    delete_root_node((it++)->first);
-                } else {
-                    ++it;
+                    delete_root_node(it->first);
                 }
             }
         }
