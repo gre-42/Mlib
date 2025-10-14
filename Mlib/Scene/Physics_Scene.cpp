@@ -1,4 +1,7 @@
 #include "Physics_Scene.hpp"
+#include <Mlib/Audio/Audio_Periodicity.hpp>
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
@@ -20,6 +23,7 @@ PhysicsScene::PhysicsScene(
     ParticleResources& particle_resources,
     TrailResources& trail_resources,
     SurfaceContactDb& surface_contact_db,
+    BulletPropertyDb& bullet_property_db,
     DynamicLightDb& dynamic_light_db,
     size_t max_tracks,
     bool save_playback,
@@ -87,6 +91,52 @@ PhysicsScene::PhysicsScene(
         air_particles_.smoke_particle_generator,
         skidmark_particles_.smoke_particle_generator,
         sea_spray_particles_.smoke_particle_generator }
+    , bullet_generator_{
+        &rendering_resources_,
+        scene_,
+        scene_node_resources_,
+        air_particles_.smoke_particle_generator,
+        *dynamic_lights_,
+        physics_engine_.rigid_bodies_,
+        physics_engine_.advance_times_,
+        *trail_renderer_,
+        dynamic_world_,
+        [ // generate_bullet_explosion_audio
+            this,
+            ar=AudioResourceContextStack::primary_audio_resources()
+        ](
+            const AudioSourceState<ScenePos>& state,
+            const VariableAndHash<std::string>& audio_resource_name)
+        {
+            auto audio_buffer = ar->get_buffer(audio_resource_name);
+            const auto& audio_meta = ar->get_buffer_meta(audio_resource_name);
+            one_shot_audio_.play(
+                *audio_buffer,
+                audio_meta.lowpass.get(),
+                state,
+                AudioPeriodicity::APERIODIC,
+                audio_meta.distance_clamping,
+                audio_meta.gain);
+        },
+        [ // generate_bullet_engine_audio
+            this,
+            ar=AudioResourceContextStack::primary_audio_resources()
+        ](
+            const AudioSourceState<ScenePos>& state0,
+            const VariableAndHash<std::string>& audio_resource_name) -> UpdateAudioSourceState
+        {
+            auto audio_buffer = ar->get_buffer(audio_resource_name);
+            const auto& audio_meta = ar->get_buffer_meta(audio_resource_name);
+            auto asp = one_shot_audio_.play(*audio_buffer, audio_meta.lowpass.get(), state0, AudioPeriodicity::PERIODIC, audio_meta.distance_clamping, audio_meta.gain);
+            return [asp](const AudioSourceState<ScenePos>* state1){
+                if (state1 == nullptr) {
+                    asp->source.stop();
+                } else {
+                    asp->position = *state1;
+                }
+            };
+        }
+        }
     , physics_sleeper_{
           "Physics FPS: ",
           scene_config_.physics_engine_config.dt / seconds,
@@ -116,6 +166,7 @@ PhysicsScene::PhysicsScene(
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 {
+    air_particles_.smoke_particle_generator.set_bullet_generator(bullet_generator_);
     physics_engine_.set_surface_contact_db(surface_contact_db);
     physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);
     physics_engine_.set_trail_renderer(*trail_renderer_);

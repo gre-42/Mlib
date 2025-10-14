@@ -117,11 +117,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         [pitch_rng, yaw_rng](bool shooting) mutable {
             return FixedArray<float, 3>{pitch_rng(shooting), yaw_rng(shooting), 0.f};
         }};
-    const auto& bullet_props = args.bullet_property_db.get(args.arguments.at<std::string>(KnownArgs::bullet_type));
-    ITrailStorage* bullet_trace_storage = nullptr;
-    if (!bullet_props.trace_storage->empty()) {
-        bullet_trace_storage = &trail_renderer.get_storage(bullet_props.trace_storage);
-    }
+    const auto& bullet_props = args.bullet_property_db.get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::bullet_type));
     std::function<void(
         const std::optional<std::string>& player,
         const std::string& bullet_suffix,
@@ -162,41 +158,6 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
         };
     }
-    std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion& e)>
-        generate_bullet_explosion_audio =
-        [
-            &o=one_shot_audio,
-            a=AudioResourceContextStack::primary_audio_resources()
-        ]
-        (const AudioSourceState<ScenePos>& state, const BulletExplosion& e)
-        {
-            if (e.audio_resource_name->empty()) {
-                return;
-            }
-            auto audio_buffer = a->get_buffer(e.audio_resource_name);
-            auto& audio_meta = a->get_buffer_meta(e.audio_resource_name);
-            o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::APERIODIC, audio_meta.distance_clamping, audio_meta.gain);
-        };
-    std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio;
-    if (const auto& a = bullet_props.engine_audio_resource_name; !a->empty()) {
-        generate_bullet_engine_audio =
-        [
-            &o=one_shot_audio,
-            audio_buffer=AudioResourceContextStack::primary_audio_resources()->get_buffer(a),
-            &audio_meta=AudioResourceContextStack::primary_audio_resources()->get_buffer_meta(a)
-        ]
-        (const AudioSourceState<ScenePos>& state) -> UpdateAudioSourceState
-        {
-            auto asp = o.play(*audio_buffer, audio_meta.lowpass.get(), state, AudioPeriodicity::PERIODIC, audio_meta.distance_clamping, audio_meta.gain);
-            return [asp](const AudioSourceState<ScenePos>* state){
-                if (state == nullptr) {
-                    asp->source.stop();
-                } else {
-                    asp->position = *state;
-                }
-            };
-        };
-    }
     std::function<void(const StaticWorld&)> generate_muzzle_flash;
     if (auto macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash); macro.has_value()) {
         generate_muzzle_flash =
@@ -213,12 +174,6 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto& gun = global_object_pool.create<Gun>(
         CURRENT_SOURCE_LOCATION,
-        &rendering_resources,
-        scene,
-        scene_node_resources,
-        air_particles.smoke_particle_generator,
-        dynamic_lights,
-        physics_engine.rigid_bodies_,
         physics_engine.advance_times_,
         args.arguments.at<float>(KnownArgs::cool_down) * seconds,
         rb,
@@ -227,9 +182,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         bullet_props,
         std::move(generate_smart_bullet),
         std::move(generate_shot_audio),
-        std::move(generate_bullet_explosion_audio),
-        std::move(generate_bullet_engine_audio),
-        bullet_trace_storage,
+        bullet_generator,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
         generate_muzzle_flash);

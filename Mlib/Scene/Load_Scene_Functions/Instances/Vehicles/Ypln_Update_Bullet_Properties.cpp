@@ -37,7 +37,7 @@ void YplnUpdateBulletProperties::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto& aim_at = get_aim_at(gun_node);
     auto& ypln = get_yaw_pitch_look_at_nodes(ypln_node);
 
-    const auto& bullet_type = args.bullet_property_db.get(args.arguments.at<std::string>(KnownArgs::bullet_type));
+    const auto& bullet_type = args.bullet_property_db.get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::bullet_type));
     aim_at.set_bullet_velocity(bullet_type.velocity);
     aim_at.set_bullet_feels_gravity(!any(bullet_type.rigid_body_flags & RigidBodyVehicleFlags::FEELS_NO_GRAVITY));
     ypln.pitch_look_at_node().set_dpitch_head(args.arguments.at<float>(KnownArgs::dpitch_head) * degrees);

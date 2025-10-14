@@ -29,10 +29,11 @@ TrailExtender::TrailExtender(
 
 void TrailExtender::append_location(
     const TransformationMatrix<float, ScenePos, 3>& location,
-    TrailLocationType location_type)
+    TrailLocationType location_type,
+    const StaticWorld& world)
 {
     if (trails_instance_.time() == std::chrono::steady_clock::time_point()) {
-        THROW_OR_ABORT("Trail instance move not called");
+        trails_instance_.move(0.f, world);
     }
     if (previous_center_.has_value()) {
         auto& prev = *previous_center_;

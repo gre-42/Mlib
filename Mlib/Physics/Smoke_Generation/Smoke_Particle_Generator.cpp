@@ -45,6 +45,7 @@ SmokeParticleGenerator::SmokeParticleGenerator(
     , particle_renderer_{ std::move(particle_renderer) }
     , scene_{ scene }
     , rigid_bodies_{ rigid_bodies }
+    , bullet_generator_{ nullptr }
 {}
 
 void SmokeParticleGenerator::generate_root(
@@ -132,6 +133,7 @@ void SmokeParticleGenerator::generate_physics_node(
             .rendering_resources = &rendering_resources_,
             .animation_state = &animation_state,
             .rigid_bodies = &rigid_bodies_,
+            .bullet_generator = bullet_generator_,
             .instance_name = resource_name,
             .absolute_model_matrix = absolute_model_matrix,
             .scene = scene_,
@@ -208,4 +210,11 @@ void SmokeParticleGenerator::generate_child_node(
 
 std::string SmokeParticleGenerator::generate_suffix() {
     return scene_.get_temporary_instance_suffix();
+}
+
+void SmokeParticleGenerator::set_bullet_generator(BulletGenerator& bullet_generator) {
+    if (bullet_generator_ != nullptr) {
+        THROW_OR_ABORT("Bullet generator already set");
+    }
+    bullet_generator_ = &bullet_generator;
 }

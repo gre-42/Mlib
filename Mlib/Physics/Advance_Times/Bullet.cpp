@@ -26,7 +26,7 @@ using namespace Mlib;
 
 Bullet::Bullet(
     Scene& scene,
-    std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion&)> generate_bullet_explosion_audio,
+    std::function<void(const AudioSourceState<ScenePos>&, const VariableAndHash<std::string>&)> generate_bullet_explosion_audio,
     std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position,
     SmokeParticleGenerator& smoke_generator,
     AdvanceTimes& advance_times,
@@ -114,7 +114,8 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(
             rigid_body_pulses_.abs_transformation(),
-            TrailLocationType::MIDPOINT);
+            TrailLocationType::MIDPOINT,
+            world);
     }
     if (update_engine_audio_position_) {
         AudioSourceState<ScenePos> state{rigid_body_pulses_.abs_position(), rigid_body_pulses_.v_com_};
@@ -162,14 +163,15 @@ void Bullet::notify_collided(
             e.animation_time,
             e.particle_container,
             world);
-        if (generate_bullet_explosion_audio_) {
-            generate_bullet_explosion_audio_({intersection_point, fixed_zeros<float, 3>()}, e);
+        if (generate_bullet_explosion_audio_ && !e.audio_resource_name->empty()) {
+            generate_bullet_explosion_audio_({intersection_point, fixed_zeros<float, 3>()}, e.audio_resource_name);
         }
     }
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(
             TransformationMatrix<float, ScenePos, 3>{rigid_body_pulses_.rotation_, intersection_point},
-            TrailLocationType::ENDPOINT);
+            TrailLocationType::ENDPOINT,
+            world);
     }
 }
 

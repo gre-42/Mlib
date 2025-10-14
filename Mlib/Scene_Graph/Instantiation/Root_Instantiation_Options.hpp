@@ -12,6 +12,7 @@ namespace Mlib {
 class IImposters;
 class ISupplyDepots;
 class RigidBodies;
+class BulletGenerator;
 struct AnimationState;
 struct RenderableResourceFilter;
 class RenderingResources;
@@ -27,6 +28,7 @@ struct RootInstantiationOptions {
     ISupplyDepots* supply_depots = nullptr;
     AnimationState* animation_state = nullptr;
     RigidBodies* rigid_bodies = nullptr;
+    BulletGenerator* bullet_generator = nullptr;
     std::list<VariableAndHash<std::string>>* instantiated_nodes = nullptr;
     const VariableAndHash<std::string>& instance_name;
     const TransformationMatrix<SceneDir, ScenePos, 3>& absolute_model_matrix;

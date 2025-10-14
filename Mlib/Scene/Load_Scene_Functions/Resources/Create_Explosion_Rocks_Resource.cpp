@@ -36,11 +36,11 @@ struct RegisterJsonUserFunction {
                         nrocks = args.arguments.at<size_t>(KnownArgs::nrocks),
                         rocks = args.arguments.at<std::vector<ExplosionRockDescriptor>>(KnownArgs::rocks),
                         &sr = sr,
-                        &rr = RenderingContextStack::primary_rendering_resources()
+                        &bp = args.bullet_property_db
                     ](){
                         return std::make_shared<ExplosionRocksResource>(
                             sr,
-                            rr,
+                            bp,
                             rocks,
                             nrocks);});
             });

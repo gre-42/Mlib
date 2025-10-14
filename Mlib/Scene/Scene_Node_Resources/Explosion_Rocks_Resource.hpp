@@ -11,12 +11,10 @@
 namespace Mlib {
 
 class SceneNodeResources;
-class RenderingResources;
+class BulletPropertyDb;
 
 struct ExplosionRockDescriptor {
-    VariableAndHash<std::string> renderable;
-    float mass;
-    float width;
+    VariableAndHash<std::string> bullet;
     Interval<SceneDir> velocity_range;
     SceneDir angular_velocity_std;
 };
@@ -27,7 +25,7 @@ class ExplosionRocksResource: public ISceneNodeResource {
 public:
     ExplosionRocksResource(
         const SceneNodeResources& scene_node_resources,
-        RenderingResources& rendering_resources,
+        const BulletPropertyDb& bullet_property_db,
         const ResourceCycle<ExplosionRockDescriptor>& descriptors,
         size_t nrocks);
     virtual void preload(const RenderableResourceFilter& filter) const override;
@@ -36,7 +34,7 @@ public:
     virtual PhysicsMaterial get_physics_material() const override;
 private:
     const SceneNodeResources& scene_node_resources_;
-    RenderingResources& rendering_resources_;
+    const BulletPropertyDb& bullet_property_db_;
     mutable FastMutex rng_mutex_;
     mutable ResourceCycle<ExplosionRockDescriptor> descriptors_;
     mutable RandomUnitVectorGenerator<SceneDir, 3> random_velocity_direction_generator_;

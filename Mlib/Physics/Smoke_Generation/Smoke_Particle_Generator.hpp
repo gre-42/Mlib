@@ -17,6 +17,7 @@ class SceneNodeResources;
 class RenderingResources;
 class IParticleRenderer;
 class RigidBodies;
+class BulletGenerator;
 template <class T>
 class VariableAndHash;
 struct StaticWorld;
@@ -78,12 +79,14 @@ public:
         const FixedArray<ScenePos, 3>& relative_position,
         float animation_duration);
     std::string generate_suffix();
+    void set_bullet_generator(BulletGenerator& bullet_generator);
 private:
     RenderingResources& rendering_resources_;
     SceneNodeResources& scene_node_resources_;
     std::shared_ptr<IParticleRenderer> particle_renderer_;
     Scene& scene_;
     RigidBodies& rigid_bodies_;
+    BulletGenerator* bullet_generator_;
 };
 
 }

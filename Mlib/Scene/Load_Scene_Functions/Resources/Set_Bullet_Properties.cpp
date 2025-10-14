@@ -57,9 +57,9 @@ static void from_json(const nlohmann::json& j, BulletProperties& item) {
     jv.validate(KnownBulletArgs::options);
 
     item.renderable_resource_name = jv.at_non_null<std::string>(KnownBulletArgs::renderable, "");
-    item.hitbox_resource_name = jv.at<std::string>(KnownBulletArgs::hitbox);
+    item.hitbox_resource_name = jv.at_non_null<std::string>(KnownBulletArgs::hitbox, "");
     item.explosions = jv.at<std::vector<BulletExplosion>>(KnownBulletArgs::explosions);
-    item.engine_audio_resource_name = jv.at<VariableAndHash<std::string>>(KnownBulletArgs::engine_audio, VariableAndHash<std::string>{});
+    item.engine_audio_resource_name = jv.at_non_null<VariableAndHash<std::string>>(KnownBulletArgs::engine_audio, VariableAndHash<std::string>{});
     item.rigid_body_flags = rigid_body_vehicle_flags_from_string(jv.at<std::string>(KnownBulletArgs::rigid_body_flags));
     item.mass = jv.at<float>(KnownBulletArgs::mass) * kg;
     item.velocity = jv.at<float>(KnownBulletArgs::velocity) * meters / seconds;
@@ -95,7 +95,7 @@ struct RegisterJsonUserFunction {
             {
                 args.arguments.validate(KnownArgs::options);
                 args.bullet_property_db.add(
-                    args.arguments.at<std::string>(KnownArgs::name),
+                    args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
                     args.arguments.at<BulletProperties>(KnownArgs::properties));
             });
     }

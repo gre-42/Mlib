@@ -1,3 +1,5 @@
+#pragma once
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <map>
 #include <string>
@@ -8,10 +10,10 @@ class BulletPropertyDb {
 public:
     BulletPropertyDb();
     ~BulletPropertyDb();
-    void add(std::string name, BulletProperties&& props);
-    const BulletProperties& get(const std::string& name);
+    void add(VariableAndHash<std::string> name, BulletProperties&& props);
+    const BulletProperties& get(const VariableAndHash<std::string>& name) const;
 private:
-    std::map<std::string, BulletProperties> properties_;
+    StringWithHashUnorderedMap<BulletProperties> properties_;
 };
 
 }

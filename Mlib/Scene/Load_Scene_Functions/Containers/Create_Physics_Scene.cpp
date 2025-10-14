@@ -49,6 +49,7 @@ struct RegisterJsonUserFunction {
                     RenderingContextStack::primary_particle_resources(),
                     RenderingContextStack::primary_trail_resources(),
                     args.surface_contact_db,
+                    args.bullet_property_db,
                     args.dynamic_light_db,
                     args.arguments.at<size_t>(KnownArgs::max_tracks, 0),
                     args.arguments.at<bool>(KnownArgs::save_playback, false),

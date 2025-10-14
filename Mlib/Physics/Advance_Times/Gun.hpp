@@ -17,11 +17,6 @@
 
 namespace Mlib {
 
-class RenderingResources;
-class SceneNodeResources;
-class SmokeParticleGenerator;
-class DynamicLights;
-class ITrailStorage;
 class RigidBodyVehicle;
 class Scene;
 class RigidBodies;
@@ -29,24 +24,16 @@ class AdvanceTimes;
 class SceneNode;
 class IPlayer;
 class ITeam;
-struct BulletExplosion;
 struct BulletProperties;
 enum class RigidBodyVehicleFlags;
 struct StaticWorld;
 template <class TPosition>
 struct AudioSourceState;
-
-using UpdateAudioSourceState = std::function<void(const AudioSourceState<ScenePos>*)>;
+class BulletGenerator;
 
 class Gun final: public IAbsoluteObserver, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
-    Gun(RenderingResources* rendering_resources,
-        Scene& scene,
-        SceneNodeResources& scene_node_resources,
-        SmokeParticleGenerator& smoke_generator,
-        DynamicLights& dynamic_lights,
-        RigidBodies& rigid_bodies,
-        AdvanceTimes& advance_times,
+    Gun(AdvanceTimes& advance_times,
         float cool_down,
         RigidBodyVehicle& parent_rb,
         const DanglingBaseClassRef<SceneNode>& node,
@@ -59,9 +46,7 @@ public:
             const FixedArray<float, 3>& velocity,
             const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
         std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio,
-        std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion&)> generate_bullet_explosion_audio,
-        std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio,
-        ITrailStorage* bullet_trace_storage,
+        const BulletGenerator& bullet_generator,
         std::string ammo_type,
         std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng,
         std::function<void(const StaticWorld&)> generate_muzzle_flash);
@@ -81,15 +66,9 @@ public:
     DanglingBaseClassPtr<SceneNode> get_ypln_node() const;
 private:
     bool maybe_generate_bullet(const StaticWorld& world);
-    void generate_bullet(const StaticWorld& world);
+    void generate_bullet();
     void generate_muzzle_flash(const StaticWorld& world);
     void generate_shot_audio();
-    RenderingResources* rendering_resources_;
-    Scene& scene_;
-    SceneNodeResources& scene_node_resources_;
-    SmokeParticleGenerator& smoke_generator_;
-    DynamicLights& dynamic_lights_;
-    RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
     RigidBodyVehicle& parent_rb_;
     DanglingBaseClassPtr<SceneNode> node_;
@@ -103,9 +82,7 @@ private:
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet_;
     std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio_;
-    std::function<void(const AudioSourceState<ScenePos>&, const BulletExplosion&)> generate_bullet_explosion_audio_;
-    std::function<UpdateAudioSourceState(const AudioSourceState<ScenePos>&)> generate_bullet_engine_audio_;
-    ITrailStorage* bullet_trace_storage_;
+    const BulletGenerator& bullet_generator_;
     InventoryItem ammo_type_;
     bool triggered_;
     IPlayer* player_;

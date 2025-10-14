@@ -6,6 +6,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Usage_Counter.hpp>
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
+#include <Mlib/Physics/Bullets/Bullet_Generator.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
@@ -35,6 +36,7 @@ class TrailResources;
 class ITrailRenderer;
 class DynamicLights;
 class SurfaceContactDb;
+class BulletPropertyDb;
 class DynamicLightDb;
 class OneShotAudio;
 
@@ -59,6 +61,7 @@ public:
         ParticleResources& particle_resources,
         TrailResources& trail_resources,
         SurfaceContactDb& surface_contact_db,
+        BulletPropertyDb& bullet_property_db,
         DynamicLightDb& dynamic_light_db,
         size_t max_tracks,
         bool save_playback,
@@ -102,6 +105,7 @@ public:
     SceneParticles skidmark_particles_;
     SceneParticles sea_spray_particles_;
     ContactSmokeGenerator contact_smoke_generator_;
+    BulletGenerator bullet_generator_;
     RealtimeSleeper physics_sleeper_;
     FifoLog fifo_log_{10 * 1000};
     SetFps physics_set_fps_;

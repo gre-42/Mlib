@@ -32,7 +32,8 @@ public:
         float spawn_duration);
     virtual void append_location(
         const TransformationMatrix<float, ScenePos, 3>& location,
-        TrailLocationType location_type) override;
+        TrailLocationType location_type,
+        const StaticWorld& world) override;
 
 private:
     TrailsInstance& trails_instance_;

@@ -6,6 +6,7 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+struct StaticWorld;
 
 enum class TrailLocationType {
     MIDPOINT,
@@ -17,7 +18,8 @@ public:
     virtual ~ITrailExtender() = default;
     virtual void append_location(
         const TransformationMatrix<float, ScenePos, 3>& location,
-        TrailLocationType location_type) = 0;
+        TrailLocationType location_type,
+        const StaticWorld& world) = 0;
 
 };
 

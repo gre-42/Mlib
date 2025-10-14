@@ -287,7 +287,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 TransformationMatrix<float, ScenePos, 3> trail_location{
                     abs_location.R,
                     abs_location.transform(s.position.casted<ScenePos>()) };
-                s.extender->append_location(trail_location, TrailLocationType::MIDPOINT);
+                s.extender->append_location(trail_location, TrailLocationType::MIDPOINT, c.world);
             }
         }
     }

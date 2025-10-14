@@ -17,6 +17,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(PhysicsScene&
     , trail_renderer{ *physics_scene.trail_renderer_ }
     , dynamic_lights{ *physics_scene.dynamic_lights_ }
     , one_shot_audio{ physics_scene.one_shot_audio_ }
+    , bullet_generator{ physics_scene.bullet_generator_ }
     , vehicle_spawners{ physics_scene.vehicle_spawners_ }
     , players{ physics_scene.players_ }
     , scene{ physics_scene.scene_ }
