@@ -33,6 +33,9 @@ RootNodes::~RootNodes() {
     if (!trash_can_.empty()) {
         verbose_abort("RootNodes dtor: Trash-can not empty after clear");
     }
+    if (!default_map_trash_can_.empty()) {
+        verbose_abort("RootNodes dtor: Default-map trash-can not empty after clear");
+    }
 }
 
 RootNodes::DefaultNodesMap& RootNodes::default_nodes() {
@@ -175,6 +178,7 @@ size_t RootNodes::try_empty_the_trash_can() {
         THROW_OR_ABORT("Trash can is already being emptied");
     }
     emptying_trash_can_ = true;
+    default_map_trash_can_.clear();
     for (auto it = trash_can_.begin(); it != trash_can_.end();) {
         auto c = it++;
         if (c->ptr->nreferences() == 0) {
@@ -203,8 +207,12 @@ void RootNodes::delete_root_node(const VariableAndHash<std::string>& name) {
     }
     if (!it.mapped().ptr->shutting_down()) {
         scene_.unregister_node(name);
-        if (default_nodes_map_.erase(name) == 0) {
-            small_static_nodes_bvh_.clear();
+        {
+            auto dit = default_nodes_map_.try_extract(name);
+            if (!dit.empty()) {
+                small_static_nodes_bvh_.clear();
+                default_map_trash_can_.push_back(std::move(dit));
+            }
         }
         UnlockGuard ulock{ lock };
         it.mapped().ptr->shutdown();

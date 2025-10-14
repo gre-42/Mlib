@@ -10,6 +10,7 @@ template <class TBaseMap>
 class StringWithHashGenericMap {
 public:
     using mapped_type = TBaseMap::mapped_type;
+    using value_type = TBaseMap::value_type;
     using key_type = TBaseMap::key_type;
     using node_type = TBaseMap::node_type;
     using iterator = TBaseMap::iterator;

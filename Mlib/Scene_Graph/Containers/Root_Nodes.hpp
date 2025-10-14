@@ -21,9 +21,11 @@ class RootNodes {
     using SmallStaticNodesBvh = Bvh<ScenePos, 3, DanglingBaseClassRef<SceneNode>>;
     using NodeContainer = StringWithHashUnorderedMap<RootNodeInfo>;
     using TrashCan = std::list<RootNodeInfo>;
+    using DefaultMapTrashCan = std::list<typename DefaultNodesMap::node_type>;
     RootNodes(const RootNodes&) = delete;
     RootNodes& operator = (const RootNodes&) = delete;
 public:
+    using DefaultNodeMapValueType = DefaultNodesMap::value_type;
     explicit RootNodes(Scene& scene);
     ~RootNodes();
     DefaultNodesMap& default_nodes();
@@ -53,6 +55,7 @@ private:
     SmallStaticNodesBvh small_static_nodes_bvh_;    // Contains nodes that are small and static
     NodeContainer node_container_;
     TrashCan trash_can_;
+    DefaultMapTrashCan default_map_trash_can_;
     bool emptying_trash_can_;
 };
 

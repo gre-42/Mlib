@@ -33,10 +33,9 @@
 
 using namespace Mlib;
 
-using NodeItem = std::pair<const VariableAndHash<std::string>, DanglingBaseClassRef<SceneNode>>;
 using NodeRawPtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
 using NodeDanglingPtrs = ChunkedArray<std::list<std::vector<DanglingBaseClassPtr<const SceneNode>>>>;
-using NodeItemPtrs = ChunkedArray<std::list<std::vector<const NodeItem*>>>;
+using NodeItemPtrs = ChunkedArray<std::list<std::vector<const RootNodes::DefaultNodeMapValueType*>>>;
 static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
@@ -835,9 +834,8 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     {
         std::unique_lock lock{mutex_};
         {
-            auto& drn = root_nodes_.default_nodes();
             NodeItemPtrs nodes{ CHUNK_SIZE };
-            for (const auto& it : drn) {
+            for (const auto& it : root_nodes_.default_nodes()) {
                 nodes.emplace_back(&it);
             }
             for (const auto& it : nodes) {
@@ -850,7 +848,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                     time,
                     scene_node_resources_,
                     nullptr);  // animation_state
-                if (it->second->to_be_deleted(time)) {
+                if (!it->second->shutting_down() && it->second->to_be_deleted(time)) {
                     UnlockGuard ug{lock};
                     delete_root_node(it->first);
                 }
