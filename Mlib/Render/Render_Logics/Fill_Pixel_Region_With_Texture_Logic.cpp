@@ -3,6 +3,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -14,6 +15,8 @@
 using namespace Mlib;
 
 FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
+    ObjectPool* object_pool,
+    DestructionFunctions* dependency_destruction_functions,
     std::shared_ptr<FillWithTextureLogic> fill_with_texture_logic,
     std::unique_ptr<IWidget>&& widget,
     DelayLoadPolicy delay_load_policy,
@@ -22,7 +25,15 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
     , widget_{ std::move(widget) }
     , delay_load_policy_{ delay_load_policy }
     , focus_filter_{ std::move(focus_filter) }
-{}
+    , on_delete_dependency_{ dependency_destruction_functions, CURRENT_SOURCE_LOCATION }
+{
+    if (dependency_destruction_functions != nullptr) {
+        if (object_pool == nullptr) {
+            THROW_OR_ABORT("dependency_destruction_functions require and object_pool");
+        }
+        on_delete_dependency_.add([this, object_pool]() { object_pool->remove(*this); }, CURRENT_SOURCE_LOCATION);
+    }
+}
 
 FillPixelRegionWithTextureLogic::~FillPixelRegionWithTextureLogic() {
     on_destroy.clear();

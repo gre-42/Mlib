@@ -15,6 +15,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Circular_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Text_Logger.hpp>
@@ -57,23 +58,17 @@ DECLARE_ARGUMENT(blank_angle);
 DECLARE_ARGUMENT(ticks);
 }
 
-const std::string CreateVisualPlayerStatus::key = "visual_player_status";
-
-LoadSceneJsonUserFunction CreateVisualPlayerStatus::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    if (args.arguments.contains(KnownArgs::circular)) {
-        args.arguments.child(KnownArgs::circular).validate(CircularArgs::options);
-    }
-    CreateVisualPlayerStatus(args.renderable_scene()).execute(args);
-};
-
 CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+    if (args.arguments.contains(KnownArgs::circular)) {
+        args.arguments.child(KnownArgs::circular).validate(CircularArgs::options);
+    }
+
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassRef<SceneNode> node = player->scene_node();
     auto lo = &get_status_writer(node);
@@ -129,4 +124,19 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance))));
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "visual_player_status",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateVisualPlayerStatus(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

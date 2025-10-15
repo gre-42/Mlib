@@ -13,6 +13,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Circular_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Text_Logger.hpp>
@@ -51,20 +52,14 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string CreateVisualNodeStatus::key = "visual_node_status";
-
-LoadSceneJsonUserFunction CreateVisualNodeStatus::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateVisualNodeStatus(args.renderable_scene()).execute(args);
-};
-
 CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {
@@ -120,4 +115,19 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance))));
     }
     logger.release();
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "visual_node_status",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateVisualNodeStatus(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

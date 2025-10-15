@@ -48,6 +48,8 @@ void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& bg = object_pool.create<FillPixelRegionWithTextureLogic>(
         CURRENT_SOURCE_LOCATION,
+        &object_pool,
+        nullptr, // player
         args.gallery[args.arguments.at<std::string>(KnownArgs::id_in_gallery)],
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

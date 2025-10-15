@@ -50,6 +50,8 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto& rs = args.renderable_scenes[source_scene];
     auto& scene_window_logic = object_pool.create<FillPixelRegionWithTextureLogic>(
         CURRENT_SOURCE_LOCATION,
+        &object_pool,
+        nullptr, // player
         std::make_shared<FillWithTextureLogic>(
             rs.physics_scene_->rendering_resources_.get_texture_lazy(
                 ColormapWithModifiers{

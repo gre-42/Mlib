@@ -31,6 +31,7 @@ VisualBulletCount::VisualBulletCount(
     const FixedArray<float, 3>& font_color,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
+    int z_order,
     FocusFilter focus_filter)
     : RenderTextLogic{
         ascii,
@@ -49,7 +50,7 @@ VisualBulletCount::VisualBulletCount(
 {
     advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
-    render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, z_order, CURRENT_SOURCE_LOCATION);
 }
 
 VisualBulletCount::~VisualBulletCount() {

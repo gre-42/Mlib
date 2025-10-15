@@ -16,6 +16,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Bullet_Count.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
@@ -26,6 +27,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(z_order);
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(charset);
 DECLARE_ARGUMENT(ttf_file);
@@ -40,20 +42,14 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-const std::string CreateVisualPlayerBulletCount::key = "visual_player_bullet_count";
-
-LoadSceneJsonUserFunction CreateVisualPlayerBulletCount::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateVisualPlayerBulletCount(args.renderable_scene()).execute(args);
-};
-
 CreateVisualPlayerBulletCount::CreateVisualPlayerBulletCount(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     object_pool.create<VisualBulletCount>(
         CURRENT_SOURCE_LOCATION,
@@ -72,7 +68,23 @@ void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs&
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::font_color),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
+        args.arguments.at<int>(KnownArgs::z_order),
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "visual_player_bullet_count",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateVisualPlayerBulletCount(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

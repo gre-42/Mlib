@@ -17,6 +17,8 @@ ControlsLogic::ControlsLogic(
     DelayLoadPolicy delay_load_policy,
     FocusFilter focus_filter)
 : gamepad_texture_{
+    nullptr, // object pool
+    nullptr, // player
     std::make_shared<FillWithTextureLogic>(
         RenderingContextStack::primary_rendering_resources().get_texture_lazy(image_resource_name)),
     std::move(widget),

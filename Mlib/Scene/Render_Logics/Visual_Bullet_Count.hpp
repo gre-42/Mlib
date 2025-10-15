@@ -38,6 +38,7 @@ public:
         const FixedArray<float, 3>& font_color,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
+        int z_order,
         FocusFilter focus_filter);
     virtual ~VisualBulletCount();
 
