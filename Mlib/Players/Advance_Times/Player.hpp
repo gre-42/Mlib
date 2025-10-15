@@ -234,7 +234,7 @@ public:
     PlaybackWaypoints& playback_waypoints();
 
     // IPlayer
-    virtual std::string id() const override;
+    virtual const std::string& id() const override;
     virtual std::string title() const override;
     virtual std::optional<VariableAndHash<std::string>> target_id() const override;
     virtual bool reset_vehicle_requested() override;
@@ -293,7 +293,7 @@ private:
     Players& players_;
     uint32_t user_id_;
     std::string user_name_;
-    std::string id_;
+    const std::string id_;
     std::string team_;
     DanglingBaseClassPtr<SceneVehicle> vehicle_;
     DanglingBaseClassPtr<VehicleSpawner> vehicle_spawner_;

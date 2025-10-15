@@ -347,8 +347,7 @@ const std::string& Player::user_name() const {
     return user_name_;
 }
 
-std::string Player::id() const {
-    std::shared_lock lock{ mutex_ };
+const std::string& Player::id() const {
     return id_;
 }
 
