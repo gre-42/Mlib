@@ -17,12 +17,14 @@ class CursorStates;
 enum class BoolRenderOption;
 class DeleteNodeMutex;
 class FlyingCameraLogicKeys;
+class UiFocus;
 
 class FlyingCameraUserClass {
 public:
     ButtonStates& button_states;
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
+    UiFocus& ui_focus;
     SelectedCameras& cameras;
     BoolRenderOption& wire_frame;
     BoolRenderOption& depth_test;

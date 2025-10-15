@@ -50,6 +50,7 @@ RenderableScene::RenderableScene(
           .button_states = button_states,
           .cursor_states = cursor_states,
           .scroll_wheel_states = scroll_wheel_states,
+          .ui_focus = ui_focus,
           .cameras = selected_cameras_,
           .wire_frame = scene_config.render_config.wire_frame,
           .depth_test = scene_config.render_config.depth_test,

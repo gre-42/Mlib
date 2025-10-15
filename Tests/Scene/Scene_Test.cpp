@@ -244,17 +244,18 @@ void test_physics_engine(unsigned int seed) {
     key_configurations
         .lock_exclusive_for(std::chrono::seconds(2), "Key configurations")
         ->insert(0, "take_screenshot", { {{{.key = "LEFT_CONTROL"}, {.key = "P"}}} });
+    UiFocus ui_focus{""};
     FlyingCameraUserClass user_object{
         .button_states = button_states,
         .cursor_states = cursor_states,
         .scroll_wheel_states = scroll_wheel_states,
+        .ui_focus = ui_focus,
         .cameras = selected_cameras,
         .wire_frame = render_config.wire_frame,
         .depth_test = render_config.depth_test,
         .cull_faces = render_config.cull_faces,
         .delete_node_mutex = delete_node_mutex,
         .physics_set_fps = &physics_set_fps};
-    UiFocus ui_focus{""};
     RenderLogics render_logics{ui_focus};
     ObjectPool object_pool{ InObjectPoolDestructor::CLEAR };
     auto& flying_camera_logic = object_pool.create<FlyingCameraLogic>(

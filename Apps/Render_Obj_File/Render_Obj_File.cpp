@@ -1152,6 +1152,7 @@ int main(int argc, char** argv) {
             .button_states = button_states,
             .cursor_states = cursor_states,
             .scroll_wheel_states = scroll_wheel_states,
+            .ui_focus = ui_focus,
             .cameras = selected_cameras,
             .wire_frame = render_config.wire_frame,
             .depth_test = render_config.depth_test,

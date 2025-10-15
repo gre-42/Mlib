@@ -160,8 +160,8 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
             sstr << std::endl;
         }
         if (any(config & ScoreBoardConfiguration::PLAYER)) {
-            for (const auto &pname: team->players()) {
-                auto p = get_player(pname, CURRENT_SOURCE_LOCATION);
+            for (const auto& player_id: team->players()) {
+                auto p = get_player(player_id, CURRENT_SOURCE_LOCATION);
                 if (p->player_role() == PlayerRole::BYSTANDER) {
                     continue;
                 }
@@ -173,7 +173,7 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
                 static const VariableAndHash<std::string> car_HP{ "car_HP" };
                 static const VariableAndHash<std::string> wins{ "wins" };
                 static const VariableAndHash<std::string> kills{ "kills" };
-                sstr << translator_->translate(Player) << ": " << pname;
+                sstr << translator_->translate(Player) << ": " << p->title();
                 if (any(config & ScoreBoardConfiguration::TEAM)) {
                     sstr << ", team: " << p->team_name();
                 }

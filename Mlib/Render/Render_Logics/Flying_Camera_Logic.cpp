@@ -1,5 +1,6 @@
 #include "Flying_Camera_Logic.hpp"
 #include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -110,6 +111,9 @@ static void nofly_key_callback(
     FlyingCameraUserClass& user_object,
     FlyingCameraLogicKeys& keys)
 {
+    if (user_object.ui_focus.editing()) {
+        return;
+    }
     // if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     //     GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     // }
