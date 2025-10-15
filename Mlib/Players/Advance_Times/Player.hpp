@@ -228,6 +228,7 @@ public:
     DrivingDirection driving_direction() const;
     ExternalsMode externals_mode() const;
     const InternalsMode& internals_mode() const;
+    const std::string& behavior() const;
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
     PlaybackWaypoints& playback_waypoints();

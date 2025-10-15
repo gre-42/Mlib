@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Physics/Ai/Skill_Map.hpp>
 #include <Mlib/Physics/Ai/Skills.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Internals_Mode.hpp>
@@ -31,6 +32,7 @@ DECLARE_ARGUMENT(if_pc);
 DECLARE_ARGUMENT(if_manual_aim);
 DECLARE_ARGUMENT(if_manual_shoot);
 DECLARE_ARGUMENT(if_manual_drive);
+DECLARE_ARGUMENT(if_weapon_cycle);
 DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(externals_seat);
 }
@@ -59,21 +61,18 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::externals),
          spawner_name](
-            uint32_t user_id,
-            const std::string& user_name,
-            const std::string& player_name,
-            ExternalsMode externals_mode,
-            const std::string& behavior)
+            const Player& player,
+            ExternalsMode externals_mode)
         {
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
             nlohmann::json let{
-                {LetKeys::user_id, user_id},
-                {LetKeys::user_name, user_name},
-                {LetKeys::player_name, player_name},
+                {LetKeys::user_id, player.user_id()},
+                {LetKeys::user_name, player.user_name()},
+                {LetKeys::player_name, player.id()},
                 {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
-                {LetKeys::behavior, behavior}
+                {LetKeys::behavior, player.behavior()}
             };
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr);
         }
@@ -82,29 +81,25 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::internals),
          spawner_name](
-            uint32_t user_id,
-            const std::string& user_name,
-            const std::string& player_name,
-            ExternalsMode externals_mode,
-            const SkillMap& skills,
-            const std::string& behavior,
+            const Player& player,
             const InternalsMode& internals_mode)
         {
-            if (externals_mode == ExternalsMode::NONE) {
+            if (player.externals_mode() == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
             nlohmann::json let{
-                {LetKeys::player_name, player_name},
-                {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
-                {LetKeys::if_manual_aim, skills.skills(ControlSource::USER).can_aim},
-                {LetKeys::if_manual_shoot, skills.skills(ControlSource::USER).can_shoot},
-                {LetKeys::if_manual_drive, skills.skills(ControlSource::USER).can_drive},
-                {LetKeys::behavior, behavior},
+                {LetKeys::player_name, player.id()},
+                {LetKeys::if_pc, (player.externals_mode() == ExternalsMode::PC)},
+                {LetKeys::if_manual_aim, player.skills(ControlSource::USER).can_aim},
+                {LetKeys::if_manual_shoot, player.skills(ControlSource::USER).can_shoot},
+                {LetKeys::if_manual_drive, player.skills(ControlSource::USER).can_drive},
+                {LetKeys::if_weapon_cycle, player.has_weapon_cycle()},
+                {LetKeys::behavior, player.behavior()},
                 {LetKeys::externals_seat, internals_mode.seat}
             };
-            if (user_id != UINT32_MAX) {
-                let[LetKeys::user_id] = user_id;
-                let[LetKeys::user_name] = user_name;
+            if (player.user_id() != UINT32_MAX) {
+                let[LetKeys::user_id] = player.user_id();
+                let[LetKeys::user_name] = player.user_name();
             }
             macro_line_executor.inserted_block_arguments(let)(macro, nullptr);
         }

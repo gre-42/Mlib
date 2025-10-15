@@ -30,31 +30,23 @@ SceneVehicle::~SceneVehicle() {
 }
 
 void SceneVehicle::create_vehicle_externals(
-    uint32_t user_id,
-    const std::string& user_name,
-    const std::string& player_name,
-    ExternalsMode externals_mode,
-    const std::string& behavior) const
+    const Player& player,
+    ExternalsMode externals_mode) const
 {
     if (!create_vehicle_externals_) {
         THROW_OR_ABORT("create_vehicle_externals not set");
     }
-    create_vehicle_externals_(user_id, user_name, player_name, externals_mode, behavior);
+    create_vehicle_externals_(player, externals_mode);
 }
 
 void SceneVehicle::create_vehicle_internals(
-    uint32_t user_id,
-    const std::string& user_name,
-    const std::string& player_name,
-    ExternalsMode externals_mode,
-    const SkillMap& skills,
-    const std::string& behavior,
+    const Player& player,
     const InternalsMode& internals_mode) const
 {
     if (!create_vehicle_internals_) {
         THROW_OR_ABORT("create_vehicle_internals not set");
     }
-    create_vehicle_internals_(user_id, user_name, player_name, externals_mode, skills, behavior, internals_mode);
+    create_vehicle_internals_(player, internals_mode);
 }
 
 void SceneVehicle::set_create_vehicle_externals(

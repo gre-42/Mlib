@@ -338,10 +338,12 @@ void Player::change_gun_node(DanglingBaseClassPtr<SceneNode> gun_node) {
 }
 
 uint32_t Player::user_id() const {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     return user_id_;
 }
 
 const std::string& Player::user_name() const {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     return user_name_;
 }
 
@@ -1131,7 +1133,7 @@ void Player::create_vehicle_externals(ExternalsMode externals_mode) {
         delete_vehicle_internals.print_source_locations();
         THROW_OR_ABORT("Vehicle internals not empty while adding externals");
     }
-    vehicle_->create_vehicle_externals(user_id_, user_name_, id(), externals_mode, behavior_);
+    vehicle_->create_vehicle_externals(*this, externals_mode);
     std::scoped_lock lock{ mutex_ };
     externals_mode_ = externals_mode;
 }
@@ -1151,7 +1153,7 @@ void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
         delete_vehicle_internals.print_source_locations();
         THROW_OR_ABORT("Create internals set after deleters were added");
     }
-    vehicle_->create_vehicle_internals(user_id_, user_name_, id(), externals_mode_, skills_, behavior_, internals_mode);
+    vehicle_->create_vehicle_internals(*this, internals_mode);
     std::scoped_lock lock{ mutex_ };
     internals_mode_ = internals_mode;
 }
@@ -1219,7 +1221,13 @@ ExternalsMode Player::externals_mode() const {
 }
 
 const InternalsMode& Player::internals_mode() const {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     return internals_mode_;
+}
+
+const std::string& Player::behavior() const {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    return behavior_;
 }
 
 SingleWaypoint& Player::single_waypoint() {

@@ -10,6 +10,7 @@
 
 namespace Mlib {
 
+class Player;
 class DeleteNodeMutex;
 class SceneNode;
 class RigidBodyVehicle;
@@ -23,18 +24,10 @@ class SceneVehicle final: public virtual DanglingBaseClass, public virtual Destr
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
     using CreateVehicleExternals = std::function<void(
-        uint32_t user_id,
-        const std::string& user_name,
-        const std::string& player_name,
-        ExternalsMode externals_mode,
-        const std::string& behavior)>;
+        const Player& player,
+        ExternalsMode externals_mode)>;
     using CreateRoleExternals = std::function<void(
-        uint32_t user_id,
-        const std::string& user_name,
-        const std::string& player_name,
-        ExternalsMode externals_mode,
-        const SkillMap& skills,
-        const std::string& behavior,
+        const Player& player,
         const InternalsMode& internals_mode)>;
     SceneVehicle(
         DeleteNodeMutex& delete_node_mutex,
@@ -43,18 +36,10 @@ public:
         const DanglingBaseClassRef<RigidBodyVehicle>& rb);
     ~SceneVehicle();
     void create_vehicle_externals(
-        uint32_t user_id,
-        const std::string& user_name,
-        const std::string& player_name,
-        ExternalsMode externals_mode,
-        const std::string& behavior) const;
+        const Player& player,
+        ExternalsMode externals_mode) const;
     void create_vehicle_internals(
-        uint32_t user_id,
-        const std::string& user_name,
-        const std::string& player_name,
-        ExternalsMode externals_mode,
-        const SkillMap& skills,
-        const std::string& behavior,
+        const Player& player,
         const InternalsMode& internals_mode) const;
     void set_create_vehicle_externals(
         const CreateVehicleExternals& create_vehicle_externals);
