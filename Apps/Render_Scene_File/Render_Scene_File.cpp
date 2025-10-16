@@ -303,6 +303,7 @@ int main(int argc, char** argv) {
         "    [--flavor <flavor>]\n"
         "    [--devel_mode]\n"
         "    [--enable_ridge_map]\n"
+        "    [--hand_brake_velocity <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
         "    [--max_extra_friction <x>]\n"
@@ -418,6 +419,7 @@ int main(int argc, char** argv) {
          "--render_dt",
          "--input_polling_interval",
          "--render_max_residual_time",
+         "--hand_brake_velocity",
          "--stiction_coefficient",
          "--friction_coefficient",
          "--max_extra_w",
@@ -654,6 +656,7 @@ int main(int argc, char** argv) {
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .no_slip = args.has_named("--no_slip"),
+                .hand_brake_velocity = safe_stof(args.named_value("--hand_brake_velocity", "5")) * kph,
                 // Friction
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),

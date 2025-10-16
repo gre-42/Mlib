@@ -47,7 +47,7 @@ struct PhysicsEngineConfig {
     float max_aerodynamic_acceleration = 50.f * kph / seconds;
     bool avoid_burnout = true;
     bool no_slip = false;
-    float hand_brake_velocity = 2.f * kph;
+    float hand_brake_velocity = 5.f * kph;
     float max_penetration = 40.f * cm;
     float max_velocity_increase = 30.f * percent;
 
