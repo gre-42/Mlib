@@ -37,6 +37,11 @@ public:
             fixed_full<TData, tndim>(std::numeric_limits<TData>::max()),
             fixed_full<TData, tndim>(std::numeric_limits<TData>::lowest())};
     }
+    static AxisAlignedBoundingBox zero() {
+        return AxisAlignedBoundingBox{
+            fixed_zeros<TData, tndim>(),
+            fixed_zeros<TData, tndim>()};
+    }
     static AxisAlignedBoundingBox from_min_max(
         const FixedArray<TData, tndim>& min,
         const FixedArray<TData, tndim>& max) {

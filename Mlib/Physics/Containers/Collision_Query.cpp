@@ -292,6 +292,8 @@ bool CollisionQuery::can_see(
 bool CollisionQuery::visit_spawn_preventers(
     const TransformationMatrix<SceneDir, ScenePos, 3>& trafo1,
     const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables1,
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& sweep_aabb,
+    const RigidBodyVehicle* ignored,
     PhysicsMaterial collidable_mask0,
     PhysicsMaterial collidable_mask1,
     const std::function<bool(const RigidBodyVehicle& vehicle0)>& visit) const
@@ -300,9 +302,12 @@ bool CollisionQuery::visit_spawn_preventers(
         if (!any(i1_rel.physics_material & collidable_mask1)) {
             continue;
         }
-        auto ti1 = TransformedIntersectable{ i1_rel.mesh, trafo1 };
+        auto ti1 = TransformedIntersectable{ i1_rel.mesh->sweep(sweep_aabb), trafo1 };
         auto bs1 = ti1.bounding_sphere();
         for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
+            if (&o0.rigid_body.get() == ignored) {
+                continue;
+            }
             for (const auto& msh0 : o0.meshes) {
                 if (!any(msh0.physics_material & collidable_mask0)) {
                     continue;
@@ -343,6 +348,9 @@ bool CollisionQuery::visit_spawn_preventers(
             ti1.aabb(),
             [&](const RigidBodyAndCollisionTriangleSphere<CompressedScenePos>& t0)
             {
+                if (&t0.rb == ignored) {
+                    return true;
+                }
                 return std::visit(
                     [&](const auto& ctp)
                     {
@@ -360,6 +368,9 @@ bool CollisionQuery::visit_spawn_preventers(
         if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().grid().visit(
             ti1.aabb(),
             [&](const RigidBodyAndIntersectableMesh& rm0){
+                if (&rm0.rb.get() == ignored) {
+                    return true;
+                }
                 if (!any(rm0.mesh.physics_material & collidable_mask0)) {
                     return true;
                 }
@@ -392,12 +403,16 @@ bool CollisionQuery::visit_spawn_preventers(
 bool CollisionQuery::can_spawn_at(
     const TransformationMatrix<SceneDir, ScenePos, 3>& trafo,
     const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables,
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& sweep_aabb,
+    const RigidBodyVehicle* ignored,
     PhysicsMaterial collidable_mask0,
     PhysicsMaterial collidable_mask1) const
 {
     return visit_spawn_preventers(
         trafo,
         intersectables,
+        sweep_aabb,
+        ignored,
         collidable_mask0,
         collidable_mask1,
         [](const RigidBodyVehicle& vehicle0){

@@ -67,24 +67,26 @@ void Spawner::set_spawn_points(
 
 bool Spawner::can_spawn_at_spawn_point(
     VehicleSpawner& spawner,
-    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp) const
+    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp,
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& swept_aabb) const
 {
     // TimeGuard time_guard{"spawn", "spawn"};
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
-    return spawner.try_spawn(sp, { SpawnAction::DRY_RUN });
+    return spawner.try_spawn({ sp, swept_aabb, nullptr, SpawnAction::DRY_RUN });
 }
 
 bool Spawner::try_spawn_at_spawn_point(
     VehicleSpawner& spawner,
-    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp)
+    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp,
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& swept_aabb)
 {
     // TimeGuard time_guard{"spawn", "spawn"};
     // std::scoped_lock lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
-    bool success = spawner.try_spawn(sp, { SpawnAction::DO_IT });
+    bool success = spawner.try_spawn({ sp, swept_aabb, nullptr, SpawnAction::DO_IT });
     // lerr() << "Spawner time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<ScenePos>(std::chrono::steady_clock::now() - start)).count();
     ++ntry_spawns_;
     return success;
@@ -126,7 +128,7 @@ void Spawner::respawn_all_players() {
                 continue;
             }
             // lerr() << "Spawning \"" << name << "\" with team \"" << spawner->get_team_name() << '"';
-            if (!try_spawn_at_spawn_point(*spawner, sp->trafo)) {
+            if (!try_spawn_at_spawn_point(*spawner, sp->trafo, AxisAlignedBoundingBox<CompressedScenePos, 3>::zero())) {
                 THROW_OR_ABORT("Could not spawn \"" + name + "\" with team \"" + spawner->get_team_name() + '"');
             }
             occupied_spawn_points.insert(sp);
@@ -168,7 +170,10 @@ bool Spawner::try_spawn_player_during_match(VehicleSpawner& spawner) {
         if (occupied_spawn_points.contains(sp)) {
             continue;
         }
-        if (try_spawn_at_spawn_point(spawner, sp->trafo)) {
+        if (try_spawn_at_spawn_point(
+            spawner,
+            sp->trafo, AxisAlignedBoundingBox<CompressedScenePos, 3>::zero()))
+        {
             return true;
         }
     }

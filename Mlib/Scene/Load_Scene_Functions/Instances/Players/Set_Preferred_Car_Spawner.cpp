@@ -53,6 +53,14 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
     args.macro_line_executor.block_arguments().validate_complement(KnownLet::options);
 
     std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
+    auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
+    auto distancebox = scene_node_resources.get_intersectables(VariableAndHash<std::string>{asset_id + "_distancebox"});
+    auto y_offset = args.arguments.at<CompressedScenePos>(KnownArgs::y_offset);
+    auto dp = FixedArray<CompressedScenePos, 3>{
+        (CompressedScenePos)0.f,
+        y_offset,
+        (CompressedScenePos)0.f
+    };
     vehicle_spawners.get(spawner_name).set_spawn_vehicle(
         [dependencies = args.arguments.try_at_vector<std::string>(KnownArgs::dependencies),
          &vs = vehicle_spawners]()
@@ -65,27 +73,19 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
             return true;
         },
         [macro_line_executor = args.macro_line_executor,
-         asset_id = args.arguments.at<std::string>(KnownArgs::asset_id),
-         y_offset = args.arguments.at<CompressedScenePos>(KnownArgs::y_offset),
          macro = args.arguments.at(KnownArgs::macro),
-         &snr = scene_node_resources,
+         dp,
+         distancebox,
          &cq = physics_engine.collision_query_]
         (
-            const TransformationMatrix<SceneDir, CompressedScenePos, 3>& p,
             const GeometrySpawnArguments& g,
             const NodeSpawnArguments* n)
         {
             assert_true((g.action == SpawnAction::DRY_RUN) == (n == nullptr));
-            auto dp = FixedArray<CompressedScenePos, 3>{
-                (CompressedScenePos)0.f,
-                y_offset,
-                (CompressedScenePos)0.f
-            };
             auto trafo = TransformationMatrix<float, ScenePos, 3>{
-                p.R,
-                funpack(p.t + dp)};
-            auto distancebox = snr.get_intersectables(VariableAndHash<std::string>{asset_id + "_distancebox"});
-            if (!cq.can_spawn_at(trafo, distancebox)) {
+                g.spawn_point.R,
+                funpack(g.spawn_point.t + dp)};
+            if (!cq.can_spawn_at(trafo, distancebox, g.swept_aabb, g.ignored)) {
                 return false;
             }
             if (g.action == SpawnAction::DRY_RUN) {
@@ -98,7 +98,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 THROW_OR_ABORT("Node geometry not set");
             }
             auto z = z3_from_3x3(trafo.R);
-            auto rotation = matrix_2_tait_bryan_angles(p.R);
+            auto rotation = matrix_2_tait_bryan_angles(g.spawn_point.R);
             nlohmann::json let{
                 {KnownLet::human_node_position, trafo.t / (ScenePos)meters},
                 {KnownLet::human_node_angle_y, std::atan2(z(0), z(2)) / degrees},

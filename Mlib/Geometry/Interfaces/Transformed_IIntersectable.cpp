@@ -15,7 +15,7 @@ using namespace Mlib;
 TransformedIntersectable::TransformedIntersectable(
     std::shared_ptr<IIntersectable> child,
     const TransformationMatrix<float, ScenePos, 3>& trafo)
-    : child_{ child }
+    : child_{ std::move(child) }
     , trafo_{ trafo }
 {}
 
@@ -25,6 +25,12 @@ BoundingSphere<CompressedScenePos, 3> TransformedIntersectable::bounding_sphere(
 
 AxisAlignedBoundingBox<CompressedScenePos, 3> TransformedIntersectable::aabb() const {
     return child_->aabb().template casted<ScenePos>().transformed(trafo_).casted<CompressedScenePos>();
+}
+
+std::shared_ptr<IIntersectable> TransformedIntersectable::sweep(
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const
+{
+    THROW_OR_ABORT("TransformedIntersectable cannot sweep");
 }
 
 bool TransformedIntersectable::touches(

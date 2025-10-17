@@ -200,16 +200,14 @@ bool VehicleSpawner::dependencies_are_met() const {
     return dependencies_are_met_();
 }
 
-bool VehicleSpawner::try_spawn(
-    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
-    const GeometrySpawnArguments& geometry)
+bool VehicleSpawner::try_spawn(const GeometrySpawnArguments& geometry)
 {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if (!try_spawn_vehicle_) {
         THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Vehicle spawner not initialized");
     }
     if (geometry.action == SpawnAction::DRY_RUN) {
-        return try_spawn_vehicle_(spawn_point, geometry, nullptr);
+        return try_spawn_vehicle_(geometry, nullptr);
     }
     if (geometry.action != SpawnAction::DO_IT) {
         verbose_abort("Spawner with suffix \"" + suffix_ + "\": Unknown spawn action: " + std::to_string((int)geometry.action));
@@ -225,7 +223,7 @@ bool VehicleSpawner::try_spawn(
         .if_with_graphics = true,
         .if_with_physics = true
     };
-    if (!try_spawn_vehicle_(spawn_point, geometry, &node_args)) {
+    if (!try_spawn_vehicle_(geometry, &node_args)) {
         if (!scene_vehicles_.empty()) {
             verbose_abort("Spawner with suffix \"" + suffix_ + "\": Scene vehicles set after failed spawning");
         }

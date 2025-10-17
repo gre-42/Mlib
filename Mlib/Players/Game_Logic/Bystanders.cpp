@@ -155,7 +155,11 @@ bool Bystanders::spawn_for_vip(
                 continue;
             }
         }
-        if (spawner_.try_spawn_at_spawn_point(spawner, n.sp->trafo)) {
+        if (spawner_.try_spawn_at_spawn_point(
+            spawner,
+            n.sp->trafo,
+            AxisAlignedBoundingBox<CompressedScenePos, 3>::zero()))
+        {
             if (spotted) {
                 spawner.notify_spotted_by_vip();
             }

@@ -9,6 +9,7 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -39,8 +40,7 @@ bool VehicleChanger::change_vehicle(VehicleSpawner& s) {
     auto& next_rb = get_rigid_body_vehicle(next_vehicle->get_primary_scene_vehicle()->scene_node());
     auto other_player = next_rb.drivers_.try_get(p->next_seat());
     if (other_player == nullptr) {
-        enter_vehicle(s, *next_vehicle.get());
-        return true;
+        return enter_vehicle(s, *next_vehicle.get());
     }
     return false;
     // } else {
@@ -91,7 +91,7 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     b.create_gun_externals();
 }
 
-void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
+bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
     if (!a.has_player()) {
         THROW_OR_ABORT("Vehicle spawner has no player");
     }
@@ -104,13 +104,6 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         THROW_OR_ABORT("Entering the same vehicle");
     }
     auto a_rb_old = ap->rigid_body();
-    if (a_rb_old->is_avatar()) {
-        a_rb_old->deactivate_avatar();
-    } else if (a_rb_old->passengers_.erase(a.get_primary_scene_vehicle()->rb().ptr()) != 1) {
-        THROW_OR_ABORT(
-            "Could not find passenger to be deleted. Vehicle: \"" + a_rb_old->name() +
-            "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
-    }
     if (b_rb->is_activated_avatar()) {
         THROW_OR_ABORT("Destination avatar is not deactivated: \"" + b_rb->name() + '"');
     }
@@ -127,14 +120,29 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         // Subtract PI/2 because we want to set the angle in z-direction,
         // while the angle computed by atan2 is measured along the x-direction.
         float angle = std::atan2(-a_dir(2), a_dir(0)) - float(M_PI / 2.);
-        b_rb->rbp_.set_pose(
+        auto b_new_trafo = TransformationMatrix<SceneDir, ScenePos, 3>{
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, angle, 0.f}),
-            a_trafo.t + (a_rb_old->door_distance_ * a_dir).casted<ScenePos>());
+            a_trafo.t + (a_rb_old->door_distance_ * a_dir).casted<ScenePos>()};
+        auto zero = (CompressedScenePos)0.f;
+        auto swept_aabb = AxisAlignedBoundingBox<CompressedScenePos, 3>::from_min_max(
+            { zero, zero, zero },
+            { zero, zero, (CompressedScenePos)a_rb_old->door_distance_ });
+        if (!b.try_spawn({b_new_trafo.casted<SceneDir, CompressedScenePos>(), swept_aabb, &a_rb_old.get(), SpawnAction::DRY_RUN})) {
+            return false;
+        }
+        if (a_rb_old->passengers_.erase(a.get_primary_scene_vehicle()->rb().ptr()) != 1) {
+            THROW_OR_ABORT(
+                "Could not find passenger to be deleted. Vehicle: \"" + a_rb_old->name() +
+                "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
+        }
+        b_rb->rbp_.set_pose(b_new_trafo.R, b_new_trafo.t);
         b_rb->rbp_.v_com_ = 0.f;
         b_rb->rbp_.w_ = 0.f;
         b.get_primary_scene_vehicle()->scene_node()->invalidate_transformation_history();
         b_rb->activate_avatar();
         a_rb_old->park_vehicle();
+    } else {
+        a_rb_old->deactivate_avatar();
     }
     ExternalsMode a_em_old = ap->externals_mode();
     ap->reset_node();
@@ -153,4 +161,5 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
                 "\". Passenger: \"" + a.get_primary_scene_vehicle()->rb()->name() + '"');
         }
     }
+    return true;
 }

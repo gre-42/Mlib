@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
+#include <memory>
 
 namespace Mlib {
 
@@ -24,6 +25,8 @@ public:
     virtual ~IIntersectable() = default;
     virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const = 0;
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const = 0;
+    virtual std::shared_ptr<IIntersectable> sweep(
+        const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const = 0;
     virtual bool touches(
         const CollisionPolygonSphere<CompressedScenePos, 4>& q,
         ScenePos& overlap,

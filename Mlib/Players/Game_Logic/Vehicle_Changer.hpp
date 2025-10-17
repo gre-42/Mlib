@@ -19,7 +19,7 @@ public:
 private:
     void change_vehicles();
     void swap_vehicles(Player& a, Player& b);
-    void enter_vehicle(VehicleSpawner& a, VehicleSpawner& b);
+    bool enter_vehicle(VehicleSpawner& a, VehicleSpawner& b);
     VehicleSpawners& vehicle_spawners_;
     DeleteNodeMutex& delete_node_mutex_;
 };

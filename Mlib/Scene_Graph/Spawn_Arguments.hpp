@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Precision.hpp>
+#include <cstddef>
 #include <string>
 
 namespace Mlib {
@@ -9,7 +10,16 @@ enum class SpawnAction {
     DO_IT
 };
 
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
+template <class TData, size_t tndim>
+class AxisAlignedBoundingBox;
+class RigidBodyVehicle;
+
 struct GeometrySpawnArguments {
+    const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point;
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& swept_aabb;
+    const RigidBodyVehicle* ignored;
     SpawnAction action;
 };
 

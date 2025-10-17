@@ -43,7 +43,6 @@ class VehicleSpawner final : public ISpawner, public virtual DanglingBaseClass {
 public:
     using DependenciesAreMet = std::function<bool()>;
     using TrySpawnVehicle = std::function<bool(
-        const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
         const GeometrySpawnArguments& geom,
         const NodeSpawnArguments* node)>;
 
@@ -83,9 +82,7 @@ public:
         TrySpawnVehicle try_spawn_vehicle,
         SpawnVehicleAlreadySetBehavior vehicle_spawner_already_set_behavior);
     bool dependencies_are_met() const;
-    bool try_spawn(
-        const TransformationMatrix<SceneDir, CompressedScenePos, 3>& spawn_point,
-        const GeometrySpawnArguments& geometry);
+    bool try_spawn(const GeometrySpawnArguments& geometry);
     void delete_vehicle();
 
     float get_time_since_spawn() const;

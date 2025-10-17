@@ -1,6 +1,7 @@
 #include "Spawn.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -38,7 +39,8 @@ void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
         {
             tait_bryan_angles_2_matrix(args.arguments.at<EFixedArray<SceneDir, 3>>(KnownArgs::rotation) * degrees),
             parse_position(args.arguments.at(KnownArgs::position), scene_node_resources)
-        }))
+        },
+        AxisAlignedBoundingBox<CompressedScenePos, 3>::zero()))
     {
         THROW_OR_ABORT("Could not spawn \"" + spawner_name + '"');
     }

@@ -64,7 +64,11 @@ void Mlib::draw_wall_barriers(
             auto& tl = *tls.emplace_back(std::make_shared<TriangleList<CompressedScenePos>>(
                 "wall_barriers_" + smid,
                 material,
-                morphology + (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE)));
+                morphology + (
+                    PhysicsMaterial::ATTR_VISIBLE |
+                    PhysicsMaterial::ATTR_COLLIDE |
+                    PhysicsMaterial::ATTR_CONCAVE |
+                    PhysicsMaterial::OBJ_CHASSIS)));
             if (!bs.cull_faces) {
                 tl.morphology += PhysicsMaterial::ATTR_TWO_SIDED;
             }

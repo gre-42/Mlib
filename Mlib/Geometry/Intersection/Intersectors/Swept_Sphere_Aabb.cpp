@@ -31,6 +31,15 @@ AxisAlignedBoundingBox<CompressedScenePos, 3> SweptSphereAabb::aabb() const {
     return aabb_large_;
 }
 
+std::shared_ptr<IIntersectable> SweptSphereAabb::sweep(
+    const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const
+{
+    return std::make_shared<SweptSphereAabb>(
+        aabb_large_.min + aabb.min,
+        aabb_large_.max + aabb.max,
+        radius_);
+}
+
 bool SweptSphereAabb::touches(
     const CollisionPolygonSphere<CompressedScenePos, 4>& q,
     ScenePos& overlap,

@@ -13,6 +13,8 @@ public:
         const CompressedScenePos& radius);
     virtual BoundingSphere<CompressedScenePos, 3> bounding_sphere() const override;
     virtual AxisAlignedBoundingBox<CompressedScenePos, 3> aabb() const override;
+    virtual std::shared_ptr<IIntersectable> sweep(
+        const AxisAlignedBoundingBox<CompressedScenePos, 3>& aabb) const override;
     virtual bool touches(
         const CollisionPolygonSphere<CompressedScenePos, 4>& q,
         ScenePos& overlap,

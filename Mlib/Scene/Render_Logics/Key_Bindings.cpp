@@ -2,6 +2,7 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Intersectors/Swept_Sphere_Aabb.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Focus.hpp>
@@ -500,7 +501,12 @@ void KeyBindings::increment_external_forces(
                     FixedArray<CompressedScenePos, 3>{(CompressedScenePos)4.f, (CompressedScenePos)1.f, (CompressedScenePos)8.f} * meters,
                     ((CompressedScenePos)0.5f) * meters);
                 auto material = PhysicsMaterial::OBJ_DISTANCEBOX | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONVEX;
-                linfo() << "Can spawn: " << (int)physics_engine_.collision_query_.can_spawn_at(trafo, { {material, ssaabb} });
+                auto swept_aabb = AxisAlignedBoundingBox<CompressedScenePos, 3>::zero();
+                linfo() << "Can spawn: " << (int)physics_engine_.collision_query_.can_spawn_at(
+                    trafo,
+                    { {material, ssaabb} },
+                    swept_aabb,
+                    nullptr);   // ignored
             }
         }
     }

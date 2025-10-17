@@ -1068,7 +1068,8 @@ bool Player::can_reset_vehicle(
     }
     return spawner_.can_spawn_at_spawn_point(
         *vehicle_spawner_.get(),
-        trafo.casted<SceneDir, CompressedScenePos>());
+        trafo.casted<SceneDir, CompressedScenePos>(),
+        AxisAlignedBoundingBox<CompressedScenePos, 3>::zero());
 }
 
 bool Player::try_reset_vehicle(
@@ -1092,7 +1093,8 @@ bool Player::try_reset_vehicle(
     }
     if (!spawner_.try_spawn_at_spawn_point(
         *vs.get(),
-        trafo.casted<SceneDir, CompressedScenePos>()))
+        trafo.casted<SceneDir, CompressedScenePos>(),
+        AxisAlignedBoundingBox<CompressedScenePos, 3>::zero()))
     {
         if (vehicle_spawner_ != nullptr) {
             verbose_abort("Vehicle spawner not null after failed spawning");

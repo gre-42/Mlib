@@ -26,6 +26,8 @@ class TeamDeathmatch;
 class DeleteNodeMutex;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <class TData, size_t tndim>
+class AxisAlignedBoundingBox;
 
 class Spawner {
     friend Bystanders;
@@ -44,8 +46,14 @@ public:
         const std::list<SpawnPoint>& spawn_points);
     void respawn_all_players();
     bool try_spawn_player_during_match(VehicleSpawner& spawner);
-    bool can_spawn_at_spawn_point(VehicleSpawner& spawner, const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp) const;
-    bool try_spawn_at_spawn_point(VehicleSpawner& spawner, const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp);
+    bool can_spawn_at_spawn_point(
+        VehicleSpawner& spawner,
+        const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp,
+        const AxisAlignedBoundingBox<CompressedScenePos, 3>& swept_aabb) const;
+    bool try_spawn_at_spawn_point(
+        VehicleSpawner& spawner,
+        const TransformationMatrix<SceneDir, CompressedScenePos, 3>& sp,
+        const AxisAlignedBoundingBox<CompressedScenePos, 3>& swept_aabb);
 private:
     std::vector<SpawnPoint*> shuffled_spawn_points();
     std::vector<SpawnPoint> spawn_points_;

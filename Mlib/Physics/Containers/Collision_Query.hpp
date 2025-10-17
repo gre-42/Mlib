@@ -17,6 +17,8 @@ template <class T>
 struct TypedMesh;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <class TData, size_t tndim>
+class AxisAlignedBoundingBox;
 
 class CollisionQuery {
 public:
@@ -57,12 +59,16 @@ public:
     bool visit_spawn_preventers(
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo1,
         const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables1,
+        const AxisAlignedBoundingBox<CompressedScenePos, 3>& sweep_aabb,
+        const RigidBodyVehicle* ignored,
         PhysicsMaterial collidable_mask0,
         PhysicsMaterial collidable_mask1,
         const std::function<bool(const RigidBodyVehicle& vehicle0)>& visit) const;
     bool can_spawn_at(
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo1,
         const std::list<TypedMesh<std::shared_ptr<IIntersectable>>>& intersectables1,
+        const AxisAlignedBoundingBox<CompressedScenePos, 3>& sweep_aabb,
+        const RigidBodyVehicle* ignored,
         PhysicsMaterial collidable_mask0 =
             PhysicsMaterial::OBJ_CHASSIS |
             PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT |
