@@ -1048,13 +1048,7 @@ void SceneNode::render(
     SceneNodeVisibility visibility) const
 {
     assert_true(is_visible_for_user(frame_id.external_render_pass.user_id));
-    auto child_m = [&]() {
-        std::shared_lock lock{ pose_mutex_ };
-        if (trafo_history_invalidated_) {
-            visibility = SceneNodeVisibility::INVISIBLE;
-        }
-        return relative_model_matrix(frame_id.external_render_pass.time);
-    }();
+    auto child_m = relative_model_matrix(frame_id.external_render_pass.time);
     std::shared_lock lock{ mutex_ };
     if (state_ == SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Cannot render detached node");
