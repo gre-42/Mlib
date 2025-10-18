@@ -153,6 +153,7 @@ struct OsmResourceConfig {
     TriangleSamplerResourceConfig triangle_sampler_resource_config;
     std::vector<WaysideResourceNamesSurface> waysides_surface;
     std::vector<WaysideResourceNamesVertex> waysides_vertex;
+    std::vector<WaysideResourceNamesSurface> buildingsides_surface;
     TerrainType bounding_terrain_type = TerrainType::UNDEFINED;
     TerrainType default_terrain_type = TerrainType::UNDEFINED;
     float default_street_width = 7 * meters;

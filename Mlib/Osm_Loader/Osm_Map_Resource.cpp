@@ -1424,6 +1424,17 @@ OsmMapResource::OsmMapResource(
             ws,
             config.contour_detection_strategy);
     }
+    for (const auto& [i, ws] : enumerate(config.buildingsides_surface)) {
+        fg.update("Draw buildingsides (" + std::to_string(i) + ')');
+        draw_waysides(
+            *hri_.bri,
+            building_hole_triangles,
+            *ground_bvh,
+            entrance_bvh,
+            config.scale,
+            ws,
+            config.contour_detection_strategy);
+    }
 
     // for (auto& l : tls_ground) {
     //     colorize_height_map(l->triangles_);

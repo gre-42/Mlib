@@ -160,6 +160,7 @@ DECLARE_ARGUMENT(far_trees_resource_names);
 DECLARE_ARGUMENT(dirt_decals_resource_names);
 DECLARE_ARGUMENT(waysides_surface);
 DECLARE_ARGUMENT(waysides_vertex);
+DECLARE_ARGUMENT(buildingsides_surface);
 DECLARE_ARGUMENT(extrusion_ambient_occlusion);
 DECLARE_ARGUMENT(laplace_ambient_occlusion);
 DECLARE_ARGUMENT(bounding_terrain_type);
@@ -721,6 +722,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains_non_null(KnownArgs::waysides_vertex)) {
             config.waysides_vertex = args.arguments.at<std::vector<WaysideResourceNamesVertex>>(KnownArgs::waysides_vertex);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::buildingsides_surface)) {
+            config.buildingsides_surface = args.arguments.at<std::vector<WaysideResourceNamesSurface>>(KnownArgs::buildingsides_surface);
         }
         if (args.arguments.contains_non_null(KnownArgs::tree_resource_names)) {
             config.tree_resource_names = args.arguments.at_vector<std::string>(KnownArgs::tree_resource_names, parse_resource_name_func);
