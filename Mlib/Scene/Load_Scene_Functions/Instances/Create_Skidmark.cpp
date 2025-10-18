@@ -80,7 +80,6 @@ struct RegisterJsonUserFunction {
             "create_skidmark",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateSkidmark(args.renderable_scene()).execute(args);
             });
     }
