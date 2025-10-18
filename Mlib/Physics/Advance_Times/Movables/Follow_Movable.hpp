@@ -61,7 +61,6 @@ public:
         float dt = 1.f / 60.f * seconds,
         float dt_ref = 1.f / 60.f * seconds);
     virtual ~FollowMovable() override;
-    void initialize(DanglingBaseClassRef<SceneNode> follower_node);
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
@@ -71,6 +70,7 @@ public:
 private:
     void notify_destroyed(SceneNode& destroyed_object);
     void advance_time(float dt);
+    void initialize(const DanglingBaseClassRef<SceneNode>& follower_node);
     AdvanceTimes& advance_times_;
     DanglingBaseClassPtr<const SceneNode> followed_node_;
     IAbsoluteMovable* followed_;

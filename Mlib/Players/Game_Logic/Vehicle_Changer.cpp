@@ -138,7 +138,11 @@ bool VehicleChanger::enter_vehicle(VehicleSpawner& a, VehicleSpawner& b) {
         b_rb->rbp_.set_pose(b_new_trafo.R, b_new_trafo.t);
         b_rb->rbp_.v_com_ = 0.f;
         b_rb->rbp_.w_ = 0.f;
-        b.get_primary_scene_vehicle()->scene_node()->invalidate_transformation_history();
+        b.get_primary_scene_vehicle()->scene_node()->set_absolute_pose(
+            b_new_trafo.t,
+            matrix_2_tait_bryan_angles(b_new_trafo.R),
+            1.f,
+            INITIAL_POSE);
         b_rb->activate_avatar();
         a_rb_old->park_vehicle();
     } else {

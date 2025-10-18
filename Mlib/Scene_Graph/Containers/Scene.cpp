@@ -842,12 +842,16 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                 if (it->second->shutting_down()) {
                     continue;
                 }
-                it->second->move(
-                    TransformationMatrix<float, ScenePos, 3>::identity(),
-                    dt,
-                    time,
-                    scene_node_resources_,
-                    nullptr);  // animation_state
+                try {
+                    it->second->move(
+                        TransformationMatrix<float, ScenePos, 3>::identity(),
+                        dt,
+                        time,
+                        scene_node_resources_,
+                        nullptr);  // animation_state
+                } catch (const std::runtime_error& e) {
+                    THROW_OR_ABORT("Error moving node \"" + *it->first + "\": " + e.what());
+                }
                 if (!it->second->shutting_down() && it->second->to_be_deleted(time)) {
                     UnlockGuard ug{lock};
                     delete_root_node(it->first);

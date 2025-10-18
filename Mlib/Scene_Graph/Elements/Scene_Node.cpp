@@ -254,6 +254,13 @@ void SceneNode::remove_node_hider(
 void SceneNode::set_absolute_movable(
     DanglingBaseClassRef<IAbsoluteMovable> absolute_movable)
 {
+    auto mp = absolute_movable->get_new_absolute_model_matrix().affine();
+    auto np = absolute_model_matrix().affine();
+    if (max(abs(mp - np)) > 1e-6) {
+        THROW_OR_ABORT((std::stringstream() <<
+            "Absolute movable pose differs from node. Absolute movable:\n" << mp <<
+            ". Node:\n" << np).str());
+    }
     std::scoped_lock lock{ mutex_ };
     if (absolute_movable_ != nullptr) {
         verbose_abort("Absolute movable already set");
@@ -908,7 +915,11 @@ void SceneNode::move(
         }
         for (auto it = children_.begin(); it != children_.end(); ) {
             OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
-            it->second.scene_node->move(v2, dt, time, scene_node_resources, estate);
+            try {
+                it->second.scene_node->move(v2, dt, time, scene_node_resources, estate);
+            } catch (const std::runtime_error& e) {
+                THROW_OR_ABORT("Error moving node \"" + *it->first + "\": " + e.what());
+            }
             if (it->second.scene_node->to_be_deleted(time)) {
                 remove_child((it++)->first);
             } else {
@@ -922,6 +933,15 @@ void SceneNode::move(
     {
         trafo_history_.clear();
         trafo_history_invalidated_ = false;
+    }
+    if (!trafo_history_.empty()) {
+        const auto& newest = trafo_history_.newest();
+        auto distance = max(abs(newest.t - trafo_.t));
+        if (distance > 100 * meters) {
+            std::stringstream sstr;
+            sstr << "Detected large interpolation distance: " << distance << " old = " << newest.t << " new = " << trafo_.t;
+            THROW_OR_ABORT(sstr.str());
+        }
     }
     trafo_history_.append(trafo_, time);
 }
@@ -1394,17 +1414,17 @@ void SceneNode::append_skidmarks_to_queue(
 }
 
 const FixedArray<ScenePos, 3>& SceneNode::position() const {
-    std::shared_lock lock{ mutex_ };
+    std::shared_lock lock{ pose_mutex_ };
     return trafo_.t;
 }
 
 FixedArray<float, 3> SceneNode::rotation() const {
-    std::shared_lock lock{ mutex_ };
+    std::shared_lock lock{ pose_mutex_ };
     return matrix_2_tait_bryan_angles(rotation_matrix_);
 }
 
 float SceneNode::scale() const {
-    std::shared_lock lock{ mutex_ };
+    std::shared_lock lock{ pose_mutex_ };
     return scale_;
 }
 
@@ -1493,6 +1513,9 @@ void SceneNode::set_relative_pose(
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix(std::chrono::steady_clock::time_point time) const {
     std::shared_lock lock{ pose_mutex_ };
+    if (trafo_history_invalidated_ && (time == std::chrono::steady_clock::time_point())) {
+        THROW_OR_ABORT("Attempt to access invalidated transformation");
+    }
     if ((time == std::chrono::steady_clock::time_point()) ||
         (interpolation_mode_ == PoseInterpolationMode::DISABLED))
     {
@@ -1503,26 +1526,13 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix(std::c
     }
 }
 
-TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(std::chrono::steady_clock::time_point time) const {
-    return absolute_model_matrix(LockingStrategy::ACQUIRE_LOCK, time);
-}
-
-TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(
-    LockingStrategy locking_strategy,
-    std::chrono::steady_clock::time_point time) const
+TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(std::chrono::steady_clock::time_point time) const
 {
     auto result = relative_model_matrix(time);
-    std::shared_lock lock{ pose_mutex_, std::defer_lock };
-    if (locking_strategy == LockingStrategy::ACQUIRE_LOCK) {
-        lock.lock();
-    }
     // if (state_ == SceneNodeState::DYNAMIC) {
     //     scene_->delete_node_mutex().notify_reading();
     // }
-    if (parent_ != nullptr) {
-        if (locking_strategy == LockingStrategy::ACQUIRE_LOCK) {
-            lock.unlock();
-        }
+    if (has_parent()) {
         return parent_->absolute_model_matrix(time) * result;
     } else {
         return result;
@@ -1531,6 +1541,9 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::chrono::steady_clock::time_point time) const {
     std::shared_lock lock{ pose_mutex_ };
+    if (trafo_history_invalidated_ && (time == std::chrono::steady_clock::time_point())) {
+        THROW_OR_ABORT("Attempt to access invalidated transformation");
+    }
     if ((time == std::chrono::steady_clock::time_point()) ||
         (interpolation_mode_ == PoseInterpolationMode::DISABLED))
     {
@@ -1543,12 +1556,10 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::ch
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_view_matrix(std::chrono::steady_clock::time_point time) const {
     auto result = relative_view_matrix(time);
-    std::shared_lock lock{ pose_mutex_ };
     // if (state_ == SceneNodeState::DYNAMIC) {
     //     scene_->delete_node_mutex().notify_reading();
     // }
-    if (parent_ != nullptr) {
-        lock.unlock();
+    if (has_parent()) {
         return result * parent_->absolute_view_matrix(time);
     } else {
         return result;
@@ -1569,9 +1580,7 @@ Bijection<TransformationMatrix<float, ScenePos, 3>> SceneNode::absolute_bijectio
     std::chrono::steady_clock::time_point time) const
 {
     auto result = relative_bijection(time);
-    std::shared_lock lock{ pose_mutex_ };
-    if (parent_ != nullptr) {
-        lock.unlock();
+    if (has_parent()) {
         return parent_->absolute_bijection(time) * result;
     } else {
         return result;
@@ -1583,8 +1592,8 @@ FixedArray<float, 3> SceneNode::velocity(
     std::chrono::steady_clock::duration dt) const
 {
     std::shared_lock lock{ pose_mutex_ };
-    auto p0 = absolute_model_matrix(LockingStrategy::NO_LOCK, time - dt);
-    auto p1 = absolute_model_matrix(LockingStrategy::NO_LOCK, time + dt);
+    auto p0 = absolute_model_matrix(time - dt);
+    auto p1 = absolute_model_matrix(time + dt);
     return (p1.t - p0.t).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count() * seconds);
 }
 

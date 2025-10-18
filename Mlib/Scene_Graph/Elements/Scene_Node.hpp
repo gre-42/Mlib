@@ -125,11 +125,6 @@ enum class ChildParentState {
     PARENT_ALREADY_SET
 };
 
-enum class LockingStrategy {
-    NO_LOCK,
-    ACQUIRE_LOCK
-};
-
 enum class PhysicsMaterial: uint32_t;
 enum class RenderingStrategies;
 
@@ -377,9 +372,6 @@ private:
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
     void clear_unsafe();
-    TransformationMatrix<float, ScenePos, 3> absolute_model_matrix(
-        LockingStrategy locking_strategy,
-        std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     uint32_t user_id_;
     Scene* scene_;
     DanglingBaseClassPtr<SceneNode> parent_;

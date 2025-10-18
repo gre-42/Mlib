@@ -27,6 +27,10 @@ public:
         times_.clear();
     }
 
+    bool empty() const {
+        return times_.empty();
+    }
+
     void append(const OffsetAndQuaternion<TDir, TPos>& qo, std::chrono::steady_clock::time_point time) {
         static_assert(length > 0);
         times_.append(time);
@@ -39,6 +43,10 @@ public:
 
     OffsetAndQuaternion<TDir, TPos> get(const Interpolator& interp) const {
         return data_(interp.i0).slerp(data_(interp.i1), interp.alpha);
+    }
+
+    const OffsetAndQuaternion<TDir, TPos>& newest() const {
+        return data_(times_.last());
     }
 
     std::chrono::steady_clock::time_point newest_time() const {

@@ -54,7 +54,6 @@ void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::y_adaptivity),
         args.arguments.at<float>(KnownArgs::y_snappiness),
         scene_config.physics_engine_config.dt);
-    auto& follow_movable_p = *follow_movable;
     linker.link_absolute_movable_and_additional_node(
         scene,
         follower_node,
@@ -65,5 +64,4 @@ void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         followed,
         std::move(follow_movable),
         CURRENT_SOURCE_LOCATION);
-    follow_movable_p.initialize(follower_node);
 }

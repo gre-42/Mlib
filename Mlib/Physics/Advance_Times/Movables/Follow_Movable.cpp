@@ -51,7 +51,7 @@ FollowMovable::~FollowMovable() {
     on_destroy.clear();
 }
 
-void FollowMovable::initialize(DanglingBaseClassRef<SceneNode> follower_node) {
+void FollowMovable::initialize(const DanglingBaseClassRef<SceneNode>& follower_node) {
     initialized_ = true;
     advance_time(NAN);
     follower_node->set_absolute_pose(
@@ -143,6 +143,7 @@ void FollowerMovableNodeSetter::set_scene_node(
         follow_.notify_destroyed(node.get());
     }, loc);
     node->set_absolute_movable({ follow_, loc });
+    follow_.initialize(node);
 }
 
 
