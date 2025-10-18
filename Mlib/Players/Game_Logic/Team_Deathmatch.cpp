@@ -44,9 +44,6 @@ void TeamDeathmatch::handle_respawn() {
     case Objective::LAST_TEAM_STANDING:
         handle_last_team_standing_objective();
         return;
-    case Objective::PHOTOS:
-        handle_photos_objective();
-        return;
     }
     THROW_OR_ABORT("Unknown objective");
 }
@@ -105,9 +102,5 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
 }
 
 void TeamDeathmatch::handle_kill_count_objective() {
-    respawn_individually();
-}
-
-void TeamDeathmatch::handle_photos_objective() {
     respawn_individually();
 }

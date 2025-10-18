@@ -60,7 +60,6 @@ class VehicleSpawners;
 class UserAccount;
 
 enum class GameMode {
-    PHOTOS,
     RALLY,
     RAMMING,
     TEAM_DEATHMATCH

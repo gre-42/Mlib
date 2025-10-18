@@ -24,7 +24,6 @@ private:
     void handle_respawn();
     void handle_kill_count_objective();
     void handle_last_team_standing_objective();
-    void handle_photos_objective();
     VehicleSpawners& spawners_;
     Players& players_;
     Spawner& spawner_;

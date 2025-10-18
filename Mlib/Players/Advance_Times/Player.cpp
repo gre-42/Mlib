@@ -53,7 +53,6 @@ using namespace Mlib;
 
 GameMode Mlib::game_mode_from_string(const std::string& game_mode) {
     static const std::map<std::string, GameMode> m{
-        {"photos", GameMode::PHOTOS},
         {"rally", GameMode::RALLY},
         {"ramming", GameMode::RAMMING},
         {"team_deathmatch", GameMode::TEAM_DEATHMATCH},
