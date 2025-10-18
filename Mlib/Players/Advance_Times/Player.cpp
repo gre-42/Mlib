@@ -1302,6 +1302,7 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
         }
         if (player->team_name() != team_name()) {
             ++stats_.nkills;
+            team()->notify_kill(rigid_body_vehicle);
         }
     }
 }

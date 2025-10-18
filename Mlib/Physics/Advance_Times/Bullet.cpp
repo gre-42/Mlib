@@ -178,8 +178,7 @@ void Bullet::notify_collided(
 void Bullet::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     if (gunner_ != nullptr) {
         gunner_->notify_kill(rigid_body_vehicle);
-    }
-    if (team_ != nullptr) {
+    } else if (team_ != nullptr) {
         team_->notify_kill(rigid_body_vehicle);
     }
 }

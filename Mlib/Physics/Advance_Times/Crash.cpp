@@ -73,11 +73,23 @@ void Crash::notify_impact(
                     base_log->log(sstr.str(), LogEntrySeverity::CRITICAL);
                 }
             }
-            if (rigid_body_.damageable_ != nullptr) {
+            if ((rigid_body_.damageable_ != nullptr) && (rigid_body_.damageable_->health() > 0)) {
                 rigid_body_.damageable_->damage(damage0, DamageSource::CRASH);
+                if (rigid_body_.damageable_->health() <= 0) {
+                    auto driver = rigid_body.drivers_.try_get("driver");
+                    if (driver != nullptr) {
+                        driver->notify_kill(rigid_body_);
+                    }
+                }
             }
-            if (rigid_body.damageable_ != nullptr) {
+            if ((rigid_body.damageable_ != nullptr) && (rigid_body.damageable_->health() > 0)) {
                 rigid_body.damageable_->damage(damage1, DamageSource::CRASH);
+                if (rigid_body.damageable_->health() <= 0) {
+                    auto driver = rigid_body_.drivers_.try_get("driver");
+                    if (driver != nullptr) {
+                        driver->notify_kill(rigid_body_);
+                    }
+                }
             }
         }
     }

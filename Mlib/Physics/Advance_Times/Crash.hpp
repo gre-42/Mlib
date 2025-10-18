@@ -16,7 +16,7 @@ public:
         float lambda_final,
         BaseLog* base_log) override;
 private:
-    const RigidBodyVehicle& rigid_body_;
+    RigidBodyVehicle& rigid_body_;
     float damage_;
 };
 
