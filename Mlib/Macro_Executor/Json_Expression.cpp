@@ -249,6 +249,12 @@ static nlohmann::json eval_recursion(
         if (expression == "%null") {
             return nlohmann::json();
         }
+        if (expression == "%true") {
+            return true;
+        }
+        if (expression == "%false") {
+            return false;
+        }
         nlohmann::json var;
         if ((expression.length() > 1) && (expression[1] == '%')) {
             // static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)/(\\w+)$");
