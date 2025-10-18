@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <stdexcept>
@@ -66,10 +67,13 @@ struct Rgba32 {
             THROW_OR_ABORT("from_float_rgba received value > 1");
         }
         return Rgba32{
-            (unsigned char)(r * 255 + 0.5f),
-            (unsigned char)(g * 255 + 0.5f),
-            (unsigned char)(b * 255 + 0.5f),
-            (unsigned char)(a * 255 + 0.5f)};
+            (unsigned char)(std::round(r * 255)),
+            (unsigned char)(std::round(g * 255)),
+            (unsigned char)(std::round(b * 255)),
+            (unsigned char)(std::round(a * 255))};
+    }
+    static inline Rgba32 from_float_rgb(const FixedArray<float, 4>& rgba) {
+        return from_float_rgba(rgba(0), rgba(1), rgba(2), rgba(3));
     }
 } PACKED;
 #include <Mlib/Packed_End.hpp>

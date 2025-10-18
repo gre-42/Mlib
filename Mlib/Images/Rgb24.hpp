@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <stdexcept>
@@ -59,9 +60,9 @@ struct Rgb24 {
             THROW_OR_ABORT("PpmImage::from_float_grayscale received " + std::to_string(grayscale) + ">1");
         }
         return Rgb24{
-            (unsigned char)(grayscale * 255 + 0.5f),
-            (unsigned char)(grayscale * 255 + 0.5f),
-            (unsigned char)(grayscale * 255 + 0.5f)};
+            (unsigned char)(std::round(grayscale * 255)),
+            (unsigned char)(std::round(grayscale * 255)),
+            (unsigned char)(std::round(grayscale * 255))};
     }
     static inline Rgb24 from_float_rgb(float r, float g, float b) {
         if (std::isnan(r) || std::isnan(g) || std::isnan(b)) {
@@ -77,9 +78,12 @@ struct Rgb24 {
             THROW_OR_ABORT("PpmImage::from_float_rgb received value > 1");
         }
         return Rgb24{
-            (unsigned char)(r * 255 + 0.5f),
-            (unsigned char)(g * 255 + 0.5f),
-            (unsigned char)(b * 255 + 0.5f)};
+            (unsigned char)(std::round(r * 255)),
+            (unsigned char)(std::round(g * 255)),
+            (unsigned char)(std::round(b * 255))};
+    }
+    static inline Rgb24 from_float_rgb(const FixedArray<float, 3>& rgb) {
+        return from_float_rgb(rgb(0), rgb(1), rgb(2));
     }
 } PACKED;
 #include <Mlib/Packed_End.hpp>
