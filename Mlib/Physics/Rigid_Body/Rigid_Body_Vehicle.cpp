@@ -46,7 +46,13 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 
+enum class WheelConstraintType {
+    PLANES,
+    ROD
+};
+
 static const float WHEEL_RADIUS = 0.25f;
+static const auto WHEEL_CONSTRAINT_TYPE = WheelConstraintType::ROD;
 
 using namespace Mlib;
 
@@ -317,55 +323,100 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         auto T1 = tire.rbp->abs_transformation();
         auto abs_vehicle_mount_0 = T0.transform(tire.vehicle_mount_0.casted<ScenePos>());
         auto abs_vertical_line = T0.rotate(tire.vertical_line);
-        // Vertical constraints
-        {
-            c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
-                rbp_,
-                *tire.rbp,
-                LineEqualityConstraint{
-                    .pec = PointEqualityConstraint{
-                        .p0 = abs_vehicle_mount_0,
-                        .p1 = T1.t,
-                        .beta = c.cfg.point_equality_beta
-                    },
-                    .null_space = abs_vertical_line
-                }));
-            // Disabled because this code prevents all but the vertical axis
-            // from rotating when the time step is small.
-            // c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
-            //     rbp_,
-            //     *tire.rbp,
-            //     LineEqualityConstraint{
-            //         .pec = PointEqualityConstraint{
-            //             .p0 = T0.transform(tire.vehicle_mount_1.casted<ScenePos>()),
-            //             .p1 = T1.t(),
-            //             .beta = c.cfg.point_equality_beta
-            //         },
-            //         .null_space = abs_vertical_line
-            //     }));
-        }
-        // Horizontal constraints
-        {
-            auto plane_normal = T0.rotate(tire.rotation_axis());
-            size_t npoints = 3;
-            for (size_t point_id = 0; point_id < npoints; ++point_id) {
-                float angle = (float)point_id / (float)npoints * 2 * (float)M_PI;
-                FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
-                auto p1 = T1.transform((tire.radius * p1r).casted<ScenePos>());
-                auto p0 = p1 - plane_normal.casted<ScenePos>() * dot0d(plane_normal.casted<ScenePos>(), p1 - abs_vehicle_mount_0);
-                c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+        auto rod0f = T0.rotate(tire.rotation_axis());
+        auto rod0 = rod0f.casted<ScenePos>();
+        auto rod1f = T1.R.column(0);
+        auto rod1 = rod1f.casted<ScenePos>();
+        if (WHEEL_CONSTRAINT_TYPE == WheelConstraintType::PLANES) {
+            // Vertical constraints
+            {
+                c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
                     rbp_,
                     *tire.rbp,
-                    BoundedPlaneEqualityConstraint{
-                        PlaneEqualityConstraint{
+                    LineEqualityConstraint{
+                        .pec = PointEqualityConstraint{
+                            .p0 = abs_vehicle_mount_0,
+                            .p1 = T1.t,
+                            .beta = c.cfg.point_equality_beta
+                        },
+                        .null_space = abs_vertical_line
+                    }));
+                // Disabled because this code prevents all but the vertical axis
+                // from rotating when the time step is small.
+                // c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
+                //     rbp_,
+                //     *tire.rbp,
+                //     LineEqualityConstraint{
+                //         .pec = PointEqualityConstraint{
+                //             .p0 = T0.transform(tire.vehicle_mount_1.casted<ScenePos>()),
+                //             .p1 = T1.t(),
+                //             .beta = c.cfg.point_equality_beta
+                //         },
+                //         .null_space = abs_vertical_line
+                //     }));
+            }
+            // Horizontal constraints
+            {
+                size_t npoints = 3;
+                for (size_t point_id = 0; point_id < npoints; ++point_id) {
+                    float angle = (float)point_id / (float)npoints * 2 * (float)M_PI;
+                    FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
+                    auto p1 = T1.transform((tire.radius * p1r).casted<ScenePos>());
+                    auto p0 = p1 - rod0 * dot0d(rod0, p1 - abs_vehicle_mount_0);
+                    c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+                        rbp_,
+                        *tire.rbp,
+                        BoundedPlaneEqualityConstraint{
+                            PlaneEqualityConstraint{
+                                .pec = PointEqualityConstraint{
+                                    .p0 = p0,
+                                    .p1 = p1,
+                                    .beta = c.cfg.plane_equality_beta
+                                },
+                                .plane_normal = rod0f
+                            }
+                        }));
+                }
+            }
+        }
+        if (WHEEL_CONSTRAINT_TYPE == WheelConstraintType::ROD) {
+            // Line constraint
+            {
+                for (auto dr = -0.5; dr <= 0.5; dr += 1) {
+                    auto p0 = abs_vehicle_mount_0 + rod0 * dr;
+                    auto p1 = T1.t + rod1 * dr;
+                    c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
+                        rbp_,
+                        *tire.rbp,
+                        LineEqualityConstraint{
                             .pec = PointEqualityConstraint{
                                 .p0 = p0,
                                 .p1 = p1,
-                                .beta = c.cfg.plane_equality_beta
+                                .beta = c.cfg.point_equality_beta
                             },
-                            .plane_normal = plane_normal
-                        }
-                    }));
+                            .null_space = abs_vertical_line
+                        }));
+                }
+            }
+            // Horizontal constraints
+            {
+                for (auto dy = -0.5; dy <= 0.5; dy += 1) {
+                    auto p0 = abs_vehicle_mount_0 + abs_vertical_line.casted<ScenePos>() * dy;
+                    auto p1 = p0 - rod1 * dot0d(rod1, p0 - T1.t);
+                    c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+                        rbp_,
+                        *tire.rbp,
+                        BoundedPlaneEqualityConstraint{
+                            PlaneEqualityConstraint{
+                                .pec = PointEqualityConstraint{
+                                    .p0 = p0,
+                                    .p1 = p1,
+                                    .beta = c.cfg.plane_equality_beta
+                                },
+                                .plane_normal = rod0f
+                            }
+                        }));
+                }
             }
         }
         // Shock absorber constraint
