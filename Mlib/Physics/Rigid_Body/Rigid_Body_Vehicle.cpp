@@ -46,13 +46,13 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 
-enum class WheelConstraintType {
-    PLANES,
-    ROD
+enum class WheelVerticalConstraintType {
+    SINGLE,
+    PAIR
 };
 
 static const float WHEEL_RADIUS = 0.25f;
-static const auto WHEEL_CONSTRAINT_TYPE = WheelConstraintType::ROD;
+static const auto WHEEL_VERTICAL_CONSTRAINT_TYPE = WheelVerticalConstraintType::PAIR;
 
 using namespace Mlib;
 
@@ -328,7 +328,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         auto rod0 = rod0f.casted<ScenePos>();
         auto rod1f = T1.R.column(0);
         auto rod1 = rod1f.casted<ScenePos>();
-        if (WHEEL_CONSTRAINT_TYPE == WheelConstraintType::PLANES) {
+        if (WHEEL_VERTICAL_CONSTRAINT_TYPE == WheelVerticalConstraintType::SINGLE) {
             // Vertical constraints
             {
                 c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
@@ -357,7 +357,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 //     }));
             }
         }
-        if (WHEEL_CONSTRAINT_TYPE == WheelConstraintType::ROD) {
+        if (WHEEL_VERTICAL_CONSTRAINT_TYPE == WheelVerticalConstraintType::PAIR) {
             auto p01 = abs_vehicle_mount_0 + abs_vertical_line * dot0d(abs_vertical_line, T1.t - abs_vehicle_mount_0);
             // Line constraint
             {
