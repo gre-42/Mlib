@@ -322,7 +322,8 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
         auto T0 = rbp_.abs_transformation();
         auto T1 = tire.rbp->abs_transformation();
         auto abs_vehicle_mount_0 = T0.transform(tire.vehicle_mount_0.casted<ScenePos>());
-        auto abs_vertical_line = T0.rotate(tire.vertical_line);
+        auto abs_vertical_linef = T0.rotate(tire.vertical_line);
+        auto abs_vertical_line = abs_vertical_linef.casted<ScenePos>();
         auto rod0f = T0.rotate(tire.rotation_axis());
         auto rod0 = rod0f.casted<ScenePos>();
         auto rod1f = T1.R.column(0);
@@ -339,7 +340,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                             .p1 = T1.t,
                             .beta = c.cfg.point_equality_beta
                         },
-                        .null_space = abs_vertical_line
+                        .null_space = abs_vertical_linef
                     }));
                 // Disabled because this code prevents all but the vertical axis
                 // from rotating when the time step is small.
@@ -355,35 +356,13 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 //         .null_space = abs_vertical_line
                 //     }));
             }
-            // Horizontal constraints
-            {
-                size_t npoints = 3;
-                for (size_t point_id = 0; point_id < npoints; ++point_id) {
-                    float angle = (float)point_id / (float)npoints * 2 * (float)M_PI;
-                    FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
-                    auto p1 = T1.transform((tire.radius * p1r).casted<ScenePos>());
-                    auto p0 = p1 - rod0 * dot0d(rod0, p1 - abs_vehicle_mount_0);
-                    c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
-                        rbp_,
-                        *tire.rbp,
-                        BoundedPlaneEqualityConstraint{
-                            PlaneEqualityConstraint{
-                                .pec = PointEqualityConstraint{
-                                    .p0 = p0,
-                                    .p1 = p1,
-                                    .beta = c.cfg.plane_equality_beta
-                                },
-                                .plane_normal = rod0f
-                            }
-                        }));
-                }
-            }
         }
         if (WHEEL_CONSTRAINT_TYPE == WheelConstraintType::ROD) {
+            auto p01 = abs_vehicle_mount_0 + abs_vertical_line * dot0d(abs_vertical_line, T1.t - abs_vehicle_mount_0);
             // Line constraint
             {
                 for (auto dr = -0.5; dr <= 0.5; dr += 1) {
-                    auto p0 = abs_vehicle_mount_0 + rod0 * dr;
+                    auto p0 = p01 + rod0 * dr;
                     auto p1 = T1.t + rod1 * dr;
                     c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
                         rbp_,
@@ -394,29 +373,54 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                                 .p1 = p1,
                                 .beta = c.cfg.point_equality_beta
                             },
-                            .null_space = abs_vertical_line
+                            .null_space = abs_vertical_linef
                         }));
                 }
             }
-            // Horizontal constraints
-            {
-                for (auto dy = -0.5; dy <= 0.5; dy += 1) {
-                    auto p0 = abs_vehicle_mount_0 + abs_vertical_line.casted<ScenePos>() * dy;
-                    auto p1 = p0 - rod1 * dot0d(rod1, p0 - T1.t);
-                    c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
-                        rbp_,
-                        *tire.rbp,
-                        BoundedPlaneEqualityConstraint{
-                            PlaneEqualityConstraint{
-                                .pec = PointEqualityConstraint{
-                                    .p0 = p0,
-                                    .p1 = p1,
-                                    .beta = c.cfg.plane_equality_beta
-                                },
-                                .plane_normal = rod0f
-                            }
-                        }));
-                }
+            // // Horizontal constraints
+            // // This adds constraints that do not rotate, i.e. are fixed w.r.t. the vehicle.
+            // // The rotating horizontal constraints below provide better results.
+            // {
+            //     for (auto dy = -0.5; dy <= 0.5; dy += 1) {
+            //         auto p0 = p01 + abs_vertical_line * dy;
+            //         auto p1 = p0 - rod1 * dot0d(rod1, p0 - T1.t);
+            //         c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+            //             rbp_,
+            //             *tire.rbp,
+            //             BoundedPlaneEqualityConstraint{
+            //                 PlaneEqualityConstraint{
+            //                     .pec = PointEqualityConstraint{
+            //                         .p0 = p0,
+            //                         .p1 = p1,
+            //                         .beta = c.cfg.plane_equality_beta
+            //                     },
+            //                     .plane_normal = rod0f
+            //                 }
+            //             }));
+            //     }
+            // }
+        }
+        // Horizontal constraints
+        {
+            size_t npoints = 3;
+            for (size_t point_id = 0; point_id < npoints; ++point_id) {
+                float angle = (float)point_id / (float)npoints * 2 * (float)M_PI;
+                FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
+                auto p1 = T1.transform((tire.radius * p1r).casted<ScenePos>());
+                auto p0 = p1 - rod0 * dot0d(rod0, p1 - abs_vehicle_mount_0);
+                c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+                    rbp_,
+                    *tire.rbp,
+                    BoundedPlaneEqualityConstraint{
+                        PlaneEqualityConstraint{
+                            .pec = PointEqualityConstraint{
+                                .p0 = p0,
+                                .p1 = p1,
+                                .beta = c.cfg.plane_equality_beta
+                            },
+                            .plane_normal = rod0f
+                        }
+                    }));
             }
         }
         // Shock absorber constraint
@@ -426,9 +430,9 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 *tire.rbp,
                 BoundedShockAbsorberConstraint{
                     .constraint{
-                        .normal_impulse{.normal = -abs_vertical_line},
+                        .normal_impulse{.normal = -abs_vertical_linef},
                         .fit = 1.f,
-                        .distance = dot0d((abs_vehicle_mount_0 - tire.rbp->abs_position()).casted<float>(), abs_vertical_line),
+                        .distance = dot0d((abs_vehicle_mount_0 - tire.rbp->abs_position()).casted<float>(), abs_vertical_linef),
                         .Ks = tire.sKs,
                         .Ka = tire.sKa,
                         .exponent = tire.sKe
