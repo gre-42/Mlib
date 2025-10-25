@@ -3,13 +3,14 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 
+using namespace std::string_view_literals;
 using namespace Mlib;
 
 static VerticalSubdivision single_vertical_subdivision_from_string(const std::string& s) {
     static const std::map<std::string_view, VerticalSubdivision> m{
-        {"none", VerticalSubdivision::NONE},
-        {"socle", VerticalSubdivision::SOCLE},
-        {"entrances", VerticalSubdivision::ENTRANCES}
+        {"none"sv, VerticalSubdivision::NONE},
+        {"socle"sv, VerticalSubdivision::SOCLE},
+        {"entrances"sv, VerticalSubdivision::ENTRANCES}
     };
     auto it = m.find(s);
     if (it == m.end()) {

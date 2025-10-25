@@ -3,7 +3,7 @@
 
 using namespace Mlib;
 
-static void print_char(char c) {
+void Mlib::print_char(char c) {
     char v = (c >= ' ') && (c <= '~') ? c : '.';
     linfo() << "Read: " << std::hex << "0x" << std::setfill('0') << std::setw(2) << (uint32_t)(uint8_t)c << " - " << v;
 }

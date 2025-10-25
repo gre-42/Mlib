@@ -27,6 +27,7 @@ inline bool any(IoVerbosity v) {
     return v != IoVerbosity::SILENT;
 }
 
+void print_char(char c);
 void print_chars(std::span<char> span, const char* msg = nullptr);
 
 template <class T>

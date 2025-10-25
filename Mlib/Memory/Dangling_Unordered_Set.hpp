@@ -2,7 +2,6 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Ptr.hpp>
 #include <Mlib/Source_Location.hpp>
-#include <optional>
 #include <unordered_set>
 #include <vector>
 
