@@ -62,8 +62,8 @@ find_package(SDL2)
 # MlibRender contains glad_gl.cpp and glad_vulkan.cpp
 find_package(Vulkan)
 find_package(OpenCV OPTIONAL_COMPONENTS features2d)
-# The "system" component is required by Asio.
-find_package(Boost REQUIRED COMPONENTS system)
+# The "system" component was required by Asio, but it is header-only now.
+find_package(Boost REQUIRED)
 if (WITH_OPENSSL)
 	find_package(OpenSSL REQUIRED)
 endif()
