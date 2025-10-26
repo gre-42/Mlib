@@ -15,6 +15,8 @@ class DanglingValueUnorderedMap {
 public:
     using Element = DestructionFunctionsTokensRef<TValue>;
     using Elements = std::unordered_map<TKey, Element>;
+    using iterator = Elements::iterator;
+    using const_iterator = Elements::const_iterator;
     DanglingValueUnorderedMap() = default;
     DanglingValueUnorderedMap(const DanglingValueUnorderedMap&) = default;
     ~DanglingValueUnorderedMap() = default;

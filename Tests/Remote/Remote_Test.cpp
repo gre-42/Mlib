@@ -1,8 +1,11 @@
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Remote/Distributed_System.hpp>
-#include <Mlib/Remote/Incremental_Objects/Communicator_Proxy.hpp>
-#include <Mlib/Remote/Incremental_Objects/Communicator_Proxy_Factory.hpp>
+#include <Mlib/Remote/Communicator_Proxies.hpp>
+#include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
+#include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
+#include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy.hpp>
+#include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy_Factory.hpp>
+#include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
 #include <Mlib/Remote/Sockets/Udp_Node.hpp>
 #include <cstdint>
 
@@ -13,7 +16,7 @@ enum class ObjectType: uint32_t {
     STRING
 };
 
-class SharedInteger: public ISharedObject {
+class SharedInteger: public IIncrementalObject {
 public:
     explicit SharedInteger(int32_t i)
     : value_{ i }
@@ -32,7 +35,7 @@ private:
     int32_t value_;
 };
 
-class SharedString: public ISharedObject {
+class SharedString: public IIncrementalObject {
 public:
     explicit SharedString(std::string s)
     : value_{ std::move(s) }
@@ -53,12 +56,12 @@ private:
     std::string value_;
 };
 
-class SharedObjectFactory: public ISharedObjectFactory {
+class RemoteObjectFactory: public IIncrementalObjectFactory {
 public:
-    SharedObjectFactory()
+    RemoteObjectFactory()
         : object_pool_{ InObjectPoolDestructor::CLEAR }
     {}
-    virtual DanglingBaseClassRef<ISharedObject> create_shared_object(std::istream& istr) override {
+    virtual DanglingBaseClassRef<IIncrementalObject> create_shared_object(std::istream& istr) override {
         auto t = read_binary<ObjectType>(istr, "object type", IoVerbosity::SILENT);
         switch (t) {
         case ObjectType::INT32:
@@ -83,15 +86,21 @@ void test_remote() {
 
     SharedString s{ "Hello world" };
 
-    SharedObjectFactory shared_object_factory;
-    CommunicatorProxyFactory communicator_proxy_factory{
-        {shared_object_factory, CURRENT_SOURCE_LOCATION} };
+    RemoteObjectFactory shared_object_factory;
+    IncrementalRemoteObjects server_objects;
+    IncrementalRemoteObjects client_objects;
+    IncrementalCommunicatorProxyFactory server_communicator_proxy_factory{
+        {shared_object_factory, CURRENT_SOURCE_LOCATION},
+        {server_objects, CURRENT_SOURCE_LOCATION} };
+    IncrementalCommunicatorProxyFactory client_communicator_proxy_factory{
+        {shared_object_factory, CURRENT_SOURCE_LOCATION},
+        {client_objects, CURRENT_SOURCE_LOCATION} };
 
-    DistributedSystem server_sys{
-        {communicator_proxy_factory, CURRENT_SOURCE_LOCATION},
+    CommunicatorProxies server_sys{
+        {server_communicator_proxy_factory, CURRENT_SOURCE_LOCATION},
         42};
-    DistributedSystem client_sys{
-        {communicator_proxy_factory, CURRENT_SOURCE_LOCATION},
+    CommunicatorProxies client_sys{
+        {client_communicator_proxy_factory, CURRENT_SOURCE_LOCATION},
         43};
 
     client_sys.add_handshake_socket({client, CURRENT_SOURCE_LOCATION});
@@ -101,14 +110,17 @@ void test_remote() {
     //     TransmissionType::UNICAST);
 
     size_t cycle = 0;
+    auto print = [&](){
+        linfo() << std::setw(2) << cycle++ <<
+            ": server: " << server_sys << ' ' << server_objects <<
+            " - client: " << client_sys << ' ' << client_objects;
+    };
     auto send_and_receive = [&](){
-        if (cycle == 0) {
-            linfo() << std::setw(2) << cycle++ << ": server: " << server_sys << " - client: " << client_sys;
-        }
+        print();
         server_sys.send_and_receive(TransmissionType::UNICAST); std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        linfo() << std::setw(2) << cycle++ << ": server: " << server_sys << " - client: " << client_sys;
+        print();
         client_sys.send_and_receive(TransmissionType::UNICAST); std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        linfo() << std::setw(2) << cycle++ << ": server: " << server_sys << " - client: " << client_sys;
+        print();
     };
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
@@ -119,7 +131,7 @@ void test_remote() {
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
     }
-    server_sys.add_object({s, CURRENT_SOURCE_LOCATION});
+    server_objects.add_new_object({s, CURRENT_SOURCE_LOCATION});
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
     }

@@ -1,75 +1,62 @@
-#include "Distributed_System.hpp"
+#include "Communicator_Proxies.hpp"
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Remote/IReceive_Socket.hpp>
 
 using namespace Mlib;
 
-DistributedSystem::DistributedSystem(
+CommunicatorProxies::CommunicatorProxies(
     DanglingBaseClassRef<ICommunicatorProxyFactory> communicator_proxy_factory,
     RemoteCommunicatorId location_id)
-    : next_object_id_{ 0 }
-    , communicator_proxy_factory_{ std::move(communicator_proxy_factory) }
+    : communicator_proxy_factory_{ std::move(communicator_proxy_factory) }
     , location_id_{ location_id }
 {}
 
-DistributedSystem::~DistributedSystem() = default;
+CommunicatorProxies::~CommunicatorProxies() = default;
 
-void DistributedSystem::add_receive_socket(DanglingBaseClassRef<IReceiveSocket> socket) {
+void CommunicatorProxies::add_receive_socket(DanglingBaseClassRef<IReceiveSocket> socket) {
     receive_sockets_.emplace(std::move(socket.ptr()), CURRENT_SOURCE_LOCATION);
 }
 
-void DistributedSystem::add_handshake_socket(DanglingBaseClassRef<ISendSocket> socket)
+void CommunicatorProxies::add_handshake_socket(DanglingBaseClassRef<ISendSocket> socket)
 {
     auto proxy = communicator_proxy_factory_->create_communicator_proxy(socket);
     handshake_communicator_proxies_.emplace_back(std::move(proxy), proxy.loc());
 }
 
-void DistributedSystem::add_object(DanglingBaseClassRef<ISharedObject> object)
-{
-    if (!objects_.emplace(
-        next_object_id_,
-        std::move(object),
-        CURRENT_SOURCE_LOCATION).second)
-    {
-        verbose_abort("Could not add remote object");
-    }
-    ++next_object_id_;
-}
-
-void DistributedSystem::send_and_receive(TransmissionType transmission_type) {
+void CommunicatorProxies::send_and_receive(TransmissionType transmission_type) {
     send(transmission_type);
     receive();
 }
 
-void DistributedSystem::send(TransmissionType transmission_type) {
+void CommunicatorProxies::send(TransmissionType transmission_type) {
     switch (transmission_type) {
     case TransmissionType::HANDSHAKE:
         for (auto& proxy : handshake_communicator_proxies_) {
             std::stringstream sstr;
             write_binary(sstr, location_id_, "location ID");
-            proxy->send_home(objects_, sstr);
+            proxy->send_home(sstr);
         }
         return;
     case TransmissionType::UNICAST:
         for (auto& [_, proxy] : unicast_communicator_proxies_) {
             std::stringstream sstr;
             write_binary(sstr, location_id_, "location ID");
-            proxy->send_home(objects_, sstr);
+            proxy->send_home(sstr);
         }
         return;
     case TransmissionType::MULTICAST:
         for (auto& [_, proxy] : multicast_communicator_proxies_) {
             std::stringstream sstr;
             write_binary(sstr, location_id_, "location ID");
-            proxy->send_home(objects_, sstr);
+            proxy->send_home(sstr);
         }
         return;
     }
     THROW_OR_ABORT("Unknown transmission type");
 }
 
-void DistributedSystem::receive() {
+void CommunicatorProxies::receive() {
     for (auto& s : receive_sockets_) {
         while (true) {
             std::stringstream sstr;
@@ -92,21 +79,20 @@ void DistributedSystem::receive() {
                 }
             }();
             // linfo() << "Receive at location " << location_id_;
-            communicator_proxy->receive_from_home(objects_, sstr);
+            communicator_proxy->receive_from_home(sstr);
         }
     }
 }
 
-void DistributedSystem::print(std::ostream& ostr) const {
+void CommunicatorProxies::print(std::ostream& ostr) const {
     ostr <<
-        "#objects: " << objects_.size() <<
-        " #receive_sockets: " << receive_sockets_.size() <<
+        "#receive_sockets: " << receive_sockets_.size() <<
         " #handshake: " << handshake_communicator_proxies_.size() <<
         " #unicast: " << unicast_communicator_proxies_.size() <<
         " #multicast: " << multicast_communicator_proxies_.size();
 }
 
-std::ostream& Mlib::operator << (std::ostream& ostr, const DistributedSystem& distributed_system) {
+std::ostream& Mlib::operator << (std::ostream& ostr, const CommunicatorProxies& distributed_system) {
     distributed_system.print(ostr);
     return ostr;
 }
