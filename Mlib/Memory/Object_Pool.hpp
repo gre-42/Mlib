@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Source_Location.hpp>
@@ -51,7 +52,7 @@ private:
     ObjectPool* p_;
 };
 
-class ObjectPool {
+class ObjectPool: public virtual DanglingBaseClass {
     ObjectPool(const ObjectPool&) = delete;
     ObjectPool& operator = (const ObjectPool&) = delete;
 public:

@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-inline YawPitchLookAtNodes& get_yaw_pitch_look_at_nodes(DanglingBaseClassRef<SceneNode> node) {
+inline YawPitchLookAtNodes& get_yaw_pitch_look_at_nodes(const DanglingBaseClassRef<SceneNode>& node) {
     auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&node->get_relative_movable());
     if (ypln == nullptr) {
         THROW_OR_ABORT("Relative movable is not a ypln");

@@ -87,8 +87,8 @@ void test_remote() {
     SharedString s{ "Hello world" };
 
     RemoteObjectFactory shared_object_factory;
-    IncrementalRemoteObjects server_objects;
-    IncrementalRemoteObjects client_objects;
+    IncrementalRemoteObjects server_objects{ 42 };
+    IncrementalRemoteObjects client_objects{ 43 };
     IncrementalCommunicatorProxyFactory server_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
         {server_objects, CURRENT_SOURCE_LOCATION} };
@@ -131,7 +131,7 @@ void test_remote() {
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
     }
-    server_objects.add_new_object({s, CURRENT_SOURCE_LOCATION});
+    server_objects.add_local_object({s, CURRENT_SOURCE_LOCATION});
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
     }

@@ -4,10 +4,13 @@
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/One_Shot_Audio.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
+#include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
+#include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 
@@ -19,6 +22,7 @@ PhysicsScene::PhysicsScene(
     std::string rendering_resources_name,
     unsigned int max_anisotropic_filtering_level,
     SceneConfig& scene_config,
+    AssetReferences& asset_references,
     SceneNodeResources& scene_node_resources,
     ParticleResources& particle_resources,
     TrailResources& trail_resources,
@@ -35,6 +39,7 @@ PhysicsScene::PhysicsScene(
     , ui_focus_{ ui_focus }
     , name_{ std::move(name) }
     , scene_config_{ scene_config }
+    , asset_references_{ asset_references, CURRENT_SOURCE_LOCATION }
     , scene_node_resources_{ scene_node_resources }
     , particle_resources_{ particle_resources }
     , rendering_resources_{
@@ -153,17 +158,9 @@ PhysicsScene::PhysicsScene(
           [this](){ paused_changed_.emit(); }}
     , busy_state_provider_guard_{ dependent_sleeper, physics_set_fps_ }
     , gefp_{ physics_engine_ }
-    , physics_iteration_{
-          scene_node_resources,
-          rendering_resources_,
-          scene_,
-          dynamic_world_,
-          physics_engine_,
-          delete_node_mutex_,
-          scene_config_.physics_engine_config,
-          &fifo_log_}
     , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, std::move(translator) }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
+    , remote_counter_user_{ { usage_counter_, CURRENT_SOURCE_LOCATION } }
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 {
     air_particles_.smoke_particle_generator.set_bullet_generator(bullet_generator_);
@@ -188,6 +185,40 @@ PhysicsScene::~PhysicsScene() {
 }
 
 // Misc
+void PhysicsScene::create_physics_iteration(
+    const std::optional<RemoteParams>& remote_params)
+{
+    if (physics_iteration_ != nullptr) {
+        THROW_OR_ABORT("Physics iteration already created");
+    }
+    if (remote_scene_ != nullptr) {
+        THROW_OR_ABORT("Remote scene already created");
+    }
+    std::function<void(std::chrono::steady_clock::time_point)> send_and_receive;
+    if (remote_params.has_value()) {
+        remote_scene_ = std::make_unique<RemoteScene>(
+            DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
+            remote_params->ip,
+            remote_params->port,
+            remote_params->role,
+            remote_params->site_id);
+        send_and_receive = [this](std::chrono::steady_clock::time_point time){
+            remote_scene_->send_and_receive(time);
+        };
+        remote_counter_user_.set(true);
+    }
+    physics_iteration_ = std::make_unique<PhysicsIteration>(
+        scene_node_resources_,
+        rendering_resources_,
+        scene_,
+        dynamic_world_,
+        physics_engine_,
+        std::move(send_and_receive),
+        delete_node_mutex_,
+        scene_config_.physics_engine_config,
+        &fifo_log_);
+}
+
 void PhysicsScene::start_physics_loop(
     const std::string& thread_name,
     ThreadAffinity thread_affinity)
@@ -195,12 +226,22 @@ void PhysicsScene::start_physics_loop(
     if (physics_loop_ != nullptr) {
         THROW_OR_ABORT("physics loop already started");
     }
+    if (physics_iteration_ == nullptr) {
+        THROW_OR_ABORT("physics iteration not created");
+    }
     physics_loop_ = std::make_unique<PhysicsLoop>(
         thread_name,
         thread_affinity,
-        physics_iteration_,
+        *physics_iteration_,
         physics_set_fps_,
         SIZE_MAX);  // nframes
+}
+
+void PhysicsScene::physics_iteration(std::chrono::steady_clock::time_point time) {
+    if (physics_iteration_ == nullptr) {
+        THROW_OR_ABORT("physics iteration not created");
+    }
+    (*physics_iteration_)(time);
 }
 
 void PhysicsScene::print_physics_engine_search_time() const {

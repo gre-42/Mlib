@@ -170,7 +170,7 @@ void VehicleSpawner::set_scene_vehicles(
         if (v->scene_node_name()->empty()) {
             THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Rigid body scene node name is empty");
         }
-        if (v->scene_node()->shutting_down()) {
+        if (v->scene_node()->shutdown_phase() != ShutdownPhase::NONE) {
             THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player received scene node that is shutting down");
         }
     }

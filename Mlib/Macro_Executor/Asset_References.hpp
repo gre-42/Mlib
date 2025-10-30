@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <list>
 #include <map>
@@ -11,7 +12,7 @@ struct ReplacementParameter;
 class MacroLineExecutor;
 class AssetGroupReplacementParameters;
 
-class AssetReferences {
+class AssetReferences: public DanglingBaseClass {
     AssetReferences(const AssetReferences&) = delete;
     AssetReferences& operator = (const AssetReferences&) = delete;
 

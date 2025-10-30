@@ -206,12 +206,14 @@ void test_physics_engine(unsigned int seed) {
     };
     scene_node_resources.register_gravity(VariableAndHash<std::string>{"world"}, { 0.f, -9.8f * meters / squared(seconds), 0.f });
     DynamicWorld dynamic_world{ scene_node_resources, VariableAndHash<std::string>{"world"} };
+    std::function<void(std::chrono::steady_clock::time_point)> send_and_receive;
     PhysicsIteration pi{
         scene_node_resources,
         rendering_resources,
         scene,
         dynamic_world,
         pe,
+        send_and_receive,
         delete_node_mutex,
         physics_cfg };
     delete_node_mutex.clear_deleter_thread();

@@ -125,6 +125,12 @@ enum class ChildParentState {
     PARENT_ALREADY_SET
 };
 
+enum class ShutdownPhase {
+    NONE,
+    IN_PROGRESS,
+    FINISHED
+};
+
 enum class PhysicsMaterial: uint32_t;
 enum class RenderingStrategies;
 
@@ -152,7 +158,7 @@ public:
         uint32_t user_id = UINT32_MAX);
     virtual ~SceneNode() override;
     virtual void shutdown();
-    bool shutting_down() const;
+    ShutdownPhase shutdown_phase() const;
 
     void set_absolute_movable(DanglingBaseClassRef<IAbsoluteMovable> absolute_movable);
     IAbsoluteMovable& get_absolute_movable() const;
@@ -406,8 +412,7 @@ private:
     SceneNodeState state_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable SafeAtomicRecursiveSharedMutex pose_mutex_;
-    std::atomic_bool shutting_down_;
-    std::atomic_bool shutdown_called_;
+    ShutdownPhase shutdown_phase_;
     std::string debug_message_;
 };
 

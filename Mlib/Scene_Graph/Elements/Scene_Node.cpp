@@ -77,8 +77,7 @@ SceneNode::SceneNode(
     , interpolation_mode_{ interpolation_mode }
     , domain_{ domain }
     , state_{ SceneNodeState::DETACHED }
-    , shutting_down_{ false }
-    , shutdown_called_{ false }
+    , shutdown_phase_{ ShutdownPhase::NONE }
 {
     if (interpolation_mode == PoseInterpolationMode::UNDEFINED) {
         THROW_OR_ABORT("Scene node pose interpolation mode is undefined");
@@ -107,14 +106,14 @@ void SceneNode::shutdown() {
             if (!scene_->shutting_down()) {
                 verbose_abort("ERROR: Static root node is being deleted but scene not shutting down");
             }
-        } else if (!parent_->shutting_down()) {
+        } else if (parent_->shutdown_phase() == ShutdownPhase::NONE) {
             verbose_abort("ERROR: Static child node is being deleted but parent not shutting down");
         }
     }
-    if (shutting_down_) {
-        verbose_abort("Recursive call to SceneNode::shutdown()");
+    if (shutdown_phase_ != ShutdownPhase::NONE) {
+        verbose_abort("SceneNode::shutdown already called");
     }
-    shutting_down_ = true;
+    shutdown_phase_ = ShutdownPhase::IN_PROGRESS;
     destruction_observers.clear();
     destruction_pointers.clear();
     on_destroy.clear();
@@ -122,20 +121,19 @@ void SceneNode::shutdown() {
         verbose_abort("Sticky absolute observer not null");
     }
     clear_unsafe();
-    shutting_down_ = false;
-    shutdown_called_ = true;
+    shutdown_phase_ = ShutdownPhase::FINISHED;
 }
 
 SceneNode::~SceneNode() {
-    if (!shutdown_called_) {
+    if (shutdown_phase_ != ShutdownPhase::FINISHED) {
         verbose_abort("SceneNode::shutdown not called before dtor");
     }
 }
 
-bool SceneNode::shutting_down() const {
+ShutdownPhase SceneNode::shutdown_phase() const {
     // The destruction order is specified explicitly
     // in the "shutdown()" method.
-    return shutting_down_;
+    return shutdown_phase_;
 }
 
 void SceneNode::set_parent(DanglingBaseClassRef<SceneNode> parent) {
@@ -442,7 +440,7 @@ void SceneNode::clear() {
     if (scene_ != nullptr) {
         scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
     }
-    if (shutting_down()) {
+    if (shutdown_phase() == ShutdownPhase::FINISHED) {
         verbose_abort("Node to be cleared is shutting down");
     }
     clear_unsafe();
@@ -471,8 +469,11 @@ void SceneNode::clear_unsafe() {
     }
     renderables_.clear();
     auto add_child_to_trash = [this](const auto& child){
-        if (child.mapped().scene_node->shutting_down()) {
+        if (child.mapped().scene_node->shutdown_phase() == ShutdownPhase::IN_PROGRESS) {
             verbose_abort("Child node \"" + *child.key() + "\" already shutting down");
+        }
+        if (child.mapped().scene_node->shutdown_phase() == ShutdownPhase::FINISHED) {
+            return;
         }
         child.mapped().scene_node->shutdown();
         if (scene_ != nullptr) {
@@ -531,24 +532,21 @@ DanglingBaseClassRef<const SceneNode> SceneNode::get_child(const VariableAndHash
 void SceneNode::remove_child(const VariableAndHash<std::string>& name) {
     std::scoped_lock lock{ mutex_ };
     if (state_ == SceneNodeState::STATIC) {
-        verbose_abort("Cannot remove child \"" + *name + "\" from static node");
+        verbose_abort("Cannot shutdown child \"" + *name + "\" from static node");
     }
-    auto it = children_.try_extract(name);
-    if (it.empty()) {
-        verbose_abort("Cannot not remove child with name \"" + *name + "\" because it does not exist");
+    auto* it = children_.try_get(name);
+    if (it == nullptr) {
+        verbose_abort("Cannot shutdown child with name \"" + *name + "\" because it does not exist");
     }
-    if (it.mapped().scene_node->shutting_down()) {
+    if (it->scene_node->shutdown_phase() != ShutdownPhase::NONE) {
         verbose_abort("Child node \"" + *name + "\" shutting down (2)");
     }
-    it.mapped().scene_node->shutdown();
-    if (it.mapped().is_registered) {
+    it->scene_node->shutdown();
+    if (it->is_registered) {
         if (scene_ == nullptr) {
             verbose_abort("Can not deregister child \"" + *name + "\" because scene is not set");
         }
         scene_->unregister_node(name);
-    }
-    if (scene_ != nullptr) {
-        scene_->add_to_trash_can(std::move(it.mapped().scene_node));
     }
 }
 
@@ -913,19 +911,26 @@ void SceneNode::move(
         if (sticky_absolute_observer_ != nullptr) {
             sticky_absolute_observer_->set_absolute_model_matrix(v2.inverted_scaled());
         }
-        for (auto it = children_.begin(); it != children_.end(); ) {
+        for (const auto& [child_name, child] : children_) {
             OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
             try {
-                it->second.scene_node->move(v2, dt, time, scene_node_resources, estate);
+                child.scene_node->move(v2, dt, time, scene_node_resources, estate);
             } catch (const std::runtime_error& e) {
-                THROW_OR_ABORT("Error moving node \"" + *it->first + "\": " + e.what());
+                THROW_OR_ABORT("Error moving node \"" + *child_name + "\": " + e.what());
             }
-            if (it->second.scene_node->to_be_deleted(time)) {
-                remove_child((it++)->first);
-            } else {
-                ++it;
+            if ((child.scene_node->shutdown_phase() == ShutdownPhase::NONE) && child.scene_node->to_be_deleted(time)) {
+                remove_child(child_name);
             }
         }
+        children_.erase_if([this](auto& child){
+            if (child.second.scene_node->shutdown_phase() != ShutdownPhase::NONE) {
+                if (scene_ != nullptr) {
+                    scene_->add_to_trash_can(std::move(child.second.scene_node));
+                }
+                return true;
+            }
+            return false;
+        });
     }
     std::scoped_lock lock{ pose_mutex_ };
     if ((interpolation_mode_ == PoseInterpolationMode::DISABLED) ||
@@ -1070,6 +1075,9 @@ void SceneNode::render(
     assert_true(is_visible_for_user(frame_id.external_render_pass.user_id));
     auto child_m = relative_model_matrix(frame_id.external_render_pass.time);
     std::shared_lock lock{ mutex_ };
+    if (shutdown_phase() != ShutdownPhase::NONE) {
+        return;
+    }
     if (state_ == SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Cannot render detached node");
     }

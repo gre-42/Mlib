@@ -60,7 +60,7 @@ void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
         return;
     }
     if (&destroyed_object == followed_node_.get()) {
-        if (!follower_node_->shutting_down()) {
+        if (follower_node_->shutdown_phase() == ShutdownPhase::NONE) {
             follower_node_ = nullptr;
             scene_.delete_root_node(follower_name_);
         }

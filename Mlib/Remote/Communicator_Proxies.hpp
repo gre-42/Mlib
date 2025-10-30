@@ -3,8 +3,8 @@
 #include <Mlib/Memory/Dangling_Unordered_Set.hpp>
 #include <Mlib/Memory/Dangling_Value_Unordered_Map.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
+#include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <compare>
-#include <cstdint>
 #include <iosfwd>
 
 namespace Mlib {
@@ -13,10 +13,9 @@ class ISendSocket;
 class ICommunicatorProxy;
 class IReceiveSocket;
 
-using RemoteCommunicatorId = uint64_t;
 using ReceiveSockets = DanglingUnorderedSet<IReceiveSocket>;
 using HandshakeProxies = DanglingList<ICommunicatorProxy>;
-using CommunicatorProxyMap = DanglingValueUnorderedMap<RemoteCommunicatorId, ICommunicatorProxy>;
+using CommunicatorProxyMap = DanglingValueUnorderedMap<RemoteSiteId, ICommunicatorProxy>;
 
 enum class TransmissionType {
     HANDSHAKE,
@@ -34,17 +33,17 @@ public:
 class ICommunicatorProxyFactory: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
     virtual DanglingBaseClassRef<ICommunicatorProxy> create_communicator_proxy(
-        DanglingBaseClassRef<ISendSocket> send_socket) = 0;
+        const DanglingBaseClassRef<ISendSocket>& send_socket) = 0;
 };
 
 class CommunicatorProxies {
 public:
     CommunicatorProxies(
-        DanglingBaseClassRef<ICommunicatorProxyFactory> communicator_proxy_factory,
-        RemoteCommunicatorId location_id);
+        const DanglingBaseClassRef<ICommunicatorProxyFactory>& communicator_proxy_factory,
+        RemoteSiteId location_id);
     ~CommunicatorProxies();
-    void add_receive_socket(DanglingBaseClassRef<IReceiveSocket> socket);
-    void add_handshake_socket(DanglingBaseClassRef<ISendSocket> socket);
+    void add_receive_socket(const DanglingBaseClassRef<IReceiveSocket>& socket);
+    void add_handshake_socket(const DanglingBaseClassRef<ISendSocket>& socket);
     void send_and_receive(TransmissionType transmission_type);
     void print(std::ostream& ostr) const;
 private:
@@ -55,7 +54,7 @@ private:
     CommunicatorProxyMap unicast_communicator_proxies_;
     CommunicatorProxyMap multicast_communicator_proxies_;
     DanglingBaseClassRef<ICommunicatorProxyFactory> communicator_proxy_factory_;
-    RemoteCommunicatorId location_id_;
+    RemoteSiteId location_id_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const CommunicatorProxies& distributed_system);

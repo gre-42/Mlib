@@ -13,18 +13,19 @@ using SharedObjects = DanglingValueUnorderedMap<RemoteObjectId, IIncrementalObje
 
 class IncrementalRemoteObjects: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
-    IncrementalRemoteObjects();
+    explicit IncrementalRemoteObjects(RemoteSiteId site_id);
     ~IncrementalRemoteObjects();
-    void add_new_object(DanglingBaseClassRef<IIncrementalObject> object);
-    void add_existing_object(RemoteObjectId id, DanglingBaseClassRef<IIncrementalObject> object);
-    DanglingBaseClassPtr<IIncrementalObject> try_get(RemoteObjectId id) const;
+    void add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
+    void add_remote_object(const RemoteObjectId& id, const DanglingBaseClassRef<IIncrementalObject>& object);
+    DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
     SharedObjects::iterator begin();
     SharedObjects::iterator end();
     size_t size() const;
     void print(std::ostream& ostr) const;
 
 private:
-    RemoteObjectId next_object_id_;
+    RemoteSiteId site_id_;
+    LocalObjectId next_local_object_id_;
     SharedObjects objects_;
 };
 

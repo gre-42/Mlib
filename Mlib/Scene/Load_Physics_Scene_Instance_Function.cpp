@@ -10,6 +10,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(PhysicsScene&
     , render_logics{ physics_scene.render_logics_ }
     , rendering_resources{ physics_scene.rendering_resources_ }
     , scene_node_resources{ physics_scene.scene_node_resources_ }
+    , asset_references{ physics_scene.asset_references_.get() }
     , particle_resources{ physics_scene.particle_resources_ }
     , air_particles{ physics_scene.air_particles_ }
     , skidmark_particles{ physics_scene.skidmark_particles_ }
@@ -29,6 +30,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(PhysicsScene&
     , paused_changed{ physics_scene.paused_changed_ }
     , physics_set_fps{ physics_scene.physics_set_fps_ }
     , game_logic{ physics_scene.game_logic_.get() }
+    , remote_scene{ physics_scene.remote_scene_.get() }
     , countdown_start{ physics_scene.countdown_start_ }
     , ui_focus{ physics_scene.ui_focus_ }
     , base_log{ physics_scene.fifo_log_ }

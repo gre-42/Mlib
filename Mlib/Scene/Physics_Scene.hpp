@@ -9,11 +9,11 @@
 #include <Mlib/Physics/Bullets/Bullet_Generator.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
+#include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <Mlib/Render/Deferred_Instantiator.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -30,6 +30,7 @@ namespace Mlib {
 
 class GameLogic;
 class PhysicsScene;
+class AssetReferences;
 class SceneNodeResources;
 class ParticleResources;
 class TrailResources;
@@ -39,7 +40,9 @@ class SurfaceContactDb;
 class BulletPropertyDb;
 class DynamicLightDb;
 class OneShotAudio;
+class RemoteScene;
 
+class PhysicsIteration;
 class PhysicsLoop;
 
 struct SceneConfig;
@@ -48,6 +51,14 @@ struct RaceIdentifier;
 class Translator;
 
 enum class ThreadAffinity;
+enum class RemoteRole;
+
+struct RemoteParams {
+    RemoteSiteId site_id;
+    RemoteRole role;
+    std::string ip;
+    uint16_t port;
+};
 
 class PhysicsScene: public DanglingBaseClass {
 public:
@@ -57,6 +68,7 @@ public:
         std::string rendering_resources_name,
         unsigned int max_anisotropic_filtering_level,
         SceneConfig& scene_config,
+        AssetReferences& asset_references,
         SceneNodeResources& scene_node_resources,
         ParticleResources& particle_resources,
         TrailResources& trail_resources,
@@ -72,9 +84,11 @@ public:
     ~PhysicsScene();
 
     // Misc
+    void create_physics_iteration(const std::optional<RemoteParams>& remote_params);
     void start_physics_loop(
         const std::string& thread_name,
         ThreadAffinity thread_affinity);
+    void physics_iteration(std::chrono::steady_clock::time_point time);
     void print_physics_engine_search_time() const;
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();
@@ -88,6 +102,7 @@ public:
     UiFocus& ui_focus_;
     std::string name_;
     const SceneConfig& scene_config_;
+    DanglingBaseClassRef<AssetReferences> asset_references_;
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;
     RenderingResources rendering_resources_;
@@ -111,14 +126,16 @@ public:
     SetFps physics_set_fps_;
     BusyStateProviderGuard busy_state_provider_guard_;
     GravityEfp gefp_;
-    PhysicsIteration physics_iteration_;
+    std::unique_ptr<PhysicsIteration> physics_iteration_;
     std::unique_ptr<PhysicsLoop> physics_loop_;
     VehicleSpawners vehicle_spawners_;
     Players players_;
     SupplyDepots supply_depots_;
     std::unique_ptr<GameLogic> game_logic_;
     UsageCounter usage_counter_;
+    CounterUser remote_counter_user_;
     CountdownPhysics countdown_start_;
+    std::unique_ptr<RemoteScene> remote_scene_;
 
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;

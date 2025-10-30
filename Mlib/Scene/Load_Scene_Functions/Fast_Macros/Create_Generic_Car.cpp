@@ -29,6 +29,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
+#include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -132,25 +134,27 @@ static inline float stoa(float v) {
     return v * degrees;
 }
 
-CreateGenericCar::CreateGenericCar(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateGenericCar::CreateGenericCar(PhysicsScene& physics_scene)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateGenericCar::execute(const JsonView& args)
 {
+    args.validate(KnownArgs::options);
+
     auto create_child_node = CreateChildNode{ physics_scene };
     auto child_renderable_instance = ChildRenderableInstance{ physics_scene };
     auto create_rigid_cuboid = CreateRigidCuboid{ physics_scene };
     auto create_rigid_disk = CreateRigidDisk{ physics_scene };
 
-    auto name = args.arguments.at<std::string>(KnownArgs::name);
-    auto tesuffix = args.arguments.at<std::string>(KnownArgs::tesuffix);
-    auto tedecimate = args.arguments.at<std::string>(KnownArgs::tedecimate);
-    auto if_with_graphics = args.arguments.at<bool>(KnownArgs::if_with_graphics);
-    auto if_with_physics = args.arguments.at<bool>(KnownArgs::if_with_physics);
-    const auto& vdb = args.asset_references["vehicles"].at(name).rp.database;
+    auto name = args.at<std::string>(KnownArgs::name);
+    auto tesuffix = args.at<std::string>(KnownArgs::tesuffix);
+    auto tedecimate = args.at<std::string>(KnownArgs::tedecimate);
+    auto if_with_graphics = args.at<bool>(KnownArgs::if_with_graphics);
+    auto if_with_physics = args.at<bool>(KnownArgs::if_with_physics);
+    const auto& vdb = asset_references["vehicles"].at(name).rp.database;
     auto wheels = vdb.at<std::string>(KnownDb::wheels);
-    const auto& wdb = args.asset_references["wheels"].at(wheels).rp.database;
+    const auto& wdb = asset_references["wheels"].at(wheels).rp.database;
     auto parent = VH{"car_node" + tesuffix};
 
     auto class_ = vehicle_type_from_string(vdb.at<std::string>(KnownDb::vehicle_class));
@@ -208,8 +212,8 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             .mass = vdb.at<float>(KnownDb::mass) * kg,
             .size = vdb.at<EFixedArray<float, 3>>(KnownDb::size) * meters,
             .com = vdb.at<EFixedArray<float, 3>>(KnownDb::com) * meters,
-            .v = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::velocity) * kph,
-            .w = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::angular_velocity) * rpm,
+            .v = args.at<EFixedArray<float, 3>>(KnownArgs::velocity) * kph,
+            .w = args.at<EFixedArray<float, 3>>(KnownArgs::angular_velocity) * rpm,
             .I_rotation = fixed_zeros<float, 3>(),
             .with_penetration_limits = true,
             .geographic_coordinates = scene_node_resources.get_geographic_mapping(WORLD),
@@ -225,9 +229,9 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
             engine_listeners->add(std::move(l));
         };
 
-        if (!args.arguments.at<bool>(KnownArgs::mute)) {
+        if (!args.at<bool>(KnownArgs::mute)) {
             if (auto engine_audio = vdb.try_at_non_null<std::string>(KnownDb::engine_audio); engine_audio.has_value()) {
-                const auto& adb = args.asset_references["engine_audio"].at(*engine_audio).rp.database;
+                const auto& adb = asset_references["engine_audio"].at(*engine_audio).rp.database;
                 adb.validate(KnownAudio::options);
                 add_engine_listener(std::make_shared<EngineAudio>(
                     adb.at<std::string>(KnownAudio::name),
@@ -314,7 +318,7 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
                 std::nullopt,   // power
                 nullptr);       // listeners
         }
-        if (args.arguments.at<bool>(KnownArgs::parking_brake_pulled)) {
+        if (args.at<bool>(KnownArgs::parking_brake_pulled)) {
             rb.park_vehicle();
         }
 
@@ -467,6 +471,12 @@ void CreateGenericCar::execute(const LoadSceneJsonUserFunctionArgs& args)
 
         rb.drivers_.set_seats({ "driver" });
         rb.door_distance_ = vdb.at<float>(KnownDb::door_distance) * meters;
+        if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.rigid_bodies.contains(parent)) {
+            remote_scene->create_local<RemoteRigidBodyVehicle>(
+                CURRENT_SOURCE_LOCATION,
+                args.json().dump(),
+                DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION});
+        }
         };
     if (if_with_physics) {
         create_physics();
@@ -481,8 +491,7 @@ struct RegisterJsonUserFunction {
             "create_generic_car",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
-                CreateGenericCar(args.physics_scene()).execute(args);
+                CreateGenericCar(args.physics_scene()).execute(args.arguments);
             });
     }
 } obj;

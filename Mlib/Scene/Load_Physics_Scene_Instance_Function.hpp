@@ -10,6 +10,7 @@ class PhysicsScene;
 class ObjectPool;
 class DeferredInstantiator;
 class SceneNodeResources;
+class AssetReferences;
 class ParticleResources;
 struct SceneParticles;
 class ITrailRenderer;
@@ -41,6 +42,7 @@ class EventEmitter;
 class RenderLogics;
 class UiFocus;
 class CountdownPhysics;
+class RemoteScene;
 
 class LoadPhysicsSceneInstanceFunction {
 public:
@@ -54,6 +56,7 @@ protected:
     RenderLogics& render_logics;
     RenderingResources& rendering_resources;
     SceneNodeResources& scene_node_resources;
+    AssetReferences& asset_references;
     ParticleResources& particle_resources;
     SceneParticles& air_particles;
     SceneParticles& skidmark_particles;
@@ -73,6 +76,7 @@ protected:
     EventEmitter& paused_changed;
     SetFps& physics_set_fps;
     GameLogic* game_logic;
+    RemoteScene* remote_scene;
     CountdownPhysics& countdown_start;
     UiFocus& ui_focus;
     BaseLog& base_log;

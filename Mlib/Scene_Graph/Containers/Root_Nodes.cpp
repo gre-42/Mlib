@@ -79,7 +79,7 @@ void RootNodes::clear() {
     clear_map_recursively(
         node_container_,
         [this](const auto& node){
-            if (node.mapped().ptr->shutting_down()) {
+            if (node.mapped().ptr->shutdown_phase() != ShutdownPhase::NONE) {
                 verbose_abort("Node \"" + *node.key() + "\" already shutting down");
             }
             node.mapped().ptr->shutdown();
@@ -205,7 +205,7 @@ void RootNodes::delete_root_node(const VariableAndHash<std::string>& name) {
     if (it.empty()) {
         verbose_abort("RootNodes::delete_root_node: Could not find root node with name \"" + *name + '"');
     }
-    if (!it.mapped().ptr->shutting_down()) {
+    if (it.mapped().ptr->shutdown_phase() == ShutdownPhase::NONE) {
         scene_.unregister_node(name);
         {
             auto dit = default_nodes_map_.try_extract(name);

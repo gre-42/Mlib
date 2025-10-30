@@ -8,7 +8,7 @@ if (NOT ANDROID)
     target_precompile_headers(MlibScene PRIVATE ../Precompiled_Header.hpp)
 endif()
 
-target_link_libraries(MlibScene MlibPhysics MlibPlayers MlibRender MlibOsmLoader MlibSceneGraph MlibMacroExecutor)
+target_link_libraries(MlibScene MlibPhysics MlibPlayers MlibRender MlibOsmLoader MlibSceneGraph MlibMacroExecutor MlibRemote)
 if (OPENAL_FOUND AND ALUT_FOUND)
     target_link_libraries(MlibScene MlibAudio)
 endif()

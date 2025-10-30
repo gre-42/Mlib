@@ -1,34 +1,39 @@
 #include "Incremental_Remote_Objects.hpp"
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-IncrementalRemoteObjects::IncrementalRemoteObjects()
-    : next_object_id_{ 0 }
+IncrementalRemoteObjects::IncrementalRemoteObjects(
+    RemoteSiteId site_id)
+    : site_id_{ site_id }
+    , next_local_object_id_{ 0 }
 {}
 
 IncrementalRemoteObjects::~IncrementalRemoteObjects() = default;
 
-void IncrementalRemoteObjects::add_new_object(DanglingBaseClassRef<IIncrementalObject> object)
+void IncrementalRemoteObjects::add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object)
 {
     if (!objects_.emplace(
-        next_object_id_,
+        RemoteObjectId{ site_id_, next_local_object_id_ },
         std::move(object),
         CURRENT_SOURCE_LOCATION).second)
     {
         verbose_abort("Could not add remote object");
     }
-    ++next_object_id_;
+    ++next_local_object_id_;
 }
 
-void IncrementalRemoteObjects::add_existing_object(RemoteObjectId id, DanglingBaseClassRef<IIncrementalObject> object)
+void IncrementalRemoteObjects::add_remote_object(
+    const RemoteObjectId& id,
+    const DanglingBaseClassRef<IIncrementalObject>& object)
 {
     if (!objects_.emplace(id, std::move(object), CURRENT_SOURCE_LOCATION).second) {
-        verbose_abort("Could not add shared object with ID \"" + std::to_string(id) + '"');
+        THROW_OR_ABORT("Could not add shared object: " + id.to_displayname());
     }
 }
 
-DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(RemoteObjectId id) const {
+DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(const RemoteObjectId& id) const {
     auto it = objects_.find(id);
     if (it == objects_.end()) {
         return nullptr;

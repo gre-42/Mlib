@@ -10,11 +10,11 @@ class IncrementalRemoteObjects;
 class IncrementalCommunicatorProxyFactory: public ICommunicatorProxyFactory {
 public:
     explicit IncrementalCommunicatorProxyFactory(
-        DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory,
-        DanglingBaseClassRef<IncrementalRemoteObjects> objects);
+        const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
+        const DanglingBaseClassRef<IncrementalRemoteObjects>& objects);
     virtual ~IncrementalCommunicatorProxyFactory() override;
     virtual DanglingBaseClassRef<ICommunicatorProxy> create_communicator_proxy(
-        DanglingBaseClassRef<ISendSocket> send_socket) override;
+        const DanglingBaseClassRef<ISendSocket>& send_socket) override;
 private:
     DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory_;
     DanglingBaseClassRef<IncrementalRemoteObjects> objects_;

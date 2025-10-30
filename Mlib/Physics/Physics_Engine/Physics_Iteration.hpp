@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Features.hpp>
+#include <chrono>
 #include <list>
 #include <mutex>
 
@@ -29,6 +30,7 @@ public:
         Scene& scene,
         DynamicWorld& dynamic_world,
         PhysicsEngine& physics_engine,
+        std::function<void(std::chrono::steady_clock::time_point)> send_and_receive,
         DeleteNodeMutex& delete_node_mutex,
         const PhysicsEngineConfig& physics_cfg,
         BaseLog* base_log = nullptr);
@@ -40,6 +42,7 @@ private:
     Scene& scene_;
     DynamicWorld& dynamic_world_;
     PhysicsEngine& physics_engine_;
+    std::function<void(std::chrono::steady_clock::time_point)> send_and_receive_;
     DeleteNodeMutex& delete_node_mutex_;
     const PhysicsEngineConfig& physics_cfg_;
     BaseLog* base_log_;

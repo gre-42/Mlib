@@ -18,6 +18,7 @@
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
+#include <Mlib/Remote/Remote_Role.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
@@ -103,6 +104,16 @@ std::unique_ptr<JThread> render_thread(
                         {
                             for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                                 r.delete_node_mutex_.clear_deleter_thread();
+                                std::optional<RemoteParams> remote_params;
+                                if ((n == "primary_scene") && args.has_named_value("--remote_role")) {
+                                    remote_params.emplace(
+                                        safe_stox<RemoteSiteId>(args.named_value("--remote_site_id")),
+                                        remote_role_from_string(args.named_value("--remote_role")),
+                                        args.named_value("--remote_ip"),
+                                        safe_stox<uint16_t>(args.named_value("--remote_port"))
+                                    );
+                                }
+                                r.create_physics_iteration(remote_params);
                                 r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
                             }
                             last_load_scene_finished = true;
@@ -118,7 +129,7 @@ std::unique_ptr<JThread> render_thread(
                             for (auto& [_, r] : physics_scenes.guarded_iterable()) {
                                 SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                                 if (!r.physics_set_fps_.paused()) {
-                                    r.physics_iteration_(std::chrono::steady_clock::now());
+                                    r.physics_iteration(std::chrono::steady_clock::now());
                                 }
                                 r.physics_set_fps_.execute_oldest_funcs();
                             }
@@ -346,6 +357,10 @@ int main(int argc, char** argv) {
         "    [--audio_alpha <value>]\n"
         "    [--audio_distance_model <value>]\n"
         "    [--user_count <n>]\n"
+        "    [--remote_site_id <id>]\n"
+        "    [--remote_role {server,client}]\n"
+        "    [--remote_ip <ip>]\n"
+        "    [--remote_port <port>]\n"
         "    [--tty_hider]\n"
         "    [--show_only <name>]\n"
         "    [--check_gl_errors]\n"
@@ -442,6 +457,10 @@ int main(int argc, char** argv) {
          "--audio_alpha",
          "--audio_distance_model",
          "--user_count",
+         "--remote_site_id",
+         "--remote_role",
+         "--remote_ip",
+         "--remote_port",
          "--bloom_x",
          "--bloom_y",
          "--bloom_threshold",
@@ -614,6 +633,7 @@ int main(int argc, char** argv) {
                 {"scene_sea_spray_width", safe_stoi(args.named_value("--scene_sea_spray_width", "2048"))},
                 {"scene_sea_spray_height", safe_stoi(args.named_value("--scene_sea_spray_height", "2048"))},
                 {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))},
+                {"remote_role", args.named_value("--remote_role", "none")},
                 {"sparse_triangle_cluster_width", safe_stof(args.named_value("--sparse_triangle_cluster_width", "3e3"))},
                 {"medium_triangle_cluster_width", safe_stof(args.named_value("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_value("--dense_triangle_cluster_width", "250"))},

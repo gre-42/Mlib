@@ -3,12 +3,12 @@
 
 namespace Mlib {
 
-struct LoadSceneJsonUserFunctionArgs;
+class JsonView;
 
 class CreateGenericCar: public LoadPhysicsSceneInstanceFunction {
 public:
     explicit CreateGenericCar(PhysicsScene& physics_scene);
-    void execute(const LoadSceneJsonUserFunctionArgs& args);
+    void execute(const JsonView& args);
 };
 
 }

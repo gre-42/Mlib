@@ -8,12 +8,12 @@
 using namespace Mlib;
 
 IncrementalCommunicatorProxy::IncrementalCommunicatorProxy(
-    DanglingBaseClassRef<ISendSocket> socket,
-    DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory,
-    DanglingBaseClassRef<IncrementalRemoteObjects> objects)
-    : socket_{ std::move(socket) }
-    , shared_object_factory_{ std::move(shared_object_factory) }
-    , objects_{ std::move(objects) }
+    const DanglingBaseClassRef<ISendSocket>& socket,
+    const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
+    const DanglingBaseClassRef<IncrementalRemoteObjects>& objects)
+    : socket_{ socket }
+    , shared_object_factory_{ shared_object_factory }
+    , objects_{ objects }
 {}
 
 IncrementalCommunicatorProxy::~IncrementalCommunicatorProxy() {
@@ -29,7 +29,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
             it->read(istr);
         } else {
             auto o = shared_object_factory_->create_shared_object(istr);
-            objects_->add_existing_object(i, std::move(o));
+            objects_->add_remote_object(i, std::move(o));
         }
     }
 }

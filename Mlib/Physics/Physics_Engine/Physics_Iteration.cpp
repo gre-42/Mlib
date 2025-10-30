@@ -1,5 +1,6 @@
 #include "Physics_Iteration.hpp"
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
@@ -27,6 +28,7 @@ PhysicsIteration::PhysicsIteration(
     Scene& scene,
     DynamicWorld& dynamic_world,
     PhysicsEngine& physics_engine,
+    std::function<void(std::chrono::steady_clock::time_point)> send_and_receive,
     DeleteNodeMutex& delete_node_mutex,
     const PhysicsEngineConfig& physics_cfg,
     BaseLog* base_log)
@@ -35,6 +37,7 @@ PhysicsIteration::PhysicsIteration(
     , scene_{ scene }
     , dynamic_world_{ dynamic_world }
     , physics_engine_{ physics_engine }
+    , send_and_receive_{ std::move(send_and_receive) }
     , delete_node_mutex_{ delete_node_mutex }
     , physics_cfg_{ physics_cfg }
     , base_log_{ base_log }
@@ -43,6 +46,9 @@ PhysicsIteration::PhysicsIteration(
 PhysicsIteration::~PhysicsIteration() = default;
 
 void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
+    if (send_and_receive_) {
+        send_and_receive_(time);
+    }
     StaticWorld world{
         .geographic_mapping = dynamic_world_.get_geographic_mapping(),
         .inverse_geographic_mapping = dynamic_world_.get_inverse_geographic_mapping(),
@@ -89,8 +95,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                 scene_.delete_root_node(name);
             }
             beacon_nodes_.clear();
-            size_t i = 0;
-            for (const auto& beacon : beacons) {
+            for (const auto& [i, beacon] : enumerate(beacons)) {
                 auto node = make_unique_scene_node(
                     beacon.location.t,
                     matrix_2_tait_bryan_angles<float>(beacon.location.R),
@@ -107,7 +112,6 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                 // node->set_scale(0.05);
                 auto& node_name = beacon_nodes_.emplace_back("beacon" + std::to_string(i));
                 scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
-                ++i;
             }
         }
         // TimeGuard tg1{"scene.move"};

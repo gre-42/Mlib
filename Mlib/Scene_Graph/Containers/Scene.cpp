@@ -260,7 +260,7 @@ void Scene::delete_node(const VariableAndHash<std::string>& name) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     try {
         DanglingBaseClassPtr<SceneNode> node = get_node(name, CURRENT_SOURCE_LOCATION).ptr();
-        if (!node->shutting_down()) {
+        if (node->shutdown_phase() != ShutdownPhase::FINISHED) {
             if (node->has_parent()) {
                 DanglingBaseClassRef<SceneNode> parent = node->parent();
                 node = nullptr;
@@ -839,7 +839,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                 nodes.emplace_back(&it);
             }
             for (const auto& it : nodes) {
-                if (it->second->shutting_down()) {
+                if (it->second->shutdown_phase() != ShutdownPhase::NONE) {
                     continue;
                 }
                 try {
@@ -852,7 +852,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                 } catch (const std::runtime_error& e) {
                     THROW_OR_ABORT("Error moving node \"" + *it->first + "\": " + e.what());
                 }
-                if (!it->second->shutting_down() && it->second->to_be_deleted(time)) {
+                if ((it->second->shutdown_phase() != ShutdownPhase::FINISHED) && it->second->to_be_deleted(time)) {
                     UnlockGuard ug{lock};
                     delete_root_node(it->first);
                 }

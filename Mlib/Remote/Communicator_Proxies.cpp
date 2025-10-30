@@ -6,19 +6,19 @@
 using namespace Mlib;
 
 CommunicatorProxies::CommunicatorProxies(
-    DanglingBaseClassRef<ICommunicatorProxyFactory> communicator_proxy_factory,
-    RemoteCommunicatorId location_id)
-    : communicator_proxy_factory_{ std::move(communicator_proxy_factory) }
+    const DanglingBaseClassRef<ICommunicatorProxyFactory>& communicator_proxy_factory,
+    RemoteSiteId location_id)
+    : communicator_proxy_factory_{ communicator_proxy_factory }
     , location_id_{ location_id }
 {}
 
 CommunicatorProxies::~CommunicatorProxies() = default;
 
-void CommunicatorProxies::add_receive_socket(DanglingBaseClassRef<IReceiveSocket> socket) {
+void CommunicatorProxies::add_receive_socket(const DanglingBaseClassRef<IReceiveSocket>& socket) {
     receive_sockets_.emplace(std::move(socket.ptr()), CURRENT_SOURCE_LOCATION);
 }
 
-void CommunicatorProxies::add_handshake_socket(DanglingBaseClassRef<ISendSocket> socket)
+void CommunicatorProxies::add_handshake_socket(const DanglingBaseClassRef<ISendSocket>& socket)
 {
     auto proxy = communicator_proxy_factory_->create_communicator_proxy(socket);
     handshake_communicator_proxies_.emplace_back(std::move(proxy), proxy.loc());
@@ -65,7 +65,7 @@ void CommunicatorProxies::receive() {
                 break;
             }
             auto communicator_proxy = [&](){
-                auto node_id = read_binary<RemoteCommunicatorId>(sstr, "node ID", IoVerbosity::SILENT);
+                auto node_id = read_binary<RemoteSiteId>(sstr, "node ID", IoVerbosity::SILENT);
                 auto it = unicast_communicator_proxies_.find(node_id);
                 if (it == unicast_communicator_proxies_.end()) {
                     auto f = communicator_proxy_factory_->create_communicator_proxy(*responder);

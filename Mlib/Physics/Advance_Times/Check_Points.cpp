@@ -328,7 +328,7 @@ void CheckPoints::reset_player() {
 void CheckPoints::notify_destroyed(SceneNode& destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (auto& n : moving_nodes_) {
-        if (!n->shutting_down()) {
+        if (n->shutdown_phase() == ShutdownPhase::NONE) {
             n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
     }
@@ -339,7 +339,7 @@ void CheckPoints::notify_destroyed(SceneNode& destroyed_object) {
         // Scene destruction happens before physics destruction,
         // so the nodes are deleted here and not in the destructor.
         for (auto& b : beacon_nodes_) {
-            if (b.beacon_node->shutting_down()) {
+            if (b.beacon_node->shutdown_phase() != ShutdownPhase::NONE) {
                 b.beacon_node = nullptr;
             }
             else {
