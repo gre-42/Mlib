@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
+#include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -34,7 +35,8 @@ PhysicsScene::PhysicsScene(
     const RaceIdentifier& race_identfier,
     DependentSleeper& dependent_sleeper,
     UiFocus& ui_focus,
-    std::shared_ptr<Translator> translator)
+    std::shared_ptr<Translator> translator,
+    const std::optional<RemoteParams>& remote_params)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
     , ui_focus_{ ui_focus }
     , name_{ std::move(name) }
@@ -173,6 +175,32 @@ PhysicsScene::PhysicsScene(
     physics_engine_.advance_times_.add_advance_time({ *skidmark_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+
+    if (remote_params.has_value()) {
+        remote_scene_ = std::make_unique<RemoteScene>(
+            DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
+            *remote_params);
+        remote_counter_user_.set(true);
+    }
+    {
+        std::function<void(std::chrono::steady_clock::time_point)> send_and_receive;
+        if (remote_scene_ != nullptr) {
+            send_and_receive = [this](std::chrono::steady_clock::time_point time){
+                remote_scene_->send_and_receive(time);
+            };
+            remote_counter_user_.set(true);
+        }
+        physics_iteration_ = std::make_unique<PhysicsIteration>(
+            scene_node_resources_,
+            rendering_resources_,
+            scene_,
+            dynamic_world_,
+            physics_engine_,
+            std::move(send_and_receive),
+            delete_node_mutex_,
+            scene_config_.physics_engine_config,
+            &fifo_log_);
+    }
 }
 
 PhysicsScene::~PhysicsScene() {
@@ -185,39 +213,6 @@ PhysicsScene::~PhysicsScene() {
 }
 
 // Misc
-void PhysicsScene::create_physics_iteration(
-    const std::optional<RemoteParams>& remote_params)
-{
-    if (physics_iteration_ != nullptr) {
-        THROW_OR_ABORT("Physics iteration already created");
-    }
-    if (remote_scene_ != nullptr) {
-        THROW_OR_ABORT("Remote scene already created");
-    }
-    std::function<void(std::chrono::steady_clock::time_point)> send_and_receive;
-    if (remote_params.has_value()) {
-        remote_scene_ = std::make_unique<RemoteScene>(
-            DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
-            remote_params->ip,
-            remote_params->port,
-            remote_params->role,
-            remote_params->site_id);
-        send_and_receive = [this](std::chrono::steady_clock::time_point time){
-            remote_scene_->send_and_receive(time);
-        };
-        remote_counter_user_.set(true);
-    }
-    physics_iteration_ = std::make_unique<PhysicsIteration>(
-        scene_node_resources_,
-        rendering_resources_,
-        scene_,
-        dynamic_world_,
-        physics_engine_,
-        std::move(send_and_receive),
-        delete_node_mutex_,
-        scene_config_.physics_engine_config,
-        &fifo_log_);
-}
 
 void PhysicsScene::start_physics_loop(
     const std::string& thread_name,

@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Translator.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
+#include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -23,6 +24,7 @@ DECLARE_ARGUMENT(max_tracks);
 DECLARE_ARGUMENT(save_playback);
 DECLARE_ARGUMENT(gid);
 DECLARE_ARGUMENT(primary_user_id);
+DECLARE_ARGUMENT(remote_params);
 }
 
 using namespace Mlib;
@@ -61,7 +63,8 @@ struct RegisterJsonUserFunction {
                         .milliseconds = 0},
                     args.render_set_fps.ds,
                     args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::primary_user_id)],
-                    std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }));
+                    std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }),
+                    args.arguments.try_at<RemoteParams>(KnownArgs::remote_params));
                 if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
                     THROW_OR_ABORT("Scene with name \"" + name + "\" already exists");
                 }

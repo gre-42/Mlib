@@ -41,25 +41,17 @@ class BulletPropertyDb;
 class DynamicLightDb;
 class OneShotAudio;
 class RemoteScene;
+class Translator;
 
 class PhysicsIteration;
 class PhysicsLoop;
 
 struct SceneConfig;
 struct RaceIdentifier;
-
-class Translator;
+struct RemoteParams;
 
 enum class ThreadAffinity;
 enum class RemoteRole;
-
-struct RemoteParams {
-    RemoteSiteId site_id;
-    RemoteRole role;
-    std::string ip;
-    uint16_t port;
-};
-
 class PhysicsScene: public DanglingBaseClass {
 public:
     PhysicsScene(
@@ -80,11 +72,11 @@ public:
         const RaceIdentifier& race_identfier,
         DependentSleeper& dependent_sleeper,
         UiFocus& ui_focus,
-        std::shared_ptr<Translator> translator);
+        std::shared_ptr<Translator> translator,
+        const std::optional<RemoteParams>& remote_params);
     ~PhysicsScene();
 
     // Misc
-    void create_physics_iteration(const std::optional<RemoteParams>& remote_params);
     void start_physics_loop(
         const std::string& thread_name,
         ThreadAffinity thread_affinity);

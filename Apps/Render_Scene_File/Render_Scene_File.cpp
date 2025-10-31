@@ -18,6 +18,7 @@
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
+#include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
@@ -104,16 +105,6 @@ std::unique_ptr<JThread> render_thread(
                         {
                             for (auto& [n, r] : physics_scenes.guarded_iterable()) {
                                 r.delete_node_mutex_.clear_deleter_thread();
-                                std::optional<RemoteParams> remote_params;
-                                if ((n == "primary_scene") && args.has_named_value("--remote_role")) {
-                                    remote_params.emplace(
-                                        safe_stox<RemoteSiteId>(args.named_value("--remote_site_id")),
-                                        remote_role_from_string(args.named_value("--remote_role")),
-                                        args.named_value("--remote_ip"),
-                                        safe_stox<uint16_t>(args.named_value("--remote_port"))
-                                    );
-                                }
-                                r.create_physics_iteration(remote_params);
                                 r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
                             }
                             last_load_scene_finished = true;
@@ -638,6 +629,15 @@ int main(int argc, char** argv) {
                 {"medium_triangle_cluster_width", safe_stof(args.named_value("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_value("--dense_triangle_cluster_width", "250"))},
                 {"object_cluster_width", safe_stof(args.named_value("--object_cluster_width", "500"))}};
+                if (args.has_named_value("--remote_role")) {
+                    j["remote_params"] = RemoteParams{
+                        safe_stox<RemoteSiteId>(args.named_value("--remote_site_id")),
+                        remote_role_from_string(args.named_value("--remote_role")),
+                        args.named_value("--remote_ip"),
+                        safe_stox<uint16_t>(args.named_value("--remote_port"))};
+                } else {
+                    j["remote_params"] = nlohmann::json();
+                }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));

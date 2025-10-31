@@ -79,8 +79,8 @@ void test_remote() {
     UdpNode server{"127.0.0.1", 1542};
     server.bind();
     server.start_receive_thread(100);
-    UdpNode client{"127.0.0.1", 1542};
-    client.start_receive_thread(100);
+    auto client = std::make_shared<UdpNode>("127.0.0.1", 1542);
+    client->start_receive_thread(100);
 
     linfo() << "server: " << &server << ", client: " << &client;
 
@@ -103,7 +103,7 @@ void test_remote() {
         {client_communicator_proxy_factory, CURRENT_SOURCE_LOCATION},
         43};
 
-    client_sys.add_handshake_socket({client, CURRENT_SOURCE_LOCATION});
+    client_sys.add_handshake_socket(client);
     
     // server_sys.add_communicator_proxy(
     //     communicator_proxy_factory.create_communicator_proxy({server, CURRENT_SOURCE_LOCATION}),
@@ -126,7 +126,7 @@ void test_remote() {
         send_and_receive();
     }
     server_sys.add_receive_socket({server, CURRENT_SOURCE_LOCATION});
-    client_sys.add_receive_socket({client, CURRENT_SOURCE_LOCATION});
+    client_sys.add_receive_socket({*client, CURRENT_SOURCE_LOCATION});
     client_sys.send_and_receive(TransmissionType::HANDSHAKE);
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();

@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Remote/IReceive_Socket.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Sockets/Asio.hpp>
@@ -14,7 +13,7 @@ namespace Mlib {
 
 struct ReceivedMessage {
     std::vector<std::byte> message;
-    DanglingBaseClassRef<ISendSocket> reply_socket;
+    std::unique_ptr<ISendSocket> reply_socket;
 };
 
 class UdpNode: public ISendSocket, public IReceiveSocket {
@@ -32,7 +31,7 @@ public:
     void bind();
     void shutdown();
     virtual void send(std::istream& istr) override;
-    virtual DanglingBaseClassPtr<ISendSocket> try_receive(std::ostream& ostr) override;
+    virtual std::unique_ptr<ISendSocket> try_receive(std::ostream& ostr) override;
 private:
     std::shared_ptr<boost::asio::io_context> io_context_;
     std::shared_ptr<boost::asio::ip::udp::socket> socket_;
@@ -40,7 +39,6 @@ private:
     FastMutex message_mutex_;
     std::jthread receive_thread_;
     std::list<ReceivedMessage> messages_received_;
-    ObjectPool send_socket_pool_;
 };
 
 }

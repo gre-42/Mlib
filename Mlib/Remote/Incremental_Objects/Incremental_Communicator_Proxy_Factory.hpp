@@ -14,7 +14,7 @@ public:
         const DanglingBaseClassRef<IncrementalRemoteObjects>& objects);
     virtual ~IncrementalCommunicatorProxyFactory() override;
     virtual DanglingBaseClassRef<ICommunicatorProxy> create_communicator_proxy(
-        const DanglingBaseClassRef<ISendSocket>& send_socket) override;
+        std::shared_ptr<ISendSocket> send_socket) override;
 private:
     DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory_;
     DanglingBaseClassRef<IncrementalRemoteObjects> objects_;

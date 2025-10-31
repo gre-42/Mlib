@@ -9,21 +9,20 @@
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Factory.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <chrono>
+#include <memory>
 
 namespace Mlib {
 
 class PhysicsScene;
 class AssetReferences;
 enum class RemoteRole;
+struct RemoteParams;
 
 class RemoteScene {
 public:
     RemoteScene(
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
-        const std::string& ip_address,
-        uint16_t port,
-        RemoteRole remote_role,
-        RemoteSiteId location_id);
+        const RemoteParams& remote_params);
     ~RemoteScene();
     void add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
     void add_remote_object(const RemoteObjectId& id, const DanglingBaseClassRef<IIncrementalObject>& object);
@@ -35,7 +34,7 @@ public:
     }
 private:
     ObjectPool object_pool_;
-    UdpNode home_node_;
+    std::shared_ptr<UdpNode> home_node_;
     RemoteSceneObjectFactory remote_scene_object_factory_;
     IncrementalRemoteObjects objects_;
     IncrementalCommunicatorProxyFactory communicator_proxy_factory_;

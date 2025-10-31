@@ -16,11 +16,11 @@ IncrementalCommunicatorProxyFactory::IncrementalCommunicatorProxyFactory(
 IncrementalCommunicatorProxyFactory::~IncrementalCommunicatorProxyFactory() = default;
 
 DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::create_communicator_proxy(
-    const DanglingBaseClassRef<ISendSocket>& send_socket)
+    std::shared_ptr<ISendSocket> send_socket)
 {
     return { object_pool_.create<IncrementalCommunicatorProxy>(
             CURRENT_SOURCE_LOCATION,
-            send_socket,
+            std::move(send_socket),
             shared_object_factory_,
             objects_),
         CURRENT_SOURCE_LOCATION

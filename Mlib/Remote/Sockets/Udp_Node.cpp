@@ -1,4 +1,5 @@
 #include "Udp_Node.hpp"
+#include <Mlib/Env.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Remote/Sockets/Asio.hpp>
@@ -15,7 +16,6 @@ UdpNode::UdpNode(
     : io_context_{ std::make_shared<boost::asio::io_context>() }
     , socket_{ std::make_shared<boost::asio::ip::udp::socket>(*io_context_) }
     , endpoint_{ address{boost::asio::ip::make_address_v4(ip_address)}, port }
-    , send_socket_pool_{ InObjectPoolDestructor::CLEAR }
 {
     socket_->open(udp::v4());
 }
@@ -28,7 +28,6 @@ UdpNode::UdpNode(
     : io_context_{ io_context }
     , socket_{ socket }
     , endpoint_{ endpoint }
-    , send_socket_pool_{ InObjectPoolDestructor::CLEAR }
 {}
 
 void UdpNode::start_receive_thread(size_t max_stored_received_messages) {
@@ -45,7 +44,9 @@ void UdpNode::start_receive_thread(size_t max_stored_received_messages) {
                 endpoint2,
                 0,
                 ec);
-            // linfo() << this << " receive_from. Error: " << (int)(bool)ec << ", Length: " << len;
+            if (getenv_default_bool("NET_DEBUG", false)) {
+                linfo() << this << " receive_from. Error: " << (int)(bool)ec << ", Length: " << len;
+            }
             if (ec) {
                 linfo() << "receive_from failed: " << ec.message();
                 continue;
@@ -61,14 +62,11 @@ void UdpNode::start_receive_thread(size_t max_stored_received_messages) {
                 }
                 messages_received_.emplace_back(
                     std::vector<std::byte>(receive_buffer.data(), receive_buffer.data() + len),
-                    DanglingBaseClassRef<ISendSocket>(
-                        send_socket_pool_.create<UdpNode>(
-                            CURRENT_SOURCE_LOCATION,
-                            io_context_,
-                            socket_,
-                            endpoint2,
-                            max_stored_received_messages),
-                        CURRENT_SOURCE_LOCATION));
+                    std::make_unique<UdpNode>(
+                        io_context_,
+                        socket_,
+                        endpoint2,
+                        max_stored_received_messages));
             }
         }
     }};
@@ -81,7 +79,6 @@ UdpNode::~UdpNode() {
         receive_thread_.request_stop();
         receive_thread_.join();
         messages_received_.clear();
-        send_socket_pool_.clear();
     }
 }
 
@@ -111,7 +108,7 @@ void UdpNode::send(std::istream& istr) {
     }
 }
 
-DanglingBaseClassPtr<ISendSocket> UdpNode::try_receive(std::ostream& ostr) {
+std::unique_ptr<ISendSocket> UdpNode::try_receive(std::ostream& ostr) {
     std::scoped_lock lock{ message_mutex_ };
     // linfo() << this << " contains " << messages_received_.size() << " messages";
     if (messages_received_.empty()) {
@@ -119,7 +116,7 @@ DanglingBaseClassPtr<ISendSocket> UdpNode::try_receive(std::ostream& ostr) {
     }
     std::list<ReceivedMessage> lmessage;
     lmessage.splice(lmessage.end(), messages_received_, messages_received_.begin());
-    const auto& message = lmessage.front();
+    auto& message = lmessage.front();
     write_iterable(ostr, message.message, "UDP message");
-    return message.reply_socket.ptr();
+    return std::move(message.reply_socket);
 }

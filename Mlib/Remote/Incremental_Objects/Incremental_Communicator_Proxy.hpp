@@ -13,15 +13,16 @@ class IIncrementalObjectFactory;
 class IncrementalCommunicatorProxy final: public virtual ICommunicatorProxy {
 public:
     IncrementalCommunicatorProxy(
-        const DanglingBaseClassRef<ISendSocket>& socket,
+        std::shared_ptr<ISendSocket> send_socket,
         const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
         const DanglingBaseClassRef<IncrementalRemoteObjects>& objects);
     virtual ~IncrementalCommunicatorProxy() override;
+    virtual void set_send_socket(std::shared_ptr<ISendSocket> send_socket) override;
     virtual void receive_from_home(std::istream& istr) override;
     virtual void send_home(std::iostream& iostr) override;
 private:
     std::unordered_set<RemoteObjectId> known_objects;
-    DanglingBaseClassRef<ISendSocket> socket_;
+    std::shared_ptr<ISendSocket> send_socket_;
     DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory_;
     DanglingBaseClassRef<IncrementalRemoteObjects> objects_;
 };

@@ -1,5 +1,6 @@
 #include "Remote_Rigid_Body_Vehicle.hpp"
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Json/Json_View.hpp>
@@ -26,10 +27,16 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     , rb_{ rb }
     , rb_on_destroy_{ rb->on_destroy, CURRENT_SOURCE_LOCATION }
 {
+    if (getenv_default_bool("PROXY_DEBUG", false)) {
+        linfo() << "Create RemoteRigidBodyVehicle";
+    }
     rb_on_destroy_.add([&o=object_pool, this](){ o.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
 RemoteRigidBodyVehicle::~RemoteRigidBodyVehicle() {
+    if (getenv_default_bool("PROXY_DEBUG", false)) {
+        linfo() << "Destroy RemoteRigidBodyVehicle";
+    }
     on_destroy.clear();
 }
 
@@ -68,7 +75,7 @@ std::unique_ptr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::from_stream(
 }
 
 void RemoteRigidBodyVehicle::read(std::istream& istr) {
-
+    THROW_OR_ABORT("RemoteRigidBodyVehicle::read not yet implemented");
 }
 
 void RemoteRigidBodyVehicle::write(std::ostream& ostr, ObjectCompression compression) {
