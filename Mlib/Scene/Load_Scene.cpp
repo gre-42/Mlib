@@ -70,7 +70,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Root_Node.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Change_Aiming_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Aiming_Gun.hpp>
@@ -326,7 +325,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreatePlaneControllerIdleBinding::key, CreatePlaneControllerIdleBinding::json_user_function);
             register_json_user_function(CreatePlaneControllerKeyBinding::key, CreatePlaneControllerKeyBinding::json_user_function);
             register_json_user_function(CreatePlaneController::key, CreatePlaneController::json_user_function);
-            register_json_user_function(CreatePlayer::key, CreatePlayer::json_user_function);
             register_json_user_function(CreateRelativeTransformer::key, CreateRelativeTransformer::json_user_function);
             register_json_user_function(CreateCopyRotation::key, CreateCopyRotation::json_user_function);
             register_json_user_function(CreatePrintCameraNodeInfoKeyBinding::key, CreatePrintCameraNodeInfoKeyBinding::json_user_function);

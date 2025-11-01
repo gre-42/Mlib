@@ -36,7 +36,6 @@ struct RegisterJsonUserFunction {
             "add_vip",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 AddVip(args.physics_scene()).execute(args);
             });
     }

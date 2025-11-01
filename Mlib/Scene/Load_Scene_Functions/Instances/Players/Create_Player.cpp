@@ -10,6 +10,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
@@ -32,20 +33,13 @@ DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(driving_direction);
 }
 
-const std::string CreatePlayer::key = "player_create";
-
-LoadSceneJsonUserFunction CreatePlayer::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreatePlayer(args.physics_scene()).execute(args);
-};
-
 CreatePlayer::CreatePlayer(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     if (game_logic == nullptr) {
         THROW_OR_ABORT("Game logic is null, cannot create player");
     }
@@ -82,4 +76,20 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
     physics_engine.advance_times_.add_advance_time({ *player, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine.add_external_force_provider(*player);
     player.release();
+}
+
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "player_create",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreatePlayer(args.physics_scene()).execute(args);
+            });
+    }
+} obj;
+
 }
