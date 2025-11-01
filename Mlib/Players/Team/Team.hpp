@@ -11,7 +11,7 @@ namespace Mlib {
 
 class Player;
 
-class Team final: public ITeam, public virtual DanglingBaseClass, public DestructionNotifier {
+class Team final: public ITeam, public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
     Team(std::string name);
     ~Team();
