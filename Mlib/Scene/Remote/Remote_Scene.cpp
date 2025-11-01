@@ -20,7 +20,10 @@ RemoteScene::RemoteScene(
     , communicator_proxy_factory_{
         { remote_scene_object_factory_, CURRENT_SOURCE_LOCATION },
         { objects_, CURRENT_SOURCE_LOCATION},
-        verbosity }
+        verbosity,
+        remote_params.role == RemoteRole::SERVER
+            ? ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_LOCAL
+            : ProxyTasks::SEND_LOCAL }
     , proxies_{
         { communicator_proxy_factory_, CURRENT_SOURCE_LOCATION },
         remote_params.site_id}

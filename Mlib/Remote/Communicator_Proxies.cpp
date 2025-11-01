@@ -21,7 +21,7 @@ void CommunicatorProxies::add_receive_socket(const DanglingBaseClassRef<IReceive
 
 void CommunicatorProxies::add_handshake_socket(std::shared_ptr<ISendSocket> socket)
 {
-    auto proxy = communicator_proxy_factory_->create_communicator_proxy(std::move(socket));
+    auto proxy = communicator_proxy_factory_->create_handshake_proxy(std::move(socket));
     handshake_communicator_proxies_.emplace_back(proxy, proxy.loc());
 }
 
@@ -69,7 +69,7 @@ void CommunicatorProxies::receive() {
                 auto site_id = read_binary<RemoteSiteId>(sstr, "node ID", IoVerbosity::SILENT);
                 auto it = unicast_communicator_proxies_.find(site_id);
                 if (it == unicast_communicator_proxies_.end()) {
-                    auto f = communicator_proxy_factory_->create_communicator_proxy(std::move(responder));
+                    auto f = communicator_proxy_factory_->create_communicator_proxy(std::move(responder), site_id);
                     auto res = unicast_communicator_proxies_.emplace(site_id, std::move(f), CURRENT_SOURCE_LOCATION);
                     if (!res.second) {
                         verbose_abort("Could not add communicator proxy with ID \"" + std::to_string(site_id) + '"');

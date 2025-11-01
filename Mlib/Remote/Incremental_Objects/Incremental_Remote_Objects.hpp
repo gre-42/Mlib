@@ -9,24 +9,26 @@ namespace Mlib {
 
 class IIncrementalObject;
 
-using SharedObjects = DanglingValueUnorderedMap<RemoteObjectId, IIncrementalObject>;
+using LocalObjects = DanglingValueUnorderedMap<LocalObjectId, IIncrementalObject>;
+using RemoteObjects = DanglingValueUnorderedMap<RemoteObjectId, IIncrementalObject>;
 
 class IncrementalRemoteObjects: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
     explicit IncrementalRemoteObjects(RemoteSiteId site_id);
     ~IncrementalRemoteObjects();
+    RemoteSiteId site_id() const;
     void add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
     void add_remote_object(const RemoteObjectId& id, const DanglingBaseClassRef<IIncrementalObject>& object);
     DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
-    SharedObjects::iterator begin();
-    SharedObjects::iterator end();
-    size_t size() const;
+    const LocalObjects& local_objects() const;
+    const RemoteObjects& remote_objects() const;
     void print(std::ostream& ostr) const;
 
 private:
     RemoteSiteId site_id_;
     LocalObjectId next_local_object_id_;
-    SharedObjects objects_;
+    LocalObjects local_objects_;
+    RemoteObjects remote_objects_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const IncrementalRemoteObjects& objects);

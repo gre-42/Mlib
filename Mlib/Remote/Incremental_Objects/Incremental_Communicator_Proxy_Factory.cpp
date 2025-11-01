@@ -8,16 +8,18 @@ using namespace Mlib;
 IncrementalCommunicatorProxyFactory::IncrementalCommunicatorProxyFactory(
     const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
     const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
-    IoVerbosity verbosity)
+    IoVerbosity verbosity,
+    ProxyTasks tasks)
     : shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
     , verbosity_{ verbosity }
+    , tasks_{ tasks }
     , object_pool_{ InObjectPoolDestructor::CLEAR }
 {}
 
 IncrementalCommunicatorProxyFactory::~IncrementalCommunicatorProxyFactory() = default;
 
-DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::create_communicator_proxy(
+DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::create_handshake_proxy(
     std::shared_ptr<ISendSocket> send_socket)
 {
     return { object_pool_.create<IncrementalCommunicatorProxy>(
@@ -25,7 +27,25 @@ DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::cr
             std::move(send_socket),
             shared_object_factory_,
             objects_,
-            verbosity_),
+            verbosity_,
+            ProxyTasks::NONE,
+            0xC0FEFACE),
+        CURRENT_SOURCE_LOCATION
+    };
+}
+
+DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::create_communicator_proxy(
+    std::shared_ptr<ISendSocket> send_socket,
+    RemoteSiteId home_site_id)
+{
+    return { object_pool_.create<IncrementalCommunicatorProxy>(
+            CURRENT_SOURCE_LOCATION,
+            std::move(send_socket),
+            shared_object_factory_,
+            objects_,
+            verbosity_,
+            tasks_,
+            home_site_id),
         CURRENT_SOURCE_LOCATION
     };
 }

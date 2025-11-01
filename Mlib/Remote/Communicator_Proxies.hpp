@@ -34,8 +34,11 @@ public:
 
 class ICommunicatorProxyFactory: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
-    virtual DanglingBaseClassRef<ICommunicatorProxy> create_communicator_proxy(
+    virtual DanglingBaseClassRef<ICommunicatorProxy> create_handshake_proxy(
         std::shared_ptr<ISendSocket> send_socket) = 0;
+    virtual DanglingBaseClassRef<ICommunicatorProxy> create_communicator_proxy(
+        std::shared_ptr<ISendSocket> send_socket,
+        RemoteSiteId home_site_id) = 0;
 };
 
 class CommunicatorProxies {

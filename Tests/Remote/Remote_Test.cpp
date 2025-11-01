@@ -92,11 +92,13 @@ void test_remote() {
     IncrementalCommunicatorProxyFactory server_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
         {server_objects, CURRENT_SOURCE_LOCATION},
-        IoVerbosity::SILENT };
+        IoVerbosity::SILENT,
+        ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE };
     IncrementalCommunicatorProxyFactory client_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
         {client_objects, CURRENT_SOURCE_LOCATION},
-        IoVerbosity::SILENT };
+        IoVerbosity::SILENT,
+        ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE };
 
     CommunicatorProxies server_sys{
         {server_communicator_proxy_factory, CURRENT_SOURCE_LOCATION},
