@@ -7,16 +7,20 @@ using namespace Mlib;
 
 RemoteScene::RemoteScene(
     const DanglingBaseClassRef<PhysicsScene>& physics_scene,
-    const RemoteParams& remote_params)
-    : object_pool_{ InObjectPoolDestructor::CLEAR }
+    const RemoteParams& remote_params,
+    IoVerbosity verbosity)
+    : verbosity_{ verbosity }
+    , object_pool_{ InObjectPoolDestructor::CLEAR }
     , home_node_{ std::make_shared<UdpNode>(remote_params.ip, remote_params.port) }
     , remote_scene_object_factory_{
         {object_pool_, CURRENT_SOURCE_LOCATION},
-        physics_scene }
+        physics_scene,
+        verbosity }
     , objects_{ remote_params.site_id }
     , communicator_proxy_factory_{
         { remote_scene_object_factory_, CURRENT_SOURCE_LOCATION },
-        { objects_, CURRENT_SOURCE_LOCATION} }
+        { objects_, CURRENT_SOURCE_LOCATION},
+        verbosity }
     , proxies_{
         { communicator_proxy_factory_, CURRENT_SOURCE_LOCATION },
         remote_params.site_id}

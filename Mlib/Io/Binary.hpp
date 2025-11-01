@@ -23,6 +23,11 @@ inline IoVerbosity operator | (IoVerbosity a, IoVerbosity b) {
     return (IoVerbosity)((int)a | (int)b);
 }
 
+inline IoVerbosity& operator |= (IoVerbosity& a, IoVerbosity b) {
+    (int&)a |= (int)b;
+    return a;
+}
+
 inline bool any(IoVerbosity v) {
     return v != IoVerbosity::SILENT;
 }

@@ -13,16 +13,16 @@
 
 namespace Mlib {
 
-class PhysicsScene;
-class AssetReferences;
-enum class RemoteRole;
 struct RemoteParams;
+class PhysicsScene;
+enum class IoVerbosity;
 
 class RemoteScene {
 public:
     RemoteScene(
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
-        const RemoteParams& remote_params);
+        const RemoteParams& remote_params,
+        IoVerbosity verbosity);
     ~RemoteScene();
     void add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
     void add_remote_object(const RemoteObjectId& id, const DanglingBaseClassRef<IIncrementalObject>& object);
@@ -30,9 +30,10 @@ public:
     CreatedAtRemoteSite created_at_remote_site;
     template<class Class, class... Args>
     void create_local(SourceLocation loc, Args&&... args) {
-        add_local_object({object_pool_.create<Class>(loc, object_pool_, std::forward<Args>(args)...), loc});
+        add_local_object({object_pool_.create<Class>(loc, object_pool_, verbosity_, std::forward<Args>(args)...), loc});
     }
 private:
+    IoVerbosity verbosity_;
     ObjectPool object_pool_;
     std::shared_ptr<UdpNode> home_node_;
     RemoteSceneObjectFactory remote_scene_object_factory_;

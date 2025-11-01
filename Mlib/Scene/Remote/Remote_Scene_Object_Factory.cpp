@@ -9,20 +9,25 @@ using namespace Mlib;
 
 RemoteSceneObjectFactory::RemoteSceneObjectFactory(
     const DanglingBaseClassRef<ObjectPool>& object_pool,
-    const DanglingBaseClassRef<PhysicsScene>& physics_scene)
+    const DanglingBaseClassRef<PhysicsScene>& physics_scene,
+        IoVerbosity verbosity)
     : object_pool_{ object_pool }
     , physics_scene_{ physics_scene }
+    , verbosity_{ verbosity }
 {}
 
 RemoteSceneObjectFactory::~RemoteSceneObjectFactory() = default;
 
-DanglingBaseClassRef<IIncrementalObject> RemoteSceneObjectFactory::create_shared_object(std::istream& istr)
+DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_shared_object(std::istream& istr)
 {
-    auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", IoVerbosity::SILENT);
+    auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     switch (type) {
     case RemoteSceneObjectType::RIGID_BODY_VEHICLE:
         {
-            auto rb = RemoteRigidBodyVehicle::from_stream(object_pool_.get(), physics_scene_.get(), istr);
+            auto rb = RemoteRigidBodyVehicle::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_);
+            if (rb == nullptr) {
+                return nullptr;
+            }
             return {
                 object_pool_->add<RemoteRigidBodyVehicle>(std::move(rb), CURRENT_SOURCE_LOCATION), CURRENT_SOURCE_LOCATION};
         }

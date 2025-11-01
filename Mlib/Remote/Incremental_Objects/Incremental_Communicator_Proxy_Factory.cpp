@@ -7,9 +7,11 @@ using namespace Mlib;
 
 IncrementalCommunicatorProxyFactory::IncrementalCommunicatorProxyFactory(
     const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
-    const DanglingBaseClassRef<IncrementalRemoteObjects>& objects)
+    const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
+    IoVerbosity verbosity)
     : shared_object_factory_{ shared_object_factory }
     , objects_{ objects }
+    , verbosity_{ verbosity }
     , object_pool_{ InObjectPoolDestructor::CLEAR }
 {}
 
@@ -22,7 +24,8 @@ DanglingBaseClassRef<ICommunicatorProxy> IncrementalCommunicatorProxyFactory::cr
             CURRENT_SOURCE_LOCATION,
             std::move(send_socket),
             shared_object_factory_,
-            objects_),
+            objects_,
+            verbosity_),
         CURRENT_SOURCE_LOCATION
     };
 }

@@ -3,7 +3,9 @@
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Audio/One_Shot_Audio.hpp>
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
+#include <Mlib/Io/Binary.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
@@ -177,9 +179,17 @@ PhysicsScene::PhysicsScene(
     physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 
     if (remote_params.has_value()) {
+        auto verbosity = IoVerbosity::SILENT;
+        if (getenv_default_bool("REMOTE_DEBUG_DATA", false)) {
+            verbosity |= IoVerbosity::DATA;
+        }
+        if (getenv_default_bool("REMOTE_DEBUG_METADATA", false)) {
+            verbosity |= IoVerbosity::METADATA;
+        }
         remote_scene_ = std::make_unique<RemoteScene>(
             DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
-            *remote_params);
+            *remote_params,
+            verbosity);
         remote_counter_user_.set(true);
     }
     {

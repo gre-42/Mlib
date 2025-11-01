@@ -9,7 +9,7 @@ class IIncrementalObject;
 
 class IIncrementalObjectFactory: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
-    virtual DanglingBaseClassRef<IIncrementalObject> create_shared_object(std::istream& istr) = 0;
+    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(std::istream& istr) = 0;
 };
 
 }

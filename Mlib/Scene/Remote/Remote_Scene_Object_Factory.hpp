@@ -6,17 +6,20 @@ namespace Mlib {
 
 class ObjectPool;
 class PhysicsScene;
+enum class IoVerbosity;
 
 class RemoteSceneObjectFactory: public IIncrementalObjectFactory {
 public:
     explicit RemoteSceneObjectFactory(
         const DanglingBaseClassRef<ObjectPool>& object_pool,
-        const DanglingBaseClassRef<PhysicsScene>& physics_scene);
+        const DanglingBaseClassRef<PhysicsScene>& physics_scene,
+        IoVerbosity verbosity);
     virtual ~RemoteSceneObjectFactory() override;
-    virtual DanglingBaseClassRef<IIncrementalObject> create_shared_object(std::istream& istr) override;
+    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(std::istream& istr) override;
 private:
     DanglingBaseClassRef<ObjectPool> object_pool_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
+    IoVerbosity verbosity_;
 };
 
 }

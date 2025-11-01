@@ -4,7 +4,7 @@
 namespace Mlib {
 
 enum class RemoteSceneObjectType: uint32_t {
-    RIGID_BODY_VEHICLE
+    RIGID_BODY_VEHICLE = 0xABC234DE
 };
 
 }

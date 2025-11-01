@@ -9,13 +9,15 @@ namespace Mlib {
 
 class ISendSocket;
 class IIncrementalObjectFactory;
+enum class IoVerbosity;
 
 class IncrementalCommunicatorProxy final: public virtual ICommunicatorProxy {
 public:
     IncrementalCommunicatorProxy(
         std::shared_ptr<ISendSocket> send_socket,
         const DanglingBaseClassRef<IIncrementalObjectFactory>& shared_object_factory,
-        const DanglingBaseClassRef<IncrementalRemoteObjects>& objects);
+        const DanglingBaseClassRef<IncrementalRemoteObjects>& objects,
+        IoVerbosity verbosity);
     virtual ~IncrementalCommunicatorProxy() override;
     virtual void set_send_socket(std::shared_ptr<ISendSocket> send_socket) override;
     virtual void receive_from_home(std::istream& istr) override;
@@ -25,6 +27,7 @@ private:
     std::shared_ptr<ISendSocket> send_socket_;
     DanglingBaseClassRef<IIncrementalObjectFactory> shared_object_factory_;
     DanglingBaseClassRef<IncrementalRemoteObjects> objects_;
+    IoVerbosity verbosity_;
 };
 
 }

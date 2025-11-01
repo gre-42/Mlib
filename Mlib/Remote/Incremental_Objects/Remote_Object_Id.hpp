@@ -3,6 +3,7 @@
 #include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <Mlib/Std_Hash.hpp>
 #include <compare>
+#include <iosfwd>
 #include <string>
 
 namespace Mlib {
@@ -16,6 +17,8 @@ struct RemoteObjectId {
     std::string to_displayname() const;
     std::strong_ordering operator <=> (const RemoteObjectId&) const = default;
 };
+
+std::ostream& operator << (std::ostream& ostr, RemoteObjectId id);
 
 }
 

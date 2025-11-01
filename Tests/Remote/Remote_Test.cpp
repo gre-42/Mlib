@@ -61,7 +61,7 @@ public:
     RemoteObjectFactory()
         : object_pool_{ InObjectPoolDestructor::CLEAR }
     {}
-    virtual DanglingBaseClassRef<IIncrementalObject> create_shared_object(std::istream& istr) override {
+    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(std::istream& istr) override {
         auto t = read_binary<ObjectType>(istr, "object type", IoVerbosity::SILENT);
         switch (t) {
         case ObjectType::INT32:
@@ -91,10 +91,12 @@ void test_remote() {
     IncrementalRemoteObjects client_objects{ 43 };
     IncrementalCommunicatorProxyFactory server_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
-        {server_objects, CURRENT_SOURCE_LOCATION} };
+        {server_objects, CURRENT_SOURCE_LOCATION},
+        IoVerbosity::SILENT };
     IncrementalCommunicatorProxyFactory client_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
-        {client_objects, CURRENT_SOURCE_LOCATION} };
+        {client_objects, CURRENT_SOURCE_LOCATION},
+        IoVerbosity::SILENT };
 
     CommunicatorProxies server_sys{
         {server_communicator_proxy_factory, CURRENT_SOURCE_LOCATION},
