@@ -35,7 +35,7 @@ void RemoteSites::for_each_site_user(const std::function<void(RemoteSiteId, uint
         local_users_->for_each_user([&](uint32_t user_id){
             operation(remote_params_->site_id, user_id);
         });
-        for (const auto [site, user_count] : sites_) {
+        for (const auto& [site, user_count] : sites_) {
             if (site != remote_params_->site_id) {
                 for (uint32_t user_id = 0; user_id < user_count; ++user_id) {
                     operation(site, user_id);
