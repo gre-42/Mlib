@@ -99,14 +99,14 @@ public:
 
     void wait_until_done() const;
     void stop_and_join();
-    void clear();
+    void shutdown();
 
     void instantiate_audio_listener(
         std::chrono::steady_clock::duration delay,
         std::chrono::steady_clock::duration velocity_dt);
 
     DestructionFunctionsRemovalTokens on_stop_and_join_physics_;
-    DestructionFunctionsRemovalTokens on_clear_physics_;
+    DestructionFunctionsRemovalTokens on_destroy_physics_;
     ObjectPool object_pool_;
     std::optional<CounterUser> counter_user_;
 

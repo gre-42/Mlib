@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Format.hpp>
@@ -23,7 +24,8 @@ Players::Players(
     bool save_playback,
     const SceneNodeResources& scene_node_resources,
     const RaceIdentifier& race_identifier,
-    std::shared_ptr<Translator> translator)
+    std::shared_ptr<Translator> translator,
+    const DanglingBaseClassRef<RemoteSites>& remote_sites)
     : race_history_{std::make_unique<RaceHistory>(
         max_tracks,
         save_playback,
@@ -31,6 +33,7 @@ Players::Players(
         race_identifier,
         translator)}
     , translator_{ std::move(translator) }
+    , remote_sites_{ remote_sites }
 {}
 
 Players::~Players() {
@@ -148,6 +151,9 @@ std::optional<LapTimeEventAndIdAndMfilename> Players::get_winner_track_filename(
 
 std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     std::stringstream sstr;
+    if (any(config & ScoreBoardConfiguration::USER)) {
+        remote_sites_->print(sstr);
+    }
     for (const auto& [tname, team] : teams_) {
         if (any(config & ScoreBoardConfiguration::TEAM)) {
             sstr << "Team: " << tname;

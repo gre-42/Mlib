@@ -6,10 +6,13 @@
 namespace Mlib {
 
 class IIncrementalObject;
+struct RemoteObjectId;
 
 class IIncrementalObjectFactory: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
-    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(std::istream& istr) = 0;
+    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
+        std::istream& istr,
+        const RemoteObjectId& id) = 0;
 };
 
 }

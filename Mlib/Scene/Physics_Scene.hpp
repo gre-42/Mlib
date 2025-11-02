@@ -42,6 +42,7 @@ class DynamicLightDb;
 class OneShotAudio;
 class RemoteScene;
 class Translator;
+class RemoteSites;
 
 class PhysicsIteration;
 class PhysicsLoop;
@@ -52,7 +53,8 @@ struct RemoteParams;
 
 enum class ThreadAffinity;
 enum class RemoteRole;
-class PhysicsScene: public DanglingBaseClass {
+
+class PhysicsScene final: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
     PhysicsScene(
         std::string name,
@@ -60,6 +62,7 @@ public:
         std::string rendering_resources_name,
         unsigned int max_anisotropic_filtering_level,
         SceneConfig& scene_config,
+        RemoteSites& remote_sites,
         AssetReferences& asset_references,
         SceneNodeResources& scene_node_resources,
         ParticleResources& particle_resources,
@@ -84,13 +87,13 @@ public:
     void print_physics_engine_search_time() const;
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();
-    void clear();
+    void shutdown();
     void instantiate_game_logic(std::function<void()> setup_new_round);
 
     DestructionFunctions on_stop_and_join_;
-    DestructionFunctions on_clear_;
     DeleteNodeMutex delete_node_mutex_;
     ObjectPool object_pool_;
+    DanglingBaseClassRef<RemoteSites> remote_sites_;
     UiFocus& ui_focus_;
     std::string name_;
     const SceneConfig& scene_config_;

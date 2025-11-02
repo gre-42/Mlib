@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <list>
@@ -30,6 +31,7 @@ template <class T>
 class DestructionFunctionsTokensRef;
 class ObjectPool;
 enum class WayPointLocation;
+class RemoteSites;
 
 class Players {
     friend std::ostream& operator << (std::ostream& ostr, const Players& players);
@@ -43,7 +45,8 @@ public:
         bool save_playback,
         const SceneNodeResources& scene_node_resources,
         const RaceIdentifier& race_identifier,
-        std::shared_ptr<Translator> translator);
+        std::shared_ptr<Translator> translator,
+        const DanglingBaseClassRef<RemoteSites>& remote_sites);
     ~Players();
     void add_player(const DanglingBaseClassRef<Player>& player);
     void remove_player(const std::string& name);
@@ -76,6 +79,7 @@ private:
     std::map<std::string, DestructionFunctionsTokensRef<Team>> teams_;
     std::unique_ptr<RaceHistory> race_history_;
     std::shared_ptr<Translator> translator_;
+    DanglingBaseClassRef<RemoteSites> remote_sites_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Players& players);

@@ -15,7 +15,9 @@ public:
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
         IoVerbosity verbosity);
     virtual ~RemoteSceneObjectFactory() override;
-    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(std::istream& istr) override;
+    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
+        std::istream& istr,
+        const RemoteObjectId& id) override;
 private:
     DanglingBaseClassRef<ObjectPool> object_pool_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;

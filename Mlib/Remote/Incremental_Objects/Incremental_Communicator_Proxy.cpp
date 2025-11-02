@@ -31,7 +31,7 @@ void IncrementalCommunicatorProxy::set_send_socket(std::shared_ptr<ISendSocket> 
 }
 
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
-    {
+    auto receive_local = [&](RemoteObjectVisibility visibility){
         uint32_t local_object_count = read_binary<uint32_t>(istr, "local object count", verbosity_);
         // linfo() << "Received " << object_count << " objects_";
         for (uint32_t j = 0; j < local_object_count; ++j) {
@@ -45,13 +45,15 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " create from home site " << home_site_id_ << ", object " << i;
                 }
-                auto o = shared_object_factory_->try_create_shared_object(istr);
+                auto o = shared_object_factory_->try_create_shared_object(istr, {home_site_id_, i});
                 if (o != nullptr) {
-                    objects_->add_remote_object({home_site_id_, i}, *o);
+                    objects_->add_remote_object({home_site_id_, i}, *o, visibility);
                 }
             }
         }
-    }
+    };
+    receive_local(RemoteObjectVisibility::PRIVATE);
+    receive_local(RemoteObjectVisibility::PUBLIC);
     {
         uint32_t remote_object_count = read_binary<uint32_t>(istr, "remote object count", verbosity_);
         // linfo() << "Received " << object_count << " objects_";
@@ -66,9 +68,9 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " create from remote site " << i;
                 }
-                auto o = shared_object_factory_->try_create_shared_object(istr);
+                auto o = shared_object_factory_->try_create_shared_object(istr, i);
                 if (o != nullptr) {
-                    objects_->add_remote_object(i, *o);
+                    objects_->add_remote_object(i, *o, RemoteObjectVisibility::PUBLIC);
                 }
             }
         }
@@ -76,8 +78,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
 }
 
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
-    if (any(tasks_ & ProxyTasks::SEND_LOCAL)) {
-        const auto& objects = objects_->local_objects();
+    auto send_local = [&](const LocalObjects& objects){
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Send " << objects.size() << " local objects";
         }
@@ -93,14 +94,22 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
                 o->write(iostr, ObjectCompression::NONE);
             }
         }
-    } else {
+    };
+    auto send_zero_local = [&](){
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Send no local objects";
         }
         write_binary<uint32_t>(iostr, 0, "local object count (zero)");
+    };
+    if (any(tasks_ & ProxyTasks::SEND_LOCAL)) {
+        send_local(objects_->private_local_objects());
+        send_local(objects_->public_local_objects());
+    } else {
+        send_zero_local();
+        send_zero_local();
     }
     if (any(tasks_ & ProxyTasks::SEND_REMOTE)) {
-        const auto& objects = objects_->remote_objects();
+        const auto& objects = objects_->public_remote_objects();
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Send " << objects.size() << " remote objects";
         }

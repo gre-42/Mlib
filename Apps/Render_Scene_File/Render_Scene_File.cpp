@@ -17,6 +17,7 @@
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
@@ -583,6 +584,14 @@ int main(int argc, char** argv) {
             window_user_object};
         MenuLogic menu_logic{menu_user_object};
 
+        std::optional<RemoteParams> remote_params;
+        if (args.has_named_value("--remote_role")) {
+            remote_params.emplace(
+                safe_stox<RemoteSiteId>(args.named_value("--remote_site_id")),
+                remote_role_from_string(args.named_value("--remote_role")),
+                args.named_value("--remote_ip"),
+                safe_stox<uint16_t>(args.named_value("--remote_port")));
+        }
         {
             auto record_track_basename = args.try_named_value("--record_track_basename");
             nlohmann::json j{
@@ -629,12 +638,8 @@ int main(int argc, char** argv) {
                 {"medium_triangle_cluster_width", safe_stof(args.named_value("--medium_triangle_cluster_width", "700"))},
                 {"dense_triangle_cluster_width", safe_stof(args.named_value("--dense_triangle_cluster_width", "250"))},
                 {"object_cluster_width", safe_stof(args.named_value("--object_cluster_width", "500"))}};
-                if (args.has_named_value("--remote_role")) {
-                    j["remote_params"] = RemoteParams{
-                        safe_stox<RemoteSiteId>(args.named_value("--remote_site_id")),
-                        remote_role_from_string(args.named_value("--remote_role")),
-                        args.named_value("--remote_ip"),
-                        safe_stox<uint16_t>(args.named_value("--remote_port"))};
+                if (remote_params.has_value()) {
+                    j["remote_params"] = *remote_params;
                 } else {
                     j["remote_params"] = nlohmann::json();
                 }
@@ -724,6 +729,7 @@ int main(int argc, char** argv) {
                 RenderingContextGuard rcg{ primary_rendering_context };
 
                 Users users;
+                RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
@@ -770,6 +776,7 @@ int main(int argc, char** argv) {
                     key_descriptions,
                     ui_focuses,
                     users,
+                    remote_sites,
                     layout_constraints,
                     gallery,
                     asset_references,

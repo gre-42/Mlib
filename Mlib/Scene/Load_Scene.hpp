@@ -24,6 +24,7 @@ class CursorStates;
 class ButtonPress;
 class UiFocuses;
 class Users;
+class RemoteSites;
 class RenderLogics;
 class ThreadSafeString;
 class SurfaceContactDb;
@@ -55,6 +56,7 @@ public:
         LockableKeyDescriptions& key_descriptions,
         UiFocuses& ui_focuses,
         Users& users,
+        RemoteSites& remote_sites,
         LayoutConstraints& layout_constraints,
         RenderLogicGallery& gallery,
         AssetReferences& asset_references,

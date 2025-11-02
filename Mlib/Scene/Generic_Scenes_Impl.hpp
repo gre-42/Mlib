@@ -28,7 +28,7 @@ GenericScenes<TScene>::~GenericScenes() {
     }
     // Destroy scene nodes in order of creation.
     for (const auto& name : generic_scenes_name_list_) {
-        (*this)[name].clear();
+        (*this)[name].shutdown();
     }
     {
         // Set the state to "SHUTTING_DOWN", so index-access to scenes

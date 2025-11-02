@@ -1,13 +1,15 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <cstdint>
 #include <functional>
 
 namespace Mlib {
 
-class Users {
+class Users: public virtual DanglingBaseClass {
 public:
     Users();
     ~Users();
+    uint32_t get_user_count() const;
     void set_user_count(uint32_t user_count);
     void for_each_user(const std::function<void(uint32_t)>& operation);
 private:

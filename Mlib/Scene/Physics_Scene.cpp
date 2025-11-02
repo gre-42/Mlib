@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
@@ -25,6 +26,7 @@ PhysicsScene::PhysicsScene(
     std::string rendering_resources_name,
     unsigned int max_anisotropic_filtering_level,
     SceneConfig& scene_config,
+    RemoteSites& remote_sites,
     AssetReferences& asset_references,
     SceneNodeResources& scene_node_resources,
     ParticleResources& particle_resources,
@@ -40,6 +42,7 @@ PhysicsScene::PhysicsScene(
     std::shared_ptr<Translator> translator,
     const std::optional<RemoteParams>& remote_params)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
+    , remote_sites_{ remote_sites, CURRENT_SOURCE_LOCATION }
     , ui_focus_{ ui_focus }
     , name_{ std::move(name) }
     , scene_config_{ scene_config }
@@ -162,7 +165,7 @@ PhysicsScene::PhysicsScene(
           [this](){ paused_changed_.emit(); }}
     , busy_state_provider_guard_{ dependent_sleeper, physics_set_fps_ }
     , gefp_{ physics_engine_ }
-    , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, std::move(translator) }
+    , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, std::move(translator), {remote_sites, CURRENT_SOURCE_LOCATION} }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
     , remote_counter_user_{ { usage_counter_, CURRENT_SOURCE_LOCATION } }
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
@@ -214,12 +217,8 @@ PhysicsScene::PhysicsScene(
 }
 
 PhysicsScene::~PhysicsScene() {
-    object_pool_.clear();
-    air_particles_.particle_renderer->on_destroy.clear();
-    skidmark_particles_.particle_renderer->on_destroy.clear();
-    countdown_start_.on_destroy.clear();
     stop_and_join();
-    clear();
+    shutdown();
 }
 
 // Misc
@@ -265,9 +264,16 @@ void PhysicsScene::stop_and_join() {
     on_stop_and_join_.clear();
 }
 
-void PhysicsScene::clear() {
+void PhysicsScene::shutdown() {
+    if (physics_loop_ != nullptr) {
+        verbose_abort("PhysicsScene: shutdown() called before stop_and_join()");
+    }
+    object_pool_.clear();
+    air_particles_.particle_renderer->on_destroy.clear();
+    skidmark_particles_.particle_renderer->on_destroy.clear();
+    countdown_start_.on_destroy.clear();
     scene_.shutdown();
-    on_clear_.clear();
+    on_destroy.clear();
 }
 
 void PhysicsScene::instantiate_game_logic(std::function<void()> setup_new_round) {

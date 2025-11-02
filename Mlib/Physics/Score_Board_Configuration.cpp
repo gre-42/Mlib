@@ -9,6 +9,7 @@ using namespace Mlib;
 static ScoreBoardConfiguration single_score_board_configuration_from_string(const std::string& s) {
     static const std::map<std::string, ScoreBoardConfiguration> m{
         {"none", ScoreBoardConfiguration::NONE},
+        {"user", ScoreBoardConfiguration::USER},
         {"player", ScoreBoardConfiguration::PLAYER},
         {"team", ScoreBoardConfiguration::TEAM},
         {"best_lap_time", ScoreBoardConfiguration::BEST_LAP_TIME},

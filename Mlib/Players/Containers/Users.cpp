@@ -9,6 +9,10 @@ Users::Users()
 
 Users::~Users() = default;
 
+uint32_t Users::get_user_count() const {
+    return user_count_;
+}
+
 void Users::set_user_count(uint32_t user_count) {
     if (user_count_ != 0) {
         THROW_OR_ABORT("User count already set");

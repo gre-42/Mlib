@@ -61,7 +61,10 @@ public:
     RemoteObjectFactory()
         : object_pool_{ InObjectPoolDestructor::CLEAR }
     {}
-    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(std::istream& istr) override {
+    virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
+        std::istream& istr,
+        const RemoteObjectId& id) override
+    {
         auto t = read_binary<ObjectType>(istr, "object type", IoVerbosity::SILENT);
         switch (t) {
         case ObjectType::INT32:
@@ -135,7 +138,7 @@ void test_remote() {
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
     }
-    server_objects.add_local_object({s, CURRENT_SOURCE_LOCATION});
+    server_objects.add_local_object({s, CURRENT_SOURCE_LOCATION}, RemoteObjectVisibility::PUBLIC);
     for (size_t i = 0; i < 3; ++i) {
         send_and_receive();
     }

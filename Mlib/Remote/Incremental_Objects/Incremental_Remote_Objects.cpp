@@ -16,58 +16,89 @@ RemoteSiteId IncrementalRemoteObjects::site_id() const {
     return site_id_;
 }
 
-void IncrementalRemoteObjects::add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object)
+void IncrementalRemoteObjects::add_local_object(
+    const DanglingBaseClassRef<IIncrementalObject>& object,
+    RemoteObjectVisibility visibility)
 {
-    if (!local_objects_.emplace(
+    auto& objects = [&]() -> LocalObjects& {
+        switch (visibility) {
+        case RemoteObjectVisibility::PRIVATE:
+            return private_local_objects_;
+        case RemoteObjectVisibility::PUBLIC:
+            return public_local_objects_;
+        }
+        THROW_OR_ABORT("Unknown local object visibility");
+    }();
+    if (!objects.emplace(
         next_local_object_id_,
         std::move(object),
         CURRENT_SOURCE_LOCATION).second)
     {
-        verbose_abort("Could not add remote object");
+        verbose_abort("Could not add private local object");
     }
     ++next_local_object_id_;
 }
 
 void IncrementalRemoteObjects::add_remote_object(
     const RemoteObjectId& id,
-    const DanglingBaseClassRef<IIncrementalObject>& object)
+    const DanglingBaseClassRef<IIncrementalObject>& object,
+    RemoteObjectVisibility visibility)
 {
     if (id.site_id == site_id_) {
         THROW_OR_ABORT("Attempt to add a local object as remote");
     }
-    if (!remote_objects_.emplace(id, std::move(object), CURRENT_SOURCE_LOCATION).second) {
-        THROW_OR_ABORT("Could not add shared object (1): " + id.to_displayname());
+    auto& objects = [&]() -> RemoteObjects& {
+        switch (visibility) {
+        case RemoteObjectVisibility::PRIVATE:
+            return private_remote_objects_;
+        case RemoteObjectVisibility::PUBLIC:
+            return public_remote_objects_;
+        }
+        THROW_OR_ABORT("Unknown remote object visibility");
+    }();
+    if (!objects.emplace(id, std::move(object), CURRENT_SOURCE_LOCATION).second) {
+        THROW_OR_ABORT("Could not add remote object: " + id.to_displayname());
     }
 }
 
 DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(const RemoteObjectId& id) const {
     if (id.site_id == site_id_) {
-        auto it = local_objects_.find(id.object_id);
-        if (it == local_objects_.end()) {
-            return nullptr;
+        if (auto it = private_local_objects_.find(id.object_id); it != private_local_objects_.end()) {
+            return it->second.object().ptr();
         }
-        return it->second.object().ptr();
+        if (auto it = public_local_objects_.find(id.object_id); it != public_local_objects_.end()) {
+            return it->second.object().ptr();
+        }
+        return nullptr;
     } else {
-        auto it = remote_objects_.find(id);
-        if (it == remote_objects_.end()) {
-            return nullptr;
+        if (auto it = private_remote_objects_.find(id); it != private_remote_objects_.end()) {
+            return it->second.object().ptr();
         }
-        return it->second.object().ptr();
+        if (auto it = public_remote_objects_.find(id); it != public_remote_objects_.end()) {
+            return it->second.object().ptr();
+        }
+        return nullptr;
     }
 }
 
-const LocalObjects& IncrementalRemoteObjects::local_objects() const {
-    return local_objects_;
+const LocalObjects& IncrementalRemoteObjects::private_local_objects() const {
+    return private_local_objects_;
 }
 
-const RemoteObjects& IncrementalRemoteObjects::remote_objects() const {
-    return remote_objects_;
+const LocalObjects& IncrementalRemoteObjects::public_local_objects() const {
+    return public_local_objects_;
+}
+
+const RemoteObjects& IncrementalRemoteObjects::public_remote_objects() const {
+    return public_remote_objects_;
 }
 
 void IncrementalRemoteObjects::print(std::ostream& ostr) const {
     ostr <<
-        "#local_objects: " << local_objects_.size() <<
-        ", #remote_objects: " << remote_objects_.size();
+        "#private local: " << private_local_objects_.size() <<
+        ", #public local: " << public_local_objects_.size() <<
+        ", #private remote: " << private_remote_objects_.size() <<
+        ", #public remote: " << public_remote_objects_.size();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const IncrementalRemoteObjects& objects) {

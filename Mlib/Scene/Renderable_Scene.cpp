@@ -39,7 +39,7 @@ RenderableScene::RenderableScene(
     uint32_t user_id,
     const SceneConfigResource& config)
     : on_stop_and_join_physics_{ physics_scene->on_stop_and_join_, CURRENT_SOURCE_LOCATION }
-    , on_clear_physics_{ physics_scene->on_clear_, CURRENT_SOURCE_LOCATION }
+    , on_destroy_physics_{ physics_scene->on_destroy, CURRENT_SOURCE_LOCATION }
     , object_pool_{ InObjectPoolDestructor::CLEAR }
     , counter_user_{ DanglingBaseClassRef<UsageCounter>{physics_scene->usage_counter_, CURRENT_SOURCE_LOCATION} }
     , name_{ std::move(name) }
@@ -128,7 +128,7 @@ RenderableScene::RenderableScene(
     on_stop_and_join_physics_.add([this](){
         aggregate_render_logic_->stop_and_join();
     }, CURRENT_SOURCE_LOCATION);
-    on_clear_physics_.add([this](){
+    on_destroy_physics_.add([this](){
         if (audio_listener_updater_ != nullptr) {
             physics_scene_->physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_, CURRENT_SOURCE_LOCATION);
             audio_listener_updater_ = nullptr;
@@ -144,7 +144,7 @@ RenderableScene::RenderableScene(
 
 RenderableScene::~RenderableScene() {
     object_pool_.clear();
-    on_clear_physics_.clear();
+    on_destroy_physics_.clear();
 }
 
 // RenderLogic
@@ -216,7 +216,7 @@ void RenderableScene::stop_and_join() {
     // Do nothing
 }
 
-void RenderableScene::clear() {
+void RenderableScene::shutdown() {
     // Do nothing
 }
 

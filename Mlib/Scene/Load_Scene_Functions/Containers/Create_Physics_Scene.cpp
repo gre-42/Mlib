@@ -47,6 +47,7 @@ struct RegisterJsonUserFunction {
                     name + ".rendering_resources",
                     args.scene_config.render_config.anisotropic_filtering_level,
                     args.scene_config,
+                    args.remote_sites,
                     args.asset_references,
                     RenderingContextStack::primary_scene_node_resources(),
                     RenderingContextStack::primary_particle_resources(),

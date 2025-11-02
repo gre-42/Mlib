@@ -12,23 +12,36 @@ class IIncrementalObject;
 using LocalObjects = DanglingValueUnorderedMap<LocalObjectId, IIncrementalObject>;
 using RemoteObjects = DanglingValueUnorderedMap<RemoteObjectId, IIncrementalObject>;
 
+enum class RemoteObjectVisibility {
+    PRIVATE,
+    PUBLIC
+};
+
 class IncrementalRemoteObjects: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
     explicit IncrementalRemoteObjects(RemoteSiteId site_id);
     ~IncrementalRemoteObjects();
     RemoteSiteId site_id() const;
-    void add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
-    void add_remote_object(const RemoteObjectId& id, const DanglingBaseClassRef<IIncrementalObject>& object);
+    void add_local_object(
+        const DanglingBaseClassRef<IIncrementalObject>& object,
+        RemoteObjectVisibility visibility);
+    void add_remote_object(
+        const RemoteObjectId& id,
+        const DanglingBaseClassRef<IIncrementalObject>& object,
+        RemoteObjectVisibility visibility);
     DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
-    const LocalObjects& local_objects() const;
-    const RemoteObjects& remote_objects() const;
+    const LocalObjects& private_local_objects() const;
+    const LocalObjects& public_local_objects() const;
+    const RemoteObjects& public_remote_objects() const;
     void print(std::ostream& ostr) const;
 
 private:
     RemoteSiteId site_id_;
     LocalObjectId next_local_object_id_;
-    LocalObjects local_objects_;
-    RemoteObjects remote_objects_;
+    LocalObjects private_local_objects_;
+    LocalObjects public_local_objects_;
+    RemoteObjects private_remote_objects_;
+    RemoteObjects public_remote_objects_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const IncrementalRemoteObjects& objects);
