@@ -31,7 +31,7 @@ void IncrementalRemoteObjects::add_local_object(
     }();
     if (!objects.emplace(
         next_local_object_id_,
-        std::move(object),
+        object,
         CURRENT_SOURCE_LOCATION).second)
     {
         verbose_abort("Could not add private local object");
@@ -56,7 +56,7 @@ void IncrementalRemoteObjects::add_remote_object(
         }
         THROW_OR_ABORT("Unknown remote object visibility");
     }();
-    if (!objects.emplace(id, std::move(object), CURRENT_SOURCE_LOCATION).second) {
+    if (!objects.emplace(id, object, CURRENT_SOURCE_LOCATION).second) {
         THROW_OR_ABORT("Could not add remote object: " + id.to_displayname());
     }
 }

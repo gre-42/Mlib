@@ -14,9 +14,6 @@ uint32_t Users::get_user_count() const {
 }
 
 void Users::set_user_count(uint32_t user_count) {
-    if (user_count_ != 0) {
-        THROW_OR_ABORT("User count already set");
-    }
     if (user_count == 0) {
         THROW_OR_ABORT("User count cannot be zero");
     }

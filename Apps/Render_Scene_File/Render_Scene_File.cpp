@@ -592,6 +592,8 @@ int main(int argc, char** argv) {
                 args.named_value("--remote_ip"),
                 safe_stox<uint16_t>(args.named_value("--remote_port")));
         }
+        Users users;
+        RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
         {
             auto record_track_basename = args.try_named_value("--record_track_basename");
             nlohmann::json j{
@@ -728,8 +730,6 @@ int main(int argc, char** argv) {
                 };
                 RenderingContextGuard rcg{ primary_rendering_context };
 
-                Users users;
-                RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 Translators translators{ asset_references, external_json_macro_arguments };
