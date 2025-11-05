@@ -1,14 +1,17 @@
 #pragma once
 #include <Mlib/Json/Json_Key.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <mutex>
 
 namespace Mlib {
 
 class JsonMacroArgumentsAndLock;
+class WritableJsonMacroArgumentsAndLock;
 
 class NotifyingJsonMacroArguments;
 
@@ -24,9 +27,10 @@ private:
     std::function<void()> cleanup_;
 };
 
-class NotifyingJsonMacroArguments {
+class NotifyingJsonMacroArguments: public virtual DanglingBaseClass {
     friend JsonMacroArgumentsObserverToken;
     friend JsonMacroArgumentsAndLock;
+    friend WritableJsonMacroArgumentsAndLock;
     NotifyingJsonMacroArguments(const NotifyingJsonMacroArguments&) = delete;
     NotifyingJsonMacroArguments& operator = (const NotifyingJsonMacroArguments&) = delete;
 public:
@@ -53,6 +57,7 @@ public:
         return json_macro_arguments_.at<TResult>(key, default_);
     }
     JsonMacroArgumentsAndLock json_macro_arguments() const;
+    WritableJsonMacroArgumentsAndLock writable_json_macro_arguments();
     JsonMacroArgumentsObserverToken add_observer(std::function<void()> func);
     JsonMacroArgumentsObserverToken add_finalizer(std::function<void()> func);
 private:
@@ -71,6 +76,7 @@ private:
 class JsonMacroArgumentsAndLock {
 public:
     explicit JsonMacroArgumentsAndLock(const NotifyingJsonMacroArguments& args);
+    ~JsonMacroArgumentsAndLock();
     const JsonMacroArguments* operator -> () const;
     operator const JsonMacroArguments&() const;
     operator const nlohmann::json&() const;
@@ -78,6 +84,18 @@ public:
 private:
     std::shared_lock<SafeAtomicRecursiveSharedMutex> lock_;
     const NotifyingJsonMacroArguments& args_;
+};
+
+class WritableJsonMacroArgumentsAndLock {
+public:
+    explicit WritableJsonMacroArgumentsAndLock(NotifyingJsonMacroArguments& args);
+    ~WritableJsonMacroArgumentsAndLock();
+    JsonMacroArguments* operator -> ();
+    operator JsonMacroArguments&();
+    void unlock_and_notify();
+private:
+    std::unique_lock<SafeAtomicRecursiveSharedMutex> lock_;
+    NotifyingJsonMacroArguments& args_;
 };
 
 }

@@ -23,7 +23,7 @@ void WithSelectedCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
     nlohmann::json let{
         {"selected_camera", *selected_cameras.camera_node_name()}
     };
-    args.macro_line_executor.inserted_block_arguments(let)(args.arguments.at(KnownArgs::content), nullptr);
+    args.macro_line_executor.inserted_block_arguments(std::move(let))(args.arguments.at(KnownArgs::content), nullptr);
 }
 
 namespace {

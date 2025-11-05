@@ -63,7 +63,7 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
                 { "ammo_type", ammo_type },
                 { "bullet_type", bullet_type },
                 { "cool_down", cool_down }};
-            macro_line_executor.inserted_block_arguments(let)(create, nullptr);
+            macro_line_executor.inserted_block_arguments(std::move(let))(create, nullptr);
         };
     }
     std::function<void(const std::string& player_name)> create_externals;
@@ -81,7 +81,7 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"player_name", player_name},
                 {"user_name", player->user_name()},
                 {"user_id", player->user_id()}};
-            macro_line_executor.inserted_block_arguments(let)(create, nullptr);
+            macro_line_executor.inserted_block_arguments(std::move(let))(create, nullptr);
         };
     }
     wc.add_weapon(

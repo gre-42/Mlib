@@ -3,7 +3,7 @@ namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
 
-class ForEachUser {
+class ComputeRandomUserRanks {
 public:
     static void execute(const LoadSceneJsonUserFunctionArgs& args);
 };

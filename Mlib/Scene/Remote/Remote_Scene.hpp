@@ -12,8 +12,8 @@
 
 namespace Mlib {
 
-class UdpNode;
 class PhysicsScene;
+class UdpNode;
 struct RemoteParams;
 enum class IoVerbosity;
 

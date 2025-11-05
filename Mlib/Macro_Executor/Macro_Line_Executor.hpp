@@ -40,7 +40,7 @@ public:
     MacroLineExecutor changed_script_filename(
         std::string script_filename) const;
     MacroLineExecutor inserted_block_arguments(
-        const nlohmann::json& block_arguments) const;
+        nlohmann::json block_arguments) const;
     MacroLineExecutor changed_context(
         std::string context,
         nlohmann::json block_arguments) const;

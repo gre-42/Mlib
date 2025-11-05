@@ -9,10 +9,23 @@
 #include <iosfwd>
 #include <map>
 #include <optional>
+#include <vector>
 
 namespace Mlib {
 
 class Users;
+enum class UserType {
+    LOCAL,
+    ALL
+};
+
+struct UserInfo {
+    uint32_t random_rank = 0;
+};
+
+struct SiteInfo {
+    std::vector<UserInfo> users;
+};
 
 class RemoteSites: public virtual DanglingBaseClass {
 public:
@@ -20,15 +33,27 @@ public:
         const DanglingBaseClassRef<Users>& local_users,
         const std::optional<RemoteParams>& remote_params);
     ~RemoteSites();
+    uint32_t get_local_user_count() const;
     uint32_t get_user_count(RemoteSiteId site_id) const;
+    uint32_t get_total_user_count(UserType user_type) const;
+    void set_local_user_count(uint32_t user_count);
     void set_user_count(RemoteSiteId site_id, uint32_t user_count);
-    void for_each_site_user(const std::function<void(RemoteSiteId site_id, uint32_t)>& operation) const;
+    void for_each_site_user(
+        const std::function<void(std::optional<RemoteSiteId> site_id, uint32_t user_id, UserInfo& user)>& operation,
+        UserType user_type);
+    void for_each_site_user(
+        const std::function<void(std::optional<RemoteSiteId> site_id, uint32_t user_id, const UserInfo& user)>& operation,
+        UserType user_type) const;
     void print(std::ostream& ostr) const;
+
+    void compute_random_user_ranks();
 private:
+    void assert_local_users_consistents() const;
     mutable SafeAtomicSharedMutex mutex_;
     DanglingBaseClassRef<Users> local_users_;
     std::optional<RemoteParams> remote_params_;
-    VerboseMap<RemoteSiteId, uint32_t> sites_;
+    SiteInfo local_site_;
+    VerboseMap<RemoteSiteId, SiteInfo> remote_sites_;
 };
 
 }

@@ -47,6 +47,7 @@ struct RegisterJsonUserFunction {
                     name + ".rendering_resources",
                     args.scene_config.render_config.anisotropic_filtering_level,
                     args.scene_config,
+                    args.external_json_macro_arguments,
                     args.remote_sites,
                     args.asset_references,
                     RenderingContextStack::primary_scene_node_resources(),
@@ -65,7 +66,7 @@ struct RegisterJsonUserFunction {
                     args.render_set_fps.ds,
                     args.ui_focuses[args.arguments.at<uint32_t>(KnownArgs::primary_user_id)],
                     std::make_unique<Translator>(args.translators, VariableAndHash{ args.arguments.at<AssetGroupAndId>(KnownArgs::gid) }),
-                    args.arguments.try_at<RemoteParams>(KnownArgs::remote_params));
+                    args.arguments.try_at_non_null<RemoteParams>(KnownArgs::remote_params));
                 if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
                     THROW_OR_ABORT("Scene with name \"" + name + "\" already exists");
                 }

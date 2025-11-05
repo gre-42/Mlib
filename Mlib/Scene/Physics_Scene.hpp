@@ -42,6 +42,7 @@ class DynamicLightDb;
 class OneShotAudio;
 class RemoteScene;
 class Translator;
+class NotifyingJsonMacroArguments;
 class RemoteSites;
 
 class PhysicsIteration;
@@ -62,6 +63,7 @@ public:
         std::string rendering_resources_name,
         unsigned int max_anisotropic_filtering_level,
         SceneConfig& scene_config,
+        NotifyingJsonMacroArguments& globals,
         RemoteSites& remote_sites,
         AssetReferences& asset_references,
         SceneNodeResources& scene_node_resources,
@@ -93,6 +95,7 @@ public:
     DestructionFunctions on_stop_and_join_;
     DeleteNodeMutex delete_node_mutex_;
     ObjectPool object_pool_;
+    DanglingBaseClassRef<NotifyingJsonMacroArguments> globals_;
     DanglingBaseClassRef<RemoteSites> remote_sites_;
     UiFocus& ui_focus_;
     std::string name_;

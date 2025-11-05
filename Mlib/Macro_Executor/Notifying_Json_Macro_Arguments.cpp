@@ -116,6 +116,10 @@ JsonMacroArgumentsAndLock NotifyingJsonMacroArguments::json_macro_arguments() co
     return JsonMacroArgumentsAndLock{*this};
 }
 
+WritableJsonMacroArgumentsAndLock NotifyingJsonMacroArguments::writable_json_macro_arguments() {
+    return WritableJsonMacroArgumentsAndLock{*this};
+}
+
 JsonMacroArgumentsObserverToken NotifyingJsonMacroArguments::add_observer(
     std::function<void()> func)
 {
@@ -152,10 +156,14 @@ void NotifyingJsonMacroArguments::remove_finalizer(
     finalizers_.erase(it);
 }
 
+// Readonly
+
 JsonMacroArgumentsAndLock::JsonMacroArgumentsAndLock(const NotifyingJsonMacroArguments& args)
     : lock_{ args.json_mutex_ }
     , args_{ args }
 {}
+
+JsonMacroArgumentsAndLock::~JsonMacroArgumentsAndLock() = default;
 
 const JsonMacroArguments* JsonMacroArgumentsAndLock::operator -> () const {
     if (!lock_.owns_lock()) {
@@ -180,4 +188,56 @@ JsonMacroArgumentsAndLock::operator const nlohmann::json&() const {
 
 void JsonMacroArgumentsAndLock::unlock() {
     lock_.unlock();
+}
+
+// Writable
+
+WritableJsonMacroArgumentsAndLock::WritableJsonMacroArgumentsAndLock(NotifyingJsonMacroArguments& args)
+    : lock_{ args.json_mutex_ }
+    , args_{ args }
+{
+    ++args.notification_counter_;
+}
+
+WritableJsonMacroArgumentsAndLock::~WritableJsonMacroArgumentsAndLock() {
+    if (lock_.owns_lock()) {
+        --args_.notification_counter_;
+        lwarn() << "WritableJsonMacroArgumentsAndLock::unlock not called";
+    }
+}
+
+JsonMacroArguments* WritableJsonMacroArgumentsAndLock::operator -> () {
+    if (!lock_.owns_lock()) {
+        THROW_OR_ABORT("WritableJsonMacroArgumentsAndLock not locked");
+    }
+    return &args_.json_macro_arguments_;
+}
+
+WritableJsonMacroArgumentsAndLock::operator JsonMacroArguments&() {
+    if (!lock_.owns_lock()) {
+        THROW_OR_ABORT("WritableJsonMacroArgumentsAndLock not locked");
+    }
+    return args_.json_macro_arguments_;
+}
+
+void WritableJsonMacroArgumentsAndLock::unlock_and_notify() {
+    if (!lock_.owns_lock()) {
+        THROW_OR_ABORT("WritableJsonMacroArgumentsAndLock not locked");
+    }
+    lock_.unlock();
+    {
+        DestructionGuard dg([&](){
+            --args_.notification_counter_;
+        });
+        std::shared_lock lock{ args_.observer_mutex_ };
+        for (const auto& f : args_.observers_) {
+            f();
+        }
+    }
+    if (args_.notification_counter_ == 0) {
+        std::shared_lock lock{ args_.observer_mutex_ };
+        for (const auto& f : args_.finalizers_) {
+            f();
+        }
+    }
 }

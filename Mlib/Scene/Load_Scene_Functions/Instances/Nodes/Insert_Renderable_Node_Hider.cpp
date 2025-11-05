@@ -148,7 +148,7 @@ void InsertRenderableNodeHider::execute(const LoadSceneJsonUserFunctionArgs& arg
             let["PUNCH_ANGLE_PITCH"] = rotation(0) / degrees;
             let["PUNCH_ANGLE_YAW"] = rotation(1) / degrees;
         }
-        macro_line_executor.inserted_block_arguments(let)(func, nullptr);
+        macro_line_executor.inserted_block_arguments(std::move(let))(func, nullptr);
     };
     std::function<void()> on_hide;
     std::function<void()> on_destroy;

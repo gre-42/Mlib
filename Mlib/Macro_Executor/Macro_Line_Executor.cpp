@@ -138,10 +138,10 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
 }
 
 MacroLineExecutor MacroLineExecutor::inserted_block_arguments(
-    const nlohmann::json& block_arguments) const
+    nlohmann::json block_arguments) const
 {
-    JsonMacroArguments let{ block_arguments_ };
-    let.insert_json(block_arguments);
+    JsonMacroArguments let{ std::move(block_arguments) };
+    let.insert_json(block_arguments_);
     return MacroLineExecutor{
         macro_recorder_,
         script_filename_,

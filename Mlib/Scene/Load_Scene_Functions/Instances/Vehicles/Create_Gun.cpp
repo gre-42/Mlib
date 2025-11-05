@@ -142,7 +142,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {"bullet_velocity", velocity / kph},
                     {"bullet_angular_velocity", angular_velocity / rpm},
                 };
-                mle.inserted_block_arguments(let)(l, nullptr);
+                mle.inserted_block_arguments(std::move(let))(l, nullptr);
             };
     }
     std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio;
@@ -169,7 +169,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             nlohmann::json let{
                 {"time_point", world.time}
             };
-            mle.inserted_block_arguments(let)(macro, nullptr);
+            mle.inserted_block_arguments(std::move(let))(macro, nullptr);
         };
     }
     auto& gun = global_object_pool.create<Gun>(
