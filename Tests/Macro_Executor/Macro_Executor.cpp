@@ -51,7 +51,7 @@ void test_eval() {
 void test_resolve() {
     std::map<std::string, std::map<std::string, int>> m;
     m["a"]["b"] = 42;
-    linfo() << "resolve " << JsonView{ m }.resolve<int>("a", "b");
+    linfo() << "resolve " << JsonView{ m }.resolve_t<int>("a", "b");
 }
 
 int main(int argc, char** argv) {

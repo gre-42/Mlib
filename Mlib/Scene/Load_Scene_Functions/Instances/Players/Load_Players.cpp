@@ -169,12 +169,12 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                 auto player_skill = player.try_resolve(PlayerKeys::skills, source, name);
                 return player_skill.has_value()
                     ? *player_skill
-                    : default_skillsv.resolve(source, name);
+                    : default_skillsv.resolve_j(source, name);
             };
             auto team = player.at<std::string>(PlayerKeys::team);
-            auto color = jv.resolve<UFixedArray<float, 3>>(ToplevelKeys::teams, team, TeamKeys::style, StyleKeys::color);
+            auto color = jv.resolve_t<UFixedArray<float, 3>>(ToplevelKeys::teams, team, TeamKeys::style, StyleKeys::color);
             auto spawn_group = player.resolve_default<std::string>("", PlayerKeys::spawn, SpawnKeys::group);
-            auto vehicle_name = player.resolve<std::string>(PlayerKeys::spawn, SpawnKeys::vehicle, SpawnedVehicleKeys::type);
+            auto vehicle_name = player.resolve_t<std::string>(PlayerKeys::spawn, SpawnKeys::vehicle, SpawnedVehicleKeys::type);
             const auto& vars = args.asset_references["vehicles"].at(vehicle_name).rp;
             if (auto controller = player.try_at<std::string>(PlayerKeys::controller); controller.has_value()) {
                 nlohmann::json let{

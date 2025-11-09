@@ -37,7 +37,7 @@ public:
         }
     }
     template <class... TKeys>
-    nlohmann::json resolve(TKeys... path) const {
+    nlohmann::json resolve_j(TKeys... path) const {
         auto res = try_resolve(path...);
         if (!res.has_value()) {
             THROW_OR_ABORT("Cannot resolve JSON-path \"" + join_arguments("/", path...) + '"');
@@ -46,7 +46,7 @@ public:
         }
     }
     template <class TValue, class... TKeys>
-    TValue resolve(TKeys... path) const {
+    TValue resolve_t(TKeys... path) const {
         auto res = try_resolve(path...);
         if (!res.has_value()) {
             THROW_OR_ABORT("Cannot resolve JSON-path \"" + join_arguments("/", path...) + '"');

@@ -73,6 +73,12 @@ void RemoteUsers::read_data(std::istream& istr) {
                 auto key = "selected_vehicle_color_" + std::to_string(site_id_) + '_' + std::to_string(user_id);
                 args->set(key, read_binary<EFixedArray<float, 3>>(istr, "selected vehicle color", verbosity_));
             }
+            {
+                auto account = nlohmann::json::object();
+                account["name"] = read_string(istr, "account name");
+                auto key = "account_" + std::to_string(site_id_) + '_' + std::to_string(user_id);
+                args->set(key, account);
+            }
         }
         args.unlock_and_notify();
     }
@@ -94,6 +100,11 @@ void RemoteUsers::write(std::ostream& ostr, ObjectCompression compression) {
             {
                 auto key = "selected_vehicle_color_" + std::to_string(site_id_) + '_' + std::to_string(user_id);
                 write_binary(ostr, args->at<EFixedArray<float, 3>>(key), "selected vehicle color");
+            }
+            {
+                auto key = "account_" + std::to_string(site_id_) + '_' + std::to_string(user_id);
+                auto account_name = args->resolve_t<std::string>(key, "name");
+                write_string(ostr, account_name, "account name");
             }
             // } catch (const std::runtime_error& e) {
             //     lerr() << "Could not write variable\n" << (const nlohmann::json&)args;
