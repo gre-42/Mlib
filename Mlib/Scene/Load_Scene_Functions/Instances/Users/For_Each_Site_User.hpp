@@ -2,15 +2,15 @@
 namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
-enum class UserType;
+enum class UserTypes;
 
 class ForEachSiteUser {
 public:
-    ForEachSiteUser(UserType user_type);
+    ForEachSiteUser(UserTypes user_type);
     ~ForEachSiteUser();
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 private:
-    UserType user_type_;
+    UserTypes user_types_;
 };
 
 }

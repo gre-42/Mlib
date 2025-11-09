@@ -13,11 +13,13 @@ UserInfo::UserInfo(
     const std::optional<RemoteSiteId>& site_id,
     uint32_t user_id,
     std::string name,
-    std::string full_name)
+    std::string full_name,
+    UserType type)
     : site_id{ site_id }
     , user_id{ user_id }
     , name{ std::move(name) }
     , full_name{ std::move(full_name) }
+    , type{ type }
     , random_rank{ 0 }
 {}
 
@@ -63,23 +65,24 @@ uint32_t RemoteSites::get_user_count(RemoteSiteId site_id) const {
     }
 }
 
-uint32_t RemoteSites::get_total_user_count(UserType user_type) const {
+uint32_t RemoteSites::get_total_user_count(UserTypes user_types) const {
     uint32_t result = 0;
     for_each_site_user(
         [&](const UserInfo& user){
             ++result;
-        }, user_type);
+        }, user_types);
     return result;
 }
 
 void RemoteSites::set_local_user_count(uint32_t user_count) {
+    std::scoped_lock lock{ mutex_ };
     local_users_->set_user_count(user_count);
     local_site_.users.clear_and_reserve(user_count);
     if (remote_params_.has_value()) {
         for (uint32_t i = 0; i < user_count; ++i) {
             auto name = std::to_string(i);
             auto full_name = VariableAndHash<std::string>{std::to_string(remote_params_->site_id) + '_' + name};
-            auto& user = local_site_.users.emplace_back(remote_params_->site_id, i, name, *full_name);
+            auto& user = local_site_.users.emplace_back(remote_params_->site_id, i, name, *full_name, UserType::LOCAL);
             named_users_.emplace(
                 std::move(full_name),
                 DanglingBaseClassRef<UserInfo>{user, CURRENT_SOURCE_LOCATION},
@@ -88,7 +91,7 @@ void RemoteSites::set_local_user_count(uint32_t user_count) {
     } else {
         for (uint32_t i = 0; i < user_count; ++i) {
             auto name = VariableAndHash<std::string>{std::to_string(i)};
-            auto& user = local_site_.users.emplace_back(std::nullopt, i, *name, *name);
+            auto& user = local_site_.users.emplace_back(std::nullopt, i, *name, *name, UserType::LOCAL);
             named_users_.emplace(
                 std::move(name),
                 DanglingBaseClassRef<UserInfo>{user, CURRENT_SOURCE_LOCATION},
@@ -105,18 +108,19 @@ void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
     if (!remote_params_.has_value() || (site_id == remote_params_->site_id)) {
         assert_local_users_consistents();
         if (local_users_->get_user_count() != user_count) {
-            if (local_users_->get_user_count() != 0) {
-                THROW_OR_ABORT(
-                    "Attempt to remotely set the user count to " +
-                    std::to_string(user_count) +
-                    "when it was previously already set to " +
-                    std::to_string(local_users_->get_user_count()));
-            }
-            set_local_user_count(user_count);
+            THROW_OR_ABORT(
+                "Attempt to remotely set the user count to " +
+                std::to_string(user_count) +
+                " when it is actually " +
+                std::to_string(local_users_->get_user_count()));
         }
     } else {
-        if (!remote_sites_.contains(site_id) && (remote_sites_.size() >= 256)) {
-            THROW_OR_ABORT("Number of sites cannot be greater than 256");
+        if (!remote_sites_.contains(site_id)) {
+            if (remote_sites_.size() >= 256) {
+                THROW_OR_ABORT("Number of sites cannot be greater than 256");
+            }
+        } else if (user_count == get_user_count(site_id)) {
+            return;
         }
         remote_sites_.erase(site_id);
         auto& site = remote_sites_.add(site_id);
@@ -124,7 +128,7 @@ void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
         for (uint32_t i = 0; i < user_count; ++i) {
             auto name = std::to_string(i);
             auto full_name = VariableAndHash<std::string>{std::to_string(site_id) + '_' + name};
-            auto& user = site.users.emplace_back(site_id, i, name, *full_name);
+            auto& user = site.users.emplace_back(site_id, i, name, *full_name, UserType::REMOTE);
             named_users_.emplace(
                 std::move(full_name),
                 DanglingBaseClassRef<UserInfo>{user, CURRENT_SOURCE_LOCATION},
@@ -135,7 +139,7 @@ void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
 
 void RemoteSites::for_each_site_user(
     const std::function<void(UserInfo& user)>& operation,
-    UserType user_type)
+    UserTypes user_types)
 {
     std::shared_lock lock{ mutex_ };
     assert_local_users_consistents();
@@ -143,7 +147,7 @@ void RemoteSites::for_each_site_user(
         local_users_->for_each_user([&](uint32_t user_id){
             operation(local_site_.users.at(user_id));
         });
-        if (user_type == UserType::ALL) {
+        if (user_types == UserTypes::ALL) {
             for (auto& [site_id, site] : remote_sites_) {
                 if (site_id != remote_params_->site_id) {
                     for (auto&& [user_id, user] : tenumerate<uint32_t>(site.users)) {
@@ -161,12 +165,12 @@ void RemoteSites::for_each_site_user(
 
 void RemoteSites::for_each_site_user(
     const std::function<void(const UserInfo& user)>& operation,
-    UserType user_type) const
+    UserTypes user_types) const
 {
     const_cast<RemoteSites*>(this)->for_each_site_user(
         [&](UserInfo& user){
             operation(user);
-        }, user_type);
+        }, user_types);
 }
 
 DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(
@@ -186,7 +190,7 @@ void RemoteSites::print(std::ostream& ostr) const {
         } else {
             ostr << "User: " << user.user_id << '\n';
         }
-    }, UserType::ALL);
+    }, UserTypes::ALL);
 }
 
 void RemoteSites::assert_local_users_consistents() const {
@@ -200,7 +204,7 @@ void RemoteSites::assert_local_users_consistents() const {
 }
 
 void RemoteSites::compute_random_user_ranks() {
-    auto nusers = get_total_user_count(UserType::ALL);
+    auto nusers = get_total_user_count(UserTypes::ALL);
     auto perm = arange<uint32_t>(nusers);
     std::mt19937 rng_;
     rng_.seed(42);
@@ -213,5 +217,5 @@ void RemoteSites::compute_random_user_ranks() {
             }
             user.random_rank = perm(i);
             ++i;
-        }, UserType::ALL);
+        }, UserTypes::ALL);
 }

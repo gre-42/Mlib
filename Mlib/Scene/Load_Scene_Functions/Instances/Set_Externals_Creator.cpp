@@ -50,6 +50,13 @@ SetExternalsCreator::SetExternalsCreator(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
+bool get_if_pc(ExternalsMode externals_mode, const UserInfo* user_info) {
+    return
+        (externals_mode == ExternalsMode::PC) &&
+        (user_info != nullptr) &&
+        (user_info->type == UserType::LOCAL);
+}
+
 void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
@@ -74,7 +81,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             nlohmann::json let{
                 {LetKeys::full_user_name, user_info->full_name},
                 {LetKeys::player_name, player.id()},
-                {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
+                {LetKeys::if_pc, get_if_pc(externals_mode, user_info.get())},
                 {LetKeys::behavior, player.behavior()}
             };
             macro_line_executor.inserted_block_arguments(std::move(let))(macro, nullptr);
@@ -90,9 +97,10 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (player.externals_mode() == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
+            auto user_info = player.user_info();
             nlohmann::json let{
                 {LetKeys::player_name, player.id()},
-                {LetKeys::if_pc, (player.externals_mode() == ExternalsMode::PC)},
+                {LetKeys::if_pc, get_if_pc(player.externals_mode(), user_info.get())},
                 {LetKeys::if_manual_aim, player.skills(ControlSource::USER).can_aim},
                 {LetKeys::if_manual_shoot, player.skills(ControlSource::USER).can_shoot},
                 {LetKeys::if_manual_drive, player.skills(ControlSource::USER).can_drive},
@@ -100,7 +108,6 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {LetKeys::behavior, player.behavior()},
                 {LetKeys::externals_seat, internals_mode.seat}
             };
-            auto user_info = player.user_info();
             if (user_info != nullptr) {
                 let[LetKeys::full_user_name] = user_info->full_name;
             }

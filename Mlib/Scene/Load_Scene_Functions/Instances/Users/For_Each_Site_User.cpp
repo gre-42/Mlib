@@ -13,8 +13,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(content);
 }
 
-ForEachSiteUser::ForEachSiteUser(UserType user_type)
-    : user_type_{ user_type }
+ForEachSiteUser::ForEachSiteUser(UserTypes user_types)
+    : user_types_{ user_types }
 {}
 
 ForEachSiteUser::~ForEachSiteUser() = default;
@@ -27,7 +27,8 @@ void ForEachSiteUser::execute(const LoadSceneJsonUserFunctionArgs &args) {
         {
             nlohmann::json let{
                 {"user_name", user.name},
-                {"full_user_name", user.full_name}
+                {"full_user_name", user.full_name},
+                {"user_is_local", (user.type == UserType::LOCAL)}
             };
             if (user.site_id.has_value()) {
                 auto locals_site_id = args.remote_sites.get_local_site_id();
@@ -35,21 +36,18 @@ void ForEachSiteUser::execute(const LoadSceneJsonUserFunctionArgs &args) {
                     THROW_OR_ABORT("Local site ID not set");
                 }
                 if (*user.site_id == *locals_site_id) {
-                    let["user_is_local"] = true;
                     let["local_user_id"] = user.user_id;
                 } else {
-                    let["user_is_local"] = false;
                     let["local_user_id"] = nlohmann::json::object();
                 }
             } else {
-                let["user_is_local"] = true;
                 let["local_user_id"] = user.user_id;
             }
             if (args.local_json_macro_arguments != nullptr) {
                 let.update(args.local_json_macro_arguments->json());
             }
             args.macro_line_executor.inserted_block_arguments(std::move(let))(l, nullptr);
-        }, user_type_);
+        }, user_types_);
 }
 
 namespace {
@@ -60,7 +58,7 @@ struct RegisterJsonUserFunctionAll {
             "for_each_site_user",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                ForEachSiteUser(UserType::ALL).execute(args);
+                ForEachSiteUser(UserTypes::ALL).execute(args);
             });
     }
 } obj_all;
@@ -71,7 +69,7 @@ struct RegisterJsonUserFunctionLocal {
             "for_each_user",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                ForEachSiteUser(UserType::LOCAL).execute(args);
+                ForEachSiteUser(UserTypes::LOCAL).execute(args);
             });
     }
 } obj_local;

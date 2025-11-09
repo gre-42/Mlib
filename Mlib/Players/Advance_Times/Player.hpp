@@ -279,6 +279,7 @@ private:
     void select_best_weapon_in_inventory();
     bool unstuck();
     DestructionFunctions on_clear_vehicle_;
+    DestructionFunctionsRemovalTokens on_clear_user_;
     DestructionFunctionsRemovalTokens on_avatar_destroyed_;
     DestructionFunctionsRemovalTokens on_vehicle_destroyed_;
     DestructionFunctionsRemovalTokens on_next_vehicle_destroyed_;

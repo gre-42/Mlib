@@ -26,6 +26,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Navigate.hpp>
 #include <Mlib/Players/Game_Logic/Spawner.hpp>
@@ -123,6 +124,7 @@ Player::Player(
     const CountdownPhysics& countdown_start)
     : car_movement{ *this }
     , avatar_movement{ *this }
+    , on_clear_user_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_avatar_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_vehicle_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
     , on_next_vehicle_destroyed_{ nullptr, CURRENT_SOURCE_LOCATION }
@@ -168,6 +170,10 @@ Player::Player(
     , user_account_{ std::move(user_account) }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (user_info_ != nullptr) {
+        on_clear_user_.set(user_info_->on_destroy, CURRENT_SOURCE_LOCATION);
+        on_clear_user_.add([this](){ user_info_ = nullptr; }, CURRENT_SOURCE_LOCATION);
+    }
 }
 
 Player::~Player() {

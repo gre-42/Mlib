@@ -6,7 +6,7 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Site_Id.hpp>
-#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <functional>
@@ -17,7 +17,13 @@
 namespace Mlib {
 
 class Users;
+
 enum class UserType {
+    LOCAL,
+    REMOTE
+};
+
+enum class UserTypes {
     LOCAL,
     ALL
 };
@@ -27,12 +33,14 @@ struct UserInfo: public virtual DestructionNotifier, public virtual DanglingBase
         const std::optional<RemoteSiteId>& site_id,
         uint32_t user_id,
         std::string name,
-        std::string full_name);
-    ~UserInfo();
+        std::string full_name,
+        UserType type);
+    virtual ~UserInfo() override;
     std::optional<RemoteSiteId> site_id;
     uint32_t user_id;
     std::string name;
     std::string full_name;
+    UserType type;
     uint32_t random_rank;
 };
 
@@ -51,22 +59,22 @@ public:
     std::optional<RemoteSiteId> get_local_site_id() const;
     uint32_t get_local_user_count() const;
     uint32_t get_user_count(RemoteSiteId site_id) const;
-    uint32_t get_total_user_count(UserType user_type) const;
+    uint32_t get_total_user_count(UserTypes user_types) const;
     void set_local_user_count(uint32_t user_count);
     void set_user_count(RemoteSiteId site_id, uint32_t user_count);
     void for_each_site_user(
         const std::function<void(UserInfo& user)>& operation,
-        UserType user_type);
+        UserTypes user_types);
     void for_each_site_user(
         const std::function<void(const UserInfo& user)>& operation,
-        UserType user_type) const;
+        UserTypes user_types) const;
     DanglingBaseClassRef<const UserInfo> get_user(const VariableAndHash<std::string>& full_name) const;
     void print(std::ostream& ostr) const;
 
     void compute_random_user_ranks();
 private:
     void assert_local_users_consistents() const;
-    mutable SafeAtomicSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
     DanglingBaseClassRef<Users> local_users_;
     std::optional<RemoteParams> remote_params_;
     SiteInfo local_site_;

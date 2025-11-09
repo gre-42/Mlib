@@ -53,7 +53,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (auto full_user_name = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
         full_user_name.has_value())
     {
-        user_info = args.remote_sites.get_user(*full_user_name).ptr();
+        user_info = args.remote_sites.get_user(*full_user_name).ptr().set_loc(CURRENT_SOURCE_LOCATION);
     }
     auto player = global_object_pool.create_unique<Player>(
         CURRENT_SOURCE_LOCATION,
