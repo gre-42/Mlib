@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Ai/Skill_Map.hpp>
 #include <Mlib/Physics/Ai/Skills.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Internals_Mode.hpp>
@@ -25,8 +26,7 @@ DECLARE_ARGUMENT(internals);
 
 namespace LetKeys {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(user_id);
-DECLARE_ARGUMENT(user_name);
+DECLARE_ARGUMENT(full_user_name);
 DECLARE_ARGUMENT(player_name);
 DECLARE_ARGUMENT(if_pc);
 DECLARE_ARGUMENT(if_manual_aim);
@@ -67,9 +67,12 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
+            auto user_info = player.user_info();
+            if (user_info == nullptr) {
+                THROW_OR_ABORT("Attempt to create vehicle externals for a player without a user");
+            }
             nlohmann::json let{
-                {LetKeys::user_id, player.user_id()},
-                {LetKeys::user_name, player.user_name()},
+                {LetKeys::full_user_name, user_info->full_name},
                 {LetKeys::player_name, player.id()},
                 {LetKeys::if_pc, (externals_mode == ExternalsMode::PC)},
                 {LetKeys::behavior, player.behavior()}
@@ -97,9 +100,9 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {LetKeys::behavior, player.behavior()},
                 {LetKeys::externals_seat, internals_mode.seat}
             };
-            if (player.user_id() != UINT32_MAX) {
-                let[LetKeys::user_id] = player.user_id();
-                let[LetKeys::user_name] = player.user_name();
+            auto user_info = player.user_info();
+            if (user_info != nullptr) {
+                let[LetKeys::full_user_name] = user_info->full_name;
             }
             macro_line_executor.inserted_block_arguments(std::move(let))(macro, nullptr);
         }

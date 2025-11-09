@@ -49,8 +49,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Gun_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Plane_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Plane_Controller_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Print_Camera_Node_Info_Key_Binding.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Rel_Key_Binding_Tripod.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Weapon_Cycle_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_Only_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_With_Shadow.hpp>
@@ -329,8 +327,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreatePlaneController::key, CreatePlaneController::json_user_function);
             register_json_user_function(CreateRelativeTransformer::key, CreateRelativeTransformer::json_user_function);
             register_json_user_function(CreateCopyRotation::key, CreateCopyRotation::json_user_function);
-            register_json_user_function(CreatePrintCameraNodeInfoKeyBinding::key, CreatePrintCameraNodeInfoKeyBinding::json_user_function);
-            register_json_user_function(CreateRelKeyBindingTripod::key, CreateRelKeyBindingTripod::json_user_function);
             register_json_user_function(CreateRotor::key, CreateRotor::json_user_function);
             register_json_user_function(CreateSpawner::key, CreateSpawner::json_user_function);
             register_json_user_function(CreateTankController::key, CreateTankController::json_user_function);

@@ -8,6 +8,7 @@
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -21,8 +22,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(user_id);
-DECLARE_ARGUMENT(user_name);
+DECLARE_ARGUMENT(full_user_name);
 DECLARE_ARGUMENT(user_account_key);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(team);
@@ -49,6 +49,12 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
     {
         user_account = std::make_shared<UserAccount>(args.macro_line_executor, *user_account_key);
     }
+    DanglingBaseClassPtr<const UserInfo> user_info = nullptr;
+    if (auto full_user_name = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
+        full_user_name.has_value())
+    {
+        user_info = args.remote_sites.get_user(*full_user_name).ptr();
+    }
     auto player = global_object_pool.create_unique<Player>(
         CURRENT_SOURCE_LOCATION,
         scene,
@@ -60,8 +66,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.collision_query_,
         vehicle_spawners,
         players,
-        args.arguments.at<uint32_t>(KnownArgs::user_id, UINT32_MAX),
-        args.arguments.at<std::string>(KnownArgs::user_name, ""),
+        user_info,
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::team),
         std::move(user_account),

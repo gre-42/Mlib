@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Advance_Times/Respawn_Config.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
+#include <Mlib/Scene_Graph/Remote_User_Filter.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <fstream>
 #include <mutex>
@@ -53,7 +54,7 @@ public:
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         std::string asset_id,
         VariableAndHash<std::string> resource_name,
-        uint32_t user_id,
+        const ViewableRemoteObject& remote_viewable,
         const DanglingBaseClassRef<IPlayer>& player,
         size_t nbeacons,
         float distance,
@@ -85,7 +86,7 @@ private:
     std::vector<IAbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     VariableAndHash<std::string> resource_name_;
-    uint32_t user_id_;
+    ViewableRemoteObject remote_viewable_;
     DanglingBaseClassRef<IPlayer> player_;
     float radius_;
     size_t nbeacons_;

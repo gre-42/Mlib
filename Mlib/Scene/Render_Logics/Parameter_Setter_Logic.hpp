@@ -58,7 +58,7 @@ public:
         SubmenuHeader& header,
         std::string persisted,
         ButtonStates& button_states,
-        uint32_t user_id,
+        uint32_t local_user_id,
         const std::function<void()> on_change = [](){},
         const std::function<void()> on_execute = [](){});
     ~ParameterSetterLogic();

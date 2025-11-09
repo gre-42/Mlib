@@ -14,6 +14,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
+#include <Mlib/Scene_Graph/Remote_User_Filter.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
@@ -148,14 +149,14 @@ public:
     explicit SceneNode(
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED,
         SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
-        uint32_t user_id = UINT32_MAX);
+        const ViewableRemoteObject& remote_viewable = ViewableRemoteObject::all());
     SceneNode(
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED,
         SceneNodeDomain domain = SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
-        uint32_t user_id = UINT32_MAX);
+        const ViewableRemoteObject& remote_viewable = ViewableRemoteObject::all());
     virtual ~SceneNode() override;
     virtual void shutdown();
     ShutdownPhase shutdown_phase() const;
@@ -353,8 +354,8 @@ public:
     void set_periodic_animation(const VariableAndHash<std::string>& name);
     void set_aperiodic_animation(const VariableAndHash<std::string>& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
-    inline bool is_visible_for_user(uint32_t user_id) const {
-        return (user_id == UINT32_MAX) || (user_id_ == UINT32_MAX) || (user_id == user_id_);
+    inline bool is_visible_for_user(const RemoteObserver& observer) const {
+        return observer.can_see(remote_viewable_);
     }
     SceneNodeState state() const;
     Scene& scene();
@@ -378,7 +379,7 @@ private:
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
     void clear_unsafe();
-    uint32_t user_id_;
+    ViewableRemoteObject remote_viewable_;
     Scene* scene_;
     DanglingBaseClassPtr<SceneNode> parent_;
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_;

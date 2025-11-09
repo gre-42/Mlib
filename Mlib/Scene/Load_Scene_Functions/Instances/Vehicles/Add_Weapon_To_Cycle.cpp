@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -74,13 +75,14 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
             &players = players](const std::string& player_name)
         {
             auto player = players.get_player(player_name, CURRENT_SOURCE_LOCATION);
-            if (player->user_id() == UINT32_MAX) {
+            auto user_info = player->user_info();
+            if (user_info == nullptr) {
                 return;
             }
             nlohmann::json let{
                 {"player_name", player_name},
-                {"user_name", player->user_name()},
-                {"user_id", player->user_id()}};
+                {"user_name", user_info->name},
+                {"full_user_name", user_info->full_name}};
             macro_line_executor.inserted_block_arguments(std::move(let))(create, nullptr);
         };
     }

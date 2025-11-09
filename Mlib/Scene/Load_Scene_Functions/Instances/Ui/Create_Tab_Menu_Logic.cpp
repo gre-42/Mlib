@@ -38,7 +38,7 @@ DECLARE_ARGUMENT(deflt);
 DECLARE_ARGUMENT(on_execute);
 DECLARE_ARGUMENT(z_order);
 DECLARE_ARGUMENT(focus_mask);
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 }
 
 CreateTabMenuLogic::CreateTabMenuLogic(RenderableScene& renderable_scene) 
@@ -68,14 +68,14 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
             // macro_line_executor(reload_transient_objects, nullptr);
         };
     }
-    auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
+    auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
     // If the selection_ids array is not yet initialized, apply the default value.
     ui_focus.all_selection_ids.try_emplace(id, deflt);
     auto& tab_menu_logic = object_pool.create<TabMenuLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(id),
         focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
-        args.confirm_button_press.get(user_id),
+        args.confirm_button_press.get(local_user_id),
         args.gallery,
         list_view_style_from_string(args.arguments.at<std::string>(KnownArgs::style)),
         args.arguments.at<std::string>(KnownArgs::selection_marker),
@@ -94,7 +94,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         ui_focus,
         args.num_renderings,
         args.button_states,
-        user_id,
+        local_user_id,
         on_execute);
     render_logics.append(
         { tab_menu_logic, CURRENT_SOURCE_LOCATION },

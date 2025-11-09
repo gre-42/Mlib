@@ -60,7 +60,7 @@ DECLARE_ARGUMENT(parameters);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 DECLARE_ARGUMENT(persistent);
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 }
 
 CreateParameterSetterLogic::CreateParameterSetterLogic(RenderableScene& renderable_scene) 
@@ -133,13 +133,13 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             mle(oe, nullptr);
         };
     }
-    auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
+    auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
     auto& parameter_setter_logic = object_pool.create<ParameterSetterLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(required),
         std::move(id),
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
-        args.confirm_button_press.get(user_id),
+        args.confirm_button_press.get(local_user_id),
         args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
@@ -156,7 +156,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         header,
         args.arguments.at<std::string>(KnownArgs::persistent, ""),
         args.button_states,
-        user_id,
+        local_user_id,
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]() {
             if (on_change.has_value() ) {
                 mle(*on_change, nullptr);

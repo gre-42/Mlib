@@ -72,7 +72,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     SubmenuHeader& header,
     std::string persisted,
     ButtonStates& button_states,
-    uint32_t user_id,
+    uint32_t local_user_id,
     std::function<void()> on_change,
     std::function<void()> on_execute)
     : ew_{ std::move(ew) }
@@ -103,7 +103,7 @@ ParameterSetterLogic::ParameterSetterLogic(
         contents_,
         ListViewOrientation::VERTICAL,
         ui_focus,
-        user_id,
+        local_user_id,
         [this, oc = std::move(on_change)](){
             if (!ew_->eval(required_)) {
                 return;

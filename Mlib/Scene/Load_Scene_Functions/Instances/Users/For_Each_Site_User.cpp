@@ -23,29 +23,32 @@ void ForEachSiteUser::execute(const LoadSceneJsonUserFunctionArgs &args) {
     args.arguments.validate(KnownArgs::options);
     auto l = args.arguments.at(KnownArgs::content);
     args.remote_sites.for_each_site_user(
-        [&](std::optional<RemoteSiteId> site_id, uint32_t user_id, UserInfo& user)
+        [&](UserInfo& user)
         {
-            if (site_id.has_value()) {
-                nlohmann::json let{
-                    {"user_id", user_id},
-                    {"user_name", std::to_string(user_id)},
-                    {"full_user_name", std::to_string(*site_id) + '_' + std::to_string(user_id)}
-                };
-                if (args.local_json_macro_arguments != nullptr) {
-                    let.update(args.local_json_macro_arguments->json());
+            nlohmann::json let{
+                {"user_name", user.name},
+                {"full_user_name", user.full_name}
+            };
+            if (user.site_id.has_value()) {
+                auto locals_site_id = args.remote_sites.get_local_site_id();
+                if (!locals_site_id.has_value()) {
+                    THROW_OR_ABORT("Local site ID not set");
                 }
-                args.macro_line_executor.inserted_block_arguments(std::move(let))(l, nullptr);
+                if (*user.site_id == *locals_site_id) {
+                    let["user_is_local"] = true;
+                    let["local_user_id"] = user.user_id;
+                } else {
+                    let["user_is_local"] = false;
+                    let["local_user_id"] = nlohmann::json::object();
+                }
             } else {
-                nlohmann::json let{
-                    {"user_id", user_id},
-                    {"user_name", std::to_string(user_id)},
-                    {"full_user_name", std::to_string(user_id)}
-                };
-                if (args.local_json_macro_arguments != nullptr) {
-                    let.update(args.local_json_macro_arguments->json());
-                }
-                args.macro_line_executor.inserted_block_arguments(std::move(let))(l, nullptr);
+                let["user_is_local"] = true;
+                let["local_user_id"] = user.user_id;
             }
+            if (args.local_json_macro_arguments != nullptr) {
+                let.update(args.local_json_macro_arguments->json());
+            }
+            args.macro_line_executor.inserted_block_arguments(std::move(let))(l, nullptr);
         }, user_type_);
 }
 

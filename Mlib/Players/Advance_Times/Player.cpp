@@ -110,8 +110,7 @@ Player::Player(
     CollisionQuery& collision_query,
     VehicleSpawners& vehicle_spawners,
     Players& players,
-    uint32_t user_id,
-    std::string user_name,
+    const DanglingBaseClassPtr<const UserInfo>& user_info,
     std::string id,
     std::string team,
     std::shared_ptr<UserAccount> user_account,
@@ -134,8 +133,7 @@ Player::Player(
     , collision_query_{ collision_query }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
-    , user_id_{ user_id }
-    , user_name_{ std::move(user_name) }
+    , user_info_{ user_info }
     , id_{ std::move(id) }
     , team_{ std::move(team) }
     , vehicle_{ nullptr }
@@ -336,14 +334,9 @@ void Player::change_gun_node(DanglingBaseClassPtr<SceneNode> gun_node) {
     }
 }
 
-uint32_t Player::user_id() const {
+DanglingBaseClassPtr<const UserInfo> Player::user_info() const {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    return user_id_;
-}
-
-const std::string& Player::user_name() const {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    return user_name_;
+    return user_info_;
 }
 
 const std::string& Player::id() const {

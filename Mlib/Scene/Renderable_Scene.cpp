@@ -36,7 +36,7 @@ RenderableScene::RenderableScene(
     LockableKeyConfigurations& key_configurations,
     UiFocus& ui_focus,
     const FocusFilter& focus_filter,
-    uint32_t user_id,
+    const RemoteObserver& remote_observer,
     const SceneConfigResource& config)
     : on_stop_and_join_physics_{ physics_scene->on_stop_and_join_, CURRENT_SOURCE_LOCATION }
     , on_destroy_physics_{ physics_scene->on_destroy, CURRENT_SOURCE_LOCATION }
@@ -59,7 +59,7 @@ RenderableScene::RenderableScene(
           .physics_set_fps = &physics_scene->physics_set_fps_}
     , ui_focus_{ ui_focus }
     , focus_filter_{ focus_filter }
-    , user_id_{ user_id }
+    , remote_observer_{ remote_observer }
     , render_logics_{ ui_focus }
     , scene_render_logics_{ ui_focus }
     , standard_camera_logic_{
@@ -191,7 +191,7 @@ void RenderableScene::render_without_setup(
     }
 
     auto f = frame_id;
-    f.external_render_pass.user_id = user_id_;
+    f.external_render_pass.observer = remote_observer_;
     f.external_render_pass.renderable_scene = { *this, DP_LOC };
     auto completed_time = physics_scene_->physics_set_fps_.completed_time();
     if (completed_time != std::chrono::steady_clock::time_point()) {

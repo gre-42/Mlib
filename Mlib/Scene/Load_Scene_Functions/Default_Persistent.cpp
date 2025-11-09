@@ -9,7 +9,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 DECLARE_ARGUMENT(variables);
 }
 
@@ -21,10 +21,10 @@ struct RegisterJsonUserFunction {
             "default_persistent",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
+                auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
                 auto variables = args.arguments.at(KnownArgs::variables);
                 for (const auto& [k, v] : variables.items()) {
-                    args.ui_focuses[user_id].set_persisted_selection_id(k, v, PersistedValueType::DEFAULT);
+                    args.ui_focuses[local_user_id].set_persisted_selection_id(k, v, PersistedValueType::DEFAULT);
                 }
             });
     }

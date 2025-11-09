@@ -83,7 +83,7 @@ void LightmapLogic::render_without_setup(
     if ((!fbs_[0]->is_configured() && !fbs_[1]->is_configured()) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
         ViewportGuard vg{ lightmap_width_, lightmap_height_ };
         RenderedSceneDescriptor light_rsd{
-            .external_render_pass = {frame_id.external_render_pass.user_id, render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
+            .external_render_pass = {frame_id.external_render_pass.observer, render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0};
         size_t target_id = 0;
         auto border_color = (float)!any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);

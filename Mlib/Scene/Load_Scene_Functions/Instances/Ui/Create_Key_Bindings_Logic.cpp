@@ -35,7 +35,7 @@ DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(deflt);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 }
 
 CreateKeyBindingsLogic::CreateKeyBindingsLogic(RenderableScene& renderable_scene)
@@ -77,7 +77,7 @@ void CreateKeyBindingsLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.button_states,
         ui_focus,
         ui_focus.all_selection_ids.at(id),
-        args.arguments.at<uint32_t>(KnownArgs::user_id));
+        args.arguments.at<uint32_t>(KnownArgs::local_user_id));
     render_logics.append(
         { parameter_setter_logic, CURRENT_SOURCE_LOCATION },
         1,                          // z_order

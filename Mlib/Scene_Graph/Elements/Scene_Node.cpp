@@ -53,10 +53,10 @@ SceneNode::SceneNode(
     float scale,
     PoseInterpolationMode interpolation_mode,
     SceneNodeDomain domain,
-    uint32_t user_id)
+    const ViewableRemoteObject& remote_viewable)
     : clearing_observers{ *this }
     , destruction_observers{ *this }
-    , user_id_{ user_id }
+    , remote_viewable_{ remote_viewable }
     , scene_{ nullptr }
     , parent_{ nullptr }
     , absolute_movable_{ nullptr }
@@ -87,14 +87,14 @@ SceneNode::SceneNode(
 SceneNode::SceneNode(
     PoseInterpolationMode interpolation_mode,
     SceneNodeDomain domain,
-    uint32_t user_id)
+    const ViewableRemoteObject& remote_viewable)
     : SceneNode{
         fixed_zeros<ScenePos, 3>(),
         fixed_zeros<float, 3>(),
         1.f,
         interpolation_mode,
         domain,
-        user_id}
+        remote_viewable}
 {}
 
 void SceneNode::shutdown() {
@@ -1072,7 +1072,9 @@ void SceneNode::render(
     const std::list<std::shared_ptr<const ColorStyle>>& color_styles,
     SceneNodeVisibility visibility) const
 {
-    assert_true(is_visible_for_user(frame_id.external_render_pass.user_id));
+    if (!is_visible_for_user(frame_id.external_render_pass.observer)) {
+        THROW_OR_ABORT("Attempt to render a node that is not visible for the specified user");
+    }
     auto child_m = relative_model_matrix(frame_id.external_render_pass.time);
     std::shared_lock lock{ mutex_ };
     if (shutdown_phase() != ShutdownPhase::NONE) {
@@ -1155,7 +1157,7 @@ void SceneNode::render(
         }
     }
     for (const auto& [_, c] : children_) {
-        if (!c.scene_node->is_visible_for_user(frame_id.external_render_pass.user_id)) {
+        if (!c.scene_node->is_visible_for_user(frame_id.external_render_pass.observer)) {
             continue;
         }
         OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };

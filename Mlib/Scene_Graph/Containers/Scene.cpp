@@ -488,7 +488,7 @@ void Scene::render(
         {
             std::shared_lock lock{ mutex_ };
             root_nodes_.visit(iv.t, [&](const auto& node) {
-                if (node->is_visible_for_user(frame_id.external_render_pass.user_id)) {
+                if (node->is_visible_for_user(frame_id.external_render_pass.observer)) {
                     nodes.emplace_back(node.ptr());
                 }
                 return true;
@@ -512,13 +512,13 @@ void Scene::render(
         {
             std::shared_lock lock{ mutex_ };
             root_nodes_.visit(iv.t, [&](const auto& node) {
-                if (node->is_visible_for_user(frame_id.external_render_pass.user_id)) {
+                if (node->is_visible_for_user(frame_id.external_render_pass.observer)) {
                     local_root_nodes.emplace_back(node.ptr());
                 }
                 return true;
             });
             static_root_nodes_.visit(iv.t, [&](const auto& node) {
-                if (node->is_visible_for_user(frame_id.external_render_pass.user_id)) {
+                if (node->is_visible_for_user(frame_id.external_render_pass.observer)) {
                     local_static_root_nodes.emplace_back(&node.get());
                 }
                 return true;

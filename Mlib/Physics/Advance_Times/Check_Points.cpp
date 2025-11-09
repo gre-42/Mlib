@@ -32,7 +32,7 @@ CheckPoints::CheckPoints(
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     std::string asset_id,
     VariableAndHash<std::string> resource_name,
-    uint32_t user_id,
+    const ViewableRemoteObject& remote_viewable,
     const DanglingBaseClassRef<IPlayer>& player,
     size_t nbeacons,
     float distance,
@@ -59,7 +59,7 @@ CheckPoints::CheckPoints(
     , nlaps_{ nlaps }
     , asset_id_{ std::move(asset_id) }
     , resource_name_{ std::move(resource_name) }
-    , user_id_{ user_id }
+    , remote_viewable_{ remote_viewable }
     , player_{ player }
     , radius_{ radius }
     , nbeacons_{ nbeacons }
@@ -165,10 +165,10 @@ void CheckPoints::advance_time(float dt) {
             auto node = make_unique_scene_node(
                 PoseInterpolationMode::ENABLED,
                 SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
-                user_id_);
+                remote_viewable_);
             node->add_color_style(std::make_unique<ColorStyle>());
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
-                .beacon_node_name = VariableAndHash<std::string>{"beacon_node_" + std::to_string(user_id_) + '_' + std::to_string(i01_)},
+                .beacon_node_name = VariableAndHash<std::string>{"checkpoint_beacon_node_" + scene_.get_temporary_instance_suffix()},
                 .beacon_node = node.get(CURRENT_SOURCE_LOCATION)});
             scene_node_resources_.instantiate_child_renderable(
                 resource_name_,

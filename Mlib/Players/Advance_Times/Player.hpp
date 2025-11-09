@@ -34,6 +34,7 @@
 
 namespace Mlib {
 
+struct UserInfo;
 class Spawner;
 class RigidBodyVehicle;
 class Players;
@@ -123,8 +124,7 @@ public:
         CollisionQuery& collision_query,
         VehicleSpawners& vehicle_spawners,
         Players& players,
-        uint32_t user_id,
-        std::string user_name,
+        const DanglingBaseClassPtr<const UserInfo>& user_info,
         std::string id,
         std::string team,
         std::shared_ptr<UserAccount> user_account,
@@ -159,8 +159,7 @@ public:
     void change_gun_node(DanglingBaseClassPtr<SceneNode> gun_node);
     bool has_way_points() const;
     void set_way_point_location_filter(JoinedWayPointSandbox filter);
-    uint32_t user_id() const;
-    const std::string& user_name() const;
+    DanglingBaseClassPtr<const UserInfo> user_info() const;
     const std::string& team_name() const;
     DanglingBaseClassRef<Team> team();
     PlayerStats& stats();
@@ -290,8 +289,7 @@ private:
     CollisionQuery& collision_query_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
-    uint32_t user_id_;
-    std::string user_name_;
+    DanglingBaseClassPtr<const UserInfo> user_info_;
     const std::string id_;
     std::string team_;
     DanglingBaseClassPtr<SceneVehicle> vehicle_;

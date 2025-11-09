@@ -70,7 +70,7 @@ public:
         ThreadSafeString& next_scene_filename,
         ButtonStates& button_states,
         UiFocus& ui_focus,
-        uint32_t user_id,
+        uint32_t local_user_id,
         std::function<void()> on_change = [](){});
     ~SceneSelectorLogic();
 

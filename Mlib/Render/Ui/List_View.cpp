@@ -22,7 +22,7 @@ ListView::ListView(
     const IListViewContents& contents,
     ListViewOrientation orientation,
     UiFocus& ui_focus,
-    uint32_t user_id,
+    uint32_t local_user_id,
     std::function<void()> on_change)
     : debug_hint_{ std::move(debug_hint) }
     , selection_index_{ selection_index }
@@ -37,27 +37,27 @@ ListView::ListView(
     , last_{ button_states, key_configurations_, 0, orientation == ListViewOrientation::HORIZONTAL ? "" : "end", "" }
 {
     AnalogDigitalAxis left{
-        .gamepad_id = user_id,
+        .gamepad_id = local_user_id,
         .axis = 1,
         .sign_and_threshold = -0.5
     };
     AnalogDigitalAxis right{
-        .gamepad_id = user_id,
+        .gamepad_id = local_user_id,
         .axis = 1,
         .sign_and_threshold = 0.5
     };
     AnalogDigitalAxis up{
-        .gamepad_id = user_id,
+        .gamepad_id = local_user_id,
         .axis = 2,
         .sign_and_threshold = -0.5
     };
     AnalogDigitalAxis down{
-        .gamepad_id = user_id,
+        .gamepad_id = local_user_id,
         .axis = 2,
         .sign_and_threshold = 0.5
     };
     auto lock = key_configurations_.lock_exclusive_for(std::chrono::seconds(2), "Key configurations");
-    if (user_id == 0) {
+    if (local_user_id == 0) {
         lock->insert(0, "left", { { {{.key = "LEFT", .joystick_axes = a(left, left), .tap_button = g(0, "LEFT")}} } });
         lock->insert(0, "right", { { {{.key = "RIGHT", .joystick_axes = a(right, right), .tap_button = g(0, "RIGHT")}} } });
         lock->insert(0, "up", { {.key_bindings = {{.key = "UP", .joystick_axes = a(up, up), .tap_button = g(0, "UP")}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
@@ -67,10 +67,10 @@ ListView::ListView(
         lock->insert(0, "home", { { {{.key = "HOME"}} } });
         lock->insert(0, "end", { { {{.key = "END"}} } });
     } else {
-        lock->insert(0, "left", { { {{.joystick_axes = a(left, left), .tap_button = g(user_id, "LEFT")}} } });
-        lock->insert(0, "right", { { {{.joystick_axes = a(right, right), .tap_button = g(user_id, "RIGHT")}} } });
-        lock->insert(0, "up", { {.key_bindings = {{.joystick_axes = a(up, up), .tap_button = g(user_id, "UP")}}} });
-        lock->insert(0, "down", { {.key_bindings = {{.joystick_axes = a(down, down), .tap_button = g(user_id, "DOWN")}}} });
+        lock->insert(0, "left", { { {{.joystick_axes = a(left, left), .tap_button = g(local_user_id, "LEFT")}} } });
+        lock->insert(0, "right", { { {{.joystick_axes = a(right, right), .tap_button = g(local_user_id, "RIGHT")}} } });
+        lock->insert(0, "up", { {.key_bindings = {{.joystick_axes = a(up, up), .tap_button = g(local_user_id, "UP")}}} });
+        lock->insert(0, "down", { {.key_bindings = {{.joystick_axes = a(down, down), .tap_button = g(local_user_id, "DOWN")}}} });
     }
     if (on_change_ && has_selected_element()) {
         trigger_on_change();

@@ -71,7 +71,7 @@ std::unique_ptr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_
         1.f, // scale
         PoseInterpolationMode::ENABLED,
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
-        UINT32_MAX); // user_id
+        ViewableRemoteObject::all());
     auto pnode = node.ref(CURRENT_SOURCE_LOCATION);
     auto node_name = VariableAndHash<std::string>{"car_node" + initial.at<std::string>("tesuffix")};
     physics_scene.remote_scene_->created_at_remote_site.rigid_bodies.add(node_name);

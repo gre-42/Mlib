@@ -53,7 +53,7 @@ void DirtmapLogic::render_without_setup(
     }
     if (!generated_) {
         // Calculate camera position
-        auto dirtmap_rsd = RenderedSceneDescriptor{ .external_render_pass = {frame_id.external_render_pass.user_id, ExternalRenderPassType::DIRTMAP, std::chrono::steady_clock::now()} };
+        auto dirtmap_rsd = RenderedSceneDescriptor{ .external_render_pass = {frame_id.external_render_pass.observer, ExternalRenderPassType::DIRTMAP, std::chrono::steady_clock::now()} };
         auto setup = child_logic_.render_setup(lx, ly, dirtmap_rsd);
         {
             AggregateRendererGuard arg{

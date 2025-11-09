@@ -2,6 +2,7 @@
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Focus_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations.hpp>
 #include <Mlib/Render/Render_Logics/Bloom/Bloom_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -33,7 +34,8 @@ DECLARE_ARGUMENT(physics);
 DECLARE_ARGUMENT(layout);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(full_user_name);
+DECLARE_ARGUMENT(local_user_id);
 }
 
 using namespace Mlib;
@@ -70,7 +72,14 @@ struct RegisterJsonUserFunction {
                 auto layout = scene_layout_from_string(args.arguments.at<std::string>(KnownArgs::layout));
                 auto name = args.arguments.at<std::string>(KnownArgs::name);
                 auto& physics_scene = args.physics_scenes[args.arguments.at<std::string>(KnownArgs::physics)];
-                auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
+                auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
+                auto remote_observer = RemoteObserver::all();
+                if (auto full_user_name = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
+                    full_user_name.has_value())
+                {
+                    auto user = args.remote_sites.get_user(*full_user_name);
+                    remote_observer = { user->site_id, user->user_id };
+                }
                 auto [_, state] = args.renderable_scenes.try_emplace(
                     name,
                     name,
@@ -82,11 +91,11 @@ struct RegisterJsonUserFunction {
                     args.key_configurations,
                     layout == SceneLayout::FULL_SCREEN
                         ? physics_scene.ui_focus_
-                        : args.ui_focuses[user_id],
+                        : args.ui_focuses[local_user_id],
                     FocusFilter{
                         .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
                         .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})},
-                    user_id,
+                    remote_observer,
                     SceneConfigResource{
                         .fly = args.arguments.at<bool>(KnownArgs::fly),
                         .rotate = args.arguments.at<bool>(KnownArgs::rotate),
@@ -120,7 +129,7 @@ struct RegisterJsonUserFunction {
                         break;
                     case SceneLayout::TILED:
                         args.renderable_scenes.add_tiled_scene(
-                            args.arguments.at<uint32_t>(KnownArgs::user_id),
+                            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
                             name);
                         break;
                     default:

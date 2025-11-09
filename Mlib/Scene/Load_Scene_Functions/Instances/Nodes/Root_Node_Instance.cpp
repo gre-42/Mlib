@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Parse_Position.hpp>
@@ -23,7 +24,7 @@ DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(interpolation);
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(full_user_name);
 }
 
 RootNodeInstance::RootNodeInstance(PhysicsScene& physics_scene) 
@@ -37,13 +38,20 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
     FixedArray<CompressedScenePos, 3> pos = parse_position(
         args.arguments.at(KnownArgs::position),
         scene_node_resources);
+    auto viewable = ViewableRemoteObject::all();
+    if (auto full_user_name = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
+        full_user_name.has_value())
+    {
+        auto user = args.remote_sites.get_user(*full_user_name);
+        viewable = { user->site_id, user->user_id };
+    }
     auto node = make_unique_scene_node(
         pos.casted<ScenePos>() * (ScenePos)meters,
         args.arguments.at<EFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
         pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")),
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
-        args.arguments.at<uint32_t>(KnownArgs::user_id, UINT32_MAX));
+        viewable);
     auto rendering_dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics, "moving"));
     auto rendering_strategy = rendering_strategy_from_string(args.arguments.at<std::string>(KnownArgs::strategy, "object"));
     scene.add_root_node(

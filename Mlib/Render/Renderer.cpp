@@ -91,7 +91,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             {
                 auto dpi = window_.dpi();
                 // TimeGuard time_guard("logic.render", "logic.render");
-                RenderedSceneDescriptor rsd{ .external_render_pass = {UINT32_MAX, ExternalRenderPassType::STANDARD, frame_time}, .time_id = time_id };
+                RenderedSceneDescriptor rsd{ .external_render_pass = {RemoteObserver::all(), ExternalRenderPassType::STANDARD, frame_time}, .time_id = time_id };
                 // lerr() << "-------------------------------";
                 // logic.print(lraw(), 0);
                 // lerr() << "+++++++++++++++++++++++++++++++";

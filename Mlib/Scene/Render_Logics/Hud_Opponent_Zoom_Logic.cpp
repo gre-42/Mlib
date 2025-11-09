@@ -117,7 +117,7 @@ void HudOpponentZoomLogic::render_with_setup(
             PerspectiveCamera::Postprocessing::ENABLED));
     RenderedSceneDescriptor zoom_rsd{
         .external_render_pass = {
-            frame_id.external_render_pass.user_id,
+            frame_id.external_render_pass.observer,
             ExternalRenderPassType::ZOOM_NODE,
             frame_id.external_render_pass.time,
             VariableAndHash<std::string>(),

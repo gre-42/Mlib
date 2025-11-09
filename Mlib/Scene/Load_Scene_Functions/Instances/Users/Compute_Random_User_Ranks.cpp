@@ -20,15 +20,10 @@ void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs &args) 
     auto& vars = *args.local_json_macro_arguments;
     args.remote_sites.compute_random_user_ranks();
     args.remote_sites.for_each_site_user(
-        [&](std::optional<RemoteSiteId> site_id, uint32_t user_id, UserInfo& user)
+        [&](UserInfo& user)
         {
-            if (site_id.has_value()) {
-                vars.set("random_rank_" + std::to_string(*site_id) + '_' + std::to_string(user_id), user.random_rank);
-                vars.set("random_rank_str_" + std::to_string(*site_id) + '_' + std::to_string(user_id), std::to_string(user.random_rank));
-            } else {
-                vars.set("random_rank_" + std::to_string(user_id), user.random_rank);
-                vars.set("random_rank_str_" + std::to_string(user_id), std::to_string(user.random_rank));
-            }
+            vars.set("random_rank_" + user.full_name, user.random_rank);
+            vars.set("random_rank_str_" + user.full_name, std::to_string(user.random_rank));
         }, UserType::ALL);
 }
 

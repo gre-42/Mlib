@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Scene_Graph/Remote_User_Filter.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
 #include <compare>
@@ -13,7 +14,7 @@ class SceneNode;
 class IRenderableScene;
 
 struct ExternalRenderPass {
-    uint32_t user_id;
+    RemoteObserver observer = RemoteObserver::all();
     ExternalRenderPassType pass;
     std::chrono::steady_clock::time_point time;
     VariableAndHash<std::string> black_node_name;

@@ -35,7 +35,7 @@ DECLARE_ARGUMENT(top);
 DECLARE_ARGUMENT(font_color);
 DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 }
 
 CreateVideoModeSelectorLogic::CreateVideoModeSelectorLogic(RenderableScene& renderable_scene) 
@@ -55,12 +55,12 @@ void CreateVideoModeSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& 
             .icon=args.arguments.at<std::string>(KnownArgs::icon)},
         focus_filter,
         0);
-    auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
+    auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
     auto& video_selector_logic = object_pool.create<VideoModeSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
         std::move(id),
         args.window_logic,
-        args.confirm_button_press.get(user_id),
+        args.confirm_button_press.get(local_user_id),
         args.arguments.at<std::string>(KnownArgs::charset),
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
@@ -75,7 +75,7 @@ void CreateVideoModeSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& 
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.button_states,
         ui_focus,
-        user_id);
+        local_user_id);
     render_logics.append(
         { video_selector_logic, CURRENT_SOURCE_LOCATION },
         1 /* z_order */,

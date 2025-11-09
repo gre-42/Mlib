@@ -18,6 +18,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -35,7 +36,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(moving_asset_id);
 DECLARE_ARGUMENT(moving_suffix);
 DECLARE_ARGUMENT(resource);
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(full_user_name);
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(nbeacons);
 DECLARE_ARGUMENT(distance);
@@ -97,6 +98,13 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else {
         sequence = std::make_unique<TrackElementVector>(args.arguments.at<std::vector<std::vector<double>>>(KnownArgs::track));
     }
+    auto viewable = ViewableRemoteObject::all();
+    if (auto full_user_name = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::full_user_name);
+        full_user_name.has_value())
+    {
+        auto user = args.remote_sites.get_user(*full_user_name);
+        viewable = { user->site_id, user->user_id };
+    }
     auto& check_points = global_object_pool.create<CheckPoints>(
         CURRENT_SOURCE_LOCATION,
         std::move(sequence),
@@ -105,7 +113,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_node_resources.get_geographic_mapping(VariableAndHash<std::string>{"world.inverse"}),
         moving_asset_id,
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
-        args.arguments.at<uint32_t>(KnownArgs::user_id),
+        viewable,
         players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION),
         args.arguments.at<size_t>(KnownArgs::nbeacons),
         args.arguments.at<float>(KnownArgs::distance) * meters,

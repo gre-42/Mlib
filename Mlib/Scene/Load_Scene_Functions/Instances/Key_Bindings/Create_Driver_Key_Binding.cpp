@@ -14,7 +14,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(seat);
 
@@ -31,6 +31,8 @@ CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene
 
 void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_player_key_binding(std::unique_ptr<PlayerKeyBinding>(new PlayerKeyBinding{
         .player = player,
@@ -40,7 +42,7 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .button_press{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::user_id),
+            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
@@ -59,7 +61,6 @@ struct RegisterJsonUserFunction {
             "player_key_binding",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 CreateDriverKeyBinding(args.renderable_scene()).execute(args);
             });
     }

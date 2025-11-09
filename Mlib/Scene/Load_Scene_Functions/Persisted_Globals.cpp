@@ -9,7 +9,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 DECLARE_ARGUMENT(variables);
 }
 
@@ -21,14 +21,14 @@ struct RegisterJsonUserFunction {
             "persisted_globals",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                auto user_id = args.arguments.at<uint32_t>(KnownArgs::user_id);
+                auto local_user_id = args.arguments.at<uint32_t>(KnownArgs::local_user_id);
                 auto variables = args.arguments.at(KnownArgs::variables);
                 if (variables.type() != nlohmann::detail::value_t::object) {
                     THROW_OR_ABORT("Variables not of type \"object\"");
                 }
                 JsonMacroArguments a;
                 for (const auto& [k, v] : variables.items()) {
-                    a.set(k, args.ui_focuses[user_id].get_persisted_selection_id(v));
+                    a.set(k, args.ui_focuses[local_user_id].get_persisted_selection_id(v));
                 }
                 args.external_json_macro_arguments.merge_and_notify(a);
             });

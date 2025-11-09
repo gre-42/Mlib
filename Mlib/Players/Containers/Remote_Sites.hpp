@@ -1,15 +1,18 @@
 #pragma once
+#include <Mlib/Array/Non_Copying_Vector.hpp>
 #include <Mlib/Map/Verbose_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Dangling_Value_Unordered_Map.hpp>
+#include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
 #include <map>
 #include <optional>
-#include <vector>
 
 namespace Mlib {
 
@@ -19,12 +22,24 @@ enum class UserType {
     ALL
 };
 
-struct UserInfo {
-    uint32_t random_rank = 0;
+struct UserInfo: public virtual DestructionNotifier, public virtual DanglingBaseClass {
+    UserInfo(
+        const std::optional<RemoteSiteId>& site_id,
+        uint32_t user_id,
+        std::string name,
+        std::string full_name);
+    ~UserInfo();
+    std::optional<RemoteSiteId> site_id;
+    uint32_t user_id;
+    std::string name;
+    std::string full_name;
+    uint32_t random_rank;
 };
 
 struct SiteInfo {
-    std::vector<UserInfo> users;
+    SiteInfo();
+    ~SiteInfo();
+    NonCopyingVector<UserInfo> users;
 };
 
 class RemoteSites: public virtual DanglingBaseClass {
@@ -33,17 +48,19 @@ public:
         const DanglingBaseClassRef<Users>& local_users,
         const std::optional<RemoteParams>& remote_params);
     ~RemoteSites();
+    std::optional<RemoteSiteId> get_local_site_id() const;
     uint32_t get_local_user_count() const;
     uint32_t get_user_count(RemoteSiteId site_id) const;
     uint32_t get_total_user_count(UserType user_type) const;
     void set_local_user_count(uint32_t user_count);
     void set_user_count(RemoteSiteId site_id, uint32_t user_count);
     void for_each_site_user(
-        const std::function<void(std::optional<RemoteSiteId> site_id, uint32_t user_id, UserInfo& user)>& operation,
+        const std::function<void(UserInfo& user)>& operation,
         UserType user_type);
     void for_each_site_user(
-        const std::function<void(std::optional<RemoteSiteId> site_id, uint32_t user_id, const UserInfo& user)>& operation,
+        const std::function<void(const UserInfo& user)>& operation,
         UserType user_type) const;
+    DanglingBaseClassRef<const UserInfo> get_user(const VariableAndHash<std::string>& full_name) const;
     void print(std::ostream& ostr) const;
 
     void compute_random_user_ranks();
@@ -54,6 +71,7 @@ private:
     std::optional<RemoteParams> remote_params_;
     SiteInfo local_site_;
     VerboseMap<RemoteSiteId, SiteInfo> remote_sites_;
+    DanglingValueUnorderedMap<VariableAndHash<std::string>, UserInfo> named_users_;
 };
 
 }

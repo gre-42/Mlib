@@ -8,6 +8,7 @@
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
@@ -15,7 +16,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(seat);
 
@@ -28,20 +29,13 @@ DECLARE_ARGUMENT(repeat_factor);
 DECLARE_ARGUMENT(speed_cursor);
 }
 
-const std::string CreateRelKeyBindingTripod::key = "rel_key_binding_tripod";
-
-LoadSceneJsonUserFunction CreateRelKeyBindingTripod::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateRelKeyBindingTripod(args.renderable_scene()).execute(args);
-};
-
 CreateRelKeyBindingTripod::CreateRelKeyBindingTripod(RenderableScene& renderable_scene) 
-: LoadRenderableSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     auto& kb = key_bindings.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
         .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingBaseClassPtr<SceneNode> {
             auto name = sc.camera_node_name();
@@ -61,18 +55,18 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
         .button_press{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::user_id),
+            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::user_id),
+            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id)),
         .gamepad_analog_axes_position{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::user_id),
+            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy, CURRENT_SOURCE_LOCATION } },
@@ -81,4 +75,19 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
     kb.on_destroy_key_bindings.add([&kbs = key_bindings, &kb]() {
         kbs.delete_relative_movable_key_binding(kb);
     }, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "rel_key_binding_tripod",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateRelKeyBindingTripod(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }
