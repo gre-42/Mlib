@@ -41,7 +41,7 @@ CreatePlaneControllerKeyBinding::CreatePlaneControllerKeyBinding(RenderableScene
 
 void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_plane_controller_key_binding(std::unique_ptr<PlaneControllerKeyBinding>(new PlaneControllerKeyBinding{
         .player = player,
         .turbine_power = args.arguments.contains(KnownArgs::turbine_power)

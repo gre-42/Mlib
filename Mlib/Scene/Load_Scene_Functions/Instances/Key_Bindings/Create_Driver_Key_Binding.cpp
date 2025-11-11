@@ -33,7 +33,7 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
 
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_player_key_binding(std::unique_ptr<PlayerKeyBinding>(new PlayerKeyBinding{
         .player = player,
         .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent, false),

@@ -20,7 +20,7 @@ Gun::Gun(
     const DanglingBaseClassPtr<SceneNode>& punch_angle_node,
     const BulletProperties& bullet_properties,
     std::function<void(
-        const std::optional<std::string>& player,
+        const std::optional<VariableAndHash<std::string>>& player,
         const std::string& bullet_suffix,
         const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,

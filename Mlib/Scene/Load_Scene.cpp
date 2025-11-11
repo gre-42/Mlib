@@ -94,7 +94,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Reset_Supply_Depot_Cooldowns.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Save_To_Obj_File.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Objective.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Create_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Spawner_Set_Nodes.hpp>
@@ -386,7 +385,6 @@ LoadScene::LoadScene(
             register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
             register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);
             register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
-            register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
             register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
             register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
             register_json_user_function(SetNodeRotation::key, SetNodeRotation::json_user_function);

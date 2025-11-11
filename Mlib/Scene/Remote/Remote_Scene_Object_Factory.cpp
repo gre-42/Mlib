@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
+#include <Mlib/Scene/Remote/Remote_Player.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene/Remote/Remote_Users.hpp>
@@ -34,6 +35,15 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
             }
             return {
                 object_pool_->add(std::move(users), CURRENT_SOURCE_LOCATION), CURRENT_SOURCE_LOCATION};
+        }
+    case RemoteSceneObjectType::PLAYER:
+        {
+            auto player = RemotePlayer::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_);
+            if (player == nullptr) {
+                return nullptr;
+            }
+            return {
+                object_pool_->add(std::move(player), CURRENT_SOURCE_LOCATION), CURRENT_SOURCE_LOCATION};
         }
     case RemoteSceneObjectType::RIGID_BODY_VEHICLE:
         {

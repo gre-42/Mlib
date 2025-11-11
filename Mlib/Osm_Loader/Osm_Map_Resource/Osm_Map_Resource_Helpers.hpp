@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <set>
@@ -26,7 +27,7 @@ struct ObjectResourceDescriptor;
 template <class TPos>
 class TriangleList;
 struct ParsedResourceName;
-enum class DrivingDirection;
+enum class DrivingDirection: uint32_t;
 enum class WayPointLocation;
 class BatchResourceInstantiator;
 struct OsmTriangleLists;

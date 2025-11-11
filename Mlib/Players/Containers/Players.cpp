@@ -26,7 +26,8 @@ Players::Players(
     const RaceIdentifier& race_identifier,
     std::shared_ptr<Translator> translator,
     const DanglingBaseClassRef<RemoteSites>& remote_sites)
-    : race_history_{std::make_unique<RaceHistory>(
+    : players_{"Player"}
+    , race_history_{std::make_unique<RaceHistory>(
         max_tracks,
         save_playback,
         scene_node_resources,
@@ -46,11 +47,11 @@ Players::~Players() {
 }
 
 void Players::add_player(const DanglingBaseClassRef<Player>& player) {
-    std::string player_id = player->id();
+    auto player_id = player->id();
     {
         auto pit = players_.try_emplace(player_id, player, CURRENT_SOURCE_LOCATION);
         if (!pit.second) {
-            THROW_OR_ABORT("Player with id \"" + player_id + "\" already exists");
+            THROW_OR_ABORT("Player with id \"" + *player_id + "\" already exists");
         }
         pit.first->second.on_destroy([this, player_id]() { remove_player(player_id); }, CURRENT_SOURCE_LOCATION);
     }
@@ -66,21 +67,21 @@ void Players::add_player(const DanglingBaseClassRef<Player>& player) {
     teams_.at(player->team_name())->add_player(player_id);
 }
 
-void Players::remove_player(const std::string& name) {
+void Players::remove_player(const VariableAndHash<std::string>& name) {
     if (players_.erase(name) != 1) {
-        verbose_abort("Could not remove player \"" + name + '"');
+        verbose_abort("Could not remove player \"" + *name + '"');
     }
 }
 
-DanglingBaseClassRef<Player> Players::get_player(const std::string& name, SourceLocation loc) {
+DanglingBaseClassRef<Player> Players::get_player(const VariableAndHash<std::string>& name, SourceLocation loc) {
     auto it = players_.find(name);
     if (it == players_.end()) {
-        THROW_OR_ABORT("No player with name \"" + name + "\" exists");
+        THROW_OR_ABORT("No player with name \"" + *name + "\" exists");
     }
     return it->second.object().set_loc(loc);
 }
 
-DanglingBaseClassRef<const Player> Players::get_player(const std::string& name, SourceLocation loc) const {
+DanglingBaseClassRef<const Player> Players::get_player(const VariableAndHash<std::string>& name, SourceLocation loc) const {
     return const_cast<Players*>(this)->get_player(name, loc);
 }
 
@@ -227,11 +228,11 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     return sstr.str();
 }
 
-std::map<std::string, DestructionFunctionsTokensRef<Player>>& Players::players() {
+StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>>& Players::players() {
     return players_;
 }
 
-const std::map<std::string, DestructionFunctionsTokensRef<Player>>& Players::players() const {
+const StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>>& Players::players() const {
     return players_;
 }
 

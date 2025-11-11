@@ -15,7 +15,7 @@ struct BulletProperties;
 
 struct WeaponInfo {
     std::function<void()> create_weapon;
-    std::function<void(const std::string& player_name)> create_externals;
+    std::function<void(const VariableAndHash<std::string>& player_name)> create_externals;
     InventoryItem ammo_type;
     const BulletProperties& bullet_properties;
     float cool_down;
@@ -25,7 +25,7 @@ struct WeaponInfo {
 };
 
 struct PlayerAndWeapon {
-    std::optional<std::string> player_name;
+    std::optional<VariableAndHash<std::string>> player_name;
     std::string weapon_name;
     std::strong_ordering operator <=> (const PlayerAndWeapon&) const = default;
 };
@@ -37,13 +37,13 @@ public:
     WeaponCycle();
     virtual ~WeaponCycle() override;
     virtual void modify_node() override;
-    void create_externals(const std::string& player_name);
+    void create_externals(const VariableAndHash<std::string>& player_name);
     void add_weapon(std::string weapon_name, const WeaponInfo& weapon_info);
     void set_desired_weapon(
-        std::optional<std::string> player_name,
+        std::optional<VariableAndHash<std::string>> player_name,
         std::string weapon_name);
-    void equip_next_weapon(std::optional<std::string> player_name);
-    void equip_previous_weapon(std::optional<std::string> player_name);
+    void equip_next_weapon(std::optional<VariableAndHash<std::string>> player_name);
+    void equip_previous_weapon(std::optional<VariableAndHash<std::string>> player_name);
     InventoryItem ammo_type() const;
     const std::map<std::string, WeaponInfo>& weapon_infos() const;
 private:

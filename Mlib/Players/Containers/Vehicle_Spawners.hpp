@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -12,16 +13,16 @@ class VehicleSpawners {
 public:
     VehicleSpawners();
     ~VehicleSpawners();
-    VehicleSpawner& get(const std::string& name);
-    void set(const std::string& name, std::unique_ptr<VehicleSpawner>&& spawner);
-    inline std::map<std::string, std::unique_ptr<VehicleSpawner>>& spawners() {
+    VehicleSpawner& get(const VariableAndHash<std::string>& name);
+    void set(const VariableAndHash<std::string>& name, std::unique_ptr<VehicleSpawner>&& spawner);
+    inline StringWithHashUnorderedMap<std::unique_ptr<VehicleSpawner>>& spawners() {
         return spawners_;
     }
     void advance_time(float dt);
     size_t nactive() const;
     void print_status() const;
 private:
-    std::map<std::string, std::unique_ptr<VehicleSpawner>> spawners_;
+    StringWithHashUnorderedMap<std::unique_ptr<VehicleSpawner>> spawners_;
 };
 
 }

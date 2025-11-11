@@ -40,7 +40,7 @@ PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(PhysicsScen
 
 void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     player->vehicle_movement.set_control_parameters(
         args.arguments.at<float>(KnownArgs::surface_power_forward) * W,
         args.arguments.at<float>(KnownArgs::surface_power_backward) * W);

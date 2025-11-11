@@ -6,21 +6,23 @@
 
 using namespace Mlib;
 
-VehicleSpawners::VehicleSpawners() = default;
+VehicleSpawners::VehicleSpawners()
+    : spawners_{"Spawner"}
+{}
 
 VehicleSpawners::~VehicleSpawners() = default;
 
-VehicleSpawner& VehicleSpawners::get(const std::string& name) {
+VehicleSpawner& VehicleSpawners::get(const VariableAndHash<std::string>& name) {
     auto it = spawners_.find(name);
     if (it == spawners_.end()) {
-        THROW_OR_ABORT("Could not find vehicle spawner with name \"" + name + '"');
+        THROW_OR_ABORT("Could not find vehicle spawner with name \"" + *name + '"');
     }
     return *it->second;
 }
 
-void VehicleSpawners::set(const std::string& name, std::unique_ptr<VehicleSpawner>&& spawner) {
+void VehicleSpawners::set(const VariableAndHash<std::string>& name, std::unique_ptr<VehicleSpawner>&& spawner) {
     if (!spawners_.try_emplace(name, std::move(spawner)).second) {
-        THROW_OR_ABORT("Vehicle spawner with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Vehicle spawner with name \"" + *name + "\" already exists");
     }
 }
 
@@ -41,7 +43,7 @@ size_t VehicleSpawners::nactive() const {
 void VehicleSpawners::print_status() const {
     for (const auto& [n, s] : spawners_) {
         std::stringstream sstr;
-        sstr << "Spawner " << std::left << std::setw(15) << std::string("\"" + n + "\"") << ": active=" << (int)s->has_scene_vehicle();
+        sstr << "Spawner " << std::left << std::setw(15) << std::string("\"" + *n + "\"") << ": active=" << (int)s->has_scene_vehicle();
         if (s->has_player()) {
             sstr << ", parking=" << (int)s->get_player()->is_parking()
                 << ", pedestrian=" << (int)s->get_player()->is_pedestrian();

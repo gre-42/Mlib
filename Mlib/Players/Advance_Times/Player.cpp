@@ -65,6 +65,18 @@ GameMode Mlib::game_mode_from_string(const std::string& game_mode) {
     return it->second;
 }
 
+std::string Mlib::game_mode_to_string(GameMode game_mode) {
+    switch(game_mode) {
+    case GameMode::RALLY:
+        return "rally";
+    case GameMode::RAMMING:
+        return "ramming";
+    case GameMode::TEAM_DEATHMATCH:
+        return "team_deathmatch";
+    }
+    THROW_OR_ABORT("Unknown game mode: " + std::to_string((uint32_t)game_mode));
+}
+
 PlayerRole Mlib::player_role_from_string(const std::string& role) {
     static const std::map<std::string, PlayerRole> m{
         {"competitor", PlayerRole::COMPETITOR},
@@ -77,6 +89,17 @@ PlayerRole Mlib::player_role_from_string(const std::string& role) {
     return it->second;
 }
 
+std::string Mlib::player_role_to_string(PlayerRole role) {
+    switch (role) {
+    case PlayerRole::COMPETITOR:
+        return "competitor";
+    case PlayerRole::BYSTANDER:
+        return "bystander";
+    }
+    THROW_OR_ABORT("Unknown player role: " + std::to_string((uint32_t)role));
+}
+
+
 UnstuckMode Mlib::unstuck_mode_from_string(const std::string& unstuck_mode) {
     static const std::map<std::string, UnstuckMode> m{
         {"off", UnstuckMode::OFF},
@@ -88,6 +111,18 @@ UnstuckMode Mlib::unstuck_mode_from_string(const std::string& unstuck_mode) {
         THROW_OR_ABORT("Unknown unstuck mode: \"" + unstuck_mode + '"');
     }
     return it->second;
+}
+
+std::string Mlib::unstuck_mode_to_string(UnstuckMode unstuck_mode) {
+    switch (unstuck_mode) {
+    case UnstuckMode::OFF:
+        return "off";
+    case UnstuckMode::REVERSE:
+        return "reverse";
+    case UnstuckMode::DELETE:
+        return "delete";
+    }
+    THROW_OR_ABORT("Unknown unstuck mode: " + std::to_string((uint32_t)unstuck_mode));
 }
 
 bool PlayerControlled::has_aim_at() const {
@@ -112,7 +147,7 @@ Player::Player(
     VehicleSpawners& vehicle_spawners,
     Players& players,
     const DanglingBaseClassPtr<const UserInfo>& user_info,
-    std::string id,
+    VariableAndHash<std::string> id,
     std::string team,
     std::shared_ptr<UserAccount> user_account,
     GameMode game_mode,
@@ -345,7 +380,7 @@ DanglingBaseClassPtr<const UserInfo> Player::user_info() const {
     return user_info_;
 }
 
-const std::string& Player::id() const {
+const VariableAndHash<std::string>& Player::id() const {
     return id_;
 }
 
@@ -353,7 +388,7 @@ std::string Player::title() const {
     if (user_account_ != nullptr) {
         return user_account_->name();
     } else {
-        return id();
+        return *id();
     }
 }
 
@@ -365,6 +400,11 @@ const std::string& Player::team_name() const {
 DanglingBaseClassRef<Team> Player::team() {
     std::shared_lock lock{ mutex_ };
     return players_.get_team(team_name());
+}
+
+std::shared_ptr<UserAccount> Player::user_account() {
+    std::shared_lock lock{ mutex_ };
+    return user_account_;
 }
 
 PlayerStats& Player::stats() {
@@ -577,7 +617,7 @@ bool Player::unstuck() {
 FixedArray<float, 3> Player::gun_direction() const {
     std::shared_lock lock{ mutex_ };
     if (controlled_.gun_node == nullptr) {
-        THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + id() + '"');
+        THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + *id() + '"');
     }
     return -z3_from_3x3(gun().absolute_model_matrix().R);
 }
@@ -585,7 +625,7 @@ FixedArray<float, 3> Player::gun_direction() const {
 FixedArray<float, 3> Player::punch_angle() const {
     std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node == nullptr) {
-        THROW_OR_ABORT("punch_angle despite gun nullptr in player \"" + id() + '"');
+        THROW_OR_ABORT("punch_angle despite gun nullptr in player \"" + *id() + '"');
     }
     return gun().punch_angle();
 }
@@ -1224,6 +1264,11 @@ const InternalsMode& Player::internals_mode() const {
     return internals_mode_;
 }
 
+UnstuckMode Player::unstuck_mode() const {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    return unstuck_mode_;
+}
+
 const std::string& Player::behavior() const {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     return behavior_;
@@ -1252,7 +1297,7 @@ void Player::append_dependent_node(VariableAndHash<std::string> node_name) {
     auto node = scene_.get_node(node_name, DP_LOC);
     auto res = dependent_nodes_.try_emplace(std::move(node_name), node->on_clear, CURRENT_SOURCE_LOCATION);
     if (!res.second) {
-        THROW_OR_ABORT("Node \"" + *node_name + "\" already is a dependent node of player \"" + id() + '"');
+        THROW_OR_ABORT("Node \"" + *node_name + "\" already is a dependent node of player \"" + *id() + '"');
     }
     res.first->second.add(
         [this, it=res.first->first](){ dependent_nodes_.erase(it); },
@@ -1322,7 +1367,7 @@ bool Player::has_way_points() const {
 void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
     std::scoped_lock lock{ mutex_ };
     if (!navigate_.has_way_points()) {
-        THROW_OR_ABORT("Player \"" + id_ + "\" has no waypoints");
+        THROW_OR_ABORT("Player \"" + *id_ + "\" has no waypoints");
     }
     auto final_filter = joined_way_point_sandbox_ & filter;
     size_t nfound = 0;
@@ -1332,7 +1377,7 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
         }
         if (nfound != 0) {
             THROW_OR_ABORT(
-                "Player \"" + id_ + "\": Found multiple waypoints for final filter \"" +
+                "Player \"" + *id_ + "\": Found multiple waypoints for final filter \"" +
                 joined_way_point_sandbox_to_string(final_filter) + '"');
         }
         pathfinding_waypoints_.set_waypoints(wp);
@@ -1341,7 +1386,7 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
     }
     if (nfound == 0) {
         THROW_OR_ABORT(
-            "Player \"" + id_ + "\": Could not find waypoints for final filter \"" +
+            "Player \"" + *id_ + "\": Could not find waypoints for final filter \"" +
             joined_way_point_sandbox_to_string(final_filter) + '"');
     }
 }

@@ -10,6 +10,8 @@
 namespace Mlib {
 
 class Player;
+template <class T>
+class VariableAndHash;
 
 class Team final: public ITeam, public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
@@ -22,8 +24,8 @@ public:
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
     virtual DestructionFunctions& on_destroy_team() override;
 
-    void add_player(const std::string& name);
-    const std::set<std::string>& players() const;
+    void add_player(const VariableAndHash<std::string>& name);
+    const std::set<VariableAndHash<std::string>>& players() const;
 
     uint32_t nwins() const;
     uint32_t nlosses() const;
@@ -34,7 +36,7 @@ public:
 
 private:
     std::string name_;
-    std::set<std::string> players_;
+    std::set<VariableAndHash<std::string>> players_;
     uint32_t nwins_;
     uint32_t nlosses_;
     uint32_t nkills_;

@@ -28,7 +28,7 @@ PlayerSetWaypoint::PlayerSetWaypoint(PhysicsScene& physics_scene)
 
 void PlayerSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION)->
+    players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION)->
         single_waypoint().set_waypoint(
             {
                 args.arguments.at<EFixedArray<CompressedScenePos, 3>>(KnownArgs::position),

@@ -43,6 +43,7 @@ class RenderLogics;
 class UiFocus;
 class CountdownPhysics;
 class RemoteScene;
+class RemoteSites;
 
 class LoadPhysicsSceneInstanceFunction {
 public:
@@ -77,6 +78,7 @@ protected:
     SetFps& physics_set_fps;
     GameLogic* game_logic;
     RemoteScene* remote_scene;
+    RemoteSites& remote_sites;
     CountdownPhysics& countdown_start;
     UiFocus& ui_focus;
     BaseLog& base_log;

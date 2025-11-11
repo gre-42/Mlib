@@ -58,6 +58,6 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
             DanglingBaseClassRef<RigidBodyVehicle>{ rb, CURRENT_SOURCE_LOCATION }));
     }
     vehicle_spawners
-        .get(args.arguments.at<std::string>(KnownArgs::spawner))
+        .get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::spawner))
         .set_scene_vehicles(std::move(vehicles));
 }

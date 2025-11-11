@@ -554,6 +554,14 @@ T MacroLineExecutor::at(const std::string& key) const {
     return global_json_macro_arguments_.at<T>(key);
 }
 
+JsonMacroArgumentsAndLock MacroLineExecutor::json_macro_arguments() const {
+    return global_json_macro_arguments_.json_macro_arguments();
+}
+
+WritableJsonMacroArgumentsAndLock MacroLineExecutor::writable_json_macro_arguments() {
+    return global_json_macro_arguments_.writable_json_macro_arguments();
+}
+
 JsonMacroArgumentsObserverToken MacroLineExecutor::add_observer(std::function<void()> func) {
     return global_json_macro_arguments_.add_observer(std::move(func));
 }

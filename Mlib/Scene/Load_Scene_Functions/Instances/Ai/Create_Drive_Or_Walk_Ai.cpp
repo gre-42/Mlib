@@ -45,7 +45,7 @@ CreateDriveOrWalkAi::CreateDriveOrWalkAi(PhysicsScene& physics_scene)
 
 void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto ai = std::make_unique<DriveOrWalkAi>(
         player,
         args.arguments.at<ScenePos>(KnownArgs::waypoint_reached_radius) * meters,

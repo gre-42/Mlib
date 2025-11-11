@@ -38,7 +38,7 @@ CreateWeaponCycleKeyBinding::CreateWeaponCycleKeyBinding(RenderableScene& render
 
 void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_weapon_inventory_key_binding(std::unique_ptr<WeaponCycleKeyBinding>(new WeaponCycleKeyBinding{
         .player = player,
         .direction = args.arguments.at<int>(KnownArgs::weapon_increment),

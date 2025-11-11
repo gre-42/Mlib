@@ -10,6 +10,7 @@ struct CreatedAtRemoteSite: public DanglingBaseClass {
     CreatedAtRemoteSite();
     ~CreatedAtRemoteSite();
     StringWithHashUnorderedSet rigid_bodies;
+    StringWithHashUnorderedSet players;
 };
 
 }

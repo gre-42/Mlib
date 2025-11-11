@@ -11,11 +11,12 @@ class UserAccount {
 public:
     UserAccount(
         const MacroLineExecutor& mle,
-        std::string name_key);
+        std::string key);
+    const std::string& key() const;
     std::string name() const;
 private:
     MacroLineExecutor mle_;
-    std::string name_key_;
+    std::string key_;
 };
 
 }

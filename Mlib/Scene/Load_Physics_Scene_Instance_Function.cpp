@@ -31,6 +31,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(PhysicsScene&
     , physics_set_fps{ physics_scene.physics_set_fps_ }
     , game_logic{ physics_scene.game_logic_.get() }
     , remote_scene{ physics_scene.remote_scene_.get() }
+    , remote_sites{ physics_scene.remote_sites_.get() }
     , countdown_start{ physics_scene.countdown_start_ }
     , ui_focus{ physics_scene.ui_focus_ }
     , base_log{ physics_scene.fifo_log_ }

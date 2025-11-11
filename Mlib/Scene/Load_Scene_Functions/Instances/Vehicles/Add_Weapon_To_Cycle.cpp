@@ -67,12 +67,12 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
             macro_line_executor.inserted_block_arguments(std::move(let))(create, nullptr);
         };
     }
-    std::function<void(const std::string& player_name)> create_externals;
+    std::function<void(const VariableAndHash<std::string>& player_name)> create_externals;
     if (auto create = args.arguments.try_at(KnownArgs::create_externals); create.has_value()) {
         create_externals = [
             macro_line_executor = args.macro_line_executor,
             create = args.arguments.at(KnownArgs::create_externals),
-            &players = players](const std::string& player_name)
+            &players = players](const VariableAndHash<std::string>& player_name)
         {
             auto player = players.get_player(player_name, CURRENT_SOURCE_LOCATION);
             auto user_info = player->user_info();

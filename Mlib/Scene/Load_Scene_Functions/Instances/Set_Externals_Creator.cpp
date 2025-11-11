@@ -13,15 +13,22 @@
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-namespace KnownArgs {
+namespace KnownArgsUnsafe {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(spawner);
 DECLARE_ARGUMENT(externals);
 DECLARE_ARGUMENT(internals);
+}
+
+namespace KnownArgsSafe {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(spawner);
+DECLARE_ARGUMENT(asset_id);
 }
 
 namespace LetKeys {
@@ -37,15 +44,6 @@ DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(externals_seat);
 }
 
-const std::string SetExternalsCreator::key = "set_externals_creator";
-
-LoadSceneJsonUserFunction SetExternalsCreator::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    args.macro_line_executor.block_arguments().validate_complement(LetKeys::options);
-    SetExternalsCreator(args.physics_scene()).execute(args);
-};
-
 SetExternalsCreator::SetExternalsCreator(PhysicsScene& physics_scene)
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
@@ -57,16 +55,21 @@ bool get_if_pc(ExternalsMode externals_mode, const UserInfo* user_info) {
         (user_info->type == UserType::LOCAL);
 }
 
-void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
+void SetExternalsCreator::execute_unsafe(
+    const JsonView& arguments,
+    const MacroLineExecutor& macro_line_executor)
 {
-    auto spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
+    arguments.validate(KnownArgsUnsafe::options);
+    macro_line_executor.block_arguments().validate_complement(LetKeys::options);
+
+    auto spawner_name = arguments.at<VariableAndHash<std::string>>(KnownArgsUnsafe::spawner);
     auto& spawner = vehicle_spawners.get(spawner_name);
     if (!spawner.has_scene_vehicle()) {
-        THROW_OR_ABORT("Spawner \"" + spawner_name + "\" has no vehicle");
+        THROW_OR_ABORT("Spawner \"" + *spawner_name + "\" has no vehicle");
     }
     spawner.get_primary_scene_vehicle()->set_create_vehicle_externals(
-        [macro_line_executor = args.macro_line_executor,
-         macro = args.arguments.at(KnownArgs::externals),
+        [macro_line_executor,
+         macro = arguments.at(KnownArgsUnsafe::externals),
          spawner_name](
             const Player& player,
             ExternalsMode externals_mode)
@@ -88,8 +91,8 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
     );
     spawner.get_primary_scene_vehicle()->set_create_vehicle_internals(
-        [macro_line_executor = args.macro_line_executor,
-         macro = args.arguments.at(KnownArgs::internals),
+        [macro_line_executor,
+         macro = arguments.at(KnownArgsUnsafe::internals),
          spawner_name](
             const Player& player,
             const InternalsMode& internals_mode)
@@ -114,4 +117,57 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             macro_line_executor.inserted_block_arguments(std::move(let))(macro, nullptr);
         }
     );
+}
+
+void SetExternalsCreator::execute_unsafe(const LoadSceneJsonUserFunctionArgs& args) {
+    execute_unsafe(args.arguments, args.macro_line_executor);
+}
+
+void SetExternalsCreator::execute_safe(const LoadSceneJsonUserFunctionArgs& args)
+{
+    args.arguments.validate(KnownArgsSafe::options);
+    execute_safe(
+        args.arguments.at<std::string>(KnownArgsSafe::spawner),
+        args.arguments.at<std::string>(KnownArgsSafe::asset_id),
+        args.macro_line_executor);
+}
+
+void SetExternalsCreator::execute_safe(
+    const std::string& spawner,
+    const std::string& asset_id,
+    const MacroLineExecutor& macro_line_executor)
+{
+    auto j = nlohmann::json::object();
+    j[KnownArgsUnsafe::spawner] = spawner;
+    j[KnownArgsUnsafe::externals] = std::map<std::string, std::string>{
+        {"playback", "create_player_vehicle_externals_" + asset_id}};
+    j[KnownArgsUnsafe::internals] = std::map<std::string, std::string>{
+        {"playback", "create_player_vehicle_internals_" + asset_id}};
+    execute_unsafe(JsonView{j}, macro_line_executor);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction0 {
+    RegisterJsonUserFunction0() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_externals_creator_unsafe",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetExternalsCreator(args.physics_scene()).execute_unsafe(args);
+            });
+    }
+} obj0;
+
+struct RegisterJsonUserFunction1 {
+    RegisterJsonUserFunction1() {
+        LoadSceneFuncs::register_json_user_function(
+            "set_externals_creator_safe",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                SetExternalsCreator(args.physics_scene()).execute_safe(args);
+            });
+    }
+} obj1;
+
 }

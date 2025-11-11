@@ -45,7 +45,7 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
     DestructionFunctions* dependency_destruction_functions = nullptr;
-    if (auto p = args.arguments.try_at<std::string>(KnownArgs::player); p.has_value()) {
+    if (auto p = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::player); p.has_value()) {
         auto player = players.get_player(*p, CURRENT_SOURCE_LOCATION);
         dependency_destruction_functions = &player->delete_vehicle_internals;
     }

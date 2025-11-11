@@ -2,7 +2,8 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
-#include <Mlib/Io/Binary.hpp>
+#include <Mlib/Io/Binary_Reader.hpp>
+#include <Mlib/Io/Binary_Writer.hpp>
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Remote/Object_Compression.hpp>
@@ -49,7 +50,8 @@ std::unique_ptr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_
     std::istream& istr,
     IoVerbosity verbosity)
 {
-    auto compression = read_binary<ObjectCompression>(istr, "object compression", verbosity);
+    auto reader = BinaryReader{istr, verbosity};
+    auto compression = reader.read_binary<ObjectCompression>("object compression");
     if (compression == ObjectCompression::NONE) {
         // Continue
     } else if (compression == ObjectCompression::INCREMENTAL) {
@@ -57,14 +59,13 @@ std::unique_ptr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_
     } else {
         THROW_OR_ABORT("RemoteRigidBodyVehicle::try_create_from_stream: Unknown compression mode");
     }
-    auto initial_len = read_binary<uint32_t>(istr, "initial rigid body length", verbosity);
-    auto initial_str = read_string(istr, initial_len, "initial rigid body", verbosity);
+    auto initial_str = reader.read_string("initial rigid body");
     auto initial_json = nlohmann::json::parse(initial_str);
     auto initial = JsonView{ initial_json };
-    auto position = read_binary<EFixedArray<ScenePos, 3>>(istr, "position", verbosity);
-    auto rotation = read_binary<EFixedArray<SceneDir, 3>>(istr, "rotation", verbosity);
-    auto v_com = read_binary<EFixedArray<SceneDir, 3>>(istr, "v_com", verbosity);
-    auto w = read_binary<EFixedArray<SceneDir, 3>>(istr, "w", verbosity);
+    auto position = reader.read_binary<EFixedArray<ScenePos, 3>>("position");
+    auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
+    auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
+    auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
     auto node = make_unique_scene_node(
         position,
         rotation,
@@ -94,35 +95,36 @@ std::unique_ptr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_
 }
 
 void RemoteRigidBodyVehicle::read(std::istream& istr) {
-    auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
+    auto reader = BinaryReader{istr, verbosity_};
+    auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != RemoteSceneObjectType::RIGID_BODY_VEHICLE) {
         THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Unexpected scene object type");
     }
-    auto compression = read_binary<ObjectCompression>(istr, "object compression", verbosity_);
+    auto compression = reader.read_binary<ObjectCompression>("object compression");
     if (compression == ObjectCompression::NONE) {
-        auto initial_len = read_binary<uint32_t>(istr, "initial rigid body length", verbosity_);
-        seek_relative_positive(istr, initial_len, verbosity_);
+        auto initial_len = reader.read_binary<uint32_t>("initial rigid body length");
+        reader.seek_relative_positive(initial_len);
     } else if (compression != ObjectCompression::INCREMENTAL) {
         THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Unknown compression mode");
     }
-    auto position = read_binary<EFixedArray<ScenePos, 3>>(istr, "position", verbosity_);
-    auto rotation = read_binary<EFixedArray<SceneDir, 3>>(istr, "rotation", verbosity_);
-    auto v_com = read_binary<EFixedArray<SceneDir, 3>>(istr, "v_com", verbosity_);
-    auto w = read_binary<EFixedArray<SceneDir, 3>>(istr, "w", verbosity_);
+    auto position = reader.read_binary<EFixedArray<ScenePos, 3>>("position");
+    auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
+    auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
+    auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
     rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
     rb_->rbp_.v_com_ = v_com;
     rb_->rbp_.w_ = w;
 }
 
 void RemoteRigidBodyVehicle::write(std::ostream& ostr, ObjectCompression compression) {
-    write_binary(ostr, RemoteSceneObjectType::RIGID_BODY_VEHICLE, "rigid body vehicle");
-    write_binary(ostr, compression, "rigi body compression");
+    auto writer = BinaryWriter{ostr};
+    writer.write_binary(RemoteSceneObjectType::RIGID_BODY_VEHICLE, "rigid body vehicle");
+    writer.write_binary(compression, "rigi body compression");
     if (compression == ObjectCompression::NONE) {
-        write_binary<uint32_t>(ostr, integral_cast<uint32_t>(initial_.length()), "initial rigid body length");
-        write_iterable(ostr, initial_, "initial rigid body");
+        writer.write_string(initial_, "initial rigid body");
     }
-    write_binary(ostr, rb_->rbp_.abs_position(), "position");
-    write_binary(ostr, matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
-    write_binary(ostr, rb_->rbp_.v_com_, "v_com");
-    write_binary(ostr, rb_->rbp_.w_, "w");
+    writer.write_binary(rb_->rbp_.abs_position(), "position");
+    writer.write_binary(matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
+    writer.write_binary(rb_->rbp_.v_com_, "v_com");
+    writer.write_binary(rb_->rbp_.w_, "w");
 }

@@ -52,7 +52,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
     args.arguments.validate(KnownArgs::options);
     args.macro_line_executor.block_arguments().validate_complement(KnownLet::options);
 
-    std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
+    auto spawner_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::spawner);
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     auto distancebox = scene_node_resources.get_intersectables(VariableAndHash<std::string>{asset_id + "_distancebox"});
     auto y_offset = args.arguments.at<CompressedScenePos>(KnownArgs::y_offset);
@@ -62,7 +62,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
         (CompressedScenePos)0.f
     };
     vehicle_spawners.get(spawner_name).set_spawn_vehicle(
-        [dependencies = args.arguments.try_at_vector<std::string>(KnownArgs::dependencies),
+        [dependencies = args.arguments.try_at_vector<VariableAndHash<std::string>>(KnownArgs::dependencies),
          &vs = vehicle_spawners]()
         {
             for (const auto& dependency : dependencies) {

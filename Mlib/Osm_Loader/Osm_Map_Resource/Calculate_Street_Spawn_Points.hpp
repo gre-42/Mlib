@@ -1,9 +1,10 @@
 #pragma once
+#include <cstdint>
 #include <list>
 
 namespace Mlib {
 
-enum class DrivingDirection;
+enum class DrivingDirection: uint32_t;
 struct SpawnPoint;
 struct StreetRectangle;
 

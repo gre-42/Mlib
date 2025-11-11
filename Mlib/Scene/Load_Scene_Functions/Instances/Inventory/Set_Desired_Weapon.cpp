@@ -33,7 +33,7 @@ SetDesiredWeapon::SetDesiredWeapon(PhysicsScene& physics_scene)
 void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), DP_LOC);
-    std::optional<std::string> player_name = args.arguments.try_at_non_null<std::string>(KnownArgs::player);
+    auto player_name = args.arguments.try_at_non_null<VariableAndHash<std::string>>(KnownArgs::player);
     std::string weapon_name = args.arguments.at<std::string>(KnownArgs::weapon);
     auto& wc = get_weapon_cycle(cycle_node);
     wc.set_desired_weapon(player_name, weapon_name);

@@ -6,11 +6,15 @@ using namespace Mlib;
 
 UserAccount::UserAccount(
     const MacroLineExecutor& mle,
-    std::string name_key)
+    std::string key)
     : mle_{ mle }
-    , name_key_{ std::move(name_key) }
+    , key_{ std::move(key) }
 {}
 
+const std::string& UserAccount::key() const {
+    return key_;
+}
+
 std::string UserAccount::name() const {
-    return JsonView{mle_.at(name_key_)}.at<std::string>("name");
+    return JsonView{mle_.at(key_)}.at<std::string>("name");
 }

@@ -37,7 +37,7 @@ CreateCarControllerIdleBinding::CreateCarControllerIdleBinding(RenderableScene& 
 void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_car_controller_idle_binding(std::unique_ptr<CarControllerIdleBinding>(new CarControllerIdleBinding{
         .node = node.ptr(),
         .surface_power = args.arguments.at<float>(KnownArgs::surface_power, 0.f) * W,

@@ -24,7 +24,7 @@ void AddVip::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Scene has no game logic");
     }
     game_logic->bystanders.add_vip(
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION),
+        players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION),
         CURRENT_SOURCE_LOCATION);
 }
 

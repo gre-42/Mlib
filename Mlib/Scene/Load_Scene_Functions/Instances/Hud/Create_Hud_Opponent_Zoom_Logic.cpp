@@ -51,7 +51,7 @@ void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
             KnownArgs::exclusive_nodes,
             [&scene=scene](const auto& n){ return (const DanglingBaseClassPtr<const SceneNode>&)scene.get_node(n, DP_LOC).ptr(); });
     }
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto cam_stream = std::make_unique<CameraStreamLogic>(
         scene,
         selected_cameras,

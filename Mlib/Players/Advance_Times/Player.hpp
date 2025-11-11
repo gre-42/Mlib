@@ -27,6 +27,8 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
+#include <cstdint>
+#include <cstdint>
 #include <list>
 #include <mutex>
 #include <optional>
@@ -47,7 +49,7 @@ class AimAt;
 class Gun;
 class Navigate;
 class SupplyDepotsWaypointsCollection;
-enum class DrivingDirection;
+enum class DrivingDirection: uint32_t;
 enum class JoinedWayPointSandbox;
 enum class WayPointLocation;
 class DeleteNodeMutex;
@@ -60,35 +62,38 @@ class VehicleSpawner;
 class VehicleSpawners;
 class UserAccount;
 
-enum class GameMode {
-    RALLY,
-    RAMMING,
-    TEAM_DEATHMATCH
+enum class GameMode: uint32_t {
+    RALLY = 0x39B2A982,
+    RAMMING = 0x9F250C1E,
+    TEAM_DEATHMATCH = 0x4ABCD738
 };
 
 GameMode game_mode_from_string(const std::string& game_mode);
+std::string game_mode_to_string(GameMode game_mode);
 
-enum class PlayerRole {
-    COMPETITOR,
-    BYSTANDER
+enum class PlayerRole: uint32_t {
+    COMPETITOR = 0x7EB29427,
+    BYSTANDER = 0xF362AF12
 };
 
 PlayerRole player_role_from_string(const std::string& role);
+std::string player_role_to_string(PlayerRole role);
 
 enum class ExternalsMode;
 
-enum class UnstuckMode {
-    OFF,
-    REVERSE,
-    DELETE
+enum class UnstuckMode: uint32_t {
+    OFF = 0x938A74FA,
+    REVERSE = 0xC84AEF70,
+    DELETE = 0x6EFB298A
 };
 
 UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode);
+std::string unstuck_mode_to_string(UnstuckMode unstuck_mode);
 
-enum class OpponentSelectionStrategy {
-    KEEP,
-    NEXT,
-    BEST
+enum class OpponentSelectionStrategy: uint32_t {
+    KEEP = 0x2EAB9423,
+    NEXT = 0x79DA3902,
+    BEST = 0x1EC28956
 };
 
 enum class ControlSource;
@@ -125,7 +130,7 @@ public:
         VehicleSpawners& vehicle_spawners,
         Players& players,
         const DanglingBaseClassPtr<const UserInfo>& user_info,
-        std::string id,
+        VariableAndHash<std::string> id,
         std::string team,
         std::shared_ptr<UserAccount> user_account,
         GameMode game_mode,
@@ -162,6 +167,7 @@ public:
     DanglingBaseClassPtr<const UserInfo> user_info() const;
     const std::string& team_name() const;
     DanglingBaseClassRef<Team> team();
+    std::shared_ptr<UserAccount> user_account();
     PlayerStats& stats();
     const PlayerStats& stats() const;
     float car_health() const;
@@ -226,13 +232,14 @@ public:
     DrivingDirection driving_direction() const;
     ExternalsMode externals_mode() const;
     const InternalsMode& internals_mode() const;
+    UnstuckMode unstuck_mode() const;
     const std::string& behavior() const;
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
     PlaybackWaypoints& playback_waypoints();
 
     // IPlayer
-    virtual const std::string& id() const override;
+    virtual const VariableAndHash<std::string>& id() const override;
     virtual std::string title() const override;
     virtual std::optional<VariableAndHash<std::string>> target_id() const override;
     virtual bool reset_vehicle_requested() override;
@@ -291,7 +298,7 @@ private:
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     DanglingBaseClassPtr<const UserInfo> user_info_;
-    const std::string id_;
+    VariableAndHash<std::string> id_;
     std::string team_;
     DanglingBaseClassPtr<SceneVehicle> vehicle_;
     DanglingBaseClassPtr<VehicleSpawner> vehicle_spawner_;

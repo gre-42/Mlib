@@ -38,7 +38,7 @@ CreateRotateGunKeyBinding::CreateRotateGunKeyBinding(RenderableScene& renderable
 void CreateRotateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
         .dynamic_node = [player]() -> DanglingBaseClassPtr<SceneNode> {
             if (!player->has_gun_node()) {

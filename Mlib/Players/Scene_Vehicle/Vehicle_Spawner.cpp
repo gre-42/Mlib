@@ -213,7 +213,7 @@ bool VehicleSpawner::try_spawn(const GeometrySpawnArguments& geometry)
         verbose_abort("Spawner with suffix \"" + suffix_ + "\": Unknown spawn action: " + std::to_string((int)geometry.action));
     }
     if (has_player() && player_->has_scene_vehicle()) {
-        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player \"" + player_->id() + "\" already has a vehicle before spawning");
+        THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Player \"" + *player_->id() + "\" already has a vehicle before spawning");
     }
     if (!scene_vehicles_.empty()) {
         THROW_OR_ABORT("Spawner with suffix \"" + suffix_ + "\": Scene vehicles already set before spawning");
@@ -228,7 +228,7 @@ bool VehicleSpawner::try_spawn(const GeometrySpawnArguments& geometry)
             verbose_abort("Spawner with suffix \"" + suffix_ + "\": Scene vehicles set after failed spawning");
         }
         if (has_player() && player_->has_scene_vehicle()) {
-            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Player \"" + player_->id() + "\" has a vehicle after failed spawning");
+            verbose_abort("Spawner with suffix \"" + suffix_ + "\": Player \"" + *player_->id() + "\" has a vehicle after failed spawning");
         }
         return false;
     } else {

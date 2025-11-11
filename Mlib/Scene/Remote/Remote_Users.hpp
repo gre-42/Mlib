@@ -29,8 +29,6 @@ public:
 
 private:
     void read_data(std::istream& istr);
-    std::string read_string(std::istream& istr, const char* msg) const;
-    void write_string(std::ostream& ostr, const std::string& str, const char* msg) const;
 
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     IoVerbosity verbosity_;

@@ -129,7 +129,7 @@ void Spawner::respawn_all_players() {
             }
             // lerr() << "Spawning \"" << name << "\" with team \"" << spawner->get_team_name() << '"';
             if (!try_spawn_at_spawn_point(*spawner, sp->trafo, AxisAlignedBoundingBox<CompressedScenePos, 3>::zero())) {
-                THROW_OR_ABORT("Could not spawn \"" + name + "\" with team \"" + spawner->get_team_name() + '"');
+                THROW_OR_ABORT("Could not spawn \"" + *name + "\" with team \"" + spawner->get_team_name() + '"');
             }
             occupied_spawn_points.insert(sp);
             break;

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Event_Emitter.hpp>
@@ -63,7 +64,7 @@ public:
         std::string rendering_resources_name,
         unsigned int max_anisotropic_filtering_level,
         SceneConfig& scene_config,
-        NotifyingJsonMacroArguments& globals,
+        const MacroLineExecutor& macro_line_executor,
         RemoteSites& remote_sites,
         AssetReferences& asset_references,
         SceneNodeResources& scene_node_resources,
@@ -95,7 +96,7 @@ public:
     DestructionFunctions on_stop_and_join_;
     DeleteNodeMutex delete_node_mutex_;
     ObjectPool object_pool_;
-    DanglingBaseClassRef<NotifyingJsonMacroArguments> globals_;
+    MacroLineExecutor macro_line_executor_;
     DanglingBaseClassRef<RemoteSites> remote_sites_;
     UiFocus& ui_focus_;
     std::string name_;

@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
+#include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Source_Location.hpp>
@@ -49,9 +50,9 @@ public:
         const DanglingBaseClassRef<RemoteSites>& remote_sites);
     ~Players();
     void add_player(const DanglingBaseClassRef<Player>& player);
-    void remove_player(const std::string& name);
-    DanglingBaseClassRef<Player> get_player(const std::string& name, SourceLocation loc);
-    DanglingBaseClassRef<const Player> get_player(const std::string& name, SourceLocation loc) const;
+    void remove_player(const VariableAndHash<std::string>& name);
+    DanglingBaseClassRef<Player> get_player(const VariableAndHash<std::string>& name, SourceLocation loc);
+    DanglingBaseClassRef<const Player> get_player(const VariableAndHash<std::string>& name, SourceLocation loc) const;
     DanglingBaseClassRef<Team> get_team(const std::string& name);
     DanglingBaseClassRef<const Team> get_team(const std::string& name) const;
     void remove_team(const std::string& name);
@@ -69,13 +70,13 @@ public:
     uint32_t rank(float race_time_seconds) const;
     std::optional<LapTimeEventAndIdAndMfilename> get_winner_track_filename(size_t rank) const;
     std::string get_score_board(ScoreBoardConfiguration config) const;
-    std::map<std::string, DestructionFunctionsTokensRef<Player>>& players();
-    const std::map<std::string, DestructionFunctionsTokensRef<Player>>& players() const;
+    StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>>& players();
+    const StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>>& players() const;
     std::map<std::string, DestructionFunctionsTokensRef<Team>>& teams();
     const std::map<std::string, DestructionFunctionsTokensRef<Team>>& teams() const;
     size_t nactive() const;
 private:
-    std::map<std::string, DestructionFunctionsTokensRef<Player>> players_;
+    StringWithHashUnorderedMap<DestructionFunctionsTokensRef<Player>> players_;
     std::map<std::string, DestructionFunctionsTokensRef<Team>> teams_;
     std::unique_ptr<RaceHistory> race_history_;
     std::shared_ptr<Translator> translator_;

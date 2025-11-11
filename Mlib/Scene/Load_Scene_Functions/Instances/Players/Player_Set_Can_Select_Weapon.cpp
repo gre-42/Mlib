@@ -29,7 +29,7 @@ PlayerSetCanSelectBestWeapon::PlayerSetCanSelectBestWeapon(PhysicsScene& physics
 
 void PlayerSetCanSelectBestWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     player->set_can_select_weapon(
         control_source_from_string(args.arguments.at<std::string>(KnownArgs::source)),
         args.arguments.at<bool>(KnownArgs::value));

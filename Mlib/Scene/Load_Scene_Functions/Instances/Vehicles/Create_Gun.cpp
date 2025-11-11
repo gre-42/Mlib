@@ -119,7 +119,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         }};
     const auto& bullet_props = args.bullet_property_db.get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::bullet_type));
     std::function<void(
-        const std::optional<std::string>& player,
+        const std::optional<VariableAndHash<std::string>>& player,
         const std::string& bullet_suffix,
         const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
@@ -129,7 +129,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             [mle = args.macro_line_executor,
              l = *g]
             (
-                const std::optional<std::string>& player,
+                const std::optional<VariableAndHash<std::string>>& player,
                 const std::string& bullet_suffix,
                 const std::optional<VariableAndHash<std::string>>& target,
                 const FixedArray<float, 3>& velocity,

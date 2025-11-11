@@ -5,6 +5,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Scene_Precision.hpp>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -26,7 +27,7 @@ struct ResourceInstanceDescriptor;
 struct StreetRectangle;
 struct ObjectResourceDescriptor;
 class ResourceNameCycle;
-enum class DrivingDirection;
+enum class DrivingDirection: uint32_t;
 struct Node;
 struct Way;
 enum class WayPointSandbox;

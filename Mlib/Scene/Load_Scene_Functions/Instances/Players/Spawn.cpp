@@ -33,7 +33,7 @@ Spawn::Spawn(PhysicsScene& physics_scene)
 
 void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
+    auto spawner_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::spawner);
     if (!game_logic->spawner.try_spawn_at_spawn_point(
         vehicle_spawners.get(spawner_name),
         {
@@ -42,7 +42,7 @@ void Spawn::execute(const LoadSceneJsonUserFunctionArgs& args)
         },
         AxisAlignedBoundingBox<CompressedScenePos, 3>::zero()))
     {
-        THROW_OR_ABORT("Could not spawn \"" + spawner_name + '"');
+        THROW_OR_ABORT("Could not spawn \"" + *spawner_name + '"');
     }
 }
 

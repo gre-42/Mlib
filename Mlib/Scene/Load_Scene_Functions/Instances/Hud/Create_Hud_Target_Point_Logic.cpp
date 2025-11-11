@@ -56,7 +56,7 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
             THROW_OR_ABORT("Relative movable is not a ypln");
         }
     }
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     object_pool.create<HudTargetPointLogic>(
         CURRENT_SOURCE_LOCATION,
         object_pool,

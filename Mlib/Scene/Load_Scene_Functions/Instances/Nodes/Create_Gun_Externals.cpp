@@ -20,7 +20,7 @@ CreateGunExternals::CreateGunExternals(PhysicsScene& physics_scene)
 void CreateGunExternals::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     player->create_gun_externals();
 }
 

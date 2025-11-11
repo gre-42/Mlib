@@ -69,7 +69,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
         args.arguments.child(KnownArgs::circular).validate(CircularArgs::options);
     }
 
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassRef<SceneNode> node = player->scene_node();
     auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {

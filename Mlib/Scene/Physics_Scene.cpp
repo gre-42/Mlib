@@ -27,7 +27,7 @@ PhysicsScene::PhysicsScene(
     std::string rendering_resources_name,
     unsigned int max_anisotropic_filtering_level,
     SceneConfig& scene_config,
-    NotifyingJsonMacroArguments& globals,
+    const MacroLineExecutor& macro_line_executor,
     RemoteSites& remote_sites,
     AssetReferences& asset_references,
     SceneNodeResources& scene_node_resources,
@@ -44,7 +44,7 @@ PhysicsScene::PhysicsScene(
     std::shared_ptr<Translator> translator,
     const std::optional<RemoteParams>& remote_params)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
-    , globals_{ globals, CURRENT_SOURCE_LOCATION }
+    , macro_line_executor_{ macro_line_executor }
     , remote_sites_{ remote_sites, CURRENT_SOURCE_LOCATION }
     , ui_focus_{ ui_focus }
     , name_{ std::move(name) }

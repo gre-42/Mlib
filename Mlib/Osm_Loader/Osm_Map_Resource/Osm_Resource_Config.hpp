@@ -24,6 +24,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <nlohmann/json_fwd.hpp>
@@ -34,7 +35,7 @@
 namespace Mlib {
 
 enum class BlendMode;
-enum class DrivingDirection;
+enum class DrivingDirection: uint32_t;
 struct WaysideResourceNamesSurface;
 struct WaysideResourceNamesVertex;
 struct RoadProperties;

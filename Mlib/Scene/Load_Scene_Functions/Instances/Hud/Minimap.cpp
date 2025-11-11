@@ -46,7 +46,7 @@ Minimap::Minimap(RenderableScene& renderable_scene)
 
 void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     DanglingBaseClassRef<SceneNode> node = player->scene_node();
     auto widget = std::make_unique<Widget>(
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

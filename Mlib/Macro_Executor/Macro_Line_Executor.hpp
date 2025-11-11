@@ -17,6 +17,8 @@ class JsonMacroArgumentsObserverToken;
 class AssetReferences;
 struct FPath;
 class JsonView;
+class JsonMacroArgumentsAndLock;
+class WritableJsonMacroArgumentsAndLock;
 
 class MacroLineExecutor {
     friend MacroRecorder;
@@ -60,6 +62,8 @@ public:
     nlohmann::json at(const std::string& key) const;
     template <class T>
     T at(const std::string& key) const;
+    JsonMacroArgumentsAndLock json_macro_arguments() const;
+    WritableJsonMacroArgumentsAndLock writable_json_macro_arguments();
     bool eval(const BooleanExpression& expression) const;
     bool eval(const BooleanExpression& expression, const JsonView& variables) const;
     bool eval_boolean_expression(const nlohmann::json& j) const;

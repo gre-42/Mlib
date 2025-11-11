@@ -33,13 +33,13 @@ CreateSpawner::CreateSpawner(PhysicsScene& physics_scene)
 
 void CreateSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto name = args.arguments.at<std::string>(KnownArgs::name);
+    auto name = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name);
     auto suffix = args.arguments.try_at<std::string>(KnownArgs::suffix);
     vehicle_spawners.set(
         name,
         std::make_unique<VehicleSpawner>(
             scene,
-            suffix.has_value() ? *suffix : '_' + name + scene.get_temporary_instance_suffix(),
+            suffix.has_value() ? *suffix : '_' + *name + scene.get_temporary_instance_suffix(),
             args.arguments.at<std::string>(KnownArgs::team),
             args.arguments.at<std::string>(KnownArgs::group),
             spawn_trigger_from_string(args.arguments.at<std::string>(KnownArgs::trigger))));

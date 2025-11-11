@@ -38,7 +38,7 @@ struct RenderableResourceFilter;
 
 using UpdateAudioSourceState = std::function<void(const AudioSourceState<ScenePos>*)>;
 using GenerateSmartBullet = std::function<void(
-    const std::optional<std::string>& player,
+    const std::optional<VariableAndHash<std::string>>& player,
     const std::string& bullet_suffix,
     const std::optional<VariableAndHash<std::string>>& target,
     const FixedArray<float, 3>& velocity,

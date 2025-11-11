@@ -39,13 +39,13 @@ DestructionFunctions& Team::on_destroy_team() {
     return on_destroy;
 }
 
-void Team::add_player(const std::string& player) {
+void Team::add_player(const VariableAndHash<std::string>& player) {
     if (!players_.insert(player).second) {
-        THROW_OR_ABORT("Team already contains a player with name \"" + player + '"');
+        THROW_OR_ABORT("Team already contains a player with name \"" + *player + '"');
     }
 }
 
-const std::set<std::string>& Team::players() const {
+const std::set<VariableAndHash<std::string>>& Team::players() const {
     return players_;
 }
 

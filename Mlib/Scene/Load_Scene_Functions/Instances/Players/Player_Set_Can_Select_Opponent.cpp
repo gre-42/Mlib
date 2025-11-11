@@ -29,7 +29,7 @@ PlayerSetCanSelectOpponent::PlayerSetCanSelectOpponent(PhysicsScene& physics_sce
 
 void PlayerSetCanSelectOpponent::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     player->set_can_select_opponent(
         control_source_from_string(args.arguments.at<std::string>(KnownArgs::source)),
         args.arguments.at<bool>(KnownArgs::value));

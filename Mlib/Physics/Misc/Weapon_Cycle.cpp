@@ -38,7 +38,7 @@ void WeaponCycle::modify_node() {
     }
 }
 
-void WeaponCycle::create_externals(const std::string& player_name) {
+void WeaponCycle::create_externals(const VariableAndHash<std::string>& player_name) {
     auto it = weapon_infos_.find(equipped_.weapon_name);
     if (it == weapon_infos_.end()) {
         THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + equipped_.weapon_name + '"');
@@ -56,13 +56,13 @@ void WeaponCycle::add_weapon(std::string weapon_name, const WeaponInfo& weapon_i
 }
 
 void WeaponCycle::set_desired_weapon(
-    std::optional<std::string> player_name,
+    std::optional<VariableAndHash<std::string>> player_name,
     std::string weapon_name)
 {
     desired_ = { std::move(player_name), std::move(weapon_name) };
 }
 
-void WeaponCycle::equip_next_weapon(std::optional<std::string> player_name) {
+void WeaponCycle::equip_next_weapon(std::optional<VariableAndHash<std::string>> player_name) {
     if (weapon_infos_.empty()) {
         return;
     }
@@ -79,7 +79,7 @@ void WeaponCycle::equip_next_weapon(std::optional<std::string> player_name) {
     desired_.player_name = std::move(player_name);
 }
 
-void WeaponCycle::equip_previous_weapon(std::optional<std::string> player_name) {
+void WeaponCycle::equip_previous_weapon(std::optional<VariableAndHash<std::string>> player_name) {
     if (weapon_infos_.empty()) {
         return;
     }

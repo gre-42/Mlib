@@ -114,7 +114,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         moving_asset_id,
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::resource),
         viewable,
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION),
+        players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION),
         args.arguments.at<size_t>(KnownArgs::nbeacons),
         args.arguments.at<float>(KnownArgs::distance) * meters,
         args.arguments.at<size_t>(KnownArgs::nahead),
