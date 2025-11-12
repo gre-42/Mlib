@@ -12,6 +12,7 @@
 #include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Player.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -86,7 +87,8 @@ void CreatePlayer::execute(const JsonView& args, const MacroLineExecutor& macro_
     if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.players.contains(name)) {
         remote_scene->create_local<RemotePlayer>(
             CURRENT_SOURCE_LOCATION,
-            DanglingBaseClassRef<Player>{*player, CURRENT_SOURCE_LOCATION});
+            DanglingBaseClassRef<Player>{*player, CURRENT_SOURCE_LOCATION},
+            DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});
     }
     player.release();
 }

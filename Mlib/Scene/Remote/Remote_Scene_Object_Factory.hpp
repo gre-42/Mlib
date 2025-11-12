@@ -8,7 +8,7 @@ class ObjectPool;
 class PhysicsScene;
 enum class IoVerbosity;
 
-class RemoteSceneObjectFactory: public IIncrementalObjectFactory {
+class RemoteSceneObjectFactory final: public IIncrementalObjectFactory {
 public:
     explicit RemoteSceneObjectFactory(
         const DanglingBaseClassRef<ObjectPool>& object_pool,

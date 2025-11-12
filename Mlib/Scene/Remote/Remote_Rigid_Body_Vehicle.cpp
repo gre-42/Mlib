@@ -1,10 +1,10 @@
 #include "Remote_Rigid_Body_Vehicle.hpp"
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Instance/Rendering_Dynamics.hpp>
 #include <Mlib/Io/Binary_Reader.hpp>
 #include <Mlib/Io/Binary_Writer.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Remote/Object_Compression.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Fast_Macros/Create_Generic_Car.hpp>
@@ -44,7 +44,7 @@ RemoteRigidBodyVehicle::~RemoteRigidBodyVehicle() {
     on_destroy.clear();
 }
 
-std::unique_ptr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_stream(
+DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_stream(
     ObjectPool& object_pool,
     PhysicsScene& physics_scene,
     std::istream& istr,
@@ -85,13 +85,16 @@ std::unique_ptr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_
     auto& rb = get_rigid_body_vehicle(pnode);
     rb.rbp_.v_com_ = v_com;
     rb.rbp_.w_ = w;
-    return std::make_unique<RemoteRigidBodyVehicle>(
-        object_pool,
-        verbosity,
-        std::move(initial_str),
-        DanglingBaseClassRef<RigidBodyVehicle>{
-            get_rigid_body_vehicle(pnode),
-            CURRENT_SOURCE_LOCATION});
+    return {
+        object_pool.create<RemoteRigidBodyVehicle>(
+            CURRENT_SOURCE_LOCATION,
+            object_pool,
+            verbosity,
+            std::move(initial_str),
+            DanglingBaseClassRef<RigidBodyVehicle>{
+                get_rigid_body_vehicle(pnode),
+                CURRENT_SOURCE_LOCATION}),
+        CURRENT_SOURCE_LOCATION};
 }
 
 void RemoteRigidBodyVehicle::read(std::istream& istr) {
@@ -127,4 +130,8 @@ void RemoteRigidBodyVehicle::write(std::ostream& ostr, ObjectCompression compres
     writer.write_binary(matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
     writer.write_binary(rb_->rbp_.v_com_, "v_com");
     writer.write_binary(rb_->rbp_.w_, "w");
+}
+
+DanglingBaseClassRef<RigidBodyVehicle> RemoteRigidBodyVehicle::rb() {
+    return rb_;
 }

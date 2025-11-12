@@ -5,6 +5,7 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <string>
 
@@ -15,7 +16,7 @@ class DeleteNodeMutex;
 class SceneNode;
 class RigidBodyVehicle;
 class SkillMap;
-enum class ExternalsMode;
+enum class ExternalsMode: uint32_t;
 enum class ControlSource;
 struct InternalsMode;
 

@@ -8,7 +8,6 @@ namespace Mlib {
 
 class PhysicsScene;
 class RigidBodyVehicle;
-class ObjectPool;
 enum class IoVerbosity;
 
 class RemoteRigidBodyVehicle final: public IIncrementalObject {
@@ -19,13 +18,15 @@ public:
         std::string initial,
         const DanglingBaseClassRef<RigidBodyVehicle>& rb);
     ~RemoteRigidBodyVehicle();
-    static std::unique_ptr<RemoteRigidBodyVehicle> try_create_from_stream(
+    static DanglingBaseClassPtr<RemoteRigidBodyVehicle> try_create_from_stream(
         ObjectPool& object_pool,
         PhysicsScene& physics_scene,
         std::istream& istr,
         IoVerbosity verbosity);
     virtual void read(std::istream& istr) override;
     virtual void write(std::ostream& ostr, ObjectCompression compression) override;
+
+    DanglingBaseClassRef<RigidBodyVehicle> rb();
 
 private:
     std::string initial_;

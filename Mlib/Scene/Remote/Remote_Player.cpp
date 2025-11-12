@@ -1,15 +1,19 @@
 #include "Remote_Player.hpp"
-#include <Mlib/Env.hpp>
 #include <Mlib/Io/Binary_Reader.hpp>
 #include <Mlib/Io/Binary_Writer.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
+#include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
 #include <Mlib/Remote/Object_Compression.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
+#include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
@@ -20,10 +24,14 @@ using namespace Mlib;
 RemotePlayer::RemotePlayer(
     ObjectPool& object_pool,
     IoVerbosity verbosity,
-    const DanglingBaseClassRef<Player>& player)
+    const DanglingBaseClassRef<Player>& player,
+    const DanglingBaseClassRef<PhysicsScene>& physics_scene)
     : player_{ player }
+    , physics_scene_{ physics_scene }
+    , vehicle_{ nullptr }
     , verbosity_{ verbosity }
     , player_on_destroy_{ player->on_destroy, CURRENT_SOURCE_LOCATION }
+    , vehicle_on_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
 {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemotePlayer";
@@ -38,7 +46,7 @@ RemotePlayer::~RemotePlayer() {
     on_destroy.clear();
 }
 
-std::unique_ptr<RemotePlayer> RemotePlayer::try_create_from_stream(
+DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     ObjectPool& object_pool,
     PhysicsScene& physics_scene,
     std::istream& istr,
@@ -46,11 +54,9 @@ std::unique_ptr<RemotePlayer> RemotePlayer::try_create_from_stream(
 {
     BinaryReader reader{ istr, verbosity };
     auto compression = reader.read_binary<ObjectCompression>("object compression");
-    if (compression == ObjectCompression::NONE) {
-        // Continue
-    } else if (compression == ObjectCompression::INCREMENTAL) {
-        return nullptr;
-    } else {
+    if ((compression != ObjectCompression::NONE) &&
+        (compression != ObjectCompression::INCREMENTAL))
+    {
         THROW_OR_ABORT("RemotePlayer::try_create_from_stream: Unknown compression mode");
     }
     auto args = nlohmann::json::object();
@@ -64,12 +70,29 @@ std::unique_ptr<RemotePlayer> RemotePlayer::try_create_from_stream(
     args["unstuck_mode"] = unstuck_mode_to_string(reader.read_binary<UnstuckMode>("unstuck_mode"));
     args["behavior"] = reader.read_string("behavior");
     args["driving_direction"] = driving_direction_to_string(reader.read_binary<DrivingDirection>("driving_direction"));
+    auto vehicle_asset_id = reader.read_string("vehicle_asset_id");
+    if (!vehicle_asset_id.empty()) {
+        reader.read_binary<RemoteObjectId>("vehicle_object_id");
+        reader.read_string("seat");
+        reader.read_binary<ExternalsMode>("externals mode");
+    }
+    auto end = reader.read_binary<uint32_t>("inverted scene object type");
+    if (end != ~(uint32_t)RemoteSceneObjectType::PLAYER) {
+        THROW_OR_ABORT("Invalid player message end (0). Vehicle asset-ID: \"" + vehicle_asset_id + '"');
+    }
+    if (physics_scene.remote_scene_ == nullptr) {
+        THROW_OR_ABORT("RemotePlayer: Remote scene is null");
+    }
     physics_scene.remote_scene_->created_at_remote_site.players.add(name);
     CreatePlayer{physics_scene}.execute(JsonView{args}, physics_scene.macro_line_executor_);
-    return std::make_unique<RemotePlayer>(
-        object_pool,
-        verbosity,
-        physics_scene.players_.get_player(name, CURRENT_SOURCE_LOCATION));
+    return {
+        object_pool.create<RemotePlayer>(
+            CURRENT_SOURCE_LOCATION,
+            object_pool,
+            verbosity,
+            physics_scene.players_.get_player(name, CURRENT_SOURCE_LOCATION),
+            DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),
+        CURRENT_SOURCE_LOCATION};
 }
 
 void RemotePlayer::read(std::istream& istr) {
@@ -93,6 +116,49 @@ void RemotePlayer::read(std::istream& istr) {
     reader.read_binary<UnstuckMode>("unstuck_mode");
     reader.read_string("behavior");
     reader.read_binary<DrivingDirection>("driving_direction");
+    auto vehicle_asset_id = reader.read_string("vehicle_asset_id");
+    if (!vehicle_asset_id.empty()) {
+        auto vehicle_object_id = reader.read_binary<RemoteObjectId>("vehicle_object_id");
+        auto seat = reader.read_string("seat");
+        auto externals_mode = reader.read_binary<ExternalsMode>("externals mode");
+        if (vehicle_ == nullptr) {
+            if (physics_scene_->remote_scene_ == nullptr) {
+                THROW_OR_ABORT("RemotePlayer: Remote scene is null");
+            }
+            auto ro = physics_scene_->remote_scene_->try_get(vehicle_object_id);
+            if (ro == nullptr) {
+                return;
+            }
+            auto rbv = dynamic_cast<RemoteRigidBodyVehicle*>(ro.get());
+            if (rbv == nullptr) {
+                THROW_OR_ABORT("Remote object is not a RemoteRigidBodyVehicle");
+            }
+            auto rb = rbv->rb();
+            if (rb->scene_node_ == nullptr) {
+                THROW_OR_ABORT("Rigid body has no scene node");
+            }
+            vehicle_ = {
+                global_object_pool.create<SceneVehicle>(
+                    CURRENT_SOURCE_LOCATION,
+                    physics_scene_->delete_node_mutex_,
+                    rb->node_name_,
+                    *rb->scene_node_,
+                    rb.set_loc(CURRENT_SOURCE_LOCATION)),
+                CURRENT_SOURCE_LOCATION};
+            vehicle_on_destroy_.set(vehicle_->on_destroy, CURRENT_SOURCE_LOCATION);
+            vehicle_on_destroy_.add([this](){ vehicle_ = nullptr; }, CURRENT_SOURCE_LOCATION);
+            SetExternalsCreator{ physics_scene_.get() }.execute_safe(
+                *vehicle_.get(),
+                vehicle_asset_id,
+                physics_scene_->macro_line_executor_);
+            player_->set_scene_vehicle(*vehicle_.get(), seat);
+            player_->create_vehicle_externals(externals_mode);
+        }
+    }
+    auto end = reader.read_binary<uint32_t>("inverted scene object type");
+    if (end != ~(uint32_t)RemoteSceneObjectType::PLAYER) {
+        THROW_OR_ABORT("Invalid player message end (1). Vehicle asset-ID: \"" + vehicle_asset_id + '"');
+    }
 }
 
 void RemotePlayer::write(std::ostream& ostr, ObjectCompression compression) {
@@ -116,4 +182,20 @@ void RemotePlayer::write(std::ostream& ostr, ObjectCompression compression) {
     writer.write_binary(player_->unstuck_mode(), "player unstuck mode");
     writer.write_string(player_->behavior(), "player behavior");
     writer.write_binary(player_->driving_direction(), "player driving direction");
+    if (player_->has_scene_vehicle()) {
+        auto rb = player_->rigid_body();
+        if (rb->asset_id_.empty()) {
+            THROW_OR_ABORT("Rigid body asset-ID is empty");
+        }
+        if (!rb->remote_object_id_.has_value()) {
+            THROW_OR_ABORT("remote vehicle object ID not set");
+        }
+        writer.write_string(rb->asset_id_, "asset ID");
+        writer.write_binary(*rb->remote_object_id_, "remote object ID");
+        writer.write_string(player_->seat(), "seat");
+        writer.write_binary(player_->externals_mode(), "externals mode");
+    } else {
+        writer.write_string("", "asset ID");
+    }
+    writer.write_binary(~(uint32_t)RemoteSceneObjectType::PLAYER, "inverted scene object type");
 }

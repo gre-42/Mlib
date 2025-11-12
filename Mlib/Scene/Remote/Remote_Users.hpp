@@ -18,7 +18,7 @@ public:
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
         RemoteSiteId site_id);
     ~RemoteUsers();
-    static std::unique_ptr<RemoteUsers> try_create_from_stream(
+    static DanglingBaseClassPtr<RemoteUsers> try_create_from_stream(
         ObjectPool& object_pool,
         PhysicsScene& physics_scene,
         std::istream& istr,

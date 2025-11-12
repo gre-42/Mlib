@@ -35,20 +35,21 @@ RemoteUsers::~RemoteUsers() {
     on_destroy.clear();
 }
 
-std::unique_ptr<RemoteUsers> RemoteUsers::try_create_from_stream(
+DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     ObjectPool& object_pool,
     PhysicsScene& physics_scene,
     std::istream& istr,
     IoVerbosity verbosity,
     RemoteSiteId site_id)
 {
-    auto res = std::make_unique<RemoteUsers>(
+    auto res = object_pool.create_unique<RemoteUsers>(
+        CURRENT_SOURCE_LOCATION,
         object_pool,
         verbosity,
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION},
         site_id);
     res->read_data(istr);
-    return res;
+    return {res.release(), CURRENT_SOURCE_LOCATION};
 }
 
 void RemoteUsers::read(std::istream& istr) {

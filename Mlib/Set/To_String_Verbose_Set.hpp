@@ -5,7 +5,7 @@
 namespace Mlib {
 
 template <class TBaseMap>
-class StringWithHashGenericSet: public VerboseSet<TBaseMap> {
+class ToStringVerboseSet: public VerboseSet<TBaseMap> {
 public:
     using value_type = TBaseMap::value_type;
     using key_type = TBaseMap::key_type;
@@ -13,12 +13,12 @@ public:
     using iterator = TBaseMap::iterator;
     using const_iterator = TBaseMap::const_iterator;
 
-    explicit StringWithHashGenericSet(std::string value_name)
+    explicit ToStringVerboseSet(std::string value_name)
         : VerboseSet<TBaseMap>{
             std::move(value_name),
-            [](const key_type& key){ return *key; } }
+            [](const key_type& key){ return std::to_string(key); } }
     {}
-    ~StringWithHashGenericSet() = default;
+    ~ToStringVerboseSet() = default;
 };
 
 }

@@ -19,7 +19,9 @@ RemoteSceneObjectFactory::RemoteSceneObjectFactory(
     , verbosity_{ verbosity }
 {}
 
-RemoteSceneObjectFactory::~RemoteSceneObjectFactory() = default;
+RemoteSceneObjectFactory::~RemoteSceneObjectFactory() {
+    on_destroy.clear();
+}
 
 DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_shared_object(
     std::istream& istr,
@@ -28,32 +30,11 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     switch (type) {
     case RemoteSceneObjectType::REMOTE_USERS:
-        {
-            auto users = RemoteUsers::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_, id.site_id);
-            if (users == nullptr) {
-                return nullptr;
-            }
-            return {
-                object_pool_->add(std::move(users), CURRENT_SOURCE_LOCATION), CURRENT_SOURCE_LOCATION};
-        }
+        return RemoteUsers::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_, id.site_id);
     case RemoteSceneObjectType::PLAYER:
-        {
-            auto player = RemotePlayer::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_);
-            if (player == nullptr) {
-                return nullptr;
-            }
-            return {
-                object_pool_->add(std::move(player), CURRENT_SOURCE_LOCATION), CURRENT_SOURCE_LOCATION};
-        }
+        return RemotePlayer::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_);
     case RemoteSceneObjectType::RIGID_BODY_VEHICLE:
-        {
-            auto rb = RemoteRigidBodyVehicle::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_);
-            if (rb == nullptr) {
-                return nullptr;
-            }
-            return {
-                object_pool_->add(std::move(rb), CURRENT_SOURCE_LOCATION), CURRENT_SOURCE_LOCATION};
-        }
+        return RemoteRigidBodyVehicle::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_);
     }
     THROW_OR_ABORT("Unknown object type: " + std::to_string((int)type));
 }

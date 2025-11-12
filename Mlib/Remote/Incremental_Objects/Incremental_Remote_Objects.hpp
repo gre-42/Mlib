@@ -22,7 +22,7 @@ public:
     explicit IncrementalRemoteObjects(RemoteSiteId site_id);
     ~IncrementalRemoteObjects();
     RemoteSiteId site_id() const;
-    void add_local_object(
+    RemoteObjectId add_local_object(
         const DanglingBaseClassRef<IIncrementalObject>& object,
         RemoteObjectVisibility visibility);
     void add_remote_object(

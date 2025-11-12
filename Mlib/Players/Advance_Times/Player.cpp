@@ -251,7 +251,7 @@ void Player::reset_node() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     {
         std::scoped_lock lock{ mutex_ };
-        if (vehicle_spawner_ != nullptr) {
+        if (vehicle_ != nullptr) {
             on_clear_vehicle_.clear();
             // The avatar can be destroyed during its dying
             // animation or while sitting in a vehicle,
@@ -259,6 +259,8 @@ void Player::reset_node() {
             // on_avatar_destroyed_.clear();
             on_vehicle_destroyed_.clear();
             vehicle_ = nullptr;
+        }
+        if (vehicle_spawner_ != nullptr) {
             vehicle_spawner_ = nullptr;
         }
         if (next_scene_vehicle_ != nullptr) {
@@ -299,8 +301,8 @@ void Player::reset_node() {
     }
 }
 
-void Player::set_vehicle_spawner(
-    VehicleSpawner& spawner,
+void Player::set_scene_vehicle(
+    SceneVehicle& vehicle,
     const std::string& desired_seat)
 {
     std::scoped_lock lock{ mutex_ };
@@ -314,27 +316,38 @@ void Player::set_vehicle_spawner(
     if (desired_seat.empty()) {
         THROW_OR_ABORT("Desired seat is empty");
     }
-    auto pv = spawner.get_primary_scene_vehicle();
-    if (!pv->rb()->drivers_.seat_exists(desired_seat)) {
-        THROW_OR_ABORT("Seat \"" + desired_seat + "\" does not exist in vehicle \"" + pv->rb()->name() + '"');
+    if (!vehicle.rb()->drivers_.seat_exists(desired_seat)) {
+        THROW_OR_ABORT("Seat \"" + desired_seat + "\" does not exist in vehicle \"" + vehicle.rb()->name() + '"');
     }
-    if (!pv->rb()->drivers_.seat_is_free(desired_seat)) {
-        THROW_OR_ABORT("Seat \"" + desired_seat + "\" is already occupied in vehicle \"" + pv->rb()->name() + '"');
+    if (!vehicle.rb()->drivers_.seat_is_free(desired_seat)) {
+        THROW_OR_ABORT("Seat \"" + desired_seat + "\" is already occupied in vehicle \"" + vehicle.rb()->name() + '"');
     }
-    pv->rb()->drivers_.add(desired_seat, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    if (pv->rb()->is_avatar()) {
+    vehicle.rb()->drivers_.add(desired_seat, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    if (vehicle.rb()->is_avatar()) {
         // The avatar can be destroyed during its dying
         // animation or while sitting in a vehicle.
-        on_avatar_destroyed_.set(pv->on_destroy, CURRENT_SOURCE_LOCATION);
+        on_avatar_destroyed_.set(vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
         on_avatar_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
         on_vehicle_destroyed_.clear();
     } else {
-        on_vehicle_destroyed_.set(pv->on_destroy, CURRENT_SOURCE_LOCATION);
+        on_vehicle_destroyed_.set(vehicle.on_destroy, CURRENT_SOURCE_LOCATION);
         on_vehicle_destroyed_.add([this](){ reset_node(); }, CURRENT_SOURCE_LOCATION);
     }
     internals_mode_.seat = desired_seat;
-    vehicle_ = pv.ptr().set_loc(CURRENT_SOURCE_LOCATION);
-    vehicle_spawner_ = { &spawner, CURRENT_SOURCE_LOCATION };
+    vehicle_ = { vehicle, CURRENT_SOURCE_LOCATION };
+}
+
+void Player::set_vehicle_spawner(
+    VehicleSpawner& spawner,
+    const std::string& desired_seat)
+{
+    std::scoped_lock lock{ mutex_ };
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (vehicle_spawner_ != nullptr) {
+        THROW_OR_ABORT("Vehicle spawner already set");
+    }
+    set_scene_vehicle(spawner.get_primary_scene_vehicle().get(), desired_seat);
+    vehicle_spawner_ = { spawner, CURRENT_SOURCE_LOCATION };
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> Player::rigid_body() {
@@ -355,7 +368,7 @@ const VariableAndHash<std::string>& Player::scene_node_name() const {
     return vehicle()->scene_node_name();
 }
 
-void Player::set_gun_node(DanglingBaseClassRef<SceneNode> gun_node) {
+void Player::set_gun_node(const DanglingBaseClassRef<SceneNode>& gun_node) {
     std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node != nullptr) {
         THROW_OR_ABORT("gun already set");
@@ -363,7 +376,7 @@ void Player::set_gun_node(DanglingBaseClassRef<SceneNode> gun_node) {
     change_gun_node(gun_node.ptr());
 }
 
-void Player::change_gun_node(DanglingBaseClassPtr<SceneNode> gun_node) {
+void Player::change_gun_node(const DanglingBaseClassPtr<SceneNode>& gun_node) {
     std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node != nullptr) {
         on_gun_node_destroyed_.clear();
@@ -964,6 +977,11 @@ DanglingBaseClassRef<const SceneNode> Player::scene_node() const {
 
 DanglingBaseClassPtr<VehicleSpawner> Player::next_scene_vehicle() {
     return next_scene_vehicle_;
+}
+
+const std::string& Player::seat() const {
+    std::shared_lock lock{ mutex_ };
+    return internals_mode_.seat;
 }
 
 const std::string& Player::next_seat() const {

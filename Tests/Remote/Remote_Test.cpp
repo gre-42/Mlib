@@ -16,13 +16,16 @@ enum class ObjectType: uint32_t {
     STRING
 };
 
-class SharedInteger: public IIncrementalObject {
+class SharedInteger final: public IIncrementalObject {
 public:
     explicit SharedInteger(int32_t i)
     : value_{ i }
     {}
     explicit SharedInteger(std::istream& istr) {
         read(istr);
+    }
+    virtual ~SharedInteger() override {
+        on_destroy.clear();
     }
     virtual void read(std::istream& istr) override {
         value_ = read_binary<int32_t>(istr, "int32", IoVerbosity::SILENT);
@@ -35,13 +38,16 @@ private:
     int32_t value_;
 };
 
-class SharedString: public IIncrementalObject {
+class SharedString final: public IIncrementalObject {
 public:
     explicit SharedString(std::string s)
     : value_{ std::move(s) }
     {}
     explicit SharedString(std::istream& istr) {
         read(istr);
+    }
+    virtual ~SharedString() override {
+        on_destroy.clear();
     }
     virtual void read(std::istream& istr) override {
         auto len = read_binary<uint32_t>(istr, "len", IoVerbosity::SILENT);
@@ -56,11 +62,14 @@ private:
     std::string value_;
 };
 
-class RemoteObjectFactory: public IIncrementalObjectFactory {
+class RemoteObjectFactory final: public IIncrementalObjectFactory {
 public:
     RemoteObjectFactory()
         : object_pool_{ InObjectPoolDestructor::CLEAR }
     {}
+    virtual ~RemoteObjectFactory() override {
+        on_destroy.clear();
+    }
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         std::istream& istr,
         const RemoteObjectId& id) override

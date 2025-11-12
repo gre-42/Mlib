@@ -28,7 +28,6 @@
 #include <Mlib/Variable_And_Hash.hpp>
 #include <chrono>
 #include <cstdint>
-#include <cstdint>
 #include <list>
 #include <mutex>
 #include <optional>
@@ -79,7 +78,7 @@ enum class PlayerRole: uint32_t {
 PlayerRole player_role_from_string(const std::string& role);
 std::string player_role_to_string(PlayerRole role);
 
-enum class ExternalsMode;
+enum class ExternalsMode: uint32_t;
 
 enum class UnstuckMode: uint32_t {
     OFF = 0x938A74FA,
@@ -148,20 +147,22 @@ public:
     void set_can_select_opponent(ControlSource control_source, bool value);
     void set_select_opponent_hysteresis_factor(ScenePos factor);
     void reset_node();
+    void set_scene_vehicle(SceneVehicle& vehicle, const std::string& desired_seat);
     void set_vehicle_spawner(VehicleSpawner& spawner, const std::string& desired_seat);
     DanglingBaseClassRef<RigidBodyVehicle> rigid_body();
     DanglingBaseClassRef<const RigidBodyVehicle> rigid_body() const;
     DanglingBaseClassRef<SceneNode> scene_node();
     DanglingBaseClassRef<const SceneNode> scene_node() const;
     DanglingBaseClassPtr<VehicleSpawner> next_scene_vehicle();
+    const std::string& seat() const;
     const std::string& next_seat() const;
     const VariableAndHash<std::string>& scene_node_name() const;
     DanglingBaseClassRef<SceneVehicle> vehicle();
     DanglingBaseClassRef<const SceneVehicle> vehicle() const;
     DanglingBaseClassRef<VehicleSpawner> vehicle_spawner();
     DanglingBaseClassRef<const VehicleSpawner> vehicle_spawner() const;
-    void set_gun_node(DanglingBaseClassRef<SceneNode> gun_node);
-    void change_gun_node(DanglingBaseClassPtr<SceneNode> gun_node);
+    void set_gun_node(const DanglingBaseClassRef<SceneNode>& gun_node);
+    void change_gun_node(const DanglingBaseClassPtr<SceneNode>& gun_node);
     bool has_way_points() const;
     void set_way_point_location_filter(JoinedWayPointSandbox filter);
     DanglingBaseClassPtr<const UserInfo> user_info() const;

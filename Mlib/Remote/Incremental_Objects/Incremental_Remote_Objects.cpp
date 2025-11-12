@@ -10,13 +10,15 @@ IncrementalRemoteObjects::IncrementalRemoteObjects(
     , next_local_object_id_{ 0 }
 {}
 
-IncrementalRemoteObjects::~IncrementalRemoteObjects() = default;
+IncrementalRemoteObjects::~IncrementalRemoteObjects() {
+    on_destroy.clear();
+}
 
 RemoteSiteId IncrementalRemoteObjects::site_id() const {
     return site_id_;
 }
 
-void IncrementalRemoteObjects::add_local_object(
+RemoteObjectId IncrementalRemoteObjects::add_local_object(
     const DanglingBaseClassRef<IIncrementalObject>& object,
     RemoteObjectVisibility visibility)
 {
@@ -36,7 +38,7 @@ void IncrementalRemoteObjects::add_local_object(
     {
         verbose_abort("Could not add private local object");
     }
-    ++next_local_object_id_;
+    return {site_id_, next_local_object_id_++};
 }
 
 void IncrementalRemoteObjects::add_remote_object(

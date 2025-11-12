@@ -21,6 +21,7 @@
 #include <Mlib/Physics/Rigid_Body/Drivers.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
 #include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
@@ -354,6 +355,7 @@ public:
     std::unique_ptr<ICollisionNormalModifier> collision_normal_modifier_;
     DanglingUnorderedSet<const RigidBodyVehicle> non_colliders_;
     FixedArray<float, 3> damage_absorption_direction_;
+    std::optional<RemoteObjectId> remote_object_id_;
 private:
     void advance_time_skate(
         const PhysicsEngineConfig& cfg,

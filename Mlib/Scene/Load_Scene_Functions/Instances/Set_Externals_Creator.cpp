@@ -56,21 +56,15 @@ bool get_if_pc(ExternalsMode externals_mode, const UserInfo* user_info) {
 }
 
 void SetExternalsCreator::execute_unsafe(
-    const JsonView& arguments,
+    SceneVehicle& vehicle,
+    nlohmann::json externals,
+    nlohmann::json internals,
     const MacroLineExecutor& macro_line_executor)
 {
-    arguments.validate(KnownArgsUnsafe::options);
     macro_line_executor.block_arguments().validate_complement(LetKeys::options);
 
-    auto spawner_name = arguments.at<VariableAndHash<std::string>>(KnownArgsUnsafe::spawner);
-    auto& spawner = vehicle_spawners.get(spawner_name);
-    if (!spawner.has_scene_vehicle()) {
-        THROW_OR_ABORT("Spawner \"" + *spawner_name + "\" has no vehicle");
-    }
-    spawner.get_primary_scene_vehicle()->set_create_vehicle_externals(
-        [macro_line_executor,
-         macro = arguments.at(KnownArgsUnsafe::externals),
-         spawner_name](
+    vehicle.set_create_vehicle_externals(
+        [macro_line_executor, macro=std::move(externals)](
             const Player& player,
             ExternalsMode externals_mode)
         {
@@ -90,10 +84,8 @@ void SetExternalsCreator::execute_unsafe(
             macro_line_executor.inserted_block_arguments(std::move(let))(macro, nullptr);
         }
     );
-    spawner.get_primary_scene_vehicle()->set_create_vehicle_internals(
-        [macro_line_executor,
-         macro = arguments.at(KnownArgsUnsafe::internals),
-         spawner_name](
+    vehicle.set_create_vehicle_internals(
+        [macro_line_executor, macro=std::move(internals)](
             const Player& player,
             const InternalsMode& internals_mode)
         {
@@ -119,31 +111,47 @@ void SetExternalsCreator::execute_unsafe(
     );
 }
 
-void SetExternalsCreator::execute_unsafe(const LoadSceneJsonUserFunctionArgs& args) {
-    execute_unsafe(args.arguments, args.macro_line_executor);
-}
-
-void SetExternalsCreator::execute_safe(const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgsSafe::options);
-    execute_safe(
-        args.arguments.at<std::string>(KnownArgsSafe::spawner),
-        args.arguments.at<std::string>(KnownArgsSafe::asset_id),
-        args.macro_line_executor);
-}
-
 void SetExternalsCreator::execute_safe(
-    const std::string& spawner,
+    SceneVehicle& vehicle,
     const std::string& asset_id,
     const MacroLineExecutor& macro_line_executor)
 {
-    auto j = nlohmann::json::object();
-    j[KnownArgsUnsafe::spawner] = spawner;
-    j[KnownArgsUnsafe::externals] = std::map<std::string, std::string>{
+    auto externals = std::map<std::string, std::string>{
         {"playback", "create_player_vehicle_externals_" + asset_id}};
-    j[KnownArgsUnsafe::internals] = std::map<std::string, std::string>{
+    auto internals = std::map<std::string, std::string>{
         {"playback", "create_player_vehicle_internals_" + asset_id}};
-    execute_unsafe(JsonView{j}, macro_line_executor);
+    execute_unsafe(
+        vehicle,
+        externals,
+        internals,
+        macro_line_executor);
+}
+
+void SetExternalsCreator::execute_unsafe(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgsUnsafe::options);
+    auto spawner_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgsUnsafe::spawner);
+    auto& spawner = vehicle_spawners.get(spawner_name);
+    if (!spawner.has_scene_vehicle()) {
+        THROW_OR_ABORT("Spawner \"" + *spawner_name + "\" has no vehicle");
+    }
+    execute_unsafe(
+        spawner.get_primary_scene_vehicle().get(),
+        args.arguments.at(KnownArgsUnsafe::externals),
+        args.arguments.at(KnownArgsUnsafe::internals),
+        args.macro_line_executor);
+}
+
+void SetExternalsCreator::execute_safe(const LoadSceneJsonUserFunctionArgs& args) {
+    args.arguments.validate(KnownArgsSafe::options);
+    auto spawner_name = args.arguments.at<VariableAndHash<std::string>>(KnownArgsUnsafe::spawner);
+    auto& spawner = vehicle_spawners.get(spawner_name);
+    if (!spawner.has_scene_vehicle()) {
+        THROW_OR_ABORT("Spawner \"" + *spawner_name + "\" has no vehicle");
+    }
+    execute_safe(
+        spawner.get_primary_scene_vehicle().get(),
+        args.arguments.at<std::string>(KnownArgsSafe::asset_id),
+        args.macro_line_executor);
 }
 
 namespace {

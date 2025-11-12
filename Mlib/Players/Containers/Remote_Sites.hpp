@@ -28,7 +28,7 @@ enum class UserTypes {
     ALL
 };
 
-struct UserInfo: public virtual DestructionNotifier, public virtual DanglingBaseClass {
+struct UserInfo final: public virtual DestructionNotifier, public virtual DanglingBaseClass {
     UserInfo(
         const std::optional<RemoteSiteId>& site_id,
         uint32_t user_id,

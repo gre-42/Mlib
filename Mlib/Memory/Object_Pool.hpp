@@ -56,8 +56,12 @@ class ObjectPool: public virtual DanglingBaseClass {
     ObjectPool(const ObjectPool&) = delete;
     ObjectPool& operator = (const ObjectPool&) = delete;
 public:
+    template <class T>
+    using UniquePtr = std::unique_ptr<T, DeleteFromPool<T>>;
+
     ObjectPool(InObjectPoolDestructor what_to_do_in_dtor);
     ~ObjectPool();
+
     template<class T, class... Args>
         requires std::is_convertible_v<T&, Object&>
     T& create(SourceLocation loc, Args&&... args) {
@@ -83,7 +87,7 @@ public:
     }
     template<class T, class... Args>
         requires std::is_convertible_v<T&, Object&>
-    std::unique_ptr<T, DeleteFromPool<T>> create_unique(SourceLocation loc, Args&&... args) {
+    UniquePtr<T> create_unique(SourceLocation loc, Args&&... args) {
         auto& res = create<T>(loc, std::forward<Args>(args)...);
         return { &res, DeleteFromPool<T>(*this) };
     }
