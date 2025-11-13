@@ -69,6 +69,7 @@ public:
         const std::function<void(const UserInfo& user)>& operation,
         UserTypes user_types) const;
     DanglingBaseClassRef<const UserInfo> get_user(const VariableAndHash<std::string>& full_name) const;
+    DanglingBaseClassRef<const UserInfo> get_local_user(uint32_t id) const;
     void print(std::ostream& ostr) const;
 
     void compute_random_user_ranks();

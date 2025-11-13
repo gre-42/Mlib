@@ -53,6 +53,7 @@ Scene::Scene(
     , root_aggregate_always_nodes_{ morn_.create(VariableAndHash<std::string>{"root_aggregate_always_nodes"}) }
     , root_instances_once_nodes_{ morn_.create(VariableAndHash<std::string>{"root_instances_once_nodes"}) }
     , root_instances_always_nodes_{ morn_.create(VariableAndHash<std::string>{"root_instances_always_nodes"}) }
+    , root_physics_nodes_{ morn_.create(VariableAndHash<std::string>{"root_physics_nodes"}) }
     , static_root_physics_nodes_{ morn_.create(VariableAndHash<std::string>{"static_root_physics_nodes"}) }
     , name_{ std::move(name) }
     , uuid_{ 0 }
@@ -112,6 +113,14 @@ void Scene::add_root_instances_always_node(
     root_instances_always_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
 }
 
+void Scene::add_moving_root_physics_node(
+    const VariableAndHash<std::string>& name,
+    std::unique_ptr<SceneNode>&& scene_node)
+{
+    std::scoped_lock lock{ mutex_ };
+    root_physics_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::DYNAMIC);
+}
+
 void Scene::add_static_root_physics_node(
     const VariableAndHash<std::string>& name,
     std::unique_ptr<SceneNode>&& scene_node)
@@ -140,13 +149,16 @@ void Scene::add_root_node(
 {
     switch (rendering_strategy) {
     case RenderingStrategies::NONE:
-        if (rendering_dynamics != RenderingDynamics::STATIC) {
-            THROW_OR_ABORT(
-                "Physics root node must be static, "
-                "or node accidentally has no renderables");
+        switch (rendering_dynamics) {
+        case RenderingDynamics::STATIC:
+            add_static_root_physics_node(name, std::move(scene_node));
+            return;
+        case RenderingDynamics::MOVING:
+            add_moving_root_physics_node(name, std::move(scene_node));
+            return;
         }
-        add_static_root_physics_node(name, std::move(scene_node));
-        return;
+        THROW_OR_ABORT(
+            "Unknown rendering dynamics: " + std::to_string((int)rendering_dynamics));
     case RenderingStrategies::OBJECT:
         switch (rendering_dynamics) {
         case RenderingDynamics::STATIC:
@@ -241,12 +253,21 @@ void Scene::delete_root_imposter_node(
 
 void Scene::delete_root_node(const VariableAndHash<std::string>& name) {
     LOG_FUNCTION("Scene::delete_root_node");
-    root_nodes_.delete_root_node(name);
+    if (root_nodes_.contains(name)) {
+        root_nodes_.delete_root_node(name);
+        return;
+    }
+    if (root_physics_nodes_.contains(name)) {
+        root_physics_nodes_.delete_root_node(name);
+        return;
+    }
+    verbose_abort("Scene::delete_root_node: Could not find root node with name \"" + *name + '"');
 }
 
 void Scene::delete_root_nodes(const Mlib::re::cregex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
     root_nodes_.delete_root_nodes(regex);
+    root_physics_nodes_.delete_root_nodes(regex);
 }
 
 void Scene::try_delete_node(const VariableAndHash<std::string>& name) {
@@ -440,6 +461,9 @@ bool Scene::visit_all(const std::function<bool(
             return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             }) &&
         root_instances_always_nodes_.visit_all([&func](const auto& node){
+            return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
+            }) &&
+        root_physics_nodes_.visit_all([&func](const auto& node){
             return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             }) &&
         static_root_physics_nodes_.visit_all([&func](const auto& node){
@@ -838,6 +862,9 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
             for (const auto& it : root_nodes_.default_nodes()) {
                 nodes.emplace_back(&it);
             }
+            for (const auto& it : root_physics_nodes_.default_nodes()) {
+                nodes.emplace_back(&it);
+            }
             for (const auto& it : nodes) {
                 if (it->second->shutdown_phase() != ShutdownPhase::NONE) {
                     continue;
@@ -906,6 +933,14 @@ void Scene::append_physics_to_queue(
         return true;
         });
     root_instances_always_nodes_.visit_all([&](const auto& node) {
+        node->append_physics_to_queue(
+            TransformationMatrix<float, ScenePos, 3>::identity(),
+            zero,
+            float_queue,
+            double_queue);
+        return true;
+        });
+    root_physics_nodes_.visit_all([&](const auto& node) {
         node->append_physics_to_queue(
             TransformationMatrix<float, ScenePos, 3>::identity(),
             zero,

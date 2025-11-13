@@ -140,6 +140,8 @@ public:
         DeleteNodeMutex& delete_node_mutex,
         const CountdownPhysics& countdown_start);
     virtual ~Player() override;
+    void set_skills(ControlSource control_source, const Skills& skills);
+    Skills get_skills(ControlSource control_source) const;
     void set_can_drive(ControlSource control_source, bool value);
     void set_can_aim(ControlSource control_source, bool value);
     void set_can_shoot(ControlSource control_source, bool value);

@@ -2,7 +2,9 @@
 #include <Mlib/Io/Binary_Reader.hpp>
 #include <Mlib/Io/Binary_Writer.hpp>
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -70,6 +72,8 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     args["unstuck_mode"] = unstuck_mode_to_string(reader.read_binary<UnstuckMode>("unstuck_mode"));
     args["behavior"] = reader.read_string("behavior");
     args["driving_direction"] = driving_direction_to_string(reader.read_binary<DrivingDirection>("driving_direction"));
+    Skills{}.read(istr);
+    Skills{}.read(istr);
     auto vehicle_asset_id = reader.read_string("vehicle_asset_id");
     if (!vehicle_asset_id.empty()) {
         reader.read_binary<RemoteObjectId>("vehicle_object_id");
@@ -116,6 +120,8 @@ void RemotePlayer::read(std::istream& istr) {
     reader.read_binary<UnstuckMode>("unstuck_mode");
     reader.read_string("behavior");
     reader.read_binary<DrivingDirection>("driving_direction");
+    player_->set_skills(ControlSource::AI, Skills{}.read(istr));
+    player_->set_skills(ControlSource::USER, Skills{}.read(istr));
     auto vehicle_asset_id = reader.read_string("vehicle_asset_id");
     if (!vehicle_asset_id.empty()) {
         auto vehicle_object_id = reader.read_binary<RemoteObjectId>("vehicle_object_id");
@@ -147,12 +153,24 @@ void RemotePlayer::read(std::istream& istr) {
                 CURRENT_SOURCE_LOCATION};
             vehicle_on_destroy_.set(vehicle_->on_destroy, CURRENT_SOURCE_LOCATION);
             vehicle_on_destroy_.add([this](){ vehicle_ = nullptr; }, CURRENT_SOURCE_LOCATION);
-            SetExternalsCreator{ physics_scene_.get() }.execute_safe(
-                *vehicle_.get(),
-                vehicle_asset_id,
-                physics_scene_->macro_line_executor_);
-            player_->set_scene_vehicle(*vehicle_.get(), seat);
-            player_->create_vehicle_externals(externals_mode);
+            auto user_info = player_->user_info();
+            if (physics_scene_->remote_scene_ == nullptr) {
+                THROW_OR_ABORT("Remote scene is unexpectedly null");
+            }
+            if (user_info->site_id == physics_scene_->remote_scene_->local_site_id()) {
+                auto let = nlohmann::json::object({
+                    {"local_user_id", user_info->user_id},
+                    {"asset_id", rb->asset_id_},
+                    {"suffix", rbv->node_suffix()}
+                });
+                SetExternalsCreator{ physics_scene_.get() }.execute_safe(
+                    *vehicle_.get(),
+                    vehicle_asset_id,
+                    physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let)));
+                player_->set_scene_vehicle(*vehicle_.get(), seat);
+                player_->create_vehicle_externals(externals_mode);
+                player_->create_vehicle_internals({ seat });
+            }
         }
     }
     auto end = reader.read_binary<uint32_t>("inverted scene object type");
@@ -182,6 +200,8 @@ void RemotePlayer::write(std::ostream& ostr, ObjectCompression compression) {
     writer.write_binary(player_->unstuck_mode(), "player unstuck mode");
     writer.write_string(player_->behavior(), "player behavior");
     writer.write_binary(player_->driving_direction(), "player driving direction");
+    player_->get_skills(ControlSource::AI).write(ostr);
+    player_->get_skills(ControlSource::USER).write(ostr);
     if (player_->has_scene_vehicle()) {
         auto rb = player_->rigid_body();
         if (rb->asset_id_.empty()) {

@@ -217,6 +217,16 @@ Player::~Player() {
     destruction_observers_.clear();
 }
 
+void Player::set_skills(ControlSource control_source, const Skills& skills) {
+    std::shared_lock lock{ mutex_ };
+    skills_.skills(control_source) = skills;
+}
+
+Skills Player::get_skills(ControlSource control_source) const {
+    std::scoped_lock lock{ mutex_ };
+    return skills_.skills(control_source);
+}
+
 void Player::set_can_drive(ControlSource control_source, bool value) {
     std::scoped_lock lock{ mutex_ };
     skills_.skills(control_source).can_drive = value;

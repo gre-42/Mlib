@@ -33,6 +33,7 @@ public:
     RemoteObjectId create_local(SourceLocation loc, Args&&... args) {
         return add_local_object({object_pool_.create<Class>(loc, object_pool_, verbosity_, std::forward<Args>(args)...), loc});
     }
+    RemoteSiteId local_site_id() const;
 private:
     IoVerbosity verbosity_;
     ObjectPool object_pool_;
@@ -41,6 +42,7 @@ private:
     IncrementalRemoteObjects objects_;
     IncrementalCommunicatorProxyFactory communicator_proxy_factory_;
     CommunicatorProxies proxies_;
+    RemoteSiteId local_site_id_;
 };
 
 }

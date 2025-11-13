@@ -181,6 +181,7 @@ void print_debug_info(
 
 JThread loader_thread(
     const ParsedArgs& args,
+    const RemoteSites& remote_sites,
     PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
     LoadScene& load_scene,
@@ -197,7 +198,7 @@ JThread loader_thread(
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
                 // GlContextGuard gcg{ render2.window() };
                 load_scene();
-                renderable_scenes["primary_scene_0"].instantiate_audio_listener(
+                renderable_scenes["primary_scene_" + remote_sites.get_local_user(0)->full_name].instantiate_audio_listener(
                     render_delay,
                     velocity_dt);
                 if (!args.has_named("--no_physics")) {
@@ -787,6 +788,7 @@ int main(int argc, char** argv) {
                     exit));
                 JThread loader_future_guard{loader_thread(
                     args,
+                    remote_sites,
                     physics_scenes,
                     renderable_scenes,
                     *load_scene,

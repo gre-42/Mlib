@@ -183,6 +183,10 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(
     return it->second.object();
 }
 
+DanglingBaseClassRef<const UserInfo> RemoteSites::get_local_user(uint32_t id) const {
+    return {local_site_.users.at(id), CURRENT_SOURCE_LOCATION};
+}
+
 void RemoteSites::print(std::ostream& ostr) const {
     for_each_site_user([&](const UserInfo& user){
         if (user.site_id.has_value()) {

@@ -6,6 +6,7 @@
 
 namespace Mlib {
 
+class ObjectPool;
 class PhysicsScene;
 class RigidBodyVehicle;
 enum class IoVerbosity;
@@ -16,6 +17,7 @@ public:
         ObjectPool& object_pool,
         IoVerbosity verbosity,
         std::string initial,
+        std::string node_suffix,
         const DanglingBaseClassRef<RigidBodyVehicle>& rb);
     ~RemoteRigidBodyVehicle();
     static DanglingBaseClassPtr<RemoteRigidBodyVehicle> try_create_from_stream(
@@ -27,9 +29,11 @@ public:
     virtual void write(std::ostream& ostr, ObjectCompression compression) override;
 
     DanglingBaseClassRef<RigidBodyVehicle> rb();
+    const std::string& node_suffix() const;
 
 private:
     std::string initial_;
+    std::string node_suffix_;
     DanglingBaseClassRef<RigidBodyVehicle> rb_;
     IoVerbosity verbosity_;
     DestructionFunctionsRemovalTokens rb_on_destroy_;

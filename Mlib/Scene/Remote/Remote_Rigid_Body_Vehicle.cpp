@@ -25,8 +25,10 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     ObjectPool& object_pool,
     IoVerbosity verbosity,
     std::string initial,
+    std::string node_suffix,
     const DanglingBaseClassRef<RigidBodyVehicle>& rb)
     : initial_{ std::move(initial) }
+    , node_suffix_{ std::move(node_suffix) }
     , rb_{ rb }
     , verbosity_{ verbosity }
     , rb_on_destroy_{ rb->on_destroy, CURRENT_SOURCE_LOCATION }
@@ -74,7 +76,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
         ViewableRemoteObject::all());
     auto pnode = node.ref(CURRENT_SOURCE_LOCATION);
-    auto node_name = VariableAndHash<std::string>{"car_node" + initial.at<std::string>("tesuffix")};
+    auto node_suffix = initial.at<std::string>("tesuffix");
+    auto node_name = VariableAndHash<std::string>{"car_node" + node_suffix};
     physics_scene.remote_scene_->created_at_remote_site.rigid_bodies.add(node_name);
     physics_scene.scene_.add_root_node(
         node_name,
@@ -91,6 +94,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             object_pool,
             verbosity,
             std::move(initial_str),
+            std::move(node_suffix),
             DanglingBaseClassRef<RigidBodyVehicle>{
                 get_rigid_body_vehicle(pnode),
                 CURRENT_SOURCE_LOCATION}),
@@ -134,4 +138,8 @@ void RemoteRigidBodyVehicle::write(std::ostream& ostr, ObjectCompression compres
 
 DanglingBaseClassRef<RigidBodyVehicle> RemoteRigidBodyVehicle::rb() {
     return rb_;
+}
+
+const std::string& RemoteRigidBodyVehicle::node_suffix() const {
+    return node_suffix_;
 }

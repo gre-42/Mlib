@@ -80,6 +80,9 @@ public:
     void add_root_instances_always_node(
         const VariableAndHash<std::string>& name,
         std::unique_ptr<SceneNode>&& scene_node);
+    void add_moving_root_physics_node(
+        const VariableAndHash<std::string>& name,
+        std::unique_ptr<SceneNode>&& scene_node);
     void add_static_root_physics_node(
         const VariableAndHash<std::string>& name,
         std::unique_ptr<SceneNode>&& scene_node);
@@ -165,6 +168,7 @@ private:
     RootNodes& root_aggregate_always_nodes_;
     RootNodes& root_instances_once_nodes_;
     RootNodes& root_instances_always_nodes_;
+    RootNodes& root_physics_nodes_;
     RootNodes& static_root_physics_nodes_;
     std::unordered_map<
         DanglingBaseClassPtr<IRenderableScene>,

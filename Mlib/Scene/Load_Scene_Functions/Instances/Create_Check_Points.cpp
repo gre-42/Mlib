@@ -24,6 +24,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Check_Points_Pacenotes.hpp>
+#include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -33,6 +34,8 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(user_is_local);
+DECLARE_ARGUMENT(renderable_scene);
 DECLARE_ARGUMENT(moving_asset_id);
 DECLARE_ARGUMENT(moving_suffix);
 DECLARE_ARGUMENT(resource);
@@ -75,13 +78,21 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
 
-CreateCheckPoints::CreateCheckPoints(RenderableScene& renderable_scene) 
-    : LoadRenderableSceneInstanceFunction{ renderable_scene }
+CreateCheckPoints::CreateCheckPoints(PhysicsScene& physics_scene) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
+
+    auto user_is_local = args.arguments.at<bool>(KnownArgs::user_is_local);
+    RenderableScene* renderable_scene = nullptr;
+    if (user_is_local) {
+        auto renderable_scene_name = args.arguments.at<std::string>(KnownArgs::renderable_scene);
+        renderable_scene = &args.renderable_scenes[renderable_scene_name];
+    }
+
     auto moving_asset_id = args.arguments.at<std::string>(KnownArgs::moving_asset_id);
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
     size_t nframes = args.arguments.at<bool>(KnownArgs::circular) ? 1 : 0;
@@ -119,7 +130,9 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::distance) * meters,
         args.arguments.at<size_t>(KnownArgs::nahead),
         args.arguments.at<float>(KnownArgs::radius) * meters,
-        &rendering_resources,
+        renderable_scene != nullptr
+            ? &rendering_resources
+            : nullptr,
         scene_node_resources,
         scene,
         delete_node_mutex,
@@ -135,7 +148,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.at<bool>(KnownArgs::pacenotes_enabled)) {
         pacenotes_filename = args.arguments.path(KnownArgs::pacenotes_filename, "");
     }
-    if (!pacenotes_filename.empty()) {
+    if ((renderable_scene != nullptr) && !pacenotes_filename.empty()) {
         auto text_widget = std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_text_left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_text_right)),
@@ -168,7 +181,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             FocusFilter{
                 .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
                 .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
-        render_logics.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+        renderable_scene->render_logics_.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
         physics_engine.advance_times_.add_advance_time({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         renderable_pace_notes.preload();
     }
@@ -183,7 +196,7 @@ struct RegisterJsonUserFunction {
             "check_points",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                CreateCheckPoints(args.renderable_scene()).execute(args);
+                CreateCheckPoints(args.physics_scene()).execute(args);
             });
     }
 } obj;

@@ -29,6 +29,7 @@ RemoteScene::RemoteScene(
     , proxies_{
         { communicator_proxy_factory_, CURRENT_SOURCE_LOCATION },
         remote_params.site_id}
+    , local_site_id_{ remote_params.site_id }
 {
     [&](){
         switch (remote_params.role) {
@@ -77,4 +78,8 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteScene::try_get(
     const RemoteObjectId& id) const
 {
     return objects_.try_get(id);
+}
+
+RemoteSiteId RemoteScene::local_site_id() const {
+    return local_site_id_;
 }

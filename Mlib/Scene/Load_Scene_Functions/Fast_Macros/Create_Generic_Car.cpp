@@ -475,6 +475,7 @@ void CreateGenericCar::execute(const JsonView& args)
             rb.remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
                 CURRENT_SOURCE_LOCATION,
                 args.json().dump(),
+                tesuffix,
                 DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION});
         }
         };

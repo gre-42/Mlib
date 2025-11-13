@@ -167,18 +167,20 @@ void CheckPoints::advance_time(float dt) {
                 SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
                 remote_viewable_);
             node->add_color_style(std::make_unique<ColorStyle>());
+            if (rendering_resources_ != nullptr) {
+                scene_node_resources_.instantiate_child_renderable(
+                    resource_name_,
+                    ChildInstantiationOptions{
+                        .rendering_resources = rendering_resources_,
+                        .instance_name = VariableAndHash<std::string>{ "beacon" },
+                        .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
+                        .interpolation_mode = PoseInterpolationMode::DISABLED,
+                        .renderable_resource_filter = RenderableResourceFilter{}});
+            }
+            node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
                 .beacon_node_name = VariableAndHash<std::string>{"checkpoint_beacon_node_" + scene_.get_temporary_instance_suffix()},
                 .beacon_node = node.get(CURRENT_SOURCE_LOCATION)});
-            scene_node_resources_.instantiate_child_renderable(
-                resource_name_,
-                ChildInstantiationOptions{
-                    .rendering_resources = rendering_resources_,
-                    .instance_name = VariableAndHash<std::string>{ "beacon" },
-                    .scene_node = node.ref(CURRENT_SOURCE_LOCATION),
-                    .interpolation_mode = PoseInterpolationMode::DISABLED,
-                    .renderable_resource_filter = RenderableResourceFilter{}});
-            node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
             scene_.auto_add_root_node(beacon_info.beacon_node_name, std::move(node), RenderingDynamics::MOVING);
         } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
             beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
