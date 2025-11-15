@@ -131,44 +131,43 @@ void RemotePlayer::read(
                 THROW_OR_ABORT("RemotePlayer: Remote scene is null");
             }
             auto ro = physics_scene_->remote_scene_->try_get(vehicle_object_id);
-            if (ro == nullptr) {
-                return;
-            }
-            auto rbv = dynamic_cast<RemoteRigidBodyVehicle*>(ro.get());
-            if (rbv == nullptr) {
-                THROW_OR_ABORT("Remote object is not a RemoteRigidBodyVehicle");
-            }
-            auto rb = rbv->rb();
-            if (rb->scene_node_ == nullptr) {
-                THROW_OR_ABORT("Rigid body has no scene node");
-            }
-            vehicle_ = {
-                global_object_pool.create<SceneVehicle>(
-                    CURRENT_SOURCE_LOCATION,
-                    physics_scene_->delete_node_mutex_,
-                    rb->node_name_,
-                    *rb->scene_node_,
-                    rb.set_loc(CURRENT_SOURCE_LOCATION)),
-                CURRENT_SOURCE_LOCATION};
-            vehicle_on_destroy_.set(vehicle_->on_destroy, CURRENT_SOURCE_LOCATION);
-            vehicle_on_destroy_.add([this](){ vehicle_ = nullptr; }, CURRENT_SOURCE_LOCATION);
-            auto user_info = player_->user_info();
-            if (physics_scene_->remote_scene_ == nullptr) {
-                THROW_OR_ABORT("Remote scene is unexpectedly null");
-            }
-            if (user_info->site_id == physics_scene_->remote_scene_->local_site_id()) {
-                auto let = nlohmann::json::object({
-                    {"local_user_id", user_info->user_id},
-                    {"asset_id", rb->asset_id_},
-                    {"suffix", rbv->node_suffix()}
-                });
-                SetExternalsCreator{ physics_scene_.get() }.execute_safe(
-                    *vehicle_.get(),
-                    rb->asset_id_,
-                    physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let)));
-                player_->set_scene_vehicle(*vehicle_.get(), seat);
-                player_->create_vehicle_externals(externals_mode);
-                player_->create_vehicle_internals({ seat });
+            if (ro != nullptr) {
+                auto rbv = dynamic_cast<RemoteRigidBodyVehicle*>(ro.get());
+                if (rbv == nullptr) {
+                    THROW_OR_ABORT("Remote object is not a RemoteRigidBodyVehicle");
+                }
+                auto rb = rbv->rb();
+                if (rb->scene_node_ == nullptr) {
+                    THROW_OR_ABORT("Rigid body has no scene node");
+                }
+                vehicle_ = {
+                    global_object_pool.create<SceneVehicle>(
+                        CURRENT_SOURCE_LOCATION,
+                        physics_scene_->delete_node_mutex_,
+                        rb->node_name_,
+                        *rb->scene_node_,
+                        rb.set_loc(CURRENT_SOURCE_LOCATION)),
+                    CURRENT_SOURCE_LOCATION};
+                vehicle_on_destroy_.set(vehicle_->on_destroy, CURRENT_SOURCE_LOCATION);
+                vehicle_on_destroy_.add([this](){ vehicle_ = nullptr; }, CURRENT_SOURCE_LOCATION);
+                auto user_info = player_->user_info();
+                if (physics_scene_->remote_scene_ == nullptr) {
+                    THROW_OR_ABORT("Remote scene is unexpectedly null");
+                }
+                if (user_info->site_id == physics_scene_->remote_scene_->local_site_id()) {
+                    auto let = nlohmann::json::object({
+                        {"local_user_id", user_info->user_id},
+                        {"asset_id", rb->asset_id_},
+                        {"suffix", rbv->node_suffix()}
+                    });
+                    SetExternalsCreator{ physics_scene_.get() }.execute_safe(
+                        *vehicle_.get(),
+                        rb->asset_id_,
+                        physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let)));
+                    player_->set_scene_vehicle(*vehicle_.get(), seat);
+                    player_->create_vehicle_externals(externals_mode);
+                    player_->create_vehicle_internals({ seat });
+                }
             }
         }
     }

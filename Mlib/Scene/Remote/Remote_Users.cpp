@@ -90,6 +90,10 @@ void RemoteUsers::read_data(std::istream& istr) {
         }
         args.unlock_and_notify();
     }
+    auto end = reader.read_binary<uint32_t>("inverted remote users");
+    if (end != ~(uint32_t)RemoteSceneObjectType::REMOTE_USERS) {
+        THROW_OR_ABORT("Invalid remote users end");
+    }
 }
 
 void RemoteUsers::write(
@@ -128,4 +132,5 @@ void RemoteUsers::write(
             // }
         }
     }
+    writer.write_binary(~(uint32_t)RemoteSceneObjectType::REMOTE_USERS, "inverted remote users");
 }

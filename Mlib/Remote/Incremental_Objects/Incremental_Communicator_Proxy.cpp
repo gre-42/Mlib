@@ -60,31 +60,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     };
     receive_local(RemoteObjectVisibility::PRIVATE);
     receive_local(RemoteObjectVisibility::PUBLIC);
-    {
-        // linfo() << "Received " << object_count << " objects_";
-        auto transmission_history_reader = TransmissionHistoryReader();
-        while (true) {
-            auto transmitted_fields = read_binary<TransmittedFields>(istr, "transmitted fields", verbosity_);
-            if (transmitted_fields == TransmittedFields::NONE) {
-                break;
-            }
-            auto i = transmission_history_reader.read(istr, transmitted_fields, verbosity_);
-            if (auto it = objects_->try_get(i); it != nullptr) {
-                if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    linfo() << this << " read frome remote site " << i;
-                }
-                it->read(istr, transmitted_fields);
-            } else {
-                if (any(verbosity_ & IoVerbosity::METADATA)) {
-                    linfo() << this << " create from remote site " << i;
-                }
-                auto o = shared_object_factory_->try_create_shared_object(istr, transmitted_fields, i);
-                if (o != nullptr) {
-                    objects_->add_remote_object(i, *o, RemoteObjectVisibility::PUBLIC);
-                }
-            }
-        }
-    }
+    receive_local(RemoteObjectVisibility::PUBLIC);
 }
 
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
@@ -103,9 +79,9 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         }
         write_binary(iostr, TransmittedFields::NONE, "transmitted fields EOF");
     };
-    auto send_zero_local = [&](){
+    auto send_zero = [&](const char* msg){
         if (any(verbosity_ & IoVerbosity::METADATA)) {
-            linfo() << "Send no local objects";
+            linfo() << "Send no " << msg << " objects";
         }
         write_binary(iostr, TransmittedFields::NONE, "transmitted fields EOF");
     };
@@ -113,8 +89,8 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         send_local(objects_->private_local_objects());
         send_local(objects_->public_local_objects());
     } else {
-        send_zero_local();
-        send_zero_local();
+        send_zero("local");
+        send_zero("local");
     }
     if (any(tasks_ & ProxyTasks::SEND_REMOTE)) {
         const auto& objects = objects_->public_remote_objects();
@@ -131,10 +107,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         }
         write_binary(iostr, TransmittedFields::NONE, "transmitted fields EOF");
     } else {
-        if (any(verbosity_ & IoVerbosity::METADATA)) {
-            linfo() << "Send no remote objects";
-        }
-        write_binary(iostr, TransmittedFields::NONE, "transmitted fields EOF");
+        send_zero("remote");
     }
     send_socket_->send(iostr);
 }

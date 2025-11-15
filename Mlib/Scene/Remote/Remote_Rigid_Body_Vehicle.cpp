@@ -101,7 +101,14 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
     auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
     auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
-    auto owner_site_id = reader.read_binary<RemoteSiteId>("owner_site_id");
+    std::optional<RemoteSiteId> owner_site_id;
+    if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
+        owner_site_id = reader.read_binary<RemoteSiteId>("owner_site_id");
+    }
+    auto end = reader.read_binary<uint32_t>("inverted scene object type");
+    if (end != ~(uint32_t)RemoteSceneObjectType::RIGID_BODY_VEHICLE) {
+        THROW_OR_ABORT("Invalid rigid body vehicle end (0)");
+    }
     if (!any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
         return nullptr;
     }
@@ -128,7 +135,9 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     rb.rbp_.v_com_ = v_com;
     rb.rbp_.w_ = w;
     rb.remote_object_id_ = remote_object_id;
-    rb.owner_site_id_ = owner_site_id;
+    if (owner_site_id.has_value()) {
+        rb.owner_site_id_ = *owner_site_id;
+    }
     return {
         object_pool.create<RemoteRigidBodyVehicle>(
             CURRENT_SOURCE_LOCATION,
@@ -160,6 +169,10 @@ void RemoteRigidBodyVehicle::read(
     auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
+    }
+    auto end = reader.read_binary<uint32_t>("inverted scene object type");
+    if (end != ~(uint32_t)RemoteSceneObjectType::RIGID_BODY_VEHICLE) {
+        THROW_OR_ABORT("Invalid rigid body vehicle end (1)");
     }
     if (physics_scene_->remote_scene_ == nullptr) {
         THROW_OR_ABORT("RemoteRigidBodyVehicle: Remote scene is null");
@@ -204,6 +217,7 @@ void RemoteRigidBodyVehicle::write(
         }
         writer.write_binary(*rb_->owner_site_id_, "owner site ID");
     }
+    writer.write_binary(~(uint32_t)RemoteSceneObjectType::RIGID_BODY_VEHICLE, "inverted rigid body vehicle");
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> RemoteRigidBodyVehicle::rb() {
