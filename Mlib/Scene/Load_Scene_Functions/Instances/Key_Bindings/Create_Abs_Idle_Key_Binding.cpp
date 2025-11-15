@@ -6,6 +6,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -21,20 +22,14 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(tires_z);
 }
 
-const std::string CreateAbsIdleKeyBinding::key = "abs_idle_binding";
-
-LoadSceneJsonUserFunction CreateAbsIdleKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateAbsIdleKeyBinding(args.renderable_scene()).execute(args);
-};
-
 CreateAbsIdleKeyBinding::CreateAbsIdleKeyBinding(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateAbsIdleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_absolute_movable_idle_binding(std::unique_ptr<AbsoluteMovableIdleBinding>(new AbsoluteMovableIdleBinding{
@@ -46,4 +41,19 @@ void CreateAbsIdleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
     kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "abs_idle_binding",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateAbsIdleKeyBinding(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

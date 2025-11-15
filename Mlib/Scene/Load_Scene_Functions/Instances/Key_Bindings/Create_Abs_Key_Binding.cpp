@@ -8,6 +8,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -39,8 +40,6 @@ DECLARE_ARGUMENT(wants_to_grind);
 DECLARE_ARGUMENT(fly_forward_factor);
 }
 
-const std::string CreateAbsKeyBinding::key = "abs_key_binding";
-
 static float from_kph(float v) {
     return v * kph;
 }
@@ -49,18 +48,14 @@ static float from_degrees(float v) {
     return v * degrees;
 }
 
-LoadSceneJsonUserFunction CreateAbsKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateAbsKeyBinding(args.renderable_scene()).execute(args);
-};
-
 CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& rb = get_rigid_body_vehicle(node);
@@ -99,4 +94,19 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
     kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "abs_key_binding",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateAbsKeyBinding(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

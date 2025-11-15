@@ -7,6 +7,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Strings/String.hpp>
 
@@ -27,20 +28,14 @@ DECLARE_ARGUMENT(yaw);
 DECLARE_ARGUMENT(roll);
 }
 
-const std::string CreatePlaneControllerKeyBinding::key = "plane_controller_key_binding";
-
-LoadSceneJsonUserFunction CreatePlaneControllerKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreatePlaneControllerKeyBinding(args.renderable_scene()).execute(args);
-};
-
 CreatePlaneControllerKeyBinding::CreatePlaneControllerKeyBinding(RenderableScene& renderable_scene) 
-: LoadRenderableSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_plane_controller_key_binding(std::unique_ptr<PlaneControllerKeyBinding>(new PlaneControllerKeyBinding{
         .player = player,
@@ -82,4 +77,19 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
             kbs.delete_plane_controller_key_binding(kb);
         }, CURRENT_SOURCE_LOCATION
     );
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "plane_controller_key_binding",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreatePlaneControllerKeyBinding(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

@@ -7,6 +7,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -16,7 +17,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(user_id);
+DECLARE_ARGUMENT(local_user_id);
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(seat);
 
@@ -33,20 +34,14 @@ DECLARE_ARGUMENT(speed_cursor);
 DECLARE_ARGUMENT(legs_z);
 }
 
-const std::string CreateAvatarControllerKeyBinding::key = "avatar_controller_key_binding";
-
-LoadSceneJsonUserFunction CreateAvatarControllerKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateAvatarControllerKeyBinding(args.renderable_scene()).execute(args);
-};
-
 CreateAvatarControllerKeyBinding::CreateAvatarControllerKeyBinding(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_avatar_controller_key_binding(std::unique_ptr<AvatarControllerKeyBinding>(new AvatarControllerKeyBinding{
@@ -70,22 +65,37 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .button_press{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::user_id),
+            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::user_id),
+            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id)),
         .gamepad_analog_axes_position{
             args.button_states,
             args.key_configurations,
-            args.arguments.at<uint32_t>(KnownArgs::user_id),
+            args.arguments.at<uint32_t>(KnownArgs::local_user_id),
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::seat)},
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
     kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "avatar_controller_key_binding",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateAvatarControllerKeyBinding(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

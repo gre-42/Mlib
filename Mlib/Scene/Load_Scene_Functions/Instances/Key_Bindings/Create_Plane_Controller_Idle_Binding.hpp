@@ -6,11 +6,10 @@ namespace Mlib {
 
 class JsonMacroArguments;
 
+struct LoadSceneJsonUserFunctionArgs;
+
 class CreatePlaneControllerIdleBinding: public LoadRenderableSceneInstanceFunction {
 public:
-    static LoadSceneJsonUserFunction json_user_function;
-    static const std::string key;
-private:
     explicit CreatePlaneControllerIdleBinding(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };

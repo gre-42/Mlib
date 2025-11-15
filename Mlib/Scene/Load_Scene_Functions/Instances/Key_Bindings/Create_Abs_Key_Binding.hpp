@@ -4,11 +4,10 @@
 
 namespace Mlib {
 
+struct LoadSceneJsonUserFunctionArgs;
+
 class CreateAbsKeyBinding: public LoadRenderableSceneInstanceFunction {
 public:
-    static LoadSceneJsonUserFunction json_user_function;
-    static const std::string key;
-private:
     explicit CreateAbsKeyBinding(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };

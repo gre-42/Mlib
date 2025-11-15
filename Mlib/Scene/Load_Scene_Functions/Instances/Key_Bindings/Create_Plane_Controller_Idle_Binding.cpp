@@ -6,6 +6,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 
 using namespace Mlib;
@@ -16,20 +17,14 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 }
 
-const std::string CreatePlaneControllerIdleBinding::key = "plane_controller_idle_binding";
-
-LoadSceneJsonUserFunction CreatePlaneControllerIdleBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreatePlaneControllerIdleBinding(args.renderable_scene()).execute(args);
-};
-
 CreatePlaneControllerIdleBinding::CreatePlaneControllerIdleBinding(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreatePlaneControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_plane_controller_idle_binding(std::unique_ptr<PlaneControllerIdleBinding>(new PlaneControllerIdleBinding{
         .player = player,
@@ -39,4 +34,19 @@ void CreatePlaneControllerIdleBinding::execute(const LoadSceneJsonUserFunctionAr
             kbs.delete_plane_controller_idle_binding(kb);
         }, CURRENT_SOURCE_LOCATION
     );
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "plane_controller_idle_binding",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreatePlaneControllerIdleBinding(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

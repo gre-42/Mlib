@@ -7,6 +7,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -28,16 +29,8 @@ DECLARE_ARGUMENT(steer_left_amount);
 DECLARE_ARGUMENT(ascend_velocity);
 }
 
-const std::string CreateCarControllerKeyBinding::key = "car_controller_key_binding";
-
-LoadSceneJsonUserFunction CreateCarControllerKeyBinding::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateCarControllerKeyBinding(args.renderable_scene()).execute(args);
-};
-
 CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& renderable_scene) 
-: LoadRenderableSceneInstanceFunction{ renderable_scene }
+    : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 inline float stov(float v) {
@@ -46,6 +39,8 @@ inline float stov(float v) {
 
 void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto player = players.get_player(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_car_controller_key_binding(std::unique_ptr<CarControllerKeyBinding>(new CarControllerKeyBinding{
@@ -73,4 +68,19 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
         .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
     kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "car_controller_key_binding",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateCarControllerKeyBinding(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

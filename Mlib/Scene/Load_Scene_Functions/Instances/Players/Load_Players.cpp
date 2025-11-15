@@ -210,8 +210,8 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     if (!user.has_value()) {
                         THROW_OR_ABORT("\"pc\" controller requires \"user\"");
                     }
-                    let["user_id"] = user->at("id");
-                    let["user_name"] = user->at("name");
+                    let["local_user_id"] = user->at("id");
+                    let["full_user_name"] = user->at("name");
                 } else if (*controller != "npc") {
                     THROW_OR_ABORT("Unknown controller: \"" + *controller + "\". Known controllers: \"pc\", \"npc\"");
                 }
