@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
@@ -70,7 +71,7 @@ void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
     FixedArray<ScenePos, 3> intersection_point = uninitialized;
     if (collision_query_.can_see(
         gun_pose.t,
-        gun_pose.t - ScenePos(1000) * gun_pose.R.column(2).casted<ScenePos>(),
+        gun_pose.t - ScenePos(1000 * meters) * gun_pose.R.column(2).casted<ScenePos>(),
         nullptr,    // excluded0,
         nullptr,    // excluded1
         false,      // only_terrain
