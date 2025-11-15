@@ -109,7 +109,14 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     if (end != ~(uint32_t)RemoteSceneObjectType::RIGID_BODY_VEHICLE) {
         THROW_OR_ABORT("Invalid rigid body vehicle end (0)");
     }
-    if (!any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
+    if (physics_scene.remote_scene_ == nullptr) {
+        THROW_OR_ABORT("RemoteRigidBodyVehicle: Remote scene is null");
+    }
+    auto local_site_id = physics_scene.remote_scene_->local_site_id();
+    if (!any(transmitted_fields & RigidBodyTransmittedFields::INITIAL) ||
+        !any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP) ||
+        (remote_object_id.site_id == local_site_id))
+    {
         return nullptr;
     }
     auto initial_json = nlohmann::json::parse(initial_str);
