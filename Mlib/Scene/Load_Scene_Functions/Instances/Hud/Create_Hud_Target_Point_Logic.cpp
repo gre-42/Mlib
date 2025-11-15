@@ -9,6 +9,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Target_Point_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -28,20 +29,14 @@ DECLARE_ARGUMENT(size);
 DECLARE_ARGUMENT(error_behavior);
 }
 
-const std::string CreateHudTargetPointLogic::key = "hud_target_point";
-
-LoadSceneJsonUserFunction CreateHudTargetPointLogic::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateHudTargetPointLogic(args.renderable_scene()).execute(args);
-};
-
 CreateHudTargetPointLogic::CreateHudTargetPointLogic(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
 void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     DanglingBaseClassRef<SceneNode> gun_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::gun_node), DP_LOC);
     std::optional<std::vector<DanglingBaseClassPtr<const SceneNode>>> exclusive_nodes;
     if (args.arguments.contains_non_null(KnownArgs::exclusive_nodes)) {
@@ -77,4 +72,19 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         args.arguments.at<EFixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<EFixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "hud_target_point",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateHudTargetPointLogic(args.renderable_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

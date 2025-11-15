@@ -30,7 +30,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Console_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Opponent_Tracker_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Opponent_Zoom_Logic.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Target_Point_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Fill_Pixel_Region_With_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Minimap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Pixel_Region.hpp>
@@ -295,7 +294,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreateHeliController::key, CreateHeliController::json_user_function);
             register_json_user_function(CreateHudOpponentTracker::key, CreateHudOpponentTracker::json_user_function);
             register_json_user_function(CreateHudOpponentZoom::key, CreateHudOpponentZoom::json_user_function);
-            register_json_user_function(CreateHudTargetPointLogic::key, CreateHudTargetPointLogic::json_user_function);
             register_json_user_function(CreateAvatarAsAvatarController::key, CreateAvatarAsAvatarController::json_user_function);
             register_json_user_function(CreateAvatarAsCarController::key, CreateAvatarAsCarController::json_user_function);
             register_json_user_function(CreateKeepOffsetFromCamera::key, CreateKeepOffsetFromCamera::json_user_function);
