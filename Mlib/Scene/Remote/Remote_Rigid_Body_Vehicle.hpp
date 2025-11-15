@@ -18,13 +18,15 @@ public:
         IoVerbosity verbosity,
         std::string initial,
         std::string node_suffix,
-        const DanglingBaseClassRef<RigidBodyVehicle>& rb);
+        const DanglingBaseClassRef<RigidBodyVehicle>& rb,
+        const DanglingBaseClassRef<PhysicsScene>& physics_scene);
     ~RemoteRigidBodyVehicle();
     static DanglingBaseClassPtr<RemoteRigidBodyVehicle> try_create_from_stream(
         ObjectPool& object_pool,
         PhysicsScene& physics_scene,
         std::istream& istr,
         TransmittedFields transmitted_fields,
+        const RemoteObjectId& remote_object_id,
         IoVerbosity verbosity);
     virtual void read(
         std::istream& istr,
@@ -43,6 +45,7 @@ private:
     std::string initial_;
     std::string node_suffix_;
     DanglingBaseClassRef<RigidBodyVehicle> rb_;
+    DanglingBaseClassRef<PhysicsScene> physics_scene_;
     IoVerbosity verbosity_;
     DestructionFunctionsRemovalTokens rb_on_destroy_;
 };

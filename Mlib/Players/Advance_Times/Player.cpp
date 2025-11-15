@@ -333,6 +333,9 @@ void Player::set_scene_vehicle(
         THROW_OR_ABORT("Seat \"" + desired_seat + "\" is already occupied in vehicle \"" + vehicle.rb()->name() + '"');
     }
     vehicle.rb()->drivers_.add(desired_seat, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    if ((user_info_ != nullptr) && (user_info_->site_id.has_value()) && (desired_seat == "driver")) {
+        vehicle.rb()->owner_site_id_ = *user_info_->site_id;
+    }
     if (vehicle.rb()->is_avatar()) {
         // The avatar can be destroyed during its dying
         // animation or while sitting in a vehicle.

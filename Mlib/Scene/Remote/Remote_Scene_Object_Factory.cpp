@@ -35,7 +35,7 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     case RemoteSceneObjectType::PLAYER:
         return RemotePlayer::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, transmitted_fields, verbosity_);
     case RemoteSceneObjectType::RIGID_BODY_VEHICLE:
-        return RemoteRigidBodyVehicle::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, transmitted_fields, verbosity_);
+        return RemoteRigidBodyVehicle::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, transmitted_fields, id, verbosity_);
     }
     THROW_OR_ABORT("Unknown object type: " + std::to_string((int)type));
 }

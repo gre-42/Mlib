@@ -29,6 +29,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
+#include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -472,11 +473,12 @@ void CreateGenericCar::execute(const JsonView& args)
         rb.drivers_.set_seats({ "driver" });
         rb.door_distance_ = vdb.at<float>(KnownDb::door_distance) * meters;
         if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.rigid_bodies.contains(parent)) {
-            remote_scene->create_local<RemoteRigidBodyVehicle>(
+            rb.remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
                 CURRENT_SOURCE_LOCATION,
                 args.json().dump(),
                 tesuffix,
-                DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION});
+                DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION},
+                DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});
             rb.owner_site_id_ = remote_scene->local_site_id();
         }
         };

@@ -63,8 +63,8 @@ void RemoteScene::send_and_receive(std::chrono::steady_clock::time_point time) {
     proxies_.send_and_receive(TransmissionType::UNICAST);
 }
 
-void RemoteScene::add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object) {
-    objects_.add_local_object(object, RemoteObjectVisibility::PUBLIC);
+RemoteObjectId RemoteScene::add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object) {
+    return objects_.add_local_object(object, RemoteObjectVisibility::PUBLIC);
 }
 
 void RemoteScene::add_remote_object(

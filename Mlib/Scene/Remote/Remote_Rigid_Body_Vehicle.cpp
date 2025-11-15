@@ -6,6 +6,7 @@
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Fast_Macros/Create_Generic_Car.hpp>
@@ -23,7 +24,8 @@ static_assert(sizeof(FixedArray<ScenePos, 3>) == 3 * 8);
 static_assert(sizeof(FixedArray<SceneDir, 3>) == 3 * 4);
 
 enum class RigidBodyTransmittedFields: uint32_t {
-    INITIAL = (uint32_t)TransmittedFields::END
+    INITIAL = (uint32_t)TransmittedFields::END,
+    OWNERSHIP = (uint32_t)TransmittedFields::END << 1
 };
 
 inline TransmittedFields operator & (TransmittedFields a, RigidBodyTransmittedFields b) {
@@ -52,10 +54,12 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     IoVerbosity verbosity,
     std::string initial,
     std::string node_suffix,
-    const DanglingBaseClassRef<RigidBodyVehicle>& rb)
+    const DanglingBaseClassRef<RigidBodyVehicle>& rb,
+    const DanglingBaseClassRef<PhysicsScene>& physics_scene)
     : initial_{ std::move(initial) }
     , node_suffix_{ std::move(node_suffix) }
     , rb_{ rb }
+    , physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
     , rb_on_destroy_{ rb->on_destroy, CURRENT_SOURCE_LOCATION }
 {
@@ -77,13 +81,15 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     PhysicsScene& physics_scene,
     std::istream& istr,
     TransmittedFields transmitted_fields,
+    const RemoteObjectId& remote_object_id,
     IoVerbosity verbosity)
 {
     auto reader = BinaryReader{istr, verbosity};
     if (any(transmitted_fields & ~(
         TransmittedFields::SITE_ID |
         TransmittedFields::END |
-        RigidBodyTransmittedFields::INITIAL)))
+        RigidBodyTransmittedFields::INITIAL |
+        RigidBodyTransmittedFields::OWNERSHIP)))
     {
         THROW_OR_ABORT("RemoteRigidBodyVehicle::try_create_from_stream: Unknown transmitted fields");
     }
@@ -95,6 +101,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
     auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
     auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
+    auto owner_site_id = reader.read_binary<RemoteSiteId>("owner_site_id");
     if (!any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {
         return nullptr;
     }
@@ -120,6 +127,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto& rb = get_rigid_body_vehicle(pnode);
     rb.rbp_.v_com_ = v_com;
     rb.rbp_.w_ = w;
+    rb.remote_object_id_ = remote_object_id;
+    rb.owner_site_id_ = owner_site_id;
     return {
         object_pool.create<RemoteRigidBodyVehicle>(
             CURRENT_SOURCE_LOCATION,
@@ -127,9 +136,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             verbosity,
             std::move(initial_str),
             std::move(node_suffix),
-            DanglingBaseClassRef<RigidBodyVehicle>{
-                get_rigid_body_vehicle(pnode),
-                CURRENT_SOURCE_LOCATION}),
+            DanglingBaseClassRef<RigidBodyVehicle>{get_rigid_body_vehicle(pnode), CURRENT_SOURCE_LOCATION},
+            DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),
         CURRENT_SOURCE_LOCATION};
 }
 
@@ -150,9 +158,20 @@ void RemoteRigidBodyVehicle::read(
     auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
     auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
     auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
-    rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
-    rb_->rbp_.v_com_ = v_com;
-    rb_->rbp_.w_ = w;
+    if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
+        rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
+    }
+    if (physics_scene_->remote_scene_ == nullptr) {
+        THROW_OR_ABORT("RemoteRigidBodyVehicle: Remote scene is null");
+    }
+    if (!rb_->owner_site_id_.has_value()) {
+        THROW_OR_ABORT("RemoteRigidBodyVehicle: Owner site ID not set");
+    }
+    if (*rb_->owner_site_id_ != physics_scene_->remote_scene_->local_site_id()) {
+        rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
+        rb_->rbp_.v_com_ = v_com;
+        rb_->rbp_.w_ = w;
+    }
 }
 
 void RemoteRigidBodyVehicle::write(
@@ -166,6 +185,9 @@ void RemoteRigidBodyVehicle::write(
     if (!any(known_fields & RigidBodyKnownFields::INITIAL)) {
         transmitted_fields |= RigidBodyTransmittedFields::INITIAL;
     }
+    if (any(proxy_tasks & ProxyTasks::SEND_OWNERSHIP)) {
+        transmitted_fields |= RigidBodyTransmittedFields::OWNERSHIP;
+    }
     transmission_history_writer.write(ostr, remote_object_id, transmitted_fields);
     auto writer = BinaryWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::RIGID_BODY_VEHICLE, "rigid body vehicle");
@@ -176,6 +198,12 @@ void RemoteRigidBodyVehicle::write(
     writer.write_binary(matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
     writer.write_binary(rb_->rbp_.v_com_, "v_com");
     writer.write_binary(rb_->rbp_.w_, "w");
+    if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
+        if (!rb_->owner_site_id_.has_value()) {
+            THROW_OR_ABORT("Owner site ID not set");
+        }
+        writer.write_binary(*rb_->owner_site_id_, "owner site ID");
+    }
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> RemoteRigidBodyVehicle::rb() {

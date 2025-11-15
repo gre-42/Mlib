@@ -73,15 +73,15 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     args["driving_direction"] = driving_direction_to_string(reader.read_binary<DrivingDirection>("driving_direction"));
     Skills{}.read(istr);
     Skills{}.read(istr);
-    auto vehicle_asset_id = reader.read_string("vehicle_asset_id");
-    if (!vehicle_asset_id.empty()) {
+    auto has_scene_vehicle = reader.read_binary<bool>("has_scene_vehicle");
+    if (has_scene_vehicle) {
         reader.read_binary<RemoteObjectId>("vehicle_object_id");
         reader.read_string("seat");
         reader.read_binary<ExternalsMode>("externals mode");
     }
     auto end = reader.read_binary<uint32_t>("inverted scene object type");
     if (end != ~(uint32_t)RemoteSceneObjectType::PLAYER) {
-        THROW_OR_ABORT("Invalid player message end (0). Vehicle asset-ID: \"" + vehicle_asset_id + '"');
+        THROW_OR_ABORT("Invalid player message end (0). Player ID: \"" + *name + '"');
     }
     if (physics_scene.remote_scene_ == nullptr) {
         THROW_OR_ABORT("RemotePlayer: Remote scene is null");
@@ -110,7 +110,7 @@ void RemotePlayer::read(
     if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END))) {
         THROW_OR_ABORT("RemotePlayer::read: Unknown transmitted fields");
     }
-    reader.read_string("player ID");
+    auto player_id = reader.read_string("player ID");
     reader.read_string("team");
     reader.read_string("full_user_name");
     reader.read_string("user_account_key");
@@ -121,8 +121,8 @@ void RemotePlayer::read(
     reader.read_binary<DrivingDirection>("driving_direction");
     player_->set_skills(ControlSource::AI, Skills{}.read(istr));
     player_->set_skills(ControlSource::USER, Skills{}.read(istr));
-    auto vehicle_asset_id = reader.read_string("vehicle_asset_id");
-    if (!vehicle_asset_id.empty()) {
+    auto has_scene_vehicle = reader.read_binary<bool>("has_scene_vehicle");
+    if (has_scene_vehicle) {
         auto vehicle_object_id = reader.read_binary<RemoteObjectId>("vehicle_object_id");
         auto seat = reader.read_string("seat");
         auto externals_mode = reader.read_binary<ExternalsMode>("externals mode");
@@ -164,7 +164,7 @@ void RemotePlayer::read(
                 });
                 SetExternalsCreator{ physics_scene_.get() }.execute_safe(
                     *vehicle_.get(),
-                    vehicle_asset_id,
+                    rb->asset_id_,
                     physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let)));
                 player_->set_scene_vehicle(*vehicle_.get(), seat);
                 player_->create_vehicle_externals(externals_mode);
@@ -174,7 +174,7 @@ void RemotePlayer::read(
     }
     auto end = reader.read_binary<uint32_t>("inverted scene object type");
     if (end != ~(uint32_t)RemoteSceneObjectType::PLAYER) {
-        THROW_OR_ABORT("Invalid player message end (1). Vehicle asset-ID: \"" + vehicle_asset_id + '"');
+        THROW_OR_ABORT("Invalid player message end (1). Player-ID: \"" + player_id + '"');
     }
 }
 
@@ -209,18 +209,15 @@ void RemotePlayer::write(
     player_->get_skills(ControlSource::USER).write(ostr);
     if (player_->has_scene_vehicle()) {
         auto rb = player_->rigid_body();
-        if (rb->asset_id_.empty()) {
-            THROW_OR_ABORT("Rigid body asset-ID is empty");
-        }
         if (!rb->remote_object_id_.has_value()) {
             THROW_OR_ABORT("remote vehicle object ID not set");
         }
-        writer.write_string(rb->asset_id_, "asset ID");
+        writer.write_binary(true, "has_scene_vehicle (true)");
         writer.write_binary(*rb->remote_object_id_, "remote object ID");
         writer.write_string(player_->seat(), "seat");
         writer.write_binary(player_->externals_mode(), "externals mode");
     } else {
-        writer.write_string("", "asset ID");
+        writer.write_binary(false, "has_scene_vehicle (false)");
     }
     writer.write_binary(~(uint32_t)RemoteSceneObjectType::PLAYER, "inverted scene object type");
 }

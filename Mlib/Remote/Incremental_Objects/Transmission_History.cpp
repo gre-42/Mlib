@@ -5,9 +5,7 @@
 
 using namespace Mlib;
 
-TransmissionHistoryReader::TransmissionHistoryReader() {
-
-}
+TransmissionHistoryReader::TransmissionHistoryReader() = default;
 
 TransmissionHistoryReader::~TransmissionHistoryReader() = default;
 
