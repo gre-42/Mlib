@@ -72,15 +72,14 @@ void SetExternalsCreator::execute_unsafe(
                 THROW_OR_ABORT("Invalid externals mode");
             }
             auto user_info = player.user_info();
-            if (user_info == nullptr) {
-                THROW_OR_ABORT("Attempt to create vehicle externals for a player without a user");
-            }
             nlohmann::json let{
-                {LetKeys::full_user_name, user_info->full_name},
                 {LetKeys::player_name, player.id()},
                 {LetKeys::if_pc, get_if_pc(externals_mode, user_info.get())},
                 {LetKeys::behavior, player.behavior()}
             };
+            if (user_info != nullptr) {
+                let[LetKeys::full_user_name] = user_info->full_name;
+            }
             macro_line_executor.inserted_block_arguments(std::move(let))(macro, nullptr);
         }
     );
