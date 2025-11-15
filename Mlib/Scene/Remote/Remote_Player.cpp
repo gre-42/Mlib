@@ -11,7 +11,8 @@
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
-#include <Mlib/Remote/Object_Compression.hpp>
+#include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
+#include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
@@ -52,14 +53,12 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     ObjectPool& object_pool,
     PhysicsScene& physics_scene,
     std::istream& istr,
+    TransmittedFields transmitted_fields,
     IoVerbosity verbosity)
 {
     BinaryReader reader{ istr, verbosity };
-    auto compression = reader.read_binary<ObjectCompression>("object compression");
-    if ((compression != ObjectCompression::NONE) &&
-        (compression != ObjectCompression::INCREMENTAL))
-    {
-        THROW_OR_ABORT("RemotePlayer::try_create_from_stream: Unknown compression mode");
+    if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END))) {
+        THROW_OR_ABORT("RemotePlayer::try_create_from_stream: Unknown transmitted fields");
     }
     auto args = nlohmann::json::object();
     auto name = VariableAndHash<std::string>{reader.read_string("player ID")};
@@ -99,17 +98,17 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         CURRENT_SOURCE_LOCATION};
 }
 
-void RemotePlayer::read(std::istream& istr) {
+void RemotePlayer::read(
+    std::istream& istr,
+    TransmittedFields transmitted_fields)
+{
     BinaryReader reader{ istr, verbosity_ };
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != RemoteSceneObjectType::PLAYER) {
         THROW_OR_ABORT("RemotePlayer::read: Unexpected scene object type");
     }
-    auto compression = reader.read_binary<ObjectCompression>("object compression");
-    if ((compression != ObjectCompression::NONE) &&
-        (compression != ObjectCompression::INCREMENTAL))
-    {
-        THROW_OR_ABORT("RemotePlayer::read: Unknown compression mode");
+    if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END))) {
+        THROW_OR_ABORT("RemotePlayer::read: Unknown transmitted fields");
     }
     reader.read_string("player ID");
     reader.read_string("team");
@@ -179,10 +178,16 @@ void RemotePlayer::read(std::istream& istr) {
     }
 }
 
-void RemotePlayer::write(std::ostream& ostr, ObjectCompression compression) {
+void RemotePlayer::write(
+    std::ostream& ostr,
+    const RemoteObjectId& remote_object_id,
+    ProxyTasks proxy_tasks,
+    KnownFields known_fields,
+    TransmissionHistoryWriter& transmission_history_writer)
+{
+    transmission_history_writer.write(ostr, remote_object_id, TransmittedFields::END);
     auto writer = BinaryWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::PLAYER, "scene object type");
-    writer.write_binary(compression, "player object compression");
     writer.write_string(*player_->id(), "player name");
     writer.write_string(player_->team_name(), "player team");
     if (auto u = player_->user_info(); u != nullptr) {

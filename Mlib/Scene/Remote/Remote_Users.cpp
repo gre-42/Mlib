@@ -4,6 +4,8 @@
 #include <Mlib/Io/Binary_Writer.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
+#include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
+#include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
@@ -39,8 +41,8 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     ObjectPool& object_pool,
     PhysicsScene& physics_scene,
     std::istream& istr,
-    IoVerbosity verbosity,
-    RemoteSiteId site_id)
+    RemoteSiteId site_id,
+    IoVerbosity verbosity)
 {
     auto res = object_pool.create_unique<RemoteUsers>(
         CURRENT_SOURCE_LOCATION,
@@ -52,7 +54,10 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     return {res.release(), CURRENT_SOURCE_LOCATION};
 }
 
-void RemoteUsers::read(std::istream& istr) {
+void RemoteUsers::read(
+    std::istream& istr,
+    TransmittedFields transmitted_fields)
+{
     auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     if (type != RemoteSceneObjectType::REMOTE_USERS) {
         THROW_OR_ABORT("RemoteUsers::read: Unexpected scene object type");
@@ -87,7 +92,14 @@ void RemoteUsers::read_data(std::istream& istr) {
     }
 }
 
-void RemoteUsers::write(std::ostream& ostr, ObjectCompression compression) {
+void RemoteUsers::write(
+    std::ostream& ostr,
+    const RemoteObjectId& remote_object_id,
+    ProxyTasks proxy_tasks,
+    KnownFields known_fields,
+    TransmissionHistoryWriter& transmission_history_writer)
+{
+    transmission_history_writer.write(ostr, remote_object_id, TransmittedFields::END);
     auto user_count = physics_scene_->remote_sites_->get_user_count(site_id_);
     
     auto writer = BinaryWriter{ostr};

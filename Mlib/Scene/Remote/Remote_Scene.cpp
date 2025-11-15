@@ -1,4 +1,5 @@
 #include "Remote_Scene.hpp"
+#include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
 #include <Mlib/Remote/Sockets/Udp_Node.hpp>
@@ -24,12 +25,11 @@ RemoteScene::RemoteScene(
         { objects_, CURRENT_SOURCE_LOCATION},
         verbosity,
         remote_params.role == RemoteRole::SERVER
-            ? ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE
-            : ProxyTasks::SEND_LOCAL }
+            ? ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE | ProxyTasks::SEND_OWNERSHIP
+            : ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE}
     , proxies_{
         { communicator_proxy_factory_, CURRENT_SOURCE_LOCATION },
         remote_params.site_id}
-    , local_site_id_{ remote_params.site_id }
 {
     [&](){
         switch (remote_params.role) {
@@ -63,8 +63,8 @@ void RemoteScene::send_and_receive(std::chrono::steady_clock::time_point time) {
     proxies_.send_and_receive(TransmissionType::UNICAST);
 }
 
-RemoteObjectId RemoteScene::add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object) {
-    return objects_.add_local_object(object, RemoteObjectVisibility::PUBLIC);
+void RemoteScene::add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object) {
+    objects_.add_local_object(object, RemoteObjectVisibility::PUBLIC);
 }
 
 void RemoteScene::add_remote_object(
@@ -81,5 +81,5 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteScene::try_get(
 }
 
 RemoteSiteId RemoteScene::local_site_id() const {
-    return local_site_id_;
+    return objects_.local_site_id();
 }

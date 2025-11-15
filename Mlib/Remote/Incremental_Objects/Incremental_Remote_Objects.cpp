@@ -5,8 +5,8 @@
 using namespace Mlib;
 
 IncrementalRemoteObjects::IncrementalRemoteObjects(
-    RemoteSiteId site_id)
-    : site_id_{ site_id }
+    RemoteSiteId local_site_id)
+    : local_site_id_{ local_site_id }
     , next_local_object_id_{ 0 }
 {}
 
@@ -14,8 +14,8 @@ IncrementalRemoteObjects::~IncrementalRemoteObjects() {
     on_destroy.clear();
 }
 
-RemoteSiteId IncrementalRemoteObjects::site_id() const {
-    return site_id_;
+RemoteSiteId IncrementalRemoteObjects::local_site_id() const {
+    return local_site_id_;
 }
 
 RemoteObjectId IncrementalRemoteObjects::add_local_object(
@@ -38,7 +38,7 @@ RemoteObjectId IncrementalRemoteObjects::add_local_object(
     {
         verbose_abort("Could not add private local object");
     }
-    return {site_id_, next_local_object_id_++};
+    return {local_site_id_, next_local_object_id_++};
 }
 
 void IncrementalRemoteObjects::add_remote_object(
@@ -46,7 +46,7 @@ void IncrementalRemoteObjects::add_remote_object(
     const DanglingBaseClassRef<IIncrementalObject>& object,
     RemoteObjectVisibility visibility)
 {
-    if (id.site_id == site_id_) {
+    if (id.site_id == local_site_id_) {
         THROW_OR_ABORT("Attempt to add a local object as remote");
     }
     auto& objects = [&]() -> RemoteObjects& {
@@ -64,7 +64,7 @@ void IncrementalRemoteObjects::add_remote_object(
 }
 
 DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(const RemoteObjectId& id) const {
-    if (id.site_id == site_id_) {
+    if (id.site_id == local_site_id_) {
         if (auto it = private_local_objects_.find(id.object_id); it != private_local_objects_.end()) {
             return it->second.object().ptr();
         }

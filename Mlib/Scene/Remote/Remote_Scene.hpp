@@ -24,14 +24,14 @@ public:
         const RemoteParams& remote_params,
         IoVerbosity verbosity);
     ~RemoteScene();
-    RemoteObjectId add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
+    void add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
     void add_remote_object(const RemoteObjectId& id, const DanglingBaseClassRef<IIncrementalObject>& object);
     void send_and_receive(std::chrono::steady_clock::time_point time);
     DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
     CreatedAtRemoteSite created_at_remote_site;
     template<class Class, class... Args>
-    RemoteObjectId create_local(SourceLocation loc, Args&&... args) {
-        return add_local_object({object_pool_.create<Class>(loc, object_pool_, verbosity_, std::forward<Args>(args)...), loc});
+    void create_local(SourceLocation loc, Args&&... args) {
+        add_local_object({object_pool_.create<Class>(loc, object_pool_, verbosity_, std::forward<Args>(args)...), loc});
     }
     RemoteSiteId local_site_id() const;
 private:
@@ -42,7 +42,6 @@ private:
     IncrementalRemoteObjects objects_;
     IncrementalCommunicatorProxyFactory communicator_proxy_factory_;
     CommunicatorProxies proxies_;
-    RemoteSiteId local_site_id_;
 };
 
 }

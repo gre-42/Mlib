@@ -25,16 +25,17 @@ RemoteSceneObjectFactory::~RemoteSceneObjectFactory() {
 
 DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_shared_object(
     std::istream& istr,
+    TransmittedFields transmitted_fields,
     const RemoteObjectId& id)
 {
     auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     switch (type) {
     case RemoteSceneObjectType::REMOTE_USERS:
-        return RemoteUsers::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_, id.site_id);
+        return RemoteUsers::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, id.site_id, verbosity_);
     case RemoteSceneObjectType::PLAYER:
-        return RemotePlayer::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_);
+        return RemotePlayer::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, transmitted_fields, verbosity_);
     case RemoteSceneObjectType::RIGID_BODY_VEHICLE:
-        return RemoteRigidBodyVehicle::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, verbosity_);
+        return RemoteRigidBodyVehicle::try_create_from_stream(object_pool_.get(), physics_scene_.get(), istr, transmitted_fields, verbosity_);
     }
     THROW_OR_ABORT("Unknown object type: " + std::to_string((int)type));
 }

@@ -17,6 +17,7 @@ public:
     virtual ~RemoteSceneObjectFactory() override;
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         std::istream& istr,
+        TransmittedFields transmitted_fields,
         const RemoteObjectId& id) override;
 private:
     DanglingBaseClassRef<ObjectPool> object_pool_;

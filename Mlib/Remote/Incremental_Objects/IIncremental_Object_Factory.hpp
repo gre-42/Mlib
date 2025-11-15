@@ -5,6 +5,7 @@
 
 namespace Mlib {
 
+enum class TransmittedFields: uint32_t;
 class IIncrementalObject;
 struct RemoteObjectId;
 
@@ -12,6 +13,7 @@ class IIncrementalObjectFactory: public virtual DestructionNotifier, public virt
 public:
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         std::istream& istr,
+        TransmittedFields transmitted_fields,
         const RemoteObjectId& id) = 0;
 };
 

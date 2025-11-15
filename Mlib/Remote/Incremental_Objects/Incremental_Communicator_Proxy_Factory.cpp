@@ -2,6 +2,7 @@
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
+#include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 
 using namespace Mlib;
 

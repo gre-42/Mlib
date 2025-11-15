@@ -472,11 +472,12 @@ void CreateGenericCar::execute(const JsonView& args)
         rb.drivers_.set_seats({ "driver" });
         rb.door_distance_ = vdb.at<float>(KnownDb::door_distance) * meters;
         if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.rigid_bodies.contains(parent)) {
-            rb.remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
+            remote_scene->create_local<RemoteRigidBodyVehicle>(
                 CURRENT_SOURCE_LOCATION,
                 args.json().dump(),
                 tesuffix,
                 DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION});
+            rb.owner_site_id_ = remote_scene->local_site_id();
         }
         };
     if (if_with_physics) {

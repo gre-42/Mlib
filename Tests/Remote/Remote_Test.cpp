@@ -6,6 +6,9 @@
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy_Factory.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
+#include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
+#include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
+#include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Remote/Sockets/Udp_Node.hpp>
 #include <cstdint>
 
@@ -21,16 +24,33 @@ public:
     explicit SharedInteger(int32_t i)
     : value_{ i }
     {}
-    explicit SharedInteger(std::istream& istr) {
-        read(istr);
+    explicit SharedInteger(
+        std::istream& istr,
+        TransmittedFields transmitted_fields)
+    {
+        read(istr, transmitted_fields);
     }
     virtual ~SharedInteger() override {
         on_destroy.clear();
     }
-    virtual void read(std::istream& istr) override {
+    virtual void read(
+        std::istream& istr,
+        TransmittedFields transmitted_fields) override
+    {
+        if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END)))
+        {
+            THROW_OR_ABORT("Unexpected transmitted fields");
+        }
         value_ = read_binary<int32_t>(istr, "int32", IoVerbosity::SILENT);
     }
-    virtual void write(std::ostream& ostr, ObjectCompression compression) override {
+    virtual void write(
+        std::ostream& ostr,
+        const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
+        KnownFields known_fields,
+        TransmissionHistoryWriter& transmission_history_writer) override
+    {
+        transmission_history_writer.write(ostr, remote_object_id, TransmittedFields::END);
         write_binary(ostr, ObjectType::INT32, "ObjectType::INT32");
         write_binary(ostr, value_, "int32");
     }
@@ -43,17 +63,30 @@ public:
     explicit SharedString(std::string s)
     : value_{ std::move(s) }
     {}
-    explicit SharedString(std::istream& istr) {
-        read(istr);
+    explicit SharedString(
+        std::istream& istr,
+        TransmittedFields transmitted_fields)
+    {
+        read(istr, transmitted_fields);
     }
     virtual ~SharedString() override {
         on_destroy.clear();
     }
-    virtual void read(std::istream& istr) override {
+    virtual void read(
+        std::istream& istr,
+        TransmittedFields transmitted_fields) override
+    {
         auto len = read_binary<uint32_t>(istr, "len", IoVerbosity::SILENT);
         value_ = read_string(istr, len, "string", IoVerbosity::SILENT);
     }
-    virtual void write(std::ostream& ostr, ObjectCompression compression) override {
+    virtual void write(
+        std::ostream& ostr,
+        const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
+        KnownFields known_fields,
+        TransmissionHistoryWriter& transmission_history_writer) override
+    {
+        transmission_history_writer.write(ostr, remote_object_id, TransmittedFields::END);
         write_binary(ostr, ObjectType::STRING, "ObjectType::STRING");
         write_binary(ostr, integral_cast<uint32_t>(value_.length()), "len");
         write_iterable(ostr, value_, "string");
@@ -72,14 +105,15 @@ public:
     }
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         std::istream& istr,
+        TransmittedFields transmitted_fields,
         const RemoteObjectId& id) override
     {
         auto t = read_binary<ObjectType>(istr, "object type", IoVerbosity::SILENT);
         switch (t) {
         case ObjectType::INT32:
-            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, istr), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, istr, transmitted_fields), CURRENT_SOURCE_LOCATION };
         case ObjectType::STRING:
-            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, istr), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, istr, transmitted_fields), CURRENT_SOURCE_LOCATION };
         }
         THROW_OR_ABORT("Unknown object type: " + std::to_string((uint32_t)t));
     }

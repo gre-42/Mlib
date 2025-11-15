@@ -19,9 +19,9 @@ enum class RemoteObjectVisibility {
 
 class IncrementalRemoteObjects: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
-    explicit IncrementalRemoteObjects(RemoteSiteId site_id);
+    explicit IncrementalRemoteObjects(RemoteSiteId local_site_id);
     ~IncrementalRemoteObjects();
-    RemoteSiteId site_id() const;
+    RemoteSiteId local_site_id() const;
     RemoteObjectId add_local_object(
         const DanglingBaseClassRef<IIncrementalObject>& object,
         RemoteObjectVisibility visibility);
@@ -36,7 +36,7 @@ public:
     void print(std::ostream& ostr) const;
 
 private:
-    RemoteSiteId site_id_;
+    RemoteSiteId local_site_id_;
     LocalObjectId next_local_object_id_;
     LocalObjects private_local_objects_;
     LocalObjects public_local_objects_;

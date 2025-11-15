@@ -24,9 +24,17 @@ public:
         ObjectPool& object_pool,
         PhysicsScene& physics_scene,
         std::istream& istr,
+        TransmittedFields transmitted_fields,
         IoVerbosity verbosity);
-    virtual void read(std::istream& istr) override;
-    virtual void write(std::ostream& ostr, ObjectCompression compression) override;
+    virtual void read(
+        std::istream& istr,
+        TransmittedFields transmitted_fields) override;
+    virtual void write(
+        std::ostream& ostr,
+        const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
+        KnownFields known_fields,
+        TransmissionHistoryWriter& transmission_history_writer) override;
 
     DanglingBaseClassRef<RigidBodyVehicle> rb();
     const std::string& node_suffix() const;
