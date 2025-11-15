@@ -114,6 +114,7 @@ void SceneNode::shutdown() {
         verbose_abort("SceneNode::shutdown already called");
     }
     shutdown_phase_ = ShutdownPhase::IN_PROGRESS;
+    parent_ = nullptr;
     destruction_observers.clear();
     destruction_pointers.clear();
     on_destroy.clear();
@@ -454,7 +455,6 @@ void SceneNode::clear_unsafe() {
 
     std::scoped_lock lock{ mutex_ };
 
-    parent_ = nullptr;
     absolute_movable_ = nullptr;
     relative_movable_ = nullptr;
     node_modifier_ = nullptr;
