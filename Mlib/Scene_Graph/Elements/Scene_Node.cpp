@@ -454,6 +454,7 @@ void SceneNode::clear_unsafe() {
 
     std::scoped_lock lock{ mutex_ };
 
+    parent_ = nullptr;
     absolute_movable_ = nullptr;
     relative_movable_ = nullptr;
     node_modifier_ = nullptr;
