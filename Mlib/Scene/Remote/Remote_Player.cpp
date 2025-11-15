@@ -154,9 +154,10 @@ void RemotePlayer::read(
                 if (physics_scene_->remote_scene_ == nullptr) {
                     THROW_OR_ABORT("Remote scene is unexpectedly null");
                 }
-                if (user_info->site_id == physics_scene_->remote_scene_->local_site_id()) {
+                if ((user_info != nullptr) &&
+                    (user_info->site_id == physics_scene_->remote_scene_->local_site_id()))
+                {
                     auto let = nlohmann::json::object({
-                        {"local_user_id", user_info->user_id},
                         {"asset_id", rb->asset_id_},
                         {"suffix", rbv->node_suffix()}
                     });
