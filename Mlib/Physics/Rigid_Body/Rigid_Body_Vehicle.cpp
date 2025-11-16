@@ -57,7 +57,6 @@ static const auto WHEEL_VERTICAL_CONSTRAINT_TYPE = WheelVerticalConstraintType::
 using namespace Mlib;
 
 RigidBodyVehicle::RigidBodyVehicle(
-    ObjectPool& object_pool,
     const RigidBodyPulses& rbp,
     std::string name,
     std::string asset_id,
@@ -108,7 +107,6 @@ RigidBodyVehicle::RigidBodyVehicle(
     , current_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , next_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , actor_task_{ ActorTask::UNDEFINED }
-    , object_pool_{ object_pool }
     , damage_absorption_direction_{ fixed_zeros<float, 3>() }
 {
     if (name_.empty()) {
@@ -123,11 +121,14 @@ RigidBodyVehicle::~RigidBodyVehicle()
     on_destroy.clear();
     destruction_observers.clear();
     drivers_.clear();
-    if (scene_ != nullptr) {
+    if ((scene_ != nullptr) &&
+        (scene_node_ != nullptr) &&
+        (scene_node_->shutdown_phase() == ShutdownPhase::NONE))
+    {
         scene_->delete_root_node(node_name_);
     }
     while (!passengers_.empty()) {
-        object_pool_.remove(passengers_.begin()->first.get());
+        global_object_pool.remove(passengers_.begin()->first.get());
     }
 }
 
@@ -1358,6 +1359,6 @@ void RigidBodyVehicle::set_scene_node(
         scene_ = nullptr;
         scene_node_ = nullptr;
         animation_state_updater_ = nullptr;
-        object_pool_.remove(this);
+        global_object_pool.remove(this);
     }, loc);
 }

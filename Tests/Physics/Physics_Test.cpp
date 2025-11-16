@@ -150,8 +150,8 @@ void test_com() {
     FixedArray<float, 3> size{2 * meters, 3 * meters, 4 * meters};
     FixedArray<float, 3> com0{0 * meters, 0 * meters, 0 * meters};
     FixedArray<float, 3> com1{0 * meters, 1 * meters, 0 * meters};
-    auto r0 = rigid_cuboid(global_object_pool, "r0", "r0_no_id", mass, size, com0);
-    auto r1 = rigid_cuboid(global_object_pool, "r1", "r1_no_id", mass, size, com1);
+    auto r0 = rigid_cuboid("r0", "r0_no_id", mass, size, com0);
+    auto r1 = rigid_cuboid("r1", "r1_no_id", mass, size, com1);
     r0->rbp_.abs_com_ = 0;
     r1->rbp_.abs_com_ = com1.casted<ScenePos>();
     r0->rbp_.rotation_ = fixed_identity_array<float, 3>();

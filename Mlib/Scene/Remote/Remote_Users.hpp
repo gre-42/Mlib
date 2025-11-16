@@ -6,20 +6,17 @@
 
 namespace Mlib {
 
-class ObjectPool;
 class PhysicsScene;
 enum class IoVerbosity;
 
 class RemoteUsers final: public IIncrementalObject {
 public:
     explicit RemoteUsers(
-        ObjectPool& object_pool,
         IoVerbosity verbosity,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
         RemoteSiteId site_id);
     ~RemoteUsers();
     static DanglingBaseClassPtr<RemoteUsers> try_create_from_stream(
-        ObjectPool& object_pool,
         PhysicsScene& physics_scene,
         std::istream& istr,
         RemoteSiteId site_id,

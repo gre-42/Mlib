@@ -46,6 +46,18 @@ void ObjectPool::add(std::function<void()> deallocate, Object& o, SourceLocation
 //     add(*o, loc);
 // }
 
+bool ObjectPool::contains(Object* o) const {
+    if (o == nullptr) {
+        verbose_abort("ObjectPool: Attempt to check for nullptr");
+    }
+    return contains(*o);
+}
+
+bool ObjectPool::contains(Object& o) const {
+    std::unique_lock lock{ mutex_ };
+    return ptrs_.contains({ nullptr, &o, CURRENT_SOURCE_LOCATION });
+}
+
 void ObjectPool::remove(Object& o) {
     std::unique_lock lock{ mutex_ };
     if (deleting_ptrs_.contains(&o)) {
@@ -64,6 +76,21 @@ void ObjectPool::remove(Object* o) {
         verbose_abort("ObjectPool: Attempt to remove nullptr");
     }
     remove(*o);
+}
+
+void ObjectPool::extract(Object* o) {
+    if (o == nullptr) {
+        verbose_abort("ObjectPool: Attempt to extract nullptr");
+    }
+    extract(*o);
+}
+
+void ObjectPool::extract(Object& o) {
+    std::unique_lock lock{ mutex_ };
+    auto n = ptrs_.extract({ nullptr, &o, CURRENT_SOURCE_LOCATION });
+    if (n.empty()) {
+        verbose_abort("ObjectPool: Could not extract object");
+    }
 }
 
 void ObjectPool::delete_(const ObjectAndSourceLocation& o) {

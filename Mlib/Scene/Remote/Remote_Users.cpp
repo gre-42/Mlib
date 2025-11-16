@@ -15,7 +15,6 @@ using namespace Mlib;
 static_assert(sizeof(FixedArray<float, 3>) == 3 * 4);
 
 RemoteUsers::RemoteUsers(
-    ObjectPool& object_pool,
     IoVerbosity verbosity,
     const DanglingBaseClassRef<PhysicsScene>& physics_scene,
     RemoteSiteId site_id)
@@ -27,7 +26,7 @@ RemoteUsers::RemoteUsers(
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemoteUsers";
     }
-    physics_scene_on_destroy_.add([&o=object_pool, this](){ o.remove(this); }, CURRENT_SOURCE_LOCATION);
+    physics_scene_on_destroy_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
 RemoteUsers::~RemoteUsers() {
@@ -38,15 +37,13 @@ RemoteUsers::~RemoteUsers() {
 }
 
 DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
-    ObjectPool& object_pool,
     PhysicsScene& physics_scene,
     std::istream& istr,
     RemoteSiteId site_id,
     IoVerbosity verbosity)
 {
-    auto res = object_pool.create_unique<RemoteUsers>(
+    auto res = global_object_pool.create_unique<RemoteUsers>(
         CURRENT_SOURCE_LOCATION,
-        object_pool,
         verbosity,
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION},
         site_id);

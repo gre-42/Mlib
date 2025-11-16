@@ -13,10 +13,8 @@ RemoteScene::RemoteScene(
     const RemoteParams& remote_params,
     IoVerbosity verbosity)
     : verbosity_{ verbosity }
-    , object_pool_{ InObjectPoolDestructor::CLEAR }
     , home_node_{ std::make_shared<UdpNode>(remote_params.ip, remote_params.port) }
     , remote_scene_object_factory_{
-        {object_pool_, CURRENT_SOURCE_LOCATION},
         physics_scene,
         verbosity }
     , objects_{ remote_params.site_id }
@@ -46,9 +44,8 @@ RemoteScene::RemoteScene(
         THROW_OR_ABORT("Unkown remote role: " + std::to_string((int)remote_params.role));
     }();
     objects_.add_local_object({
-            object_pool_.create<RemoteUsers>(
+            global_object_pool.create<RemoteUsers>(
                 CURRENT_SOURCE_LOCATION,
-                object_pool_,
                 verbosity,
                 physics_scene,
                 remote_params.site_id),
@@ -78,6 +75,10 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteScene::try_get(
     const RemoteObjectId& id) const
 {
     return objects_.try_get(id);
+}
+
+bool RemoteScene::try_remove(const RemoteObjectId& id) {
+    return objects_.try_remove(id);
 }
 
 RemoteSiteId RemoteScene::local_site_id() const {

@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Remote/Communicator_Proxies.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy_Factory.hpp>
@@ -28,15 +27,15 @@ public:
     void add_remote_object(const RemoteObjectId& id, const DanglingBaseClassRef<IIncrementalObject>& object);
     void send_and_receive(std::chrono::steady_clock::time_point time);
     DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
+    bool try_remove(const RemoteObjectId& id);
     CreatedAtRemoteSite created_at_remote_site;
     template<class Class, class... Args>
     RemoteObjectId create_local(SourceLocation loc, Args&&... args) {
-        return add_local_object({object_pool_.create<Class>(loc, object_pool_, verbosity_, std::forward<Args>(args)...), loc});
+        return add_local_object({global_object_pool.create<Class>(loc, verbosity_, std::forward<Args>(args)...), loc});
     }
     RemoteSiteId local_site_id() const;
 private:
     IoVerbosity verbosity_;
-    ObjectPool object_pool_;
     std::shared_ptr<UdpNode> home_node_;
     RemoteSceneObjectFactory remote_scene_object_factory_;
     IncrementalRemoteObjects objects_;

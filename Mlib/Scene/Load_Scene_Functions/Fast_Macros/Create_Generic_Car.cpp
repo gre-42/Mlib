@@ -206,7 +206,6 @@ void CreateGenericCar::execute(const JsonView& args)
         DanglingBaseClassRef<SceneNode> node = scene.get_node(parent, DP_LOC);
 
         auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
-            .object_pool = object_pool,
             .node = parent,
             .name = "generic_car_" + name + tesuffix,
             .asset_id = name,
@@ -348,7 +347,6 @@ void CreateGenericCar::execute(const JsonView& args)
                 RigidBodyVehicle* wheel = nullptr;
                 if (wheel_mass != 0.f) {
                     wheel = &create_rigid_disk(CreateRigidDiskArgs{
-                        .object_pool = object_pool,
                         .node = node,
                         .name = name,
                         .asset_id = asset_id,

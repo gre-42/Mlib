@@ -53,7 +53,6 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args) const
     args.arguments.validate(KnownArgs::options);
 
     (*this)(CreateRigidDiskArgs{
-        global_object_pool,
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::asset_id),
@@ -81,7 +80,6 @@ RigidBodyVehicle& CreateRigidDisk::operator () (const CreateRigidDiskArgs& args)
         physics_engine.config().max_penetration,
         args.radius};
     auto rb = rigid_disk(
-        global_object_pool,
         args.name,
         args.asset_id,
         args.mass,

@@ -4,11 +4,13 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
 #include <iosfwd>
+#include <set>
 
 namespace Mlib {
 
 class IIncrementalObject;
 
+using DeletedObjects = std::set<RemoteObjectId>;
 using LocalObjects = DanglingValueUnorderedMap<LocalObjectId, IIncrementalObject>;
 using RemoteObjects = DanglingValueUnorderedMap<RemoteObjectId, IIncrementalObject>;
 
@@ -30,6 +32,8 @@ public:
         const DanglingBaseClassRef<IIncrementalObject>& object,
         RemoteObjectVisibility visibility);
     DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
+    bool try_remove(const RemoteObjectId& id);
+    const DeletedObjects& deleted_objects() const;
     const LocalObjects& private_local_objects() const;
     const LocalObjects& public_local_objects() const;
     const RemoteObjects& public_remote_objects() const;
@@ -37,6 +41,7 @@ public:
 
 private:
     RemoteSiteId local_site_id_;
+    DeletedObjects deleted_objects_;
     LocalObjectId next_local_object_id_;
     LocalObjects private_local_objects_;
     LocalObjects public_local_objects_;

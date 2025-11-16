@@ -5,7 +5,6 @@
 
 namespace Mlib {
 
-class ObjectPool;
 class PhysicsScene;
 class Player;
 class SceneVehicle;
@@ -14,13 +13,11 @@ enum class IoVerbosity;
 class RemotePlayer final: public IIncrementalObject {
 public:
     explicit RemotePlayer(
-        ObjectPool& object_pool,
         IoVerbosity verbosity,
         const DanglingBaseClassRef<Player>& player,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene);
     ~RemotePlayer();
     static DanglingBaseClassPtr<RemotePlayer> try_create_from_stream(
-        ObjectPool& object_pool,
         PhysicsScene& physics_scene,
         std::istream& istr,
         TransmittedFields transmitted_fields,

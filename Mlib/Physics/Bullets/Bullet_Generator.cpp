@@ -126,7 +126,6 @@ void BulletGenerator::generate_bullet(
         rc.collision_observers_.emplace_back(std::move(bullet));
     } else {
         auto rcu = rigid_cuboid(
-            global_object_pool,
             "bullet",
             "bullet_no_id",
             bullet_properties.mass,

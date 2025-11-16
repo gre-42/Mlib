@@ -4,14 +4,12 @@
 
 namespace Mlib {
 
-class ObjectPool;
 class PhysicsScene;
 enum class IoVerbosity;
 
 class RemoteSceneObjectFactory final: public IIncrementalObjectFactory {
 public:
     explicit RemoteSceneObjectFactory(
-        const DanglingBaseClassRef<ObjectPool>& object_pool,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
         IoVerbosity verbosity);
     virtual ~RemoteSceneObjectFactory() override;
@@ -20,7 +18,6 @@ public:
         TransmittedFields transmitted_fields,
         const RemoteObjectId& id) override;
 private:
-    DanglingBaseClassRef<ObjectPool> object_pool_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     IoVerbosity verbosity_;
 };

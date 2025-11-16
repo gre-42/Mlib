@@ -52,7 +52,6 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args) const
     args.arguments.validate(KnownArgs::options);
 
     (*this)(CreateRigidCuboidArgs{
-        global_object_pool,
         args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node),
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::asset_id),
@@ -81,7 +80,6 @@ RigidBodyVehicle& CreateRigidCuboid::operator () (const CreateRigidCuboidArgs& a
         physics_engine.config().max_penetration,
         radius};
     auto rb = rigid_cuboid(
-        global_object_pool,
         args.name,
         args.asset_id,
         args.mass,

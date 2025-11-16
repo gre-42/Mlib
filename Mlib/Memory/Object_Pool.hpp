@@ -97,9 +97,22 @@ public:
         auto& res = create<T>(loc, std::forward<Args>(args)...);
         return { &res, DeleteFromPool<T>(*this) };
     }
+    template<class T>
+        requires std::is_convertible_v<T&, Object&>
+    std::unique_ptr<T> extract(UniquePtr<T>&& u) {
+        if (u == nullptr) {
+            verbose_abort("Attempt to extract a nullptr from the object pool");
+        }
+        extract(*u);
+        return std::unique_ptr<T>{u.release()};
+    }
 
+    bool contains(Object* o) const;
+    bool contains(Object& o) const;
     void remove(Object* o);
     void remove(Object& o);
+    void extract(Object* o);
+    void extract(Object& o);
     void clear();
     void assert_no_leaks() const;
 private:

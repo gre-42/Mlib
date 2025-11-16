@@ -25,7 +25,6 @@
 using namespace Mlib;
 
 RemotePlayer::RemotePlayer(
-    ObjectPool& object_pool,
     IoVerbosity verbosity,
     const DanglingBaseClassRef<Player>& player,
     const DanglingBaseClassRef<PhysicsScene>& physics_scene)
@@ -39,7 +38,7 @@ RemotePlayer::RemotePlayer(
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemotePlayer";
     }
-    player_on_destroy_.add([&o=object_pool, this](){ o.remove(this); }, CURRENT_SOURCE_LOCATION);
+    player_on_destroy_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
 RemotePlayer::~RemotePlayer() {
@@ -50,7 +49,6 @@ RemotePlayer::~RemotePlayer() {
 }
 
 DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
-    ObjectPool& object_pool,
     PhysicsScene& physics_scene,
     std::istream& istr,
     TransmittedFields transmitted_fields,
@@ -89,9 +87,8 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     physics_scene.remote_scene_->created_at_remote_site.players.add(name);
     CreatePlayer{physics_scene}.execute(JsonView{args}, physics_scene.macro_line_executor_);
     return {
-        object_pool.create<RemotePlayer>(
+        global_object_pool.create<RemotePlayer>(
             CURRENT_SOURCE_LOCATION,
-            object_pool,
             verbosity,
             physics_scene.players_.get_player(name, CURRENT_SOURCE_LOCATION),
             DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION}),

@@ -32,7 +32,6 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
     scene.append_physics_to_queue(float_queue, double_queue);
     auto add_rigid_cuboid = [&](const auto& cva, const std::string& name){
         auto rb = rigid_cuboid(
-            object_pool,
             name,                       // name
             "none",                     // asset_id
             INFINITY,                   // mass
@@ -40,7 +39,7 @@ void InstantiateStatics::execute(const LoadSceneJsonUserFunctionArgs &args) {
             fixed_ones<float, 3>());    // com
         rb->set_absolute_model_matrix(TransformationMatrix<float, ScenePos, 3>::identity());
         physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, { cva }, {}, CollidableMode::COLLIDE);
-        rb.release();
+        object_pool.add(global_object_pool.extract(std::move(rb)), CURRENT_SOURCE_LOCATION);
         };
     {
         auto filter = PhysicsMaterial::NONE;

@@ -42,8 +42,8 @@ void Mlib::create_scene_rod(
     PhysicsEngine& pe,
     SelectedCameras& selected_cameras)
 {
-    auto rb0 = rigid_cuboid(global_object_pool, "rb0", "ground_no_id", INFINITY, { 1.f, 2.f, 3.f });
-    auto rb1_0 = rigid_cuboid(global_object_pool, "rb1_0", "rb1_0_no_id", 3.f * kg, { 2.f, 3.f, 4.f });
+    auto rb0 = rigid_cuboid("rb0", "ground_no_id", INFINITY, { 1.f, 2.f, 3.f });
+    auto rb1_0 = rigid_cuboid("rb1_0", "rb1_0_no_id", 3.f * kg, { 2.f, 3.f, 4.f });
 
     auto load_box = [](
         const FixedArray<float, 3>& scale,

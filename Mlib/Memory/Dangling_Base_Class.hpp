@@ -128,6 +128,11 @@ public:
     T* get() const {
         return v_;
     }
+    T* release() {
+        auto result = v_;
+        *this = nullptr;
+        return result;
+    }
     // Comparison
     bool operator == (std::nullptr_t) const {
         return v_ == nullptr;

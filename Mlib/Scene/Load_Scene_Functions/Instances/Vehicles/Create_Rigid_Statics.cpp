@@ -50,7 +50,6 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at(KnownArgs::transformation));
 
     auto rb = rigid_cuboid(
-        object_pool,
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::asset_id),
         INFINITY * kg,
@@ -91,7 +90,7 @@ void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
             d_hitboxes,
             {},
             CollidableMode::COLLIDE);
-        rb.release();
+        object_pool.add(global_object_pool.extract(std::move(rb)), CURRENT_SOURCE_LOCATION);
     } catch (const TriangleException<double>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
             save_triangle_to_obj(*filename, {e.a, e.b, e.c});

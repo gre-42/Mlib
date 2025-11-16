@@ -12,14 +12,12 @@
 namespace Mlib {
 
 struct LoadSceneJsonUserFunctionArgs;
-class ObjectPool;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 enum class CollidableMode;
 class RigidBodyVehicle;
 
 struct CreateRigidDiskArgs {
-    ObjectPool& object_pool;
     const VariableAndHash<std::string>& node;
     const std::string& name;
     const std::string& asset_id;

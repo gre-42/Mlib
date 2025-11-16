@@ -89,7 +89,6 @@ RigidBodyPulses Mlib::rigid_disk_pulses(
 }
 
 std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_cuboid(
-    ObjectPool& object_pool,
     std::string name,
     std::string asset_id,
     float mass,
@@ -101,9 +100,8 @@ std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_
     const PenetrationLimitsFactory& pl,
     const TransformationMatrix<double, double, 3>* geographic_coordinates)
 {
-    return object_pool.create_unique<RigidBodyVehicle>(
+    return global_object_pool.create_unique<RigidBodyVehicle>(
         CURRENT_SOURCE_LOCATION,
-        object_pool,
         rigid_cuboid_pulses(mass, size, com, v, w, I_rotation, pl),
         std::move(name),
         std::move(asset_id),
@@ -111,7 +109,6 @@ std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_
 }
 
 std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_disk(
-    ObjectPool& object_pool,
     std::string name,
     std::string asset_id,
     float mass,
@@ -123,9 +120,8 @@ std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_
     const PenetrationLimitsFactory& pl,
     const TransformationMatrix<double, double, 3>* geographic_coordinates)
 {
-    return object_pool.create_unique<RigidBodyVehicle>(
+    return global_object_pool.create_unique<RigidBodyVehicle>(
         CURRENT_SOURCE_LOCATION,
-        object_pool,
         rigid_disk_pulses(mass, radius, com, v, w, I_rotation, pl),
         std::move(name),
         std::move(asset_id),

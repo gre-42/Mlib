@@ -1,5 +1,7 @@
 #include "Incremental_Communicator_Proxy.hpp"
 #include <Mlib/Io/Binary.hpp>
+#include <Mlib/Io/Binary_Reader.hpp>
+#include <Mlib/Io/Binary_Writer.hpp>
 #include <Mlib/Remote/ISend_Socket.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object_Factory.hpp>
@@ -33,6 +35,14 @@ void IncrementalCommunicatorProxy::set_send_socket(std::shared_ptr<ISendSocket> 
 }
 
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
+    auto reader = BinaryReader{istr, verbosity_};
+    {
+        auto ndeleted = reader.read_binary<uint32_t>("#deleted");
+        for (uint32_t i = 0; i < ndeleted; ++i) {
+            auto id = reader.read_binary<RemoteObjectId>("deleted ID");
+            objects_->try_remove(id);
+        }
+    }
     auto receive_local = [&](RemoteObjectVisibility visibility){
         // linfo() << "Received " << object_count << " objects_";
         auto transmission_history_reader = TransmissionHistoryReader();
@@ -64,6 +74,17 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
 }
 
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
+    auto writer = BinaryWriter{iostr};
+    {
+        const auto& deleted = objects_->deleted_objects();
+        if (any(verbosity_ & IoVerbosity::METADATA)) {
+            linfo() << "Delete " << deleted.size() << " objects";
+        }
+        writer.write_binary(integral_cast<uint32_t>(deleted.size()), "#ndeleted");
+        for (const auto& id : deleted) {
+            writer.write_binary(id, "deleted ID");
+        }
+    }
     auto send_local = [&](const LocalObjects& objects){
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Maybe send " << objects.size() << " local objects";
@@ -77,13 +98,13 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             auto& known_fields = known_fields_[j];
             o->write(iostr, j, tasks_, known_fields, transmission_history_writer);
         }
-        write_binary(iostr, TransmittedFields::NONE, "transmitted fields EOF");
+        writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
     };
     auto send_zero = [&](const char* msg){
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Send no " << msg << " objects";
         }
-        write_binary(iostr, TransmittedFields::NONE, "transmitted fields EOF");
+        writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
     };
     if (any(tasks_ & ProxyTasks::SEND_LOCAL)) {
         send_local(objects_->private_local_objects());
@@ -105,7 +126,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             auto& known_fields = known_fields_[i];
             o->write(iostr, i, tasks_, known_fields, transmission_history_writer);
         }
-        write_binary(iostr, TransmittedFields::NONE, "transmitted fields EOF");
+        writer.write_binary(TransmittedFields::NONE, "transmitted fields EOF");
     } else {
         send_zero("remote");
     }

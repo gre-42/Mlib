@@ -51,10 +51,10 @@ void Mlib::create_scene_flat(
 {
     FastUniformRandomNumberGenerator<float> prng{seed, -1.f, 1.f};
     FastUniformRandomNumberGenerator<float> rrng{seed + 1, -0.1f * (float)M_PI, 0.1f * (float)M_PI};
-    auto rb0 = rigid_cuboid(global_object_pool, "ground", "ground_no_id", INFINITY, {1.f, 2.f, 3.f});
-    auto rb1_0 = rigid_cuboid(global_object_pool, "rb1_0", "rb1_0_no_id", 3.f * kg, {2.f, 3.f, 4.f});
-    auto rb1_1 = rigid_cuboid(global_object_pool, "rb1_1", "rb1_1_no_id", 3.f * kg, {2.f, 3.f, 4.f});
-    auto rb1_2 = rigid_cuboid(global_object_pool, "rb1_2", "rb1_2_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb0 = rigid_cuboid("ground", "ground_no_id", INFINITY, {1.f, 2.f, 3.f});
+    auto rb1_0 = rigid_cuboid("rb1_0", "rb1_0_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_1 = rigid_cuboid("rb1_1", "rb1_1_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_2 = rigid_cuboid("rb1_2", "rb1_2_no_id", 3.f * kg, {2.f, 3.f, 4.f});
 
     const auto z2 = fixed_zeros<float, 2>();
     UUVector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{

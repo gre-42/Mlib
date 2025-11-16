@@ -1,4 +1,5 @@
 #include "Incremental_Remote_Objects.hpp"
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -83,6 +84,20 @@ DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(const
     }
 }
 
+bool IncrementalRemoteObjects::try_remove(const RemoteObjectId& id) {
+    deleted_objects_.insert(id);
+    auto o = try_get(id);
+    if ((o == nullptr) || !global_object_pool.contains(o.get())) {
+        return false;
+    }
+    global_object_pool.remove(o.release());
+    return true;
+}
+
+const DeletedObjects& IncrementalRemoteObjects::deleted_objects() const {
+    return deleted_objects_;
+}
+
 const LocalObjects& IncrementalRemoteObjects::private_local_objects() const {
     return private_local_objects_;
 }
@@ -97,7 +112,8 @@ const RemoteObjects& IncrementalRemoteObjects::public_remote_objects() const {
 
 void IncrementalRemoteObjects::print(std::ostream& ostr) const {
     ostr <<
-        "#private local: " << private_local_objects_.size() <<
+        "#deleted: " << deleted_objects_.size() <<
+        ", #private local: " << private_local_objects_.size() <<
         ", #public local: " << public_local_objects_.size() <<
         ", #private remote: " << private_remote_objects_.size() <<
         ", #public remote: " << public_remote_objects_.size();

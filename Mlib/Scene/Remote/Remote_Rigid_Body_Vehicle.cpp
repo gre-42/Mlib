@@ -50,7 +50,6 @@ inline KnownFields operator & (KnownFields a, RigidBodyKnownFields b) {
 }
 
 RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
-    ObjectPool& object_pool,
     IoVerbosity verbosity,
     std::string initial,
     std::string node_suffix,
@@ -58,7 +57,7 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     const DanglingBaseClassRef<PhysicsScene>& physics_scene)
     : initial_{ std::move(initial) }
     , node_suffix_{ std::move(node_suffix) }
-    , rb_{ rb }
+    , rb_{ rb.ptr() }
     , physics_scene_{ physics_scene }
     , verbosity_{ verbosity }
     , rb_on_destroy_{ rb->on_destroy, CURRENT_SOURCE_LOCATION }
@@ -66,18 +65,31 @@ RemoteRigidBodyVehicle::RemoteRigidBodyVehicle(
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Create RemoteRigidBodyVehicle";
     }
-    rb_on_destroy_.add([&o=object_pool, this](){ o.remove(this); }, CURRENT_SOURCE_LOCATION);
+    rb_on_destroy_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
 RemoteRigidBodyVehicle::~RemoteRigidBodyVehicle() {
     if (any(verbosity_ & IoVerbosity::METADATA)) {
         linfo() << "Destroy RemoteRigidBodyVehicle";
     }
+    if (rb_ == nullptr) {
+        verbose_abort("RemoteRigidBodyVehicle: Rigid body is null");
+    }
+    if (!rb_->remote_object_id_.has_value()) {
+        verbose_abort("RemoteRigidBodyVehicle: Rigid body has no remote object ID");
+    }
+    if (physics_scene_->remote_scene_ == nullptr) {
+        verbose_abort("RemoteRigidBodyVehicle: Remote scene is null");
+    }
+    physics_scene_->remote_scene_->created_at_remote_site.rigid_bodies.erase(rb_->node_name_);
+    physics_scene_->remote_scene_->try_remove(*rb_->remote_object_id_);
+    if (rb_ != nullptr) {
+        global_object_pool.remove(rb_.release());
+    }
     on_destroy.clear();
 }
 
 DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_from_stream(
-    ObjectPool& object_pool,
     PhysicsScene& physics_scene,
     std::istream& istr,
     TransmittedFields transmitted_fields,
@@ -146,9 +158,8 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         rb.owner_site_id_ = *owner_site_id;
     }
     return {
-        object_pool.create<RemoteRigidBodyVehicle>(
+        global_object_pool.create<RemoteRigidBodyVehicle>(
             CURRENT_SOURCE_LOCATION,
-            object_pool,
             verbosity,
             std::move(initial_str),
             std::move(node_suffix),
@@ -161,6 +172,9 @@ void RemoteRigidBodyVehicle::read(
     std::istream& istr,
     TransmittedFields transmitted_fields)
 {
+    if (rb_ == nullptr) {
+        THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Rigid body is destroyed");
+    }
     auto reader = BinaryReader{istr, verbosity_};
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != RemoteSceneObjectType::RIGID_BODY_VEHICLE) {
@@ -201,6 +215,9 @@ void RemoteRigidBodyVehicle::write(
     KnownFields known_fields,
     TransmissionHistoryWriter& transmission_history_writer)
 {
+    if (rb_ == nullptr) {
+        THROW_OR_ABORT("RemoteRigidBodyVehicle::write: Rigid body is destroyed");
+    }
     auto transmitted_fields = TransmittedFields::NONE;
     if (!any(known_fields & RigidBodyKnownFields::INITIAL)) {
         transmitted_fields |= RigidBodyTransmittedFields::INITIAL;
@@ -228,7 +245,10 @@ void RemoteRigidBodyVehicle::write(
 }
 
 DanglingBaseClassRef<RigidBodyVehicle> RemoteRigidBodyVehicle::rb() {
-    return rb_;
+    if (rb_ == nullptr) {
+        THROW_OR_ABORT("RemoteRigidBodyVehicle::rb: Rigid body is destroyed");
+    }
+    return *rb_;
 }
 
 const std::string& RemoteRigidBodyVehicle::node_suffix() const {

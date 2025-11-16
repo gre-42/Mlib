@@ -63,7 +63,6 @@ enum class VehicleDomain;
 enum class ActorType;
 enum class ActorTask;
 enum class VehicleAiMoveToStatus;
-class ObjectPool;
 struct StaticWorld;
 template <class T>
 class DanglingRef;
@@ -133,7 +132,6 @@ class RigidBodyVehicle final:
     public virtual DanglingBaseClass {
 public:
     RigidBodyVehicle(
-        ObjectPool& object_pool,
         const RigidBodyPulses& rbp,
         std::string name,
         std::string asset_id,
@@ -351,7 +349,6 @@ public:
     VehicleDomain current_vehicle_domain_;
     VehicleDomain next_vehicle_domain_;
     ActorTask actor_task_;
-    ObjectPool& object_pool_;
     std::unique_ptr<ISurfaceNormal> surface_normal_;
     std::unique_ptr<ICollisionNormalModifier> collision_normal_modifier_;
     DanglingUnorderedSet<const RigidBodyVehicle> non_colliders_;
