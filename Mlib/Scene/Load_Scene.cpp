@@ -57,7 +57,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Root_Node.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Change_Aiming_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Aiming_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Behavior.hpp>
@@ -327,7 +326,6 @@ LoadScene::LoadScene(
             register_json_user_function(Minimap::key, Minimap::json_user_function);
             register_json_user_function(InstantiateGrass::key, InstantiateGrass::json_user_function);
             register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);
-            register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
             register_json_user_function(LookAtNode::key, LookAtNode::json_user_function);
             register_json_user_function(CreateDriveOrWalkAi::key, CreateDriveOrWalkAi::json_user_function);
             register_json_user_function(CreateVehicleFollowerAi::key, CreateVehicleFollowerAi::json_user_function);

@@ -62,14 +62,15 @@ public:
     uint32_t get_total_user_count(UserTypes user_types) const;
     void set_local_user_count(uint32_t user_count);
     void set_user_count(RemoteSiteId site_id, uint32_t user_count);
-    void for_each_site_user(
-        const std::function<void(UserInfo& user)>& operation,
+    bool for_each_site_user(
+        const std::function<bool(UserInfo& user)>& operation,
         UserTypes user_types);
-    void for_each_site_user(
-        const std::function<void(const UserInfo& user)>& operation,
+    bool for_each_site_user(
+        const std::function<bool(const UserInfo& user)>& operation,
         UserTypes user_types) const;
     DanglingBaseClassRef<const UserInfo> get_user(const VariableAndHash<std::string>& full_name) const;
     DanglingBaseClassRef<const UserInfo> get_local_user(uint32_t id) const;
+    DanglingBaseClassRef<const UserInfo> get_user_by_rank(uint32_t rank) const;
     void print(std::ostream& ostr) const;
 
     void compute_random_user_ranks();

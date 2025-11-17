@@ -24,6 +24,7 @@ void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs &args) 
         {
             vars.set("random_rank_" + user.full_name, user.random_rank);
             vars.set("random_rank_str_" + user.full_name, std::to_string(user.random_rank));
+            return true;
         }, UserTypes::ALL);
 }
 

@@ -7,8 +7,10 @@
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 
@@ -89,16 +91,8 @@ DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(name);
 }
 
-const std::string LoadPlayers::key = "load_players";
-
-LoadSceneJsonUserFunction LoadPlayers::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    LoadPlayers(args.physics_scene()).execute(args);
-};
-
 LoadPlayers::LoadPlayers(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -128,6 +122,8 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
     // macro_playback teams.create_player_and_car_for_pc decimate: player_name:you car_name:_tiger_tank TEAM:red GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8;
     // macro_playback teams.create_player_and_car_for_npc car_name:_tiger_tank decimate: player_name:npc1 TEAM:red  GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8
     //    TEAMS_WAY_POINTS_RESOURCE:TEAMS_WAY_POINTS_RESOURCE;
+
+    args.arguments.validate(KnownArgs::options);
 
     try {
         auto filename = args.arguments.path(KnownArgs::json);
@@ -178,8 +174,6 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
             const auto& vars = args.asset_references["vehicles"].at(vehicle_name).rp;
             if (auto controller = player.try_at<std::string>(PlayerKeys::controller); controller.has_value()) {
                 nlohmann::json let{
-                    {"spawner_name", player.at<std::string>(PlayerKeys::name)},
-                    {"player_name", player.at<std::string>(PlayerKeys::name)},
                     {"asset_id", vehicle_name},
                     {"spawn_group", spawn_group},
                     {"team", team},
@@ -205,60 +199,87 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
                     {"mute", false}
                 };
+                std::string spawner_name = player.at<std::string>(PlayerKeys::name);
                 if (*controller == "pc") {
                     auto user = player.try_at(PlayerKeys::user);
                     if (!user.has_value()) {
                         THROW_OR_ABORT("\"pc\" controller requires \"user\"");
                     }
-                    let["local_user_id"] = user->at("id");
-                    let["full_user_name"] = user->at("name");
+                    auto u = args.remote_sites.get_user_by_rank(JsonView{*user}.at<uint32_t>("rank"));
+                    let["full_user_name"] = u->full_name;
+                    spawner_name += '_' + u->full_name;
+                    if (u->site_id.has_value() &&
+                        remote_sites.get_local_site_id().has_value() &&
+                        (*u->site_id != *remote_sites.get_local_site_id()))
+                    {
+                        let["user_is_local"] = false;
+                    } else {
+                        let["user_is_local"] = true;
+                        let["local_user_id"] = u->user_id;
+                    }
                 } else if (*controller != "npc") {
                     THROW_OR_ABORT("Unknown controller: \"" + *controller + "\". Known controllers: \"pc\", \"npc\"");
                 }
-                
+                let["spawner_name"] = spawner_name;
+                let["player_name"] = spawner_name;
+
+                JsonMacroArguments locals{{
+                    {ToplevelKeys::library, jv.at<std::string>(ToplevelKeys::library)},
+                    {"vehicle_class", vars.database.at<std::string>("vehicle_class")},
+                    {"controller", *controller}}};
                 nlohmann::json line{
                     {
                         MacroKeys::playback,
-                        (jv.at(ToplevelKeys::library).get<std::string>() + ".create_player_and_" +
-                            vars.database.at<std::string>("vehicle_class") +
-                            "_for_" + *controller)
-                    },
-                    {
-                        MacroKeys::let,
-                        std::move(let)
+                        "$library.create_player_and_$vehicle_class-_for_$controller"
                     }
                 };
-                args.macro_line_executor(line, nullptr);
+                args.macro_line_executor.inserted_block_arguments(std::move(let))(line, &locals);
             } else {
+                nlohmann::json let{
+                    {"spawner_name", player.at<std::string>(PlayerKeys::name)},
+                    {"asset_id", vehicle_name},
+                    {"spawn_group", spawn_group},
+                    {"team", team},
+                    {"if_human_style", true},
+                    {"if_car_body_renderable_style", true},
+                    {"color", color},
+                    {"velocity_error_std", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
+                    {"yaw_error_std", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
+                    {"pitch_error_std", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
+                    {"error_alpha", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
+                    {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
+                    {"mute", false}
+                };
+                JsonMacroArguments locals{{
+                    {ToplevelKeys::library, jv.at<std::string>(ToplevelKeys::library)},
+                    {"vehicle_class", vars.database.at<std::string>("vehicle_class")},
+                    {"controller", *controller}}
+                };
                 nlohmann::json line{
                     {
                         MacroKeys::playback,
-                        (jv.at(ToplevelKeys::library).get<std::string>() + ".create_spawner_and_" +
-                            vars.database.at<std::string>("vehicle_class"))
-                    },
-                    {
-                        MacroKeys::let,
-                        {
-                            {"spawner_name", player.at<std::string>(PlayerKeys::name)},
-                            {"asset_id", vehicle_name},
-                            {"spawn_group", spawn_group},
-                            {"team", team},
-                            {"if_human_style", true},
-                            {"if_car_body_renderable_style", true},
-                            {"color", color},
-                            {"velocity_error_std", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
-                            {"yaw_error_std", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
-                            {"pitch_error_std", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
-                            {"error_alpha", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
-                            {"respawn_cooldown_time", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
-                            {"mute", false}
-                        }
+                        "$library.create_spawner_and_$vehicle_class"
                     }
                 };
-                args.macro_line_executor(line, nullptr);
+                args.macro_line_executor.inserted_block_arguments(std::move(let))(line, &locals);
             }
         }
     } catch (const nlohmann::detail::exception& e) {
         throw std::runtime_error(e.what());
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "load_players",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                LoadPlayers(args.physics_scene()).execute(args);
+            });
+    }
+} obj;
+
 }

@@ -70,6 +70,7 @@ uint32_t RemoteSites::get_total_user_count(UserTypes user_types) const {
     for_each_site_user(
         [&](const UserInfo& user){
             ++result;
+            return true;
         }, user_types);
     return result;
 }
@@ -137,39 +138,37 @@ void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
     }
 }
 
-void RemoteSites::for_each_site_user(
-    const std::function<void(UserInfo& user)>& operation,
+bool RemoteSites::for_each_site_user(
+    const std::function<bool(UserInfo& user)>& operation,
     UserTypes user_types)
 {
     std::shared_lock lock{ mutex_ };
     assert_local_users_consistents();
     if (remote_params_.has_value()) {
-        local_users_->for_each_user([&](uint32_t user_id){
-            operation(local_site_.users.at(user_id));
-        });
         if (user_types == UserTypes::ALL) {
             for (auto& [site_id, site] : remote_sites_) {
                 if (site_id != remote_params_->site_id) {
                     for (auto&& [user_id, user] : tenumerate<uint32_t>(site.users)) {
-                        operation(user);
+                        if (!operation(user)) {
+                            return false;
+                        }
                     }
                 }
             }
         }
-    } else {
-        local_users_->for_each_user([&](uint32_t user_id){
-            operation(local_site_.users.at(user_id));
-        });
     }
+    return local_users_->for_each_user([&](uint32_t user_id){
+        return operation(local_site_.users.at(user_id));
+    });
 }
 
-void RemoteSites::for_each_site_user(
-    const std::function<void(const UserInfo& user)>& operation,
+bool RemoteSites::for_each_site_user(
+    const std::function<bool(const UserInfo& user)>& operation,
     UserTypes user_types) const
 {
-    const_cast<RemoteSites*>(this)->for_each_site_user(
+    return const_cast<RemoteSites*>(this)->for_each_site_user(
         [&](UserInfo& user){
-            operation(user);
+            return operation(user);
         }, user_types);
 }
 
@@ -194,7 +193,23 @@ void RemoteSites::print(std::ostream& ostr) const {
         } else {
             ostr << "User: " << user.user_id << '\n';
         }
+        return true;
     }, UserTypes::ALL);
+}
+
+DanglingBaseClassRef<const UserInfo> RemoteSites::get_user_by_rank(uint32_t rank) const {
+    DanglingBaseClassPtr<const UserInfo> result = nullptr;
+    for_each_site_user([&](const UserInfo& user){
+        if (user.random_rank == rank) {
+            result = {user, CURRENT_SOURCE_LOCATION};
+            return false;
+        }
+        return true;
+    }, UserTypes::ALL);
+    if (result == nullptr) {
+        THROW_OR_ABORT("Could not find user with rank " + std::to_string(rank));
+    }
+    return *result;
 }
 
 void RemoteSites::assert_local_users_consistents() const {
@@ -221,5 +236,6 @@ void RemoteSites::compute_random_user_ranks() {
             }
             user.random_rank = perm(i);
             ++i;
+            return true;
         }, UserTypes::ALL);
 }

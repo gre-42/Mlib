@@ -47,6 +47,7 @@ void ForEachSiteUser::execute(const LoadSceneJsonUserFunctionArgs &args) {
                 let.update(args.local_json_macro_arguments->json());
             }
             args.macro_line_executor.inserted_block_arguments(std::move(let))(l, nullptr);
+            return true;
         }, user_types_);
 }
 
