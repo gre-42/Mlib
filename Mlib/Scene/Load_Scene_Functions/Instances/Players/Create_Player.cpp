@@ -36,11 +36,13 @@ DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(driving_direction);
 }
 
-CreatePlayer::CreatePlayer(PhysicsScene& physics_scene) 
-    : LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreatePlayer::CreatePlayer(
+    PhysicsScene& physics_scene,
+    const MacroLineExecutor& macro_line_executor) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene, &macro_line_executor }
 {}
 
-void CreatePlayer::execute(const JsonView& args, const MacroLineExecutor& macro_line_executor)
+void CreatePlayer::execute(const JsonView& args)
 {
     args.validate(KnownArgs::options);
     if (game_logic == nullptr) {
@@ -93,12 +95,6 @@ void CreatePlayer::execute(const JsonView& args, const MacroLineExecutor& macro_
     player.release();
 }
 
-
-void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    execute(args.arguments, args.macro_line_executor);
-}
-
 namespace {
 
 struct RegisterJsonUserFunction {
@@ -107,7 +103,7 @@ struct RegisterJsonUserFunction {
             "player_create",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                CreatePlayer(args.physics_scene()).execute(args);
+                CreatePlayer(args.physics_scene(), args.macro_line_executor).execute(args.arguments);
             });
     }
 } obj;

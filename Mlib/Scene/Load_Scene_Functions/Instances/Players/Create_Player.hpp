@@ -9,9 +9,10 @@ struct LoadSceneJsonUserFunctionArgs;
 
 class CreatePlayer: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit CreatePlayer(PhysicsScene& physics_scene);
-    void execute(const JsonView& args, const MacroLineExecutor& macro_line_executor);
-    void execute(const LoadSceneJsonUserFunctionArgs& args);
+    explicit CreatePlayer(
+        PhysicsScene& physics_scene,
+        const MacroLineExecutor& macro_line_executor);
+    void execute(const JsonView& args);
 };
 
 }

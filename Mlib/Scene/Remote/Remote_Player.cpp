@@ -85,7 +85,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         THROW_OR_ABORT("RemotePlayer: Remote scene is null");
     }
     physics_scene.remote_scene_->created_at_remote_site.players.add(name);
-    CreatePlayer{physics_scene}.execute(JsonView{args}, physics_scene.macro_line_executor_);
+    CreatePlayer{physics_scene, physics_scene.macro_line_executor_}.execute(JsonView{args});
     return {
         global_object_pool.create<RemotePlayer>(
             CURRENT_SOURCE_LOCATION,
