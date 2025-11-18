@@ -52,6 +52,7 @@ PhysicsScene::PhysicsScene(
     , asset_references_{ asset_references, CURRENT_SOURCE_LOCATION }
     , scene_node_resources_{ scene_node_resources }
     , particle_resources_{ particle_resources }
+    , bullet_property_db_{ bullet_property_db }
     , rendering_resources_{
         std::move(rendering_resources_name),
         max_anisotropic_filtering_level }

@@ -33,7 +33,6 @@ DECLARE_ARGUMENT(dpitch_max);
 DECLARE_ARGUMENT(yaw_error_std);
 DECLARE_ARGUMENT(pitch_error_std);
 DECLARE_ARGUMENT(error_alpha);
-DECLARE_ARGUMENT(dpitch_head);
 }
 
 const std::string CreateYawPitchLookatNodes::key = "yaw_pitch_look_at_nodes";

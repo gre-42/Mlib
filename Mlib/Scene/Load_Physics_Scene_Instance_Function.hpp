@@ -6,13 +6,14 @@
 
 namespace Mlib {
 
+class BulletPropertyDb;
+class MacroLineExecutor;
 class PhysicsScene;
 class ObjectPool;
 class DeferredInstantiator;
 class SceneNodeResources;
 class AssetReferences;
 class ParticleResources;
-struct SceneParticles;
 class ITrailRenderer;
 class SmokeParticleGenerator;
 class DynamicLights;
@@ -24,13 +25,11 @@ class Scene;
 class DynamicWorld;
 class PhysicsEngine;
 class CursorStates;
-struct SceneConfig;
 class SetFps;
 class RenderLogic;
 class GameLogic;
 class BaseLog;
 class DeleteNodeMutex;
-struct RenderingContext;
 class DirtmapLogic;
 class SkyboxLogic;
 class StandardRenderLogic;
@@ -44,15 +43,22 @@ class UiFocus;
 class CountdownPhysics;
 class RemoteScene;
 class RemoteSites;
+struct SceneParticles;
+struct SceneConfig;
+struct RenderingContext;
 
 class LoadPhysicsSceneInstanceFunction {
 public:
-    explicit LoadPhysicsSceneInstanceFunction(PhysicsScene& physics_scene);
+    explicit LoadPhysicsSceneInstanceFunction(
+        PhysicsScene& physics_scene,
+        const MacroLineExecutor* macro_line_executor = nullptr);
     ~LoadPhysicsSceneInstanceFunction();
 
 protected:
     PhysicsScene& physics_scene;
     ObjectPool& object_pool;
+    const MacroLineExecutor& macro_line_executor;
+    BulletPropertyDb& bullet_property_db;
     DeferredInstantiator& deferred_instantiator;
     RenderLogics& render_logics;
     RenderingResources& rendering_resources;

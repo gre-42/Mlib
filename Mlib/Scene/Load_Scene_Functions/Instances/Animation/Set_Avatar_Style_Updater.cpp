@@ -38,9 +38,9 @@ void SetAvatarStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
         gun_node,
         args.arguments.at<std::string>(KnownArgs::resource_wo_gun),
         args.arguments.at<std::string>(KnownArgs::resource_w_gun));
-    AnimationStateUpdater* ptr = updater.get();
+    AnimationStateUpdater& ref = *updater;
     avatar_node->set_animation_state_updater(std::move(updater));
-    rb.animation_state_updater_ = { ptr, CURRENT_SOURCE_LOCATION };
+    rb.animation_state_updater_ = { ref, CURRENT_SOURCE_LOCATION };
 }
 
 namespace {

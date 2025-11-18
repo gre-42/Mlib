@@ -32,6 +32,7 @@
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
+#include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -90,6 +91,7 @@ DECLARE_ARGUMENT(rear_engine);
 DECLARE_ARGUMENT(engine_audio);
 DECLARE_ARGUMENT(engine_exhaust);
 DECLARE_ARGUMENT(door_distance);
+DECLARE_ARGUMENT(waypoint_dy);
 }
 
 namespace KnownAudio {
@@ -217,7 +219,7 @@ void CreateGenericCar::execute(const JsonView& args)
             .I_rotation = fixed_zeros<float, 3>(),
             .with_penetration_limits = true,
             .geographic_coordinates = scene_node_resources.get_geographic_mapping(WORLD),
-            .waypoint_dy = (CompressedScenePos)1.2f,
+            .waypoint_dy = vdb.at<CompressedScenePos>(KnownDb::waypoint_dy),
             .hitboxes = VariableAndHash<std::string>{name + "_hitboxes"},
             .collidable_mode = CollidableMode::COLLIDE | CollidableMode::MOVE});
 
@@ -281,7 +283,7 @@ void CreateGenericCar::execute(const JsonView& args)
                     vdb.at<float>(KnownDb::w_clutch) * rpm,
                     vdb.at<float>(KnownDb::max_dw, INFINITY) * rpm / seconds };
                 rb.engines_.add(
-                    VariableAndHash<std::string>{ "front" },
+                    front_engine,
                     std::move(engine_power),
                     engine_listeners);
             }
@@ -295,7 +297,7 @@ void CreateGenericCar::execute(const JsonView& args)
                     vdb.at<float>(KnownDb::w_clutch) * rpm,
                     vdb.at<float>(KnownDb::max_dw, INFINITY) * rpm / seconds };
                 rb.engines_.add(
-                    VariableAndHash<std::string>{ "rear" },
+                    rear_engine,
                     std::move(engine_power),
                     engine_listeners);
             }
@@ -309,12 +311,12 @@ void CreateGenericCar::execute(const JsonView& args)
                 vdb.at<float>(KnownDb::w_clutch) * rpm,
                 vdb.at<float>(KnownDb::max_dw, INFINITY) * rpm / seconds };
             rb.engines_.add(
-                VariableAndHash<std::string>{ "engine" },
+                front_engine,
                 std::move(engine_power),
                 engine_listeners);
         } else {
             rb.engines_.add(
-                VariableAndHash<std::string>{ "engine" },
+                front_engine,
                 std::nullopt,   // power
                 nullptr);       // listeners
         }
@@ -327,7 +329,7 @@ void CreateGenericCar::execute(const JsonView& args)
         auto wheel_mass = wdb.at<float>(KnownWheels::mass) * kg;
         auto wheel_brake_force = wdb.at<float>(KnownWheels::brake_force) * N;
         auto wheel_brake_torque = wdb.at<float>(KnownWheels::brake_torque) * N * meters;
-        auto wheel_Ks = wdb.at<float>(KnownWheels::Ks) * N;
+        auto wheel_Ks = wdb.at<float>(KnownWheels::Ks) * N / meters;
         auto wheel_Ka = wdb.at<float>(KnownWheels::Ka) * N / (meters / seconds);
         auto wheel_Ke = wdb.at<float>(KnownWheels::Ke);
         Interp<float> mus{
@@ -473,6 +475,7 @@ void CreateGenericCar::execute(const JsonView& args)
         if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.rigid_bodies.contains(parent)) {
             rb.remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
                 CURRENT_SOURCE_LOCATION,
+                RemoteSceneObjectType::RIGID_BODY_CAR,
                 args.json().dump(),
                 tesuffix,
                 DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION},

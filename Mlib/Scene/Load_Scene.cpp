@@ -95,13 +95,11 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Controls.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Ui_Exhibit.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_To_Inventory.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Burn_In.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Connect_Trailer.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Aim_At.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Delta_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Engine.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rotor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Trailer_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Weapon_Cycle.hpp>
@@ -275,7 +273,6 @@ LoadScene::LoadScene(
 
             // Instances
             register_json_user_function(AddToInventory::key, AddToInventory::json_user_function);
-            register_json_user_function(AddWeaponToInventory::key, AddWeaponToInventory::json_user_function);
             register_json_user_function(ConnectTrailer::key, ConnectTrailer::json_user_function);
             register_json_user_function(BurnIn::key, BurnIn::json_user_function);
             register_json_user_function(ClearParameters::key, ClearParameters::json_user_function);
@@ -288,7 +285,6 @@ LoadScene::LoadScene(
             register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
             register_json_user_function(CreateDestinationReachedAi::key, CreateDestinationReachedAi::json_user_function);
             register_json_user_function(CreateEngine::key, CreateEngine::json_user_function);
-            register_json_user_function(CreateGun::key, CreateGun::json_user_function);
             register_json_user_function(CreateMissileAi::key, CreateMissileAi::json_user_function);
             register_json_user_function(CreateHeliController::key, CreateHeliController::json_user_function);
             register_json_user_function(CreateHudOpponentTracker::key, CreateHudOpponentTracker::json_user_function);

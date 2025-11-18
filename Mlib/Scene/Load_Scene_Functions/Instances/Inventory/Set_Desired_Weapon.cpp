@@ -27,7 +27,7 @@ LoadSceneJsonUserFunction SetDesiredWeapon::json_user_function = [](const LoadSc
 };
 
 SetDesiredWeapon::SetDesiredWeapon(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)

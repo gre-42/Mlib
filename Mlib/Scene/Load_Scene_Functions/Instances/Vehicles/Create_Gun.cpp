@@ -18,6 +18,7 @@
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
@@ -50,16 +51,10 @@ DECLARE_ARGUMENT(generate_muzzle_flash);
 DECLARE_ARGUMENT(shot_audio);
 }
 
-const std::string CreateGun::key = "gun";
-
-LoadSceneJsonUserFunction CreateGun::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    CreateGun(args.physics_scene()).execute(args);
-};
-
-CreateGun::CreateGun(PhysicsScene& physics_scene) 
-    : LoadPhysicsSceneInstanceFunction{ physics_scene }
+CreateGun::CreateGun(
+    PhysicsScene& physics_scene,
+    const MacroLineExecutor& macro_line_executor)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene, &macro_line_executor }
 {}
 
 class PunchAngleRng {
@@ -93,17 +88,19 @@ private:
     float punch_angle_;
 };
 
-void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateGun::operator()(const JsonView& args)
 {
+    args.validate(KnownArgs::options);
+
     Linker linker{ physics_engine.advance_times_ };
-    DanglingBaseClassRef<SceneNode> parent_rb_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::parent_rigid_body_node), DP_LOC);
+    DanglingBaseClassRef<SceneNode> parent_rb_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::parent_rigid_body_node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(parent_rb_node);
-    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
-    DanglingBaseClassPtr<SceneNode> punch_angle_node = args.arguments.contains_non_null(KnownArgs::punch_angle_node)
-        ? scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::punch_angle_node), DP_LOC).ptr()
+    DanglingBaseClassRef<SceneNode> node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
+    DanglingBaseClassPtr<SceneNode> punch_angle_node = args.contains_non_null(KnownArgs::punch_angle_node)
+        ? scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::punch_angle_node), DP_LOC).ptr()
         : nullptr;
-    float punch_angle_idle_std = args.arguments.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
-    float punch_angle_shoot_std = args.arguments.at<float>(KnownArgs::punch_angle_shoot_std) * degrees;
+    float punch_angle_idle_std = args.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
+    float punch_angle_shoot_std = args.at<float>(KnownArgs::punch_angle_shoot_std) * degrees;
     float punch_angle_idle_alpha = 0.002f;
     float decay = 0.05f;
     // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
@@ -117,16 +114,16 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         [pitch_rng, yaw_rng](bool shooting) mutable {
             return FixedArray<float, 3>{pitch_rng(shooting), yaw_rng(shooting), 0.f};
         }};
-    const auto& bullet_props = args.bullet_property_db.get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::bullet_type));
+    const auto& bullet_props = bullet_property_db.get(args.at<VariableAndHash<std::string>>(KnownArgs::bullet_type));
     std::function<void(
         const std::optional<VariableAndHash<std::string>>& player,
         const std::string& bullet_suffix,
         const std::optional<VariableAndHash<std::string>>& target,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet;
-    if (auto g = args.arguments.try_at(KnownArgs::generate_smart_bullet); g.has_value()) {
+    if (auto g = args.try_at(KnownArgs::generate_smart_bullet); g.has_value()) {
         generate_smart_bullet =
-            [mle = args.macro_line_executor,
+            [mle = macro_line_executor,
              l = *g]
             (
                 const std::optional<VariableAndHash<std::string>>& player,
@@ -146,7 +143,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             };
     }
     std::function<void(const AudioSourceState<ScenePos>&)> generate_shot_audio;
-    if (auto a = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::shot_audio); a.has_value()) {
+    if (auto a = args.try_at<VariableAndHash<std::string>>(KnownArgs::shot_audio); a.has_value()) {
         generate_shot_audio =
         [
             &o=one_shot_audio,
@@ -159,11 +156,11 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         };
     }
     std::function<void(const StaticWorld&)> generate_muzzle_flash;
-    if (auto macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash); macro.has_value()) {
+    if (auto macro = args.try_at_non_null(KnownArgs::generate_muzzle_flash); macro.has_value()) {
         generate_muzzle_flash =
         [
             macro=*macro,
-            mle=args.macro_line_executor
+            mle=macro_line_executor
         ](const StaticWorld& world)
         {
             nlohmann::json let{
@@ -175,7 +172,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& gun = global_object_pool.create<Gun>(
         CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
-        args.arguments.at<float>(KnownArgs::cool_down) * seconds,
+        args.at<float>(KnownArgs::cool_down) * seconds,
         rb,
         node,
         punch_angle_node,
@@ -183,11 +180,26 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::move(generate_smart_bullet),
         std::move(generate_shot_audio),
         bullet_generator,
-        args.arguments.at<std::string>(KnownArgs::ammo_type),
+        args.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
         generate_muzzle_flash);
-    if (args.arguments.contains_non_null(KnownArgs::ypln_node)) {
-        auto ypln_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::ypln_node), DP_LOC);
+    if (args.contains_non_null(KnownArgs::ypln_node)) {
+        auto ypln_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::ypln_node), DP_LOC);
         gun.set_ypln_node(ypln_node);
     }
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "gun",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                CreateGun(args.physics_scene(), args.macro_line_executor)(JsonView{args.arguments});
+            });
+    }
+} obj;
+
 }

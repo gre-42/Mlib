@@ -104,6 +104,7 @@ public:
     DanglingBaseClassRef<AssetReferences> asset_references_;
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;
+    BulletPropertyDb& bullet_property_db_;
     RenderingResources rendering_resources_;
     std::function<bool()> paused_;
     EventEmitter paused_changed_;

@@ -3,9 +3,15 @@
 
 using namespace Mlib;
 
-LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(PhysicsScene& physics_scene)
+LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(
+    PhysicsScene& physics_scene,
+    const MacroLineExecutor* macro_line_executor)
     : physics_scene{ physics_scene }
     , object_pool{ physics_scene.object_pool_ }
+    , macro_line_executor{ macro_line_executor == nullptr
+        ? physics_scene.macro_line_executor_
+        : *macro_line_executor}
+    , bullet_property_db{ physics_scene.bullet_property_db_ }
     , deferred_instantiator{ physics_scene.deferred_instantiator_ }
     , render_logics{ physics_scene.render_logics_ }
     , rendering_resources{ physics_scene.rendering_resources_ }

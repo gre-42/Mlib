@@ -3,15 +3,15 @@
 
 namespace Mlib {
 
-class MacroLineExecutor;
 class JsonView;
+class MacroLineExecutor;
 
-class AddWeaponToInventory: public LoadPhysicsSceneInstanceFunction {
+class CreateGenericAvatar: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit AddWeaponToInventory(
+    explicit CreateGenericAvatar(
         PhysicsScene& physics_scene,
         const MacroLineExecutor& macro_line_executor);
-    void operator () (const JsonView& args);
+    void execute(const JsonView& args);
 };
 
 }

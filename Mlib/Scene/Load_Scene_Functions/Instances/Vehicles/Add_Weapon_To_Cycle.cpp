@@ -11,6 +11,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -30,31 +31,26 @@ DECLARE_ARGUMENT(create_weapon);
 DECLARE_ARGUMENT(create_externals);
 }
 
-const std::string AddWeaponToInventory::key = "add_weapon_to_cycle";
-
-LoadSceneJsonUserFunction AddWeaponToInventory::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
-{
-    args.arguments.validate(KnownArgs::options);
-    AddWeaponToInventory(args.physics_scene()).execute(args);
-};
-
-AddWeaponToInventory::AddWeaponToInventory(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+AddWeaponToInventory::AddWeaponToInventory(
+    PhysicsScene& physics_scene,
+    const MacroLineExecutor& macro_line_executor) 
+    : LoadPhysicsSceneInstanceFunction{ physics_scene, &macro_line_executor }
 {}
 
-void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), DP_LOC);
-    auto entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
+void AddWeaponToInventory::operator () (const JsonView& args) {
+    args.validate(KnownArgs::options);
+
+    DanglingBaseClassRef<SceneNode> cycle_node = scene.get_node(args.at<VariableAndHash<std::string>>(KnownArgs::cycle_node), DP_LOC);
+    auto entry_name = args.at<std::string>(KnownArgs::entry_name);
     WeaponCycle& wc = get_weapon_cycle(cycle_node);
-    auto ammo_type = args.arguments.at<InventoryItem>(KnownArgs::ammo_type);
-    auto bullet_type = args.arguments.at<std::string>(KnownArgs::bullet_type);
-    float cool_down = args.arguments.at<float>(KnownArgs::cool_down);
+    auto ammo_type = args.at<InventoryItem>(KnownArgs::ammo_type);
+    auto bullet_type = args.at<std::string>(KnownArgs::bullet_type);
+    float cool_down = args.at<float>(KnownArgs::cool_down);
 
     std::function<void()> create_weapon;
-    if (auto create = args.arguments.try_at(KnownArgs::create_weapon); create.has_value()) {
+    if (auto create = args.try_at(KnownArgs::create_weapon); create.has_value()) {
         create_weapon = [
-            macro_line_executor = args.macro_line_executor,
+            macro_line_executor = macro_line_executor,
             create = *create,
             ammo_type,
             bullet_type,
@@ -68,10 +64,10 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
         };
     }
     std::function<void(const VariableAndHash<std::string>& player_name)> create_externals;
-    if (auto create = args.arguments.try_at(KnownArgs::create_externals); create.has_value()) {
+    if (auto create = args.try_at(KnownArgs::create_externals); create.has_value()) {
         create_externals = [
-            macro_line_executor = args.macro_line_executor,
-            create = args.arguments.at(KnownArgs::create_externals),
+            macro_line_executor = macro_line_executor,
+            create = args.at(KnownArgs::create_externals),
             &players = players](const VariableAndHash<std::string>& player_name)
         {
             auto player = players.get_player(player_name, CURRENT_SOURCE_LOCATION);
@@ -92,8 +88,23 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
             .create_weapon = std::move(create_weapon),
             .create_externals = std::move(create_externals),
             .ammo_type = ammo_type,
-            .bullet_properties = args.bullet_property_db.get(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::bullet_type)),
+            .bullet_properties = bullet_property_db.get(args.at<VariableAndHash<std::string>>(KnownArgs::bullet_type)),
             .cool_down = cool_down * seconds,
-            .range_min = args.arguments.at<float>(KnownArgs::range_min) * meters,
-            .range_max = args.arguments.at<float>(KnownArgs::range_max) * meters});
+            .range_min = args.at<float>(KnownArgs::range_min) * meters,
+            .range_max = args.at<float>(KnownArgs::range_max) * meters});
+}
+
+namespace {
+
+struct RegisterJsonUserFunction {
+    RegisterJsonUserFunction() {
+        LoadSceneFuncs::register_json_user_function(
+            "add_weapon_to_cycle",
+            [](const LoadSceneJsonUserFunctionArgs& args)
+            {
+                AddWeaponToInventory(args.physics_scene(), args.macro_line_executor)(args.arguments);
+            });
+    }
+} obj;
+
 }
