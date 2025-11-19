@@ -28,11 +28,13 @@ LoadSceneJsonUserFunction CreatePerspectiveCamera::json_user_function = [](const
 };
 
 CreatePerspectiveCamera::CreatePerspectiveCamera(PhysicsScene& physics_scene) 
-: LoadPhysicsSceneInstanceFunction{ physics_scene }
+    : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
 void CreatePerspectiveCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
+
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto pc = std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),

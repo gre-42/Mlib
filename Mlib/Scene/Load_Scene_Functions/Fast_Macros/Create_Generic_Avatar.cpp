@@ -1,5 +1,6 @@
 #include "Create_Generic_Avatar.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Material/Particle_Type.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
@@ -31,6 +32,7 @@
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Insert_Physics_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
@@ -81,6 +83,9 @@ DECLARE_ARGUMENT(dyaw_max);
 DECLARE_ARGUMENT(steering_multiplier);
 DECLARE_ARGUMENT(animation_resource_wo_gun);
 DECLARE_ARGUMENT(animation_resource_w_gun);
+DECLARE_ARGUMENT(y_fov);
+DECLARE_ARGUMENT(near_plane);
+DECLARE_ARGUMENT(far_plane);
 }
 
 namespace KnownDb {
@@ -205,7 +210,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
             std::move(animation_state),
             AnimationStateAlreadyExistsBehavior::THROW);
     }
-      
+    
     create_child_node("dynamic", parent, animation_node, {0.f, -0.5f * meters, 0.f}, {0.f, 180.f * degrees, 0.f});
     // The human hitbox has width and length of 0.5 (or \"radius\" or 0.25), so z = -0.3 is out of its hitbox"
     create_child_node("dynamic", parent, main_gun_node, {0.1f * meters, 0.5f * meters, 0.f});
@@ -216,6 +221,30 @@ void CreateGenericAvatar::execute(const JsonView& args)
     create_child_node("dynamic", human_head_node          , human_head_node2         , {0.f, 0.f, 0.f}, {0.f, 180 * degrees, 0.f});
     create_child_node("dynamic", human_head_node2         , human_head_camera_node   , {0.f, 0.f, 0.f});
     
+    {
+        DanglingBaseClassRef<SceneNode> camera_node = scene.get_node(human_head_camera_node, DP_LOC);
+        {
+            auto pc = std::make_unique<PerspectiveCamera>(
+                PerspectiveCameraConfig(),
+                PerspectiveCamera::Postprocessing::ENABLED);
+            pc->set_y_fov(args.at<float>(KnownArgs::y_fov) * degrees);
+            pc->set_near_plane(args.at<float>(KnownArgs::near_plane));
+            pc->set_far_plane(args.at<float>(KnownArgs::far_plane));
+            pc->set_requires_postprocessing(true);
+            camera_node->set_camera(std::move(pc));
+        }
+        {
+            auto node_hider = std::make_unique<PhysicsNodeHiderWithEvent>(
+                parent_node,
+                camera_node);
+            auto& nh = global_object_pool.add(std::move(node_hider), CURRENT_SOURCE_LOCATION);
+            parent_node->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
+            camera_node->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
+            parent_node->insert_node_hider(nullptr, { nh, CURRENT_SOURCE_LOCATION });
+            physics_engine.advance_times_.add_advance_time({ nh, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        }
+    }
+
     if (if_with_graphics) {
         create_child_node("dynamic", animation_node, main_gun_node_visual0, {0.f, 0.f, 0.f});
         create_child_node("dynamic", main_gun_node_visual0, main_gun_node_visual, {-0.075f * meters, 0.f, 0.025f * meters}, {90 * degrees, 0.f, 90 * degrees});
