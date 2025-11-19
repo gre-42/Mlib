@@ -51,6 +51,8 @@ DECLARE_ARGUMENT(tesuffix);
 DECLARE_ARGUMENT(tedecimate);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
+DECLARE_ARGUMENT(if_car_body_renderable_style);
+DECLARE_ARGUMENT(color);
 DECLARE_ARGUMENT(parking_brake_pulled);
 DECLARE_ARGUMENT(velocity);
 DECLARE_ARGUMENT(angular_velocity);
@@ -155,6 +157,7 @@ void CreateGenericCar::execute(const JsonView& args)
     auto tedecimate = args.at<std::string>(KnownArgs::tedecimate);
     auto if_with_graphics = args.at<bool>(KnownArgs::if_with_graphics);
     auto if_with_physics = args.at<bool>(KnownArgs::if_with_physics);
+    auto if_car_body_renderable_style = args.at<bool>(KnownArgs::if_car_body_renderable_style);
     const auto& vdb = asset_references["vehicles"].at(name).rp.database;
     auto wheels = vdb.at<std::string>(KnownDb::wheels);
     const auto& wdb = asset_references["wheels"].at(wheels).rp.database;
@@ -176,6 +179,15 @@ void CreateGenericCar::execute(const JsonView& args)
     create_child_node("dynamic", parent, VH{"wheel_left_rear_node" + tesuffix}, wheel_left_rear_mount_0.casted<ScenePos>());
     create_child_node("dynamic", parent, VH{"wheel_right_rear_node" + tesuffix}, wheel_right_rear_mount_0.casted<ScenePos>());
 
+    DanglingBaseClassRef<SceneNode> parent_node = scene.get_node(parent, DP_LOC);
+
+    if (if_car_body_renderable_style) {
+        auto style = std::unique_ptr<ColorStyle>(new ColorStyle{
+            .selector = Mlib::compile_regex("body|chassis|turret|main_gun"),
+            .ambient = args.at<EOrderableFixedArray<float, 3>>(KnownArgs::color),
+            .diffuse = args.at<EOrderableFixedArray<float, 3>>(KnownArgs::color)});
+        parent_node->add_color_style(std::move(style));
+    }
     if (if_with_graphics) {
         if (class_ != VehicleType::SHIP) {
             create_child_node("dynamic", VH{"wheel_right_front_node" + tesuffix}, VH{"wheel_right_front_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
@@ -205,8 +217,6 @@ void CreateGenericCar::execute(const JsonView& args)
         create_lights();
     }
     auto create_physics = [&](){
-        DanglingBaseClassRef<SceneNode> node = scene.get_node(parent, DP_LOC);
-
         auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
             .node = parent,
             .name = "generic_car_" + name + tesuffix,
@@ -248,7 +258,7 @@ void CreateGenericCar::execute(const JsonView& args)
                 THROW_OR_ABORT("Engine exhaust array is empty");
             }
             auto particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE);
-            scene.get_node(parent, DP_LOC)->add_renderable(
+            parent_node->add_renderable(
                 VariableAndHash<std::string>{"exhaust_particles"},
                 particle_renderer);
             physics_engine.advance_times_.add_advance_time(
