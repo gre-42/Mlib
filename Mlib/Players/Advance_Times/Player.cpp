@@ -674,6 +674,10 @@ void Player::trigger_gun() {
     gun().trigger(this, &team().get());
 }
 
+bool Player::can_shoot() const {
+    return has_gun_node() && !gun().is_none_gun();
+}
+
 bool Player::has_gun_node() const {
     std::shared_lock lock{ mutex_ };
     return (controlled_.gun_node != nullptr);
