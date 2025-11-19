@@ -3,12 +3,13 @@
 
 namespace Mlib {
 
+class JsonView;
 struct LoadSceneJsonUserFunctionArgs;
 
 class CreateDamageable: public LoadPhysicsSceneInstanceFunction {
 public:
     explicit CreateDamageable(PhysicsScene& physics_scene);
-    void execute(const LoadSceneJsonUserFunctionArgs& args);
+    void execute(const JsonView& args);
 };
 
 }

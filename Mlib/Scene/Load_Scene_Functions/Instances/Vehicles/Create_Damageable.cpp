@@ -35,21 +35,20 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(health);
 DECLARE_ARGUMENT(explosions);
 DECLARE_ARGUMENT(delete_node_when_health_leq_zero);
-DECLARE_ARGUMENT(gid);
 }
 
 CreateDamageable::CreateDamageable(PhysicsScene& physics_scene) 
     : LoadPhysicsSceneInstanceFunction{ physics_scene }
 {}
 
-void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateDamageable::execute(const JsonView& args)
 {
-    args.arguments.validate(KnownArgs::options);
+    args.validate(KnownArgs::options);
 
-    auto node = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node);
+    auto node = args.at<VariableAndHash<std::string>>(KnownArgs::node);
 
     DeletingDamageable::GenerateExplosions generate_explosions;
-    auto explosions = args.arguments.try_at<std::vector<nlohmann::json>>(KnownArgs::explosions);
+    auto explosions = args.try_at<std::vector<nlohmann::json>>(KnownArgs::explosions);
 
     if (explosions.has_value()) {
         generate_explosions.reserve(explosions->size());
@@ -115,11 +114,9 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene,
         physics_engine.advance_times_,
         node,
-        args.arguments.at<float>(KnownArgs::health),
-        args.arguments.at<bool>(KnownArgs::delete_node_when_health_leq_zero),
-        std::make_unique<Translator>(
-            args.translators,
-            VariableAndHash{args.arguments.at<AssetGroupAndId>(KnownArgs::gid)}),
+        args.at<float>(KnownArgs::health),
+        args.at<bool>(KnownArgs::delete_node_when_health_leq_zero),
+        translator,
         std::move(generate_explosions));
 }
 
@@ -131,7 +128,7 @@ struct RegisterJsonUserFunction {
             "damageable",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                CreateDamageable(args.physics_scene()).execute(args);
+                CreateDamageable(args.physics_scene()).execute(args.arguments);
             });
     }
 } obj;

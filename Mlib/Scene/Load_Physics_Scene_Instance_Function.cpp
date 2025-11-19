@@ -11,6 +11,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(
     , macro_line_executor{ macro_line_executor == nullptr
         ? physics_scene.macro_line_executor_
         : *macro_line_executor}
+    , translator{ physics_scene.translator_ }
     , bullet_property_db{ physics_scene.bullet_property_db_ }
     , deferred_instantiator{ physics_scene.deferred_instantiator_ }
     , render_logics{ physics_scene.render_logics_ }

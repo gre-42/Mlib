@@ -45,11 +45,13 @@ DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(externals_seat);
 }
 
-SetExternalsCreator::SetExternalsCreator(PhysicsScene& physics_scene)
-    : LoadPhysicsSceneInstanceFunction{ physics_scene }
+SetExternalsCreator::SetExternalsCreator(
+    PhysicsScene& physics_scene,
+    const MacroLineExecutor& macro_line_executor)
+    : LoadPhysicsSceneInstanceFunction{ physics_scene, &macro_line_executor }
 {}
 
-bool get_if_pc(ExternalsMode externals_mode, const UserInfo* user_info) {
+static bool get_if_pc(ExternalsMode externals_mode, const UserInfo* user_info) {
     return
         (externals_mode == ExternalsMode::PC) &&
         (user_info != nullptr) &&
@@ -59,13 +61,12 @@ bool get_if_pc(ExternalsMode externals_mode, const UserInfo* user_info) {
 void SetExternalsCreator::execute_unsafe(
     SceneVehicle& vehicle,
     nlohmann::json externals,
-    nlohmann::json internals,
-    const MacroLineExecutor& macro_line_executor)
+    nlohmann::json internals)
 {
     macro_line_executor.block_arguments().validate_complement(LetKeys::options);
 
     vehicle.set_create_vehicle_externals(
-        [macro_line_executor, macro=std::move(externals)](
+        [mle=macro_line_executor, macro=std::move(externals)](
             const Player& player,
             ExternalsMode externals_mode)
         {
@@ -84,11 +85,11 @@ void SetExternalsCreator::execute_unsafe(
                     let[LetKeys::local_user_id] = user_info->user_id;
                 }
             }
-            macro_line_executor.inserted_block_arguments(std::move(let))(macro, nullptr);
+            mle.inserted_block_arguments(std::move(let))(macro, nullptr);
         }
     );
     vehicle.set_create_vehicle_internals(
-        [macro_line_executor, macro=std::move(internals)](
+        [mle=macro_line_executor, macro=std::move(internals)](
             const Player& player,
             const InternalsMode& internals_mode)
         {
@@ -112,15 +113,14 @@ void SetExternalsCreator::execute_unsafe(
                     let[LetKeys::local_user_id] = user_info->user_id;
                 }
             }
-            macro_line_executor.inserted_block_arguments(std::move(let))(macro, nullptr);
+            mle.inserted_block_arguments(std::move(let))(macro, nullptr);
         }
     );
 }
 
 void SetExternalsCreator::execute_safe(
     SceneVehicle& vehicle,
-    const std::string& asset_id,
-    const MacroLineExecutor& macro_line_executor)
+    const std::string& asset_id)
 {
     auto externals = std::map<std::string, std::string>{
         {"playback", "create_player_vehicle_externals_" + asset_id}};
@@ -129,8 +129,7 @@ void SetExternalsCreator::execute_safe(
     execute_unsafe(
         vehicle,
         externals,
-        internals,
-        macro_line_executor);
+        internals);
 }
 
 void SetExternalsCreator::execute_unsafe(const LoadSceneJsonUserFunctionArgs& args) {
@@ -143,8 +142,7 @@ void SetExternalsCreator::execute_unsafe(const LoadSceneJsonUserFunctionArgs& ar
     execute_unsafe(
         spawner.get_primary_scene_vehicle().get(),
         args.arguments.at(KnownArgsUnsafe::externals),
-        args.arguments.at(KnownArgsUnsafe::internals),
-        args.macro_line_executor);
+        args.arguments.at(KnownArgsUnsafe::internals));
 }
 
 void SetExternalsCreator::execute_safe(const LoadSceneJsonUserFunctionArgs& args) {
@@ -156,8 +154,7 @@ void SetExternalsCreator::execute_safe(const LoadSceneJsonUserFunctionArgs& args
     }
     execute_safe(
         spawner.get_primary_scene_vehicle().get(),
-        args.arguments.at<std::string>(KnownArgsSafe::asset_id),
-        args.macro_line_executor);
+        args.arguments.at<std::string>(KnownArgsSafe::asset_id));
 }
 
 namespace {
@@ -168,7 +165,7 @@ struct RegisterJsonUserFunction0 {
             "set_externals_creator_unsafe",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                SetExternalsCreator(args.physics_scene()).execute_unsafe(args);
+                SetExternalsCreator(args.physics_scene(), args.macro_line_executor).execute_unsafe(args);
             });
     }
 } obj0;
@@ -179,7 +176,7 @@ struct RegisterJsonUserFunction1 {
             "set_externals_creator_safe",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                SetExternalsCreator(args.physics_scene()).execute_safe(args);
+                SetExternalsCreator(args.physics_scene(), args.macro_line_executor).execute_safe(args);
             });
     }
 } obj1;

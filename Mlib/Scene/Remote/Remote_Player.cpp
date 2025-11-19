@@ -160,12 +160,15 @@ void RemotePlayer::read(
                 {
                     auto let = nlohmann::json::object({
                         {"asset_id", rb->asset_id_},
-                        {"suffix", rbv->node_suffix()}
+                        {"suffix", rbv->node_suffix()},
+                        {"if_damageable", (rb->damageable_ != nullptr)}
                     });
-                    SetExternalsCreator{ physics_scene_.get() }.execute_safe(
+                    SetExternalsCreator{
+                        physics_scene_.get(),
+                        physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let))
+                    }.execute_safe(
                         *vehicle_.get(),
-                        rb->asset_id_,
-                        physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let)));
+                        rb->asset_id_);
                     player_->set_scene_vehicle(*vehicle_.get(), seat);
                     player_->create_vehicle_externals(externals_mode);
                     player_->create_vehicle_internals({ seat });

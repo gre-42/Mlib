@@ -169,11 +169,15 @@ PhysicsScene::PhysicsScene(
           [this](){ paused_changed_.emit(); }}
     , busy_state_provider_guard_{ dependent_sleeper, physics_set_fps_ }
     , gefp_{ physics_engine_ }
-    , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, std::move(translator), {remote_sites, CURRENT_SOURCE_LOCATION} }
+    , players_{ max_tracks, save_playback, scene_node_resources, race_identfier, translator, {remote_sites, CURRENT_SOURCE_LOCATION} }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
     , remote_counter_user_{ { usage_counter_, CURRENT_SOURCE_LOCATION } }
+    , translator_{ std::move(translator) }
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 {
+    if (translator_ == nullptr) {
+        THROW_OR_ABORT("Physics scene translator is null");
+    }
     air_particles_.smoke_particle_generator.set_bullet_generator(bullet_generator_);
     physics_engine_.set_surface_contact_db(surface_contact_db);
     physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);

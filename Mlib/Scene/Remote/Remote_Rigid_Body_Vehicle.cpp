@@ -117,6 +117,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
     auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
     auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
+    auto flags = reader.read_binary<RigidBodyVehicleFlags>("rigid body flags");
     std::optional<RemoteSiteId> owner_site_id;
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         owner_site_id = reader.read_binary<RemoteSiteId>("owner_site_id");
@@ -183,6 +184,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto& rb = get_rigid_body_vehicle(pnode);
     rb.rbp_.v_com_ = v_com;
     rb.rbp_.w_ = w;
+    rb.flags_ = flags;
     rb.remote_object_id_ = remote_object_id;
     if (owner_site_id.has_value()) {
         rb.owner_site_id_ = *owner_site_id;
@@ -219,6 +221,7 @@ void RemoteRigidBodyVehicle::read(
     auto rotation = reader.read_binary<EFixedArray<SceneDir, 3>>("rotation");
     auto v_com = reader.read_binary<EFixedArray<SceneDir, 3>>("v_com");
     auto w = reader.read_binary<EFixedArray<SceneDir, 3>>("w");
+    auto flags = reader.read_binary<RigidBodyVehicleFlags>("rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         rb_->owner_site_id_ = reader.read_binary<RemoteSiteId>("owner_site_id");
     }
@@ -236,6 +239,7 @@ void RemoteRigidBodyVehicle::read(
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
         rb_->rbp_.v_com_ = v_com;
         rb_->rbp_.w_ = w;
+        rb_->flags_ = flags;
     }
 }
 
@@ -266,6 +270,7 @@ void RemoteRigidBodyVehicle::write(
     writer.write_binary(matrix_2_tait_bryan_angles(rb_->rbp_.rotation_), "rotation");
     writer.write_binary(rb_->rbp_.v_com_, "v_com");
     writer.write_binary(rb_->rbp_.w_, "w");
+    writer.write_binary(rb_->flags_, "rigid body flags");
     if (any(transmitted_fields & RigidBodyTransmittedFields::OWNERSHIP)) {
         if (!rb_->owner_site_id_.has_value()) {
             THROW_OR_ABORT("Owner site ID not set");

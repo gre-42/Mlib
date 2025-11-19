@@ -43,6 +43,7 @@ class UiFocus;
 class CountdownPhysics;
 class RemoteScene;
 class RemoteSites;
+class Translator;
 struct SceneParticles;
 struct SceneConfig;
 struct RenderingContext;
@@ -58,6 +59,7 @@ protected:
     PhysicsScene& physics_scene;
     ObjectPool& object_pool;
     const MacroLineExecutor& macro_line_executor;
+    const std::shared_ptr<Translator>& translator;
     BulletPropertyDb& bullet_property_db;
     DeferredInstantiator& deferred_instantiator;
     RenderLogics& render_logics;

@@ -135,6 +135,7 @@ public:
     UsageCounter usage_counter_;
     CounterUser remote_counter_user_;
     CountdownPhysics countdown_start_;
+    std::shared_ptr<Translator> translator_;
     std::unique_ptr<RemoteScene> remote_scene_;
 
     AudioResourceContext primary_audio_resource_context_;

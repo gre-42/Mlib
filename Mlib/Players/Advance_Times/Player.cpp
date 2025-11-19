@@ -604,6 +604,15 @@ bool Player::unstuck() {
     if (!has_scene_vehicle()) {
         return false;
     }
+    if (std::isnan(stuck_velocity_)) {
+        THROW_OR_ABORT("Stuck velocity not set");
+    }
+    if (std::isnan(stuck_duration_)) {
+        THROW_OR_ABORT("Stuck duration not set");
+    }
+    if (std::isnan(unstuck_duration_)) {
+        THROW_OR_ABORT("Unstuck duration not set");
+    }
     if ((sum(squared(vehicle_->rb()->rbp_.v_com_)) > squared(stuck_velocity_)) ||
         (unstuck_start_ != std::chrono::steady_clock::time_point()))
     {
