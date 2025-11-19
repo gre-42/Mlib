@@ -152,14 +152,16 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     auto pnode = node.ref(CURRENT_SOURCE_LOCATION);
     std::string node_suffix;
     VariableAndHash<std::string> node_name;
+    auto let = nlohmann::json::object();
     if (type == RemoteSceneObjectType::RIGID_BODY_CAR) {
         node_suffix = initial.at<std::string>("tesuffix");
         node_name = VariableAndHash<std::string>{"car_node" + node_suffix};
     } else if (type == RemoteSceneObjectType::RIGID_BODY_AVATAR) {
         node_suffix = initial.at<std::string>("suffix");
         node_name = VariableAndHash<std::string>{"human_node" + node_suffix};
+        let["suffix"] = node_suffix;
     } else {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle: Unknoen scene object type");
+        THROW_OR_ABORT("RemoteRigidBodyVehicle: Unknown scene object type");
     }
     physics_scene.remote_scene_->created_at_remote_site.rigid_bodies.add(node_name);
     physics_scene.scene_.add_root_node(
@@ -170,9 +172,13 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
     if (type == RemoteSceneObjectType::RIGID_BODY_CAR) {
         CreateGenericCar(physics_scene).execute(initial);
     } else if (type == RemoteSceneObjectType::RIGID_BODY_AVATAR) {
-        CreateGenericAvatar(physics_scene, physics_scene.macro_line_executor_).execute(initial);
+        CreateGenericAvatar(
+            physics_scene,
+            physics_scene
+            .macro_line_executor_
+            .inserted_block_arguments(std::move(let))).execute(initial);
     } else {
-        THROW_OR_ABORT("RemoteRigidBodyVehicle: Unknoen scene object type");
+        THROW_OR_ABORT("RemoteRigidBodyVehicle: Unknown scene object type");
     }
     auto& rb = get_rigid_body_vehicle(pnode);
     rb.rbp_.v_com_ = v_com;

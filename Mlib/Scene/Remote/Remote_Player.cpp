@@ -62,8 +62,12 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
     auto name = VariableAndHash<std::string>{reader.read_string("player ID")};
     args["name"] = *name;
     args["team"] = reader.read_string("team");
-    args["full_user_name"] = reader.read_string("full_user_name");
-    args["user_account_key"] = reader.read_string("user_account_key");
+    if (auto full_user_name = reader.read_string("full_user_name"); !full_user_name.empty()) {
+        args["full_user_name"] = std::move(full_user_name);
+    }
+    if (auto user_account_key = reader.read_string("user_account_key"); !user_account_key.empty()) {
+        args["user_account_key"] = std::move(user_account_key);
+    }
     args["game_mode"] = game_mode_to_string(reader.read_binary<GameMode>("game_mode"));
     args["player_role"] = player_role_to_string(reader.read_binary<PlayerRole>("player_role"));
     args["unstuck_mode"] = unstuck_mode_to_string(reader.read_binary<UnstuckMode>("unstuck_mode"));

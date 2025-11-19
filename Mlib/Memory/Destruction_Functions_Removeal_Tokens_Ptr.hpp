@@ -12,6 +12,8 @@ class DestructionFunctionsTokensPtr {
     DestructionFunctionsTokensPtr(const DestructionFunctionsTokensPtr&) = delete;
     DestructionFunctionsTokensPtr& operator = (const DestructionFunctionsTokensPtr&) = delete;
 public:
+    using value_type = T;
+
     template <class TDerived>
         requires std::is_convertible_v<TDerived&, T&>
     inline DestructionFunctionsTokensPtr(

@@ -73,7 +73,7 @@ public:
     DanglingBaseClassRef<const UserInfo> get_user_by_rank(uint32_t rank) const;
     void print(std::ostream& ostr) const;
 
-    void compute_random_user_ranks();
+    uint32_t compute_random_user_ranks();
 private:
     void assert_local_users_consistents() const;
     mutable SafeAtomicRecursiveSharedMutex mutex_;

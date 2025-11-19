@@ -43,6 +43,7 @@
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
@@ -61,6 +62,8 @@ DECLARE_ARGUMENT(decimate);
 DECLARE_ARGUMENT(decimate1);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
+DECLARE_ARGUMENT(if_human_style);
+DECLARE_ARGUMENT(color);
 DECLARE_ARGUMENT(parking_brake_pulled);
 DECLARE_ARGUMENT(velocity);
 DECLARE_ARGUMENT(angular_velocity);
@@ -158,6 +161,8 @@ void CreateGenericAvatar::execute(const JsonView& args)
     auto decimate1 = args.at<std::string>(KnownArgs::decimate1);
     auto if_with_graphics = args.at<bool>(KnownArgs::if_with_graphics);
     auto if_with_physics = args.at<bool>(KnownArgs::if_with_physics);
+    auto if_human_style = args.at<bool>(KnownArgs::if_human_style);
+    auto with_gun = args.at<bool>(KnownArgs::with_gun);
     const auto& vdb = asset_references["vehicles"].at(name).rp.database;
     auto wheel = vdb.at<std::string>(KnownDb::wheel);
     const auto& wdb = asset_references["wheels"].at(wheel).rp.database;
@@ -175,6 +180,32 @@ void CreateGenericAvatar::execute(const JsonView& args)
     auto wheel_mount_0 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_mount_0);
     auto wheel_mount_1 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_mount_1);
 
+    DanglingBaseClassRef<SceneNode> parent_node = scene.get_node(parent, DP_LOC);
+
+    if (if_human_style) {
+        auto style = std::unique_ptr<ColorStyle>(new ColorStyle{
+            .ambient = args.at<EOrderableFixedArray<float, 3>>(KnownArgs::color),
+            .diffuse = args.at<EOrderableFixedArray<float, 3>>(KnownArgs::color)});
+        parent_node->add_color_style(std::move(style));
+
+        auto animation_loop_name = with_gun
+            ? VH{args.at<std::string>(KnownArgs::animation_resource_w_gun) + ".idle"}
+            : VH{args.at<std::string>(KnownArgs::animation_resource_wo_gun) + ".idle"};
+
+        float animation_loop_end = RenderingContextStack::primary_scene_node_resources()
+            .get_animation_duration(animation_loop_name);
+        auto animation_state = std::unique_ptr<AnimationState>(new AnimationState{
+            .periodic_skelletal_animation_name = animation_loop_name,
+            .periodic_skelletal_animation_frame = {
+                AnimationFrame{
+                    .begin = 0 * seconds,
+                    .end = animation_loop_end * seconds,
+                    .time = 0 * seconds}}});
+        parent_node->set_animation_state(
+            std::move(animation_state),
+            AnimationStateAlreadyExistsBehavior::THROW);
+    }
+      
     create_child_node("dynamic", parent, animation_node, {0.f, -0.5f * meters, 0.f}, {0.f, 180.f * degrees, 0.f});
     // The human hitbox has width and length of 0.5 (or \"radius\" or 0.25), so z = -0.3 is out of its hitbox"
     create_child_node("dynamic", parent, main_gun_node, {0.1f * meters, 0.5f * meters, 0.f});
@@ -184,7 +215,6 @@ void CreateGenericAvatar::execute(const JsonView& args)
     create_child_node("dynamic", animation_node           , human_head_node          , {0.f, 1.7f * meters, 0.f});
     create_child_node("dynamic", human_head_node          , human_head_node2         , {0.f, 0.f, 0.f}, {0.f, 180 * degrees, 0.f});
     create_child_node("dynamic", human_head_node2         , human_head_camera_node   , {0.f, 0.f, 0.f});
-    DanglingBaseClassRef<SceneNode> parent_node = scene.get_node(parent, DP_LOC);
     
     if (if_with_graphics) {
         create_child_node("dynamic", animation_node, main_gun_node_visual0, {0.f, 0.f, 0.f});
@@ -287,7 +317,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
             rb.avatar_controller_ = std::make_unique<AvatarAsAvatarController>(rb, follower);
         }
 
-        if (args.at<bool>(KnownArgs::with_gun)) {
+        if (with_gun) {
             auto uweapon_cycle = std::make_unique<WeaponCycle>();
             auto& weapon_cycle = *uweapon_cycle;
             parent_node->set_node_modifier(std::move(uweapon_cycle));

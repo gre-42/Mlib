@@ -1,6 +1,5 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unordered_Set.hpp>
-#include <Mlib/Memory/Dangling_Value_Unordered_Map.hpp>
+#include <Mlib/Memory/Dangling_Value_Map.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
 #include <iosfwd>
@@ -11,8 +10,8 @@ namespace Mlib {
 class IIncrementalObject;
 
 using DeletedObjects = std::set<RemoteObjectId>;
-using LocalObjects = DanglingValueUnorderedMap<LocalObjectId, IIncrementalObject>;
-using RemoteObjects = DanglingValueUnorderedMap<RemoteObjectId, IIncrementalObject>;
+using LocalObjects = DanglingValueMap<LocalObjectId, IIncrementalObject>;
+using RemoteObjects = DanglingValueMap<RemoteObjectId, IIncrementalObject>;
 
 enum class RemoteObjectVisibility {
     PRIVATE,

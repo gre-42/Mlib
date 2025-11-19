@@ -222,7 +222,7 @@ void RemoteSites::assert_local_users_consistents() const {
     }
 }
 
-void RemoteSites::compute_random_user_ranks() {
+uint32_t RemoteSites::compute_random_user_ranks() {
     auto nusers = get_total_user_count(UserTypes::ALL);
     auto perm = arange<uint32_t>(nusers);
     std::mt19937 rng_;
@@ -238,4 +238,5 @@ void RemoteSites::compute_random_user_ranks() {
             ++i;
             return true;
         }, UserTypes::ALL);
+    return nusers;
 }

@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
@@ -18,7 +19,7 @@ void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs &args) 
         THROW_OR_ABORT("compute_random_user_ranks must be called from within a block");
     }
     auto& vars = *args.local_json_macro_arguments;
-    args.remote_sites.compute_random_user_ranks();
+    auto nusers = args.remote_sites.compute_random_user_ranks();
     args.remote_sites.for_each_site_user(
         [&](UserInfo& user)
         {
@@ -26,6 +27,8 @@ void ComputeRandomUserRanks::execute(const LoadSceneJsonUserFunctionArgs &args) 
             vars.set("random_rank_str_" + user.full_name, std::to_string(user.random_rank));
             return true;
         }, UserTypes::ALL);
+    auto wa = const_cast<MacroLineExecutor&>(args.macro_line_executor).writable_json_macro_arguments();
+    wa->set("total_user_count", nusers);
 }
 
 namespace {
