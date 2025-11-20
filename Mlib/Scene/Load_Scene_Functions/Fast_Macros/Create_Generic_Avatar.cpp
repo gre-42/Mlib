@@ -250,7 +250,6 @@ void CreateGenericAvatar::execute(const JsonView& args)
         create_child_node("dynamic", main_gun_node_visual0, main_gun_node_visual, {-0.075f * meters, 0.f, 0.025f * meters}, {90 * degrees, 0.f, 90 * degrees});
     }
     if (if_with_physics) {
-
         auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
             .node = parent,
             .name = "generic_avatar_" + name + suffix,

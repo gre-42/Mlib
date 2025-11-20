@@ -601,6 +601,9 @@ void Player::increment_external_forces(
 bool Player::unstuck() {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (unstuck_mode_ == UnstuckMode::OFF) {
+        THROW_OR_ABORT("Player::unstuck called but unstuck-mode is off");
+    }
     if (!has_scene_vehicle()) {
         return false;
     }
@@ -674,8 +677,8 @@ void Player::trigger_gun() {
     gun().trigger(this, &team().get());
 }
 
-bool Player::can_shoot() const {
-    return has_gun_node() && !gun().is_none_gun();
+bool Player::has_weapon() const {
+    return has_weapon_cycle() || (has_gun_node() && !gun().is_none_gun());
 }
 
 bool Player::has_gun_node() const {

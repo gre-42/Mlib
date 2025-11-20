@@ -41,7 +41,7 @@ DECLARE_ARGUMENT(if_manual_aim);
 DECLARE_ARGUMENT(if_manual_shoot);
 DECLARE_ARGUMENT(if_manual_drive);
 DECLARE_ARGUMENT(if_weapon_cycle);
-DECLARE_ARGUMENT(if_can_shoot);
+DECLARE_ARGUMENT(if_has_weapon);
 DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(externals_seat);
 }
@@ -105,7 +105,7 @@ void SetExternalsCreator::execute_unsafe(
                 {LetKeys::if_manual_shoot, player.skills(ControlSource::USER).can_shoot},
                 {LetKeys::if_manual_drive, player.skills(ControlSource::USER).can_drive},
                 {LetKeys::if_weapon_cycle, player.has_weapon_cycle()},
-                {LetKeys::if_can_shoot, player.can_shoot()},
+                {LetKeys::if_has_weapon, player.has_weapon()},
                 {LetKeys::behavior, player.behavior()},
                 {LetKeys::externals_seat, internals_mode.seat}
             };

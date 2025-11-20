@@ -202,7 +202,7 @@ public:
     std::string vehicle_name() const;
     FixedArray<float, 3> gun_direction() const;
     FixedArray<float, 3> punch_angle() const;
-    bool can_shoot() const;
+    bool has_weapon() const;
     bool has_gun_node() const;
     const Gun& gun() const;
     Gun& gun();
