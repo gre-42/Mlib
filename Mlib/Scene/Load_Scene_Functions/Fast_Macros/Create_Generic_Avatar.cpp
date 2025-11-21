@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
+#include <Mlib/Physics/Advance_Times/Crash.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
@@ -35,6 +36,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Insert_Physics_Node_Hider.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
@@ -65,6 +67,7 @@ DECLARE_ARGUMENT(decimate1);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
 DECLARE_ARGUMENT(if_human_style);
+DECLARE_ARGUMENT(if_damageable);
 DECLARE_ARGUMENT(color);
 DECLARE_ARGUMENT(parking_brake_pulled);
 DECLARE_ARGUMENT(velocity);
@@ -159,6 +162,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
     auto create_rigid_disk = CreateRigidDisk{ physics_scene };
     auto add_weapon_to_cycle = AddWeaponToInventory{ physics_scene, macro_line_executor };
     auto create_gun = CreateGun{ physics_scene, macro_line_executor };
+    auto create_damageable = CreateDamageable{ physics_scene };
 
     auto name = args.at<std::string>(KnownArgs::name);
     auto suffix = args.at<std::string>(KnownArgs::suffix);
@@ -541,6 +545,22 @@ void CreateGenericAvatar::execute(const JsonView& args)
                 .name = VH{"hand_r"},
                 .smoothness = 0,
                 .rotation_strength = 1.f});
+
+        if (args.at<bool>(KnownArgs::if_damageable)) {
+            create_damageable.execute(JsonView{std::map<std::string, nlohmann::json>{
+                {"node", parent},
+                {"health", 200},
+                {"delete_node_when_health_leq_zero", false},
+                {"explosions", std::vector<nlohmann::json>{
+                    std::map<std::string, nlohmann::json>{
+                        {"damage_sources", {"crash"}},
+                        {"audio", "impactcrunch01"}
+                    }
+                }}
+            }});
+            auto d = std::make_unique<Crash>(rb, 0.3f);
+            rb.collision_observers_.emplace_back(std::move(d));
+        }
 
         if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.rigid_bodies.contains(parent)) {
             rb.remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(

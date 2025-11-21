@@ -24,6 +24,7 @@ SetDamageAbsorptionDirection::SetDamageAbsorptionDirection(PhysicsScene& physics
 
 void SetDamageAbsorptionDirection::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    args.arguments.validate(KnownArgs::options);
     DanglingBaseClassRef<SceneNode> node = scene.get_node(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     rb.damage_absorption_direction_ = args.arguments.at<EFixedArray<float, 3>>(KnownArgs::direction);
@@ -37,7 +38,6 @@ struct RegisterJsonUserFunction {
             "set_damage_absorption_direction",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                args.arguments.validate(KnownArgs::options);
                 SetDamageAbsorptionDirection(args.physics_scene()).execute(args);
             });
     }

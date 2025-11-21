@@ -151,14 +151,12 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
         SceneNodeDomain::RENDER | SceneNodeDomain::PHYSICS,
         ViewableRemoteObject::all());
     auto pnode = node.ref(CURRENT_SOURCE_LOCATION);
-    std::string node_suffix;
+    std::string node_suffix = initial.at<std::string>("suffix");
     VariableAndHash<std::string> node_name;
     auto let = nlohmann::json::object();
     if (type == RemoteSceneObjectType::RIGID_BODY_CAR) {
-        node_suffix = initial.at<std::string>("tesuffix");
         node_name = VariableAndHash<std::string>{"car_node" + node_suffix};
     } else if (type == RemoteSceneObjectType::RIGID_BODY_AVATAR) {
-        node_suffix = initial.at<std::string>("suffix");
         node_name = VariableAndHash<std::string>{"human_node" + node_suffix};
         let["suffix"] = node_suffix;
     } else {

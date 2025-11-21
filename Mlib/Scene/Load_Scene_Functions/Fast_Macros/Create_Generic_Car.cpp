@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
+#include <Mlib/Physics/Advance_Times/Crash.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
@@ -27,6 +28,7 @@
 #include <Mlib/Scene/Load_Scene_Funcs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
@@ -47,11 +49,12 @@ static const auto WORLD = VariableAndHash<std::string>{"world"};
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(tesuffix);
-DECLARE_ARGUMENT(tedecimate);
+DECLARE_ARGUMENT(suffix);
+DECLARE_ARGUMENT(decimate);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
 DECLARE_ARGUMENT(if_car_body_renderable_style);
+DECLARE_ARGUMENT(if_damageable);
 DECLARE_ARGUMENT(color);
 DECLARE_ARGUMENT(parking_brake_pulled);
 DECLARE_ARGUMENT(velocity);
@@ -151,17 +154,18 @@ void CreateGenericCar::execute(const JsonView& args)
     auto child_renderable_instance = ChildRenderableInstance{ physics_scene };
     auto create_rigid_cuboid = CreateRigidCuboid{ physics_scene };
     auto create_rigid_disk = CreateRigidDisk{ physics_scene };
+    auto create_damageable = CreateDamageable{ physics_scene };
 
     auto name = args.at<std::string>(KnownArgs::name);
-    auto tesuffix = args.at<std::string>(KnownArgs::tesuffix);
-    auto tedecimate = args.at<std::string>(KnownArgs::tedecimate);
+    auto suffix = args.at<std::string>(KnownArgs::suffix);
+    auto decimate = args.at<std::string>(KnownArgs::decimate);
     auto if_with_graphics = args.at<bool>(KnownArgs::if_with_graphics);
     auto if_with_physics = args.at<bool>(KnownArgs::if_with_physics);
     auto if_car_body_renderable_style = args.at<bool>(KnownArgs::if_car_body_renderable_style);
     const auto& vdb = asset_references["vehicles"].at(name).rp.database;
     auto wheels = vdb.at<std::string>(KnownDb::wheels);
     const auto& wdb = asset_references["wheels"].at(wheels).rp.database;
-    auto parent = VH{"car_node" + tesuffix};
+    auto parent = VH{"car_node" + suffix};
 
     auto class_ = vehicle_type_from_string(vdb.at<std::string>(KnownDb::vehicle_class));
 
@@ -174,10 +178,10 @@ void CreateGenericCar::execute(const JsonView& args)
     auto wheel_right_rear_mount_0 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_0);
     auto wheel_right_rear_mount_1 = vdb.at<EFixedArray<float, 3>>(KnownDb::wheel_right_rear_mount_1);
 
-    create_child_node("dynamic", parent, VH{"wheel_left_front_node" + tesuffix}, wheel_left_front_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, VH{"wheel_right_front_node" + tesuffix}, wheel_right_front_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, VH{"wheel_left_rear_node" + tesuffix}, wheel_left_rear_mount_0.casted<ScenePos>());
-    create_child_node("dynamic", parent, VH{"wheel_right_rear_node" + tesuffix}, wheel_right_rear_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, VH{"wheel_left_front_node" + suffix}, wheel_left_front_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, VH{"wheel_right_front_node" + suffix}, wheel_right_front_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, VH{"wheel_left_rear_node" + suffix}, wheel_left_rear_mount_0.casted<ScenePos>());
+    create_child_node("dynamic", parent, VH{"wheel_right_rear_node" + suffix}, wheel_right_rear_mount_0.casted<ScenePos>());
 
     DanglingBaseClassRef<SceneNode> parent_node = scene.get_node(parent, DP_LOC);
 
@@ -190,36 +194,36 @@ void CreateGenericCar::execute(const JsonView& args)
     }
     if (if_with_graphics) {
         if (class_ != VehicleType::SHIP) {
-            create_child_node("dynamic", VH{"wheel_right_front_node" + tesuffix}, VH{"wheel_right_front_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
-            create_child_node("dynamic", VH{"wheel_right_rear_node" + tesuffix}, VH{"wheel_right_rear_node_visual" + tesuffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+            create_child_node("dynamic", VH{"wheel_right_front_node" + suffix}, VH{"wheel_right_front_node_visual" + suffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
+            create_child_node("dynamic", VH{"wheel_right_rear_node" + suffix}, VH{"wheel_right_rear_node_visual" + suffix}, { 0.f, 0.f, 0.f }, { 0.f, 180 * degrees, 0.f });
         }
-        auto create_graphics = [&](const std::string& suffix, const std::string& decimate){
-            child_renderable_instance("main" + suffix, parent, VH{name + "/main" + decimate});
+        auto create_graphics = [&](const std::string& suffix1, const std::string& decimate1){
+            child_renderable_instance("main" + suffix1, parent, VH{name + "/main" + decimate1});
 
             if (class_ != VehicleType::SHIP) {
-                child_renderable_instance("wheel" + suffix, VH{"wheel_left_front_node" + tesuffix}, VH{name + "/wheel_front" + decimate});
-                child_renderable_instance("wheel" + suffix, VH{"wheel_right_front_node_visual" + tesuffix}, VH{name + "/wheel_front" + decimate});
-                child_renderable_instance("wheel" + suffix, VH{"wheel_left_rear_node" + tesuffix}, VH{name + "/wheel_rear" + decimate});
-                child_renderable_instance("wheel" + suffix, VH{"wheel_right_rear_node_visual" + tesuffix}, VH{name + "/wheel_rear" + decimate});
+                child_renderable_instance("wheel" + suffix1, VH{"wheel_left_front_node" + suffix}, VH{name + "/wheel_front" + decimate1});
+                child_renderable_instance("wheel" + suffix1, VH{"wheel_right_front_node_visual" + suffix}, VH{name + "/wheel_front" + decimate1});
+                child_renderable_instance("wheel" + suffix1, VH{"wheel_left_rear_node" + suffix}, VH{name + "/wheel_rear" + decimate1});
+                child_renderable_instance("wheel" + suffix1, VH{"wheel_right_rear_node_visual" + suffix}, VH{name + "/wheel_rear" + decimate1});
             }
             };
-        create_graphics(tesuffix, tedecimate);
-        create_graphics("_lowres" + tesuffix, "_lowres");
+        create_graphics(suffix, decimate);
+        create_graphics("_lowres" + suffix, "_lowres");
         auto create_lights = [&]() {
             if (auto p = vdb.try_at_non_null<UFixedArray<ScenePos, 3>>(KnownDb::light_left_front_position); p.has_value()) {
-                create_child_node("dynamic", parent, VH{"light_left_front" + tesuffix}, *p);
-                child_renderable_instance("blob" + tesuffix, VH{"light_left_front" + tesuffix}, VH{"car_light_beam"});
+                create_child_node("dynamic", parent, VH{"light_left_front" + suffix}, *p);
+                child_renderable_instance("blob" + suffix, VH{"light_left_front" + suffix}, VH{"car_light_beam"});
             }
             if (auto p = vdb.try_at_non_null<UFixedArray<ScenePos, 3>>(KnownDb::light_right_front_position); p.has_value()) {
-                create_child_node("dynamic", parent, VH{"light_right_front_position" + tesuffix}, *p);
-                child_renderable_instance("blob" + tesuffix, VH{"light_right_front_position" + tesuffix}, VH{"car_light_beam"});
+                create_child_node("dynamic", parent, VH{"light_right_front_position" + suffix}, *p);
+                child_renderable_instance("blob" + suffix, VH{"light_right_front_position" + suffix}, VH{"car_light_beam"});
             }};
         create_lights();
     }
     auto create_physics = [&](){
         auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
             .node = parent,
-            .name = "generic_car_" + name + tesuffix,
+            .name = "generic_car_" + name + suffix,
             .asset_id = name,
             .mass = vdb.at<float>(KnownDb::mass) * kg,
             .size = vdb.at<EFixedArray<float, 3>>(KnownDb::size) * meters,
@@ -425,8 +429,8 @@ void CreateGenericCar::execute(const JsonView& args)
             };
         create_wheel(
             0,
-            VariableAndHash<std::string>{"wheel_left_front_node" + tesuffix},
-            "wheel_left_front" + name + tesuffix,
+            VariableAndHash<std::string>{"wheel_left_front_node" + suffix},
+            "wheel_left_front" + name + suffix,
             "wheel_left_front" + name,
             front_engine,
             std::nullopt,
@@ -434,8 +438,8 @@ void CreateGenericCar::execute(const JsonView& args)
             wheel_left_front_mount_1);
         create_wheel(
             1,
-            VariableAndHash<std::string>{"wheel_right_front_node" + tesuffix},
-            "wheel_right_front" + name + tesuffix,
+            VariableAndHash<std::string>{"wheel_right_front_node" + suffix},
+            "wheel_right_front" + name + suffix,
             "wheel_right_front" + name,
             front_engine,
             std::nullopt,
@@ -443,8 +447,8 @@ void CreateGenericCar::execute(const JsonView& args)
             wheel_right_front_mount_1);
         create_wheel(
             2,
-            VariableAndHash<std::string>{"wheel_left_rear_node" + tesuffix},
-            "wheel_left_rear" + name + tesuffix,
+            VariableAndHash<std::string>{"wheel_left_rear_node" + suffix},
+            "wheel_left_rear" + name + suffix,
             "wheel_left_rear" + name,
             rear_engine,
             std::nullopt,
@@ -452,8 +456,8 @@ void CreateGenericCar::execute(const JsonView& args)
             wheel_left_rear_mount_1);
         create_wheel(
             3,
-            VariableAndHash<std::string>{"wheel_right_rear_node" + tesuffix},
-            "wheel_right_rear" + name + tesuffix,
+            VariableAndHash<std::string>{"wheel_right_rear_node" + suffix},
+            "wheel_right_rear" + name + suffix,
             "wheel_right_rear" + name,
             rear_engine,
             std::nullopt,
@@ -482,12 +486,36 @@ void CreateGenericCar::execute(const JsonView& args)
 
         rb.drivers_.set_seats({ "driver" });
         rb.door_distance_ = vdb.at<float>(KnownDb::door_distance) * meters;
+
+        if (args.at<bool>(KnownArgs::if_damageable)) {
+            create_damageable.execute(JsonView{std::map<std::string, nlohmann::json>{
+                {"node", parent},
+                {"health", 200},
+                {"delete_node_when_health_leq_zero", true},
+                {"explosions", std::vector<nlohmann::json>{
+                    std::map<std::string, nlohmann::json>{
+                        {"animation", "large_explosion_cross"},
+                        {"particle_container", "node"},
+                        {"animation_duration", 0.6f},
+                        {"audio", "explodemini_fast"}
+                    },
+                    std::map<std::string, nlohmann::json>{
+                        {"animation", "explosion_rocks"},
+                        {"particle_container", "physics"},
+                        {"animation_duration", 1.5f}
+                    }
+                }}
+            }});
+            rb.collision_observers_.emplace_back(std::make_unique<Crash>(rb, 0.3f));
+            rb.damage_absorption_direction_ = FixedArray<float, 3>{0.f, 0.f, 1.f};
+        }
+
         if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.rigid_bodies.contains(parent)) {
             rb.remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
                 CURRENT_SOURCE_LOCATION,
                 RemoteSceneObjectType::RIGID_BODY_CAR,
                 args.json().dump(),
-                tesuffix,
+                suffix,
                 DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION},
                 DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});
             rb.owner_site_id_ = remote_scene->local_site_id();
