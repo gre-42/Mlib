@@ -11,7 +11,7 @@
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 
 using namespace Mlib;
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <iosfwd>
 #include <list>
 #include <map>

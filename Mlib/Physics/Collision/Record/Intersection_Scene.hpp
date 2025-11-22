@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Intersection/Intersectors/Intersection_Info.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
 #include <memory>
 #include <vector>

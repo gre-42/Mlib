@@ -4,7 +4,7 @@
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
 #include <list>
 #include <map>

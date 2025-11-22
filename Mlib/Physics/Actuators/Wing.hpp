@@ -3,8 +3,8 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Actuators/Trail_Source.hpp>
 #include <Mlib/Physics/Actuators/Wing_Angle.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Precision.hpp>
 #include <optional>
 
 namespace Mlib {

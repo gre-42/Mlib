@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_List.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <random>
 
 namespace Mlib {

@@ -5,7 +5,7 @@
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 
 namespace Mlib {
 

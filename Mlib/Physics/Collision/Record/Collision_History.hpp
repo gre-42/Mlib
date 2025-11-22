@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Physics/Containers/Ridge_Map.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <chrono>
 #include <list>
 #include <map>

@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <iosfwd>

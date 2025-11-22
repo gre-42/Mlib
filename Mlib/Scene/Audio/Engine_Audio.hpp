@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Cross_Fade.hpp>
 #include <Mlib/Physics/Actuators/IEngine_Event_Listener.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <functional>
 #include <memory>
 #include <string>

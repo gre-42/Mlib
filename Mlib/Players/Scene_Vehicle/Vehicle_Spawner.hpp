@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <chrono>
 #include <functional>
 #include <list>

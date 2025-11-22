@@ -3,7 +3,7 @@
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cmath>
 #include <cstddef>
 

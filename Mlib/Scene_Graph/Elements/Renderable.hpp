@@ -2,7 +2,7 @@
 #include <Mlib/Billboard_Id.hpp>
 #include <Mlib/Geometry/Intersection/Extremal_Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Extremal_Bounding_Sphere.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
 #include <memory>
 #include <type_traits>

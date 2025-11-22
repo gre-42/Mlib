@@ -12,7 +12,7 @@
 #include <Mlib/Physics/Containers/Elements/Collision_Triangle_Sphere.hpp>
 #include <Mlib/Physics/Containers/Ridge_Map.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <functional>
 #include <map>
 #include <memory>

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Interfaces/IIntersectable.hpp>
 #include <Mlib/Math/Transformation/Translation_Matrix.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <memory>
 
 namespace Mlib {

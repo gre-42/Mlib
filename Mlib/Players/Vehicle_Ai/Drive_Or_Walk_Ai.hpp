@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 
 namespace Mlib {
 

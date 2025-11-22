@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <list>
 #include <optional>

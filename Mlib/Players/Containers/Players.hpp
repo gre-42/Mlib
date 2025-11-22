@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Graph/Point_And_Flags.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <list>
 #include <map>

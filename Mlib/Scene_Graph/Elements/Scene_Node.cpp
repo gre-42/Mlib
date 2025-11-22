@@ -15,6 +15,7 @@
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Scene_Config/Interpolation_Thresholds.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/List_Of_Blended.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -943,7 +944,7 @@ void SceneNode::move(
     if (!trafo_history_.empty()) {
         const auto& newest = trafo_history_.newest();
         auto distance = max(abs(newest.t - trafo_.t));
-        if (distance > 100 * meters) {
+        if (distance > INTERPOLATION_ERROR_DISTANCE) {
             std::stringstream sstr;
             sstr << "Detected large interpolation distance: " << distance << " old = " << newest.t << " new = " << trafo_.t;
             THROW_OR_ABORT(sstr.str());

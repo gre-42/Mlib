@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <memory>
 
 namespace Mlib {

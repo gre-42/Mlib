@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
-#include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <list>

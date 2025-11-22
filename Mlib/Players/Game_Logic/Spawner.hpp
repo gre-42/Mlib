@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh_Fwd.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <functional>
 #include <list>

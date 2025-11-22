@@ -2,9 +2,9 @@
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Threadsafe_String_With_Hash_Unordered_Map.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points_Fwd.hpp>
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
-#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>

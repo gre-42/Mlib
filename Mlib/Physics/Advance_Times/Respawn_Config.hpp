@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <nlohmann/json_fwd.hpp>
 
 namespace Mlib {

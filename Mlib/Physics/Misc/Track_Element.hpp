@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <iosfwd>
 #include <vector>
 

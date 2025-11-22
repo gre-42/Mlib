@@ -2,8 +2,8 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
-#include <Mlib/Scene_Precision.hpp>
 #include <cstdint>
 #include <memory>
 

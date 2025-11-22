@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <string>

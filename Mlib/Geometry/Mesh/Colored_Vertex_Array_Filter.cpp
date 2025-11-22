@@ -2,7 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Json/Json_View.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 
 using namespace Mlib;
 

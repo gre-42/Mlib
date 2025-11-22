@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Maybe_Generate.hpp>
 #include <Mlib/Physics/Smoke_Generation/Particle_Trail_Generator.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <compare>
 #include <map>
 #include <optional>

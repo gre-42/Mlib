@@ -7,7 +7,7 @@
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Primitive_Dimensions.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Strings/Group_And_Name.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/To_Underlying.hpp>

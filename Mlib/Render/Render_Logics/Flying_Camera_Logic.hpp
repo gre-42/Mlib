@@ -2,7 +2,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 
 struct GLFWwindow;

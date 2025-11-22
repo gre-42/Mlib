@@ -2,7 +2,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unordered_Set.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <vector>

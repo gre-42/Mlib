@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Billboard_Id.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <list>
 #include <map>

@@ -2,8 +2,8 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Kn5_Array.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Scene_Precision.hpp>
 
 using namespace Mlib;
 

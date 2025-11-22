@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Base.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <cstdint>
 

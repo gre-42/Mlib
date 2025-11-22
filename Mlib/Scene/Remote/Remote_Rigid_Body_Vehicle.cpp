@@ -6,6 +6,7 @@
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
@@ -14,9 +15,11 @@
 #include <Mlib/Scene/Physics_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
+#include <Mlib/Scene_Config/Interpolation_Thresholds.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <nlohmann/json.hpp>
 
 using namespace Mlib;
@@ -206,6 +209,9 @@ void RemoteRigidBodyVehicle::read(
     if (rb_ == nullptr) {
         THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Rigid body is destroyed");
     }
+    if (rb_->scene_node_ == nullptr) {
+        THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Scene node is destroyed");
+    }
     auto reader = BinaryReader{istr, verbosity_};
     auto type = reader.read_binary<RemoteSceneObjectType>("scene object type");
     if (type != type_) {
@@ -234,6 +240,22 @@ void RemoteRigidBodyVehicle::read(
         THROW_OR_ABORT("RemoteRigidBodyVehicle: Owner site ID not set");
     }
     if (*rb_->owner_site_id_ != physics_scene_->remote_scene_->local_site_id()) {
+        bool invalidate_transformation_history = [&](){
+            if ((rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR))) {
+                return true;
+            }
+            if (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
+                return true;
+            }
+            return false;
+        }();
+        if (invalidate_transformation_history) {
+            rb_->scene_node_->set_absolute_pose(
+                position,
+                rotation,
+                1.f,
+                INITIAL_POSE);
+        }
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
         rb_->rbp_.v_com_ = v_com;
         rb_->rbp_.w_ = w;

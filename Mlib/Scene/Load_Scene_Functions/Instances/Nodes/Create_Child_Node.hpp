@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene/Load_Physics_Scene_Instance_Function.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
-#include <Mlib/Scene_Precision.hpp>
 #include <cstddef>
 
 namespace Mlib {

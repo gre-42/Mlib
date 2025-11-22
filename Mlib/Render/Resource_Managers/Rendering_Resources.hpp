@@ -14,7 +14,7 @@
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/Resource_Managers/Font_Name_And_Height_Hash.hpp>
 #include <Mlib/Render/Resource_Managers/Texture_Role.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Variable_And_Hash.hpp>

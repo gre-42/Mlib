@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Math/Interp_Fwd.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Elements.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>

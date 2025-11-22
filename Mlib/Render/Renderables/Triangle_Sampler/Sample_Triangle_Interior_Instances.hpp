@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
 #include <memory>
 

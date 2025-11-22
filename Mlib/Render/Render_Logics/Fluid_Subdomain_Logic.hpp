@@ -11,7 +11,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Moving_Node_Logic.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <chrono>
 #include <cmath>
 #include <string>

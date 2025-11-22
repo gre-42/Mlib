@@ -10,12 +10,12 @@
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Memory/Shared_Ptrs.hpp>
 #include <Mlib/Object.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Elements/Billboard_Container.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Graph/Remote_User_Filter.hpp>
-#include <Mlib/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <atomic>

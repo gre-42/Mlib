@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Geometry/Texture/Uv_Shifter.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 
 using namespace Mlib;
 

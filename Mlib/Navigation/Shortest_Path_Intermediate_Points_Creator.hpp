@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <DetourNavMesh.h>
 #include <cstddef>
 #include <map>

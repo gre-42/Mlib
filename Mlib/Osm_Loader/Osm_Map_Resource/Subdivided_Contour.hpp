@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp_Fwd.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <list>
 
 namespace Mlib {

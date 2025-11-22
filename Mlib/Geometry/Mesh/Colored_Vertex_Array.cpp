@@ -13,7 +13,7 @@
 #include <Mlib/Geometry/Quad_3D.hpp>
 #include <Mlib/Geometry/Triangle_3D.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <mutex>

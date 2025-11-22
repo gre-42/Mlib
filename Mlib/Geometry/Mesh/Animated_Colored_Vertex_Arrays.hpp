@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/String_With_Hash_Unordered_Map.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>

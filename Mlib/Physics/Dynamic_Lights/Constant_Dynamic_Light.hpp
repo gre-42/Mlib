@@ -2,9 +2,9 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Transformation/Position_Series.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Light.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
-#include <Mlib/Scene_Precision.hpp>
 #include <chrono>
 #include <functional>
 

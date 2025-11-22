@@ -12,7 +12,7 @@
 #include <Mlib/Render/Render_Logics/Moving_Node_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Offset_Renderer.hpp>
 #include <Mlib/Render/Render_Logics/Periodicity.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cmath>
 #include <string>
 

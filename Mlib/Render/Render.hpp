@@ -2,7 +2,7 @@
 #ifndef __ANDROID__
 
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <atomic>
 #include <chrono>
 #include <iosfwd>

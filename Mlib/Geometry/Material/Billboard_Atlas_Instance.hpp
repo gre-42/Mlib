@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstdint>
 
 namespace Mlib {

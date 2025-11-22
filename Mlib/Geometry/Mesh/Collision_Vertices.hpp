@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
 #include <set>
 

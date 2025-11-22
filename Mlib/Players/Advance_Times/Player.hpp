@@ -22,7 +22,7 @@
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
 #include <Mlib/Players/Scene_Vehicle/Internals_Mode.hpp>
-#include <Mlib/Scene_Precision.hpp>
+#include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
