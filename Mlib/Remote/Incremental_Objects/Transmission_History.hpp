@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Remote/Remote_Site_Id.hpp>
+#include <chrono>
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
@@ -35,25 +36,35 @@ inline TransmissionHistory& operator |= (TransmissionHistory& a, TransmissionHis
 
 class TransmissionHistoryReader {
 public:
-    TransmissionHistoryReader();
+    explicit TransmissionHistoryReader(
+        std::chrono::steady_clock::time_point base_time);
     ~TransmissionHistoryReader();
-    RemoteObjectId read(
+    RemoteObjectId read_remote_object_id(
         std::istream& istr,
         TransmittedFields transmitted_fields,
         IoVerbosity verbosity);
+    std::chrono::steady_clock::time_point read_time(
+        std::istream& istr,
+        IoVerbosity verbosity) const;
 private:
+    std::chrono::steady_clock::time_point base_time_;
     std::optional<RemoteSiteId> site_id_;
 };
 
 class TransmissionHistoryWriter {
 public:
-    TransmissionHistoryWriter();
+    explicit TransmissionHistoryWriter(
+        std::chrono::steady_clock::time_point base_time);
     ~TransmissionHistoryWriter();
-    void write(
+    void write_remote_object_id(
         std::ostream& ostr,
         const RemoteObjectId& remote_object_id,
         TransmittedFields transmitted_fields);
+    void write_time(
+        std::ostream& ostr,
+        std::chrono::steady_clock::time_point time) const;
 private:
+    std::chrono::steady_clock::time_point base_time_;
     TransmissionHistory history_;
 };
 

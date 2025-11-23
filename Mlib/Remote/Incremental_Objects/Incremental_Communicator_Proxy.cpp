@@ -45,13 +45,13 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     }
     auto receive_local = [&](RemoteObjectVisibility visibility){
         // linfo() << "Received " << object_count << " objects_";
-        auto transmission_history_reader = TransmissionHistoryReader();
+        auto transmission_history_reader = TransmissionHistoryReader{objects_->local_time()};
         while (true) {
             auto transmitted_fields = read_binary<TransmittedFields>(istr, "transmitted fields", verbosity_);
             if (transmitted_fields == TransmittedFields::NONE) {
                 break;
             }
-            auto i = transmission_history_reader.read(istr, transmitted_fields, verbosity_);
+            auto i = transmission_history_reader.read_remote_object_id(istr, transmitted_fields, verbosity_);
             if (auto it = objects_->try_get(i); it != nullptr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " read frome home site " << home_site_id_ << ", object " << i;
@@ -81,7 +81,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             linfo() << "Delete " << deleted.size() << " objects";
         }
         writer.write_binary(integral_cast<uint32_t>(deleted.size()), "#ndeleted");
-        for (const auto& id : deleted) {
+        for (const auto& [id, time] : deleted) {
             writer.write_binary(id, "deleted ID");
         }
     }
@@ -89,7 +89,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Maybe send " << objects.size() << " local objects";
         }
-        auto transmission_history_writer = TransmissionHistoryWriter();
+        auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time()};
         for (auto& [i, o] : objects) {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 linfo() << "Maybe send object to home site " << home_site_id_ << ", " << i;
@@ -118,7 +118,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Maybe send " << objects.size() << " remote objects";
         }
-        auto transmission_history_writer = TransmissionHistoryWriter();
+        auto transmission_history_writer = TransmissionHistoryWriter{objects_->local_time()};
         for (auto& [i, o] : objects) {
             if (any(verbosity_ & IoVerbosity::METADATA)) {
                 linfo() << "Maybe send object to home site " << home_site_id_ << ", " << i;

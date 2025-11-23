@@ -1,6 +1,7 @@
 #include "Incremental_Remote_Objects.hpp"
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
+#include <Mlib/Scene_Config/Remote_Event_History_Duration.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -17,6 +18,20 @@ IncrementalRemoteObjects::~IncrementalRemoteObjects() {
 
 RemoteSiteId IncrementalRemoteObjects::local_site_id() const {
     return local_site_id_;
+}
+
+std::chrono::steady_clock::time_point IncrementalRemoteObjects::local_time() const
+{
+    if (local_time_ == std::chrono::steady_clock::time_point()) {
+        THROW_OR_ABORT("Local time not set");
+    }
+    return local_time_;
+}
+
+void IncrementalRemoteObjects::set_local_time(
+    std::chrono::steady_clock::time_point time)
+{
+    local_time_ = time;
 }
 
 RemoteObjectId IncrementalRemoteObjects::add_local_object(
@@ -85,7 +100,7 @@ DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(const
 }
 
 bool IncrementalRemoteObjects::try_remove(const RemoteObjectId& id) {
-    deleted_objects_.insert(id);
+    deleted_objects_.try_emplace(id, local_time());
     auto o = try_get(id);
     if ((o == nullptr) || !global_object_pool.contains(o.get())) {
         return false;
@@ -96,6 +111,14 @@ bool IncrementalRemoteObjects::try_remove(const RemoteObjectId& id) {
 
 const DeletedObjects& IncrementalRemoteObjects::deleted_objects() const {
     return deleted_objects_;
+}
+
+void IncrementalRemoteObjects::forget_old_deleted_objects()
+{
+    auto lt = local_time();
+    std::erase_if(deleted_objects_, [&](const auto& item){
+        return item.second + REMOTE_EVENT_HISTORY_DURATION < lt;
+    });
 }
 
 const LocalObjects& IncrementalRemoteObjects::private_local_objects() const {

@@ -12,7 +12,6 @@ namespace Mlib {
 class ISendSocket;
 class IIncrementalObjectFactory;
 enum class IoVerbosity;
-
 enum class ProxyTasks;
 
 class IncrementalCommunicatorProxy final: public virtual ICommunicatorProxy {

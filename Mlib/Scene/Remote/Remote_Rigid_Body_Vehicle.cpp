@@ -280,7 +280,7 @@ void RemoteRigidBodyVehicle::write(
     if (any(proxy_tasks & ProxyTasks::SEND_OWNERSHIP)) {
         transmitted_fields |= RigidBodyTransmittedFields::OWNERSHIP;
     }
-    transmission_history_writer.write(ostr, remote_object_id, transmitted_fields);
+    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, transmitted_fields);
     auto writer = BinaryWriter{ostr};
     writer.write_binary(type_, "rigid body vehicle");
     if (any(transmitted_fields & RigidBodyTransmittedFields::INITIAL)) {

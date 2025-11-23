@@ -100,7 +100,7 @@ void RemoteUsers::write(
     KnownFields known_fields,
     TransmissionHistoryWriter& transmission_history_writer)
 {
-    transmission_history_writer.write(ostr, remote_object_id, TransmittedFields::END);
+    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
     auto user_count = physics_scene_->remote_sites_->get_user_count(site_id_);
     
     auto writer = BinaryWriter{ostr};

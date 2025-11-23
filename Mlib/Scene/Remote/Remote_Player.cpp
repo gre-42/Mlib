@@ -189,7 +189,7 @@ void RemotePlayer::write(
     KnownFields known_fields,
     TransmissionHistoryWriter& transmission_history_writer)
 {
-    transmission_history_writer.write(ostr, remote_object_id, TransmittedFields::END);
+    transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
     auto writer = BinaryWriter{ostr};
     writer.write_binary(RemoteSceneObjectType::PLAYER, "scene object type");
     writer.write_string(*player_->id(), "player name");

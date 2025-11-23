@@ -50,7 +50,7 @@ public:
         KnownFields known_fields,
         TransmissionHistoryWriter& transmission_history_writer) override
     {
-        transmission_history_writer.write(ostr, remote_object_id, TransmittedFields::END);
+        transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
         write_binary(ostr, ObjectType::INT32, "ObjectType::INT32");
         write_binary(ostr, value_, "int32");
     }
@@ -86,7 +86,7 @@ public:
         KnownFields known_fields,
         TransmissionHistoryWriter& transmission_history_writer) override
     {
-        transmission_history_writer.write(ostr, remote_object_id, TransmittedFields::END);
+        transmission_history_writer.write_remote_object_id(ostr, remote_object_id, TransmittedFields::END);
         write_binary(ostr, ObjectType::STRING, "ObjectType::STRING");
         write_binary(ostr, integral_cast<uint32_t>(value_.length()), "len");
         write_iterable(ostr, value_, "string");
