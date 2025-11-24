@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Advance_Times/Player_Site_Privileges.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/User_Account/User_Account.hpp>
@@ -61,13 +62,17 @@ void CreatePlayer::execute(const JsonView& args)
         user_info = remote_sites.get_user(*full_user_name).ptr().set_loc(CURRENT_SOURCE_LOCATION);
     }
     auto name = args.at<VariableAndHash<std::string>>(KnownArgs::name);
-    auto is_owned_by_local_site = true;
+    auto site_privileges = PlayerSitePrivileges::NONE;
     if (remote_scene != nullptr) {
-        if (user_info != nullptr) {
-            is_owned_by_local_site = (user_info->site_id == remote_scene->local_site_id());
-        } else {
-            is_owned_by_local_site = !remote_scene->created_at_remote_site.players.contains(name);
+        if ((user_info != nullptr) && (user_info->site_id == remote_scene->local_site_id())) {
+            site_privileges |= PlayerSitePrivileges::CONTROLLER;
         }
+        if (!remote_scene->created_at_remote_site.players.contains(name)) {
+            site_privileges |= PlayerSitePrivileges::MANAGER;
+        }
+    } else {
+        site_privileges |= PlayerSitePrivileges::CONTROLLER;
+        site_privileges |= PlayerSitePrivileges::MANAGER;
     }
     auto player = global_object_pool.create_unique<Player>(
         CURRENT_SOURCE_LOCATION,
@@ -80,7 +85,7 @@ void CreatePlayer::execute(const JsonView& args)
         physics_engine.collision_query_,
         vehicle_spawners,
         players,
-        is_owned_by_local_site,
+        site_privileges,
         user_info,
         name,
         args.at<std::string>(KnownArgs::team),

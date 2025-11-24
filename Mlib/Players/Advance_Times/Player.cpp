@@ -26,6 +26,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Players/Advance_Times/Player_Site_Privileges.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
@@ -148,7 +149,7 @@ Player::Player(
     CollisionQuery& collision_query,
     VehicleSpawners& vehicle_spawners,
     Players& players,
-    bool is_owned_by_local_site,
+    PlayerSitePrivileges site_privileges,
     const DanglingBaseClassPtr<const UserInfo>& user_info,
     VariableAndHash<std::string> id,
     std::string team,
@@ -173,7 +174,7 @@ Player::Player(
     , collision_query_{ collision_query }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
-    , is_owned_by_local_site_{ is_owned_by_local_site }
+    , site_privileges_{ site_privileges }
     , user_info_{ user_info }
     , id_{ std::move(id) }
     , team_{ std::move(team) }
@@ -572,7 +573,7 @@ void Player::increment_external_forces(
 {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!is_owned_by_local_site_) {
+    if (!any(site_privileges_ & PlayerSitePrivileges::CONTROLLER)) {
         return;
     }
     if (phase.burn_in) {
@@ -1469,6 +1470,6 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
     }
 }
 
-bool Player::is_owned_by_local_site() const {
-    return is_owned_by_local_site_;
+PlayerSitePrivileges Player::site_privileges() const {
+    return site_privileges_;
 }

@@ -98,6 +98,7 @@ enum class OpponentSelectionStrategy: uint32_t {
 };
 
 enum class ControlSource;
+enum class PlayerSitePrivileges;
 
 struct PlayerControlled {
     bool has_aim_at() const;
@@ -132,7 +133,7 @@ public:
         CollisionQuery& collision_query,
         VehicleSpawners& vehicle_spawners,
         Players& players,
-        bool is_owned_by_local_site,
+        PlayerSitePrivileges site_privileges,
         const DanglingBaseClassPtr<const UserInfo>& user_info,
         VariableAndHash<std::string> id,
         std::string team,
@@ -247,7 +248,7 @@ public:
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
     PlaybackWaypoints& playback_waypoints();
-    bool is_owned_by_local_site() const;
+    PlayerSitePrivileges site_privileges() const;
 
     // IPlayer
     virtual const VariableAndHash<std::string>& id() const override;
@@ -310,7 +311,7 @@ private:
     CollisionQuery& collision_query_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
-    bool is_owned_by_local_site_;
+    PlayerSitePrivileges site_privileges_;
     DanglingBaseClassPtr<const UserInfo> user_info_;
     VariableAndHash<std::string> id_;
     std::string team_;

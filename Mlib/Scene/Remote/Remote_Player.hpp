@@ -2,6 +2,8 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
+#include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
+#include <optional>
 
 namespace Mlib {
 
@@ -34,11 +36,12 @@ public:
         ProxyTasks proxy_tasks,
         KnownFields known_fields,
         TransmissionHistoryWriter& transmission_history_writer) override;
-
 private:
+    void reset_node();
     DanglingBaseClassRef<Player> player_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     DanglingBaseClassPtr<SceneVehicle> vehicle_;
+    std::optional<RemoteObjectId> vehicle_object_id_;
     IoVerbosity verbosity_;
     DestructionFunctionsRemovalTokens player_on_destroy_;
     DestructionFunctionsRemovalTokens vehicle_on_destroy_;
