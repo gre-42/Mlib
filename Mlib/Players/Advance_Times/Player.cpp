@@ -21,6 +21,7 @@
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
+#include <Mlib/Physics/Misc/When_To_Equip.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Phase.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -42,6 +43,7 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Way_Points.hpp>
 #include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 #include <Mlib/Scene_Graph/Spawn_Arguments.hpp>
@@ -146,6 +148,7 @@ Player::Player(
     CollisionQuery& collision_query,
     VehicleSpawners& vehicle_spawners,
     Players& players,
+    bool is_owned_by_local_site,
     const DanglingBaseClassPtr<const UserInfo>& user_info,
     VariableAndHash<std::string> id,
     std::string team,
@@ -170,6 +173,7 @@ Player::Player(
     , collision_query_{ collision_query }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
+    , is_owned_by_local_site_{ is_owned_by_local_site }
     , user_info_{ user_info }
     , id_{ std::move(id) }
     , team_{ std::move(team) }
@@ -549,6 +553,16 @@ void Player::advance_time(float dt, const StaticWorld& world) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     aim_and_shoot();
     select_best_weapon_in_inventory();
+    for (const auto& [time, weapon] : shot_history) {
+        if ((time >= old_world_time_) && (time < world.time)) {
+            if (has_weapon_cycle()) {
+                set_desired_weapon(weapon, WhenToEquip::EQUIP_INSTANTLY);
+                trigger_gun();
+            }
+        }
+    }
+    shot_history.forget_old_entries(world.time);
+    old_world_time_ = world.time;
 }
 
 void Player::increment_external_forces(
@@ -558,6 +572,9 @@ void Player::increment_external_forces(
 {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (!is_owned_by_local_site_) {
+        return;
+    }
     if (phase.burn_in) {
         return;
     }
@@ -706,6 +723,13 @@ const WeaponCycle& Player::weapon_cycle() const {
     return Mlib::get_weapon_cycle(scene_node());
 }
 
+void Player::set_desired_weapon(const std::string& name, WhenToEquip when_to_equip) {
+    if (!has_weapon_cycle()) {
+        THROW_OR_ABORT("Player has no weapon cycle");
+    }
+    weapon_cycle().set_desired_weapon(id_, name, when_to_equip);
+}
+
 bool Player::needs_supplies() const {
     std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
@@ -834,7 +858,7 @@ void Player::select_best_weapon_in_inventory() {
     if (!best_weapon.has_value()) {
         return;
     }
-    weapon_cycle().set_desired_weapon(id_, *best_weapon);
+    set_desired_weapon(*best_weapon, WhenToEquip::EQUIP_LATER);
 }
 
 bool Player::ramming() const {
@@ -1398,6 +1422,13 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     }
 }
 
+void Player::notify_bullet_generated(std::chrono::steady_clock::time_point time) {
+    std::scoped_lock lock{ mutex_ };
+    if ((time >= old_world_time_) && has_weapon_cycle()) {
+        shot_history.try_emplace(time, weapon_cycle().weapon_name());
+    }
+}
+
 DestructionFunctions& Player::on_destroy_player() {
     return on_destroy;
 }
@@ -1436,4 +1467,8 @@ void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
             "Player \"" + *id_ + "\": Could not find waypoints for final filter \"" +
             joined_way_point_sandbox_to_string(final_filter) + '"');
     }
+}
+
+bool Player::is_owned_by_local_site() const {
+    return is_owned_by_local_site_;
 }

@@ -12,6 +12,7 @@ namespace Mlib {
 class Inventory;
 enum class RigidBodyVehicleFlags;
 struct BulletProperties;
+enum class WhenToEquip;
 
 struct WeaponInfo {
     std::function<void()> create_weapon;
@@ -41,10 +42,12 @@ public:
     void add_weapon(std::string weapon_name, const WeaponInfo& weapon_info);
     void set_desired_weapon(
         std::optional<VariableAndHash<std::string>> player_name,
-        std::string weapon_name);
+        std::string weapon_name,
+        WhenToEquip when_to_equip);
     void equip_next_weapon(std::optional<VariableAndHash<std::string>> player_name);
     void equip_previous_weapon(std::optional<VariableAndHash<std::string>> player_name);
     InventoryItem ammo_type() const;
+    const std::string& weapon_name() const;
     const std::map<std::string, WeaponInfo>& weapon_infos() const;
 private:
     std::map<std::string, WeaponInfo> weapon_infos_;

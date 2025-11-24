@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <chrono>
 #include <list>
 #include <optional>
 #include <string>
@@ -71,6 +72,7 @@ public:
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) = 0;
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) = 0;
+    virtual void notify_bullet_generated(std::chrono::steady_clock::time_point time) = 0;
     virtual DestructionFunctions& on_destroy_player() = 0;
     virtual DestructionFunctions& on_clear_vehicle() = 0;
 };

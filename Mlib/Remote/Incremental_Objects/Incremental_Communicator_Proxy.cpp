@@ -56,12 +56,12 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " read frome home site " << home_site_id_ << ", object " << i;
                 }
-                it->read(istr, transmitted_fields);
+                it->read(istr, i, transmitted_fields, transmission_history_reader);
             } else {
                 if (any(verbosity_ & IoVerbosity::METADATA)) {
                     linfo() << this << " create from home site " << home_site_id_ << ", object " << i;
                 }
-                auto o = shared_object_factory_->try_create_shared_object(istr, transmitted_fields, i);
+                auto o = shared_object_factory_->try_create_shared_object(istr, i, transmitted_fields, transmission_history_reader);
                 if (o != nullptr) {
                     objects_->add_remote_object(i, *o, visibility);
                 }

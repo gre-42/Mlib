@@ -113,12 +113,8 @@ const DeletedObjects& IncrementalRemoteObjects::deleted_objects() const {
     return deleted_objects_;
 }
 
-void IncrementalRemoteObjects::forget_old_deleted_objects()
-{
-    auto lt = local_time();
-    std::erase_if(deleted_objects_, [&](const auto& item){
-        return item.second + REMOTE_EVENT_HISTORY_DURATION < lt;
-    });
+void IncrementalRemoteObjects::forget_old_deleted_objects() {
+    deleted_objects_.forget_old_entries(local_time());
 }
 
 const LocalObjects& IncrementalRemoteObjects::private_local_objects() const {

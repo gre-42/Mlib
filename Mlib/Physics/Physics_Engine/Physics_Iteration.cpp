@@ -46,9 +46,6 @@ PhysicsIteration::PhysicsIteration(
 PhysicsIteration::~PhysicsIteration() = default;
 
 void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
-    if (send_and_receive_) {
-        send_and_receive_(time);
-    }
     StaticWorld world{
         .geographic_mapping = dynamic_world_.get_geographic_mapping(),
         .inverse_geographic_mapping = dynamic_world_.get_inverse_geographic_mapping(),
@@ -118,4 +115,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
         scene_.move(physics_cfg_.dt, time);
     }
     physics_engine_.move_advance_times(world);
+    if (send_and_receive_) {
+        send_and_receive_(time);
+    }
 }

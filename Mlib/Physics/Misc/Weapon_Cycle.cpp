@@ -1,6 +1,7 @@
 #include "Weapon_Cycle.hpp"
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
+#include <Mlib/Physics/Misc/When_To_Equip.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -57,9 +58,13 @@ void WeaponCycle::add_weapon(std::string weapon_name, const WeaponInfo& weapon_i
 
 void WeaponCycle::set_desired_weapon(
     std::optional<VariableAndHash<std::string>> player_name,
-    std::string weapon_name)
+    std::string weapon_name,
+    WhenToEquip when_to_equip)
 {
     desired_ = { std::move(player_name), std::move(weapon_name) };
+    if (when_to_equip == WhenToEquip::EQUIP_INSTANTLY) {
+        modify_node();
+    }
 }
 
 void WeaponCycle::equip_next_weapon(std::optional<VariableAndHash<std::string>> player_name) {
@@ -99,6 +104,13 @@ InventoryItem WeaponCycle::ammo_type() const {
         THROW_OR_ABORT("Inventory does not have information about a weapon with name \"" + equipped_.weapon_name + '"');
     }
     return it->second.ammo_type;
+}
+
+const std::string& WeaponCycle::weapon_name() const {
+    if (equipped_.weapon_name.empty()) {
+        THROW_OR_ABORT("No weapon is equpped");
+    }
+    return equipped_.weapon_name;
 }
 
 const std::map<std::string, WeaponInfo>& WeaponCycle::weapon_infos() const {

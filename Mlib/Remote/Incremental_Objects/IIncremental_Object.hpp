@@ -6,18 +6,21 @@
 
 namespace Mlib {
 
-enum class KnownFields: uint32_t;
-class TransmissionHistoryWriter;
-enum class ProxyTasks;
-enum class TransmittedFields: uint32_t;
 struct RemoteObjectId;
+class TransmissionHistoryReader;
+class TransmissionHistoryWriter;
+enum class KnownFields: uint32_t;
+enum class TransmittedFields: uint32_t;
+enum class ProxyTasks;
 
 class IIncrementalObject: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
     virtual ~IIncrementalObject() = default;
     virtual void read(
         std::istream& istr,
-        TransmittedFields transmitted_fields) = 0;
+        const RemoteObjectId& remote_object_id,
+        TransmittedFields transmitted_fields,
+        TransmissionHistoryReader& transmission_history_reader) = 0;
     virtual void write(
         std::ostream& ostr,
         const RemoteObjectId& remote_object_id,

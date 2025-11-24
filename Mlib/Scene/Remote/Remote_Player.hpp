@@ -21,10 +21,13 @@ public:
         PhysicsScene& physics_scene,
         std::istream& istr,
         TransmittedFields transmitted_fields,
+        TransmissionHistoryReader& transmission_history_reader,
         IoVerbosity verbosity);
     virtual void read(
         std::istream& istr,
-        TransmittedFields transmitted_fields) override;
+        const RemoteObjectId& remote_object_id,
+        TransmittedFields transmitted_fields,
+        TransmissionHistoryReader& transmission_history_reader) override;
     virtual void write(
         std::ostream& ostr,
         const RemoteObjectId& remote_object_id,

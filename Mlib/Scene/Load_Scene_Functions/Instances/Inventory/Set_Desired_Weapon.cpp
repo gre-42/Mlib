@@ -3,6 +3,7 @@
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
+#include <Mlib/Physics/Misc/When_To_Equip.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -36,8 +37,9 @@ void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto player_name = args.arguments.try_at_non_null<VariableAndHash<std::string>>(KnownArgs::player);
     std::string weapon_name = args.arguments.at<std::string>(KnownArgs::weapon);
     auto& wc = get_weapon_cycle(cycle_node);
-    wc.set_desired_weapon(player_name, weapon_name);
     if (args.arguments.at<bool>(KnownArgs::equip_instantly)) {
-        wc.modify_node();
+        wc.set_desired_weapon(player_name, weapon_name, WhenToEquip::EQUIP_INSTANTLY);
+    } else {
+        wc.set_desired_weapon(player_name, weapon_name, WhenToEquip::EQUIP_LATER);
     }
 }

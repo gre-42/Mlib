@@ -22,20 +22,24 @@ enum class ObjectType: uint32_t {
 class SharedInteger final: public IIncrementalObject {
 public:
     explicit SharedInteger(int32_t i)
-    : value_{ i }
+        : value_{ i }
     {}
     explicit SharedInteger(
         std::istream& istr,
-        TransmittedFields transmitted_fields)
+        const RemoteObjectId& remote_object_id,
+        TransmittedFields transmitted_fields,
+        TransmissionHistoryReader& transmission_history_reader)
     {
-        read(istr, transmitted_fields);
+        read(istr, remote_object_id, transmitted_fields, transmission_history_reader);
     }
     virtual ~SharedInteger() override {
         on_destroy.clear();
     }
     virtual void read(
         std::istream& istr,
-        TransmittedFields transmitted_fields) override
+        const RemoteObjectId& remote_object_id,
+        TransmittedFields transmitted_fields,
+        TransmissionHistoryReader& transmission_history_reader) override
     {
         if (any(transmitted_fields & ~(TransmittedFields::SITE_ID | TransmittedFields::END)))
         {
@@ -61,20 +65,24 @@ private:
 class SharedString final: public IIncrementalObject {
 public:
     explicit SharedString(std::string s)
-    : value_{ std::move(s) }
+        : value_{ std::move(s) }
     {}
     explicit SharedString(
         std::istream& istr,
-        TransmittedFields transmitted_fields)
+        const RemoteObjectId& remote_object_id,
+        TransmittedFields transmitted_fields,
+        TransmissionHistoryReader& transmission_history_reader)
     {
-        read(istr, transmitted_fields);
+        read(istr, remote_object_id, transmitted_fields, transmission_history_reader);
     }
     virtual ~SharedString() override {
         on_destroy.clear();
     }
     virtual void read(
         std::istream& istr,
-        TransmittedFields transmitted_fields) override
+        const RemoteObjectId& remote_object_id,
+        TransmittedFields transmitted_fields,
+        TransmissionHistoryReader& transmission_history_reader) override
     {
         auto len = read_binary<uint32_t>(istr, "len", IoVerbosity::SILENT);
         value_ = read_string(istr, len, "string", IoVerbosity::SILENT);
@@ -105,15 +113,16 @@ public:
     }
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         std::istream& istr,
+        const RemoteObjectId& id,
         TransmittedFields transmitted_fields,
-        const RemoteObjectId& id) override
+        TransmissionHistoryReader& transmission_history_reader) override
     {
         auto t = read_binary<ObjectType>(istr, "object type", IoVerbosity::SILENT);
         switch (t) {
         case ObjectType::INT32:
-            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, istr, transmitted_fields), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, istr, id, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         case ObjectType::STRING:
-            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, istr, transmitted_fields), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, istr, id, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         }
         THROW_OR_ABORT("Unknown object type: " + std::to_string((uint32_t)t));
     }

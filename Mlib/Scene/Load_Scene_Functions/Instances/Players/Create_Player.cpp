@@ -61,6 +61,14 @@ void CreatePlayer::execute(const JsonView& args)
         user_info = remote_sites.get_user(*full_user_name).ptr().set_loc(CURRENT_SOURCE_LOCATION);
     }
     auto name = args.at<VariableAndHash<std::string>>(KnownArgs::name);
+    auto is_owned_by_local_site = true;
+    if (remote_scene != nullptr) {
+        if (user_info != nullptr) {
+            is_owned_by_local_site = (user_info->site_id == remote_scene->local_site_id());
+        } else {
+            is_owned_by_local_site = !remote_scene->created_at_remote_site.players.contains(name);
+        }
+    }
     auto player = global_object_pool.create_unique<Player>(
         CURRENT_SOURCE_LOCATION,
         scene,
@@ -72,6 +80,7 @@ void CreatePlayer::execute(const JsonView& args)
         physics_engine.collision_query_,
         vehicle_spawners,
         players,
+        is_owned_by_local_site,
         user_info,
         name,
         args.at<std::string>(KnownArgs::team),

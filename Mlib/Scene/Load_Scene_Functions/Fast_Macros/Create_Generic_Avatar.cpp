@@ -20,6 +20,7 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
+#include <Mlib/Physics/Misc/When_To_Equip.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
@@ -408,8 +409,7 @@ void CreateGenericAvatar::execute(const JsonView& args)
                 })}
             }});
 
-            weapon_cycle.set_desired_weapon(std::nullopt, "m4a1");
-            weapon_cycle.modify_node();
+            weapon_cycle.set_desired_weapon(std::nullopt, "m4a1", WhenToEquip::EQUIP_INSTANTLY);
         } else {
             create_gun(JsonView{{
                 {"node", *main_gun_end_node},

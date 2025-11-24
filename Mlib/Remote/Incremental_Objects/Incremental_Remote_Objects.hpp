@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Value_Map.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
+#include <Mlib/Remote/Events/Events_And_Times.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
 #include <chrono>
 #include <iosfwd>
@@ -10,7 +11,7 @@ namespace Mlib {
 
 class IIncrementalObject;
 
-using DeletedObjects = std::map<RemoteObjectId, std::chrono::steady_clock::time_point>;
+using DeletedObjects = EventsAndTimes<RemoteObjectId, std::chrono::steady_clock::time_point>;
 using LocalObjects = DanglingValueMap<LocalObjectId, IIncrementalObject>;
 using RemoteObjects = DanglingValueMap<RemoteObjectId, IIncrementalObject>;
 

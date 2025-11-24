@@ -53,7 +53,9 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
 
 void RemoteUsers::read(
     std::istream& istr,
-    TransmittedFields transmitted_fields)
+    const RemoteObjectId& remote_object_id,
+    TransmittedFields transmitted_fields,
+    TransmissionHistoryReader& transmission_history_reader)
 {
     auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     if (type != RemoteSceneObjectType::REMOTE_USERS) {

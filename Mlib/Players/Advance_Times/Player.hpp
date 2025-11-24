@@ -22,6 +22,7 @@
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
 #include <Mlib/Players/Scene_Vehicle/Internals_Mode.hpp>
+#include <Mlib/Remote/Events/Times_And_Events.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -48,9 +49,6 @@ class AimAt;
 class Gun;
 class Navigate;
 class SupplyDepotsWaypointsCollection;
-enum class DrivingDirection: uint32_t;
-enum class JoinedWayPointSandbox;
-enum class WayPointLocation;
 class DeleteNodeMutex;
 class Bystanders;
 class WeaponCycle;
@@ -60,6 +58,10 @@ class SceneVehicle;
 class VehicleSpawner;
 class VehicleSpawners;
 class UserAccount;
+enum class DrivingDirection: uint32_t;
+enum class JoinedWayPointSandbox;
+enum class WayPointLocation;
+enum class WhenToEquip;
 
 enum class GameMode: uint32_t {
     RALLY = 0x39B2A982,
@@ -118,6 +120,8 @@ class Player final:
     Player(const Player&) = delete;
     Player& operator = (const Player&) = delete;
 public:
+    using ShotHistory = TimesAndEvents<std::chrono::steady_clock::time_point, std::string>;
+
     Player(
         Scene& scene,
         SupplyDepots& supply_depots,
@@ -128,6 +132,7 @@ public:
         CollisionQuery& collision_query,
         VehicleSpawners& vehicle_spawners,
         Players& players,
+        bool is_owned_by_local_site,
         const DanglingBaseClassPtr<const UserInfo>& user_info,
         VariableAndHash<std::string> id,
         std::string team,
@@ -212,6 +217,7 @@ public:
     const Inventory& inventory() const;
     WeaponCycle& weapon_cycle();
     const WeaponCycle& weapon_cycle() const;
+    void set_desired_weapon(const std::string& name, WhenToEquip when_to_equip);
     bool needs_supplies() const;
     size_t nbullets_available() const;
     std::optional<std::string> best_weapon_in_inventory() const;
@@ -241,6 +247,7 @@ public:
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
     PlaybackWaypoints& playback_waypoints();
+    bool is_owned_by_local_site() const;
 
     // IPlayer
     virtual const VariableAndHash<std::string>& id() const override;
@@ -268,6 +275,7 @@ public:
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) override;
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
+    virtual void notify_bullet_generated(std::chrono::steady_clock::time_point time) override;
     virtual DestructionFunctions& on_destroy_player() override;
     virtual DestructionFunctions& on_clear_vehicle() override;
     // IAdvanceTime
@@ -283,6 +291,7 @@ public:
     VehicleMovement vehicle_movement;
     CarMovement car_movement;
     AvatarMovement avatar_movement;
+    ShotHistory shot_history;
 private:
     void clear_opponent();
     void set_opponent(Player& opponent);
@@ -301,6 +310,7 @@ private:
     CollisionQuery& collision_query_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
+    bool is_owned_by_local_site_;
     DanglingBaseClassPtr<const UserInfo> user_info_;
     VariableAndHash<std::string> id_;
     std::string team_;
@@ -345,6 +355,7 @@ private:
     Spawner& spawner_;
     std::shared_ptr<UserAccount> user_account_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
+    std::chrono::steady_clock::time_point old_world_time_;
 };
 
 }

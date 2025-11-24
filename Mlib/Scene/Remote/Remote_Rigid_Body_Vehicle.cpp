@@ -204,7 +204,9 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
 
 void RemoteRigidBodyVehicle::read(
     std::istream& istr,
-    TransmittedFields transmitted_fields)
+    const RemoteObjectId& remote_object_id,
+    TransmittedFields transmitted_fields,
+    TransmissionHistoryReader& transmission_history_reader)
 {
     if (rb_ == nullptr) {
         THROW_OR_ABORT("RemoteRigidBodyVehicle::read: Rigid body is destroyed");

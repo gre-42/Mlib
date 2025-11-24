@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 
 using namespace Mlib;
 
@@ -110,6 +111,9 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
     }
     if (generate_shot_audio_) {
         generate_shot_audio();
+    }
+    if (player_ != nullptr) {
+        player_->notify_bullet_generated(world.time);
     }
     return true;
 }
