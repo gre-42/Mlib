@@ -210,6 +210,7 @@ void RemotePlayer::read(
                     }
                     player_->create_vehicle_externals(externals_mode);
                     player_->create_vehicle_internals({ seat });
+                    vehicle_object_id_ = vehicle_object_id;
                 }
             }
         }
