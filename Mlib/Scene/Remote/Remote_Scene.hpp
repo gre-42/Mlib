@@ -3,7 +3,6 @@
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Communicator_Proxy_Factory.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
-#include <Mlib/Scene/Remote/Created_At_Remote_Site.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Factory.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <chrono>
@@ -28,7 +27,6 @@ public:
     void send_and_receive(std::chrono::steady_clock::time_point time);
     DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
     bool try_remove(const RemoteObjectId& id);
-    CreatedAtRemoteSite created_at_remote_site;
     template<class Class, class... Args>
     RemoteObjectId create_local(SourceLocation loc, Args&&... args) {
         return add_local_object({global_object_pool.create<Class>(loc, verbosity_, std::forward<Args>(args)...), loc});

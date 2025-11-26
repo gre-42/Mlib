@@ -100,7 +100,11 @@ DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(const
 }
 
 bool IncrementalRemoteObjects::try_remove(const RemoteObjectId& id) {
-    deleted_objects_.try_emplace(id, local_time());
+    // If the local time is not set, this means that no transmission has taken
+    // place yet, and the deleted objects need not be updated.
+    if (local_time_ != std::chrono::steady_clock::time_point()) {
+        deleted_objects_.try_emplace(id, local_time());
+    }
     auto o = try_get(id);
     if ((o == nullptr) || !global_object_pool.contains(o.get())) {
         return false;

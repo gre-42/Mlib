@@ -43,7 +43,7 @@ CreatePlayer::CreatePlayer(
     : LoadPhysicsSceneInstanceFunction{ physics_scene, &macro_line_executor }
 {}
 
-void CreatePlayer::execute(const JsonView& args)
+void CreatePlayer::execute(const JsonView& args, PlayerCreator creator)
 {
     args.validate(KnownArgs::options);
     if (game_logic == nullptr) {
@@ -67,7 +67,7 @@ void CreatePlayer::execute(const JsonView& args)
         if ((user_info != nullptr) && (user_info->site_id == remote_scene->local_site_id())) {
             site_privileges |= PlayerSitePrivileges::CONTROLLER;
         }
-        if (!remote_scene->created_at_remote_site.players.contains(name)) {
+        if (creator == PlayerCreator::LOCAL) {
             site_privileges |= PlayerSitePrivileges::MANAGER;
         }
     } else {
@@ -100,7 +100,7 @@ void CreatePlayer::execute(const JsonView& args)
     players.add_player({ *player, CURRENT_SOURCE_LOCATION });
     physics_engine.advance_times_.add_advance_time({ *player, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     physics_engine.add_external_force_provider(*player);
-    if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.players.contains(name)) {
+    if ((remote_scene != nullptr) && (creator == PlayerCreator::LOCAL)) {
         remote_scene->create_local<RemotePlayer>(
             CURRENT_SOURCE_LOCATION,
             DanglingBaseClassRef<Player>{*player, CURRENT_SOURCE_LOCATION},
@@ -117,7 +117,7 @@ struct RegisterJsonUserFunction {
             "player_create",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                CreatePlayer(args.physics_scene(), args.macro_line_executor).execute(args.arguments);
+                CreatePlayer(args.physics_scene(), args.macro_line_executor).execute(args.arguments, PlayerCreator::LOCAL);
             });
     }
 } obj;

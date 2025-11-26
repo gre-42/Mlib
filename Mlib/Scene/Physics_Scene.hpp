@@ -95,7 +95,6 @@ public:
 
     DestructionFunctions on_stop_and_join_;
     DeleteNodeMutex delete_node_mutex_;
-    ObjectPool object_pool_;
     MacroLineExecutor macro_line_executor_;
     DanglingBaseClassRef<RemoteSites> remote_sites_;
     UiFocus& ui_focus_;
@@ -108,7 +107,6 @@ public:
     RenderingResources rendering_resources_;
     std::function<bool()> paused_;
     EventEmitter paused_changed_;
-    OneShotAudio& one_shot_audio_;
     std::unique_ptr<ITrailRenderer> trail_renderer_;
     std::unique_ptr<DynamicLights> dynamic_lights_;
     DynamicWorld dynamic_world_;
@@ -116,6 +114,8 @@ public:
     PhysicsEngine physics_engine_;
     DeferredInstantiator deferred_instantiator_;
     Scene scene_;
+    ObjectPool object_pool_;
+    OneShotAudio& one_shot_audio_;
     SceneParticles air_particles_;
     SceneParticles skidmark_particles_;
     SceneParticles sea_spray_particles_;

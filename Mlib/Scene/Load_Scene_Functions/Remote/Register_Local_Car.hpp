@@ -5,19 +5,13 @@ namespace Mlib {
 
 class JsonView;
 class MacroLineExecutor;
-struct LoadSceneJsonUserFunctionArgs;
 
-enum class PlayerCreator {
-    LOCAL,
-    REMOTE
-};
-
-class CreatePlayer: public LoadPhysicsSceneInstanceFunction {
+class RegisterLocalCar: public LoadPhysicsSceneInstanceFunction {
 public:
-    explicit CreatePlayer(
+    explicit RegisterLocalCar(
         PhysicsScene& physics_scene,
         const MacroLineExecutor& macro_line_executor);
-    void execute(const JsonView& args, PlayerCreator creator);
+    void execute(const JsonView& args);
 };
 
 }

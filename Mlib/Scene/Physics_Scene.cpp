@@ -43,8 +43,7 @@ PhysicsScene::PhysicsScene(
     UiFocus& ui_focus,
     std::shared_ptr<Translator> translator,
     const std::optional<RemoteParams>& remote_params)
-    : object_pool_{ InObjectPoolDestructor::CLEAR }
-    , macro_line_executor_{ macro_line_executor }
+    : macro_line_executor_{ macro_line_executor }
     , remote_sites_{ remote_sites, CURRENT_SOURCE_LOCATION }
     , ui_focus_{ ui_focus }
     , name_{ std::move(name) }
@@ -60,11 +59,6 @@ PhysicsScene::PhysicsScene(
         return (usage_counter_.count() == 0);
       } }
     , paused_changed_{ [](){ return true; }}
-    , one_shot_audio_{ object_pool_.create<OneShotAudio>(
-        CURRENT_SOURCE_LOCATION,
-        PositionRequirement::WAITING_FOR_POSITION,
-        paused_,
-        paused_changed_) }
     , trail_renderer_{ std::make_unique<TrailRenderer>(trail_resources) }
     , dynamic_lights_{ std::make_unique<DynamicLights>(dynamic_light_db) }
     , dynamic_world_{ scene_node_resources, std::move(world) }
@@ -78,6 +72,12 @@ PhysicsScene::PhysicsScene(
         &scene_node_resources,
         trail_renderer_.get(),
         dynamic_lights_.get()}
+    , object_pool_{ InObjectPoolDestructor::CLEAR }
+    , one_shot_audio_{ object_pool_.create<OneShotAudio>(
+        CURRENT_SOURCE_LOCATION,
+        PositionRequirement::WAITING_FOR_POSITION,
+        paused_,
+        paused_changed_) }
     , air_particles_{
         scene_node_resources,
         rendering_resources_,
@@ -175,52 +175,57 @@ PhysicsScene::PhysicsScene(
     , translator_{ std::move(translator) }
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 {
-    if (translator_ == nullptr) {
-        THROW_OR_ABORT("Physics scene translator is null");
-    }
-    air_particles_.smoke_particle_generator.set_bullet_generator(bullet_generator_);
-    physics_engine_.set_surface_contact_db(surface_contact_db);
-    physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);
-    physics_engine_.set_trail_renderer(*trail_renderer_);
-
-    physics_engine_.add_external_force_provider(gefp_);
-    physics_engine_.advance_times_.add_advance_time({ *air_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    physics_engine_.advance_times_.add_advance_time({ *skidmark_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-
-    if (remote_params.has_value()) {
-        auto verbosity = IoVerbosity::SILENT;
-        if (getenv_default_bool("REMOTE_DEBUG_DATA", false)) {
-            verbosity |= IoVerbosity::DATA;
+    try {
+        if (translator_ == nullptr) {
+            THROW_OR_ABORT("Physics scene translator is null");
         }
-        if (getenv_default_bool("REMOTE_DEBUG_METADATA", false)) {
-            verbosity |= IoVerbosity::METADATA;
-        }
-        remote_scene_ = std::make_unique<RemoteScene>(
-            DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
-            *remote_params,
-            verbosity);
-        remote_counter_user_.set(true);
-    }
-    {
-        std::function<void(std::chrono::steady_clock::time_point)> send_and_receive;
-        if (remote_scene_ != nullptr) {
-            send_and_receive = [this](std::chrono::steady_clock::time_point time){
-                remote_scene_->send_and_receive(time);
-            };
+        air_particles_.smoke_particle_generator.set_bullet_generator(bullet_generator_);
+        physics_engine_.set_surface_contact_db(surface_contact_db);
+        physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);
+        physics_engine_.set_trail_renderer(*trail_renderer_);
+
+        physics_engine_.add_external_force_provider(gefp_);
+        physics_engine_.advance_times_.add_advance_time({ *air_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        physics_engine_.advance_times_.add_advance_time({ *skidmark_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+
+        if (remote_params.has_value()) {
+            auto verbosity = IoVerbosity::SILENT;
+            if (getenv_default_bool("REMOTE_DEBUG_DATA", false)) {
+                verbosity |= IoVerbosity::DATA;
+            }
+            if (getenv_default_bool("REMOTE_DEBUG_METADATA", false)) {
+                verbosity |= IoVerbosity::METADATA;
+            }
+            remote_scene_ = std::make_unique<RemoteScene>(
+                DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
+                *remote_params,
+                verbosity);
             remote_counter_user_.set(true);
         }
-        physics_iteration_ = std::make_unique<PhysicsIteration>(
-            scene_node_resources_,
-            rendering_resources_,
-            scene_,
-            dynamic_world_,
-            physics_engine_,
-            std::move(send_and_receive),
-            delete_node_mutex_,
-            scene_config_.physics_engine_config,
-            &fifo_log_);
+        {
+            std::function<void(std::chrono::steady_clock::time_point)> send_and_receive;
+            if (remote_scene_ != nullptr) {
+                send_and_receive = [this](std::chrono::steady_clock::time_point time){
+                    remote_scene_->send_and_receive(time);
+                };
+                remote_counter_user_.set(true);
+            }
+            physics_iteration_ = std::make_unique<PhysicsIteration>(
+                scene_node_resources_,
+                rendering_resources_,
+                scene_,
+                dynamic_world_,
+                physics_engine_,
+                std::move(send_and_receive),
+                delete_node_mutex_,
+                scene_config_.physics_engine_config,
+                &fifo_log_);
+        }
+    } catch (...) {
+        shutdown();
+        throw;
     }
 }
 

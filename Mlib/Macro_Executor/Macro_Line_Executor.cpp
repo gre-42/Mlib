@@ -360,8 +360,12 @@ void MacroLineExecutor::operator () (
                     msg << "Exception while substituting variables for (2) " << std::setw(2) << j << "\n\nException message: " << e.what();
                     throw std::runtime_error(msg.str());
                 }
+                auto name = Mlib::eval<std::string>(
+                    jv.at<std::string>(MacroKeys::call),
+                    global_args,
+                    merged_args,
+                    asset_references_);
                 global_args.unlock();
-                auto name = jv.at<std::string>(MacroKeys::call);
                 // BENCHMARK short_description = name;
                 auto mle2 = changed_context(
                     context,

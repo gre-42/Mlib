@@ -42,9 +42,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
-#include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
-#include <Mlib/Scene/Remote/Remote_Scene.hpp>
-#include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene/Scene_Particles.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -61,10 +58,8 @@ static const auto WORLD = VariableAndHash<std::string>{"world"};
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(asset_id);
 DECLARE_ARGUMENT(suffix);
-DECLARE_ARGUMENT(decimate);
-DECLARE_ARGUMENT(decimate1);
 DECLARE_ARGUMENT(if_with_graphics);
 DECLARE_ARGUMENT(if_with_physics);
 DECLARE_ARGUMENT(if_human_style);
@@ -94,6 +89,8 @@ DECLARE_ARGUMENT(far_plane);
 
 namespace KnownDb {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(decimate);
+DECLARE_ARGUMENT(decimate1);
 DECLARE_ARGUMENT(wheel_mount_0);
 DECLARE_ARGUMENT(wheel_mount_1);
 DECLARE_ARGUMENT(angular_vels);
@@ -165,17 +162,17 @@ void CreateGenericAvatar::execute(const JsonView& args)
     auto create_gun = CreateGun{ physics_scene, macro_line_executor };
     auto create_damageable = CreateDamageable{ physics_scene };
 
-    auto name = args.at<std::string>(KnownArgs::name);
+    auto asset_id = args.at<std::string>(KnownArgs::asset_id);
     auto suffix = args.at<std::string>(KnownArgs::suffix);
-    auto decimate = args.at<std::string>(KnownArgs::decimate);
-    auto decimate1 = args.at<std::string>(KnownArgs::decimate1);
     auto if_with_graphics = args.at<bool>(KnownArgs::if_with_graphics);
     auto if_with_physics = args.at<bool>(KnownArgs::if_with_physics);
     auto if_human_style = args.at<bool>(KnownArgs::if_human_style);
     auto with_gun = args.at<bool>(KnownArgs::with_gun);
-    const auto& vdb = asset_references["vehicles"].at(name).rp.database;
+    const auto& vdb = asset_references["vehicles"].at(asset_id).rp.database;
     auto wheel = vdb.at<std::string>(KnownDb::wheel);
     const auto& wdb = asset_references["wheels"].at(wheel).rp.database;
+    auto decimate = vdb.at<std::string>(KnownDb::decimate);
+    auto decimate1 = vdb.at<std::string>(KnownDb::decimate1);
     auto parent = VH{"human_node" + suffix};
     auto animation_node = VH{"animation_node" + suffix};
     auto main_gun_node = VH{"main_gun_node" + suffix};
@@ -257,8 +254,8 @@ void CreateGenericAvatar::execute(const JsonView& args)
     if (if_with_physics) {
         auto& rb = create_rigid_cuboid(CreateRigidCuboidArgs{
             .node = parent,
-            .name = "generic_avatar_" + name + suffix,
-            .asset_id = name,
+            .name = "generic_avatar_" + asset_id + suffix,
+            .asset_id = asset_id,
             .mass = vdb.at<float>(KnownDb::mass) * kg,
             .size = fixed_full<float, 3>(INFINITY * meters),
             .com = vdb.at<EFixedArray<float, 3>>(KnownDb::com) * meters,
@@ -561,21 +558,10 @@ void CreateGenericAvatar::execute(const JsonView& args)
             auto d = std::make_unique<Crash>(rb, 0.3f);
             rb.collision_observers_.emplace_back(std::move(d));
         }
-
-        if ((remote_scene != nullptr) && !remote_scene->created_at_remote_site.rigid_bodies.contains(parent)) {
-            rb.remote_object_id_ = remote_scene->create_local<RemoteRigidBodyVehicle>(
-                CURRENT_SOURCE_LOCATION,
-                RemoteSceneObjectType::RIGID_BODY_AVATAR,
-                args.json().dump(),
-                suffix,
-                DanglingBaseClassRef<RigidBodyVehicle>{rb, CURRENT_SOURCE_LOCATION},
-                DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION});
-            rb.owner_site_id_ = remote_scene->local_site_id();
-        }
     }
     if (if_with_graphics) {
-        child_renderable_instance("human-inst", animation_node, VH{name + decimate});
-        child_renderable_instance("human-inst" + decimate1, animation_node, VH{name + decimate1});
+        child_renderable_instance("human-inst", animation_node, VH{asset_id + decimate});
+        child_renderable_instance("human-inst" + decimate1, animation_node, VH{asset_id + decimate1});
     }
 }
 
