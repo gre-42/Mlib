@@ -3,6 +3,7 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Modifier.hpp>
 #include <compare>
 #include <functional>
+#include <iosfwd>
 #include <map>
 #include <optional>
 #include <string>
@@ -34,6 +35,7 @@ struct PlayerAndWeapon {
 class WeaponCycle: public INodeModifier {
     WeaponCycle(const WeaponCycle&) = delete;
     WeaponCycle& operator = (const WeaponCycle&) = delete;
+    friend std::ostream& operator << (std::ostream& ostr, const WeaponCycle& wc);
 public:
     WeaponCycle();
     virtual ~WeaponCycle() override;
@@ -54,5 +56,7 @@ private:
     PlayerAndWeapon equipped_;
     PlayerAndWeapon desired_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const WeaponCycle& wc);
 
 }

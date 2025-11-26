@@ -208,14 +208,11 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     auto u = args.remote_sites.get_user_by_rank(JsonView{*user}.at<uint32_t>("rank"));
                     let["full_user_name"] = u->full_name;
                     spawner_name += '_' + u->full_name;
-                    if (u->site_id.has_value() &&
-                        remote_sites.get_local_site_id().has_value() &&
-                        (*u->site_id != *remote_sites.get_local_site_id()))
-                    {
-                        let["user_is_local"] = false;
-                    } else {
+                    if (u->type == UserType::LOCAL) {
                         let["user_is_local"] = true;
                         let["local_user_id"] = u->user_id;
+                    } else {
+                        let["user_is_local"] = false;
                     }
                 } else if (*controller != "npc") {
                     THROW_OR_ABORT("Unknown controller: \"" + *controller + "\". Known controllers: \"pc\", \"npc\"");

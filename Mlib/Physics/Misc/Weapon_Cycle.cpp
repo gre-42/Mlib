@@ -116,3 +116,10 @@ const std::string& WeaponCycle::weapon_name() const {
 const std::map<std::string, WeaponInfo>& WeaponCycle::weapon_infos() const {
     return weapon_infos_;
 }
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const WeaponCycle& wc) {
+    for (const auto& [name, _] : wc.weapon_infos_) {
+        ostr << name << '\n';
+    }
+    return ostr;
+}

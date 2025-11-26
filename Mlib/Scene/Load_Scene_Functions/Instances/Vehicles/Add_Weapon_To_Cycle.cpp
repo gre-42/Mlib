@@ -79,6 +79,12 @@ void AddWeaponToInventory::operator () (const JsonView& args) {
                 {"player_name", player_name},
                 {"user_name", user_info->name},
                 {"full_user_name", user_info->full_name}};
+            if (user_info->type == UserType::LOCAL) {
+                let["user_is_local"] = true;
+                let["local_user_id"] = user_info->user_id;
+            } else {
+                let["user_is_local"] = false;
+            }
             macro_line_executor.inserted_block_arguments(std::move(let))(create, nullptr);
         };
     }
