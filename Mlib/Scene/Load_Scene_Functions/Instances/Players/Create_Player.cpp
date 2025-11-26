@@ -64,7 +64,9 @@ void CreatePlayer::execute(const JsonView& args, PlayerCreator creator)
     auto name = args.at<VariableAndHash<std::string>>(KnownArgs::name);
     auto site_privileges = PlayerSitePrivileges::NONE;
     if (remote_scene != nullptr) {
-        if ((user_info != nullptr) && (user_info->site_id == remote_scene->local_site_id())) {
+        if (((user_info != nullptr) && (user_info->site_id == remote_scene->local_site_id())) ||
+            ((user_info == nullptr) && (creator == PlayerCreator::LOCAL)))
+        {
             site_privileges |= PlayerSitePrivileges::CONTROLLER;
         }
         if (creator == PlayerCreator::LOCAL) {
