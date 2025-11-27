@@ -2,6 +2,7 @@
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <chrono>
+#include <cstdint>
 #include <list>
 #include <optional>
 #include <string>
@@ -25,7 +26,7 @@ class TransformationMatrix;
 class VehicleSpawner;
 class SceneVehicle;
 
-enum class SelectNextVehicleQuery {
+enum class SelectNextVehicleQuery: uint8_t {
     NONE = 0,
     ENTER_IF_FREE = 1 << 0,
     EXIT = 1 << 1,
@@ -56,6 +57,7 @@ public:
     virtual bool try_reset_vehicle(
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) = 0;
     virtual void select_next_vehicle(
+        std::chrono::steady_clock::time_point time,
         SelectNextVehicleQuery q,
         const std::string& seat) = 0;
     virtual void set_next_vehicle(

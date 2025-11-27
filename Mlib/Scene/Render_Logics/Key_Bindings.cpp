@@ -55,6 +55,7 @@
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 
@@ -701,6 +702,7 @@ void KeyBindings::increment_external_forces(
             }
             if (k->select_next_vehicle) {
                 k->player->select_next_vehicle(
+                    world.time,
                     SelectNextVehicleQuery::ENTER_BY_FORCE |
                     SelectNextVehicleQuery::EXIT,
                     "driver");

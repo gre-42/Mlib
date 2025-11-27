@@ -267,6 +267,9 @@ void Player::reset_node() {
     {
         std::scoped_lock lock{ mutex_ };
         if (vehicle_ != nullptr) {
+            if (vehicle_->rb()->remote_object_id_.has_value()) {
+                vehicle_->rb()->owner_site_id_ = vehicle_->rb()->remote_object_id_->site_id;
+            }
             on_clear_vehicle_.clear();
             // The avatar can be destroyed during its dying
             // animation or while sitting in a vehicle,
@@ -563,6 +566,14 @@ void Player::advance_time(float dt, const StaticWorld& world) {
         }
     }
     shot_history.forget_old_entries(world.time);
+    if (any(site_privileges_ & PlayerSitePrivileges::MANAGER)) {
+        for (const auto& [time, event] : select_next_vehicle_history) {
+            if ((time >= old_world_time_) && (time < world.time)) {
+                select_next_vehicle(time, event.q, event.seat);
+            }
+        }
+    }
+    select_next_vehicle_history.forget_old_entries(world.time);
     old_world_time_ = world.time;
 }
 
@@ -1094,10 +1105,15 @@ struct AvailableSpawner {
 };
 
 void Player::select_next_vehicle(
+    std::chrono::steady_clock::time_point time,
     SelectNextVehicleQuery q,
     const std::string& seat)
 {
     std::scoped_lock lock{ mutex_ };
+    if (!any(site_privileges_ & PlayerSitePrivileges::MANAGER)) {
+        select_next_vehicle_history.try_emplace(time, SelectNextVehicleEvent{q, seat});
+        return;
+    }
     if (!has_scene_vehicle()) {
         return;
     }
@@ -1149,7 +1165,7 @@ void Player::select_next_vehicle(
             if (!any(q & SelectNextVehicleQuery::ENTER_BY_FORCE)) {
                 return;
             }
-            driver->select_next_vehicle(SelectNextVehicleQuery::EXIT, "driver");
+            driver->select_next_vehicle(time, SelectNextVehicleQuery::EXIT, "driver");
         }
         set_next_vehicle(
             closest_spawner->spawner,

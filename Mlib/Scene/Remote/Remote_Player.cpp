@@ -19,6 +19,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
+#include <Mlib/Scene/Remote/Remote_Events/Remote_Select_Next_Vehicle_History.hpp>
+#include <Mlib/Scene/Remote/Remote_Events/Remote_Shot_History.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
@@ -26,35 +28,6 @@
 #include <nlohmann/json.hpp>
 
 using namespace Mlib;
-
-static Player::ShotHistory read_shot_history(
-    std::istream& istr,
-    TransmissionHistoryReader& transmission_history_reader,
-    IoVerbosity verbosity)
-{
-    Player::ShotHistory result;
-    BinaryReader reader{ istr, verbosity };
-    auto nshots = reader.read_binary<uint16_t>("nshots");
-    for (uint16_t i = 0; i < nshots; ++i) {
-        auto time = transmission_history_reader.read_time(istr, verbosity);
-        auto weapon = reader.read_string("weapon name");
-        result.try_emplace(time, std::move(weapon));
-    }
-    return result;
-}
-
-static void write_shot_history(
-    const Player::ShotHistory& shots,
-    std::ostream& ostr,
-    TransmissionHistoryWriter& transmission_history_writer)
-{
-    BinaryWriter writer{ ostr };
-    writer.write_binary(integral_cast<uint16_t>(shots.size()), "nshots");
-    for (const auto& [time, weapon] : shots) {
-        transmission_history_writer.write_time(ostr, time);
-        writer.write_string(weapon, "weapon name");
-    }
-}
 
 RemotePlayer::RemotePlayer(
     IoVerbosity verbosity,
@@ -119,6 +92,7 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
             read_shot_history(istr, transmission_history_reader, verbosity);
         }
     }
+    read_select_next_vehicle_history(istr, transmission_history_reader, verbosity);
     auto end = reader.read_binary<uint32_t>("inverted scene object type");
     if (end != ~(uint32_t)RemoteSceneObjectType::PLAYER) {
         THROW_OR_ABORT("Invalid player message end (0). Player ID: \"" + *name + '"');
@@ -184,33 +158,35 @@ void RemotePlayer::read(
                     if (rb->scene_node_ == nullptr) {
                         THROW_OR_ABORT("Rigid body has no scene node");
                     }
-                    vehicle_ = {
-                        global_object_pool.create<SceneVehicle>(
-                            CURRENT_SOURCE_LOCATION,
-                            physics_scene_->delete_node_mutex_,
-                            rb->node_name_,
-                            *rb->scene_node_,
-                            rb.set_loc(CURRENT_SOURCE_LOCATION)),
-                        CURRENT_SOURCE_LOCATION};
-                    vehicle_on_destroy_.set(vehicle_->on_destroy, CURRENT_SOURCE_LOCATION);
-                    vehicle_on_destroy_.add([this](){ vehicle_ = nullptr; }, CURRENT_SOURCE_LOCATION);
-                    player_->set_scene_vehicle(*vehicle_.get(), seat);
-                    {
-                        auto let = nlohmann::json::object({
-                            {"asset_id", rb->asset_id_},
-                            {"suffix", rbv->node_suffix()},
-                            {"if_damageable", (rb->damageable_ != nullptr)}
-                        });
-                        SetExternalsCreator{
-                            physics_scene_.get(),
-                            physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let))
-                        }.execute_safe(
-                            *vehicle_.get(),
-                            rb->asset_id_);
+                    if (!rb->is_deactivated_avatar() && rb->drivers_.seat_is_free(seat)) {
+                        vehicle_ = {
+                            global_object_pool.create<SceneVehicle>(
+                                CURRENT_SOURCE_LOCATION,
+                                physics_scene_->delete_node_mutex_,
+                                rb->node_name_,
+                                *rb->scene_node_,
+                                rb.set_loc(CURRENT_SOURCE_LOCATION)),
+                            CURRENT_SOURCE_LOCATION};
+                        vehicle_on_destroy_.set(vehicle_->on_destroy, CURRENT_SOURCE_LOCATION);
+                        vehicle_on_destroy_.add([this](){ vehicle_ = nullptr; }, CURRENT_SOURCE_LOCATION);
+                        player_->set_scene_vehicle(*vehicle_.get(), seat);
+                        {
+                            auto let = nlohmann::json::object({
+                                {"asset_id", rb->asset_id_},
+                                {"suffix", rbv->node_suffix()},
+                                {"if_damageable", (rb->damageable_ != nullptr)}
+                            });
+                            SetExternalsCreator{
+                                physics_scene_.get(),
+                                physics_scene_->macro_line_executor_.inserted_block_arguments(std::move(let))
+                            }.execute_safe(
+                                *vehicle_.get(),
+                                rb->asset_id_);
+                        }
+                        player_->create_vehicle_externals(externals_mode);
+                        player_->create_vehicle_internals({ seat });
+                        vehicle_object_id_ = vehicle_object_id;
                     }
-                    player_->create_vehicle_externals(externals_mode);
-                    player_->create_vehicle_internals({ seat });
-                    vehicle_object_id_ = vehicle_object_id;
                 }
             }
         }
@@ -220,18 +196,26 @@ void RemotePlayer::read(
                 auto weapon = reader.read_string("weapon");
                 auto shot_history = read_shot_history(istr, transmission_history_reader, verbosity_);
                 if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER)) {
-                    player_->shot_history = shot_history;
-                    if (player_->has_scene_vehicle()) {
-                        if (has_weapon_cycle != player_->has_weapon_cycle()) {
-                            THROW_OR_ABORT("Inconsistent \"has_weapon_cycle\"");
+                    if (vehicle_object_id_.has_value() && (vehicle_object_id == *vehicle_object_id_)) {
+                        player_->shot_history = shot_history;
+                        if (player_->has_scene_vehicle()) {
+                            if (has_weapon_cycle != player_->has_weapon_cycle()) {
+                                THROW_OR_ABORT("Inconsistent \"has_weapon_cycle\"");
+                            }
+                            player_->set_desired_weapon(weapon, WhenToEquip::EQUIP_INSTANTLY);
                         }
-                        player_->set_desired_weapon(weapon, WhenToEquip::EQUIP_INSTANTLY);
                     }
                 }
             }
         }
     } else if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
         reset_node();
+    }
+    {
+        auto select_next_vehicle_history = read_select_next_vehicle_history(istr, transmission_history_reader, verbosity_);
+        if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER)) {
+            player_->select_next_vehicle_history = select_next_vehicle_history;
+        }
     }
     auto end = reader.read_binary<uint32_t>("inverted scene object type");
     if (end != ~(uint32_t)RemoteSceneObjectType::PLAYER) {
@@ -294,5 +278,6 @@ void RemotePlayer::write(
     } else {
         writer.write_binary(false, "has_scene_vehicle (false)");
     }
+    write_select_next_vehicle_history(player_->select_next_vehicle_history, ostr, transmission_history_writer);
     writer.write_binary(~(uint32_t)RemoteSceneObjectType::PLAYER, "inverted scene object type");
 }

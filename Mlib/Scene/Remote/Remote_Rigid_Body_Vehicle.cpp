@@ -262,26 +262,36 @@ void RemoteRigidBodyVehicle::read(
     if (!rb_->owner_site_id_.has_value()) {
         THROW_OR_ABORT("RemoteRigidBodyVehicle: Owner site ID not set");
     }
-    if (*rb_->owner_site_id_ != physics_scene_->remote_scene_->local_site_id()) {
-        bool invalidate_transformation_history = [&](){
-            if ((rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR))) {
-                return true;
-            }
-            if (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE)) {
-                return true;
-            }
+    bool is_manager = (remote_object_id.site_id == physics_scene_->remote_scene_->local_site_id());
+    bool is_owner = (*rb_->owner_site_id_ == physics_scene_->remote_scene_->local_site_id());
+    bool is_remotely_activated_avatar = [&](){
+        if (is_manager) {
             return false;
-        }();
-        if (invalidate_transformation_history) {
-            rb_->scene_node_->set_absolute_pose(
-                position,
-                rotation,
-                1.f,
-                INITIAL_POSE);
         }
+        return (rb_->is_deactivated_avatar() && !any(flags & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR));
+    }();
+    bool position_contains_jump = (sum(squared(rb_->rbp_.abs_position() - position)) > squared(REMOTE_INTERPOLATION_JUMP_DISTANCE));
+    bool invalidate_transformation_history = (position_contains_jump || is_remotely_activated_avatar) && !is_manager;
+    bool update_position = [&](){
+        if (is_manager) {
+            return !position_contains_jump && !is_owner;
+        } else {
+            return invalidate_transformation_history || !is_owner;
+        }
+    }();
+    if (invalidate_transformation_history) {
+        rb_->scene_node_->set_absolute_pose(
+            position,
+            rotation,
+            1.f,
+            INITIAL_POSE);
+    }
+    if (update_position) {
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);
         rb_->rbp_.v_com_ = v_com;
         rb_->rbp_.w_ = w;
+    }
+    if (!is_manager) {
         rb_->flags_ = flags;
     }
 }

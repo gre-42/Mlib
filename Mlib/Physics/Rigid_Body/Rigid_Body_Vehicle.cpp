@@ -1084,17 +1084,23 @@ bool RigidBodyVehicle::is_avatar() const {
 }
 
 bool RigidBodyVehicle::is_activated_avatar() const {
-    if (!is_avatar()) {
-        return false;
+    if (any(flags_ & RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR)) {
+        if (!is_avatar()) {
+            THROW_OR_ABORT("RigidBodyVehicle::is_activated_avatar: Rigid body is not an avatar");
+        }
+        return true;
     }
-    return any(flags_ & RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR);
+    return false;
 }
 
 bool RigidBodyVehicle::is_deactivated_avatar() const {
-    if (!is_avatar()) {
-        return false;
+    if (any(flags_ & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
+        if (!is_avatar()) {
+            THROW_OR_ABORT("RigidBodyVehicle::is_deactivated_avatar: Rigid body is not an avatar");
+        }
+        return true;
     }
-    return any(flags_ & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR);
+    return false;
 }
 
 bool RigidBodyVehicle::has_avatar_controller() const {

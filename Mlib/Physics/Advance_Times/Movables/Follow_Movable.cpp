@@ -146,7 +146,6 @@ void FollowerMovableNodeSetter::set_scene_node(
     follow_.initialize(node);
 }
 
-
 FollowedMovableNodeSetter::FollowedMovableNodeSetter(FollowMovable& follow)
     : follow_{ follow }
     , removal_tokens_{ nullptr, CURRENT_SOURCE_LOCATION }

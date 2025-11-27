@@ -106,6 +106,11 @@ struct PlayerControlled {
     DanglingBaseClassPtr<SceneNode> gun_node;
 };
 
+struct SelectNextVehicleEvent {
+    SelectNextVehicleQuery q;
+    const std::string seat;
+};
+
 class Player final:
     public IPlayer,
     public IAdvanceTime,
@@ -122,6 +127,7 @@ class Player final:
     Player& operator = (const Player&) = delete;
 public:
     using ShotHistory = TimesAndEvents<std::chrono::steady_clock::time_point, std::string>;
+    using SelectNextVehicleHistory = TimesAndEvents<std::chrono::steady_clock::time_point, SelectNextVehicleEvent>;
 
     Player(
         Scene& scene,
@@ -260,6 +266,7 @@ public:
     virtual bool try_reset_vehicle(
         const TransformationMatrix<SceneDir, ScenePos, 3>& trafo) override;
     virtual void select_next_vehicle(
+        std::chrono::steady_clock::time_point time,
         SelectNextVehicleQuery q,
         const std::string& seat) override;
     virtual void set_next_vehicle(
@@ -293,6 +300,7 @@ public:
     CarMovement car_movement;
     AvatarMovement avatar_movement;
     ShotHistory shot_history;
+    SelectNextVehicleHistory select_next_vehicle_history;
 private:
     void clear_opponent();
     void set_opponent(Player& opponent);
