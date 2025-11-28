@@ -167,6 +167,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
+        case RemoteSceneObjectType::COUNTDOWN:
             THROW_OR_ABORT("RemoteRigidBodyVehicle: Unexpected object type");
         }
         THROW_OR_ABORT("RemoteRigidBodyVehicle: Unknown scene object type");
@@ -199,6 +200,7 @@ DanglingBaseClassPtr<RemoteRigidBodyVehicle> RemoteRigidBodyVehicle::try_create_
             return;
         case RemoteSceneObjectType::REMOTE_USERS:
         case RemoteSceneObjectType::PLAYER:
+        case RemoteSceneObjectType::COUNTDOWN:
             THROW_OR_ABORT("RemoteRigidBodyVehicle: Unexpected object type");
         }
         THROW_OR_ABORT("RemoteRigidBodyVehicle: Unknown scene object type");

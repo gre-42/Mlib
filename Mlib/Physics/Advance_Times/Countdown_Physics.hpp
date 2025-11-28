@@ -11,6 +11,10 @@ public:
     explicit CountdownPhysics();
     ~CountdownPhysics();
 
+    void set(float elapsed, float duration);
+    float elapsed() const;
+    float duration() const;
+
     void reset(float duration);
     uint32_t seconds_remaining() const;
     bool counting() const;

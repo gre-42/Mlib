@@ -2,6 +2,7 @@
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
+#include <Mlib/Scene/Remote/Remote_Countdown.hpp>
 #include <Mlib/Scene/Remote/Remote_Player.hpp>
 #include <Mlib/Scene/Remote/Remote_Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene_Object_Type.hpp>
@@ -35,6 +36,8 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     case RemoteSceneObjectType::RIGID_BODY_CAR:
     case RemoteSceneObjectType::RIGID_BODY_AVATAR:
         return RemoteRigidBodyVehicle::try_create_from_stream(type, physics_scene_.get(), istr, transmitted_fields, remote_object_id, verbosity_);
+    case RemoteSceneObjectType::COUNTDOWN:
+        return RemoteCountdown::try_create_from_stream(physics_scene_.get(), istr, remote_object_id, verbosity_);
     }
     THROW_OR_ABORT("Unknown object type: " + std::to_string((int)type));
 }

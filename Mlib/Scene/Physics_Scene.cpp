@@ -188,7 +188,9 @@ PhysicsScene::PhysicsScene(
         physics_engine_.advance_times_.add_advance_time({ *air_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         physics_engine_.advance_times_.add_advance_time({ *skidmark_particles_.particle_renderer, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         physics_engine_.advance_times_.add_advance_time({ one_shot_audio_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-        physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        if (!remote_params.has_value() || (remote_params->role == RemoteRole::SERVER)) {
+            physics_engine_.advance_times_.add_advance_time({ countdown_start_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        }
 
         if (remote_params.has_value()) {
             auto verbosity = IoVerbosity::SILENT;

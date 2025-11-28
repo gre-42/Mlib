@@ -3,6 +3,7 @@
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
 #include <Mlib/Remote/Sockets/Udp_Node.hpp>
+#include <Mlib/Scene/Remote/Remote_Countdown.hpp>
 #include <Mlib/Scene/Remote/Remote_Users.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -34,6 +35,13 @@ RemoteScene::RemoteScene(
         case RemoteRole::SERVER:
             home_node_->bind();
             proxies_.add_receive_socket({*home_node_, CURRENT_SOURCE_LOCATION});
+            objects_.add_local_object({
+                    global_object_pool.create<RemoteCountdown>(
+                        CURRENT_SOURCE_LOCATION,
+                        verbosity,
+                        physics_scene),
+                    CURRENT_SOURCE_LOCATION},
+                RemoteObjectVisibility::PUBLIC);
             return;
         case RemoteRole::CLIENT:
             proxies_.add_handshake_socket(home_node_);

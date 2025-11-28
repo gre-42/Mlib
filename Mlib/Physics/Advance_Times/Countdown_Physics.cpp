@@ -14,6 +14,22 @@ CountdownPhysics::~CountdownPhysics() {
     on_destroy.clear();
 }
 
+void CountdownPhysics::set(float elapsed, float duration) {
+    std::scoped_lock lock{ mutex_ };
+    elapsed_ = elapsed;
+    duration_ = duration;
+}
+
+float CountdownPhysics::elapsed() const {
+    std::scoped_lock lock{ mutex_ };
+    return elapsed_;
+}
+
+float CountdownPhysics::duration() const {
+    std::scoped_lock lock{ mutex_ };
+    return duration_;
+}
+
 void CountdownPhysics::reset(float duration) {
     std::scoped_lock lock{ mutex_ };
     duration_ = duration;
