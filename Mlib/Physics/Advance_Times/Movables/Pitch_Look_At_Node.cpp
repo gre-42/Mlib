@@ -66,8 +66,16 @@ void PitchLookAtNode::increment_pitch(float dpitch, float relaxation) {
     dpitch_ += signed_min(dpitch, dpitch_max_) * relaxation;
 }
 
-void PitchLookAtNode::set_pitch(float pitch) {
+void PitchLookAtNode::goto_pitch(float pitch) {
     increment_pitch(normalized_radians(pitch - dpitch_ - pitch_), 1.f);
+}
+
+void PitchLookAtNode::set_pitch(float pitch) {
+    pitch_ = pitch;
+}
+
+float PitchLookAtNode::get_pitch() const {
+    return pitch_;
 }
 
 TransformationMatrix<float, ScenePos, 3> PitchLookAtNode::get_new_relative_model_matrix() const {

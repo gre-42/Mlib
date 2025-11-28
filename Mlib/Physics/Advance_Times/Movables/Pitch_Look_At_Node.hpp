@@ -31,7 +31,9 @@ public:
     virtual void notify_destroyed(SceneNode& destroyed_object) override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
     void increment_pitch(float dpitch, float relaxation);
+    void goto_pitch(float pitch);
     void set_pitch(float pitch);
+    float get_pitch() const;
 
     void set_head_node(DanglingBaseClassRef<SceneNode> head_node);
 

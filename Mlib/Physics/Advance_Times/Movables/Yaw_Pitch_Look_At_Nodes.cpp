@@ -54,8 +54,16 @@ void YawPitchLookAtNodes::increment_yaw(float dyaw, float relaxation) {
     dyaw_ += signed_min(dyaw, dyaw_max_) * relaxation;
 }
 
+void YawPitchLookAtNodes::goto_yaw(float yaw) {
+    increment_yaw(normalized_radians(yaw - dyaw_ - get_yaw()), 1.f);
+}
+
 void YawPitchLookAtNodes::set_yaw(float yaw) {
-    increment_yaw(normalized_radians(yaw - dyaw_ - z_to_yaw(relative_model_matrix_.R.column(2))), 1.f);
+    relative_model_matrix_.R = tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, yaw, 0.f});
+}
+
+float YawPitchLookAtNodes::get_yaw() const {
+    return z_to_yaw(relative_model_matrix_.R.column(2));
 }
 
 TransformationMatrix<float, ScenePos, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {

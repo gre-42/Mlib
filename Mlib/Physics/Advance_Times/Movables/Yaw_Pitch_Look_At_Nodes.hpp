@@ -33,7 +33,9 @@ public:
     virtual void notify_destroyed(SceneNode& destroyed_object) override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
     void increment_yaw(float dyaw, float relaxation);
+    void goto_yaw(float yaw);
     void set_yaw(float yaw);
+    float get_yaw() const;
 
     PitchLookAtNode& pitch_look_at_node() const;
 

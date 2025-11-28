@@ -31,10 +31,10 @@ void AvatarAsAvatarController::apply() {
         rb_.set_surface_power(legs_name, EnginePowerIntent{.surface_power = NAN});
     }
     if (!std::isnan(target_yaw_)) {
-        ypln_.set_yaw(target_yaw_);
+        ypln_.goto_yaw(target_yaw_);
     }
     if (!std::isnan(target_pitch_)) {
-        ypln_.pitch_look_at_node().set_pitch(target_pitch_);
+        ypln_.pitch_look_at_node().goto_pitch(target_pitch_);
     }
     if (!std::isnan(dyaw_)) {
         ypln_.increment_yaw(dyaw_, dyaw_relaxation_);

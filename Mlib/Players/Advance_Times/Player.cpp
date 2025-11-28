@@ -3,6 +3,7 @@
 #include <Mlib/Components/Aim_At.hpp>
 #include <Mlib/Components/Gun.hpp>
 #include <Mlib/Components/Weapon_Cycle.hpp>
+#include <Mlib/Components/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -14,6 +15,7 @@
 #include <Mlib/Physics/Advance_Times/Countdown_Physics.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Physics/Containers/Collision_Group.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
@@ -812,6 +814,73 @@ Gun& Player::gun() {
         THROW_OR_ABORT("Gun node not set");
     }
     return get_gun(*controlled_.gun_node);
+}
+
+bool Player::has_gun_yaw() const {
+    if (!has_gun_node()) {
+        return false;
+    }
+    auto ypln_node = gun().get_ypln_node();
+    return ypln_node != this->scene_node().ptr();
+}
+
+float Player::get_gun_yaw() const {
+    if (!has_gun_node()) {
+        THROW_OR_ABORT("Player has no gun node");
+    }
+    auto ypln_node = gun().get_ypln_node();
+    if (ypln_node == nullptr) {
+        THROW_OR_ABORT("Player gun has no ypln node");
+    }
+    if (ypln_node == this->scene_node().ptr()) {
+        THROW_OR_ABORT("Player gun has no dedicated yaw node");
+    }
+    auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
+    return ypln.get_yaw();
+}
+
+void Player::set_gun_yaw(float value) {
+    if (!has_gun_node()) {
+        THROW_OR_ABORT("Player has no gun node");
+    }
+    auto ypln_node = gun().get_ypln_node();
+    if (ypln_node == nullptr) {
+        THROW_OR_ABORT("Player gun has no ypln node");
+    }
+    auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
+    return ypln.set_yaw(value);
+}
+
+bool Player::has_gun_pitch() const {
+    if (!has_gun_node()) {
+        return false;
+    }
+    auto ypln_node = gun().get_ypln_node();
+    return ypln_node != nullptr;
+}
+
+float Player::get_gun_pitch() const {
+    if (!has_gun_node()) {
+        THROW_OR_ABORT("Player has no gun node");
+    }
+    auto ypln_node = gun().get_ypln_node();
+    if (ypln_node == nullptr) {
+        THROW_OR_ABORT("Player gun has no ypln node");
+    }
+    auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
+    return ypln.pitch_look_at_node().get_pitch();
+}
+
+void Player::set_gun_pitch(float value) {
+    if (!has_gun_node()) {
+        THROW_OR_ABORT("Player has no gun node");
+    }
+    auto ypln_node = gun().get_ypln_node();
+    if (ypln_node == nullptr) {
+        THROW_OR_ABORT("Player gun has no ypln node");
+    }
+    auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
+    return ypln.pitch_look_at_node().set_pitch(value);
 }
 
 bool Player::is_pedestrian() const {

@@ -86,10 +86,24 @@ DanglingBaseClassPtr<RemotePlayer> RemotePlayer::try_create_from_stream(
         reader.read_binary<RemoteObjectId>("vehicle_object_id");
         reader.read_string("seat");
         reader.read_binary<ExternalsMode>("externals mode");
-        auto has_weapon_cycle = reader.read_binary<bool>("has_weapon_cycle");
-        if (has_weapon_cycle) {
-            reader.read_string("weapon");
-            read_shot_history(istr, transmission_history_reader, verbosity);
+        {
+            auto has_weapon_cycle = reader.read_binary<bool>("has_weapon_cycle");
+            if (has_weapon_cycle) {
+                reader.read_string("weapon");
+                read_shot_history(istr, transmission_history_reader, verbosity);
+            }
+        }
+        {
+            auto has_gun_yaw = reader.read_binary<bool>("has_gun_yaw");
+            if (has_gun_yaw) {
+                reader.read_binary<float>("gun yaw");
+            }
+        }
+        {
+            auto has_gun_pitch = reader.read_binary<bool>("has_gun_pitch");
+            if (has_gun_pitch) {
+                reader.read_binary<float>("gun pitch");
+            }
         }
     }
     read_select_next_vehicle_history(istr, transmission_history_reader, verbosity);
@@ -218,6 +232,28 @@ void RemotePlayer::read(
                 }
             }
         }
+        {
+            auto has_gun_yaw = reader.read_binary<bool>("has_gun_yaw");
+            if (has_gun_yaw) {
+                auto gun_yaw = reader.read_binary<float>("gun yaw");
+                if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
+                    player_->has_gun_yaw())
+                {
+                    player_->set_gun_yaw(gun_yaw);
+                }
+            }
+        }
+        {
+            auto has_gun_pitch = reader.read_binary<bool>("has_gun_pitch");
+            if (has_gun_pitch) {
+                auto gun_pitch = reader.read_binary<float>("gun pitch");
+                if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
+                    player_->has_gun_pitch())
+                {
+                    player_->set_gun_pitch(gun_pitch);
+                }
+            }
+        }
     } else if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
         reset_node();
     }
@@ -283,6 +319,18 @@ void RemotePlayer::write(
             write_shot_history(player_->shot_history, ostr, transmission_history_writer);
         } else {
             writer.write_binary(false, "has_weapon_cycle (false)");
+        }
+        if (player_->has_gun_yaw()) {
+            writer.write_binary(true, "has_gun_yaw (true)");
+            writer.write_binary(player_->get_gun_yaw(), "gun yaw");
+        } else {
+            writer.write_binary(false, "has_gun_yaw (false)");
+        }
+        if (player_->has_gun_pitch()) {
+            writer.write_binary(true, "has_gun_pitch (true)");
+            writer.write_binary(player_->get_gun_pitch(), "gun pitch");
+        } else {
+            writer.write_binary(false, "has_gun_pitch (false)");
         }
     } else {
         writer.write_binary(false, "has_scene_vehicle (false)");

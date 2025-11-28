@@ -219,6 +219,12 @@ public:
     const Gun& gun() const;
     Gun& gun();
     void trigger_gun();
+    bool has_gun_yaw() const;
+    float get_gun_yaw() const;
+    void set_gun_yaw(float value);
+    bool has_gun_pitch() const;
+    float get_gun_pitch() const;
+    void set_gun_pitch(float value);
     bool has_weapon_cycle() const;
     Inventory& inventory();
     const Inventory& inventory() const;
