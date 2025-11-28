@@ -821,7 +821,13 @@ bool Player::has_gun_yaw() const {
         return false;
     }
     auto ypln_node = gun().get_ypln_node();
-    return ypln_node != this->scene_node().ptr();
+    if (ypln_node == nullptr) {
+        return false;
+    }
+    if (ypln_node == scene_node().ptr()) {
+        return false;
+    }
+    return true;
 }
 
 float Player::get_gun_yaw() const {
@@ -832,7 +838,7 @@ float Player::get_gun_yaw() const {
     if (ypln_node == nullptr) {
         THROW_OR_ABORT("Player gun has no ypln node");
     }
-    if (ypln_node == this->scene_node().ptr()) {
+    if (ypln_node == scene_node().ptr()) {
         THROW_OR_ABORT("Player gun has no dedicated yaw node");
     }
     auto& ypln = get_yaw_pitch_look_at_nodes(*ypln_node);
@@ -856,7 +862,10 @@ bool Player::has_gun_pitch() const {
         return false;
     }
     auto ypln_node = gun().get_ypln_node();
-    return ypln_node != nullptr;
+    if (ypln_node == nullptr) {
+        return false;
+    }
+    return true;
 }
 
 float Player::get_gun_pitch() const {
