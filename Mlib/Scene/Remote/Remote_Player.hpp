@@ -3,7 +3,6 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
-#include <optional>
 
 namespace Mlib {
 
@@ -41,7 +40,6 @@ private:
     DanglingBaseClassRef<Player> player_;
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
     DanglingBaseClassPtr<SceneVehicle> vehicle_;
-    std::optional<RemoteObjectId> vehicle_object_id_;
     IoVerbosity verbosity_;
     DestructionFunctionsRemovalTokens player_on_destroy_;
     DestructionFunctionsRemovalTokens vehicle_on_destroy_;

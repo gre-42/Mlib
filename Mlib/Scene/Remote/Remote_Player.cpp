@@ -141,8 +141,14 @@ void RemotePlayer::read(
         auto seat = reader.read_string("seat");
         auto externals_mode = reader.read_binary<ExternalsMode>("externals mode");
         if (!any(player_->site_privileges() & PlayerSitePrivileges::MANAGER)) {
-            if (vehicle_object_id_.has_value() && (vehicle_object_id != *vehicle_object_id_)) {
-                reset_node();
+            if (player_->has_scene_vehicle()) {
+                auto rb = player_->rigid_body();
+                if (!rb->remote_object_id_.has_value()) {
+                    THROW_OR_ABORT("remote vehicle object ID not set");
+                }
+                if (*rb->remote_object_id_ != vehicle_object_id) {
+                    reset_node();
+                }
             }
             if (physics_scene_->remote_scene_ == nullptr) {
                 THROW_OR_ABORT("RemotePlayer: Remote scene is null");
@@ -186,7 +192,6 @@ void RemotePlayer::read(
                         player_->create_vehicle_externals(externals_mode);
                         player_->create_vehicle_internals({ seat });
                         player_->create_gun_externals();
-                        vehicle_object_id_ = vehicle_object_id;
                     }
                 }
             }
@@ -196,15 +201,19 @@ void RemotePlayer::read(
             if (has_weapon_cycle) {
                 auto weapon = reader.read_string("weapon");
                 auto shot_history = read_shot_history(istr, transmission_history_reader, verbosity_);
-                if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER)) {
-                    if (vehicle_object_id_.has_value() && (vehicle_object_id == *vehicle_object_id_)) {
+                if (!any(player_->site_privileges() & PlayerSitePrivileges::CONTROLLER) &&
+                    player_->has_scene_vehicle())
+                {
+                    auto rb = player_->rigid_body();
+                    if (!rb->remote_object_id_.has_value()) {
+                        THROW_OR_ABORT("remote vehicle object ID not set");
+                    }
+                    if (*rb->remote_object_id_ == vehicle_object_id) {
                         player_->shot_history = shot_history;
-                        if (player_->has_scene_vehicle()) {
-                            if (has_weapon_cycle != player_->has_weapon_cycle()) {
-                                THROW_OR_ABORT("Inconsistent \"has_weapon_cycle\"");
-                            }
-                            player_->set_desired_weapon(weapon, WhenToEquip::EQUIP_INSTANTLY);
+                        if (has_weapon_cycle != player_->has_weapon_cycle()) {
+                            THROW_OR_ABORT("Inconsistent \"has_weapon_cycle\"");
                         }
+                        player_->set_desired_weapon(weapon, WhenToEquip::EQUIP_INSTANTLY);
                     }
                 }
             }
@@ -228,7 +237,6 @@ void RemotePlayer::reset_node() {
     player_->reset_node();
     vehicle_ = nullptr;
     vehicle_on_destroy_.clear();
-    vehicle_object_id_.reset();
 }
 
 void RemotePlayer::write(
