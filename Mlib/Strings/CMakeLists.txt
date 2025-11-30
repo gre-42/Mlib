@@ -6,4 +6,4 @@ my_add_library(MlibStrings "1" "" "${mlib_excluded_files}")
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibStrings MlibOs Boost::boost Boost::regex)
+target_link_libraries(MlibStrings MlibOs Boost::boost)
