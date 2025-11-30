@@ -11,6 +11,7 @@
 namespace Mlib {
 
 class PhysicsScene;
+class SceneLevelSelector;
 class UdpNode;
 struct RemoteParams;
 enum class IoVerbosity;
@@ -19,6 +20,7 @@ class RemoteScene {
 public:
     RemoteScene(
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
+        const DanglingBaseClassRef<SceneLevelSelector>& scene_level_selector,
         const RemoteParams& remote_params,
         IoVerbosity verbosity);
     ~RemoteScene();

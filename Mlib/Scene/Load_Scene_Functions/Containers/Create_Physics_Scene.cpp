@@ -48,6 +48,7 @@ struct RegisterJsonUserFunction {
                     args.scene_config.render_config.anisotropic_filtering_level,
                     args.scene_config,
                     args.macro_line_executor.changed_context(name, nlohmann::json::object()),
+                    args.scene_level_selector,
                     args.remote_sites,
                     args.asset_references,
                     RenderingContextStack::primary_scene_node_resources(),

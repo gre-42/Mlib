@@ -19,6 +19,7 @@
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
 #include <Mlib/Players/Containers/Users.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -648,6 +649,7 @@ int main(int argc, char** argv) {
                 }
             external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
         }
+        LocalSceneLevel local_scene_level;
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render.window_should_close() && !unhandled_exceptions_occured()) {
             num_renderings = args_num_renderings;
@@ -761,6 +763,7 @@ int main(int argc, char** argv) {
                     &search_path,
                     main_scene_filename,
                     next_scene_filename,
+                    local_scene_level,
                     external_json_macro_arguments,
                     num_renderings,
                     render_set_fps,
@@ -822,6 +825,7 @@ int main(int argc, char** argv) {
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
+                local_scene_level = load_scene->scene_level();
             }
             ui_focuses.clear_focuses();
             if (auto s = (std::string)next_scene_filename; !s.empty()) {

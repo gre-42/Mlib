@@ -25,6 +25,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class ExpressionWatcher;
 class JsonView;
+class SceneLevelSelector;
 
 class SceneEntry {
 public:
@@ -68,6 +69,7 @@ public:
         FocusFilter focus_filter,
         std::unique_ptr<ExpressionWatcher>&& ew,
         ThreadSafeString& next_scene_filename,
+        SceneLevelSelector& scene_level_selector,
         ButtonStates& button_states,
         UiFocus& ui_focus,
         uint32_t local_user_id,
@@ -105,6 +107,7 @@ private:
     UiFocus& ui_focus_;
     std::string id_;
     ThreadSafeString& next_scene_filename_;
+    SceneLevelSelector& scene_level_selector_;
     ListView list_view_;
     JsonMacroArgumentsObserverToken ot_;
 };

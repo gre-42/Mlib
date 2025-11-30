@@ -140,10 +140,14 @@ void test_remote() {
     linfo() << "server: " << &server << ", client: " << &client;
 
     SharedString s{ "Hello world" };
+    LocalSceneLevel local_scene_level;
+    std::function<void()> on_schedule_load_scene;
+    SceneLevelSelector server_scene_level{local_scene_level, on_schedule_load_scene};
+    SceneLevelSelector client_scene_level{local_scene_level, on_schedule_load_scene};
 
     RemoteObjectFactory shared_object_factory;
-    IncrementalRemoteObjects server_objects{ 42 };
-    IncrementalRemoteObjects client_objects{ 43 };
+    IncrementalRemoteObjects server_objects{ 42, {server_scene_level, CURRENT_SOURCE_LOCATION} };
+    IncrementalRemoteObjects client_objects{ 43, {client_scene_level, CURRENT_SOURCE_LOCATION} };
     IncrementalCommunicatorProxyFactory server_communicator_proxy_factory{
         {shared_object_factory, CURRENT_SOURCE_LOCATION},
         {server_objects, CURRENT_SOURCE_LOCATION},

@@ -81,6 +81,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         focus_filter,
         std::make_unique<ExpressionWatcher>(args.macro_line_executor),
         args.next_scene_filename,
+        args.scene_level_selector,
         args.button_states,
         ui_focus,
         args.arguments.at<uint32_t>(KnownArgs::local_user_id),

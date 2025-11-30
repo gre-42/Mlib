@@ -10,6 +10,7 @@
 namespace Mlib {
 
 class IIncrementalObject;
+class SceneLevelSelector;
 
 using DeletedObjects = EventsAndTimes<RemoteObjectId, std::chrono::steady_clock::time_point>;
 using LocalObjects = DanglingValueMap<LocalObjectId, IIncrementalObject>;
@@ -22,11 +23,14 @@ enum class RemoteObjectVisibility {
 
 class IncrementalRemoteObjects: public virtual DestructionNotifier, public virtual DanglingBaseClass {
 public:
-    explicit IncrementalRemoteObjects(RemoteSiteId local_site_id);
+    explicit IncrementalRemoteObjects(
+        RemoteSiteId local_site_id,
+        const DanglingBaseClassRef<SceneLevelSelector>& local_scene_level_selector);
     ~IncrementalRemoteObjects();
     RemoteSiteId local_site_id() const;
     std::chrono::steady_clock::time_point local_time() const;
     void set_local_time(std::chrono::steady_clock::time_point time);
+    DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector() const;
     RemoteObjectId add_local_object(
         const DanglingBaseClassRef<IIncrementalObject>& object,
         RemoteObjectVisibility visibility);
@@ -46,6 +50,7 @@ public:
 private:
     RemoteSiteId local_site_id_;
     std::chrono::steady_clock::time_point local_time_;
+    DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector_;
     DeletedObjects deleted_objects_;
     LocalObjectId next_local_object_id_;
     LocalObjects private_local_objects_;

@@ -34,6 +34,7 @@ class AssetReferences;
 class Translators;
 struct RealtimeDependentFps;
 class WindowLogic;
+class SceneLevelSelector;
 
 struct LoadSceneJsonUserFunctionArgs {
     const std::string& name;
@@ -41,6 +42,7 @@ struct LoadSceneJsonUserFunctionArgs {
     const std::function<PhysicsScene&()>& physics_scene;
     const std::function<RenderableScene&()>& renderable_scene;
     const MacroLineExecutor& macro_line_executor;
+    SceneLevelSelector& scene_level_selector;
     NotifyingJsonMacroArguments& external_json_macro_arguments;
     JsonMacroArguments* local_json_macro_arguments;
     SurfaceContactDb& surface_contact_db;

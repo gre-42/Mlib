@@ -2,6 +2,7 @@
 #include <Mlib/Macro_Executor/Focus_Finalizer.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Configurations_Fwd.hpp>
 #include <Mlib/Render/Key_Bindings/Lockable_Key_Descriptions_Fwd.hpp>
 #include <atomic>
@@ -40,6 +41,7 @@ public:
         const std::list<std::string>* search_path,
         const std::string& script_filename,
         ThreadSafeString& next_scene_filename,
+        LocalSceneLevel scene_level,
         NotifyingJsonMacroArguments& external_json_macro_arguments,
         std::atomic_size_t& num_renderings,
         RealtimeDependentFps& render_set_fps,
@@ -67,11 +69,13 @@ public:
         const std::function<void()>& exit);
     ~LoadScene();
     void operator () ();
+    LocalSceneLevel scene_level() const;
 private:
     MacroLineExecutor::JsonUserFunction json_user_function_;
     MacroLineExecutor macro_line_executor_;
     MacroRecorder macro_file_executor_;
     FocusFinalizer focus_finalizer_;
+    SceneLevelSelector scene_level_selector_;
 };
 
 }

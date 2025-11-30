@@ -3,6 +3,7 @@
 #include <Mlib/Remote/Communicator_Proxies.hpp>
 #include <Mlib/Remote/Incremental_Objects/Incremental_Remote_Objects.hpp>
 #include <Mlib/Remote/Incremental_Objects/Known_Fields.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <iosfwd>
 #include <unordered_map>
@@ -35,6 +36,7 @@ private:
     IoVerbosity verbosity_;
     ProxyTasks tasks_;
     RemoteSiteId home_site_id_;
+    std::optional<LocalSceneLevel> home_scene_level_;
 };
 
 }

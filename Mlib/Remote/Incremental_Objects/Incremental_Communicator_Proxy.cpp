@@ -37,8 +37,20 @@ void IncrementalCommunicatorProxy::set_send_socket(std::shared_ptr<ISendSocket> 
 void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     auto reader = BinaryReader{istr, verbosity_};
     {
-        auto ndeleted = reader.read_binary<uint32_t>("#deleted");
-        for (uint32_t i = 0; i < ndeleted; ++i) {
+        auto scene_level_name = reader.read_string("scene level name");
+        auto reload_count = reader.read_binary<uint8_t>("reload_count");
+        home_scene_level_.emplace(std::move(scene_level_name), reload_count);
+        if (any(tasks_ & ProxyTasks::RELOAD_SCENE)) {
+            auto level_selector = objects_->local_scene_level_selector();
+            if (level_selector->reload_required(*home_scene_level_)) {
+                level_selector->client_schedule_load_scene_level(*home_scene_level_);
+                return;
+            }
+        }
+    }
+    {
+        auto ndeleted = reader.read_binary<uint16_t>("#deleted");
+        for (uint16_t i = 0; i < ndeleted; ++i) {
             auto id = reader.read_binary<RemoteObjectId>("deleted ID");
             objects_->try_remove(id);
         }
@@ -76,11 +88,16 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
     auto writer = BinaryWriter{iostr};
     {
+        auto level = objects_->local_scene_level_selector()->get_local_scene_level();
+        writer.write_string(level.name, "level name");
+        writer.write_binary(level.reload_count, "reload count");
+    }
+    {
         const auto& deleted = objects_->deleted_objects();
         if (any(verbosity_ & IoVerbosity::METADATA)) {
             linfo() << "Delete " << deleted.size() << " objects";
         }
-        writer.write_binary(integral_cast<uint32_t>(deleted.size()), "#ndeleted");
+        writer.write_binary(integral_cast<uint16_t>(deleted.size()), "#ndeleted");
         for (const auto& [id, time] : deleted) {
             writer.write_binary(id, "deleted ID");
         }

@@ -1,14 +1,17 @@
 #include "Incremental_Remote_Objects.hpp"
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Remote/Incremental_Objects/IIncremental_Object.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Scene_Config/Remote_Event_History_Duration.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 IncrementalRemoteObjects::IncrementalRemoteObjects(
-    RemoteSiteId local_site_id)
+    RemoteSiteId local_site_id,
+    const DanglingBaseClassRef<SceneLevelSelector>& local_scene_level_selector)
     : local_site_id_{ local_site_id }
+    , local_scene_level_selector_{ local_scene_level_selector }
     , next_local_object_id_{ 0 }
 {}
 
@@ -32,6 +35,10 @@ void IncrementalRemoteObjects::set_local_time(
     std::chrono::steady_clock::time_point time)
 {
     local_time_ = time;
+}
+
+DanglingBaseClassRef<SceneLevelSelector> IncrementalRemoteObjects::local_scene_level_selector() const {
+    return local_scene_level_selector_;
 }
 
 RemoteObjectId IncrementalRemoteObjects::add_local_object(

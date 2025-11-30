@@ -1,5 +1,6 @@
 #include "Remote_Scene.hpp"
 #include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Remote/Remote_Role.hpp>
 #include <Mlib/Remote/Sockets/Udp_Node.hpp>
@@ -11,6 +12,7 @@ using namespace Mlib;
 
 RemoteScene::RemoteScene(
     const DanglingBaseClassRef<PhysicsScene>& physics_scene,
+    const DanglingBaseClassRef<SceneLevelSelector>& scene_level_selector,
     const RemoteParams& remote_params,
     IoVerbosity verbosity)
     : verbosity_{ verbosity }
@@ -18,14 +20,14 @@ RemoteScene::RemoteScene(
     , remote_scene_object_factory_{
         physics_scene,
         verbosity }
-    , objects_{ remote_params.site_id }
+    , objects_{ remote_params.site_id, scene_level_selector }
     , communicator_proxy_factory_{
         { remote_scene_object_factory_, CURRENT_SOURCE_LOCATION },
         { objects_, CURRENT_SOURCE_LOCATION},
         verbosity,
         remote_params.role == RemoteRole::SERVER
             ? ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE | ProxyTasks::SEND_OWNERSHIP
-            : ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE}
+            : ProxyTasks::SEND_LOCAL | ProxyTasks::SEND_REMOTE | ProxyTasks::RELOAD_SCENE}
     , proxies_{
         { communicator_proxy_factory_, CURRENT_SOURCE_LOCATION },
         remote_params.site_id}

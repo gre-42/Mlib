@@ -45,7 +45,7 @@ class RemoteScene;
 class Translator;
 class NotifyingJsonMacroArguments;
 class RemoteSites;
-
+class SceneLevelSelector;
 class PhysicsIteration;
 class PhysicsLoop;
 
@@ -65,6 +65,7 @@ public:
         unsigned int max_anisotropic_filtering_level,
         SceneConfig& scene_config,
         const MacroLineExecutor& macro_line_executor,
+        SceneLevelSelector& scene_level_selector,
         RemoteSites& remote_sites,
         AssetReferences& asset_references,
         SceneNodeResources& scene_node_resources,

@@ -7,6 +7,7 @@
 #include <Mlib/Macro_Executor/Focus.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Charsets.hpp>
@@ -82,6 +83,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     FocusFilter focus_filter,
     std::unique_ptr<ExpressionWatcher>&& ew,
     ThreadSafeString& next_scene_filename,
+    SceneLevelSelector& scene_level_selector,
     ButtonStates& button_states,
     UiFocus& ui_focus,
     uint32_t local_user_id,
@@ -101,6 +103,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     , ui_focus_{ ui_focus }
     , id_{ std::move(id) }
     , next_scene_filename_{ next_scene_filename }
+    , scene_level_selector_{ scene_level_selector }
     , list_view_{
         "id = " + id_,
         button_states,
@@ -110,7 +113,9 @@ SceneSelectorLogic::SceneSelectorLogic(
         ui_focus,
         local_user_id,
         [this, oc = std::move(on_change)]() {
-            next_scene_filename_ = scene_files_.at(list_view_.selected_element()).filename();
+            const auto& entry = scene_files_.at(list_view_.selected_element());
+            next_scene_filename_ = entry.filename();
+            scene_level_selector_.server_set_next_scene_level(entry.id());
             merge_substitutions();
             oc();
         } }

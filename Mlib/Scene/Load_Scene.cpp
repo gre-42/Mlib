@@ -168,6 +168,7 @@ LoadScene::LoadScene(
     const std::list<std::string>* search_path,
     const std::string& script_filename,
     ThreadSafeString& next_scene_filename,
+    LocalSceneLevel scene_level,
     NotifyingJsonMacroArguments& external_json_macro_arguments,
     std::atomic_size_t& num_renderings,
     RealtimeDependentFps& render_set_fps,
@@ -212,6 +213,7 @@ LoadScene::LoadScene(
             .physics_scene = physics_scene,
             .renderable_scene = renderable_scene,
             .macro_line_executor = macro_line_executor,
+            .scene_level_selector = scene_level_selector_,
             .external_json_macro_arguments = external_json_macro_arguments,
             .local_json_macro_arguments = local_json_macro_arguments,
             .surface_contact_db = surface_contact_db,
@@ -246,8 +248,8 @@ LoadScene::LoadScene(
         }
         it->second(args);
         return true;
-    }},
-    macro_line_executor_{
+    }}
+    , macro_line_executor_{
         macro_file_executor_,
         script_filename,
         search_path,
@@ -256,8 +258,13 @@ LoadScene::LoadScene(
         nlohmann::json::object(),
         external_json_macro_arguments,
         asset_references,
-        verbose},
-    focus_finalizer_{ ui_focuses, macro_line_executor_ }
+        verbose}
+    , focus_finalizer_{ ui_focuses, macro_line_executor_ }
+    , scene_level_selector_{
+        std::move(scene_level),
+        [this](){
+            macro_line_executor_({{"playback", "remote.level.load_" + scene_level_selector_.get_next_scene_name()}}, nullptr);
+        }}
 {
     static struct RegisterJsonUserFunctions {
         RegisterJsonUserFunctions() {
@@ -430,4 +437,8 @@ LoadScene::~LoadScene() = default;
 
 void LoadScene::operator () () {
     macro_file_executor_(macro_line_executor_);
+}
+
+LocalSceneLevel LoadScene::scene_level() const {
+    return scene_level_selector_.get_next_scene_level();
 }

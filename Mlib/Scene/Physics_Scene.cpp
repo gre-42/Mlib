@@ -13,6 +13,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
+#include <Mlib/Remote/Incremental_Objects/Scene_Level.hpp>
 #include <Mlib/Remote/Remote_Params.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Scene/Remote/Remote_Scene.hpp>
@@ -28,6 +29,7 @@ PhysicsScene::PhysicsScene(
     unsigned int max_anisotropic_filtering_level,
     SceneConfig& scene_config,
     const MacroLineExecutor& macro_line_executor,
+    SceneLevelSelector& scene_level_selector,
     RemoteSites& remote_sites,
     AssetReferences& asset_references,
     SceneNodeResources& scene_node_resources,
@@ -202,6 +204,7 @@ PhysicsScene::PhysicsScene(
             }
             remote_scene_ = std::make_unique<RemoteScene>(
                 DanglingBaseClassRef<PhysicsScene>{*this, CURRENT_SOURCE_LOCATION},
+                DanglingBaseClassRef<SceneLevelSelector>{scene_level_selector, CURRENT_SOURCE_LOCATION},
                 *remote_params,
                 verbosity);
             remote_counter_user_.set(true);
