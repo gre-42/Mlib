@@ -8,5 +8,5 @@ include_directories(${Mlib_INCLUDE_DIR})
 
 target_link_libraries(MlibRegex MlibThreads)
 if (MSVC)
-    target_link_libraries(MlibRegex Boost::regex)
+    target_link_libraries(MlibRegex Boost::xpressive)
 endif()

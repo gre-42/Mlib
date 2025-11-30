@@ -11,7 +11,7 @@ endif()
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibRemote Mlib MlibOs MlibIo MlibMemory MlibJson)
+target_link_libraries(MlibRemote Mlib MlibOs MlibIo MlibMemory MlibJson Boost::boost)
 
 if (MINGW)
     target_link_libraries(MlibRemote -lws2_32)
