@@ -287,6 +287,7 @@ void RemoteRigidBodyVehicle::read(
             rotation,
             1.f,
             INITIAL_POSE);
+        rb_->scene_node_->clear_transformation_history();
     }
     if (update_position) {
         rb_->rbp_.set_pose(tait_bryan_angles_2_matrix(rotation), position);

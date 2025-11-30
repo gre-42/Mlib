@@ -941,7 +941,9 @@ void SceneNode::move(
         trafo_history_.clear();
         trafo_history_invalidated_ = false;
     }
-    if (!trafo_history_.empty()) {
+    if (!trafo_history_.empty() &&
+        (interpolation_mode_ != PoseInterpolationMode::ENABLED_WO_CHECKS))
+    {
         const auto& newest = trafo_history_.newest();
         auto distance = max(abs(newest.t - trafo_.t));
         if (distance > INTERPOLATION_ERROR_DISTANCE) {
@@ -1835,6 +1837,33 @@ void SceneNode::assert_node_can_be_modified_by_this_thread() const {
 void SceneNode::invalidate_transformation_history() {
     std::scoped_lock lock{ pose_mutex_ };
     trafo_history_invalidated_ = true;
+}
+
+void SceneNode::clear_transformation_history()
+{
+    if (parent_ == nullptr) {
+        clear_transformation_history(TransformationMatrix<float, ScenePos, 3>::identity());
+    } else {
+        clear_transformation_history(parent_->absolute_model_matrix());
+    }
+}
+
+void SceneNode::clear_transformation_history(
+    const TransformationMatrix<float, ScenePos, 3>& parent_m)
+{
+    auto child_m = relative_model_matrix();
+    std::scoped_lock lock{ mutex_ };
+    if (state_ == SceneNodeState::STATIC) {
+        THROW_OR_ABORT("Cannot clear transformation history of a static node");
+    }
+    auto m = parent_m * child_m;
+    if (absolute_movable_ != nullptr) {
+        absolute_movable_->set_absolute_model_matrix(m);
+    }
+    set_absolute_pose(m.t, matrix_2_tait_bryan_angles(m.R), scale_, INITIAL_POSE);
+    for (const auto& [_, c] : children_) {
+        c.scene_node->clear_transformation_history(m);
+    }
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, DanglingBaseClassPtr<const SceneNode> node) {

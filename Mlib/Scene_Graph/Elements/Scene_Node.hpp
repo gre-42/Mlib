@@ -366,12 +366,15 @@ public:
     SceneNodeDomain domain() const;
     void assert_node_can_be_modified_by_this_thread() const;
     void invalidate_transformation_history();
+    void clear_transformation_history();
     mutable DestructionObservers<SceneNode&> clearing_observers;
     mutable DestructionObservers<SceneNode&> destruction_observers;
     mutable SharedPtrs clearing_pointers;
     mutable SharedPtrs destruction_pointers;
     mutable DestructionFunctions on_clear;
 private:
+    void clear_transformation_history(
+        const TransformationMatrix<float, ScenePos, 3>& parent_m);
     void set_scene_and_state_unsafe(Scene& scene, SceneNodeState state);
     void setup_child_unsafe(
         const VariableAndHash<std::string>& name,
