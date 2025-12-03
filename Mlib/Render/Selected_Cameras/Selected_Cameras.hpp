@@ -37,7 +37,7 @@ public:
     void set_camera_cycle(CameraCycleType tpe, const std::vector<VariableAndHash<std::string>>& cameras);
     void cycle_camera(CameraCycleType tpe);
     std::optional<CameraCycleType> cycle(const VariableAndHash<std::string>& name) const;
-    EventEmitter camera_changed;
+    EventEmitter<> camera_changed;
 private:
     std::optional<NodeAndCamera> try_get_camera(const VariableAndHash<std::string>& name, SOURCE_LOCATION loc) const;
     Scene& scene_;

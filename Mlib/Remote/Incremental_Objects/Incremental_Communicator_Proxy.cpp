@@ -57,7 +57,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
     }
     auto receive_local = [&](RemoteObjectVisibility visibility){
         // linfo() << "Received " << object_count << " objects_";
-        auto transmission_history_reader = TransmissionHistoryReader{objects_->local_time()};
+        auto transmission_history_reader = TransmissionHistoryReader{*home_scene_level_, objects_->local_time()};
         while (true) {
             auto transmitted_fields = read_binary<TransmittedFields>(istr, "transmitted fields", verbosity_);
             if (transmitted_fields == TransmittedFields::NONE) {

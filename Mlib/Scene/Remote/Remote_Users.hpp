@@ -6,6 +6,7 @@
 
 namespace Mlib {
 
+class SceneLevelSelector;
 class PhysicsScene;
 enum class IoVerbosity;
 
@@ -14,12 +15,15 @@ public:
     explicit RemoteUsers(
         IoVerbosity verbosity,
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
+        const DanglingBaseClassRef<SceneLevelSelector>& local_scene_level_selector,
         RemoteSiteId site_id);
     ~RemoteUsers();
     static DanglingBaseClassPtr<RemoteUsers> try_create_from_stream(
         PhysicsScene& physics_scene,
+        SceneLevelSelector& scene_level_selector,
         std::istream& istr,
         RemoteSiteId site_id,
+        TransmissionHistoryReader& transmission_history_reader,
         IoVerbosity verbosity);
     virtual void read(
         std::istream& istr,
@@ -34,9 +38,12 @@ public:
         TransmissionHistoryWriter& transmission_history_writer) override;
 
 private:
-    void read_data(std::istream& istr);
+    void read_data(
+        std::istream& istr,
+        TransmissionHistoryReader& transmission_history_reader);
 
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
+    DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector_;
     IoVerbosity verbosity_;
     RemoteSiteId site_id_;
     DestructionFunctionsRemovalTokens physics_scene_on_destroy_;

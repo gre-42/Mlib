@@ -10,7 +10,7 @@ using namespace Mlib;
 using VH = VariableAndHash<std::string>;
 
 SelectedCameras::SelectedCameras(Scene& scene)
-    : camera_changed{ [this]() { return camera_node_exists(); } }
+    : camera_changed{ [this](const auto& f) { if (camera_node_exists()) { f(); }; } }
     , scene_{ scene }
     , dirtmap_node_name_{ "dirtmap_node" }
     , camera_cycle_near_{ *this, {VH{"follower_camera_0"}, VH{"turret_camera_node"}} }  // "main_gun_end_node"

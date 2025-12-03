@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/INode_Setter.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
@@ -17,7 +18,6 @@ class AdvanceTimes;
 class SceneNode;
 class Scene;
 class SelectedCameras;
-class EventReceiverDeletionToken;
 
 class KeepOffsetFromCamera: public INodeSetter, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
@@ -49,7 +49,7 @@ private:
     FixedArray<float, 3> grid_;
     DanglingBaseClassPtr<SceneNode> follower_node_;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
-    std::unique_ptr<EventReceiverDeletionToken> camera_changed_deletion_token_;
+    EventReceiverDeletionToken<> camera_changed_deletion_token_;
 };
 
 }

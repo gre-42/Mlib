@@ -140,7 +140,7 @@ void test_physics_engine(unsigned int seed) {
     SurfaceContactDb surface_contact_db;
     BulletPropertyDb bullet_property_db;
     std::function<bool()> paused;
-    EventEmitter paused_changed{ [](){ return true; } };
+    EventEmitter<> paused_changed{ [](const auto& f){ f(); } };
     OneShotAudio one_shot_audio{ PositionRequirement::WAITING_FOR_POSITION, paused, paused_changed };
     auto air_particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SMOKE);
     auto skidmark_particle_renderer = std::make_shared<ParticleRenderer>(particle_resources, ParticleType::SKIDMARK);

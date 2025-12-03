@@ -36,7 +36,7 @@
 
 namespace Mlib {
 
-struct UserInfo;
+class UserInfo;
 class Spawner;
 class RigidBodyVehicle;
 class Players;

@@ -15,7 +15,7 @@ using namespace Mlib;
 EngineAudio::EngineAudio(
     const std::string& resource_name,
     std::function<bool()> audio_paused,
-    EventEmitter& audio_paused_changed,
+    EventEmitter<>& audio_paused_changed,
     float p_idle,
     float p_reference)
     : cross_fade_{ PositionRequirement::WAITING_FOR_POSITION, std::move(audio_paused), audio_paused_changed }

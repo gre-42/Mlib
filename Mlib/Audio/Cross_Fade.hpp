@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
 #include <Mlib/Math/Fixed_Point_Number.hpp>
+#include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Scene_Config/Scene_Precision.hpp>
 #include <Mlib/Threads/Fast_Mutex.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
@@ -13,8 +14,6 @@
 
 namespace Mlib {
 
-class EventEmitter;
-class EventReceiverDeletionToken;
 class AudioBuffer;
 template <class TPosition>
 struct AudioSourceState;
@@ -37,7 +36,7 @@ public:
     explicit CrossFade(
         PositionRequirement position_requirement,
         std::function<bool()> paused,
-        EventEmitter& paused_changed,
+        EventEmitter<>& paused_changed,
         float dgain = 0.02f);
     ~CrossFade();
     void start_background_thread(float dt = 0.01f);
@@ -64,7 +63,7 @@ private:
     mutable FastMutex mutex_;
     std::function<bool()> paused_;
     std::optional<JThread> fader_;
-    std::unique_ptr<EventReceiverDeletionToken> erdt_;
+    EventReceiverDeletionToken<> erdt_;
 };
 
 }

@@ -29,6 +29,7 @@
 
 namespace Mlib {
 
+class UserInfo;
 class GameLogic;
 class PhysicsScene;
 class AssetReferences;
@@ -107,7 +108,7 @@ public:
     BulletPropertyDb& bullet_property_db_;
     RenderingResources rendering_resources_;
     std::function<bool()> paused_;
-    EventEmitter paused_changed_;
+    EventEmitter<> paused_changed_;
     std::unique_ptr<ITrailRenderer> trail_renderer_;
     std::unique_ptr<DynamicLights> dynamic_lights_;
     DynamicWorld dynamic_world_;
@@ -138,6 +139,8 @@ public:
     CountdownPhysics countdown_start_;
     std::shared_ptr<Translator> translator_;
     std::unique_ptr<RemoteScene> remote_scene_;
+    std::optional<EventReceiverDeletionToken<const UserInfo&>> on_user_loaded_level_token_;
+    std::optional<EventReceiverDeletionToken<>> on_all_users_loaded_level_token_;
 
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;

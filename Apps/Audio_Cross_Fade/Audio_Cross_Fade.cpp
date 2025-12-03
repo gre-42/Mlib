@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
         float pitch = safe_stof(args.named_value("--pitch", "1"));
         float gain_factor = safe_stof(args.named_value("--gain", "1"));
         auto paused = [](){return false;};
-        EventEmitter paused_changed{[](){return false;}};
+        EventEmitter paused_changed;
         CrossFade cross_fade{ PositionRequirement::POSITION_NOT_REQUIRED, paused, paused_changed, dgain };
         cross_fade.start_background_thread(dt_fade);
         for (const auto& b : buffers) {

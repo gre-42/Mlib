@@ -1,35 +1,45 @@
 #pragma once
 #include <functional>
 #include <map>
-#include <memory>
 
 namespace Mlib {
 
+template <class... Args>
 class EventEmitter;
 
+template <class... Args>
 class EventReceiverDeletionToken {
-    friend EventEmitter;
     EventReceiverDeletionToken(const EventReceiverDeletionToken&) = delete;
     EventReceiverDeletionToken& operator = (const EventReceiverDeletionToken&) = delete;
 public:
-    explicit EventReceiverDeletionToken(EventEmitter& emitter);
+    using Emitter = EventEmitter<Args...>;
+    friend Emitter;
+    explicit EventReceiverDeletionToken(Emitter& emitter, std::function<void(const Args&...)> f);
     ~EventReceiverDeletionToken();
+    void reset();
 private:
-    EventEmitter* emitter_;
+    Emitter* emitter_;
 };
 
+template <class... Args>
 class EventEmitter {
-    friend EventReceiverDeletionToken;
+public:
+    using DeletionToken = EventReceiverDeletionToken<Args...>;
+    friend DeletionToken;
+    using EventCallback = std::function<void(const Args&...)>;
+    using OnInsert = std::function<void(const EventCallback&)>;
     EventEmitter(const EventEmitter&) = delete;
     EventEmitter& operator = (const EventEmitter&) = delete;
-public:
-    explicit EventEmitter(std::function<bool()> fire_initial_event);
+    explicit EventEmitter(OnInsert on_insert = OnInsert());
     ~EventEmitter();
-    std::unique_ptr<EventReceiverDeletionToken> insert(std::function<void()> f);
-    void emit();
+    void insert(DeletionToken& deletion_token, EventCallback f);
+    void clear();
+    void emit(const Args&... args);
 private:
-    std::function<bool()> fire_initial_event_;
-    std::map<EventReceiverDeletionToken*, std::function<void()>> functions_;
+    OnInsert on_insert_;
+    std::map<DeletionToken*, EventCallback> functions_;
 };
 
 }
+
+#include "Event_Emitter.impl.hpp"

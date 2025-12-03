@@ -12,8 +12,10 @@ using namespace Mlib;
 
 RemoteSceneObjectFactory::RemoteSceneObjectFactory(
     const DanglingBaseClassRef<PhysicsScene>& physics_scene,
+    const DanglingBaseClassRef<SceneLevelSelector>& scene_level_selector,
     IoVerbosity verbosity)
     : physics_scene_{ physics_scene }
+    , scene_level_selector_{ scene_level_selector }
     , verbosity_{ verbosity }
 {}
 
@@ -30,7 +32,7 @@ DanglingBaseClassPtr<IIncrementalObject> RemoteSceneObjectFactory::try_create_sh
     auto type = read_binary<RemoteSceneObjectType>(istr, "scene object type", verbosity_);
     switch (type) {
     case RemoteSceneObjectType::REMOTE_USERS:
-        return RemoteUsers::try_create_from_stream(physics_scene_.get(), istr, remote_object_id.site_id, verbosity_);
+        return RemoteUsers::try_create_from_stream(physics_scene_.get(), scene_level_selector_.get(), istr, remote_object_id.site_id, transmission_history_reader, verbosity_);
     case RemoteSceneObjectType::PLAYER:
         return RemotePlayer::try_create_from_stream(physics_scene_.get(), istr, transmitted_fields, transmission_history_reader, verbosity_);
     case RemoteSceneObjectType::RIGID_BODY_CAR:

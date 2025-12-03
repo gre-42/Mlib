@@ -7,6 +7,7 @@
 
 namespace Mlib {
 
+struct LocalSceneLevel;
 struct RemoteObjectId;
 enum class IoVerbosity;
 enum class TransmittedFields: uint32_t;
@@ -37,6 +38,7 @@ inline TransmissionHistory& operator |= (TransmissionHistory& a, TransmissionHis
 class TransmissionHistoryReader {
 public:
     explicit TransmissionHistoryReader(
+        const LocalSceneLevel& home_scene_level,
         std::chrono::steady_clock::time_point base_time);
     ~TransmissionHistoryReader();
     RemoteObjectId read_remote_object_id(
@@ -46,6 +48,7 @@ public:
     std::chrono::steady_clock::time_point read_time(
         std::istream& istr,
         IoVerbosity verbosity) const;
+    const LocalSceneLevel& home_scene_level;
 private:
     std::chrono::steady_clock::time_point base_time_;
     std::optional<RemoteSiteId> site_id_;

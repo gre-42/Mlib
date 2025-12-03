@@ -7,8 +7,10 @@
 using namespace Mlib;
 
 TransmissionHistoryReader::TransmissionHistoryReader(
+    const LocalSceneLevel& home_scene_level,
     std::chrono::steady_clock::time_point base_time)
-    : base_time_{ base_time }
+    : home_scene_level{ home_scene_level }
+    , base_time_{ base_time }
 {}
 
 TransmissionHistoryReader::~TransmissionHistoryReader() = default;

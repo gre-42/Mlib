@@ -10,6 +10,7 @@
 using namespace Mlib;
 
 UserInfo::UserInfo(
+    const DanglingBaseClassRef<RemoteSites>& remote_sites,
     const std::optional<RemoteSiteId>& site_id,
     uint32_t user_id,
     std::string name,
@@ -21,10 +22,43 @@ UserInfo::UserInfo(
     , full_name{ std::move(full_name) }
     , type{ type }
     , random_rank{ 0 }
-{}
+    , status_{ UserStatus::INITIAL }
+    , remote_sites_{ remote_sites }
+{
+    ++remote_sites_->users_total_;
+}
 
 UserInfo::~UserInfo() {
+    --remote_sites_->users_total_;
     on_destroy.clear();
+}
+
+UserStatus UserInfo::get_status() const {
+    return status_;
+}
+
+void UserInfo::set_status(UserStatus status) {
+    if ((status != UserStatus::INITIAL) &&
+        (status != UserStatus::LEVEL_LOADED) &&
+        (status != UserStatus::LEVEL_LOADING))
+    {
+        THROW_OR_ABORT("Unknown user status");
+    }
+    if (status_ != UserStatus::LEVEL_LOADED) {
+        if (status == UserStatus::LEVEL_LOADED) {
+            ++remote_sites_->users_with_loaded_level_;
+            remote_sites_->on_user_loaded_level.emit(*this);
+            if (remote_sites_->users_with_loaded_level_ == remote_sites_->users_total_) {
+                remote_sites_->on_all_users_loaded_level.emit();
+                remote_sites_->on_all_users_loaded_level.clear();
+            }
+        }
+    } else {
+        if (status != UserStatus::LEVEL_LOADED) {
+            --remote_sites_->users_with_loaded_level_;
+        }
+    }
+    status_ = status;
 }
 
 SiteInfo::SiteInfo()
@@ -83,7 +117,9 @@ void RemoteSites::set_local_user_count(uint32_t user_count) {
         for (uint32_t i = 0; i < user_count; ++i) {
             auto name = std::to_string(i);
             auto full_name = VariableAndHash<std::string>{std::to_string(remote_params_->site_id) + '_' + name};
-            auto& user = local_site_.users.emplace_back(remote_params_->site_id, i, name, *full_name, UserType::LOCAL);
+            auto& user = local_site_.users.emplace_back(
+                DanglingBaseClassRef<RemoteSites>{*this, CURRENT_SOURCE_LOCATION},
+                remote_params_->site_id, i, name, *full_name, UserType::LOCAL);
             named_users_.emplace(
                 std::move(full_name),
                 DanglingBaseClassRef<UserInfo>{user, CURRENT_SOURCE_LOCATION},
@@ -92,7 +128,9 @@ void RemoteSites::set_local_user_count(uint32_t user_count) {
     } else {
         for (uint32_t i = 0; i < user_count; ++i) {
             auto name = VariableAndHash<std::string>{std::to_string(i)};
-            auto& user = local_site_.users.emplace_back(std::nullopt, i, *name, *name, UserType::LOCAL);
+            auto& user = local_site_.users.emplace_back(
+                DanglingBaseClassRef<RemoteSites>{*this, CURRENT_SOURCE_LOCATION},
+                std::nullopt, i, *name, *name, UserType::LOCAL);
             named_users_.emplace(
                 std::move(name),
                 DanglingBaseClassRef<UserInfo>{user, CURRENT_SOURCE_LOCATION},
@@ -129,7 +167,9 @@ void RemoteSites::set_user_count(RemoteSiteId site_id, uint32_t user_count) {
         for (uint32_t i = 0; i < user_count; ++i) {
             auto name = std::to_string(i);
             auto full_name = VariableAndHash<std::string>{std::to_string(site_id) + '_' + name};
-            auto& user = site.users.emplace_back(site_id, i, name, *full_name, UserType::REMOTE);
+            auto& user = site.users.emplace_back(
+                DanglingBaseClassRef<RemoteSites>{*this, CURRENT_SOURCE_LOCATION},
+                site_id, i, name, *full_name, UserType::REMOTE);
             named_users_.emplace(
                 std::move(full_name),
                 DanglingBaseClassRef<UserInfo>{user, CURRENT_SOURCE_LOCATION},
@@ -142,24 +182,41 @@ bool RemoteSites::for_each_site_user(
     const std::function<bool(UserInfo& user)>& operation,
     UserTypes user_types)
 {
+    auto include_user = [&](const UserInfo& user){
+        return (((user.get_status() == UserStatus::INITIAL) && any(user_types & UserTypes::INITIAL)) ||
+                ((user.get_status() == UserStatus::LEVEL_LOADED) && any(user_types & UserTypes::LEVEL_LOADED)) ||
+                ((user.get_status() == UserStatus::LEVEL_LOADING) && any(user_types & UserTypes::LEVEL_LOADING)));
+    };
     std::shared_lock lock{ mutex_ };
     assert_local_users_consistents();
     if (remote_params_.has_value()) {
-        if (user_types == UserTypes::ALL) {
+        if (any(user_types & UserTypes::REMOTE)) {
             for (auto& [site_id, site] : remote_sites_) {
                 if (site_id != remote_params_->site_id) {
                     for (auto&& [user_id, user] : tenumerate<uint32_t>(site.users)) {
-                        if (!operation(user)) {
-                            return false;
+                        if (include_user(user)) {
+                            if (!operation(user)) {
+                                return false;
+                            }
                         }
                     }
                 }
             }
         }
     }
-    return local_users_->for_each_user([&](uint32_t user_id){
-        return operation(local_site_.users.at(user_id));
-    });
+    if (any(user_types & UserTypes::LOCAL)) {
+        if (!local_users_->for_each_user([&](uint32_t user_id){
+            auto& user = local_site_.users.at(user_id);
+            if (include_user(user)) {
+                return operation(user);
+            }
+            return true;
+        }))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool RemoteSites::for_each_site_user(
@@ -172,14 +229,30 @@ bool RemoteSites::for_each_site_user(
         }, user_types);
 }
 
-DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(
-    const VariableAndHash<std::string>& full_name) const
-{
+DanglingBaseClassRef<UserInfo> RemoteSites::get_user(RemoteSiteId site_id, uint32_t id) {
+    auto& site = get_site_info(site_id);
+    if (id >= site.users.size()) {
+        THROW_OR_ABORT("User ID too large");
+    }
+    return DanglingBaseClassRef<UserInfo>{ site.users.at(id), CURRENT_SOURCE_LOCATION };
+}
+
+DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(RemoteSiteId site_id, uint32_t id) const {
+    return const_cast<RemoteSites*>(this)->get_user(site_id, id);
+}
+
+DanglingBaseClassRef<UserInfo> RemoteSites::get_user(const VariableAndHash<std::string>& full_name) {
     auto it = named_users_.find(full_name);
     if (it == named_users_.end()) {
         THROW_OR_ABORT("Could not find user with name \"" + *full_name + '"');
     }
     return it->second.object();
+}
+
+DanglingBaseClassRef<const UserInfo> RemoteSites::get_user(
+    const VariableAndHash<std::string>& full_name) const
+{
+    return const_cast<RemoteSites*>(this)->get_user(full_name);
 }
 
 DanglingBaseClassRef<const UserInfo> RemoteSites::get_local_user(uint32_t id) const {
@@ -210,6 +283,14 @@ DanglingBaseClassRef<const UserInfo> RemoteSites::get_user_by_rank(uint32_t rank
         THROW_OR_ABORT("Could not find user with rank " + std::to_string(rank));
     }
     return *result;
+}
+
+SiteInfo& RemoteSites::get_site_info(RemoteSiteId site_id) {
+    if (!remote_params_.has_value() || (site_id == remote_params_->site_id)) {
+        return local_site_;
+    } else {
+        return remote_sites_.get(site_id);
+    }
 }
 
 void RemoteSites::assert_local_users_consistents() const {

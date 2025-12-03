@@ -3,9 +3,13 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <atomic>
 #include <functional>
+#include <optional>
 
 namespace Mlib {
 
+class UserInfo;
+template <class... Args>
+class EventReceiverDeletionToken;
 class BulletPropertyDb;
 class MacroLineExecutor;
 class PhysicsScene;
@@ -37,6 +41,7 @@ class AggregateRenderLogic;
 class PostProcessingLogic;
 class SupplyDepots;
 class RenderingResources;
+template <class... Args>
 class EventEmitter;
 class RenderLogics;
 class UiFocus;
@@ -82,7 +87,7 @@ protected:
     SupplyDepots& supply_depots;
     const SceneConfig& scene_config;
     std::function<bool()>& paused;
-    EventEmitter& paused_changed;
+    EventEmitter<>& paused_changed;
     SetFps& physics_set_fps;
     GameLogic* game_logic;
     RemoteScene* remote_scene;
@@ -91,6 +96,8 @@ protected:
     UiFocus& ui_focus;
     BaseLog& base_log;
     DeleteNodeMutex& delete_node_mutex;
+    std::optional<EventReceiverDeletionToken<const UserInfo&>>& on_user_loaded_level_token;
+    std::optional<EventReceiverDeletionToken<>>& on_all_users_loaded_level_token;
 
 private:
     AudioResourceContextGuard arg0_;

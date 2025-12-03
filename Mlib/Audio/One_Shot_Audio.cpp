@@ -22,10 +22,10 @@ AudioSourceAndPosition::~AudioSourceAndPosition() = default;
 OneShotAudio::OneShotAudio(
     PositionRequirement position_requirement,
     std::function<bool()> paused,
-    EventEmitter& paused_changed)
+    EventEmitter<>& paused_changed)
     : position_requirement_{ position_requirement }
     , paused_{ std::move(paused) }
-    , erdt_{ paused_changed.insert([this](){ advance_time(); }) }
+    , erdt_{ paused_changed, [this](){ advance_time(); } }
 {}
 
 OneShotAudio::~OneShotAudio() {

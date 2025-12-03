@@ -26,7 +26,8 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
     , follower_node_{ follower_node.ptr() }
     , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
     , camera_changed_deletion_token_{
-        cameras.camera_changed.insert([this]() {
+        cameras.camera_changed,
+        [this]() {
             if (follower_node_ == nullptr) {
                 return;
             }
@@ -39,7 +40,6 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
                 1.f,
                 INITIAL_POSE);
             }
-        )
     }
 {}
 

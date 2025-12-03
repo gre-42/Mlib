@@ -60,7 +60,7 @@ PhysicsScene::PhysicsScene(
     , paused_{ [this]() {
         return (usage_counter_.count() == 0);
       } }
-    , paused_changed_{ [](){ return true; }}
+    , paused_changed_{ [](const auto& f){ f(); }}
     , trail_renderer_{ std::make_unique<TrailRenderer>(trail_resources) }
     , dynamic_lights_{ std::make_unique<DynamicLights>(dynamic_light_db) }
     , dynamic_world_{ scene_node_resources, std::move(world) }

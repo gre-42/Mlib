@@ -4,6 +4,7 @@
 
 namespace Mlib {
 
+class SceneLevelSelector;
 class PhysicsScene;
 enum class IoVerbosity;
 
@@ -11,6 +12,7 @@ class RemoteSceneObjectFactory final: public IIncrementalObjectFactory {
 public:
     explicit RemoteSceneObjectFactory(
         const DanglingBaseClassRef<PhysicsScene>& physics_scene,
+        const DanglingBaseClassRef<SceneLevelSelector>& scene_level_selector,
         IoVerbosity verbosity);
     virtual ~RemoteSceneObjectFactory() override;
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
@@ -20,6 +22,7 @@ public:
         TransmissionHistoryReader& transmission_history_reader) override;
 private:
     DanglingBaseClassRef<PhysicsScene> physics_scene_;
+    DanglingBaseClassRef<SceneLevelSelector> scene_level_selector_;
     IoVerbosity verbosity_;
 };
 

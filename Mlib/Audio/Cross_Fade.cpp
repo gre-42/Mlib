@@ -16,13 +16,13 @@ void AudioSourceAndGain::apply_gain() {
 CrossFade::CrossFade(
     PositionRequirement position_requirement,
     std::function<bool()> paused,
-    EventEmitter& paused_changed,
+    EventEmitter<>& paused_changed,
     float dgain)
     : position_requirement_{ position_requirement }
     , total_gain_{ 0.f }
     , dgain_{ dgain }
     , paused_{ std::move(paused) }
-    , erdt_{ paused_changed.insert([this](){ advance_time(0.f); }) }
+    , erdt_{ paused_changed, [this](){ advance_time(0.f); } }
 {}
 
 CrossFade::~CrossFade() {
