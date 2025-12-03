@@ -13,6 +13,7 @@
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
+#include <Mlib/Players/Game_Logic/Late_Join_Player_Factory.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <Mlib/Render/Deferred_Instantiator.hpp>
@@ -141,6 +142,7 @@ public:
     std::unique_ptr<RemoteScene> remote_scene_;
     std::optional<EventReceiverDeletionToken<const UserInfo&>> on_user_loaded_level_token_;
     std::optional<EventReceiverDeletionToken<>> on_all_users_loaded_level_token_;
+    std::optional<LateJoinPlayerFactory> late_join_player_factory_;
 
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;

@@ -826,6 +826,7 @@ int main(int argc, char** argv) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
                 local_scene_level = load_scene->scene_level();
+                remote_sites.invalidate_user_level_loaded();
             }
             ui_focuses.clear_focuses();
             if (auto s = (std::string)next_scene_filename; !s.empty()) {

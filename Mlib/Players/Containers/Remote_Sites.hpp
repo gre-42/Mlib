@@ -33,6 +33,8 @@ enum class UserTypes {
     LEVEL_LOADED = 1 << 4,
     ALL = LOCAL | REMOTE | INITIAL | LEVEL_LOADING | LEVEL_LOADED,
     ALL_LOADED = LOCAL | REMOTE | LEVEL_LOADED,
+    ALL_LOCAL = ALL & ~REMOTE,
+    ALL_REMOTE = ALL & ~LOCAL,
 };
 
 inline bool any(UserTypes types) {
@@ -118,6 +120,7 @@ public:
     void print(std::ostream& ostr) const;
 
     uint32_t compute_random_user_ranks();
+    void invalidate_user_level_loaded();
 private:
     SiteInfo& get_site_info(RemoteSiteId site_id);
     void assert_local_users_consistents() const;

@@ -27,16 +27,13 @@ void EventReceiverDeletionToken<Args...>::reset() {
     if (emitter_->functions_.erase(this) != 1) {
         verbose_abort("Could not delete event function");
     }
+    emitter_ = nullptr;
 }
 
 template <class... Args>
 EventEmitter<Args...>::EventEmitter(OnInsert on_insert)
     : on_insert_{ std::move(on_insert) }
-{
-    if (!on_insert_) {
-        verbose_abort("on_insert not valid");
-    }
-}
+{}
 
 template <class... Args>
 EventEmitter<Args...>::~EventEmitter() {

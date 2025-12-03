@@ -103,7 +103,7 @@ struct RegisterJsonUserFunctionLocal {
             "for_each_user",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                ForEachSiteUser(UserTypes::LOCAL).execute(args);
+                ForEachSiteUser(UserTypes::ALL_LOCAL).execute(args);
             });
     }
 } obj_local;

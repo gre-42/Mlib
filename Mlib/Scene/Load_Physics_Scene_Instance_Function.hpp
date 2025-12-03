@@ -52,6 +52,7 @@ class Translator;
 struct SceneParticles;
 struct SceneConfig;
 struct RenderingContext;
+class LateJoinPlayerFactory;
 
 class LoadPhysicsSceneInstanceFunction {
 public:
@@ -98,6 +99,7 @@ protected:
     DeleteNodeMutex& delete_node_mutex;
     std::optional<EventReceiverDeletionToken<const UserInfo&>>& on_user_loaded_level_token;
     std::optional<EventReceiverDeletionToken<>>& on_all_users_loaded_level_token;
+    std::optional<LateJoinPlayerFactory>& late_join_player_factory;
 
 private:
     AudioResourceContextGuard arg0_;

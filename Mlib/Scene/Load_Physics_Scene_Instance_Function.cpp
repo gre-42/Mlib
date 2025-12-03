@@ -45,6 +45,7 @@ LoadPhysicsSceneInstanceFunction::LoadPhysicsSceneInstanceFunction(
     , delete_node_mutex{ physics_scene.delete_node_mutex_ }
     , on_user_loaded_level_token{ physics_scene.on_user_loaded_level_token_ }
     , on_all_users_loaded_level_token{ physics_scene.on_all_users_loaded_level_token_ }
+    , late_join_player_factory{ physics_scene.late_join_player_factory_ }
     , arg0_{ physics_scene.primary_audio_resource_context_ }
     , arg1_{ physics_scene.secondary_audio_resource_context_ }
 {}
