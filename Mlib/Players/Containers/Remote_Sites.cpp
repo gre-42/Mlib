@@ -322,10 +322,10 @@ uint32_t RemoteSites::compute_random_user_ranks() {
     return nusers;
 }
 
-void RemoteSites::invalidate_user_level_loaded() {
+void RemoteSites::set_user_status(UserTypes types, UserStatus status) {
     for_each_site_user(
         [&](UserInfo& user){
-            user.set_status(UserStatus::INITIAL);
+            user.set_status(status);
             return true;
-        }, UserTypes::ALL_REMOTE);
+        }, types);
 }

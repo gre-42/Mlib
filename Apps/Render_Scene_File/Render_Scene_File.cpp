@@ -182,7 +182,7 @@ void print_debug_info(
 
 JThread loader_thread(
     const ParsedArgs& args,
-    const RemoteSites& remote_sites,
+    RemoteSites& remote_sites,
     PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
     LoadScene& load_scene,
@@ -215,6 +215,7 @@ JThread loader_thread(
                     }
                 }
                 load_scene_finished = true;
+                remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADED);
             }
 
             print_debug_info(args, physics_scenes);
@@ -594,8 +595,10 @@ int main(int argc, char** argv) {
                 args.named_value("--remote_ip"),
                 safe_stox<uint16_t>(args.named_value("--remote_port")));
         }
+        auto user_count = safe_sto<uint32_t>(args.named_value("--user_count", "1"));
         Users users;
         RemoteSites remote_sites{ {users, CURRENT_SOURCE_LOCATION}, remote_params };
+        remote_sites.set_local_user_count(user_count);
         {
             auto record_track_basename = args.try_named_value("--record_track_basename");
             nlohmann::json j{
@@ -636,7 +639,7 @@ int main(int argc, char** argv) {
                 {"scene_water_waves_height", safe_stoi(args.named_value("--scene_water_waves_height", "512"))},
                 {"scene_sea_spray_width", safe_stoi(args.named_value("--scene_sea_spray_width", "2048"))},
                 {"scene_sea_spray_height", safe_stoi(args.named_value("--scene_sea_spray_height", "2048"))},
-                {"selected_user_count", safe_sto<uint32_t>(args.named_value("--user_count", "1"))},
+                {"selected_user_count", user_count},
                 {"remote_role", args.named_value("--remote_role", "none")},
                 {"sparse_triangle_cluster_width", safe_stof(args.named_value("--sparse_triangle_cluster_width", "3e3"))},
                 {"medium_triangle_cluster_width", safe_stof(args.named_value("--medium_triangle_cluster_width", "700"))},
@@ -759,6 +762,8 @@ int main(int argc, char** argv) {
                     render.request_window_close();
                 };
                 render.window().set_title(main_scene_filename);
+                remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
+                remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);
                 load_scene.reset(new LoadScene(
                     &search_path,
                     main_scene_filename,
@@ -826,7 +831,6 @@ int main(int argc, char** argv) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }
                 local_scene_level = load_scene->scene_level();
-                remote_sites.invalidate_user_level_loaded();
             }
             ui_focuses.clear_focuses();
             if (auto s = (std::string)next_scene_filename; !s.empty()) {

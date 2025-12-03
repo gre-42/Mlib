@@ -23,11 +23,13 @@ public:
         SceneLevelSelector& scene_level_selector,
         std::istream& istr,
         RemoteSiteId site_id,
+        ProxyTasks proxy_tasks,
         TransmissionHistoryReader& transmission_history_reader,
         IoVerbosity verbosity);
     virtual void read(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override;
     virtual void write(
@@ -40,6 +42,7 @@ public:
 private:
     void read_data(
         std::istream& istr,
+        ProxyTasks proxy_tasks,
         TransmissionHistoryReader& transmission_history_reader);
 
     DanglingBaseClassRef<PhysicsScene> physics_scene_;

@@ -18,6 +18,7 @@ public:
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override;
 private:

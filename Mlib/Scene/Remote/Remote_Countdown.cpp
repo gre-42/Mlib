@@ -50,6 +50,7 @@ DanglingBaseClassPtr<RemoteCountdown> RemoteCountdown::try_create_from_stream(
 void RemoteCountdown::read(
     std::istream& istr,
     const RemoteObjectId& remote_object_id,
+    ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
     TransmissionHistoryReader& transmission_history_reader)
 {

@@ -9,6 +9,7 @@
 #include <Mlib/Remote/Remote_Site_Id.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
@@ -80,7 +81,7 @@ public:
     UserStatus get_status() const;
     void set_status(UserStatus value);
 private:
-    UserStatus status_;
+    std::atomic<UserStatus> status_;
     DanglingBaseClassRef<RemoteSites> remote_sites_;
 };
 
@@ -120,7 +121,7 @@ public:
     void print(std::ostream& ostr) const;
 
     uint32_t compute_random_user_ranks();
-    void invalidate_user_level_loaded();
+    void set_user_status(UserTypes types, UserStatus status);
 private:
     SiteInfo& get_site_info(RemoteSiteId site_id);
     void assert_local_users_consistents() const;

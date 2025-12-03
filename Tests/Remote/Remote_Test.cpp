@@ -27,10 +27,11 @@ public:
     explicit SharedInteger(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader)
     {
-        read(istr, remote_object_id, transmitted_fields, transmission_history_reader);
+        read(istr, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
     }
     virtual ~SharedInteger() override {
         on_destroy.clear();
@@ -38,6 +39,7 @@ public:
     virtual void read(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override
     {
@@ -70,10 +72,11 @@ public:
     explicit SharedString(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader)
     {
-        read(istr, remote_object_id, transmitted_fields, transmission_history_reader);
+        read(istr, remote_object_id, proxy_tasks, transmitted_fields, transmission_history_reader);
     }
     virtual ~SharedString() override {
         on_destroy.clear();
@@ -81,6 +84,7 @@ public:
     virtual void read(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override
     {
@@ -114,15 +118,16 @@ public:
     virtual DanglingBaseClassPtr<IIncrementalObject> try_create_shared_object(
         std::istream& istr,
         const RemoteObjectId& id,
+        ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) override
     {
         auto t = read_binary<ObjectType>(istr, "object type", IoVerbosity::SILENT);
         switch (t) {
         case ObjectType::INT32:
-            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, istr, id, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedInteger>(CURRENT_SOURCE_LOCATION, istr, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         case ObjectType::STRING:
-            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, istr, id, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
+            return { object_pool_.create<SharedString>(CURRENT_SOURCE_LOCATION, istr, id, proxy_tasks, transmitted_fields, transmission_history_reader), CURRENT_SOURCE_LOCATION };
         }
         THROW_OR_ABORT("Unknown object type: " + std::to_string((uint32_t)t));
     }

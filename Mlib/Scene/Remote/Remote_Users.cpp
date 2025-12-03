@@ -4,6 +4,7 @@
 #include <Mlib/Io/Binary_Writer.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Containers/Remote_Sites.hpp>
+#include <Mlib/Remote/Incremental_Objects/Proxy_Tasks.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmission_History.hpp>
 #include <Mlib/Remote/Incremental_Objects/Transmitted_Fields.hpp>
 #include <Mlib/Scene/Physics_Scene.hpp>
@@ -43,6 +44,7 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
     SceneLevelSelector& local_scene_level_selector,
     std::istream& istr,
     RemoteSiteId site_id,
+    ProxyTasks proxy_tasks,
     TransmissionHistoryReader& transmission_history_reader,
     IoVerbosity verbosity)
 {
@@ -52,13 +54,14 @@ DanglingBaseClassPtr<RemoteUsers> RemoteUsers::try_create_from_stream(
         DanglingBaseClassRef<PhysicsScene>{physics_scene, CURRENT_SOURCE_LOCATION},
         DanglingBaseClassRef<SceneLevelSelector>{local_scene_level_selector, CURRENT_SOURCE_LOCATION},
         site_id);
-    res->read_data(istr, transmission_history_reader);
+    res->read_data(istr, proxy_tasks, transmission_history_reader);
     return {res.release(), CURRENT_SOURCE_LOCATION};
 }
 
 void RemoteUsers::read(
     std::istream& istr,
     const RemoteObjectId& remote_object_id,
+    ProxyTasks proxy_tasks,
     TransmittedFields transmitted_fields,
     TransmissionHistoryReader& transmission_history_reader)
 {
@@ -66,17 +69,21 @@ void RemoteUsers::read(
     if (type != RemoteSceneObjectType::REMOTE_USERS) {
         THROW_OR_ABORT("RemoteUsers::read: Unexpected scene object type");
     }
-    read_data(istr, transmission_history_reader);
+    read_data(istr, proxy_tasks, transmission_history_reader);
 }
 
 void RemoteUsers::read_data(
     std::istream& istr,
+    ProxyTasks proxy_tasks,
     TransmissionHistoryReader& transmission_history_reader)
 {
     auto reader = BinaryReader(istr, verbosity_);
     auto user_count = reader.read_binary<uint32_t>("user count");
     physics_scene_->remote_sites_->set_user_count(site_id_, user_count);
-    
+    if (!physics_scene_->remote_sites_->get_local_site_id().has_value()) {
+        THROW_OR_ABORT("Local site ID not set");
+    }
+    auto local_site_id = *physics_scene_->remote_sites_->get_local_site_id();
     {
         auto args = physics_scene_->macro_line_executor_.writable_json_macro_arguments();
         for (uint32_t user_id = 0; user_id < user_count; ++user_id) {
@@ -101,22 +108,26 @@ void RemoteUsers::read_data(
     for (uint32_t user_id = 0; user_id < user_count; ++user_id) {
         auto user = physics_scene_->remote_sites_->get_user(site_id_, user_id);
         auto status = reader.read_binary<UserStatus>("user status");
-        auto final_status = [&](){
-            switch (status) {
-            case UserStatus::INITIAL:
-            case UserStatus::LEVEL_LOADING:
-                return status;
-            case UserStatus::LEVEL_LOADED:
-                {
-                    if (local_scene_level_selector_->reload_required(transmission_history_reader.home_scene_level)) {
-                        return UserStatus::INITIAL;
-                    }
+        if (!any(proxy_tasks & ProxyTasks::RELOAD_SCENE)) {
+            auto final_status = [&](){
+                switch (status) {
+                case UserStatus::INITIAL:
+                case UserStatus::LEVEL_LOADING:
                     return status;
+                case UserStatus::LEVEL_LOADED:
+                    {
+                        if (local_scene_level_selector_->reload_required(transmission_history_reader.home_scene_level)) {
+                            return UserStatus::INITIAL;
+                        }
+                        return status;
+                    }
                 }
-            }
-            THROW_OR_ABORT("Unknown user status");
-        }();
-        user->set_status(final_status);
+                THROW_OR_ABORT("Unknown user status");
+            }();
+            user->set_status(final_status);
+        } else if (site_id_ != local_site_id) {
+            user->set_status(status);
+        }
     }
     auto end = reader.read_binary<uint32_t>("inverted remote users");
     if (end != ~(uint32_t)RemoteSceneObjectType::REMOTE_USERS) {

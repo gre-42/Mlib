@@ -19,6 +19,7 @@ public:
     virtual void read(
         std::istream& istr,
         const RemoteObjectId& remote_object_id,
+        ProxyTasks proxy_tasks,
         TransmittedFields transmitted_fields,
         TransmissionHistoryReader& transmission_history_reader) = 0;
     virtual void write(
