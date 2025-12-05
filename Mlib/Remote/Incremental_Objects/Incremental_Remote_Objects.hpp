@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Remote/Events/Events_And_Times.hpp>
 #include <Mlib/Remote/Incremental_Objects/Remote_Object_Id.hpp>
+#include <Mlib/Time/Time_And_Pause.hpp>
 #include <chrono>
 #include <iosfwd>
 #include <map>
@@ -29,7 +30,8 @@ public:
     ~IncrementalRemoteObjects();
     RemoteSiteId local_site_id() const;
     std::chrono::steady_clock::time_point local_time() const;
-    void set_local_time(std::chrono::steady_clock::time_point time);
+    PauseStatus pause_status() const;
+    void set_local_time(const TimeAndPause<std::chrono::steady_clock::time_point>& time);
     DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector() const;
     RemoteObjectId add_local_object(
         const DanglingBaseClassRef<IIncrementalObject>& object,
@@ -49,7 +51,7 @@ public:
 
 private:
     RemoteSiteId local_site_id_;
-    std::chrono::steady_clock::time_point local_time_;
+    TimeAndPause<std::chrono::steady_clock::time_point> local_time_;
     DanglingBaseClassRef<SceneLevelSelector> local_scene_level_selector_;
     DeletedObjects deleted_objects_;
     LocalObjectId next_local_object_id_;

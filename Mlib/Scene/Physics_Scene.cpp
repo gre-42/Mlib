@@ -210,9 +210,9 @@ PhysicsScene::PhysicsScene(
             remote_counter_user_.set(true);
         }
         {
-            std::function<void(std::chrono::steady_clock::time_point)> send_and_receive;
+            std::function<void(const TimeAndPause<std::chrono::steady_clock::time_point>&)> send_and_receive;
             if (remote_scene_ != nullptr) {
-                send_and_receive = [this](std::chrono::steady_clock::time_point time){
+                send_and_receive = [this](const TimeAndPause<std::chrono::steady_clock::time_point>& time){
                     remote_scene_->send_and_receive(time);
                 };
                 remote_counter_user_.set(true);
@@ -241,9 +241,14 @@ PhysicsScene::~PhysicsScene() {
 
 // Misc
 
+bool PhysicsScene::physics_loop_started() const {
+    return physics_loop_ != nullptr;
+}
+
 void PhysicsScene::start_physics_loop(
     const std::string& thread_name,
-    ThreadAffinity thread_affinity)
+    ThreadAffinity thread_affinity,
+    std::function<bool()> loading)
 {
     if (physics_loop_ != nullptr) {
         THROW_OR_ABORT("physics loop already started");
@@ -255,11 +260,12 @@ void PhysicsScene::start_physics_loop(
         thread_name,
         thread_affinity,
         *physics_iteration_,
+        std::move(loading),
         physics_set_fps_,
         SIZE_MAX);  // nframes
 }
 
-void PhysicsScene::physics_iteration(std::chrono::steady_clock::time_point time) {
+void PhysicsScene::physics_iteration(const TimeAndPause<std::chrono::steady_clock::time_point>& time) {
     if (physics_iteration_ == nullptr) {
         THROW_OR_ABORT("physics iteration not created");
     }

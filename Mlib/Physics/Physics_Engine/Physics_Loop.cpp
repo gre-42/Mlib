@@ -6,48 +6,63 @@
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
+#include <Mlib/Time/Time_And_Pause.hpp>
+#include <chrono>
 #include <vector>
 
 using namespace Mlib;
 
 PhysicsLoop::PhysicsLoop(
-    const std::string& thread_name,
+    std::string thread_name,
     ThreadAffinity thread_affinity,
     PhysicsIteration& physics_iteration,
+    std::function<bool()> level_loading,
     SetFps& set_fps,
     size_t nframes,
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background)
-: set_fps_{set_fps},
-  physics_iteration_{physics_iteration},
-  physics_thread_{run_in_background([this, tn=thread_name, thread_affinity, nframes](){
-    try {
-        ThreadInitializer ti{ tn, thread_affinity };
-        SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration_.delete_node_mutex_ };
-        size_t nframes2 = nframes;
-        // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
-        while (!physics_thread_.get_stop_token().stop_requested()) {
-            std::chrono::steady_clock::time_point simulated_time;
-            if (!set_fps_.paused()) {
-                // lag_finder.start();
-                // TimeGuard::initialize(5 * 60);
-                if (nframes2 != SIZE_MAX) {
-                    if (nframes2-- == 0) {
-                        break;
+    : set_fps_{set_fps}
+    , physics_iteration_{physics_iteration}
+    , physics_thread_{run_in_background(
+        [this, tn=std::move(thread_name), thread_affinity, nframes, ll=std::move(level_loading)]()
+        {
+            try {
+                ThreadInitializer ti{ tn, thread_affinity };
+                DeferredSetDeleterThreadGuard set_deleter_thread_guard{physics_iteration_.delete_node_mutex_};
+                size_t nframes2 = nframes;
+                auto simulated_time = set_fps_.simulated_time();
+                // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
+                while (!physics_thread_.get_stop_token().stop_requested()) {
+                    auto loading = ll();
+                    if (!loading && !set_deleter_thread_guard.is_set()) {
+                        set_deleter_thread_guard.clear_deleter_thread();
+                        set_deleter_thread_guard.set_deleter_thread();
                     }
+                    if (!set_fps_.paused() && !loading) {
+                        // lag_finder.start();
+                        // TimeGuard::initialize(5 * 60);
+                        if (nframes2 != SIZE_MAX) {
+                            if (nframes2-- == 0) {
+                                break;
+                            }
+                        }
+                        simulated_time = set_fps_.simulated_time();
+                        physics_iteration_({simulated_time, PauseStatus::RUNNING});
+                        // lerr() << rb0->get_new_absolute_model_matrix();
+                        // TimeGuard tg2{"physics tick"};
+                        set_fps_.tick(simulated_time);
+                    } else {
+                        physics_iteration_({simulated_time, loading ? PauseStatus::LOADING : PauseStatus::PAUSED});
+                        if (!loading) {
+                            set_fps_.tick(std::chrono::steady_clock::time_point());
+                        }
+                    }
+                    // TimeGuard::print_groups(lraw());
+                    // lag_finder.stop();
                 }
-                simulated_time = set_fps_.simulated_time();
-                physics_iteration_(simulated_time);
-                // lerr() << rb0->get_new_absolute_model_matrix();
-                // TimeGuard tg2{"physics tick"};
+            } catch (...) {
+                add_unhandled_exception(std::current_exception());
             }
-            set_fps_.tick(simulated_time);
-            // TimeGuard::print_groups(lraw());
-            // lag_finder.stop();
-        }
-    } catch (...) {
-        add_unhandled_exception(std::current_exception());
-    }
-    })}
+            })}
 {}
 
 PhysicsLoop::~PhysicsLoop() {

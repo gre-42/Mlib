@@ -10,6 +10,8 @@
 
 namespace Mlib {
 
+template <class TTimepoint>
+class TimeAndPause;
 class PhysicsScene;
 class SceneLevelSelector;
 class UdpNode;
@@ -26,7 +28,7 @@ public:
     ~RemoteScene();
     RemoteObjectId add_local_object(const DanglingBaseClassRef<IIncrementalObject>& object);
     void add_remote_object(const RemoteObjectId& id, const DanglingBaseClassRef<IIncrementalObject>& object);
-    void send_and_receive(std::chrono::steady_clock::time_point time);
+    void send_and_receive(const TimeAndPause<std::chrono::steady_clock::time_point>& time);
     DanglingBaseClassPtr<IIncrementalObject> try_get(const RemoteObjectId& id) const;
     bool try_remove(const RemoteObjectId& id);
     template<class Class, class... Args>

@@ -62,6 +62,7 @@
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
+#include <Mlib/Time/Time_And_Pause.hpp>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -76,7 +77,7 @@ std::unique_ptr<JThread> render_thread(
     LockableKeyConfigurations& key_configurations,
     PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
-    std::atomic_bool& load_scene_finished,
+    LoadScene& load_scene,
     Renderer& renderer,
     const SceneConfig& scene_config,
     MenuLogic& menu_logic)
@@ -84,7 +85,7 @@ std::unique_ptr<JThread> render_thread(
     return std::make_unique<JThread>([&](){
         try {
             ThreadInitializer ti{ "Render", ThreadAffinity::POOL };
-            bool last_load_scene_finished = false;
+            bool all_physics_loops_started = false;
             LambdaRenderLogic lrl{
                 [&](const LayoutConstraintParameters& lx,
                     const LayoutConstraintParameters& ly,
@@ -97,20 +98,24 @@ std::unique_ptr<JThread> render_thread(
                         scene_graph_config.renderable_hider->process_input();
                     }
                     menu_logic.handle_events();
-                    if (load_scene_finished) {
+                    if (!all_physics_loops_started && 
+                        !args.has_named("--no_physics") &&
+                        !args.has_named("--single_threaded"))
+                    {
+                        all_physics_loops_started = load_scene.level_loaded();
+                        for (auto& [n, r] : physics_scenes.guarded_iterable()) {
+                            if (r.physics_loop_started()) {
+                                continue;
+                            }
+                            r.start_physics_loop(
+                                ("Phys_" + n).substr(0, 15), ThreadAffinity::POOL,
+                                [&load_scene](){ return !load_scene.level_loaded(); });
+                        }
+                    }
+                    if (load_scene.level_loaded()) {
                         execute_render_allocators();
                         auto& rs = physics_scenes["primary_scene"];
                         rs.scene_.wait_for_cleanup();
-                        if (!last_load_scene_finished && 
-                            !args.has_named("--no_physics") &&
-                            !args.has_named("--single_threaded"))
-                        {
-                            for (auto& [n, r] : physics_scenes.guarded_iterable()) {
-                                r.delete_node_mutex_.clear_deleter_thread();
-                                r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
-                            }
-                            last_load_scene_finished = true;
-                        }
                         renderable_scenes.render_toplevel(
                             lx,
                             ly,
@@ -122,7 +127,7 @@ std::unique_ptr<JThread> render_thread(
                             for (auto& [_, r] : physics_scenes.guarded_iterable()) {
                                 SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                                 if (!r.physics_set_fps_.paused()) {
-                                    r.physics_iteration(std::chrono::steady_clock::now());
+                                    r.physics_iteration({std::chrono::steady_clock::now(), PauseStatus::RUNNING});
                                 }
                                 r.physics_set_fps_.execute_oldest_funcs();
                             }
@@ -186,7 +191,6 @@ JThread loader_thread(
     PhysicsScenes& physics_scenes,
     RenderableScenes& renderable_scenes,
     LoadScene& load_scene,
-    std::atomic_bool& load_scene_finished,
     std::chrono::steady_clock::duration render_delay,
     std::chrono::steady_clock::duration velocity_dt)
 {
@@ -205,8 +209,7 @@ JThread loader_thread(
                 if (!args.has_named("--no_physics")) {
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : physics_scenes.guarded_iterable()) {
-                            r.delete_node_mutex_.clear_deleter_thread();
-                            r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
+                            r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL, [](){ return false; /*loading*/ });
                         }
                     } else if (args.has_named("--single_threaded")) {
                         for (auto& [n, r] : physics_scenes.guarded_iterable()) {
@@ -214,7 +217,7 @@ JThread loader_thread(
                         }
                     }
                 }
-                load_scene_finished = true;
+                load_scene.notify_level_loaded();
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADED);
             }
 
@@ -742,26 +745,11 @@ int main(int argc, char** argv) {
                 RenderableScenes renderable_scenes;
                 PhysicsScenes physics_scenes;
 
-                std::atomic_bool load_scene_finished = false;
-                std::unique_ptr<Renderer> renderer;
-                std::unique_ptr<JThread> render_future;
-                if (!args.has_named("--no_render")) {
-                    renderer = std::make_unique<Renderer>(render.generate_renderer());
-                    render_future = render_thread(
-                        args,
-                        button_states,
-                        key_configurations,
-                        physics_scenes,
-                        renderable_scenes,
-                        load_scene_finished,
-                        *renderer,
-                        scene_config,
-                        menu_logic);
-                }
                 std::function<void()> exit = [&render](){
                     render.request_window_close();
                 };
                 render.window().set_title(main_scene_filename);
+
                 remote_sites.set_user_status(UserTypes::ALL_REMOTE, UserStatus::INITIAL);
                 remote_sites.set_user_status(UserTypes::ALL_LOCAL, UserStatus::LEVEL_LOADING);
                 load_scene.reset(new LoadScene(
@@ -794,13 +782,29 @@ int main(int argc, char** argv) {
                     renderable_scenes,
                     window_logic,
                     exit));
+
+                std::unique_ptr<Renderer> renderer;
+                std::unique_ptr<JThread> render_future;
+                if (!args.has_named("--no_render")) {
+                    renderer = std::make_unique<Renderer>(render.generate_renderer());
+                    render_future = render_thread(
+                        args,
+                        button_states,
+                        key_configurations,
+                        physics_scenes,
+                        renderable_scenes,
+                        *load_scene,
+                        *renderer,
+                        scene_config,
+                        menu_logic);
+                }
+
                 JThread loader_future_guard{loader_thread(
                     args,
                     remote_sites,
                     physics_scenes,
                     renderable_scenes,
                     *load_scene,
-                    load_scene_finished,
                     render_delay,
                     velocity_dt)};
                 try {

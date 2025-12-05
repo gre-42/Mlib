@@ -206,7 +206,7 @@ void test_physics_engine(unsigned int seed) {
     };
     scene_node_resources.register_gravity(VariableAndHash<std::string>{"world"}, { 0.f, -9.8f * meters / squared(seconds), 0.f });
     DynamicWorld dynamic_world{ scene_node_resources, VariableAndHash<std::string>{"world"} };
-    std::function<void(std::chrono::steady_clock::time_point)> send_and_receive;
+    std::function<void(const TimeAndPause<std::chrono::steady_clock::time_point>&)> send_and_receive;
     PhysicsIteration pi{
         scene_node_resources,
         rendering_resources,
@@ -221,6 +221,7 @@ void test_physics_engine(unsigned int seed) {
         "Physics",
         ThreadAffinity::POOL,
         pi,
+        [](){ return false; }, // level_loading
         physics_set_fps,
         is_interactive ? SIZE_MAX : 20};
     if (!is_interactive) {

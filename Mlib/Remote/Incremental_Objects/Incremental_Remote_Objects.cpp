@@ -23,16 +23,16 @@ RemoteSiteId IncrementalRemoteObjects::local_site_id() const {
     return local_site_id_;
 }
 
-std::chrono::steady_clock::time_point IncrementalRemoteObjects::local_time() const
-{
-    if (local_time_ == std::chrono::steady_clock::time_point()) {
-        THROW_OR_ABORT("Local time not set");
-    }
-    return local_time_;
+std::chrono::steady_clock::time_point IncrementalRemoteObjects::local_time() const {
+    return local_time_.time();
+}
+
+PauseStatus IncrementalRemoteObjects::pause_status() const {
+    return local_time_.status();
 }
 
 void IncrementalRemoteObjects::set_local_time(
-    std::chrono::steady_clock::time_point time)
+    const TimeAndPause<std::chrono::steady_clock::time_point>& time)
 {
     local_time_ = time;
 }
@@ -109,7 +109,7 @@ DanglingBaseClassPtr<IIncrementalObject> IncrementalRemoteObjects::try_get(const
 bool IncrementalRemoteObjects::try_remove(const RemoteObjectId& id) {
     // If the local time is not set, this means that no transmission has taken
     // place yet, and the deleted objects need not be updated.
-    if (local_time_ != std::chrono::steady_clock::time_point()) {
+    if (local_time_.initialized()) {
         deleted_objects_.try_emplace(id, local_time());
     }
     auto o = try_get(id);

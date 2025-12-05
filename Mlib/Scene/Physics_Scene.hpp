@@ -50,6 +50,8 @@ class RemoteSites;
 class SceneLevelSelector;
 class PhysicsIteration;
 class PhysicsLoop;
+template <class TTimepoint>
+class TimeAndPause;
 
 struct SceneConfig;
 struct RaceIdentifier;
@@ -86,10 +88,12 @@ public:
     ~PhysicsScene();
 
     // Misc
+    bool physics_loop_started() const;
     void start_physics_loop(
         const std::string& thread_name,
-        ThreadAffinity thread_affinity);
-    void physics_iteration(std::chrono::steady_clock::time_point time);
+        ThreadAffinity thread_affinity,
+        std::function<bool()> loading);
+    void physics_iteration(const TimeAndPause<std::chrono::steady_clock::time_point>& time);
     void print_physics_engine_search_time() const;
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();

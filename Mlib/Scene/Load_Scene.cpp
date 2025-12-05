@@ -442,3 +442,17 @@ void LoadScene::operator () () {
 LocalSceneLevel LoadScene::scene_level() const {
     return scene_level_selector_.get_next_scene_level();
 }
+
+void LoadScene::notify_level_loaded() {
+    scene_level_selector_.notify_level_loaded();
+}
+
+bool LoadScene::level_loaded() const {
+    switch (scene_level_selector_.load_status()) {
+    case LocalSceneLevelLoadStatus::LOADING:
+        return false;
+    case LocalSceneLevelLoadStatus::RUNNING:
+        return true;
+    }
+    THROW_OR_ABORT("Unknown level loaded status");
+}

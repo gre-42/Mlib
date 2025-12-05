@@ -70,6 +70,8 @@ public:
     ~LoadScene();
     void operator () ();
     LocalSceneLevel scene_level() const;
+    void notify_level_loaded();
+    bool level_loaded() const;
 private:
     MacroLineExecutor::JsonUserFunction json_user_function_;
     MacroLineExecutor macro_line_executor_;

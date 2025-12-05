@@ -27,7 +27,8 @@ bool LocalSceneLevel::reload_required(const LocalSceneLevel& other_level) const
 SceneLevelSelector::SceneLevelSelector(
     LocalSceneLevel local_scene_level,
     std::function<void()> on_schedule_load_scene)
-    : local_scene_level_{ std::move(local_scene_level) }
+    : load_status_{ LocalSceneLevelLoadStatus::LOADING }
+    , local_scene_level_{ std::move(local_scene_level) }
     , on_schedule_load_scene_{ std::move(on_schedule_load_scene) }
 {}
 
@@ -66,5 +67,16 @@ void SceneLevelSelector::client_schedule_load_scene_level(LocalSceneLevel level)
 }
 
 bool SceneLevelSelector::reload_required(const LocalSceneLevel& other_level) const {
+    std::shared_lock lock{ mutex_ };
     return local_scene_level_.reload_required(other_level);
+}
+
+LocalSceneLevelLoadStatus SceneLevelSelector::load_status() const {
+    std::shared_lock lock{ mutex_ };
+    return load_status_;
+}
+
+void SceneLevelSelector::notify_level_loaded() {
+    std::scoped_lock lock{ mutex_ };
+    load_status_ = LocalSceneLevelLoadStatus::RUNNING;
 }

@@ -14,9 +14,10 @@ class SetFps;
 class PhysicsLoop {
 public:
     PhysicsLoop(
-        const std::string& thread_name,
+        std::string thread_name,
         ThreadAffinity thread_affinity,
         PhysicsIteration& physics_iteration,
+        std::function<bool()> level_loading,
         SetFps& set_fps,
         size_t nframes = SIZE_MAX,
         const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;});

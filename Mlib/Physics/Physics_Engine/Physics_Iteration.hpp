@@ -20,6 +20,8 @@ class DeleteRigidBodyMutex;
 class PhysicsLoop;
 struct Beacon;
 class DynamicWorld;
+template <class TTimepoint>
+class TimeAndPause;
 
 class PhysicsIteration {
     friend PhysicsLoop;
@@ -30,19 +32,19 @@ public:
         Scene& scene,
         DynamicWorld& dynamic_world,
         PhysicsEngine& physics_engine,
-        std::function<void(std::chrono::steady_clock::time_point)> send_and_receive,
+        std::function<void(const TimeAndPause<std::chrono::steady_clock::time_point>&)> send_and_receive,
         DeleteNodeMutex& delete_node_mutex,
         const PhysicsEngineConfig& physics_cfg,
         BaseLog* base_log = nullptr);
     ~PhysicsIteration();
-    void operator()(std::chrono::steady_clock::time_point time);
+    void operator()(const TimeAndPause<std::chrono::steady_clock::time_point>& time);
 private:
     SceneNodeResources& scene_node_resources_;
     RenderingResources& rendering_resources_;
     Scene& scene_;
     DynamicWorld& dynamic_world_;
     PhysicsEngine& physics_engine_;
-    std::function<void(std::chrono::steady_clock::time_point)> send_and_receive_;
+    std::function<void(const TimeAndPause<std::chrono::steady_clock::time_point>&)> send_and_receive_;
     DeleteNodeMutex& delete_node_mutex_;
     const PhysicsEngineConfig& physics_cfg_;
     BaseLog* base_log_;

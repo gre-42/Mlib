@@ -100,6 +100,9 @@ void UdpNode::send(std::istream& istr) {
     std::vector<std::byte> data(len);
     read_vector(istr, data, "send buffer", IoVerbosity::SILENT);
     auto sent = socket_->send_to(boost::asio::buffer(data), endpoint_, 0, ec);
+    if (getenv_default_bool("NET_DEBUG", false)) {
+        linfo() << this << " send_to. Error: " << (int)(bool)ec << ", Length: " << sent << " / " << data.size();
+    }
     if (ec) {
         THROW_OR_ABORT("UDP send failed: \"" + ec.message() + '"');
     }

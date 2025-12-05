@@ -68,7 +68,7 @@ RemoteScene::RemoteScene(
 
 RemoteScene::~RemoteScene() = default;
 
-void RemoteScene::send_and_receive(std::chrono::steady_clock::time_point time) {
+void RemoteScene::send_and_receive(const TimeAndPause<std::chrono::steady_clock::time_point>& time) {
     objects_.set_local_time(time);
     objects_.forget_old_deleted_objects();
     proxies_.send_and_receive(TransmissionType::UNICAST);
