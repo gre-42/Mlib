@@ -104,7 +104,7 @@ void IncrementalCommunicatorProxy::receive_from_home(std::istream& istr) {
 
 void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
     auto writer = BinaryWriter{iostr};
-    [&](){
+    switch (0) { case 0:
         {
             auto level_selector = objects_->local_scene_level_selector();
             auto level = level_selector->get_local_scene_level();
@@ -112,7 +112,7 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
             writer.write_binary(level.reload_count, "reload count");
             writer.write_binary(level_selector->load_status(), "scene level load status");
             if (is_loading(level_selector->load_status())) {
-                return;
+                break;
             }
         }
         {
@@ -170,6 +170,6 @@ void IncrementalCommunicatorProxy::send_home(std::iostream& iostr) {
         } else {
             send_zero("remote");
         }
-    }();
+    }
     send_socket_->send(iostr);
 }
