@@ -61,7 +61,9 @@ public:
         , is_set_{ false }
     {}
     ~DeferredSetDeleterThreadGuard() {
-        delete_node_mutex_.clear_deleter_thread();
+        if (is_set_) {
+            delete_node_mutex_.clear_deleter_thread();
+        }
     }
     void clear_deleter_thread() {
         delete_node_mutex_.clear_deleter_thread();
