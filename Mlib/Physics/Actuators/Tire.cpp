@@ -14,7 +14,7 @@ Tire::Tire(
     float sKa,
     float sKe,
     const Interp<float>& stiction_coefficient,
-    const CombinedMagicFormula<float>& magic_formula,
+    const CombinedPacejkasMagicFormula<float>& magic_formula,
     const FixedArray<float, 3>& vehicle_mount_0,
     const FixedArray<float, 3>& vehicle_mount_1,
     float radius)

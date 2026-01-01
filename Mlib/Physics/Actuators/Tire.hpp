@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
-#include <Mlib/Physics/Collision/Magic_Formula.hpp>
+#include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <string>
 
@@ -29,14 +29,14 @@ public:
         float sKa,
         float sKe,
         const Interp<float>& stiction_coefficient,
-        const CombinedMagicFormula<float>& magic_formula,
+        const CombinedPacejkasMagicFormula<float>& magic_formula,
         const FixedArray<float, 3>& vehicle_mount_0,
         const FixedArray<float, 3>& vehicle_mount_1,
         float radius);
     ~Tire();
     void advance_time(float dt);
     FixedArray<float, 3> rotation_axis() const;
-    CombinedMagicFormula<float> magic_formula;
+    CombinedPacejkasMagicFormula<float> magic_formula;
     float shock_absorber_position;
     float angle_x;
     float angle_y;

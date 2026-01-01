@@ -104,10 +104,10 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<float>(KnownArgs::Ka) * N / (meters / seconds),
             args.arguments.at<float>(KnownArgs::Ke),
             mus,
-            CombinedMagicFormula<float>{
-                .f = FixedArray<MagicFormulaArgmax<float>, 2>{
-                    MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
-                    MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
+            CombinedPacejkasMagicFormula<float>{
+                .f = FixedArray<PacejkasMagicFormulaArgmax<float>, 2>{
+                    PacejkasMagicFormulaArgmax<float>{PacejkasMagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
+                    PacejkasMagicFormulaArgmax<float>{PacejkasMagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
                 }
             },
             args.arguments.at<EFixedArray<float, 3>>(KnownArgs::vehicle_mount_0),

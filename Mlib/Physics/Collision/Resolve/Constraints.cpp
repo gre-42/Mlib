@@ -4,7 +4,7 @@
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Actuators/Velocity_Classification.hpp>
-#include <Mlib/Physics/Collision/Magic_Formula.hpp>
+#include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Collision/Resolve/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
@@ -452,7 +452,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
         {
             slip,
             std::asin(sin_lateral_slip_angle)},
-        cfg_.no_slip ? MagicFormulaMode::NO_SLIP : MagicFormulaMode::STANDARD) * lambda_max;
+        cfg_.no_slip ? PacejkasMagicFormulaMode::NO_SLIP : PacejkasMagicFormulaMode::STANDARD) * lambda_max;
     // lerr() << tire_id_ << " | " << r;
     fci_.set_clamping(
         n3_,

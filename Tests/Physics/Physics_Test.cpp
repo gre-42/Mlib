@@ -4,7 +4,7 @@
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
-#include <Mlib/Physics/Collision/Magic_Formula.hpp>
+#include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
@@ -208,22 +208,22 @@ void test_com() {
 
 void test_magic_formula() {
     {
-        MagicFormulaArgmax<float> mf{MagicFormula<float>{}};
+        PacejkasMagicFormulaArgmax<float> mf{PacejkasMagicFormula<float>{}};
         assert_isclose(mf.argmax, 0.04665f);
         assert_isclose(mf(mf.argmax), 1.f);
         assert_isclose(mf(-mf.argmax), -1.f);
-        assert_isclose(mf(2 * mf.argmax, MagicFormulaMode::NO_SLIP), 1.f);
-        assert_isclose(mf(-2 * mf.argmax, MagicFormulaMode::NO_SLIP), -1.f);
-        assert_isclose(mf(0.9f * mf.argmax, MagicFormulaMode::NO_SLIP), 0.997996f);
-        assert_isclose(mf(-0.9f * mf.argmax, MagicFormulaMode::NO_SLIP), -0.997996f);
+        assert_isclose(mf(2 * mf.argmax, PacejkasMagicFormulaMode::NO_SLIP), 1.f);
+        assert_isclose(mf(-2 * mf.argmax, PacejkasMagicFormulaMode::NO_SLIP), -1.f);
+        assert_isclose(mf(0.9f * mf.argmax, PacejkasMagicFormulaMode::NO_SLIP), 0.997996f);
+        assert_isclose(mf(-0.9f * mf.argmax, PacejkasMagicFormulaMode::NO_SLIP), -0.997996f);
         assert_isclose(mf(2 * mf.argmax), 0.952219f);
     }
     {
-        MagicFormulaArgmax<float> mf{MagicFormula<float>{.B = 41 * 0.044f * 8}};
+        PacejkasMagicFormulaArgmax<float> mf{PacejkasMagicFormula<float>{.B = 41 * 0.044f * 8}};
         assert_isclose(mf.argmax, 0.132484f);
     }
     {
-        MagicFormulaArgmax<float> mf{MagicFormula<float>{.B = 41 * 0.044f * 10}};
+        PacejkasMagicFormulaArgmax<float> mf{PacejkasMagicFormula<float>{.B = 41 * 0.044f * 10}};
         assert_isclose(mf.argmax, 0.10599f);
     }
 }

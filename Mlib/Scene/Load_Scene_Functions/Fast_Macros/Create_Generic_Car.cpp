@@ -15,7 +15,7 @@
 #include <Mlib/Physics/Advance_Times/Crash.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
-#include <Mlib/Physics/Collision/Magic_Formula.hpp>
+#include <Mlib/Physics/Collision/Pacejkas_Magic_Formula.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
@@ -417,10 +417,10 @@ void CreateGenericCar::execute(const JsonView& args)
                         wheel_Ka,
                         wheel_Ke,
                         mus,
-                        CombinedMagicFormula<float>{
-                            .f = FixedArray<MagicFormulaArgmax<float>, 2>{
-                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
-                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
+                        CombinedPacejkasMagicFormula<float>{
+                            .f = FixedArray<PacejkasMagicFormulaArgmax<float>, 2>{
+                                PacejkasMagicFormulaArgmax<float>{PacejkasMagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
+                                PacejkasMagicFormulaArgmax<float>{PacejkasMagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
                             }
                         },
                         vehicle_mount_0,
