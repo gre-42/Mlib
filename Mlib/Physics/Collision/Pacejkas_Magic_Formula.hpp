@@ -18,9 +18,9 @@ enum class PacejkasMagicFormulaMode {
 
 template <class TData>
 struct PacejkasMagicFormula {
-    TData B = 41;
+    TData B = 41;           // x-scaling
     TData C = (TData)1.4;
-    TData D = 1;
+    TData D = 1;            // y-scaling
     TData E = (TData)-0.2;
     TData operator () (const TData& x) const {
         return D * std::sin(C * std::atan(B * x - E * (B * x - std::atan(B * x))));
