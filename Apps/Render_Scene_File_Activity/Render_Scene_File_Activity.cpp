@@ -669,7 +669,7 @@ void android_main(android_app* app) {
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
                 .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
-                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "20")),
+                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "8")),
