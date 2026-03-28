@@ -44,7 +44,7 @@ private:
     VariableAndHash<std::string> dirtmap_node_name_;
     CameraCycle camera_cycle_near_;
     CameraCycle camera_cycle_far_;
-    CameraCycle camera_cycle_tripod_;
+    CameraCycle camera_cycle_spectator_;
     VariableAndHash<std::string> fallback_camera_node_name_;
     VariableAndHash<std::string> camera_node_name_;
     mutable SafeAtomicRecursiveSharedMutex camera_mutex_;

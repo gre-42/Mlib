@@ -1,4 +1,4 @@
-#include "Create_Rel_Key_Binding_Tripod.hpp"
+#include "Create_Rel_Key_Binding_Spectator.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -29,18 +29,18 @@ DECLARE_ARGUMENT(repeat_factor);
 DECLARE_ARGUMENT(speed_cursor);
 }
 
-CreateRelKeyBindingTripod::CreateRelKeyBindingTripod(RenderableScene& renderable_scene) 
+CreateRelKeyBindingSpectator::CreateRelKeyBindingSpectator(RenderableScene& renderable_scene) 
     : LoadRenderableSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateRelKeyBindingSpectator::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
     auto& kb = key_bindings.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
         .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingBaseClassPtr<SceneNode> {
             auto name = sc.camera_node_name();
             auto cycle = sc.cycle(name);
-            if (cycle.has_value() && (*cycle == CameraCycleType::TRIPOD)) {
+            if (cycle.has_value() && (*cycle == CameraCycleType::SPECTATOR)) {
                 return scene.get_node(name, DP_LOC).ptr();
             }
             return nullptr;
@@ -82,10 +82,10 @@ namespace {
 struct RegisterJsonUserFunction {
     RegisterJsonUserFunction() {
         LoadSceneFuncs::register_json_user_function(
-            "rel_key_binding_tripod",
+            "rel_key_binding_spectator",
             [](const LoadSceneJsonUserFunctionArgs& args)
             {
-                CreateRelKeyBindingTripod(args.renderable_scene()).execute(args);
+                CreateRelKeyBindingSpectator(args.renderable_scene()).execute(args);
             });
     }
 } obj;

@@ -15,7 +15,7 @@ SelectedCameras::SelectedCameras(Scene& scene)
     , dirtmap_node_name_{ "dirtmap_node" }
     , camera_cycle_near_{ *this, {VH{"follower_camera_0"}, VH{"turret_camera_node"}} }  // "main_gun_end_node"
     , camera_cycle_far_{ *this, {VH{"45_deg_camera"}, VH{"light_node"}, VH{"dirtmap_node"}} }
-    , camera_cycle_tripod_{ *this, {VH{"tripod0"}} }
+    , camera_cycle_spectator_{ *this, {VH{"spectator0"}} }
     , fallback_camera_node_name_{ "stadium_camera" }
     , camera_node_name_{ "follower_camera_0" }
 {}
@@ -29,8 +29,8 @@ std::optional<CameraCycleType> SelectedCameras::cycle(const VariableAndHash<std:
     if (camera_cycle_far_.contains(name)) {
         return CameraCycleType::FAR;
     }
-    if (camera_cycle_tripod_.contains(name)) {
-        return CameraCycleType::TRIPOD;
+    if (camera_cycle_spectator_.contains(name)) {
+        return CameraCycleType::SPECTATOR;
     }
     return std::nullopt;
 }
@@ -105,8 +105,8 @@ void SelectedCameras::set_camera_cycle(
     case CameraCycleType::FAR:
         camera_cycle_far_.set_camera_names(cameras);
         return;
-    case CameraCycleType::TRIPOD:
-        camera_cycle_tripod_.set_camera_names(cameras);
+    case CameraCycleType::SPECTATOR:
+        camera_cycle_spectator_.set_camera_names(cameras);
         return;
     }
     THROW_OR_ABORT("Unknown camera cycle type: " + std::to_string(int(tpe)));
@@ -124,8 +124,8 @@ void SelectedCameras::cycle_camera(CameraCycleType tpe) {
     case CameraCycleType::FAR:
         camera_cycle_far_.cycle_camera();
         return;
-    case CameraCycleType::TRIPOD:
-        camera_cycle_tripod_.cycle_camera();
+    case CameraCycleType::SPECTATOR:
+        camera_cycle_spectator_.cycle_camera();
         return;
     }
     THROW_OR_ABORT("Unknown camera cycle type: " + std::to_string(int(tpe)));

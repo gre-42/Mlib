@@ -8,7 +8,7 @@ CameraCycleType Mlib::camera_cycle_type_from_string(const std::string& s) {
     static const std::map<std::string, CameraCycleType> m{
         {"near", CameraCycleType::NEAR},
         {"far", CameraCycleType::FAR},
-        {"tripod", CameraCycleType::TRIPOD},
+        {"spectator", CameraCycleType::SPECTATOR},
     };
     auto it = m.find(s);
     if (it == m.end()) {
